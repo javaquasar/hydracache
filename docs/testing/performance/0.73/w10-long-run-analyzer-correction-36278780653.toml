@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-long-run-analyzer-correction-36278780653-v1"
+state = "offline-reanalysis-passed-awaiting-d4-review"
+original_failure = "docs/testing/performance/0.73/w10-long-run-qualification-failed-8f8d4457.toml"
+contract = "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml"
+workflow_run = 36278780653
+workflow_url = "https://github.com/javaquasar/hydracache/actions/runs/36278780653"
+original_tooling_commit = "8f8d44570eb984a37f38a6b8dafeaebbd54d3d11"
+correction_commit = "3e603b3a4d079b1e28d94bde11a7d374018ebd71"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+
+original_campaign_sha256 = "21050af401193774e20564af989bed27a6af2ea4e2f2f8ba367abe05b8153470"
+runner_sha256 = "3dbce5ea195e5fde60f0bc861839b83aca101a5a9c36283f00897a3a4f65038c"
+reanalyzer_sha256 = "fe59d82573a6a22f91f738a790248e94172d18595e7c01a432c29f31a71e8d36"
+reanalysis_sha256 = "9d703ce8cc1eb024a491131cf0d58290e79e7b937dadb83875ebd76a0e072258"
+i73_receipt_sha256 = "98ff6f3bfc6cb98323eeea5a101ce732c36f39d897774e2c1d7d08bb970829fe"
+i73_checkpoints_sha256 = "80c87567a0520ed4a8cc19949cbc25aac6eebb59e8c331a4534c967fc0fcd93b"
+c73_receipt_sha256 = "686f7c5afd1f64b2cb97e05ed6130ab32dd83a4d2fe63c32c1240789974f3466"
+c73_checkpoints_sha256 = "08d127e2ba7d35f00a51746f8ee0d6116fe213ba979569a0634ab3945b21aba6"
+nested_sha256_verified = true
+
+defect = "The original analyzer sampled blocks of absolute memory levels, concatenated those randomly selected levels, and assigned them new monotonically increasing time coordinates. That destroyed the observed trend before estimating bootstrap slopes."
+falsifier = "On a perfectly linear 36-checkpoint series with slope 1/6 unit per second, the upper bound must remain 1/6. The previous implementation collapsed toward zero; the corrected adjacent-slope moving-block implementation returns exactly 1/6 and is deterministic at the frozen seed."
+correction = "Compute each adjacent checkpoint slope in original time order, sample contiguous 12-slope blocks with replacement until the original delta count is restored, and use the 95th percentile of 10,000 resampled mean slopes as the one-sided upper bound. This matches the existing memory-statistics moving-block contract."
+bootstrap_method = "moving-block-adjacent-slope-v1"
+block_samples = 12
+bootstrap_iterations = 10000
+bootstrap_seed = 730073
+confidence = 0.95
+
+raw_observations_changed = false
+workload_changed = false
+thresholds_changed = false
+identities_changed = false
+rerun_performed = false
+automatic_retry_allowed = false
+performance_claim_allowed = false
+confirmation_allowed = false
+candidate_is_final_c73 = false
+tooling_or_orchestration_fault_found = true
+
+i73_rss_theil_sen_bytes_per_second = 34.13232848432038
+c73_rss_theil_sen_bytes_per_second = 9.840001889656811
+i73_rss_upper_95_bytes_per_second = 117.08014425910481
+c73_rss_upper_95_bytes_per_second = 62.73508326296912
+i73_anonymous_pss_upper_95_bytes_per_second = 117.08014425910481
+c73_anonymous_pss_upper_95_bytes_per_second = 62.73508326296912
+rss_slope_guard_passed = true
+anonymous_pss_slope_guard_passed = true
+goodput_guard_passed = true
+cpu_guard_passed = true
+p99_guard_passed = true
+result = "passed"
+
+decision = "retain-original-failure-and-review-analyzer-correction-at-d4"
+interpretation = "Run 36278780653 remains an immutable failed original analysis. Reanalysis changes no product observation, identity, workload, threshold, seed, block length, or retry count; it corrects a tooling implementation that did not compute a time-preserving slope bootstrap. All frozen guards pass under the corrected analyzer, but this receipt alone does not open confirmation or finalize the later hydra-moka distribution identity."
+next_evidence = "At D4, independently review the correction and decide how the passed original C73 source evidence relates to the later exact hydra-moka registry candidate. Do not rent the host or dispatch a replacement six-hour run merely to obtain a favorable sample."
+
+validation = [
+  "python -m unittest scripts.perf.test_performance_long_run_073 -v: 5 passed",
+  "python -m py_compile scripts/perf/performance_long_run_073.py scripts/perf/reanalyze_performance_long_run_073.py: passed",
+  "offline reanalysis of the downloaded immutable run 36278780653 packet: passed",
+  "all twelve nested role, stream, checkpoint, and calibration SHA-256 values: verified",
+]

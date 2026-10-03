@@ -1,0 +1,89 @@
+schema_version = 1
+release = "0.73.0"
+work_item = "W11"
+kind = "exact-sha-ci-admission"
+status = "rejected-before-tag"
+ship_allowed = false
+tag_created = false
+recorded_at = "2026-10-03T14:14:28Z"
+
+[identity]
+pull_request = 214
+base_ref = "main"
+base_sha = "1f63494889d50a4e41018159710e5286a887ebf7"
+candidate_ref = "release/0.73-candidate"
+candidate_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_tree = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
+pull_request_merge_sha = "269f7fafccfd8b912fb6ad4957d905c65a97044a"
+pull_request_merge_tree = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
+tree_identity_verified = true
+
+[runs]
+ci = 37126998956
+ci_url = "https://github.com/javaquasar/hydracache/actions/runs/37126998956"
+ci_conclusion = "failure"
+hc2 = 37126998936
+hc2_url = "https://github.com/javaquasar/hydracache/actions/runs/37126998936"
+hc2_conclusion = "success"
+documentation = 37126998896
+documentation_url = "https://github.com/javaquasar/hydracache/actions/runs/37126998896"
+documentation_conclusion = "failure"
+
+[[root_failure]]
+id = "docs-example-lock-version-drift"
+jobs = ["Documentation Site / Build and verify docs", "CI / Docs"]
+command = "cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked"
+observed = "docs-site/examples/Cargo.lock still records HydraCache path packages at 0.72.0 while the workspace is 0.73.0; Cargo refused to update the lock file under --locked"
+classification = "frozen-publication-input-defect"
+
+[[root_failure]]
+id = "ci-topology-registry-drift"
+jobs = ["CI / 0.71 CI topology safety gate", "CI / MSRV 1.88.0"]
+observed = "the checked-in topology inventory omitted compatibility-073.yml and five performance-*073 workflows"
+classification = "tooling-governance-defect"
+
+[[root_failure]]
+id = "memory-owner-registry-drift"
+jobs = ["CI / 0.71 Memory Contracts", "CI / Migration Conformance Fast Evidence 0.69"]
+observed = "HydraCacheInner omitted removal_observer and the HC/2 OutboundQueue remained an unreviewed syntactic owner"
+classification = "tooling-governance-defect"
+
+[[root_failure]]
+id = "gated-test-registry-drift"
+jobs = ["CI / Rust", "CI / Migration Conformance Fast Evidence 0.69"]
+observed = "HYDRACACHE_RUN_COMPATIBILITY_073_ROLLING was referenced by performance_compatibility_073.rs but absent from the frozen gated-test registry"
+classification = "tooling-governance-defect"
+
+[[root_failure]]
+id = "retained-072-test-hard-coded-workspace-version"
+jobs = ["CI / Migration Conformance Fast Evidence 0.69"]
+observed = "management_compat_072 asserted that the current workspace version was exactly 0.72.0 and rejected the intentional 0.73.0 version"
+classification = "tooling-test-defect"
+
+[[root_failure]]
+id = "instruction-tripwire-empty-summary"
+jobs = ["CI / CI Instruction Work Tripwire"]
+observed = "the paired instruction tripwire ended with ValueError: head.ndjson: no benchmark summaries"
+classification = "ci-orchestration-defect"
+
+[derived_failures]
+jobs = [
+  "CI / Migration Conformance Admission 0.69",
+  "CI / HC/2 Linux Required",
+  "CI / HC/2 Docker Interop",
+]
+reason = "fail-closed aggregation of the root job failures above"
+
+[accepted_lanes]
+hc2_client_plane = "all executed required Linux, Java 17, Java 21 and Docker interop jobs passed in run 37126998936"
+migration_java_legacy = "success"
+migration_postgres_16 = "success"
+migration_postgres_18 = "success"
+memory_regression_fast = "success"
+shared_performance_tripwire = "success"
+
+[decision]
+reason = "full exact-tree CI is not green, so W11 publication closure is not satisfied"
+candidate_change_authorized = false
+ci_retry_authorized = false
+next_step = "obtain an explicit release decision: either freeze a corrected candidate and repeat all evidence affected by its identity, or amend the release contract through a reviewed governance change; never waive or rerun the red gates silently"

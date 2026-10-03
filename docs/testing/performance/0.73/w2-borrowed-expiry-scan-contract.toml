@@ -1,0 +1,39 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w2-borrowed-expiry-scan-073-v1"
+state = "preregistered-candidate-implementation-authorized"
+triggering_evidence = "docs/testing/performance/0.73/w2-expiry-sweep-profile-e4a61d9f.toml"
+baseline_profile_source = "e4a61d9fbbd3fa3fa5eb3b12e39b2ca5b5872404"
+candidate_source_parent = "b4ffe170bd96383971d40dbd925202343f9f6600"
+baseline_identity = "I73"
+production_feature_enabled = false
+product_mutation_allowed = true
+candidate_data_present = false
+dedicated_host_run_allowed = false
+local_results_promotable = false
+profile_tool = "tools/expiry-sweep-profile-073"
+independent_processes_required = true
+repeats_per_scenario = 5
+candidate = "Traverse BTreeMap entries by reference, retain owned StoreKey values only for expired removals and the next bounded-scan cursor, and return examined cardinality without an owned examined vector."
+forbidden_changes = [
+  "change the 256-entry opportunistic scan budget",
+  "change the 1000 ms sweep interval",
+  "change expiry eligibility",
+  "change ordered-map wrap semantics",
+  "skip tenant quota release",
+  "add production counters or timers",
+  "change public client protocol or diagnostics",
+]
+required_correctness = [
+  "bounded scan removes exactly the expired entries it examined",
+  "next pass resumes after the final examined key and wraps once",
+  "full diagnostic sweep examines the complete store and retains no cursor",
+  "empty stores retain no cursor",
+  "tenant quota accounting is released for every expired removal",
+]
+primary_metric = "gross_allocated_bytes"
+secondary_metrics = ["allocation_count", "cloned_identity_bytes"]
+acceptance = "All 20 candidate processes pass. No-expiry and cursor-wrap allocate exactly one cursor clone (96 bytes, 3 String allocations); half-expired allocates no more than 30,528 gross bytes; all-expired allocates no more than 61,248 gross bytes. Correctness and quota tests pass unchanged."
+rejection = "Reject on any failed process, scan-budget or cursor mismatch, quota leak, more than 96 no-expiry bytes, no-expiry/wrap inequality, or allocation above either preregistered expired-shape bound."
+interpretation_limit = "Local exact allocation can accept or reject the ownership change. It cannot establish CPU, mutex-wait, latency, RSS, capacity, or release-grade numerical claims."
+next_decision = "If accepted locally, retain the result and continue W1 owner classification. Do not spend a dedicated-host run on W2 alone; include it only in a later integrated candidate after other local owners are resolved."

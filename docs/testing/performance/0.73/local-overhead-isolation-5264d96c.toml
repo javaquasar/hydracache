@@ -1,0 +1,63 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_screening"
+profile_id = "instrumentation-overhead-counters-only-073-v1"
+diagnostic_only = true
+counter_correctness_eligible = false
+promotable = false
+numerical_claim_eligible = false
+source_sha = "5264d96cc181f70a54a6c0d2601a3e7b0d0454b8"
+binary_sha256 = "c81cac092c97fcd5fac132d47830f6fb2841ed4570e3fbc62ecb906bb005572f"
+host_fingerprint_sha256 = "6925691d8e0ce5d649fb02ae0f4c91f7be667aede4d0d23f62b24ac8cd34cc65"
+screening_sha256 = "e971bce96f6ded345661847b5f9aaf4ea43df4b237fafdb40bfde4e1c5993065"
+run_order_seed = 73003
+pair_count = 3
+counterbalanced = true
+failed_attempts = 0
+thresholds_status = "screening_only_unqualified"
+decision = "listener-cost-attributed-local-diagnostic"
+isolated_factor = "production counters with the async eviction listener disabled"
+conclusion = "The listener owns the observed fill and expire/delete allocation deltas and most of the RSS delta; elapsed time remains too noisy for a directional claim."
+next_evidence = "Redesign or remove listener-path allocation and retained-memory cost, preserve removal-accounting correctness, then rerun the full production profile locally before dedicated-host qualification."
+
+[[median_observations]]
+metric = "elapsed_ns"
+off = 33442600.0
+production = 35924300.0
+regression_fraction = 0.0742077470
+
+[[median_observations]]
+metric = "fill_allocated_bytes_per_operation"
+off = 2433.625
+production = 2433.625
+regression_fraction = 0.0
+
+[[median_observations]]
+metric = "steady_allocated_bytes_per_operation"
+off = 315.1875
+production = 315.1875
+regression_fraction = 0.0
+
+[[median_observations]]
+metric = "expire_delete_allocated_bytes_per_operation"
+off = 2267.125
+production = 2267.125
+regression_fraction = 0.0
+
+[[median_observations]]
+metric = "refill_allocated_bytes_per_operation"
+off = 1052.46875
+production = 1086.71875
+regression_fraction = 0.0325425339
+
+[[median_observations]]
+metric = "post_idle_rss_delta_bytes"
+off = 602112.0
+production = 610304.0
+regression_fraction = 0.0136054422
+
+[[median_observations]]
+metric = "peak_rss_delta_bytes"
+off = 696320.0
+production = 684032.0
+regression_fraction = -0.0176470588

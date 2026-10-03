@@ -307,6 +307,8 @@ pub struct MemoryReconciliationReport {
 pub enum MemoryFootprintError {
     CounterFault,
     NotQuiescent,
+    RemovalObserverDirty,
+    RemovalCleanupPending { accepted: u64, acknowledged: u64 },
     EpochMismatch { expected: u64, acknowledged: u64 },
     ReconciliationMismatch,
 }
@@ -316,6 +318,16 @@ impl fmt::Display for MemoryFootprintError {
         match self {
             Self::CounterFault => formatter.write_str("memory counter overflow or underflow"),
             Self::NotQuiescent => formatter.write_str("exact memory snapshot requires quiescence"),
+            Self::RemovalObserverDirty => formatter.write_str(
+                "removal observer lost bounded cleanup work; reconciliation is required",
+            ),
+            Self::RemovalCleanupPending {
+                accepted,
+                acknowledged,
+            } => write!(
+                formatter,
+                "removal cleanup is pending: accepted {accepted}, acknowledged {acknowledged}"
+            ),
             Self::EpochMismatch {
                 expected,
                 acknowledged,
@@ -354,6 +366,7 @@ pub(crate) struct MemoryCaptureInput {
     pub(crate) tag_version_after: u64,
     pub(crate) tag_generation_records: u64,
     pub(crate) key_generation_records: u64,
+    pub(crate) removal_observer_stable: bool,
 }
 
 impl EntryMemoryDelta {
@@ -518,23 +531,15 @@ impl MemoryFootprintCounters {
     }
 
     fn checked_add(&self, counter: &AtomicU64, delta: u64) {
-        if counter
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                value.checked_add(delta)
-            })
-            .is_err()
-        {
+        let previous = counter.fetch_add(delta, Ordering::AcqRel);
+        if previous.checked_add(delta).is_none() {
             self.faulted.store(true, Ordering::Release);
         }
     }
 
     fn checked_sub(&self, counter: &AtomicU64, delta: u64) {
-        if counter
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                value.checked_sub(delta)
-            })
-            .is_err()
-        {
+        let previous = counter.fetch_sub(delta, Ordering::AcqRel);
+        if previous < delta {
             self.faulted.store(true, Ordering::Release);
         }
     }
@@ -568,6 +573,7 @@ impl MemoryFootprintCounters {
             tag_version_after,
             tag_generation_records,
             key_generation_records,
+            removal_observer_stable,
         } = input;
         self.ensure_healthy()?;
         let before = self.version.load(Ordering::Acquire);
@@ -587,7 +593,8 @@ impl MemoryFootprintCounters {
         let stable = active_before == 0
             && active_after == 0
             && before == after
-            && tag_version_before == tag_version_after;
+            && tag_version_before == tag_version_after
+            && removal_observer_stable;
         let epoch = self.epoch.load(Ordering::Acquire);
         let workload_epoch_acknowledged = matches!(request, MemorySnapshotRequest::Exact { .. });
         let consistency = match request {
@@ -799,6 +806,39 @@ mod tests {
             MemorySnapshotConsistency::ObservedNonAtomic
         );
         drop(mutation);
+    }
+
+    #[test]
+    fn counter_overflow_faults_before_mutation_releases() {
+        let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
+        let mutation = counters.mutation();
+        counters.entries.store(u64::MAX, Ordering::Release);
+
+        counters.checked_add(&counters.entries, 1);
+
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+        assert_eq!(
+            counters.capture(MemorySnapshotRequest::Admin, MemoryCaptureInput::default()),
+            Err(MemoryFootprintError::CounterFault)
+        );
+        drop(mutation);
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+    }
+
+    #[test]
+    fn counter_underflow_faults_before_mutation_releases() {
+        let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
+        let mutation = counters.mutation();
+
+        counters.checked_sub(&counters.entries, 1);
+
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+        assert_eq!(
+            counters.capture(MemorySnapshotRequest::Admin, MemoryCaptureInput::default()),
+            Err(MemoryFootprintError::CounterFault)
+        );
+        drop(mutation);
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
     }
 
     #[test]

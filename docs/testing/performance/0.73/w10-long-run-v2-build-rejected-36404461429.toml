@@ -1,0 +1,46 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-long-run-v2-build-rejected-36404461429-v1"
+state = "rejected-before-performance-measurement"
+contract = "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml"
+workflow_run = 36404461429
+workflow_url = "https://github.com/javaquasar/hydracache/actions/runs/36404461429"
+artifact_id = 10961982535
+artifact_name = "performance-long-run-qualification-073-8296d9531546700d7a5f77a3ebb19d8d2bf576ae-36404461429-1"
+artifact_zip_sha256 = "11e261415368d3786592391afeb0b60e9cfb5b3f7d4dcabcc67a0f78ca0e7fa0"
+post_i73_calibration_sha256 = "b7f7a29ecfe3750a3e6ab0d045e29d4a383e3fb5495d9145f3ddd03d047dc5c3"
+post_c73_calibration_sha256 = "23bd94dbda3bdea0d1d800aeb23ec060891c46362c5c8e0a25abaa8027e9b0f1"
+
+workflow_revision = "8296d9531546700d7a5f77a3ebb19d8d2bf576ae"
+submitted_tooling_sha = "8296d9531546700d7a5f77a3ebb19d8d2bf576ae"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_tree_oid = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
+baseline_harness_lock_sha256 = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
+candidate_harness_lock_sha256 = "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630"
+
+candidate_checkout_completed = true
+baseline_server_build_completed = true
+candidate_server_build_completed = true
+baseline_harness_build_completed = true
+candidate_harness_build_completed = false
+canary_started = false
+baseline_role_started = false
+candidate_role_started = false
+measurement_observations_produced = false
+automatic_retry_performed = false
+
+post_i73_calibration_result = "success"
+post_c73_calibration_result = "success"
+post_calibration_protected_environment = "performance-reference-073"
+post_calibration_dedicated_bare_metal = true
+post_calibration_host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+post_calibration_lease_owner = "long-run-073@javaquasar"
+post_calibration_lease_end = "2026-09-29T03:35:10Z"
+
+failure = "The common standalone harness lockfile records the I73 path packages at version 0.72.0 and the Git Moka source. The exact C73 tree exposes those path packages at version 0.73.0 and hydra-moka from the registry, so Cargo correctly refused to update the copied lockfile while --locked was active."
+artifact_boundary = "The artifact contains only the two always-run post-calibration files. Their nested SHA-256 digests, protected environment, dedicated-host identity, host fingerprint and lease were checked independently; no canary, role checkpoint, performance sample or numerical release evidence exists."
+correction = "Keep the overlay source byte-identical for both roles, add a preregistered C73-specific harness lockfile, verify both lockfile digests, select it only for the C73 build under --locked, then restore the canonical overlay lockfile and compare both overlay trees before any canary or measurement."
+decision = "retain-rejected-build-and-fix-tooling-without-redispatch"
+retry_boundary = "This is a pre-measurement orchestration failure, not a performance result. The frozen I73 and C73 identities, product trees, workload, durations, thresholds and statistical rules remain unchanged. No repeated run was created by this follow-up."
+next_evidence = "Run contract and locked-build checks, commit and push the tooling-only correction. A new protected qualification requires a separately authorized dispatch and must retain this failed attempt."

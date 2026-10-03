@@ -1,0 +1,87 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w3-tag-index-profile-f8b90ef0-v1"
+state = "local-profile-passed-candidate-owner-found"
+contract = "docs/testing/performance/0.73/w3-tag-index-profile-contract.toml"
+source_commit = "f8b90ef0f6c9d7bfc42dbd367c87cce4a2ef2cf8"
+profile_tool = "tools/tag-index-profile-073"
+binary_sha256 = "24f43d6f26a8639c55a9b663a4c3841246d62785f10cc7c90cc562f84552a5b4"
+contract_sha256 = "a2b726e5ee6745a9254143ddaec64e9bb2dd1132dc9185e63d545d00e93fc833"
+tool_source_sha256 = "92c538cd52472e6b4d55e9d8f14f3b28fcf7331c1da248225036d90144b8cc17"
+tool_lock_sha256 = "6c08c11af348478e7b5c8647258fb3d6f671e58a70b604d3d286f5673fa26bd4"
+raw_manifest_sha256 = "0ac9d09c1a7f7310a68753ec638571d856fc937ad9bf8cf7c71514468ebbf7ea"
+raw_manifest_canonicalization = "stdout filenames ordinal-sorted; each line is two spaces, quoted filename:lowercase-sha256, comma, LF; UTF-8 without BOM"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80 2026-01-15)"
+host = "ASUS EXPERTBOOK P5405CSA; Intel Core Ultra 7 258V; 8 cores/8 logical processors; 33,634,439,168 bytes physical memory; Windows NT 10.0.26200.0"
+attempts = 215
+raw_stdout_results = 215
+raw_stderr_results = 215
+raw_exit_results = 215
+failed_attempts = 0
+nonempty_stderr = 0
+invariant_failures = 0
+repeats_per_scenario = 5
+index_scenarios = 10
+event_scenarios = 30
+invalidation_scenarios = 3
+independent_processes = true
+prebuilt_release_binary = true
+exact_memory_reconciliation_passed = true
+event_content_equality_passed = true
+generation_fence_passed = true
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+
+tag_cardinalities = [0, 1, 4, 16, 64]
+estimated_tag_retained_bytes = [0, 47104, 188416, 753664, 3014656]
+index_shared_median_gross_allocated_bytes = [183424, 308944, 684924, 2191876, 8213340]
+index_shared_median_live_delta_bytes = [157664, 197420, 316248, 792712, 2693304]
+index_unique_median_gross_allocated_bytes = [185520, 388228, 999452, 3449996, 13241308]
+index_unique_median_live_delta_bytes = [159832, 264880, 581640, 1855592, 6940728]
+index_shared_gross_bytes_per_membership_at_64_tags = 490.1072
+index_unique_gross_bytes_per_membership_at_64_tags = 796.8621
+index_unique_gross_premium_per_membership_at_64_tags = 306.7549
+index_shared_live_bytes_per_membership_at_64_tags = 154.7632
+index_unique_live_bytes_per_membership_at_64_tags = 413.8730
+
+event_shared_s0_median_gross_allocated_bytes = [184328, 308880, 684988, 2190620, 8215436]
+event_shared_s1_median_gross_allocated_bytes = [201808, 339536, 759780, 2437412, 9148292]
+event_shared_s8_median_gross_allocated_bytes = [256992, 498232, 1218436, 4100548, 15628164]
+event_unique_s0_median_gross_allocated_bytes = [184552, 388228, 999356, 3449836, 13242532]
+event_unique_s1_median_gross_allocated_bytes = [200968, 419012, 1075148, 3693532, 14175132]
+event_unique_s8_median_gross_allocated_bytes = [259152, 576708, 1532836, 5357572, 20656068]
+event_s1_tag_churn_bytes_per_delivery_tag = 55.8701
+event_s8_tag_churn_bytes_per_delivery_tag = 56.0002
+event_shared_64_s8_payload_bytes = 4194304
+event_shared_64_s8_gross_increment_bytes = 7412728
+event_shared_64_s8_tag_only_gross_increment_bytes = 7340064
+event_shared_64_s8_increment_share_percent = 47.4319
+
+invalidation_fanouts = [1, 64, 1024]
+invalidation_median_gross_allocated_bytes = [2380, 134356, 2355364]
+invalidation_median_elapsed_nanoseconds = [19900, 70300, 1234600]
+invalidation_removed_keys = [1, 64, 1024]
+invalidation_post_tag_memberships = [0, 0, 0]
+invalidation_post_generation_records = [1, 1, 1]
+
+source_audit = "CacheEntry already shares one immutable Arc tag slice across entry clones, but TagIndex owns String keys and public CacheEvent stores Vec<String>. Tokio broadcast Clone therefore deep-copies every event tag string for each receiving subscriber."
+estimator_interpretation = "The exact retained-byte estimator reports 184 bytes per logical membership for both topologies. It intentionally does not model HashMap topology or allocator capacity, so equal estimates do not imply equal allocator retention."
+index_interpretation = "At 64 tags, shared topology added about 154.8 live allocator bytes per membership over the zero-tag cell while unique topology added about 413.9. The difference is expected ownership of distinct outer tag maps and is not by itself a safe interning candidate."
+event_interpretation = "After subtracting the zero-tag event cost, one subscriber allocated 55.87 bytes and eight subscribers allocated 56.00 bytes per delivered 32-byte tag. This matches one 24-byte String header plus one 32-byte allocation and identifies CacheEvent Clone as the repeatable fan-out owner."
+invalidation_interpretation = "Invalidation removed exactly the requested fan-out, left zero memberships and one bounded generation record, and remained linear in required key removal. No independent invalidation candidate is justified by this local profile."
+decision = "preregister-shared-cache-event-tags-candidate"
+next_evidence = "Freeze a candidate contract before mutation, replace CacheEvent Vec<String> ownership with an immutable shared slice while preserving the public tags accessor and event equality, then rerun all 215 local cells and the tag-index model, event, reconciliation, and stale-load fencing tests."
+
+validation = [
+  "cargo fmt --manifest-path tools/tag-index-profile-073/Cargo.toml --check: passed",
+  "cargo check --manifest-path tools/tag-index-profile-073/Cargo.toml --locked: passed",
+  "cargo clippy --manifest-path tools/tag-index-profile-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "cargo test --manifest-path tools/tag-index-profile-073/Cargo.toml --locked: 2 passed",
+  "215-process frozen local matrix: passed with empty stderr and no invariant failure",
+  "cargo test -p hydracache invalidating_tag_during_load_discards_stale_store --locked: passed",
+]

@@ -1,0 +1,185 @@
+diff --git a/src/future/base_cache.rs b/src/future/base_cache.rs
+--- a/src/future/base_cache.rs
++++ b/src/future/base_cache.rs
+@@ -30 +30 @@ use crate::{
+-    notification::{AsyncEvictionListener, RemovalCause},
++    notification::{AsyncEvictionListener, PostRemovalObserver, RemovalCause},
+@@ -115,0 +116,5 @@ impl<K, V, S> BaseCache<K, V, S> {
++    #[inline]
++    pub(crate) fn is_removal_observer_enabled(&self) -> bool {
++        self.inner.is_removal_observer_enabled()
++    }
++
+@@ -137,0 +143,11 @@ impl<K, V, S> BaseCache<K, V, S> {
++    pub(crate) fn observe_invalidate(
++        &self,
++        key: &Arc<K>,
++        entry: &MiniArc<ValueEntry<K, V>>,
++    ) where
++        K: Send + Sync + 'static,
++        V: Clone + Send + Sync + 'static,
++    {
++        self.inner.observe_invalidate(key, entry);
++    }
++
+@@ -169,0 +186 @@ where
++        post_removal_observer: Option<PostRemovalObserver<K, V>>,
+@@ -194,0 +212 @@ where
++            post_removal_observer,
+@@ -603,0 +622,9 @@ where
++        if self.is_removal_observer_enabled() {
++            self.inner.observe_upsert(
++                Arc::clone(&key),
++                &old_info.entry,
++                old_info.last_accessed,
++                old_info.last_modified,
++            );
++        }
++
+@@ -886,0 +914 @@ struct EvictionState<'a, K, V> {
++    observer: Option<&'a PostRemovalObserver<K, V>>,
+@@ -894,0 +923 @@ impl<'a, K, V> EvictionState<'a, K, V> {
++        observer: Option<&'a PostRemovalObserver<K, V>>,
+@@ -898,0 +928 @@ impl<'a, K, V> EvictionState<'a, K, V> {
++            observer,
+@@ -904 +934 @@ impl<'a, K, V> EvictionState<'a, K, V> {
+-        self.notifier.is_some()
++        self.notifier.is_some() || self.observer.is_some()
+@@ -915,0 +946,3 @@ impl<'a, K, V> EvictionState<'a, K, V> {
++        if let Some(observer) = self.observer {
++            observer(Arc::clone(&key), entry.value.clone(), cause);
++        }
+@@ -918,2 +950,0 @@ impl<'a, K, V> EvictionState<'a, K, V> {
+-        } else {
+-            panic!("notify_entry_removal is called when the notification is disabled");
+@@ -1020,0 +1052 @@ pub(crate) struct Inner<K, V, S> {
++    removal_observer: Option<PostRemovalObserver<K, V>>,
+@@ -1069,0 +1102,5 @@ impl<K, V, S> Inner<K, V, S> {
++    #[inline]
++    pub(crate) fn is_removal_observer_enabled(&self) -> bool {
++        self.removal_observer.is_some()
++    }
++
+@@ -1157,0 +1195 @@ where
++        post_removal_observer: Option<PostRemovalObserver<K, V>>,
+@@ -1214,0 +1253 @@ where
++            removal_observer: post_removal_observer,
+@@ -1329,2 +1368,6 @@ where
+-        let mut eviction_state =
+-            EvictionState::new(current_ec, current_ws, self.removal_notifier.as_ref());
++        let mut eviction_state = EvictionState::new(
++            current_ec,
++            current_ws,
++            self.removal_notifier.as_ref(),
++            self.removal_observer.as_ref(),
++        );
+@@ -2539,0 +2583,43 @@ where
++    fn observe_upsert(
++        &self,
++        key: Arc<K>,
++        entry: &MiniArc<ValueEntry<K, V>>,
++        last_accessed: Option<Instant>,
++        last_modified: Option<Instant>,
++    ) {
++        let now = self.current_time();
++        let exp = &self.expiration_policy;
++        let mut cause = RemovalCause::Replaced;
++        if last_accessed.is_some_and(|value| is_expired_by_tti(&exp.time_to_idle(), value, now)) {
++            cause = RemovalCause::Expired;
++        }
++        if let Some(last_modified) = last_modified {
++            if is_expired_by_ttl(&exp.time_to_live(), last_modified, now) {
++                cause = RemovalCause::Expired;
++            } else if is_invalid_entry(&self.valid_after(), last_modified) {
++                cause = RemovalCause::Explicit;
++            }
++        }
++        if let Some(observer) = &self.removal_observer {
++            observer(key, entry.value.clone(), cause);
++        }
++    }
++
++    fn observe_invalidate(&self, key: &Arc<K>, entry: &MiniArc<ValueEntry<K, V>>) {
++        let now = self.current_time();
++        let exp = &self.expiration_policy;
++        let mut cause = RemovalCause::Explicit;
++        if entry
++            .last_accessed()
++            .is_some_and(|value| is_expired_by_tti(&exp.time_to_idle(), value, now))
++            || entry
++                .last_modified()
++                .is_some_and(|value| is_expired_by_ttl(&exp.time_to_live(), value, now))
++        {
++            cause = RemovalCause::Expired;
++        }
++        if let Some(observer) = &self.removal_observer {
++            observer(Arc::clone(key), entry.value.clone(), cause);
++        }
++    }
++
+@@ -2545,0 +2632,3 @@ where
++        if let Some(observer) = &self.removal_observer {
++            observer(Arc::clone(&key), entry.value.clone(), cause);
++        }
+diff --git a/src/future/builder.rs b/src/future/builder.rs
+--- a/src/future/builder.rs
++++ b/src/future/builder.rs
+@@ -4 +4 @@ use crate::{
+-    notification::{AsyncEvictionListener, ListenerFuture, RemovalCause},
++    notification::{AsyncEvictionListener, ListenerFuture, PostRemovalObserver, RemovalCause},
+@@ -64,0 +65 @@ pub struct CacheBuilder<K, V, C> {
++    post_removal_observer: Option<PostRemovalObserver<K, V>>,
+@@ -84,0 +86 @@ where
++            post_removal_observer: None,
+@@ -126,0 +129 @@ where
++            self.post_removal_observer,
+@@ -225,0 +229 @@ where
++            self.post_removal_observer,
+@@ -321 +325,15 @@ impl<K, V, C> CacheBuilder<K, V, C> {
+-        self.async_eviction_listener(async_listener)
++        Self {
++            eviction_listener: Some(Box::new(async_listener)),
++            ..self
++        }
++    }
++
++    /// Lab-only post-removal observer that bypasses listener locking and futures.
++    pub fn post_removal_observer<F>(self, observer: F) -> Self
++    where
++        F: Fn(Arc<K>, V, RemovalCause) + Send + Sync + 'static,
++    {
++        Self {
++            post_removal_observer: Some(Box::new(observer)),
++            ..self
++        }
+diff --git a/src/future/cache.rs b/src/future/cache.rs
+--- a/src/future/cache.rs
++++ b/src/future/cache.rs
+@@ -11 +11 @@ use crate::{
+-    notification::AsyncEvictionListener,
++    notification::{AsyncEvictionListener, PostRemovalObserver},
+@@ -791,0 +792 @@ where
++            None,
+@@ -823,0 +825 @@ where
++        post_removal_observer: Option<PostRemovalObserver<K, V>>,
+@@ -837,0 +840 @@ where
++                post_removal_observer,
+@@ -1985,0 +1989,4 @@ where
++                if self.base.is_removal_observer_enabled() {
++                    self.base.observe_invalidate(&kv.key, &kv.entry);
++                }
++
+diff --git a/src/future/invalidator.rs b/src/future/invalidator.rs
+--- a/src/future/invalidator.rs
++++ b/src/future/invalidator.rs
+@@ -323 +323 @@ where
+-            if cache.is_removal_notifier_enabled() {
++            if cache.is_removal_notifier_enabled() || cache.is_removal_observer_enabled() {
+diff --git a/src/notification.rs b/src/notification.rs
+--- a/src/notification.rs
++++ b/src/notification.rs
+@@ -23,0 +24,4 @@ pub(crate) type AsyncEvictionListener<K, V> =
++#[cfg(feature = "future")]
++pub(crate) type PostRemovalObserver<K, V> =
++    Box<dyn Fn(Arc<K>, V, RemovalCause) + Send + Sync + 'static>;
++

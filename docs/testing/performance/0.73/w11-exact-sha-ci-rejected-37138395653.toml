@@ -1,0 +1,76 @@
+schema_version = 1
+release = "0.73.0"
+work_item = "W11"
+kind = "exact-sha-ci-admission"
+status = "rejected-before-tag"
+ship_allowed = false
+tag_created = false
+recorded_at = "2026-10-03T17:23:38Z"
+
+[identity]
+pull_request = 214
+base_ref = "main"
+base_sha = "1f63494889d50a4e41018159710e5286a887ebf7"
+candidate_ref = "release/0.73-candidate"
+candidate_sha = "58419e64627d27f8a0b2c61d24959638479ff2f4"
+candidate_tree = "f84d209c5d779b9584af78ffdabf139fcc01e920"
+pull_request_merge_sha = "d7a1919c3e3c66eb6db93effe88085f2e5090e77"
+pull_request_merge_tree = "f84d209c5d779b9584af78ffdabf139fcc01e920"
+tree_identity_verified = true
+measured_product_candidate_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+product_runtime_diff_from_measured_candidate = "empty"
+
+[runs]
+ci = 37138395653
+ci_url = "https://github.com/javaquasar/hydracache/actions/runs/37138395653"
+ci_conclusion = "failure"
+hc2 = 37138395655
+hc2_url = "https://github.com/javaquasar/hydracache/actions/runs/37138395655"
+hc2_conclusion = "success"
+documentation = 37138395690
+documentation_url = "https://github.com/javaquasar/hydracache/actions/runs/37138395690"
+documentation_conclusion = "success"
+
+[[root_failure]]
+id = "cargo-semver-checks-rustdoc-json-version-drift"
+job = "CI / 0.71 Memory Contracts"
+job_id = 111247544721
+step = "Validate every publishable package against v0.70.0"
+observed = "pinned cargo-semver-checks 0.49.0 accepted rustdoc JSON through v60, while the runner's unpinned stable Rust emitted v61; every package ended as analysis-or-tool-failure rather than a detected SemVer incompatibility"
+classification = "ci-toolchain-compatibility-defect"
+retained_artifact_id = 11279987939
+retained_artifact_name = "memory-ownership-071-d7a1919c3e3c66eb6db93effe88085f2e5090e77-37138395653-1"
+retained_artifact_digest = "sha256:de24a93eed1705a68ed96904992bfda372c8568723a6b9fae9971faf3c79f7be"
+
+[[root_failure]]
+id = "unreviewed-stable-rust-clippy-drift"
+job = "CI / Rust"
+job_id = 111247544783
+step = "Clippy"
+observed = "dtolnay/rust-toolchain@stable resolved to Rust/Clippy 1.99.0 instead of the reviewed release toolchain 1.94.0; new fetch_update deprecations and double_must_use lints, including generated-code findings, were promoted to errors by the unchanged -D warnings policy"
+classification = "ci-toolchain-temporal-drift"
+
+[derived_failures]
+jobs = ["CI / HC/2 Linux Required", "CI / HC/2 Docker Interop"]
+reason = "fail-closed aggregation after the Rust root job failed; dedicated same-SHA HC/2 run 37138395655 passed"
+
+[accepted_lanes]
+documentation_site = "all locked examples, link checks, release synchronization and visual smoke checks passed in run 37138395690"
+hc2_client_plane = "all required Linux, Java 17, Java 21 and Docker interop jobs passed in run 37138395655"
+ci_docs = "success"
+ci_instruction_tripwire = "success"
+ci_topology = "success"
+migration_java_legacy = "success"
+migration_postgres_16 = "success"
+migration_postgres_18 = "success"
+migration_admission = "success"
+memory_regression_fast = "success"
+msrv_1_88_0 = "success"
+shared_performance_tripwire = "success"
+
+[decision]
+reason = "full exact-tree CI is not green, so W11 publication closure remains unsatisfied even though product, HC/2 and documentation gates passed"
+candidate_change_authorized = true
+ci_retry_authorized = false
+remediation = "pin both release-critical CI jobs to Rust 1.94.0 and pin cargo-semver-checks 0.50.0, which supports rustdoc JSON v61; keep -D warnings and the exact Clippy feature/allocator matrix unchanged"
+next_step = "create a new tooling-only exact candidate and let its normal pull-request workflows run; do not rerun 37138395653 and do not change measured product runtime, workload, duration, estimator, seed or thresholds"

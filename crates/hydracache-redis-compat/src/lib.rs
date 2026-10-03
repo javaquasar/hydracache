@@ -1980,7 +1980,7 @@ pub fn encode_resp2_value(value: RespValue) -> Result<Vec<u8>, RedisCompatError>
     let mut output = BytesMut::new();
     extend_encode_resp2(&mut output, &frame, false)
         .map_err(|error| RedisCompatError::Encode(error.to_string()))?;
-    Ok(output.to_vec())
+    Ok(Vec::from(output))
 }
 
 /// Encode a RESP3 response value.
@@ -1989,7 +1989,7 @@ pub fn encode_resp3_value(value: RespValue) -> Result<Vec<u8>, RedisCompatError>
     let mut output = BytesMut::new();
     extend_encode_resp3(&mut output, &frame, false)
         .map_err(|error| RedisCompatError::Encode(error.to_string()))?;
-    Ok(output.to_vec())
+    Ok(Vec::from(output))
 }
 
 fn encode_resp_value(value: RespValue, dialect: RespDialect) -> Result<Vec<u8>, RedisCompatError> {

@@ -1,0 +1,76 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-integrated-process-smoke-passed-e192e615-v1"
+state = "local-integrated-smoke-passed-host-contract-pending"
+contract = "docs/testing/performance/0.73/w10-integrated-process-smoke-contract.toml"
+scenario = "docs/testing/performance/0.73/w10-integrated-smoke-scenario.toml"
+implementation_commit = "e192e61506f5e2d921aa6fc4bc77543e9b23c062"
+implementation_tree = "65c0dfc89f7bcf3a66e168279e00bb6ff5b1f33a"
+raw_evidence = "target/performance-evidence/0.73/W10-20260925T213139Z"
+raw_manifest_sha256 = "dc00e8c4dae078c9b4e90eca659a0ea83bb2f3096e2ce82a3842932a7f44b72e"
+contract_sha256 = "3bab146f1adcc83c51e3d3d3f01d9704d433de83cb88bd5dcb30dadc73a4b1f5"
+scenario_sha256 = "21d3dab85d55c28a7be8ce484eb1239dfd35fe176c2494111a088ad019ca2681"
+test_file_sha256 = "70b7ef6cf1943d4020e8733c32dc87a7dd49ea7e7ec3dcc5d0225d656f442385"
+runner_sha256 = "adb4a338e8b94276bb93c3e54d012a4acb955ca3db14326754a52bd7e09b9e14"
+binary_sha256 = "af27095336720f93df84d1b59f7f39d92f8d2f43a4d9867c1a6368992a342d46"
+
+working_tree_dirty = false
+prebuilt_binary_used = true
+independent_processes = 4
+cells_passed = 4
+cells_failed = 0
+operations_per_cell = 1000
+attempted_total = 4000
+success_total = 4000
+rejected_total = 0
+timeout_total = 0
+late_total = 0
+incomplete_total = 0
+stdout_stderr_retained = true
+receipt_hashes_retained = true
+final_owner_reconciliation_passed = true
+management_truth_checked = true
+real_daemon_checked = true
+real_hc1_checked = true
+real_mtls_hc2_checked = true
+real_resp_checked = true
+direct_surface_checked = true
+durable_feature_checked = true
+canary_exit_code = 101
+canary_marker = "HC-CANARY-RED:W10"
+canary_red = true
+invalid_attempts_retained = 3
+
+product_mutation_present = false
+performance_threshold_applied = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+host_dispatch_allowed = false
+long_run_allowed = false
+candidate_is_final_c73 = false
+
+event_delivery_result = "One real mTLS HC2 stream completed 1000 mutation/event outcomes with a 300-request stalled phase, monotonically increasing watermarks, zero dropped events, and zero client/server live owners after close."
+expiry_tag_result = "The local cache completed replacement, tag invalidation, active TTL expiry, refill, exact memory reconciliation, and zero retained entries/tags/bytes; the isolated client surface separately proved active expiry releases tenant entry/value quota before refill."
+mixed_protocol_result = "One cell executed the frozen 350 HC2, 300 RESP, 150 HC1, 100 direct, 50 tag, and 50 TTL operations, checked management truth once, and reported 1000/1000 successful classified outcomes."
+durable_result = "The sync-acknowledged companion completed write/read/overwrite/tombstone/confirmed-GC/reopen work, observed 49 budget rejections, rejected a corrupt checksum envelope, and reconciled all 1000 scheduled outcomes."
+claim_boundary = "This is a deterministic local semantic and composition smoke. It detects interaction failures before expensive measurement but supplies no throughput, latency, allocation, RSS, capacity, published-0.72 compatibility, or long-run claim."
+decision = "pass-local-integrated-smoke-design-focused-host-contract"
+next_evidence = "Preregister a focused protected-host I73/C73 comparison for the exact integrated candidate. Keep the full volume, paired identity, counterbalanced order, complete outcome accounting, and existing release thresholds; this local smoke alone does not authorize dispatch."
+
+[[invalid_attempt]]
+id = "durable-gc-prefix-starvation"
+outcome = "failed-semantic-assertion"
+reason = "Fifty two-record GC scans repeatedly revisited the sorted live prefix, so repair-confirmed tombstones outside the prefix were never observed."
+correction = "Keep fifty maintenance calls but allow each bounded scan to inspect the fixed 256-key cardinality; confirmed tombstones were then reclaimed and the tracker reached zero."
+
+[[invalid_attempt]]
+id = "receipt-prefixed-by-libtest"
+outcome = "runner-rejected-zero-receipts"
+reason = "Libtest prepended the test name to the JSON receipt on a shared stdout line, while the first parser required JSON at column zero."
+correction = "Parse the unique embedded receipt prefix, retain the failed attempt directory, and still require exactly one validated receipt per process."
+
+[[invalid_attempt]]
+id = "cross-stream-event-assumption"
+outcome = "event-timeout"
+reason = "The first stalled-consumer design produced mutations on a second HC2 stream, but production subscriptions are intentionally scoped to their own bidirectional stream. Extending the timeout correctly did not change that semantic result."
+correction = "Issue 300 concurrent pending puts on the subscribed stream, delay reads to create backpressure, drain ordered watermarks, then join every invocation before the remaining operations."

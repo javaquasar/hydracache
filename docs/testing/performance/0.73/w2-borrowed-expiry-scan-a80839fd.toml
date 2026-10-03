@@ -1,0 +1,92 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w2-borrowed-expiry-scan-a80839fd-v1"
+state = "local-candidate-accepted-no-dedicated-run"
+contract = "docs/testing/performance/0.73/w2-borrowed-expiry-scan-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/w2-expiry-sweep-profile-e4a61d9f.toml"
+implementation_commit = "df88c28cdd4f068a315959b141d42cee4f31d4b0"
+candidate_source_commit = "a80839fd67aad086a9881375d19964dcc3449498"
+baseline_profile_source = "e4a61d9fbbd3fa3fa5eb3b12e39b2ca5b5872404"
+baseline_identity = "I73"
+profile_feature = "performance-profile"
+profile_tool = "tools/expiry-sweep-profile-073"
+binary_sha256 = "cd0e6b7cf25455523669dff0ff83ce80aae5349c56e93ce51e6227d19fabbbe7"
+contract_sha256 = "4750d6afa94f4fc99059c45ee8052a2da3d99538a475928ecddf4b2979898f15"
+tool_lock_sha256 = "6a11ba1baf9148929a9d7df4374157661176d9f5e5988c13da345dfb38607013"
+tool_source_sha256 = "4decb26cd90500a8cbbd0cac8c635f601f290ac8cfa23ed9a4dea75087db4389"
+raw_result_sha256 = "cbf5ab5f954ada246e1a259bc26640ffa867d54b346ea06bdd6eee186b80aa55"
+attempts = 20
+failed_attempts = 0
+repeats_per_scenario = 5
+fixture_entries = 512
+scan_limit = 256
+identity_bytes_per_key = 96
+production_feature_enabled = false
+candidate_local_accepted = true
+dedicated_host_run_allowed = false
+promotable = false
+cpu_claims_allowed = false
+mutex_wait_claims_allowed = false
+latency_claims_allowed = false
+rss_claims_allowed = false
+numerical_release_claims_allowed = false
+gross_allocated_bytes_removed_per_bounded_scan = 43008
+allocations_removed_per_bounded_scan = 769
+cloned_identity_bytes_removed_per_bounded_scan = 24576
+w1_disposition = "accepted"
+correctness = "The candidate still examines at most 256 ordered entries, resumes after the last examined key, wraps once, performs a cursor-free full diagnostic sweep, clears an empty-store cursor, removes every expired key, and releases tenant quota accounting."
+allocation_model = "The candidate removes exactly the 18,432-byte examined Vec backing allocation plus 256 * 96 = 24,576 bytes of deep StoreKey clones. Expired removal keys and one bounded-scan cursor remain owned. The same 43,008-byte and 769-allocation reduction appears in every shape."
+interpretation = "The exact, invariant delta and unchanged logical cardinalities accept the ownership hypothesis locally. Percent reductions vary with expired cardinality: 99.7773% for no expiry, 58.4856% for half expiry, and 41.2523% for all expiry. These percentages describe this fixed local allocation fixture only."
+decision = "accept-w2-locally-and-continue-owner-classification"
+next_evidence = "Proceed to W5 queued HC/2 bytes and connection-owned allocations. Do not dispatch a dedicated-host run for W2 alone; measure the later integrated candidate under its own preregistered D3 comparison."
+
+validation = [
+  "cargo test -p hydracache-client-transport-axum --features performance-profile --locked: 65 passed, 2 ignored",
+  "cargo check -p hydracache-client-transport-axum --no-default-features --locked: passed",
+  "cargo clippy -p hydracache-client-transport-axum --lib --tests --no-default-features --locked -- -D warnings: passed",
+  "cargo check -p hydracache-client-transport-axum --features performance-profile --locked: passed",
+  "cargo clippy -p hydracache-client-transport-axum --lib --tests --features performance-profile --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/expiry-sweep-profile-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/expiry-sweep-profile-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "candidate local allocation matrix: 20 passed, 0 failed",
+]
+
+[[scenario]]
+name = "none-expired"
+baseline_gross_allocated_bytes = 43104
+candidate_gross_allocated_bytes = 96
+relative_change = -0.997773
+baseline_allocation_count = 772
+candidate_allocation_count = 3
+candidate_cloned_keys = 1
+candidate_cloned_identity_bytes = 96
+
+[[scenario]]
+name = "half-expired"
+baseline_gross_allocated_bytes = 73536
+candidate_gross_allocated_bytes = 30528
+relative_change = -0.584856
+baseline_allocation_count = 1162
+candidate_allocation_count = 393
+candidate_cloned_keys = 129
+candidate_cloned_identity_bytes = 12384
+
+[[scenario]]
+name = "all-expired"
+baseline_gross_allocated_bytes = 104256
+candidate_gross_allocated_bytes = 61248
+relative_change = -0.412523
+baseline_allocation_count = 1547
+candidate_allocation_count = 778
+candidate_cloned_keys = 257
+candidate_cloned_identity_bytes = 24672
+
+[[scenario]]
+name = "cursor-wrap-none-expired"
+baseline_gross_allocated_bytes = 43104
+candidate_gross_allocated_bytes = 96
+relative_change = -0.997773
+baseline_allocation_count = 772
+candidate_allocation_count = 3
+candidate_cloned_keys = 1
+candidate_cloned_identity_bytes = 96

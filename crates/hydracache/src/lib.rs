@@ -534,6 +534,8 @@ mod multitenancy;
 #[cfg(not(target_arch = "wasm32"))]
 mod refresh;
 #[cfg(not(target_arch = "wasm32"))]
+mod removal_observer;
+#[cfg(not(target_arch = "wasm32"))]
 mod security;
 #[cfg(not(target_arch = "wasm32"))]
 mod stats;

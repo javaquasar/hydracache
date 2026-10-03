@@ -1,0 +1,26 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_feasibility"
+experiment = "versioned-bounded-post-removal-observer"
+source_sha = "9a2ca11424ac04382b714798432f954e2a32a73c"
+binary_sha256 = "c5e52eca879075fd76c71095fcc76440e9b7c67360969c4479de30fa99d095b5"
+receipt_sha256 = "456fdd1eff9329bc9be9bcd6e418f7eb6b7468c3e25b4bff4808c532641193f3"
+operations_per_case = 1024
+repetitions = 3
+counterbalanced = true
+diagnostic_only = true
+product_semantics_eligible = false
+promotable = false
+decision = "reference-model-feasible-moka-seam-unproven"
+conclusion = "The preallocated versioned observer publication and drain path recorded zero gross allocated bytes per operation in all three local repetitions while passing lifecycle falsifiers. This does not include Moka automatic removal delivery and is not product evidence."
+next_evidence = "Patch Moka in an isolated lab build so automatic replacement, expiry, explicit invalidation, and capacity eviction invoke the observer without enabling removal-notifier key locks or boxed futures."
+
+[[median_observations]]
+path = "atomic-counter-only"
+gross_allocated_bytes_per_operation = 0.0
+elapsed_ns = 4700.0
+
+[[median_observations]]
+path = "versioned-observer"
+gross_allocated_bytes_per_operation = 0.0
+elapsed_ns = 191500.0

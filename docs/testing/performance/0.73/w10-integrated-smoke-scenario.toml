@@ -1,0 +1,44 @@
+schema_version = 1
+release = "0.73"
+scenario_id = "integrated-smoke-073-v1"
+seed = 731001
+operations = 1000
+payload_bytes = 4096
+key_cardinality = 256
+tag_cardinality = 16
+ttl_milliseconds = 50
+management_reads = 1
+unexpected_failures_allowed = 0
+timing_claim_allowed = false
+
+[mixed_weights_percent]
+hc2_key_and_subscription = 35
+resp = 30
+hc1_native_client = 15
+direct_local_client_surface = 10
+tag_invalidation = 5
+ttl_expire_refill = 5
+
+[[cell]]
+id = "event-delivery"
+process_role = "real-daemon-hc2"
+persistence = "off"
+required_observations = ["encoded_event_bytes", "event_order", "queue_budget", "subscriptions_after_close", "pending_after_close"]
+
+[[cell]]
+id = "expiry-tag-accounting"
+process_role = "client-surface-and-local-cache"
+persistence = "off"
+required_observations = ["final_cardinality", "tenant_quota_release", "tag_memberships", "retained_reconciliation"]
+
+[[cell]]
+id = "mixed-protocol"
+process_role = "real-daemon-all-listeners-plus-direct"
+persistence = "off"
+required_observations = ["per_surface_attempted", "per_surface_success", "rejected", "timeout", "late", "incomplete", "management_truth"]
+
+[[cell]]
+id = "durable-companion"
+process_role = "durable-store"
+persistence = "sync-acknowledged"
+required_observations = ["logical_bytes", "budget_rejections", "reopen_content", "corruption_rejection", "gc_reclamation"]

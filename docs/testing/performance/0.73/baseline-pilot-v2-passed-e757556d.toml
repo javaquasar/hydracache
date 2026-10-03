@@ -1,0 +1,75 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-v2-passed-e757556d-v1"
+contract_id = "observer-baseline-pilot-073-v2"
+state = "executed-passed-four-stable-rates-i73-frozen"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36077381099
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36077381099"
+source_sha = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+implementation_commit = "947e624ddcf388a86fba61601118e2f078d8bbe1"
+binary_sha256 = "29d22e7c476e7285846016b7326d88990190188b938f4c7d3c6776a37c47f162"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10841515433
+artifact_name = "performance-baseline-pilot-v2-073-e757556d3a31d565f52a9561d6d4e555bb1cc373-36077381099-1"
+artifact_sha256 = "ceec60d10747f24f5da6b3c3b0583961d37b745b1bad3a4bc291f33cefd7b853"
+campaign_manifest_sha256 = "a4896ca4d21bdd6b388f64931c4aa0e924c54b4791801e446fbd113ee79e3aec"
+preflight_sha256 = "2944948c8fe0b80266813b00a37335152b85ec8ad36cc5b88deaed77c7d27737"
+postflight_sha256 = "30fa0ba5c0475fea87416bb4083e0d79f72571ef3ff4c82bba244ae96813500d"
+baseline_pilot_sha256 = "53cf9b63271859b64e0ea59be88fbd94533468bfcce1e8c5e032df9bdabbeb03"
+packet_file_count = 164
+pre_calibration_relative_spread = 0.00203639121896348
+post_calibration_relative_spread = 0.0044202599334117
+attempts = 40
+failed_attempts = 0
+paired_estimator = "hodges-lehmann-v1"
+stable_rates = [2500, 5000, 10000, 20000]
+selected_knee_rate_per_second = 20000
+frozen_d3_rates_per_second = [5000, 12000, 17000]
+candidate_data_present = false
+candidate_measurement_authorized = true
+i73_freeze_eligible = true
+derived_d3_rates_admitted = true
+thresholds_changed = false
+silent_retry_allowed = false
+code_effect_claimed_against_prior_campaigns = false
+decision = "freeze-i73-and-open-preregistered-d3-candidate-measurement"
+conclusion = "All four offered rates passed the unchanged goodput, CPU, p99, allocation, reconciliation, and stability guards. Paired CPU overhead was 0.052%, 0.090%, 0.167%, and 0.594%; production allocation was 25.80--26.95 B/op below off. The baseline-only packet therefore freezes I73 at exact source e757556d and derives 5000, 12000, and 17000 operations/second for D3."
+cross_run_interpretation = "Earlier v2 packets remain valid negative evidence but are independent campaigns and do not measure a causal code delta. This packet alone satisfies the preregistered admission rule. The repeated reversal of the allocation sign is consistent with the separately attributed and locally verified shared-tag ownership change, but only a future exact I73/C73 paired campaign may support a candidate improvement claim."
+next_evidence = "For each W2--W9 candidate, seal a D2 proposal against this exact I73 source and the frozen 5000/12000/17000 rates before observing candidate data. Run at least five independently started counterbalanced I73/C73 pairs on the admitted host and retain failures without silent retry."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.0005156632718833371
+cpu_pair_regressions = [-0.004092962653485918, 0.0035841267568660876, 0.010073961946003678, 0.0005156632718833371, -0.006876586859027682]
+allocation_overhead_bytes_per_operation = -25.796960000000126
+p99_relative_regression = 0.015384615384615385
+goodput_relative_regression = -0.0000026192463243106156
+stable = true
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.0008974763396860088
+cpu_pair_regressions = [-0.004806072639433606, -0.00003545747230779187, 0.006601025318805623, 0.010155102040816376, -0.0053126800230430616]
+allocation_overhead_bytes_per_operation = -26.50167999999985
+p99_relative_regression = 0.000492976532754175
+goodput_relative_regression = -0.00002376980535993525
+stable = true
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.001670413869268378
+cpu_pair_regressions = [0.008024710557734138, -0.0040153714937374, -0.0014738481245937843, -0.00013623424642147624, 0.00481467586313054]
+allocation_overhead_bytes_per_operation = -26.675199999999677
+p99_relative_regression = -0.0037750974805276123
+goodput_relative_regression = -0.000019814506831002945
+stable = true
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.005940876970375816
+cpu_pair_regressions = [-0.004306767263390407, 0.016573638389880404, -0.0020123587283519817, 0.005824560789936939, 0.013894112669103613]
+allocation_overhead_bytes_per_operation = -26.948640000000523
+p99_relative_regression = -0.002101647135447005
+goodput_relative_regression = -0.000002782934175983624
+stable = true

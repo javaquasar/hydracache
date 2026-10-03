@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::SystemTime;
 
 use crate::CacheKey;
@@ -142,7 +143,7 @@ pub struct CacheEvent {
     kind: CacheEventKind,
     scope: CacheEventScope,
     origin: CacheEventOrigin,
-    tags: Vec<String>,
+    tags: Arc<[String]>,
     timestamp: SystemTime,
 }
 
@@ -164,7 +165,7 @@ impl CacheEvent {
                 key: CacheKey::from(key.into()),
             },
             origin,
-            tags: tags.into_iter().map(Into::into).collect(),
+            tags: tags.into_iter().map(Into::into).collect::<Vec<_>>().into(),
             timestamp: SystemTime::now(),
         }
     }
@@ -184,7 +185,7 @@ impl CacheEvent {
                 affected_keys,
             },
             origin,
-            tags: vec![tag],
+            tags: Arc::from([tag]),
             timestamp: SystemTime::now(),
         }
     }
@@ -199,7 +200,7 @@ impl CacheEvent {
             kind,
             scope: CacheEventScope::Cache { affected_keys },
             origin,
-            tags: Vec::new(),
+            tags: Arc::from([]),
             timestamp: SystemTime::now(),
         }
     }
@@ -405,6 +406,8 @@ impl CacheEventOptions {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::{
         CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin, CacheEventScope,
         CacheEventValueMode,
@@ -452,6 +455,21 @@ mod tests {
                 affected_keys: Some(10)
             }
         );
+    }
+
+    #[test]
+    fn event_clone_shares_immutable_tags() {
+        let event = CacheEvent::for_key(
+            CacheEventKind::Stored,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            ["users", "user:42"],
+        );
+
+        let cloned = event.clone();
+
+        assert!(Arc::ptr_eq(&event.tags, &cloned.tags));
+        assert_eq!(cloned.tags(), &["users".to_owned(), "user:42".to_owned()]);
     }
 
     #[test]

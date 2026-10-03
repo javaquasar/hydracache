@@ -1,0 +1,101 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-long-run-tooling-passed-c3769d3e-v1"
+state = "local-tooling-qualified-dispatch-route-pending"
+contract = "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml"
+tooling_implementation_commit = "c3769d3e986c574365112fea47fd0de01019b4c7"
+tooling_implementation_tree = "5baaec6f01995d179ce780c339cb64e25b8d92e7"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+raw_canary_packet = "target/long-run-073-canary-local-v2"
+raw_local_screen_packet = "target/long-run-073-screen-local-v1"
+
+contract_sha256 = "7ba9795892d94cac440b9ee4b9ccf469b72521232ad09ac4f4b24f387f963c66"
+harness_source_sha256 = "a48854208d114a2bf0665460a0b5ebf6089420791687ad1d910341fa516f4b2b"
+harness_manifest_sha256 = "aba0578cd5e6680db412fdb737fdb5d634eb8392aaec8db1a9346a62c24738c1"
+harness_lock_sha256 = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
+runner_sha256 = "f8cc351d0ee8652bcdc3eb0a80de651df0c26d66faaea454cf1a4418bb428c94"
+runner_test_sha256 = "518815ef9ca8362d120a6e739d2684e7edd4fe2d2e9d1066821e916e5e12e030"
+workflow_sha256 = "a8438f5503449a4b1e5d174850527d3db902d641027cbcdcdce81dc7644cdb2d"
+canary_receipt_sha256 = "cce8204a05ddc5f7436698b5159f475cd5037db9871e2b0bd19d736f56817a23"
+local_campaign_sha256 = "f6c20787ced05ef98018b51f215bdda0ca464e152dcee51d4d553447d3a1e3b2"
+i73_receipt_sha256 = "1fcd6d1ee42e789b95c09f58e179c66130f03853c032d6ae30e9fc9f6a77630f"
+i73_checkpoints_sha256 = "089569e5b19316ea7e88df27929536a43c78fadf913da0b9013e7ebede0751a8"
+c73_receipt_sha256 = "e8245f91e62aaf3c62f4b74615b517e531a38864c166557f4a4b207dd2eb04e4"
+c73_checkpoints_sha256 = "e809ed8ea8c4b87e1c39202d62b091f670925c88dd67aaf018240a21ed52c2a4"
+overlay_sha256 = "03fe5e0a6a5acb50d5980c4f8fed31fa047c6247c150311e6d6c4443356c3ff3"
+i73_local_harness_sha256 = "75a6dda4559f1b77bca0d4f11bd3bf0ec4b932d89ed6cdea4fece936f4208293"
+c73_local_harness_sha256 = "298a879604cc768582d5e1ce46ab518ac2249c7e644329ab8d997f75cc9e3edd"
+i73_local_server_sha256 = "26ef2cd4262eaf3d7c21069003549a39723b2fe74c09fd490c3902249cf20d62"
+c73_local_server_sha256 = "dfe30e681fee2565bd156be406f629618ae1b9cbc1e9a91c655b7819f448162b"
+
+working_tree_dirty = false
+runner_unit_tests_passed = 11
+performance_contract_tests_passed = 103
+harness_clippy_warnings_denied = true
+harness_rustfmt_passed = true
+i73_overlay_compile_passed = true
+c73_overlay_compile_passed = true
+overlay_identical_between_roles_enforced = true
+exact_role_sources_enforced = true
+manual_workflow_only = true
+protected_environment_required = true
+serialized_concurrency_required = true
+pre_post_calibration_per_role_required = true
+role_order_enforced = true
+baseline_bounds_sealed_before_candidate = true
+automatic_retry_allowed = false
+confirmation_in_qualification_workflow = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+allocation_or_capacity_claim_allowed = false
+candidate_is_final_c73 = false
+host_dispatch_route_registered = false
+host_dispatch_completed = false
+
+canary_result = "passed"
+canary_marker = "HC-CANARY-RED:W10-LONG"
+canary_marker_observed = true
+canary_campaign_receipt_absent = true
+canary_rejection = "C73 receipt identity or outcomes are incomplete"
+
+local_result = "passed"
+local_role_order = ["I73", "C73"]
+local_operations_per_role = 2000
+local_duration_seconds_per_role = 2
+local_i73_checkpoints = 5
+local_c73_checkpoints = 4
+local_packet_bytes = 23979
+local_resources_available = false
+local_performance_claim_allowed = false
+local_confirmation_allowed = false
+
+decision = "pass-local-tooling-register-dispatch-route-before-host-run"
+claim_boundary = "This receipt qualifies only the long-run harness, runner, workflow shape, exact role identities, fail-closed canary, checkpoint reconciliation, serial role order, and local packet sealing. The two-second Windows screen is not host evidence and none of its goodput, CPU, latency, RSS, or slope values may support a release claim."
+dispatch_rule = "First expose the reviewed workflow through an already registered manual default-branch entry without weakening the protected environment or shared serialized lease. Only then may one six-hour-per-role qualification be dispatched with tooling_sha bound to c3769d3e; no automatic retry is allowed."
+next_evidence = "Register and locally validate the dispatch adapter, commit it, then run one protected 15-hour-capped qualification and retain complete or partial artifacts from that single attempt."
+
+[[invalid_attempt]]
+id = "windows-junction-package-collision"
+outcome = "overlay-build-rejected"
+reason = "Cargo treated junction-backed exact crates as duplicate packages in the standalone staging workspace."
+correction = "Use a staging tree whose relative workspace shape is explicit instead of junction aliases."
+
+[[invalid_attempt]]
+id = "windows-symbolic-link-privilege"
+outcome = "overlay-materialization-rejected"
+reason = "The development account could not create the Linux-style symlink staging topology without elevation."
+correction = "Keep Linux CI symlinks, but copy the exact read-only source tree for the local Windows tooling screen."
+
+[[invalid_attempt]]
+id = "copied-overlay-missing-root-inputs"
+outcome = "overlay-build-failed"
+reason = "The first copied staging tree omitted the exact root docs and Cargo.lock consumed by loadgen include_str paths and locked resolution."
+correction = "Mirror the exact root Cargo.toml, Cargo.lock, crates, and docs around the identical tool overlay."
+
+[[invalid_attempt]]
+id = "input-verifier-missing-return"
+outcome = "canary-runner-failed-before-harness"
+reason = "A refactor left input validation after an earlier return, so the canary received None instead of the verified identity map."
+correction = "Restore the fail-closed return path and add a regression test that also rejects overlay drift."

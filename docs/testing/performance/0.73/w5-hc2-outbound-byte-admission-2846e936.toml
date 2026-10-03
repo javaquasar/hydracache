@@ -1,0 +1,155 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-outbound-byte-admission-2846e936-v1"
+state = "local-candidate-accepted-for-integrated-campaign"
+contract = "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-25cdfb61.toml"
+implementation_commit = "2846e93633cc14dea5c00b2f742e27260c794875"
+profile_tool = "tools/hc2-connection-profile-073"
+binary_sha256 = "34f6ccfecbc3980ec7b31247c9287ae672c2d8875bacb3f222f121e892407f58"
+contract_sha256 = "88cb8b725488fca6e96a718ced72b353a8f5394e71614f80beb50b3e61fcf4bf"
+server_source_sha256 = "57ef93bee2a4ebe54c3e372e9d8cedf3b346c5a423a1e817f88fe6cb8104f9be"
+root_lock_sha256 = "740c0b011a871d4578d596db8c8071edb0bb594ca56e2153dcfe431371bae294"
+tool_lock_sha256 = "e5036205789986a0363fd09b16754b7fa52768e49aa96d40e1ff69d4812a4bf1"
+application_queue_byte_budget = 1048576
+application_queue_item_capacity = 16
+pairs_per_value_size = 5
+attempts = 20
+failed_attempts = 0
+connections = 8
+subscriptions = 8
+offered_value_bytes_per_connection = 8388608
+value_bytes = [4096, 262144]
+mutations_per_connection = [2048, 32]
+product_mutation_present = true
+candidate_data_present = true
+public_configuration_changed = false
+wire_contract_changed = false
+frame_rejection_added = false
+dedicated_host_run_allowed = false
+dedicated_host_repeat_authorized = false
+release_numerical_claim_allowed = false
+promotable = false
+candidate_accepted_locally = true
+unit_invariants_passed = true
+real_mtls_invariant_passed = true
+full_server_suite_passed = true
+strict_clippy_passed = true
+control_invariant_passed = true
+treatment_invariant_passed = true
+stability_invariant_passed = true
+close_invariant_passed = true
+stderr_empty = true
+raw_results = [
+  "4096-attempt1-drained.json:8d63fa1e1722dccca7f70d0de074bf33270fd959ad81de080933a95cff29922a",
+  "4096-attempt2-unpolled.json:1909c2f13f30ad1af7ecf9b41066de4f79838cfaf07655a61eb374f7a0e68498",
+  "4096-attempt3-unpolled.json:3ce7c9fcf1edb06209a173520dd12e799251fa427b74b0534dd9d433042e9912",
+  "4096-attempt4-drained.json:933ce2c1b11f8d55f204c993d87a7046cc1a1085df81dc4eb49959777e4c4321",
+  "4096-attempt5-drained.json:bb4a85598d9a14bb57540c68a2c789c5173e04c3e283313bc555c5f514e5bc85",
+  "4096-attempt6-unpolled.json:9bb61eb9dfab72df27cb34b0d7fa247c4d1277585be23325210cfa21d9d6acde",
+  "4096-attempt7-unpolled.json:e8e14a305635ab63ad54edd407f65a4d824b9259bbf69aad446a207276ddbfdc",
+  "4096-attempt8-drained.json:4fe866410906fc05e28b83f90d6626ca84e9b144950ab3a9202118a14dcac3bd",
+  "4096-attempt9-drained.json:4225eb34069603ae70fbfb05b71f621686e6d571f128f3c6e8f003b45536e7f7",
+  "4096-attempt10-unpolled.json:cce54daaed1d2eaccf858ba2c10ebf3591a1fdf5b965c8c4fde0fbcc2e3ed51b",
+  "262144-attempt1-drained.json:2e0da1f694e4e909483611a49a8816b521be596c02df3963f4d743b9ff9b5134",
+  "262144-attempt2-unpolled.json:6b522ae8d7081da3c08cc052550e8817bc340db41344e8fe5073ff7408c43abe",
+  "262144-attempt3-unpolled.json:6d1c1a518fee8bb9eaf7133830f1a283abee40f34dcff58e39e442657ed03e3f",
+  "262144-attempt4-drained.json:56d3ad0596e7a40393588e4f83e754665b3f814df52ad87062b094c10232435f",
+  "262144-attempt5-drained.json:3e120b0b21323a3ff8f951fc91dbdac9df3f042aa5591713bfabf0350a40b38f",
+  "262144-attempt6-unpolled.json:e5f20d72a2fc18fed9f59349ec5eda3adeaf1879f9b3d848b088d7dcc71f617c",
+  "262144-attempt7-unpolled.json:018ef90c39a5de82f25643a3752db06b4ef7ec5f65fe3f0e50661d0d3392f2ab",
+  "262144-attempt8-drained.json:d4eae33bb127dd587f6de45e74c766293b9c4618a4825575a4828b69162e354f",
+  "262144-attempt9-drained.json:3dbbeaba128c0d5b028f5ae00cc67c619d19a10d7aff11194d790eba50808f89",
+  "262144-attempt10-unpolled.json:f61bbd3eb60afd7924630541508acfeabb32a8c9766820043ad7673e4369fb41",
+]
+baseline_median_unpolled_dispatch_4096 = 4160
+candidate_median_unpolled_dispatch_4096 = 4152
+baseline_median_unpolled_dispatch_262144 = 128
+candidate_median_unpolled_dispatch_262144 = 104
+high_payload_dispatch_reduction_percent = 18.75
+baseline_median_paired_server_working_set_delta_4096_bytes = 9216000
+candidate_median_paired_server_working_set_delta_4096_bytes = 9863168
+baseline_median_paired_server_working_set_delta_262144_bytes = 22667264
+candidate_median_paired_server_working_set_delta_262144_bytes = 15949824
+high_payload_working_set_reduction_bytes = 6717440
+high_payload_working_set_reduction_percent = 29.6349837368992
+baseline_median_paired_server_pagefile_delta_262144_bytes = 22663168
+candidate_median_paired_server_pagefile_delta_262144_bytes = 15167488
+high_payload_pagefile_reduction_bytes = 7495680
+high_payload_pagefile_reduction_percent = 33.0742815832279
+interpretation = "The one-MiB encoded-envelope admission budget left the 4 KiB item-bound dispatch effectively unchanged (4,160 to 4,152) and reduced the 256 KiB stalled median from 128 to 104 dispatches. High-payload unpolled-minus-drained server working set fell by 6,717,440 bytes (29.6%) and pagefile by 7,495,680 bytes (33.1%). Every high-payload candidate pair was below every retained baseline pair."
+correctness = "Encoded length is charged before the existing 16-item channel; the queued wrapper owns the permit until tonic polls the item. Unit tests prove exact charge, blocking, one-oversize progress, poll release, closed-receiver release, and disconnect cleanup. The real-mTLS test preserves event bytes/order and reconciles all live HC/2 resources. No frame is rejected by the new admission layer."
+claim_boundary = "The accepted change bounds only encoded ServerEnvelope bytes waiting in HydraCache's application queue. The remaining high-payload retention includes a producer-held frame, a frame already polled by tonic, Hyper/h2's peer-advertised receive window, protobuf/TLS work buffers, sockets, and allocator high-water pages. The local percentages are diagnostic, non-promotable, and not release claims."
+small_payload_result = "The 4 KiB paired working-set median changed from 9,216,000 to 9,863,168 bytes while its ranges overlapped and dispatch stayed effectively unchanged. This is consistent with the existing 16-item limit remaining the active bound for small frames; it is not accepted as a small-frame memory improvement."
+decision = "retain-byte-admission-for-integrated-w5-w2-campaign"
+next_evidence = "Update the W5 ledger/article, keep the candidate in the integrated release branch, and move to the next unresolved release-0.73 workstream. Do not authorize a dedicated-host run for this isolated subproblem."
+
+[[pair]]
+value_bytes = 4096
+index = 1
+unpolled_dispatch = 4141
+paired_server_working_set_delta_bytes = 10059776
+paired_server_pagefile_delta_bytes = 10633216
+
+[[pair]]
+value_bytes = 4096
+index = 2
+unpolled_dispatch = 4146
+paired_server_working_set_delta_bytes = 10166272
+paired_server_pagefile_delta_bytes = 10776576
+
+[[pair]]
+value_bytes = 4096
+index = 3
+unpolled_dispatch = 4153
+paired_server_working_set_delta_bytes = 9863168
+paired_server_pagefile_delta_bytes = 10022912
+
+[[pair]]
+value_bytes = 4096
+index = 4
+unpolled_dispatch = 4170
+paired_server_working_set_delta_bytes = 9666560
+paired_server_pagefile_delta_bytes = 9416704
+
+[[pair]]
+value_bytes = 4096
+index = 5
+unpolled_dispatch = 4152
+paired_server_working_set_delta_bytes = 8056832
+paired_server_pagefile_delta_bytes = 8269824
+
+[[pair]]
+value_bytes = 262144
+index = 1
+unpolled_dispatch = 104
+paired_server_working_set_delta_bytes = 17661952
+paired_server_pagefile_delta_bytes = 17756160
+
+[[pair]]
+value_bytes = 262144
+index = 2
+unpolled_dispatch = 104
+paired_server_working_set_delta_bytes = 16248832
+paired_server_pagefile_delta_bytes = 15474688
+
+[[pair]]
+value_bytes = 262144
+index = 3
+unpolled_dispatch = 104
+paired_server_working_set_delta_bytes = 15949824
+paired_server_pagefile_delta_bytes = 15167488
+
+[[pair]]
+value_bytes = 262144
+index = 4
+unpolled_dispatch = 104
+paired_server_working_set_delta_bytes = 14204928
+paired_server_pagefile_delta_bytes = 13299712
+
+[[pair]]
+value_bytes = 262144
+index = 5
+unpolled_dispatch = 104
+paired_server_working_set_delta_bytes = 14262272
+paired_server_pagefile_delta_bytes = 13418496

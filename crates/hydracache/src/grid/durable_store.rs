@@ -26,6 +26,7 @@ const NONE_EPOCH: u64 = u64::MAX;
 pub struct DurableValueStore {
     db: sled::Db,
     max_total_bytes: u64,
+    budget_used_bytes: u64,
     rejected_total: u64,
 }
 
@@ -67,9 +68,11 @@ impl DurableValueStore {
     ) -> Result<Self, ValueStoreError> {
         let db = sled::open(path).map_err(sled_error)?;
         validate_or_initialize_format(&db)?;
+        let budget_used_bytes = scan_total_bytes(&db)?;
         Ok(Self {
             db,
             max_total_bytes: max_total_bytes.max(1),
+            budget_used_bytes,
             rejected_total: 0,
         })
     }
@@ -81,14 +84,7 @@ impl DurableValueStore {
 
     /// Return total retained value bytes.
     pub fn total_bytes(&self) -> Result<u64, ValueStoreError> {
-        let mut total = 0_u64;
-        for item in self.db.scan_prefix(RECORD_PREFIX) {
-            let (key, value) = item.map_err(sled_error)?;
-            let key = stored_key_to_cache_key(key.as_ref())?;
-            let record = decode_record(&key, value.as_ref())?;
-            total = total.saturating_add(record.approx_bytes());
-        }
-        Ok(total)
+        scan_total_bytes(&self.db)
     }
 
     /// Return how many writes were rejected by the byte budget.
@@ -215,20 +211,11 @@ impl DurableValueStore {
         Ok(report)
     }
 
-    fn would_fit(
-        &self,
-        key: &str,
-        record: &ReplicatedValueRecord,
-    ) -> Result<bool, ValueStoreError> {
-        let existing = self
-            .get(key)?
-            .map(|existing| existing.approx_bytes())
-            .unwrap_or_default();
-        Ok(self
-            .total_bytes()?
-            .saturating_sub(existing)
+    fn would_fit(&self, existing_bytes: u64, record: &ReplicatedValueRecord) -> bool {
+        self.budget_used_bytes
+            .saturating_sub(existing_bytes)
             .saturating_add(record.approx_bytes())
-            <= self.max_total_bytes)
+            <= self.max_total_bytes
     }
 
     fn scan_records(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError> {
@@ -250,19 +237,28 @@ impl ReplicatedValueStore for DurableValueStore {
         record: ReplicatedValueRecord,
     ) -> Result<(), ValueStoreError> {
         let key = key.into();
-        if !self.would_fit(&key, &record)? {
+        let current = self.get(&key)?;
+        let existing_bytes = current
+            .as_ref()
+            .map(ReplicatedValueRecord::approx_bytes)
+            .unwrap_or_default();
+        if !self.would_fit(existing_bytes, &record) {
             self.rejected_total = self.rejected_total.saturating_add(1);
             return Err(ValueStoreError::new(
                 "durable value store total byte budget exceeded",
             ));
         }
-        let merged = self
-            .get(&key)?
+        let merged = current
             .map(|current| current.merge(record.clone()))
             .unwrap_or(record);
+        let merged_bytes = merged.approx_bytes();
         self.db
             .insert(record_key(&key), encode_record(&key, &merged)?)
             .map_err(sled_error)?;
+        self.budget_used_bytes = self
+            .budget_used_bytes
+            .saturating_sub(existing_bytes)
+            .saturating_add(merged_bytes);
         self.flush()
     }
 
@@ -302,7 +298,17 @@ impl ReplicatedValueStore for DurableValueStore {
     }
 
     fn remove(&mut self, key: &str) -> Result<(), ValueStoreError> {
-        self.db.remove(record_key(key)).map_err(sled_error)?;
+        if let Some(bytes) = self.db.remove(record_key(key)).map_err(sled_error)? {
+            match decode_record(key, bytes.as_ref()) {
+                Ok(record) => {
+                    self.budget_used_bytes =
+                        self.budget_used_bytes.saturating_sub(record.approx_bytes());
+                }
+                Err(_) => {
+                    self.budget_used_bytes = scan_total_bytes(&self.db)?;
+                }
+            }
+        }
         self.flush()
     }
 
@@ -318,6 +324,17 @@ impl ReplicatedValueStore for DurableValueStore {
     fn rejected_total(&self) -> u64 {
         DurableValueStore::rejected_total(self)
     }
+}
+
+fn scan_total_bytes(db: &sled::Db) -> Result<u64, ValueStoreError> {
+    let mut total = 0_u64;
+    for item in db.scan_prefix(RECORD_PREFIX) {
+        let (key, value) = item.map_err(sled_error)?;
+        let key = stored_key_to_cache_key(key.as_ref())?;
+        let record = decode_record(&key, value.as_ref())?;
+        total = total.saturating_add(record.approx_bytes());
+    }
+    Ok(total)
 }
 
 fn validate_or_initialize_format(db: &sled::Db) -> Result<(), ValueStoreError> {

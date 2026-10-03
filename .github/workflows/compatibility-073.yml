@@ -1,0 +1,236 @@
+name: Published 0.72 Compatibility 0.73
+
+on:
+  workflow_dispatch:
+    inputs:
+      tooling_sha:
+        description: "Exact lowercase 40-character commit containing the reviewed compatibility tooling"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      tooling_sha:
+        description: "Exact lowercase 40-character commit containing the reviewed compatibility tooling"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-073
+  cancel-in-progress: false
+
+jobs:
+  compatibility:
+    name: Exact B72/C73 wire, durable, and rolling compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      B72_SHA: 24927c28c279c6c34ad90111ee6470b4065e0815
+      C73_SHA: 7e3070894aa51af96cdcb3e350eff923a309e1fa
+      C73_TREE_OID: e2c438b9a248586a4f72d3eca3d1c5369fff440b
+      EVIDENCE_DIR: ${{ github.workspace }}/target/compatibility-evidence/0.73/${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Check out reviewed tooling revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tooling_sha }}
+
+      - name: Verify tooling identity
+        shell: bash
+        env:
+          INPUT_TOOLING_SHA: ${{ inputs.tooling_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_TOOLING_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_TOOLING_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          mkdir -p "$EVIDENCE_DIR"
+          echo "TOOLING_SHA=$INPUT_TOOLING_SHA" >> "$GITHUB_ENV"
+
+      - name: Materialize exact products and frozen overlays
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          b72_root="$RUNNER_TEMP/hydracache-b72-$run_key"
+          c73_root="$RUNNER_TEMP/hydracache-c73-compat-$run_key"
+          b72_stage="$RUNNER_TEMP/compatibility-b72-stage-$run_key"
+          c73_stage="$RUNNER_TEMP/compatibility-c73-stage-$run_key"
+          git worktree prune
+          git worktree add --detach "$b72_root" "$B72_SHA"
+          git worktree add --detach "$c73_root" "$C73_SHA"
+          test "$(git -C "$b72_root" rev-parse HEAD)" = "$B72_SHA"
+          test "$(git -C "$b72_root" rev-parse 'v0.72.0^{commit}')" = "$B72_SHA"
+          test "$(git -C "$c73_root" rev-parse HEAD)" = "$C73_SHA"
+          test "$(git -C "$c73_root" rev-parse 'HEAD^{tree}')" = "$C73_TREE_OID"
+          mkdir -p "$b72_stage/tools" "$c73_stage/tools"
+          cp -a tools/compatibility-073 "$b72_stage/tools/"
+          cp -a tools/compatibility-073 "$c73_stage/tools/"
+          cp "$b72_stage/tools/compatibility-073/Cargo.b72.lock" \
+            "$b72_stage/tools/compatibility-073/Cargo.lock"
+          ln -s "$b72_root/Cargo.toml" "$b72_stage/Cargo.toml"
+          ln -s "$b72_root/crates" "$b72_stage/crates"
+          ln -s "$c73_root/Cargo.toml" "$c73_stage/Cargo.toml"
+          ln -s "$c73_root/crates" "$c73_stage/crates"
+          {
+            echo "B72_ROOT=$b72_root"
+            echo "C73_ROOT=$c73_root"
+            echo "B72_OVERLAY=$b72_stage/tools/compatibility-073"
+            echo "C73_OVERLAY=$c73_stage/tools/compatibility-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Build exact servers and dual-version harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --manifest-path "$B72_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$C73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$B72_OVERLAY/Cargo.toml" --release --locked
+          cargo build --manifest-path "$C73_OVERLAY/Cargo.toml" --release --locked
+          test -z "$(git -C "$B72_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          test -z "$(git -C "$C73_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          {
+            echo "B72_SERVER=$B72_ROOT/target/release/hydracache-server"
+            echo "C73_SERVER=$C73_ROOT/target/release/hydracache-server"
+            echo "B72_HARNESS=$B72_OVERLAY/target/release/compatibility-073"
+            echo "C73_HARNESS=$C73_OVERLAY/target/release/compatibility-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Falsify missing-cell accounting
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/compatibility_073.py \
+            --mode canary \
+            --b72-harness "$B72_HARNESS" \
+            --c73-harness "$C73_HARNESS" \
+            --b72-server "$B72_SERVER" \
+            --c73-server "$C73_SERVER" \
+            --b72-root "$B72_ROOT" \
+            --c73-root "$C73_ROOT" \
+            --scenario docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml \
+            --output "$EVIDENCE_DIR/canary"
+
+      - name: Run four wire cells and three durable transitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/compatibility_073.py \
+            --mode campaign \
+            --b72-harness "$B72_HARNESS" \
+            --c73-harness "$C73_HARNESS" \
+            --b72-server "$B72_SERVER" \
+            --c73-server "$C73_SERVER" \
+            --b72-root "$B72_ROOT" \
+            --c73-root "$C73_ROOT" \
+            --scenario docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml \
+            --output "$EVIDENCE_DIR/campaign"
+
+      - name: Run six real rolling scenarios
+        shell: bash
+        env:
+          HYDRACACHE_RUN_COMPATIBILITY_073_ROLLING: "1"
+          HYDRACACHE_072_DAEMON_SOURCE_REF: v0.72.0
+          HYDRACACHE_072_DAEMON_SOURCE_COMMIT: 24927c28c279c6c34ad90111ee6470b4065e0815
+          HYDRACACHE_C73_SOURCE_COMMIT: 7e3070894aa51af96cdcb3e350eff923a309e1fa
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR/rolling"
+          export HYDRACACHE_072_DAEMON_BINARY="$B72_SERVER"
+          export HYDRACACHE_C73_DAEMON_BINARY="$C73_SERVER"
+          export HYDRACACHE_COMPATIBILITY_073_ROLLING_OUTPUT="$EVIDENCE_DIR/rolling/rolling.json"
+          env "CARGO_BIN_EXE_hydracache-server=$C73_SERVER" \
+            cargo test -p hydracache-server --test performance_compatibility_073 --locked \
+            real_published_072_candidate_upgrade_restart_and_same_disk_rollback -- \
+            --exact --nocapture --test-threads=1 2>&1 | tee "$EVIDENCE_DIR/rolling/attempt.log"
+
+      - name: Seal compatibility packet
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$EVIDENCE_DIR" "$TOOLING_SHA" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path(sys.argv[1])
+          tooling_sha = sys.argv[2]
+          canary_path = root / "canary" / "canary.json"
+          campaign_path = root / "campaign" / "compatibility-campaign.json"
+          rolling_path = root / "rolling" / "rolling.json"
+          required = (canary_path, campaign_path, rolling_path)
+          missing = [str(path.relative_to(root)) for path in required if not path.is_file()]
+          digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          if missing:
+              manifest = {
+                  "schema_version": 1,
+                  "release": "0.73",
+                  "profile_id": "published-072-compatibility-073-v1",
+                  "tooling_sha": tooling_sha,
+                  "result": "incomplete",
+                  "missing": missing,
+                  "available_sha256": {
+                      str(path.relative_to(root)): digest(path)
+                      for path in required if path.is_file()
+                  },
+                  "long_run_allowed": False,
+              }
+              (root / "manifest.json").write_text(
+                  json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+              )
+              raise SystemExit("compatibility packet incomplete: " + ", ".join(missing))
+          canary = json.loads(canary_path.read_text(encoding="utf-8"))
+          campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
+          rolling = json.loads(rolling_path.read_text(encoding="utf-8"))
+          if canary.get("result") != "passed" or not canary.get("marker_observed") or not canary.get("receipt_absent"):
+              raise SystemExit("compatibility canary did not fail closed")
+          if campaign.get("wire_cells_passed") != 4 or campaign.get("durable_transitions_passed") != 3:
+              raise SystemExit("wire or durable matrix incomplete")
+          expected_rolling = [
+              "B72-leader-C73-followers",
+              "leadership-change-during-mixed-cluster",
+              "C73-leader-B72-follower",
+              "B72-follower-same-disk-restart",
+              "full-C73-cluster",
+              "same-disk-rollback-to-B72",
+          ]
+          if campaign.get("result") != "passed-local-wire-and-durable-only":
+              raise SystemExit("wire/durable campaign result changed")
+          if rolling.get("result") != "passed" or [item.get("id") for item in rolling.get("scenarios", [])] != expected_rolling:
+              raise SystemExit("rolling matrix incomplete")
+          manifest = {
+              "schema_version": 1,
+              "release": "0.73",
+              "profile_id": "published-072-compatibility-073-v1",
+              "tooling_sha": tooling_sha,
+              "published_source_commit": campaign["published_source_commit"],
+              "candidate_source_commit": campaign["candidate_source_commit"],
+              "candidate_tree_oid": campaign["candidate_tree_oid"],
+              "canary_sha256": digest(canary_path),
+              "campaign_sha256": digest(campaign_path),
+              "rolling_sha256": digest(rolling_path),
+              "wire_cells_passed": 4,
+              "durable_transitions_passed": 3,
+              "rolling_scenarios_passed": 6,
+              "result": "passed",
+              "long_run_allowed": True,
+              "host_performance_claim_allowed": False,
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Upload complete or incomplete packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 30

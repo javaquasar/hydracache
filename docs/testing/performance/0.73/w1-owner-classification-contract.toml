@@ -1,0 +1,110 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w1-owner-classification-073-v1"
+state = "preregistered-source-audit-complete-probes-pending"
+baseline_identity = "I73"
+baseline_source_sha = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+baseline_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+candidate_data_allowed = false
+product_mutation_allowed = false
+dedicated_host_run_allowed = false
+production_counter_addition_requires_missing_owner = true
+profile_identity_separate = true
+local_results_promotable = false
+required_terminal_dispositions = ["accepted", "measured-no-win", "not-applicable", "rejected", "deferred-external-blocker"]
+probe_order = [
+  "reuse existing exact owner counters and deterministic tests",
+  "use isolated local allocation/copy/lock probes with independent processes",
+  "use profile-only stack sampling for unresolved CPU owners",
+  "use OS allocator and anon/file page metrics for external ownership",
+  "authorize a D2 product candidate only after one owner and one primary metric are identified",
+]
+success_rule = "Every W2--W9 surface has a named owner or explicit external/file-backed classification, a reproducible local probe, a falsifier, and a terminal D1 disposition. No candidate code or dedicated-host comparison is allowed by this contract."
+
+[[surface]]
+work_item = "W2"
+id = "shared-store-expiry"
+owner = "ClientSurfaceState store mutex, BTreeMap tuple keys, StoredValue payloads, tenant quota ledger, and bounded expiry sweep"
+source_files = ["crates/hydracache-client-transport-axum/src/lib.rs"]
+current_visibility = "logical cardinality and quota behavior are tested; expiry sweep clones examined tuple keys"
+missing_signals = ["store lock wait and hold duration", "examined and cloned expiry keys", "retained bytes split between tuple keys and values"]
+next_probe = "local fixed-trace put/get/delete/expiry process matrix plus test-only sweep counters and lock timing"
+falsifier = "a hidden skipped quota release or cursor-boundary expiry must fail exact reconciliation"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W3"
+id = "tag-index"
+owner = "CacheEntry immutable tag slice, tag-index key/tag memberships, generation map, and public event tag materialization"
+source_files = ["crates/hydracache/src/entry.rs", "crates/hydracache/src/tag_index.rs", "crates/hydracache/src/memory_footprint.rs"]
+current_visibility = "exact retained estimator separates entry, tag-index, and generation bytes; shared observer-tag clone is already attributed"
+missing_signals = ["event-payload copied tag bytes", "invalidation work by fan-out", "actual allocator bytes by tag cardinality"]
+next_probe = "extend the local allocation harness across 0/1/4/16/64 tags and event-off/noop/production boundaries"
+falsifier = "handle or generation reuse without epoch advance must fail stale-load and owner reconciliation tests"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W4"
+id = "resp-translation"
+owner = "RESP decode buffers, redis_key_to_structured_key hex expansion, StructuredKey components, batch clones, and response encoding"
+source_files = ["crates/hydracache-redis-compat/src/lib.rs"]
+current_visibility = "source-level copy sites and compatibility fixtures exist; no per-command copied-byte attribution exists"
+missing_signals = ["decoded bytes copied per command", "binary-key expansion bytes", "response encode allocation per command family"]
+next_probe = "local RESP2/RESP3 command-family allocation and copied-byte harness using frozen binary-key fixtures"
+falsifier = "legacy encoded and new binary identities colliding or changing lookup semantics must fail before mutation"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W5"
+id = "hc2-connection-state"
+owner = "per-connection task and channel, stream subscription map, fenced session map, pending invocations, and copied event frames"
+source_files = ["crates/hydracache-server/src/hc2.rs"]
+current_visibility = "live connection, invocation, subscription, and session counters reconcile on close"
+missing_signals = ["queued bytes by stream", "per-connection task and channel allocation", "event-frame copied bytes", "mutex wait"]
+next_probe = "local real-mTLS 1/10/100/1000 connection census and slow-consumer queued-byte probe"
+falsifier = "retain one pending invocation or queued frame after close and require owner reconciliation to fail"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W6"
+id = "management-service-overhead"
+owner = "management read limiter, cursor store, aggregation cache, bounded peer response bodies, history service, and polling tasks"
+source_files = ["crates/hydracache-server/src/management_http.rs", "crates/hydracache-server/src/management_aggregation.rs", "crates/hydracache-server/src/management_history.rs"]
+current_visibility = "request concurrency, response bounds, cache epoch behavior, and history limits are deterministic"
+missing_signals = ["collector wakeups with zero readers", "cache hit/miss and serialized bytes", "retained cursor/history bytes", "management-off task census"]
+next_probe = "local management off/on and polling/no-polling process pairs with task, allocation, response-byte, and cache counters"
+falsifier = "a disabled service starting a collector or a stale cache claiming completeness must turn the gate red"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W7"
+id = "durability-page-cache"
+owner = "Sled tree and file-backed pages, encoded record staging buffers, durable logical bytes, repair state, and bounded GC"
+source_files = ["crates/hydracache/src/grid/durable_store.rs"]
+current_visibility = "logical total bytes, budget rejection, repair state, and GC reclamation are visible"
+missing_signals = ["anonymous versus file-backed resident bytes", "record encode/decode staging bytes", "write amplification", "completed buffer lifetime"]
+next_probe = "local persistence-off/on process pairs with OS anon/file metrics and allocation phases; keep page cache intact"
+falsifier = "misclassifying file-backed pages as allocator ownership or retaining a completed staging buffer must fail attribution"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W8"
+id = "allocator"
+owner = "selected process allocator arenas, thread caches, active pages, resident pages, and retained free pages"
+source_files = ["Cargo.toml", "crates/hydracache-server/Cargo.toml"]
+current_visibility = "gross allocation is locally countable; allocator active/resident/retained values are external to HydraCache ownership counters"
+missing_signals = ["allocated/active/resident/retained tuple", "arena and thread-cache count", "faults", "idle purge and refill reuse"]
+next_probe = "separate system/jemalloc/mimalloc builds with allocator-native stats and identical traces"
+falsifier = "an RSS-only result that omits active and retained allocator bytes must be rejected"
+candidate_authorized = false
+
+[[surface]]
+work_item = "W9"
+id = "retained-byte-admission"
+owner = "exact retained-byte counters and estimator for entries, values, keys, tags, tag index, expiry metadata, and generation metadata"
+source_files = ["crates/hydracache/src/memory_footprint.rs"]
+current_visibility = "quiescent exact snapshot and counter reconciliation are complete; no fail-open retained-byte admission exists"
+missing_signals = ["pressure evidence justifying a new semantic limit", "queued/inflight/output reservation owners", "batch reservation rollback"]
+next_probe = "reuse exact retained snapshots during W2--W8 local probes; classify not-applicable unless a measured pressure owner requires admission"
+falsifier = "absence of a measured pressure owner or any reinterpretation of legacy capacity forbids a W9 candidate"
+candidate_authorized = false

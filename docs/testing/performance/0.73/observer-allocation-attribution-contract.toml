@@ -1,0 +1,38 @@
+schema_version = 1
+release = "0.73"
+contract_id = "observer-allocation-attribution-073-v1"
+state = "preregistered-before-tooling"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-2daccb47.toml"
+evidence_class = "local_diagnostic_only"
+implementation_scope = [
+  "tools/performance-observer-073/src/main.rs",
+  "scripts/perf/performance_allocation_attribution_073.py",
+  "scripts/perf/test_performance_allocation_attribution_073.py",
+]
+instrumentation_modes = ["off", "counters-only", "observer-noop", "production"]
+scenarios = ["mixed", "get", "replace", "remove-refill", "tag-invalidate-refill", "ttl-put"]
+repeats_per_scenario_and_mode = 5
+operations_per_attempt = 8192
+offered_rate_per_second = 20000
+warmup_operations = 4096
+run_order_seed = 73074
+counterbalanced_order_required = true
+independent_processes_required = true
+prebuilt_binary_required = true
+binary_sha256_required = true
+raw_attempts_retained = true
+failed_attempts_retained = true
+allocation_measurement_only = true
+cpu_claims_allowed = false
+rss_claims_allowed = false
+correctness_claims_from_ablation_modes_allowed = false
+candidate_data_allowed = false
+numerical_release_claims_allowed = false
+promotable = false
+dedicated_host_run_allowed = false
+product_source_changes_allowed = false
+thresholds_changed = false
+question = "Which operation family and adjacent instrumentation layer owns the persistent approximately 20-byte-per-operation off-to-production allocation delta?"
+interpretation_rule = "Use within-scenario adjacent mode medians only for ownership attribution. Mixed must remain the unchanged release workload. Ablation modes deliberately provide incomplete removal accounting and cannot support correctness, baseline freeze, release acceptance, or an optimization claim."
+success_rule = "All 120 independently started attempts complete, raw receipts and binary identity are retained, and every scenario reports off-to-counters-only, counters-only-to-observer-noop, observer-noop-to-production, and off-to-production allocation deltas."
+next_decision = "Preregister a product change only if the local result identifies one bounded owner and a falsifiable safety contract. Otherwise improve attribution locally without another dedicated-host run."

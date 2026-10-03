@@ -1498,6 +1498,29 @@ disposition = "bounded"
 disposition_reason = "Conservative AST discovery identified a lifecycle-bearing production aggregate; W1 reconciles its bounded aggregate counters."
 
 [[owner]]
+owner_id = "owner-5f61817c7c7bcb89"
+subsystem = "hydracache-server"
+owning_type = "Arc + OutboundSender + Semaphore"
+source = "crates/hydracache-server/src/hc2.rs"
+symbol = "OutboundQueue"
+allocation_sites = ["sender", "byte_budget"]
+keying_dimension = "one queue per HC/2 connection; bounded by the connection lifecycle and configured stream count"
+retained_unit = "queued response items plus byte-budget permits"
+creation_transition = "create an HC/2 response stream"
+terminal_transitions = ["receiver close", "connection cancellation", "connection drop"]
+cleanup = "dropping the response stream closes the bounded sender and releases the shared semaphore"
+count_bound = "max_streams_per_connection"
+byte_bound = "HC2_OUTBOUND_QUEUE_BYTE_BUDGET plus bounded item metadata"
+age_bound = "connection/stream lifetime; cancellation and disconnect release the queue"
+overflow_behavior = "bounded mpsc backpressure and byte-permit acquisition; no unbounded enqueue"
+snapshot_fields = []
+security_classification = "aggregate-sensitive; queued payload contents are never exported"
+focused_tests = ["hc2::tests::outbound_byte_admission_charges_encoded_length_and_releases_on_poll", "hc2::tests::outbound_byte_admission_allows_one_oversize_and_releases_on_disconnect"]
+slow_evidence_ids = ["w5-hc2-outbound-byte-admission-2846e936"]
+disposition = "ephemeral"
+disposition_reason = "Release 0.73 introduced an explicitly byte-bounded HC/2 outbound queue owned only for the connection/stream lifetime; W5 tests cover saturation, cancellation and release."
+
+[[owner]]
 owner_id = "owner-7046f6765b7216e1"
 subsystem = "hydracache-cluster-transport-axum"
 owning_type = "Arc + Vec"
@@ -2009,7 +2032,7 @@ subsystem = "hydracache"
 owning_type = "Arc + Sender"
 source = "crates/hydracache/src/cache.rs"
 symbol = "HydraCacheInner"
-allocation_sites = ["in_flight", "stats", "invalidation_bus", "bus_shutdown", "tag_index", "memory"]
+allocation_sites = ["in_flight", "stats", "invalidation_bus", "bus_shutdown", "tag_index", "memory", "removal_observer"]
 keying_dimension = "aggregate-only; runtime keys, tenants, sessions, and connections are forbidden metric labels"
 retained_unit = "logical elements and bytes owned by the listed fields"
 creation_transition = "construct or activate HydraCacheInner"

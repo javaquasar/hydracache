@@ -17,6 +17,7 @@ use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
 use crate::load_breaker::{LoadBreakerPolicy, LoadBreakerRegistry};
 use crate::memory_footprint::{MemoryFootprintCounters, MemoryInstrumentationMode};
+use crate::removal_observer::RemovalObserver;
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
 
@@ -65,6 +66,12 @@ where
     persistence_storage_dir: Option<PathBuf>,
     load_breaker_policy: LoadBreakerPolicy,
     memory_instrumentation_mode: MemoryInstrumentationMode,
+    #[cfg(feature = "instrumentation-lab")]
+    memory_eviction_listener_enabled: bool,
+    #[cfg(feature = "instrumentation-lab")]
+    memory_eviction_listener_noop: bool,
+    #[cfg(feature = "instrumentation-lab")]
+    memory_removal_observer_noop: bool,
     codec: C,
 }
 
@@ -90,6 +97,41 @@ where
     /// Select the bounded memory instrumentation posture.
     pub fn memory_instrumentation_mode(mut self, mode: MemoryInstrumentationMode) -> Self {
         self.memory_instrumentation_mode = mode;
+        self
+    }
+
+    /// Development-only seam for attributing production instrumentation cost.
+    ///
+    /// Disabling the listener makes eviction/removal accounting incomplete and
+    /// must never be used for correctness or release evidence.
+    #[cfg(feature = "instrumentation-lab")]
+    #[doc(hidden)]
+    pub fn instrumentation_lab_eviction_listener(mut self, enabled: bool) -> Self {
+        self.memory_eviction_listener_enabled = enabled;
+        self
+    }
+
+    /// Development-only seam that retains backend listener registration but
+    /// removes all HydraCache callback work.
+    ///
+    /// This makes removal accounting and tag cleanup incomplete. It exists only
+    /// to separate backend notification cost from callback cost.
+    #[cfg(feature = "instrumentation-lab")]
+    #[doc(hidden)]
+    pub fn instrumentation_lab_noop_eviction_listener(mut self, enabled: bool) -> Self {
+        self.memory_eviction_listener_noop = enabled;
+        self
+    }
+
+    /// Development-only seam that registers the nonblocking backend observer
+    /// while removing all HydraCache callback work.
+    ///
+    /// This makes removal accounting and tag cleanup incomplete. It exists only
+    /// to separate backend observer delivery cost from callback cost.
+    #[cfg(feature = "instrumentation-lab")]
+    #[doc(hidden)]
+    pub fn instrumentation_lab_noop_removal_observer(mut self, enabled: bool) -> Self {
+        self.memory_removal_observer_noop = enabled;
         self
     }
 
@@ -196,6 +238,12 @@ where
             persistence_storage_dir: self.persistence_storage_dir,
             load_breaker_policy: self.load_breaker_policy,
             memory_instrumentation_mode: self.memory_instrumentation_mode,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_eviction_listener_enabled: self.memory_eviction_listener_enabled,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_eviction_listener_noop: self.memory_eviction_listener_noop,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_removal_observer_noop: self.memory_removal_observer_noop,
             codec,
         }
     }
@@ -347,37 +395,43 @@ where
     /// Build the local cache.
     pub fn build(self) -> HydraCache<C> {
         let max_entry_bytes = self.max_entry_bytes;
+        #[cfg(feature = "instrumentation-lab")]
+        let attach_memory_eviction_listener = self.memory_eviction_listener_enabled;
+        #[cfg(not(feature = "instrumentation-lab"))]
+        let attach_memory_eviction_listener = true;
+        #[cfg(feature = "instrumentation-lab")]
+        let noop_memory_eviction_listener = self.memory_eviction_listener_noop;
+        #[cfg(not(feature = "instrumentation-lab"))]
+        let noop_memory_eviction_listener = false;
+        #[cfg(feature = "instrumentation-lab")]
+        let noop_memory_removal_observer = self.memory_removal_observer_noop;
+        #[cfg(not(feature = "instrumentation-lab"))]
+        let noop_memory_removal_observer = false;
         let memory = Arc::new(MemoryFootprintCounters::new(
             self.memory_instrumentation_mode,
         ));
         let tag_index = Arc::new(TagIndex::default());
-        let eviction_memory = memory.clone();
-        let eviction_tag_index = tag_index.clone();
+        let mut removal_observer = None;
         let mut store_builder = Cache::<String, CacheEntry>::builder()
             .max_capacity(self.max_capacity)
             .weigher(move |_key, entry: &CacheEntry| {
                 entry.value.len().min(max_entry_bytes).max(1) as u32
             });
-        if self.memory_instrumentation_mode != MemoryInstrumentationMode::Off {
-            store_builder = store_builder.async_eviction_listener(
-                move |key: Arc<String>, entry: CacheEntry, _cause| {
-                    let memory = eviction_memory.clone();
-                    let tag_index = eviction_tag_index.clone();
-                    Box::pin(async move {
-                        let _mutation = memory.mutation();
-                        tag_index.unregister(&key, &entry.tags).await;
-                        match crate::memory_footprint::EntryMemoryDelta::new(
-                            &key,
-                            entry.value.len(),
-                            &entry.tags,
-                            entry.expires_at.is_some(),
-                        ) {
-                            Ok(delta) => memory.remove(delta),
-                            Err(_) => memory.mark_fault(),
-                        }
-                    })
-                },
-            );
+        if self.memory_instrumentation_mode != MemoryInstrumentationMode::Off
+            && attach_memory_eviction_listener
+        {
+            store_builder = if noop_memory_removal_observer {
+                store_builder.post_removal_observer(|_key, _entry, _cause| {})
+            } else if noop_memory_eviction_listener {
+                store_builder.eviction_listener(|_key, _entry, _cause| {})
+            } else {
+                let observer = Arc::new(RemovalObserver::new(memory.clone()));
+                let callback = observer.clone();
+                removal_observer = Some(observer);
+                store_builder.post_removal_observer(move |key, entry, cause| {
+                    callback.observe(key, entry, cause);
+                })
+            };
         }
         let store = store_builder.build();
 
@@ -414,6 +468,8 @@ where
                 replicated_value_security: self.replicated_value_security,
                 load_breaker: LoadBreakerRegistry::new(self.load_breaker_policy),
                 memory,
+                removal_observer,
+                next_entry_version: AtomicU64::new(1),
             }),
         };
 
@@ -445,6 +501,12 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             persistence_storage_dir: None,
             load_breaker_policy: LoadBreakerPolicy::default(),
             memory_instrumentation_mode: MemoryInstrumentationMode::default(),
+            #[cfg(feature = "instrumentation-lab")]
+            memory_eviction_listener_enabled: true,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_eviction_listener_noop: false,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_removal_observer_noop: false,
             codec: PostcardCodec,
         }
     }

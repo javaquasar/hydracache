@@ -42,4 +42,6 @@ reason = "SQL parsing is allowed only through the HydraCache CI/build-time lint 
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = []
+# Release 0.73 consumes the reviewed observer fork as the exact crates.io package
+# hydra-moka 0.12.15-hydra.1. The dependency receipt binds its registry checksum
+# to the underlying reviewed source revision and upstream base.

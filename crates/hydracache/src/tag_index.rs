@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use tokio::sync::RwLock;
@@ -30,7 +30,7 @@ pub(crate) struct TagIndexMemoryState {
 
 #[derive(Debug, Default)]
 struct TagIndexState {
-    keys_by_tag: HashMap<String, HashSet<String>>,
+    keys_by_tag: HashMap<String, HashMap<String, u64>>,
     generations: HashMap<String, u64>,
     key_generations: HashMap<String, u64>,
     global_generation: u64,
@@ -47,7 +47,7 @@ pub(crate) struct TagIndexRetainedState {
 }
 
 impl TagIndex {
-    pub(crate) async fn register(&self, key: &str, tags: &[String]) {
+    pub(crate) async fn register(&self, key: &str, tags: &[String], version: u64) {
         if tags.is_empty() {
             return;
         }
@@ -58,8 +58,9 @@ impl TagIndex {
                 .keys_by_tag
                 .entry(tag.clone())
                 .or_default()
-                .insert(key.to_owned());
+                .insert(key.to_owned(), version);
         }
+        self.publish_generation_state(&guard);
     }
 
     pub(crate) async fn unregister(&self, key: &str, tags: &[String]) {
@@ -76,6 +77,27 @@ impl TagIndex {
                 }
             }
         }
+        self.publish_generation_state(&guard);
+    }
+
+    pub(crate) async fn unregister_if_version(&self, key: &str, tags: &[String], version: u64) {
+        if tags.is_empty() {
+            return;
+        }
+
+        let mut guard = self.state.write().await;
+        for tag in tags {
+            let remove_tag = guard.keys_by_tag.get_mut(tag).is_some_and(|keys| {
+                if keys.get(key) == Some(&version) {
+                    keys.remove(key);
+                }
+                keys.is_empty()
+            });
+            if remove_tag {
+                guard.keys_by_tag.remove(tag);
+            }
+        }
+        self.publish_generation_state(&guard);
     }
 
     pub(crate) async fn take_tag(&self, tag: &str) -> Vec<String> {
@@ -91,7 +113,7 @@ impl TagIndex {
         let keys = guard
             .keys_by_tag
             .remove(tag)
-            .map(|keys| keys.into_iter().collect())
+            .map(|keys| keys.into_keys().collect())
             .unwrap_or_default();
         self.publish_generation_state(&guard);
         keys
@@ -150,6 +172,21 @@ impl TagIndex {
         self.publish_generation_state(&guard);
     }
 
+    pub(crate) async fn reconcile_memberships(&self, entries: &[(String, u64, Vec<String>)]) {
+        let mut guard = self.state.write().await;
+        guard.keys_by_tag.clear();
+        for (key, version, tags) in entries {
+            for tag in tags {
+                guard
+                    .keys_by_tag
+                    .entry(tag.clone())
+                    .or_default()
+                    .insert(key.clone(), *version);
+            }
+        }
+        self.publish_generation_state(&guard);
+    }
+
     pub(crate) fn memory_state(&self) -> TagIndexMemoryState {
         TagIndexMemoryState {
             version: self.version.load(Ordering::Acquire),
@@ -175,14 +212,14 @@ impl TagIndex {
         let guard = self.state.read().await;
         TagIndexRetainedState {
             tags: guard.keys_by_tag.len(),
-            memberships: guard.keys_by_tag.values().map(HashSet::len).sum(),
+            memberships: guard.keys_by_tag.values().map(HashMap::len).sum(),
             tag_generations: guard.generations.len(),
             key_generations: guard.key_generations.len(),
             string_capacity_bytes: guard
                 .keys_by_tag
                 .iter()
                 .map(|(tag, keys)| {
-                    tag.capacity() + keys.iter().map(String::capacity).sum::<usize>()
+                    tag.capacity() + keys.keys().map(String::capacity).sum::<usize>()
                 })
                 .sum::<usize>()
                 + guard
@@ -196,6 +233,17 @@ impl TagIndex {
                     .map(String::capacity)
                     .sum::<usize>(),
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn contains_version(&self, tag: &str, key: &str, version: u64) -> bool {
+        self.state
+            .read()
+            .await
+            .keys_by_tag
+            .get(tag)
+            .and_then(|keys| keys.get(key))
+            .is_some_and(|stored| *stored == version)
     }
 }
 
@@ -214,7 +262,7 @@ mod tests {
         let index = TagIndex::default();
         let tags = vec!["alpha".to_owned(), "beta".to_owned()];
 
-        index.register("key", &tags).await;
+        index.register("key", &tags, 1).await;
         let retained = index.retained_state().await;
         assert_eq!(retained.tags, 2);
         assert_eq!(retained.memberships, 2);
@@ -244,7 +292,7 @@ mod tests {
     async fn clear_releases_all_index_maps_and_fences_old_loads() {
         let index = TagIndex::default();
         let tags = vec!["tag-a".to_owned()];
-        index.register("key-a", &tags).await;
+        index.register("key-a", &tags, 1).await;
         let before = index.snapshot("key-a", &tags).await;
         index.take_tag("orphan-tag").await;
         index.advance_key("orphan-key").await;

@@ -18,11 +18,106 @@ fn profile() -> Value {
     .expect("profile JSON")
 }
 
+fn performance_profile_073() -> Value {
+    serde_json::from_slice(
+        &fs::read(root().join("docs/testing/perf-host-profiles/performance-reference-073-v1.json"))
+            .expect("0.73 host profile"),
+    )
+    .expect("0.73 profile JSON")
+}
+
 #[test]
 fn checked_in_host_profile_is_complete() {
     let problems =
         xtask::memory_contracts::check_host_profile(&profile(), "0.71", "memory-reference-071-v1");
     assert!(problems.is_empty(), "{problems:?}");
+}
+
+#[test]
+fn checked_in_performance_profile_073_is_complete_and_fresh() {
+    let profile = performance_profile_073();
+    let problems = xtask::memory_contracts::check_host_profile(
+        &profile,
+        "0.73",
+        "performance-reference-073-v1",
+    );
+    assert!(problems.is_empty(), "{problems:?}");
+    assert_eq!(
+        profile["completed_bootstrap_admission"],
+        "fresh-0.73-admission-required"
+    );
+    assert!(profile["ineligible_platforms"]
+        .as_array()
+        .expect("ineligible platforms")
+        .iter()
+        .any(|value| value == "shared-self-hosted"));
+    assert!(profile["required_tools"]
+        .as_array()
+        .expect("required tools")
+        .iter()
+        .any(|value| value == "pidstat"));
+
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/performance-host-admission-073.yml"))
+            .expect("0.73 host admission workflow");
+    for required in [
+        "runs-on: [self-hosted, linux, x64, hydracache-release]",
+        "environment: performance-reference-073",
+        "performance-reference-073-host",
+        "apt-get install --yes sysstat",
+        "pidstat -V",
+        "preflight.json",
+        "postflight.json",
+        "host fingerprint drifted across admission",
+        "candidate_measurement_authorized\": False",
+    ] {
+        assert!(workflow.contains(required), "workflow omitted {required}");
+    }
+    assert!(
+        !workflow.contains("push:"),
+        "host admission must be manual-only"
+    );
+}
+
+#[test]
+fn baseline_pilot_073_is_baseline_only_and_uses_the_admitted_lane() {
+    let contract = fs::read_to_string(
+        root().join("docs/testing/performance/0.73/baseline-pilot-contract.toml"),
+    )
+    .expect("baseline pilot contract");
+    for required in [
+        "state = \"preregistered-unmeasured\"",
+        "candidate_data_allowed = false",
+        "offered_rates_per_second = [2500, 5000, 10000, 20000]",
+        "window_seconds = 5",
+        "minimum_stable_rates = 3",
+    ] {
+        assert!(
+            contract.contains(required),
+            "pilot contract omitted {required}"
+        );
+    }
+
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/performance-baseline-pilot-073.yml"))
+            .expect("baseline pilot workflow");
+    for required in [
+        "environment: performance-reference-073",
+        "group: performance-reference-073-host",
+        "Paired baseline-only I73 rate and window pilot",
+        "candidate_data_present",
+        "performance_baseline_pilot_073.py",
+        "--profile-id observer-baseline-pilot-073-v2",
+        "--repeats 5",
+        "--window-seconds 10",
+        "hodges-lehmann-v1",
+    ] {
+        assert!(
+            workflow.contains(required),
+            "pilot workflow omitted {required}"
+        );
+    }
+    assert!(!workflow.contains("push:"), "pilot v2 must be manual-only");
 }
 
 #[test]

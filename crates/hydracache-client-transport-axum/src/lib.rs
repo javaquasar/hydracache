@@ -490,47 +490,215 @@ impl StoredValue {
     }
 }
 
+struct ExpirySweepCandidates {
+    #[cfg_attr(not(any(test, feature = "performance-profile")), allow(dead_code))]
+    examined: usize,
+    expired: Vec<StoreKey>,
+    next_cursor: Option<StoreKey>,
+}
+
 fn expiry_sweep_candidates(
     store: &BTreeMap<StoreKey, StoredValue>,
     now_ms: u64,
     cursor: Option<&StoreKey>,
     scan_limit: usize,
-) -> (Vec<StoreKey>, Vec<StoreKey>) {
-    let mut examined = Vec::with_capacity(scan_limit.min(store.len()));
+    capture_cursor: bool,
+) -> ExpirySweepCandidates {
+    let mut examined = 0;
+    let mut expired = Vec::new();
+    let mut last_examined = None;
     if let Some(cursor) = cursor {
-        examined.extend(
-            store
+        for (key, value) in store
+            .range((
+                std::ops::Bound::Excluded(cursor),
+                std::ops::Bound::Unbounded,
+            ))
+            .take(scan_limit)
+        {
+            examined += 1;
+            if value.is_expired(now_ms) {
+                expired.push(key.clone());
+            }
+            last_examined = Some(key);
+        }
+        if examined < scan_limit {
+            for (key, value) in store
                 .range((
-                    std::ops::Bound::Excluded(cursor),
                     std::ops::Bound::Unbounded,
+                    std::ops::Bound::Included(cursor),
                 ))
-                .map(|(key, _)| key.clone())
-                .take(scan_limit),
-        );
-        if examined.len() < scan_limit {
-            examined.extend(
-                store
-                    .range((
-                        std::ops::Bound::Unbounded,
-                        std::ops::Bound::Included(cursor),
-                    ))
-                    .map(|(key, _)| key.clone())
-                    .take(scan_limit - examined.len()),
-            );
+                .take(scan_limit - examined)
+            {
+                examined += 1;
+                if value.is_expired(now_ms) {
+                    expired.push(key.clone());
+                }
+                last_examined = Some(key);
+            }
         }
     } else {
-        examined.extend(store.keys().take(scan_limit).cloned());
+        for (key, value) in store.iter().take(scan_limit) {
+            examined += 1;
+            if value.is_expired(now_ms) {
+                expired.push(key.clone());
+            }
+            last_examined = Some(key);
+        }
     }
-    let expired = examined
-        .iter()
-        .filter(|key| {
-            store
-                .get(*key)
-                .is_some_and(|value| value.is_expired(now_ms))
-        })
-        .cloned()
-        .collect();
-    (examined, expired)
+    ExpirySweepCandidates {
+        examined,
+        expired,
+        next_cursor: if capture_cursor {
+            last_examined.cloned()
+        } else {
+            None
+        },
+    }
+}
+
+/// Profile-only fixtures for attributing expiry-sweep allocation without
+/// adding counters or timers to the production request path.
+#[cfg(feature = "performance-profile")]
+pub mod performance_profile {
+    use super::{expiry_sweep_candidates, StoreKey, StoredValue};
+    use std::collections::BTreeMap;
+
+    const FIXTURE_ENTRIES: usize = 512;
+    const SCAN_LIMIT: usize = 256;
+    const NOW_MS: u64 = 1_000;
+    const TENANT_BYTES: usize = 16;
+    const NAMESPACE_BYTES: usize = 16;
+    const KEY_BYTES: usize = 64;
+
+    /// Frozen expiry shape used by the W2 local profile process.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum ExpirySweepProfileScenario {
+        /// No examined entry is expired.
+        NoneExpired,
+        /// Every other examined entry is expired.
+        HalfExpired,
+        /// Every examined entry is expired.
+        AllExpired,
+        /// The scan crosses the end of the ordered map without expired entries.
+        CursorWrapNoneExpired,
+    }
+
+    impl ExpirySweepProfileScenario {
+        /// Parse the stable command-line spelling used by the profile tool.
+        pub fn parse(value: &str) -> Option<Self> {
+            match value {
+                "none-expired" => Some(Self::NoneExpired),
+                "half-expired" => Some(Self::HalfExpired),
+                "all-expired" => Some(Self::AllExpired),
+                "cursor-wrap-none-expired" => Some(Self::CursorWrapNoneExpired),
+                _ => None,
+            }
+        }
+
+        /// Return the stable command-line spelling.
+        pub const fn as_str(self) -> &'static str {
+            match self {
+                Self::NoneExpired => "none-expired",
+                Self::HalfExpired => "half-expired",
+                Self::AllExpired => "all-expired",
+                Self::CursorWrapNoneExpired => "cursor-wrap-none-expired",
+            }
+        }
+    }
+
+    /// Logical copy volume observed while executing one frozen W2 scan.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct ExpirySweepProfileObservation {
+        /// Entries inspected by the bounded scan.
+        pub examined_keys: usize,
+        /// Inspected entries copied into the expired work list.
+        pub expired_keys: usize,
+        /// Tuple-key clones, including the next cursor clone.
+        pub cloned_keys: usize,
+        /// String payload bytes copied by all tuple-key clones.
+        pub cloned_identity_bytes: usize,
+        /// Whether the scan retained a cursor for the next bounded pass.
+        pub next_cursor_present: bool,
+    }
+
+    /// Prebuilt store and cursor. Fixture construction is intentionally outside
+    /// the allocation measurement window.
+    pub struct ExpirySweepProfileFixture {
+        scenario: ExpirySweepProfileScenario,
+        store: BTreeMap<StoreKey, StoredValue>,
+        cursor: Option<StoreKey>,
+    }
+
+    impl ExpirySweepProfileFixture {
+        /// Build the fixed-cardinality W2 fixture.
+        pub fn new(scenario: ExpirySweepProfileScenario) -> Self {
+            let mut store = BTreeMap::new();
+            for index in 0..FIXTURE_ENTRIES {
+                let expires_at_ms = match scenario {
+                    ExpirySweepProfileScenario::HalfExpired if index % 2 == 0 => NOW_MS,
+                    ExpirySweepProfileScenario::AllExpired => NOW_MS,
+                    _ => NOW_MS + 1,
+                };
+                store.insert(
+                    fixed_store_key(index),
+                    StoredValue {
+                        value: Vec::new(),
+                        expires_at_ms: Some(expires_at_ms),
+                    },
+                );
+            }
+            let cursor = (scenario == ExpirySweepProfileScenario::CursorWrapNoneExpired)
+                .then(|| fixed_store_key(400));
+            Self {
+                scenario,
+                store,
+                cursor,
+            }
+        }
+
+        /// Execute the real candidate selection and the request-path cursor
+        /// clone, returning only allocation-free aggregate observations.
+        pub fn run(&self) -> ExpirySweepProfileObservation {
+            let candidates = expiry_sweep_candidates(
+                &self.store,
+                NOW_MS,
+                self.cursor.as_ref(),
+                SCAN_LIMIT,
+                true,
+            );
+            let expired_identity_bytes =
+                candidates.expired.iter().map(identity_bytes).sum::<usize>();
+            let cursor_identity_bytes = candidates.next_cursor.as_ref().map_or(0, identity_bytes);
+            let observation = ExpirySweepProfileObservation {
+                examined_keys: candidates.examined,
+                expired_keys: candidates.expired.len(),
+                cloned_keys: candidates.expired.len()
+                    + usize::from(candidates.next_cursor.is_some()),
+                cloned_identity_bytes: expired_identity_bytes + cursor_identity_bytes,
+                next_cursor_present: candidates.next_cursor.is_some(),
+            };
+            std::hint::black_box((&candidates, self.scenario));
+            observation
+        }
+    }
+
+    fn fixed_store_key(index: usize) -> StoreKey {
+        (
+            fixed_component("tenant", 0, TENANT_BYTES),
+            fixed_component("ns", 0, NAMESPACE_BYTES),
+            fixed_component("key", index, KEY_BYTES),
+        )
+    }
+
+    fn fixed_component(prefix: &str, index: usize, bytes: usize) -> String {
+        let mut value = format!("{prefix}-{index:08}");
+        value.extend(std::iter::repeat_n('x', bytes - value.len()));
+        value
+    }
+
+    fn identity_bytes((tenant, namespace, key): &StoreKey) -> usize {
+        tenant.len() + namespace.len() + key.len()
+    }
 }
 
 /// Shared state for the public client surface.
@@ -924,7 +1092,7 @@ impl ClientSurfaceState {
         let removed = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
             let mut store = self.store.lock().expect("store mutex");
-            let (examined, expired) = expiry_sweep_candidates(
+            let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
                 if force { None } else { cursor.as_ref() },
@@ -933,21 +1101,19 @@ impl ClientSurfaceState {
                 } else {
                     CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
                 },
+                !force,
             );
-            for (tenant, namespace, key) in &expired {
-                let tenant = TenantId::new(tenant).expect("stored tenant identity was validated");
-                isolation.remove_entry_for_tenant(&tenant, namespace, key);
-                store.remove(&(tenant.as_str().to_owned(), namespace.clone(), key.clone()));
+            for expired_key @ (tenant, namespace, key) in &candidates.expired {
+                let tenant_id =
+                    TenantId::new(tenant).expect("stored tenant identity was validated");
+                isolation.remove_entry_for_tenant(&tenant_id, namespace, key);
+                store.remove(expired_key);
             }
-            *cursor = if force {
-                None
-            } else {
-                examined.last().cloned()
-            };
-            expired.len()
+            *cursor = candidates.next_cursor;
+            candidates.expired.len()
         } else {
             let mut store = self.store.lock().expect("store mutex");
-            let (examined, expired) = expiry_sweep_candidates(
+            let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
                 if force { None } else { cursor.as_ref() },
@@ -956,16 +1122,13 @@ impl ClientSurfaceState {
                 } else {
                     CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
                 },
+                !force,
             );
-            for key in &expired {
+            for key in &candidates.expired {
                 store.remove(key);
             }
-            *cursor = if force {
-                None
-            } else {
-                examined.last().cloned()
-            };
-            expired.len()
+            *cursor = candidates.next_cursor;
+            candidates.expired.len()
         };
         if removed != 0 {
             self.state_mutations
@@ -2948,6 +3111,41 @@ mod retention_tests {
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
         assert!(state.store.lock().expect("store mutex").is_empty());
+
+        state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
+        assert_eq!(state.reap_expired_entries_for_maintenance(), 0);
+        assert!(state
+            .expiry_sweep_cursor
+            .lock()
+            .expect("expiry cursor mutex")
+            .is_none());
+    }
+
+    #[test]
+    fn expiry_sweep_candidate_wraps_once_and_full_scan_retains_no_cursor() {
+        let store = ["a", "b", "c", "d"]
+            .into_iter()
+            .map(|key| {
+                (
+                    ("tenant".to_owned(), "namespace".to_owned(), key.to_owned()),
+                    StoredValue::persistent(Vec::new()),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let cursor = ("tenant".to_owned(), "namespace".to_owned(), "c".to_owned());
+
+        let bounded = expiry_sweep_candidates(&store, 1_000, Some(&cursor), 3, true);
+        assert_eq!(bounded.examined, 3);
+        assert!(bounded.expired.is_empty());
+        assert_eq!(
+            bounded.next_cursor.as_ref().map(|(_, _, key)| key.as_str()),
+            Some("b")
+        );
+
+        let full = expiry_sweep_candidates(&store, 1_000, None, usize::MAX, false);
+        assert_eq!(full.examined, store.len());
+        assert!(full.expired.is_empty());
+        assert!(full.next_cursor.is_none());
     }
 
     #[test]

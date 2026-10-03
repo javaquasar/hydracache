@@ -1,0 +1,84 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w3-shared-event-tags-accepted-82f46245-v1"
+state = "local-candidate-accepted-for-integration"
+contract = "docs/testing/performance/0.73/w3-shared-event-tags-contract.toml"
+baseline_evidence = "docs/testing/performance/0.73/w3-tag-index-profile-f8b90ef0.toml"
+source_commit = "82f46245af235536a6dac93a8fbc59ecaeb6cc7d"
+binary_sha256 = "2a7081afd4a23b4ade4b4946745c1aa8309b1d8e159f8b9c7ae026f84e58f1eb"
+contract_sha256 = "195317b410d2268f8472074d930334c5523c9d121ac1ae0d35c842c80e043aaf"
+product_source_sha256 = "d507d0588e2638ece42c84aeecfaf09632b387add1c621d8f3533d5164af233c"
+tool_source_sha256 = "92c538cd52472e6b4d55e9d8f14f3b28fcf7331c1da248225036d90144b8cc17"
+tool_lock_sha256 = "6c08c11af348478e7b5c8647258fb3d6f671e58a70b604d3d286f5673fa26bd4"
+raw_manifest_sha256 = "51ad8ca43c70d487f3f9b8c483046cf62a7026cc00aa40d52cf7f4f763a557f4"
+raw_manifest_canonicalization = "stdout filenames ordinal-sorted; each line is two spaces, quoted filename:lowercase-sha256, comma, LF; UTF-8 without BOM"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80e 2026-01-15)"
+attempts = 215
+failed_attempts = 0
+nonempty_stderr = 0
+invariant_failures = 0
+repeats_per_scenario = 5
+independent_processes = true
+prebuilt_release_binary = true
+exact_memory_reconciliation_passed = true
+event_content_equality_passed = true
+generation_fence_passed = true
+public_tags_accessor_unchanged = true
+event_equality_semantics_unchanged = true
+product_mutation_present = true
+production_counter_addition = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_used_for_acceptance = false
+all_thresholds_passed = true
+
+tag_cardinalities = [0, 1, 4, 16, 64]
+candidate_index_shared_median_gross_allocated_bytes = [185456, 309880, 686084, 2191844, 8214532]
+candidate_index_unique_median_gross_allocated_bytes = [184392, 388196, 999324, 3448804, 13241404]
+candidate_event_shared_s0_median_gross_allocated_bytes = [184424, 310944, 686020, 2190556, 8214340]
+candidate_event_shared_s1_median_gross_allocated_bytes = [204936, 336504, 731044, 2310500, 8628068]
+candidate_event_shared_s8_median_gross_allocated_bytes = [262248, 394880, 788420, 2367876, 8686476]
+candidate_event_unique_s0_median_gross_allocated_bytes = [184328, 387164, 1001484, 3447772, 13242340]
+candidate_event_unique_s1_median_gross_allocated_bytes = [204872, 414884, 1045444, 3566588, 13656004]
+candidate_event_unique_s8_median_gross_allocated_bytes = [262216, 472164, 1103820, 3625964, 13712380]
+
+baseline_primary_median_gross_allocated_bytes = 15628164
+candidate_primary_median_gross_allocated_bytes = 8686476
+primary_total_gross_reduction_fraction = 0.444178
+minimum_primary_total_gross_reduction_fraction = 0.30
+baseline_s1_tag_churn_bytes_per_delivery_tag = 55.8701
+candidate_s1_tag_churn_bytes_per_delivery_tag = 24.0
+baseline_s8_tag_churn_bytes_per_delivery_tag = 56.0002
+candidate_s8_tag_churn_bytes_per_delivery_tag = 3.0084
+maximum_candidate_tag_churn_bytes_per_delivery_tag = 12.0
+maximum_observed_no_subscriber_gross_regression_fraction = 0.011079
+maximum_allowed_no_subscriber_gross_regression_fraction = 0.05
+maximum_observed_index_live_delta_regression_fraction = 0.014056
+maximum_allowed_index_live_delta_regression_fraction = 0.10
+maximum_observed_invalidation_gross_regression_fraction = 0.0
+maximum_allowed_invalidation_gross_regression_fraction = 0.10
+
+invalidation_fanouts = [1, 64, 1024]
+baseline_invalidation_median_gross_allocated_bytes = [2380, 134356, 2355364]
+candidate_invalidation_median_gross_allocated_bytes = [2380, 134356, 2352196]
+invalidation_removed_keys = [1, 64, 1024]
+invalidation_post_tag_memberships = [0, 0, 0]
+invalidation_post_generation_records = [1, 1, 1]
+
+ownership_interpretation = "Arc<[String]> makes CacheEvent Clone share one immutable tag slice. One-subscriber tag churn becomes one 24-byte String-header copy per tag during Vec-to-Arc construction; at eight subscribers that one-time cost amortizes to about 3 bytes per delivered tag instead of repeating a 32-byte payload allocation and header for every receiver."
+control_interpretation = "No-subscriber, index live-delta, and invalidation controls stayed inside preregistered limits. Exact owner estimates and logical membership counts are unchanged because the mutation affects transient public-event delivery, not retained cache/index accounting."
+decision = "retain-shared-cache-event-tags-for-integrated-w3-w5-confirmation"
+next_evidence = "Keep the candidate in the integrated release branch, retain local percentages as non-promotable, and move to W4 RESP translation owner classification before deciding whether any combined dedicated-host campaign is warranted."
+
+validation = [
+  "cargo test -p hydracache-core --locked: 23 unit and 11 doc tests passed",
+  "cargo test -p hydracache --lib tests::events --locked: 16 passed",
+  "cargo test -p hydracache --test native_event_listeners --locked: 4 passed",
+  "cargo test -p hydracache --test tag_index_model_071 --locked: 2 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --locked: 5 passed",
+  "cargo test -p hydracache --lib tests::invalidation_safety::invalidating_tag_during_load_discards_stale_store --locked: passed",
+  "cargo check --workspace --locked: passed",
+  "215-process frozen candidate matrix: passed with empty stderr and no invariant failure",
+]

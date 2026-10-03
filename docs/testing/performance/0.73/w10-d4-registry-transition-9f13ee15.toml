@@ -1,0 +1,62 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-d4-registry-transition-9f13ee15-v1"
+state = "d4-supply-chain-review-complete-new-campaign-required"
+analyzer_correction = "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml"
+long_run_contract = "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml"
+
+measured_candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+measured_moka_git_revision = "352e53faa480c9997272b9c70798dd5b5c15d581"
+registry_transition_commit = "9f13ee154a7db513abdf348825ec19dfbf733519"
+registry_transition_tree_oid = "10171ddeee535fad73aa46941a686e24ff135f56"
+hydra_moka_release_commit = "2e358c5135a2649818dc1890ac96929d92e86424"
+hydra_moka_upstream_base = "616473ee923f4cd1429b3d8eb3be7df3eb9906b1"
+hydra_moka_package = "hydra-moka"
+hydra_moka_version = "0.12.15-hydra.1"
+hydra_moka_registry_checksum = "7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a"
+root_lock_sha256 = "7c9a04ca61997cb897c3b6e589f07af723661e6096b0ba98d957e85a2b558119"
+
+runtime_source_file_count = 52
+git_runtime_source_manifest_sha256 = "5625fca5db8f1a6e2c496cf92ce8df18faf1bf96f1b31541a548e6d981ecc440"
+registry_runtime_source_manifest_sha256 = "5625fca5db8f1a6e2c496cf92ce8df18faf1bf96f1b31541a548e6d981ecc440"
+release_manifest_sha256 = "30fe0449ce68de53d8377b38899009aedfe14fa5367d52ae9d2b6251cfb29be0"
+registry_original_manifest_sha256 = "30fe0449ce68de53d8377b38899009aedfe14fa5367d52ae9d2b6251cfb29be0"
+
+runtime_sources_equal = true
+dependency_and_feature_graph_equal = true
+library_target_equal = true
+runtime_package_environment_reads_absent = true
+readme_include_runtime_reachable = false
+package_identity_equal = false
+source_identity_equal = false
+binary_identity_proven_equal = false
+old_six_hour_evidence_transfer_allowed = false
+old_confirmation_allowed = false
+new_six_hour_qualification_required = true
+new_twenty_four_hour_confirmation_required = true
+numerical_claim_allowed = false
+release_archive_allowed = false
+server_dispatch_allowed_before_final_candidate_freeze = false
+
+changed_release_paths = [
+  ".ci_extras/pin-crate-vers-kani.sh",
+  ".ci_extras/pin-crate-vers-msrv.sh",
+  ".ci_extras/pin-crate-vers-nightly.sh",
+  "CHANGELOG.md",
+  "Cargo.toml",
+  "README.md",
+]
+
+review = "The published crate contains the same 52 runtime source files and the same original Cargo manifest as release commit 2e358c51. The release-only diff from the measured observer revision changes CI pins, package metadata, changelog, and README; HydraCache enables future, while the README include is sync-doctest-only. No runtime source reads Cargo package name or version."
+identity_boundary = "Source equivalence is not exact build identity. Moving from a Git package to crates.io changes Cargo's package/source identity and Cargo.lock, and no byte-identical final HydraCache binary has been established. The preregistered D4 rule therefore invalidates affected exact-candidate receipts instead of inferring equivalence from source inspection."
+decision = "retain-corrected-old-qualification-but-do-not-transfer-to-registry-candidate"
+cost_control = "Do not dispatch another protected-host run while version, release notes, generated/package assets, feature metadata, SBOM inputs, or lockfiles can still change. Freeze the final publishable candidate first, then run exactly one new six-hour qualification and, only if it passes, one 24-hour confirmation."
+next_evidence = "Complete publication closure and freeze a final registry-backed C73 commit. Preregister its source, tree, lockfile, binaries, hydra-moka checksum, workflow and scenario identities before requesting the protected host."
+
+validation = [
+  "git diff --name-status 352e53faa480c9997272b9c70798dd5b5c15d581..2e358c5135a2649818dc1890ac96929d92e86424",
+  "recursive canonical SHA-256 manifest comparison for all 52 src files: identical",
+  "hydra-moka release Cargo.toml versus registry Cargo.toml.orig SHA-256: identical",
+  "Cargo.lock package/version/source/checksum inspection: registry identity confirmed",
+  "runtime source search for CARGO_PKG_VERSION and package-name reads: none",
+]

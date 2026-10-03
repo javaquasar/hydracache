@@ -16,7 +16,8 @@ def manifest():
         "baseline_tag": "v0.70.0",
         "baseline_commit": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
         "tool": "cargo-semver-checks",
-        "tool_version": "0.49.0",
+        "tool_version": "0.50.0",
+        "toolchain": "rustc-1.94.0",
         "profiles": ["default", "all-features"],
         "packages": ["hydracache", "hydracache-core"],
         "profile_overrides": {
