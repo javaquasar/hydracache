@@ -338,7 +338,7 @@ The semantic checks covered more than happy-path GET and SET:
 - batch prevalidation, duplicate-key behavior and multi-key atomicity;
 - exact response bytes and result validation in every performance receipt.
 
-The complete client-surface run passed 70 active tests; two million-operation retention soaks
+The complete client-surface run passed 72 active tests; two million-operation retention soaks
 remained deliberately scheduled rather than being smuggled into a quick local gate. The focused
 multitenancy suite passed 15 tests, RESP boundaries 11, connection chaos 4, and pipeline
 attribution 2. Both local profilers passed their unit and clippy gates after the product candidates
@@ -424,8 +424,8 @@ portability evidence only—not a Linux performance or syscall claim.
 Sixth, W11 now has a content-addressed qualification manifest and a dry-run validator. It checks
 phase order, workload-contract hashes, same-box Redis requirements and artifact naming while
 keeping every expensive phase `not-run`. The tool deliberately has no execution mode until the
-0.73 tag, exact 0.74 candidate, admitted host, Redis binary identities and explicit authorization
-are available.
+exact 0.74 candidate, admitted host, Redis binary identities, qualification runner and explicit
+authorization are available. The 0.73 tag and confirmation are no longer blockers.
 
 Finally, the semantic suite gained concurrent batch, expiry and authorization regressions. Batch
 readers observe either all old values or all new values, never a torn mix. Sixteen simultaneous
@@ -436,6 +436,52 @@ and audited.
 These additions do not change the release conclusion. They improve the ability to reject a noisy
 series, locate a native owner, reproduce a transport edge case and start qualification safely. The
 product path still contains no accepted 0.74 optimization.
+
+## What changed after 0.73 shipped
+
+Publication closed one identity question without changing the measured baseline. The annotated
+`v0.73.0` tag points to release commit `d1db9937`, while the confirmed product runtime remains
+byte-equivalent to measured candidate `16d2e98b`. W0 now pins both identities, the successful
+24-hour confirmation run and immutable archive commit `570a5bcb`; it does not pretend the tag
+commit and measured commit are the same object.
+
+That closure allowed the remaining local follow-ups to proceed, but it did not improve the signal
+quality of this Windows host. The first completed follow-up was the W9a atomic-ordering audit. We
+classified every `SeqCst` operation in the measured RESP and direct client paths. Lifecycle,
+message publication, monotonic time-floor and expiry-claim atomics kept their stronger ordering.
+Only independent diagnostic counters were eligible for a `Relaxed` screen.
+
+The preregistered screen used seven counterbalanced pairs and required at least 2% lower CPU/op
+with six of seven pairs favoring `Relaxed`. At concurrency 1 both medians were exactly 7.03125
+ns/op and zero pairs favored `Relaxed`. At concurrency 8 both medians were 142.578125 ns/op and
+only four pairs favored it. The screen failed before product mutation, so no atomic was changed.
+This is another useful negative result: a weaker ordering can be semantically defensible and still
+not be worth carrying.
+
+The other post-publication work improved the qualification control plane rather than the product
+hot path. The long-run resilience contract now distinguishes controller loss from progress loss
+and measurement loss. A new Rust foundation writes canonical hash-chained checkpoints, syncs the
+journal before atomically replacing its head, and rejects sequence gaps, middle corruption,
+digest breaks, identity drift and timestamp reversal. Recovery tolerates at most one incomplete
+trailing JSON record; appending after that tail is forbidden until explicit recovery archives it.
+
+A separate `xtask` verifier reimplements the digest calculation instead of trusting the writer.
+It rejects manifest/journal disagreement, duplicate roles, parent traversal and any promotable
+packet without complete I74 and C74 journals. The pure supervisor state machine separately proves
+that attach can update only controller lease and revision; host/boot, PID-start, cgroup, cpuset,
+checkpoint, lease, failure, duplicate-executor or durable-history drift all fail closed. Its typed
+64-KiB protocol rejects unknown and duplicate fields, malformed packets and cross-operation fields,
+and exposes no arbitrary command or environment surface.
+
+This is deliberately not described as a completed resilient qualification system. The live Unix
+`SOCK_SEQPACKET` service, peer credentials and signature verification, systemd process ownership,
+provisioning, bounded diagnostics, deterministic sealing and real controller-loss rehearsals still
+require Linux-host implementation and evidence. No six-hour or 24-hour 0.74 run has started.
+
+Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a
+and W9a were rejected and the other proposals are deferred or unauthorized, there is no honest
+C74 to freeze. Tooling progress is not a substitute for a product candidate, and isolated local
+percentages are not added together.
 
 ## The practical rule
 
