@@ -226,6 +226,18 @@ use a new exact SHA. Because its diff from measured C73 is restricted to docs lo
 documentation, test/governance registries and CI tooling, the product-duration packets remain valid;
 all build, docs, compatibility, instruction and release gates touched by those files are repeated.
 
+Corrected exact-tree attempt `37138395653` is retained separately in
+`docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml`. It proved the product
+runtime diff from measured C73 was empty and cleared the dedicated HC/2 and documentation
+workflows, but CI still rejected publication for two temporal-tooling defects. The memory contract
+paired `cargo-semver-checks 0.49.0` with a stable compiler that emitted unsupported rustdoc JSON
+v61, and the primary Rust job let `stable` drift to Rust/Clippy 1.99.0 instead of the reviewed
+1.94.0 release toolchain. The latter introduced new deprecation and generated-code lints under the
+unchanged `-D warnings` policy. Remediation pins both release-critical jobs to Rust 1.94.0 and pins
+`cargo-semver-checks 0.50.0`, which supports rustdoc JSON v61; it does not weaken Clippy, alter the
+feature/allocator matrix, or edit product runtime merely to follow a later compiler. A new exact
+tooling SHA must repeat normal PR admission. The failed run itself is never rerun or reclassified.
+
 ## Test principles and evidence acceptance
 
 1. **Independent oracle:** every optimized path is compared with a reference model or published 0.72 behavior; performance tests never replace semantic assertions. Test all newly introduced branches, error/cancel paths, overflow and cleanup in the module that owns them, then cross-crate and real-process behavior.

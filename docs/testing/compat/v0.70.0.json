@@ -4,7 +4,8 @@
   "baseline_tag": "v0.70.0",
   "baseline_commit": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
   "tool": "cargo-semver-checks",
-  "tool_version": "0.49.0",
+  "tool_version": "0.50.0",
+  "toolchain": "rustc-1.94.0",
   "profiles": ["default", "all-features"],
   "profile_overrides": {
     "hydracache": {
@@ -18,7 +19,7 @@
   "excluded_packages": [
     {
       "package": "hydracache-macros",
-      "reason": "cargo-semver-checks 0.49.0 cannot analyze a proc-macro-only target; its public macro contract is covered by the workspace trybuild and macro tests."
+      "reason": "cargo-semver-checks 0.50.0 cannot analyze a proc-macro-only target; its public macro contract is covered by the workspace trybuild and macro tests."
     }
   ],
   "packages": [

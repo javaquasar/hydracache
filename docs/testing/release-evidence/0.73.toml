@@ -128,7 +128,7 @@ function = "w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_fa
 [[work_item]]
 id = "W11"
 required_sources = ["crates/xtask/src/performance_contract.rs", "crates/xtask/src/release_evidence.rs", "docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/releases/0.73.0.md"]
-required_artifacts = ["docs/testing/canary-registry-0.73.json", "docs/testing/release-evidence/0.73.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml"]
+required_artifacts = ["docs/testing/canary-registry-0.73.json", "docs/testing/release-evidence/0.73.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
