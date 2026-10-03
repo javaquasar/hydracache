@@ -29,6 +29,16 @@ EXPECTED_SURFACES = {
     "ttl_expire_refill": 51_840_000,
 }
 SUM_LINE = re.compile(r"^([0-9a-f]{64})  ([^\\\r\n]+)$")
+SECRET_MARKERS = [
+    b"ghp_",
+    b"github_pat_",
+    b"Authorization:",
+    b"Bearer ",
+    b"BEGIN PRIVATE KEY",
+    b"BEGIN OPENSSH PRIVATE KEY",
+    b"password=",
+    b"token=",
+]
 
 
 def sha256_file(path: pathlib.Path) -> str:
@@ -137,6 +147,16 @@ def tree_digest(root: pathlib.Path) -> tuple[str, int]:
     return digest.hexdigest(), len(files)
 
 
+def reject_secret_bearing_files(root: pathlib.Path) -> int:
+    files = [path for path in root.rglob("*") if path.is_file()]
+    for path in files:
+        content = path.read_bytes()
+        for marker in SECRET_MARKERS:
+            if marker in content:
+                raise ValueError(f"secret-like marker in {path.relative_to(root).as_posix()}")
+    return len(files)
+
+
 def toml_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
@@ -180,7 +200,7 @@ def main() -> int:
             stage_path = stage_root.joinpath(*pathlib.PurePosixPath(relative).parts)
             if final_path.read_bytes() != stage_path.read_bytes():
                 raise ValueError(f"I73 continuation handoff changed {relative}")
-        if final_members < stage_members | {
+        if final_members != stage_members | {
             "c73/attempt.json",
             "c73/checkpoints.jsonl",
             "c73/receipt.json",
@@ -191,6 +211,8 @@ def main() -> int:
             "long-run-campaign.json",
         }:
             raise ValueError("final archive is missing required members")
+        secret_scan_file_count = reject_secret_bearing_files(final_root)
+        reject_secret_bearing_files(stage_root)
 
         campaign = json.loads((final_root / "long-run-campaign.json").read_text(encoding="utf-8"))
         expected_campaign = {
@@ -321,6 +343,7 @@ def main() -> int:
             f"final_file_count = {final_file_count}",
             f"i73_stage_file_count = {stage_file_count}",
             f"continuation_file_count = {len(final_entries)}",
+            f"secret_scan_file_count = {secret_scan_file_count}",
             f"i73_operations = {OPERATIONS}",
             f"c73_operations = {OPERATIONS}",
             f"i73_checkpoint_count = {analyses['I73']['checkpoint_count']}",
