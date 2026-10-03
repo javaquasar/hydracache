@@ -20,6 +20,16 @@ on:
         required: false
         default: false
         type: boolean
+      run_redis_compat_release_proof:
+        description: "Run only the Redis release proof against an explicit immutable candidate SHA"
+        required: false
+        default: false
+        type: boolean
+      release_proof_candidate_sha:
+        description: "Full candidate SHA used only by the focused Redis release-proof repair lane"
+        required: false
+        default: ""
+        type: string
       run_management_candidate_soak_072:
         description: "Run the exact six-hour 0.72 Management Center candidate soak"
         required: false
@@ -152,7 +162,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Validate topology through fail-closed watchdog
         run: >-
@@ -325,7 +335,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -391,7 +401,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -505,7 +515,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -562,7 +572,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Materialize fail-loud upstream admission status
         run: >-
@@ -620,7 +630,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: rustfmt
 
@@ -1290,7 +1300,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -1311,14 +1321,28 @@ jobs:
     name: Redis Compatibility Release Proof
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (inputs.run_nightly || inputs.run_redis_compat_release_proof))
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.run_redis_compat_release_proof && inputs.release_proof_candidate_sha || github.sha }}
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Verify focused release-proof candidate
+        if: github.event_name == 'workflow_dispatch' && inputs.run_redis_compat_release_proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate='${{ inputs.release_proof_candidate_sha }}'
+          test "$candidate" != ""
+          test "${#candidate}" -eq 40
+          test "$(git rev-parse HEAD)" = "$candidate"
+          git diff --exit-code
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: rustfmt, clippy
 
@@ -1375,7 +1399,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -1470,7 +1494,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Verify shipped v0.71.0 provenance
         run: |
@@ -1504,7 +1528,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Prove exact-candidate HC1 and HC2 coexistence
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
@@ -1538,7 +1562,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Prove exact-candidate HC1 and HC2 coexistence
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
@@ -1577,7 +1601,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -1630,7 +1654,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -1671,7 +1695,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -2640,7 +2664,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -2665,7 +2689,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -2786,7 +2810,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -2926,7 +2950,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install stable Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Install pinned TSan nightly
         timeout-minutes: 15
@@ -3014,7 +3038,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: llvm-tools-preview
 
@@ -3107,7 +3131,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
