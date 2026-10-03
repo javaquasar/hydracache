@@ -381,7 +381,8 @@ def main() -> int:
         ]
     )
     options.output.parent.mkdir(parents=True, exist_ok=True)
-    options.output.write_text(output, encoding="utf-8")
+    # Evidence bytes must remain stable across Windows and Unix worktrees.
+    options.output.write_bytes(output.encode("utf-8"))
     print(f"verified release 0.73 confirmation run {RUN_ID}: all guards passed")
     return 0
 
