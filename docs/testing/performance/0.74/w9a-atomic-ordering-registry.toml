@@ -1,0 +1,111 @@
+schema_version = 1
+release = "0.74"
+registry_id = "w9a-atomic-ordering-074-v1"
+state = "audit-complete-screen-pending"
+source_scope = [
+  "crates/hydracache-redis-compat/src/lib.rs",
+  "crates/hydracache-client-transport-axum/src/lib.rs",
+]
+screen_pairs = 7
+minimum_cpu_improvement_percent = 2.0
+product_change_requires_end_to_end_native_and_resp_non_regression = true
+broad_mechanical_replacement_forbidden = true
+
+[[atomic]]
+id = "resp.next_request_id"
+classification = "uniqueness-generator"
+current_ordering = "SeqCst"
+decision = "retain-pending-order-and-audit-correlation-proof"
+
+[[atomic]]
+id = "resp.accepted_connections"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "resp.commands"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "resp.errors"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "resp.active_event_subscribers"
+classification = "lifecycle-owner"
+current_ordering = "SeqCst"
+decision = "retain"
+
+[[atomic]]
+id = "resp.event_messages"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "resp.lagged_event_subscribers"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "client.dispatch_attempts"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "client.state_mutations"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "client.rejected_anonymous"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "client.rejected_oversized"
+classification = "diagnostic-counter"
+current_ordering = "SeqCst"
+candidate_ordering = "Relaxed"
+decision = "screen-only"
+
+[[atomic]]
+id = "client.active_subscriptions"
+classification = "lifecycle-owner"
+current_ordering = "SeqCst"
+decision = "retain"
+
+[[atomic]]
+id = "client.next_message_id"
+classification = "uniqueness-generator"
+current_ordering = "SeqCst"
+decision = "retain-pending-publication-order-proof"
+
+[[atomic]]
+id = "client.cache_time_floor_ms"
+classification = "monotonic-time-floor"
+current_ordering = "SeqCst"
+decision = "retain"
+
+[[atomic]]
+id = "client.next_expiry_sweep_ms"
+classification = "expiry-claim"
+current_ordering = "SeqCst"
+decision = "retain"
