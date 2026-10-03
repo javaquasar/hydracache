@@ -29,6 +29,10 @@ sha256 = "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
 path = "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md"
 sha256 = "6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d"
 
+[[contract_inputs]]
+path = "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"
+sha256 = "698bb594465ebcb601029b3005035ca91d6e8156d30bfe63effcaff9d07ac0e7"
+
 [[phases]]
 id = "Q0-identity-and-contract"
 expensive = false

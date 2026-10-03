@@ -34,6 +34,7 @@ members = [
     "crates/xtask",
     "fuzz",
     "tests/post-publish-consumer",
+    "tools/long-run-supervisor-074",
 ]
 resolver = "2"
 

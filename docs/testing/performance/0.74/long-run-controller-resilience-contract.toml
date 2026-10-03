@@ -1,0 +1,67 @@
+schema_version = 1
+release = "0.74"
+contract_id = "long-run-controller-resilience-074-v1"
+state = "frozen-before-candidate-data"
+promotable = false
+design = "docs/testing/performance/0.74/long-run-controller-resilience-design.md"
+campaign_root = "/var/lib/hydracache-performance/campaigns"
+supervisor_service = "hydracache-performance-supervisor-074.service"
+measured_unit_prefix = "hydracache-performance-074-"
+checkpoint_domain = "hydracache-long-run-record-v1"
+checkpoint_cadence_seconds = 30
+progress_warning_gap_seconds = 90
+progress_rejection_gap_seconds = 180
+diagnostic_grace_seconds = 30
+maximum_product_lease_seconds = 108000
+maximum_campaign_bytes = 21474836480
+maximum_campaign_files = 20000
+controller_loss_may_reattach = true
+progress_loss_must_fail = true
+measurement_loss_must_fail = true
+automatic_restart_forbidden = true
+mixed_process_lifetimes_forbidden = true
+single_incomplete_trailing_checkpoint_recoverable = true
+earlier_chain_corruption_recoverable = false
+
+[overhead_budget]
+maximum_supervisor_cpu_percent = 0.5
+maximum_supervisor_rss_bytes = 67108864
+maximum_checkpoint_io_bytes_per_second = 1048576
+asymmetry_percent = 1.0
+
+[identity]
+fields = [
+  "campaign_id",
+  "manifest_sha256",
+  "machine_id",
+  "boot_id",
+  "host_receipt_sha256",
+  "mount_identity",
+  "cpusets",
+  "source_tree_lock_and_binary_sha256s",
+  "pid",
+  "start_ticks",
+  "process_group",
+  "cgroup_path",
+  "cgroup_inode",
+  "unit_name",
+]
+
+[operations]
+allowed = ["start", "attach", "status", "seal", "abort", "verify"]
+attach_may_spawn = false
+status_may_spawn = false
+verify_requires_live_supervisor = false
+
+[durability]
+canonical_json_profile = "RFC-8785-compatible-integer-and-string-subset"
+append_sync = "write-all-then-fdatasync"
+head_replace = "same-directory-create-new-sync-rename-parent-sync"
+state_replace = "same-directory-create-new-sync-rename-parent-sync"
+
+[local_implementation]
+checkpoint_chain_library = "tools/long-run-supervisor-074"
+live_service_complete = false
+systemd_confinement_complete = false
+host_rehearsal_complete = false
+release_admission_allowed = false

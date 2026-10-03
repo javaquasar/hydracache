@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/checkpoint-envelope.schema.json",
+  "title": "HydraCache 0.74 long-run checkpoint envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "previous_record_sha256",
+    "payload",
+    "payload_sha256",
+    "record_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "previous_record_sha256": { "$ref": "#/$defs/hash" },
+    "payload_sha256": { "$ref": "#/$defs/hash" },
+    "record_sha256": { "$ref": "#/$defs/hash" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaign_id", "role", "phase", "phase_epoch", "monotonic_elapsed_ns",
+        "wall_clock_utc", "completed", "failed", "rejected", "timed_out", "outstanding",
+        "telemetry_sequence", "milestone", "surface_counters", "resource_counters",
+        "owner_counters", "harness", "daemon"
+      ],
+      "properties": {
+        "campaign_id": { "$ref": "#/$defs/hash" },
+        "role": { "enum": ["i74", "c74"] },
+        "phase": { "enum": ["startup", "warmup", "measured", "drain", "durable-companion", "post-work-idle", "reconciliation", "terminal"] },
+        "phase_epoch": { "$ref": "#/$defs/count" },
+        "monotonic_elapsed_ns": { "$ref": "#/$defs/count" },
+        "wall_clock_utc": { "type": "string", "format": "date-time" },
+        "completed": { "$ref": "#/$defs/count" },
+        "failed": { "$ref": "#/$defs/count" },
+        "rejected": { "$ref": "#/$defs/count" },
+        "timed_out": { "$ref": "#/$defs/count" },
+        "outstanding": { "$ref": "#/$defs/count" },
+        "telemetry_sequence": { "$ref": "#/$defs/count" },
+        "milestone": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "surface_counters": { "$ref": "#/$defs/counters" },
+        "resource_counters": { "$ref": "#/$defs/counters" },
+        "owner_counters": { "$ref": "#/$defs/counters" },
+        "harness": { "$ref": "#/$defs/process" },
+        "daemon": { "$ref": "#/$defs/process" }
+      }
+    }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "count": { "type": "integer", "minimum": 0 },
+    "counters": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/count" }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["boot_id", "pid", "start_ticks", "process_group", "cgroup_path", "cgroup_inode", "unit_name"],
+      "properties": {
+        "boot_id": { "type": "string", "minLength": 1 },
+        "pid": { "type": "integer", "minimum": 1 },
+        "start_ticks": { "$ref": "#/$defs/count" },
+        "process_group": { "type": "integer" },
+        "cgroup_path": { "type": "string", "minLength": 1 },
+        "cgroup_inode": { "$ref": "#/$defs/count" },
+        "unit_name": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -35,6 +35,14 @@ The focused WSL2 portability result is recorded in
 [`local-linux-sanity.md`](local-linux-sanity.md). It is a non-promotable `local-quick` sub-tier and
 does not substitute for the admitted Linux release host.
 
+The controller-resilience contract is frozen in
+[`long-run-controller-resilience-contract.toml`](long-run-controller-resilience-contract.toml).
+The first local implementation slice, `tools/long-run-supervisor-074`, writes and independently
+verifies canonical hash-chained checkpoint envelopes, rejects identity/timestamp/hash drift, and
+recovers at most one incomplete trailing line. This is not yet the live systemd supervisor: Unix
+socket authorization, process/cgroup ownership, attach leases, provisioning and real host fault
+rehearsals remain incomplete and release admission stays closed.
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:
