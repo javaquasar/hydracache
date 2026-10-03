@@ -55,6 +55,11 @@ predicate evaluator. Deterministic tests prove that attach changes only controll
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,
 revision, duplicate-executor, recorded-failure and durable-history drift.
 
+The versioned request/response protocol is also locally implemented with the frozen 65,536-byte
+limit, strict unknown/duplicate-field rejection, UUIDv4 and lowercase-digest validation,
+operation-specific fields, the single exact staging path for `start`, and canonical response
+digests. It intentionally exposes no argv, environment, shell, DBus or arbitrary-path field.
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:
