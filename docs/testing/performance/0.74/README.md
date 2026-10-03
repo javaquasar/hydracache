@@ -43,6 +43,13 @@ recovers at most one incomplete trailing line. This is not yet the live systemd 
 socket authorization, process/cgroup ownership, attach leases, provisioning and real host fault
 rehearsals remain incomplete and release admission stays closed.
 
+Offline packet verification is independently implemented in `xtask` (it does not call the
+supervisor library):
+
+```text
+cargo xtask long-run-campaign-check --release 0.74 --manifest <packet-manifest.json>
+```
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:

@@ -332,7 +332,7 @@ fn record_hash(
 }
 
 fn canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, serde_json::Error> {
-    serde_json::to_vec(value)
+    serde_json::to_vec(&serde_json::to_value(value)?)
 }
 
 fn sha256_hex(bytes: &[u8]) -> String {

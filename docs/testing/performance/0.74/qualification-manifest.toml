@@ -31,7 +31,7 @@ sha256 = "6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"
-sha256 = "698bb594465ebcb601029b3005035ca91d6e8156d30bfe63effcaff9d07ac0e7"
+sha256 = "a5b8fa3bbe0f3b6d291ae2b558f0b322d0836928fa46f28bf4310d20accaf944"
 
 [[phases]]
 id = "Q0-identity-and-contract"
