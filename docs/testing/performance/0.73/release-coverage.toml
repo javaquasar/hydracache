@@ -1,6 +1,6 @@
 schema_version = 1
 release = "0.73"
-state = "confirmation-passed-archive-published-ship-gates-pending"
+state = "shipped"
 product_candidate = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
 product_tree = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
 instrumented_baseline = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
@@ -10,11 +10,15 @@ confirmation_tooling_sha = "aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f"
 confirmation_status = "passed-independently-verified"
 archive_branch = "evidence/0.73/w10-confirmation"
 archive_commit = "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9"
-ship_allowed = false
+final_candidate = "d1db9937e61295341ac95f289bace275641b1650"
+final_candidate_tree = "5bea41dd43278a9405648939666de5024d2164cc"
+tag = "v0.73.0"
+tag_commit = "d1db9937e61295341ac95f289bace275641b1650"
+ship_allowed = true
 
-# This matrix is the W11 ownership index. It retains the interrupted confirmation
-# as non-final; final evidence is added only after a newly authorized complete
-# artifact has been downloaded and independently verified.
+# This matrix is the W11 ownership index. It retains interrupted and rejected
+# attempts as non-final evidence beside the independently verified accepted
+# confirmation and exact-SHA release admission.
 [[work_item]]
 id = "W0"
 disposition = "accepted"
@@ -83,6 +87,6 @@ tests = ["w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_fail
 
 [[work_item]]
 id = "W11"
-disposition = "archive-published-ship-gates-pending"
-sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml"]
+disposition = "shipped"
+sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-passed-37140860241.toml"]
 tests = ["release_073_governance_contract_is_fail_closed", "w11_archive_policy_pins_durable_branch_and_release_links", "w11_archive_policy_rejects_mutable_or_expiring_only_evidence", "canary_release_073_rejects_missing_work_item_evidence"]
