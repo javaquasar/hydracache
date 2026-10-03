@@ -199,7 +199,7 @@ async fn cancelled_load_releases_the_inflight_owner() {
 }
 
 #[tokio::test]
-async fn capacity_eviction_is_accounted_by_the_removal_listener() {
+async fn capacity_eviction_is_accounted_by_the_removal_observer() {
     let cache = HydraCache::local()
         .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
         .max_capacity(16)
@@ -221,5 +221,63 @@ async fn capacity_eviction_is_accounted_by_the_removal_listener() {
             .await
             .expect("reconcile")
             .matched
+    );
+}
+
+#[tokio::test]
+async fn delayed_replacement_cleanup_preserves_new_same_tag_membership() {
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .build();
+    cache
+        .put("versioned", 1_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("first version");
+    cache
+        .put("versioned", 2_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("replacement version");
+    cache.diagnostics().await;
+
+    assert_eq!(
+        cache
+            .invalidate_tag("shared")
+            .await
+            .expect("new membership remains visible"),
+        1
+    );
+    assert_eq!(exact_snapshot(&cache).await.live_entries, 0);
+    assert!(
+        cache
+            .reconcile_memory_footprint()
+            .await
+            .expect("replacement reconciliation")
+            .matched
+    );
+}
+
+#[cfg(feature = "instrumentation-lab")]
+#[tokio::test]
+async fn noop_removal_observer_is_an_explicit_incorrect_diagnostic_ablation() {
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .instrumentation_lab_noop_removal_observer(true)
+        .build();
+    cache
+        .put("replaced", 1_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("first version");
+    cache
+        .put("replaced", 2_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("replacement version");
+    cache.diagnostics().await;
+
+    assert!(
+        matches!(
+            cache.reconcile_memory_footprint().await,
+            Err(hydracache::MemoryFootprintError::ReconciliationMismatch)
+        ),
+        "the noop observer must never masquerade as correctness evidence"
     );
 }

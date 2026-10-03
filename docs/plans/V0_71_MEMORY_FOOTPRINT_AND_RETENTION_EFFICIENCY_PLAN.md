@@ -1348,7 +1348,9 @@ shorter proposal pairs.
 - Register profiler, allocator, long-soak, cgroup and cross-target lanes plus dynamic canaries in
   the gated/canary registries; skip-loud and quarantine-expiry rules remain unchanged.
 - Add `docs/testing/compat/v0.70.0.json` and a blocking `Public API Compatibility 0.71` lane using
-  reviewed `cargo-semver-checks 0.49.0`. It covers the complete publishable-library package set,
+  a reviewed, pinned `cargo-semver-checks` release. The original lane used `0.49.0`; release 0.73
+  pins Rust `1.94.0` with `cargo-semver-checks 0.50.0` because that pair supports rustdoc JSON v61.
+  It covers the complete publishable-library package set,
   default/all/supported feature profiles, immutable baseline/candidate SHAs and machine-readable
   distinction between a compatibility violation and an analysis/tool failure.
 - Extend downstream compile witnesses for auto-traits, object-safe trait objects, public struct

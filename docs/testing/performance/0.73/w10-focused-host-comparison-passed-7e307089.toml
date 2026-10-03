@@ -1,0 +1,107 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-focused-host-comparison-passed-7e307089-v1"
+state = "focused-host-passed-compatibility-and-rollback-open"
+contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml"
+tooling_source_commit = "52968f73d8c8b66fcf51e140c7548386e43078a4"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+
+github_run_id = 36197196983
+github_job_id = 108275635511
+artifact_id = 10890687645
+artifact_name = "performance-integrated-host-073-52968f73d8c8b66fcf51e140c7548386e43078a4-36197196983-1"
+artifact_zip_sha256 = "be0f13ed92b920501b1b4f8c02ab8615a904abc6d665caa75c4f02fb26cd99a5"
+manifest_sha256 = "4bcedf3f09482578704a7ede8bd8406060239133e179162f86b07df56e609940"
+preflight_sha256 = "5f0e094dbc06c17a74e6be19464c8453477dd12f91dd78fa8fb9894fafc62565"
+postflight_sha256 = "fd0adc16a87021529b106004173d9a49898440ce5d62b07ab214b503e14715dc"
+canary_sha256 = "429da8d1e68627cab0b06df0b340be83a00adf46274785da55123238f1349400"
+campaign_sha256 = "2e86e540bc5e062a3f4c5e58a37c49b27d191714c6d50ba53302b53e7c373d47"
+scenario_sha256 = "95fa6c7188ff648e6710c52e876671115b99a24481eb78c9160e3d044da81696"
+overlay_sha256 = "2c2431a7e779598fe3442faeccd452151d839287e7b7a0ee09cf74b200ddf294"
+runner_sha256 = "f2e629e888dc664b304520449bf0626649a9c153c56ae341f5be00791e8e5a40"
+i73_server_sha256 = "f561f4f7925ceb9c94b39be2eb9b4a0f8f1c59566b1da2f78041ca99c12cc2c0"
+c73_server_sha256 = "0aa50682940cb748ff59587a9553f0782937f8595a8c51c545c80dfa13099dd3"
+i73_harness_sha256 = "6dc9fdfbe9502d1fc385be9d64cd34d13434b5ff155deb3f8905739e0e3f207e"
+c73_harness_sha256 = "b291ccbb07ac015878596bc876ad2a4a129d81918a673a048309234f8f39e378"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+
+result = "passed"
+attempt_count = 30
+failed_attempt_count = 0
+pairs_per_rate = 5
+rates_per_second = [5000, 12000, 17000]
+window_seconds = 10
+warmup_operations = 5000
+weights_percent = [35, 30, 15, 10, 5, 5]
+total_operations = 3400000
+total_successes = 3400000
+total_errors = 0
+total_timeouts = 0
+total_rejections = 0
+total_hc2_events = 1190000
+total_durable_operations = 30000
+total_durable_successes = 30000
+
+pre_calibration_relative_spread = 0.0133055339816793
+post_calibration_relative_spread = 0.0226173345422594
+calibration_limit = 0.05
+host_identity_stable = true
+lease_stable = true
+exact_role_identity_passed = true
+all_attempt_hashes_verified = true
+all_attempt_stderr_empty = true
+all_primary_guards_passed = true
+canary_marker = "HC-CANARY-RED:W10-HOST"
+canary_marker_observed = true
+canary_receipt_absent = true
+
+host_primary_guards_qualified = true
+host_dispatch_completed = true
+published_072_compatibility_satisfied = false
+compatibility_and_rollback_allowed = true
+long_run_allowed = false
+candidate_is_final_c73 = false
+release_numerical_claim_allowed = false
+allocation_or_rss_promotion_allowed = false
+immutable_archive_complete = false
+silent_retry_allowed = false
+
+decision = "pass-focused-host-open-published-072-compatibility-and-rollback"
+claim_boundary = "The exact I73/C73 integrated candidate passed equal-work goodput, CPU/op, and p99 guards at all three frozen rates. This qualifies the focused host comparison and opens published-0.72 compatibility/rollback work. It does not promote RSS or allocation, finalize C73, authorize long runs, or establish a release numerical improvement claim."
+archive_boundary = "The GitHub artifact and a local downloaded copy are digest-bound here, but provider retention is not an immutable release archive. Archive materialization remains mandatory before tagging."
+next_evidence = "Build and identify the real v0.72.0 tag artifact and exact C73 binary, then execute the preregistered empty-store, old-write/new-read, restart, rolling, HC/1, HC/2, RESP, tag, TTL, tenant, durable, management route/asset, and same-disk rollback-or-loud-refusal cells."
+
+[[rate_result]]
+rate = 5000
+complete_pairs = 5
+operations_per_role = 50000
+goodput_relative_regression = 0.000049
+cpu_per_operation_relative_regression = 0.003223
+p99_relative_regression = -0.035530
+rss_after_relative_change = -0.000114
+peak_rss_relative_change = -0.000114
+passed = true
+
+[[rate_result]]
+rate = 12000
+complete_pairs = 5
+operations_per_role = 120000
+goodput_relative_regression = 0.000002
+cpu_per_operation_relative_regression = 0.004931
+p99_relative_regression = -0.001112
+rss_after_relative_change = 0.001568
+peak_rss_relative_change = 0.002475
+passed = true
+
+[[rate_result]]
+rate = 17000
+complete_pairs = 5
+operations_per_role = 170000
+goodput_relative_regression = -0.000044
+cpu_per_operation_relative_regression = 0.001237
+p99_relative_regression = 0.001430
+rss_after_relative_change = 0.003935
+peak_rss_relative_change = 0.003252
+passed = true

@@ -86,6 +86,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("perf-reference") => xtask::perf_reference::run(args.collect())?,
         Some("perf-runner-preflight") => xtask::perf::run_preflight(args.collect())?,
         Some("perf-budget-check") => xtask::perf_budget::run(args.collect())?,
+        Some("performance-contract-check") => xtask::performance_contract::run(args.collect())?,
+        Some("performance-local-context") => xtask::performance_local::run_context(args.collect())?,
+        Some("performance-local-receipt") => xtask::performance_local::run_receipt(args.collect())?,
+        Some("performance-overhead-screen") => xtask::performance_overhead::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
         Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
         Some("release-evidence") => xtask::release_evidence::run(args.collect())?,
@@ -141,7 +145,7 @@ fn print_usage() {
          cargo xtask memory-decision-check --release 0.71  # validate immutable D0-D4 proposal transitions\n  \
          cargo xtask memory-statistics-check --release 0.71  # validate the preregistered numerical decision contract\n  \
          cargo xtask allocator-capability-check --release 0.71  # validate allocator capability and portability claims\n  \
-         cargo xtask perf-memory-preflight --release 0.71 --profile memory-reference-071-v1  # fingerprint or block the numerical evidence host\n  \
+         cargo xtask perf-memory-preflight --release <0.71|0.73> --profile <memory-reference-071-v1|performance-reference-073-v1> [--output <path>]  # fingerprint or block the numerical evidence host\n  \
          cargo xtask memory-compat-check --release 0.71  # validate the 0.70/0.71 runtime and durable compatibility matrix\n  \
          cargo xtask memory-release-policy-check --release 0.71  # validate mandatory/no-win/deferred release dispositions\n  \
          cargo xtask memory-baseline-check --release 0.71 [--require-d0]  # validate B0/B1, scenario, archive, and D0 admission\n  \
@@ -158,6 +162,10 @@ fn print_usage() {
          cargo xtask perf-qualification --release 0.67.1 --profile reference-v1 --phase <context|finalize>  # validate a non-promotable dedicated host\n  \
          cargo xtask perf-reference --release 0.67.1 --profile reference-v1 --phase <propose|review|reviewed|activate|frozen-candidate>  # derive, review, activate, and prove the reference contract\n  \
          cargo xtask perf-budget-check --release <0.67|0.67.1> --profile <reference-v1|ci-shared>  # validate receipt-bound macro budgets\n  \
+         cargo xtask performance-contract-check --release 0.73 [--receipt <path>] [--require-ship]  # validate structural evidence; --require-ship additionally requires the archived final confirmation\n  \
+         cargo xtask performance-local-context --release 0.73 [--output <path>]  # capture a privacy-safe local host/source fingerprint\n  \
+         cargo xtask performance-local-receipt --release 0.73 --context <path> --binary <path> --scenario <path> --raw-series <path> --outcomes <path> --output <path> --attempt-id <id> --instrumentation-mode <mode> --run-order-seed <u64> --pair-index <n> --block-order <baseline_candidate|candidate_baseline> --candidate-role <baseline|candidate> --candidate-id <id> --started-at-utc <RFC3339> --result <success|failed|invalidated>  # hash inputs and emit a validated local receipt\n  \
+         cargo xtask performance-overhead-screen --release 0.73 --context <path> --binary <path> --output <new-dir> --pairs <n> --seed <u64> [--profile <instrumentation-overhead-073-v1|instrumentation-overhead-counters-only-073-v1|instrumentation-overhead-listener-noop-073-v1>]  # run append-only counterbalanced off/production local screening\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \

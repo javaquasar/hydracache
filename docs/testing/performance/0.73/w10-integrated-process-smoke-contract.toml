@@ -1,0 +1,59 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w10-integrated-process-smoke-073-v1"
+state = "preregistered-before-smoke-implementation"
+source_parent = "5556d174979c903c30e70f18da55b7271437bbb1"
+candidate_identity = "C73-provisional-1"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_ledger = "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml"
+local_qualification = "docs/testing/performance/0.73/w10-local-qualification-passed-132917fd.toml"
+scenario = "docs/testing/performance/0.73/w10-integrated-smoke-scenario.toml"
+test_file = "crates/hydracache-server/tests/performance_integrated_073.rs"
+runner = "scripts/perf/performance_integrated_smoke_073.py"
+profile_id = "integrated-smoke-073-v1"
+
+product_mutation_allowed = false
+public_api_change_allowed = false
+configuration_change_allowed = false
+wire_change_allowed = false
+durable_format_change_allowed = false
+performance_threshold_allowed = false
+host_dispatch_allowed = false
+long_run_allowed = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+
+real_daemon_required = true
+real_hc1_required = true
+real_mtls_hc2_required = true
+real_resp_required = true
+direct_surface_required = true
+management_truth_required = true
+durable_feature_required = true
+independent_process_per_cell_required = true
+prebuilt_binary_required = true
+complete_outcome_accounting_required = true
+failed_attempt_retention_required = true
+stderr_retention_required = true
+final_owner_reconciliation_required = true
+explicit_ignored_or_skipped_rejection_required = true
+canary_required = true
+
+cell_ids = ["event-delivery", "expiry-tag-accounting", "mixed-protocol", "durable-companion"]
+required_processes = 4
+operations = 1000
+payload_bytes = 4096
+key_cardinality = 256
+tag_cardinality = 16
+seed = 731001
+mixed_weights_percent = [35, 30, 15, 10, 5, 5]
+persistence_cells = ["off", "sync-acknowledged"]
+
+event_interaction = "Exercise shared core tags, shared HC2 Bytes, and the one-MiB outbound encoded-byte budget together through a real mTLS stream. Drain and stalled phases must preserve bytes/order and return live subscription, pending, and queued owners to zero on close."
+expiry_tag_interaction = "Exercise active expiry, tagged replacement, tag invalidation, idle, and refill through the client surface and local cache. Final entry/quota/tag/retained owners must reconcile exactly."
+mixed_protocol_interaction = "Run the frozen 35/30/15/10/5/5 operation allocation across real HC2, RESP, HC1, direct, tag, and TTL surfaces against one candidate process boundary where applicable. Record attempted, success, rejection, timeout, late, and incomplete by surface; aggregate success cannot hide a harmed surface."
+durable_interaction = "Run durable write/overwrite/read/reopen and confirmed GC as a separate sync-acknowledged companion. Preserve record/checksum/fsync semantics and compare no timing or residency number locally."
+canary = "HYDRACACHE_CANARY_DEFECT=W10 must either drop one scheduled outcome or retain one owner after close; the runner must fail with HC-CANARY-RED:W10."
+success_rule = "Every one of four independently started cells executes the exact scenario, reports complete zero-error outcome accounting, passes semantic assertions and cleanup/reconciliation, retains stdout/stderr and a receipt hash, and rejects the W10 canary."
+falsifier = "A fixture-only protocol substitute, zero executed cell, changed weights, pooled persistence, hidden failure, missing final owner checkpoint, or timing-based acceptance must fail the smoke."
+next_decision = "After implementation and one passing local smoke plus red canary, decide whether a protected-host I73/C73 focused contract is warranted. The smoke itself cannot authorize dispatch or a claim."

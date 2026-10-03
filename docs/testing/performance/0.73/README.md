@@ -1,0 +1,591 @@
+# HydraCache 0.73 local performance screening
+
+`local-screening-073-v1` is the first W0 contract. It makes local development evidence reusable
+without allowing a laptop, workstation, WSL, or shared runner to create a release performance
+claim.
+
+Validate the checked-in contract and example:
+
+```text
+cargo xtask performance-contract-check --release 0.73
+```
+
+Capture a privacy-safe local context before screening a candidate:
+
+```text
+cargo xtask performance-local-context --release 0.73
+```
+
+The generated `target/performance-evidence/0.73/local/context.json` binds the exact source SHA,
+dirty-tree state, OS/architecture, logical CPU count, and hashed CPU/toolchain identities. Raw CPU
+model text, hostname, username, home path, serial numbers, and network addresses are not retained.
+The fingerprint covers only stable identity: timestamps and source state do not silently turn the
+same host into a different machine.
+
+`baseline-identities.toml` distinguishes the annotated/peeled published `B72`, the post-publish
+branch root `R73`, and the still-unfrozen `I73`. `post-tag-delta.toml` classifies every path between
+`v0.72.0` and `R73`; the checker recomputes that Git diff and rejects missing, stale, or status-mismatched
+entries. The current ledger has no product-runtime or production-instrumentation path, so none of the
+post-tag changes is silently treated as an optimization baseline.
+
+`scenario-matrix.toml` preregisters the complete W2-W9 surface and wave coverage, concurrency/load
+lanes, mixed-runtime weights and evidence invariants. It intentionally remains in `pilot` state with
+stable rates and measurement windows marked `unmeasured`; candidate measurement is forbidden until
+baseline-only calibration and production-instrumentation overhead evidence freeze `I73`.
+
+`instrumentation-overhead.toml` freezes the off-versus-production design and inherits the 2%
+goodput and 3% CPU/request and p99 regression ceilings. Profile mode remains classification-only.
+Allocation and RSS limits are deliberately unmeasured blockers: baseline-only evidence must freeze
+them before five admitted qualification pairs can authorize `I73`.
+
+A bounded plumbing pilot can exercise each mode locally without producing an overhead claim:
+
+```text
+cargo run -p hydracache-loadgen --locked -- memory-efficiency --profile memory-efficiency-v1 --provider system --instrumentation-mode <off|production|profile> --output-dir target/performance-evidence/0.73/local/instrumentation-pilot/<mode>
+```
+
+This pilot proves the mode adapters, ordered phase timeline and artifact writing only. Its debug-build
+elapsed time is not a stable rate, threshold, qualification pair, or input to an `I73` freeze.
+With profile `instrumentation-overhead-073-v1`, each phase also emits a schema-validated
+`resource-series.jsonl` containing gross allocation bytes per operation and self-process RSS/peak
+RSS. The legacy `memory-efficiency-v1` output shape remains unchanged.
+
+After building the loadgen once and generating a clean context, run three local counterbalanced
+pairs with `cargo xtask performance-overhead-screen --release 0.73 --context <context> --binary
+<loadgen> --output <new-directory> --pairs 3 --seed <seed>`. The output directory is append-only;
+every subprocess retains stdout, stderr, receipt and resource-series digests. `screening.json`
+contains the per-mode distributions but explicitly marks thresholds `screening_only_unqualified`.
+
+To attribute the mutation/RSS deltas without paying for a dedicated-host run, repeat the same local
+screen with `--profile instrumentation-overhead-counters-only-073-v1`. This development-only
+variant retains the production counters but omits the async eviction listener. Its receipts are
+marked `diagnostic_only: true` and `counter_correctness_eligible: false`: removal accounting is
+intentionally incomplete, so the result may locate overhead but cannot prove correctness, freeze
+thresholds, or contribute to `I73`.
+
+The narrower `instrumentation-overhead-listener-noop-073-v1` diagnostic keeps the backend listener
+registered but replaces HydraCache's callback with a no-op. Comparing it with the counters-only
+profile separates backend notification cost from retained-byte accounting and async tag cleanup.
+It is likewise ineligible for correctness, thresholds, or promotion.
+
+The first three-pair release-build screen is retained in
+`local-overhead-screening-307b3500.toml`. It found no elapsed-time regression and no steady-read
+allocation delta, but it did find material mutation allocation and RSS deltas. The result is a
+negative, non-promotable blocker—not a threshold proposal. The next step is to isolate the
+production-only async eviction-listener cost before repeating the screen.
+
+That isolation is retained in `local-overhead-isolation-5264d96c.toml`. With production counters
+enabled and only the listener removed, median fill and expire/delete allocation deltas fell to zero;
+post-idle and peak RSS deltas fell to +1.4% and -1.8%. Refill retained a small +3.3% delta. The
+elapsed median moved +7.4%, but one fast production sample makes three short local pairs inadequate
+for a timing claim. The result attributes the large mutation/RSS cost to the listener and directs
+the next implementation step; it does not validate removal-counter correctness or unblock `I73`.
+
+The follow-up no-op-listener screen is retained in
+`local-overhead-listener-noop-5e101e69.toml`. Merely registering the backend listener reproduced
+fill allocation +23.9%, expire/delete allocation +25.8%, post-idle RSS +27.4%, and peak RSS +21.3%
+while steady reads remained unchanged. The callback is not free, but optimizing it alone cannot
+clear the blocker: the production redesign must avoid enabling Moka's listener-backed mutation path
+while preserving exact automatic-removal and tag-cleanup semantics.
+
+`proposal-registry.toml` records the resulting redesign as `D1 classified`, not `D2 authorized`.
+The locked Moka 0.12.15 source shows that enabling the future-cache notifier activates per-key
+locking on insertion and shared boxed notification futures on removal/update paths. The current
+0.12.16 API still has no nonblocking post-removal observer. Product mutation and candidate
+measurement therefore remain forbidden until a lab-only feasibility spike, recorded review, and
+pre-candidate allocation/RSS limits select or reject an exact alternative.
+
+The first backend feasibility result is retained in
+`notification-feasibility-bf9f1382.toml`. In three counterbalanced repetitions, registering a
+no-op listener increased median allocation per insert by 89.9% on Moka future and 72.8% on Moka
+sync; per remove it increased allocation by 33.3% and 11.4%, respectively. Sync reduced the
+incremental listener allocation by 24.3% for insert and 66.3% for remove, but did not eliminate the
+insert penalty and would change the backend's asynchronous semantics. The result rejects a sync
+migration as the instrumentation fix; it remains a diagnostic microprobe, not product evidence or
+authorization for D2.
+
+`notification-observer-requirements.toml` freezes the next lab step before implementation. A
+nonblocking callback is not sufficient by itself: delayed cleanup for an old entry must not remove
+tag membership belonging to a newer value under the same key. The prototype must therefore carry
+an immutable entry version, perform only bounded synchronous accounting in the observer, apply
+deferred tag cleanup conditionally by version, reject duplicate decrements, and make queue overflow,
+cancellation, or an incomplete drain fail an exact snapshot closed. The contract still forbids
+product mutation and candidate measurement until the recorded review and threshold freeze authorize
+D2.
+
+The executable reference model lives in `hydracache-loadgen::notification_observer`. It implements
+the version-conditional index, shared per-entry duplicate guard, preallocated bounded queue, dirty
+epoch, fail-closed exact snapshot, reconciliation, and shutdown drain without touching the product
+cache. Its local allocation probe can be run with:
+
+```text
+cargo run -p hydracache-loadgen --release --locked --bin hydracache-notification-observer-prototype -- --output target/performance-evidence/0.73/local/<new-receipt>.json
+```
+
+The receipt is diagnostic and non-promotable. It measures the reference publication/drain
+mechanism, not Moka automatic eviction or HydraCache product semantics.
+
+The exact-SHA reference run is retained in `notification-observer-prototype-9a2ca114.toml`. Both
+the atomic-counter control and the preallocated versioned observer recorded 0 gross allocated bytes
+per operation in all three repetitions. Elapsed values are retained for diagnostics but are not a
+timing claim: this tiny reference model does not include Moka automatic removal delivery. The result
+establishes that the HydraCache-side lifecycle can be allocation-free; the next uncertainty is the
+Moka observer seam itself.
+
+The first isolated Moka patch and its exact-SHA result are retained as
+`moka-post-removal-observer-0.12.15.patch` and `moka-observer-spike-5d560170.toml`. The patch adds a
+lab-only observer mode that keeps Moka's existing removal delivery but does not create the listener
+key-lock map. Insert allocation matched listener-off exactly at 400.44 B/op, compared with 755.74
+B/op for the listener. This confirms the fill owner. Observer removal still cost 2,700.16 B/op
+versus 2,276.23 off because this first patch intentionally retained boxed listener futures and
+cancellation delivery. All Explicit, Replaced, Expired, and Size causes were observed. The next
+spike removes that second mechanism without altering the production dependency.
+
+Prepare either patch in a fresh ignored directory with
+`scripts/prepare-moka-observer-spike.ps1`. The first patch is the default; pass
+`-PatchFile docs/testing/performance/0.73/moka-post-removal-observer-direct-0.12.15.patch` for the
+direct observer that bypasses both key locks and listener futures. The standalone locked harness in
+`tools/moka-observer-spike` keeps this dependency experiment outside the workspace and product
+`Cargo.lock`.
+
+The cumulative direct-observer result is retained in `moka-observer-direct-779849b6.toml`. The
+observer matched off at 400.69 B/op for insert. For remove it measured 2,275.41 B/op against
+2,287.78 off; this small negative delta is treated as no detected allocation penalty, not as an
+improvement. The harness also connected real Moka replacement callbacks to the versioned cleanup
+model and proved that delayed cleanup for version 41 cannot remove version 42's membership. The lab
+implementation is complete. This remains historical lab evidence: it did not authorize itself and
+does not become a numerical claim after the later D2 decision.
+
+`notification-observer-d2-review.toml` is the machine-checked review candidate. It proposes a 15%
+minimum reduction in the primary fill-allocation metric from the smallest baseline-only observed
+listener overhead of 23.892%. Unaffected allocation cells use `max(3%, 16 B/op)` and post-idle/peak
+RSS use `max(5%, 1 MiB)` as conservative guards inherited from the reviewed 0.71 practical-effect
+contract. Candidate observer measurements are listed separately and are explicitly excluded from
+threshold derivation. The project selected the proposal-scoped single-maintainer path. Thresholds
+are frozen against the earlier `1e9fd748` commit. The later dependency decision authorizes product
+integration but still does not authorize candidate measurement.
+
+`single-maintainer-review-policy.toml` records the exception and its compensating controls. It
+requires separate governance, dependency, implementation, and measurement commits; append-only
+attempt retention; dedicated-host qualification; explicit self-review wording; panic/reentrancy
+falsifiers; and a demonstrated rollback. It does not permit describing the result as independently
+reviewed.
+
+`moka-fork-decision-352e53fa.toml` records the resolved dependency choice. The project-owned fork
+is distributed as exact crates.io package `hydra-moka =0.12.15-hydra.1` with registry checksum
+`7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a`. Its runtime observer source
+remains full revision `352e53faa480c9997272b9c70798dd5b5c15d581`, based on upstream Moka
+`v0.12.15` at `616473ee923f4cd1429b3d8eb3be7df3eb9906b1`. The receipt binds the source tree,
+stable patch id, checked-in prototype-patch digest, fork `Cargo.lock`, CycloneDX 1.5 SBOM, license,
+MSRV, maintenance cadence, advisory policy, and one-commit crates.io rollback. Full Moka tests,
+Clippy, package verification, all 80 valid feature combinations, `cargo deny`, the isolated
+HydraCache harness, panic containment, and Windows/Linux x86_64/Linux aarch64 checks passed. D2 now
+allows the separately committed production integration; measurements remain closed until that
+integration passes product-level correctness and local admission.
+
+`moka-post-removal-observer-upstream-draft.md` supplied the concrete API proposal later posted as
+discussion `moka-rs/moka#606` and draft pull request `#607`. The dependency receipt explicitly
+records their disposition as pending, so neither the fork nor D2 can be mistaken for upstream
+acceptance.
+The hardened fork contains panic containment and an explicit nonblocking/non-reentrant callback
+contract; HydraCache still has to prove its own product-level reentrancy and shutdown behavior.
+
+`w10-long-run-analyzer-correction-36278780653.toml` retains a later tooling finding against the
+complete six-hour packet. The original analyzer randomized absolute RSS/PSS levels before assigning
+new time coordinates, which erased the trend and produced a purported upper bound below its own
+Theil-Sen point estimate in both roles. Commit `3e603b3a` replaces that operation with the existing
+time-preserving moving-block bootstrap of adjacent rates. Offline reanalysis independently matched
+the original campaign and all twelve nested hashes, changed no raw observation, workload,
+threshold, identity, block size, seed, or iteration count, and performed no retry. Corrected
+RSS/PSS upper bounds are 117.0801 B/s for I73 and 62.7351 B/s for C73, so all frozen six-hour guards
+pass. The original failed receipt remains append-only; the correction opens D4 review only and does
+not itself authorize confirmation, a performance claim, or finalization of the later registry
+distribution identity.
+
+`notification-observer-product-73fc38a1.toml` records that product admission. Implementation commit
+`73fc38a131d26e78b246fe93d5edd71d33796bbf` pins the fork, replaces the async eviction listener with
+a synchronous post-removal observer only when memory instrumentation is enabled, versions entries
+and tag memberships, defers conditional cleanup through a bounded 4,096-ticket queue, and makes
+dirty or pending epochs fail exact snapshots closed. The existing 72-byte `CacheEntry` estimate is
+preserved by storing tags as a boxed slice. Full tests, focused memory/concurrency/model tests,
+normal and instrumentation-lab Clippy, feature-leak checking, `cargo deny`, documentation contracts,
+and the load-generator observer model passed. A detached worktree at parent commit `03f89354` also
+passed the pre-observer check and memory-footprint suite, demonstrating the crates.io-Moka rollback.
+
+The receipt also discloses a preliminary D2 file-ledger omission: several support files required by
+the already-authorized surfaces were not listed before implementation. The exact changed-file set
+and scope adjudication were recorded before any candidate measurement; thresholds and public API
+were unchanged. Product correctness admission now allows append-only local candidate screening as
+non-promotable rejection evidence. `candidate_measurements_allowed` remains false for dedicated or
+promotable evidence until the host profile is admitted and the full D3 campaign runs.
+
+`local-observer-product-screening-06a8bd95.toml` retains the resulting local comparison. We rebuilt
+the pre-observer control at exact commit `03f89354` and the admitted candidate at `06a8bd95`, then
+ran five counterbalanced off/production pairs for each source on the same privacy-safe host
+fingerprint with seed 7302. Candidate production fill allocation fell from 3,040.38 to 2,479.31
+B/op (`-18.45%`), clearing the frozen 15% local rejection minimum, while the within-candidate fill
+overhead was approximately zero. Expire/delete fell 26.23%, refill 24.95%, post-idle RSS 23.89%,
+and peak RSS 19.50%; steady-read allocation increased by only 1.25 B/op (0.40%). The summary binds
+both clean source contexts, binaries, raw `screening.json` digests, and the unchanged thresholds.
+It is still `promotable: false`: the campaigns were sequential on a local Windows workstation and
+do not replace admitted-host calibration, confidence intervals, CPU/p99 gates, or D3 qualification.
+
+`statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
+retention, five-pair minimum, throughput/CPU/p99 guards, and the single-maintainer-reviewed
+allocation/RSS proposal before product mutation. `host-profile.toml` is a requirement template,
+not an admitted machine: it forbids candidate measurement until a new dedicated-host fingerprint,
+serialized lease, pre/post calibration, dependency decision, and production-instrumentation gates
+pass.
+
+Validate a generated receipt:
+
+```text
+cargo xtask performance-contract-check --release 0.73 --receipt target/performance-evidence/0.73/local/<attempt>/receipt.json
+```
+
+This command validates receipts produced by `performance-local-receipt`. The per-attempt
+`receipt.json` written by `performance-overhead-screen` is a loadgen memory-efficiency receipt with
+a different schema; the screen command validates that receipt internally and binds its digest in
+`screening.json`. Do not pass the loadgen receipt to `performance-contract-check --receipt`.
+
+Generate that receipt with `cargo xtask performance-local-receipt`. The command takes the context,
+prebuilt binary, frozen scenario, raw-series and outcome JSON paths plus the pair metadata shown by
+`cargo xtask --help`; it hashes all file inputs and refuses schema or accounting violations before
+writing the receipt. This keeps manual hashes and copied host/source identities out of the workflow.
+`local-screening-outcomes.example.json` provides the required accounting shape for runner adapters;
+real attempts replace its counts and retain every non-success outcome.
+
+Every receipt binds the exact source, prebuilt binary, scenario, host fingerprint, raw series,
+instrumentation mode, pair order, and complete operation outcomes. Failed and invalidated attempts
+remain append-only. Local receipts always carry `promotable: false` and
+`numerical_claim_eligible: false`; `--require-ship` therefore fails until later W0/W10 contracts
+add dedicated-host and integrated-candidate evidence.
+
+The first account-backed step is intentionally cheaper than D3. The manual
+`Performance Host Admission 0.73` workflow targets the repository's Linux x86_64 self-hosted
+runner through the `hydracache-release` label and the protected `performance-reference-073`
+environment. It captures fresh pre/post host fingerprints and five-sample calibrations around an
+exact-source release load-generator build, holds one serialized lease through workflow concurrency,
+and uploads an immutable admission packet. The packet explicitly keeps
+`candidate_measurement_authorized: false`: it must be reviewed and bound into the checked-in host
+contract before the five-pair observer qualification is dispatched. The old 0.71 admission is not
+reused even when both workflows happen to land on the same physical machine.
+
+Run `36060837195` completed that admission at source `3ba09fcc`. The pre/post fingerprint was
+`sha256:702282...465d`; calibration spread was 3.05% before and 1.49% after the release build,
+inside the frozen 5% ceiling. `host-admission-3ba09fcc.toml` binds the raw packet and retains the
+two earlier failed run IDs: both exposed an unsupported `pidstat --version` probe and neither
+started candidate measurement. The host is now eligible, but candidate measurement remains closed
+until baseline-only pilots freeze scenario windows and stable offered rates.
+
+`baseline-pilot-contract.toml` preregisters the first such pilot. It uses the standalone
+`tools/performance-observer-073` harness to run the same 40% get / 25% tagged-put / 15%
+remove-refill / 10% tag-invalidate-refill / 10% TTL-put workload in off and production modes.
+Four offered rates receive three counterbalanced, independently started five-second windows each.
+The pilot can select an I73 knee and the 25%/60%/85% D3 rates, but it carries no candidate role,
+cannot change thresholds, and remains non-promotable.
+
+Run `36064788229` executed that contract at exact source `4ba93a1a`. All 24 attempts completed,
+both instrumentation modes sustained at least 99.96% of every offered rate, p99 remained below two
+milliseconds, and the host passed its pre/post calibration boundary. Nevertheless, none of the four
+rates was eligible: production exceeded the frozen 3% CPU-per-operation ceiling by 4.14%, 6.46%,
+10.01%, and 5.27%. Production was slower in CPU time in all 12 paired observations, independent of
+which mode ran first, while its allocation cost was consistently about 20 bytes per operation.
+`baseline-pilot-insufficient-4ba93a1a.toml` binds the retained artifact and records the result as
+negative baseline evidence. I73 remains unfrozen, candidate measurement remains closed, and the
+ceiling is unchanged. The next step is a short four-mode attribution run, not an unrecorded retry.
+
+`cpu-attribution-contract.toml` freezes that diagnostic before execution. At 10,000 operations per
+second it runs five independent, Williams-counterbalanced blocks across `off`, `counters-only`,
+`observer-noop`, and `production`. The adjacent deltas distinguish counter work, backend observer
+registration/delivery, and the real HydraCache callback. The two ablations are deliberately
+incorrect configurations, so the workflow has no numerical acceptance threshold and cannot freeze
+I73; it succeeds only when all attempts and the admitted-host calibration envelope are complete.
+
+Run `36066691730` completed all 20 attempts at exact source `ed339846`; pre/post calibration
+spread was 4.27% and 2.09%, inside the unchanged 5% bound. Counter-only CPU was 0.20% below off,
+which is classified as no detected counter cost. Empty observer delivery added 1.42%, and the full
+callback/cleanup path added a further 1.99%. The complete production path was 3.24% above off and
+allocated 20.23 additional bytes per operation. `cpu-attribution-ed339846.toml` binds the raw
+packet. The result authorizes only a local optimization of the empty-drain fast path; it does not
+accept production overhead or reopen candidate measurement.
+
+Commit `affe4390` implements the bounded local follow-up: `RemovalObserver::drain` now compares its
+accepted and acknowledged sequences before taking the async receiver mutex. A test-only acquisition
+counter proves that empty drains skip the lock, pending work still forces one acquisition, and the
+next empty drain skips it again. The existing duplicate, saturation, pending-barrier, versioned-tag,
+memory-footprint, and exact-reconciliation suites remain green. The checked-in
+`removal-drain-fast-path-affe4390.toml` receipt authorizes only a repeat of the unchanged
+baseline-only contract; it does not authorize candidate data or change the 3% CPU ceiling.
+
+Run `36067885432` repeated that unchanged contract. The fast path moved the 10,000 and 20,000
+rates inside the CPU ceiling at 2.80% and 2.08%, while 2,500 and 5,000 both remained at 3.52%.
+With two stable rates instead of the required three, the workflow correctly retained another
+`insufficient-baseline` packet and left I73 unfrozen. The result is progress, not acceptance.
+
+`removal-queue-contract.toml` freezes the next local step. It replaces the bounded Tokio mpsc and
+its async receiver mutex with the already-locked `crossbeam-queue 0.3.12` `ArrayQueue`, preserving
+the 4,096-ticket bound, nonblocking callback, duplicate/version rules, dirty-on-overflow behavior,
+and accepted/acknowledged barrier. No host repeat is allowed until all local correctness,
+reconciliation, clippy, standalone-harness, and supply-chain gates pass.
+
+Commit `daffd71b` implements that contract. Publication now uses a preallocated bounded
+`ArrayQueue`; draining uses a single atomic consumer claim whose RAII guard releases the claim even
+when the future is dropped. A busy consumer never acknowledges another consumer's work, so the
+accepted/acknowledged exactness check continues to fail closed. The queue capacity, overflow and
+slot-collision dirty behavior, version-conditional tag cleanup, and reconciliation path are
+unchanged. Focused observer, memory-footprint, accounting, formatting, Clippy, standalone-harness,
+and supply-chain checks passed.
+
+`removal-queue-product-daffd71b.toml` records the implementation and one scope variance: the
+standalone harness lockfile also had to record the exact dependency because it resolves the
+workspace crate under `--locked`. This is local correctness admission, not performance evidence.
+It authorizes only another run of the unchanged baseline-only contract; the 3% CPU ceiling and the
+minimum of three stable offered rates remain frozen.
+
+Run `36069607878` executed that repeat at exact source `90a40510`. All 24 attempts completed and
+pre/post calibration spreads were only 0.23% and 0.15%. The 10,000 and 20,000 rates passed at 2.48%
+and 0.99% CPU overhead, but 5,000 narrowly missed at 3.23% and 2,500 measured 7.04%. The result
+therefore retains exactly two stable rates and remains insufficient. A duplicate manual dispatch,
+run `36069619626`, was cancelled before its job started; it is not a hidden measurement retry.
+
+`baseline-pilot-insufficient-90a40510.toml` binds the full packet. The stronger high-rate result is
+consistent with less drain synchronization work, but it does not prove that the queue caused the
+change or justify dropping low rates. `removal-sequence-contract.toml` preregisters the next bounded
+local step: replace two checked atomic CAS loops with single `fetch_add` operations while preserving
+dirty-on-overflow and every exactness rule. No further host run is allowed until those local gates
+pass.
+
+Commit `549fbaeb` implements that micro-optimization. The returned pre-increment value detects
+`u64::MAX`; wrap immediately marks the epoch dirty, and `ensure_clean` checks dirty before comparing
+the now-wrapped sequences. A new test forces overflow on both accepted and acknowledged counters,
+proves that equal wrapped values cannot look exact, and proves that only reconciliation restores a
+clean state. All preregistered local gates passed. `removal-sequence-product-549fbaeb.toml` therefore
+authorizes one unchanged baseline-only repeat, not a candidate campaign or numerical claim.
+
+Run `36070743841` retained a third insufficient v1 packet. Only 20,000 operations/second passed;
+CPU overhead was 6.62%, 10.13%, 5.46%, and 1.63% across the four rates. All attempts completed and
+pre/post calibration spreads remained below 1.21%. The immediately preceding run had measured
+3.23% at 5,000 and 2.48% at 10,000, so the new packet does not support a causal regression claim for
+the two-instruction sequence change. The v1 estimator uses a ratio of independently summarized mode
+medians from only three pairs; its observed repeatability is now a falsified assumption.
+
+`baseline-pilot-v2-contract.toml` corrects the method without relaxing it. The workload, offered
+rates, seed, outcome rules, 2% goodput ceiling, 3% CPU and p99 ceilings, and three-stable-rate rule
+remain unchanged. V2 increases each cell from three five-second pairs to five ten-second pairs and
+aggregates within-pair differences with the already-frozen Hodges-Lehmann estimator. Its workflow is
+manual-only, so ordinary branch pushes cannot spend the dedicated-host budget. The incorrect-SHA
+dispatch `36070717512` was cancelled before environment approval and executed no job.
+
+Commit `4979e2e1` implements v2 without touching product code. The harness passes its profile id to
+every independently started process, retains pair/repeat identity, computes each relative or
+absolute overhead inside the pair, and then applies the one-sample Walsh-average Hodges-Lehmann
+estimator. It hard-rejects reduced repeats, windows, rates, warmup, or a different seed. Synthetic
+unit tests cover estimator construction and regression signs; workflow/contract tests require the
+protected lane and absence of a push trigger. `baseline-pilot-v2-product-4979e2e1.toml` admits one
+first v2 run and no candidate measurement.
+
+Run `36072021641` executed v2 at exact source `72d491ac`. All 40 attempts completed. Paired CPU
+overhead was 3.85%, 1.23%, 3.86%, and 0.94%; only 5,000 and 20,000 operations/second passed. The
+10,000 cell contained one 13.61% pair, but the Hodges-Lehmann result remained 3.86%, close to three
+other positive pairs, so the outlier did not decide the cell alone. P99, goodput, and calibration
+passed. `baseline-pilot-v2-insufficient-72d491ac.toml` therefore retains a higher-power negative
+result with I73 still unfrozen.
+
+The next local target is now narrower and evidence-backed. Removal accounting updates eight
+retained-memory atomics; each currently uses a checked compare-and-swap loop while enclosed by an
+active mutation guard. `memory-counter-atomic-contract.toml` permits replacing only those additions
+and subtractions with one atomic operation plus wrap detection. Overflow or underflow must fault
+before the guard releases quiescence, so an exact snapshot cannot observe a wrapped value as clean.
+Active-mutation, version, epoch, public estimates, workload, and thresholds remain untouched.
+
+Commit `a205ce0a` implements that boundary exactly. Each retained counter now uses one `fetch_add`
+or `fetch_sub`; the returned old value decides whether the permanent fault bit must be set. Forced
+overflow and underflow tests keep the mutation guard alive and prove that `barrier` sees
+`CounterFault`, not merely `NotQuiescent`, before guard release. Capture also refuses the wrapped
+state, and the fault remains after release. The active-mutation, version, and epoch counters keep
+their checked CAS algorithms because their synchronization windows are not interchangeable with
+data-counter accounting. `memory-counter-atomic-product-a205ce0a.toml` retains the full local gate
+receipt and authorizes one unchanged, manual v2 baseline repeat; it makes no speed claim itself.
+
+Run `36073786075` executed that repeat at exact source `2daccb47`. All 40 attempts succeeded and
+pre/post calibration spreads were 2.67% and 2.08%, but only 20,000 operations/second passed. The
+paired CPU estimates were 3.53%, 4.69%, 4.44%, and 1.80%; the unchanged gate therefore keeps I73
+unfrozen. The apparent loss of the previously stable 5,000 cell is not attributed to the counter
+change because the two campaigns are not a paired code comparison. It is nevertheless a complete
+negative result and is not rerun. `baseline-pilot-v2-insufficient-2daccb47.toml` retains the packet
+identity, all pair-level CPU deltas, and the decision to return to local attribution.
+
+The allocation signal is more repeatable than the cross-run CPU differences: production remained
+about 20.1--20.5 bytes per operation above off at every offered rate. That observation does not by
+itself prove that allocation owns the CPU gap, but it is a concrete owner candidate. The next step
+is diagnostic-only local isolation of observer delivery and cleanup allocation; no further product
+micro-optimization or dedicated-host repeat is authorized until that cost has an owner.
+
+`observer-allocation-attribution-contract.toml` preregisters that local experiment. It keeps the
+mixed workload intact and adds five isolated operation families, runs five counterbalanced repeats
+of the existing four modes, and retains 120 process receipts. Only gross allocation is interpreted;
+Windows-local CPU and RSS are explicitly unavailable, and the incomplete counters-only/noop modes
+cannot support correctness or release claims. The experiment may identify an owner, but cannot
+authorize its own product change or another reference-host run.
+
+The exact-source local run completed all 120 attempts. Counters-only and get stayed near off. The
+noop observer added 79 B/op on replacement, 81 B/op on remove/refill, 118 B/op on tag invalidation,
+and 76 B/op on TTL puts. Production callback work did not own that positive delta; the remaining
+off-to-production costs were concentrated in remove/refill (+76 B/op) and tag invalidation/refill
+(+86 B/op), producing +24.80 B/op in mixed. Source inspection closes the attribution loop: pinned
+Moka invokes the observer with `entry.value.clone()`, while `CacheEntry::clone` deeply clones its
+`Box<[String]>` tags. `observer-allocation-attribution-2c37d2f1.toml` retains exact medians, binary
+and result hashes, and prohibits a host repeat. The next candidate is shared immutable entry tags,
+validated locally before another reference-host minute is authorized.
+
+`shared-entry-tags-contract.toml` preregisters that ownership change. The internal entry and cleanup
+ticket may share `Arc<[String]>`, but public event payloads remain owned strings, estimator schema
+and values remain frozen, queue capacity and dirty/overflow behavior cannot move, and the callback
+still cannot await or block. Correctness gates and the exact 120-process local matrix are required;
+even a successful local result does not automatically authorize another host run.
+
+Implementation `947e624d` passed those correctness gates and the unchanged 120-process matrix.
+The mutation-only `counters-only -> observer-noop` deltas moved from +76--118 B/op to -6.48--+1.69
+B/op, while get remained neutral. Remove/refill moved from +76.17 to -1.99 B/op off-to-production,
+tag-invalidate/refill moved from +85.71 to +14.83 B/op, and mixed moved from +24.80 to -25.85
+B/op. `shared-entry-tags-product-947e624d.toml` retains the exact implementation parent, binary and
+result hashes, all scenario deltas, and the interpretation boundary: this proves locally that the
+deep-clone cost moved, not that CPU or RSS improved. The receipt separately authorizes exactly one
+unchanged manual baseline-v2 repeat at the exact source containing the receipt; it does not permit
+an automatic run, altered thresholds, or a retry selected after seeing the result.
+
+That one authorized repeat is run `36077381099` at exact source `e757556d`. All 40 attempts passed,
+and pre/post calibration spread was 0.20%/0.44%. Unlike the earlier negative campaigns, every rate
+passed: paired CPU overhead was 0.052%, 0.090%, 0.167%, and 0.594% at 2,500/5,000/10,000/20,000
+operations per second. Production allocation was 25.80--26.95 B/op below off at every rate, while
+goodput and p99 remained inside their frozen guards. `baseline-pilot-v2-passed-e757556d.toml`
+retains the run, artifact, binary, host, manifest, calibration, and pair identities. I73 is now
+frozen at `e757556d`; the selected knee is 20,000 operations/second and the preregistered 25/60/85%
+D3 cells are 5,000/12,000/17,000. Candidate measurement is open only for separately sealed D2
+proposals using this exact baseline, the unchanged thresholds, and at least five counterbalanced
+I73/C73 pairs. Earlier negative packets remain in the ledger and are not rewritten as code-effect
+comparisons.
+
+`w1-owner-classification-contract.toml` opens the next release step without opening a candidate. It
+maps W2--W9 to concrete owners and existing evidence, then records only the missing signals. Exact
+retained snapshots, HC/2 live-owner counters, durable logical bytes, and management bounds are
+reused; allocator and anon/file page ownership stay external; profile stacks stay under the
+separate `I73-profile` identity. The contract forbids product mutation and dedicated-host runs. A
+surface reaches D1 only with a reproducible local probe and falsifier, and a later D2 proposal must
+still name one owner, one primary metric, exact files, and rollback before observing candidate data.
+
+The same push exposed a separate cost-control issue: the host-admission workflow still had an
+automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
+cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like
+pilot v2, manual-only; a subsequent ordinary push created no performance run.
+
+`w10-d4-registry-transition-9f13ee15.toml` closes the supply-chain review raised by the corrected
+six-hour analysis. The measured Moka Git revision and published `hydra-moka 0.12.15-hydra.1` have
+identical canonical manifests for all 52 runtime source files, and the release manifest equals the
+registry `Cargo.toml.orig`. That is strong source-equivalence evidence, but it is not an exact
+binary-identity proof: the Cargo package/source identity and root lockfile changed. The receipt
+therefore preserves the corrected old qualification without transferring it, keeps numerical and
+archive claims closed, and requires a new six-hour plus 24-hour campaign only after every remaining
+publication input has been frozen. Protected-host dispatch before that final freeze is rejected as
+avoidable spend.
+
+`w10-long-run-qualification-v2-contract.toml` binds the replacement campaign to publication-freeze
+commit `16d2e98b`, its tree and root-lock digest, plus the exact registry checksum for
+`hydra-moka 0.12.15-hydra.1`. It inherits the complete v1 workload, duration, estimator, seed,
+threshold and failure policy through a machine-checked normalization; only the candidate identity
+changes. The runner now targets this final registry candidate, while the offline reanalyzer retains
+an explicit old-C73 constant so run `36278780653` remains independently reproducible.
+
+The first v2 dispatch, run `36404123541`, was rejected before product checkout because the manually
+submitted tooling SHA had been incorrectly reconstructed from a short prefix. No product worktree,
+build, canary, or long-running role started. The always-path retained two blocked-host calibration
+diagnostics from the stale self-hosted checkout; they are not measurement evidence. Receipt
+`w10-long-run-v2-dispatch-rejected-36404123541.toml` binds the artifact and both files by SHA-256
+and permits one corrected pre-product dispatch using the exact value returned by `git rev-parse`.
+
+Two later attempts remain part of the same append-only history. Run `36404461429` stopped while
+building the C73 standalone harness because one shared lockfile could not represent both frozen
+product graphs under `--locked`; no performance observation was produced. Run `36457014494` then
+completed the full I73 role but rejected C73 before server start because the harness still admitted
+the historical candidate SHA. That attempt also exposed a false-positive negative canary, which had
+treated any producer failure as proof that the intended incomplete packet was rejected. The
+role-specific lock selection, final-candidate harness identity and fail-closed canary were corrected
+without changing either product tree, workload, duration, estimator, seed or threshold. Both failed
+artifacts remain retained and cannot be spliced into the successful campaign.
+
+Run `36532416869` is the first complete qualification of the final registry candidate. The canary
+reached the intended missing-reconciled-checkpoint defect and was rejected for that defect; all four
+calibrations matched the admitted host and lease; and both serial roles completed 259.2 million
+operations with 362 checkpoints, zero errors, zero timeouts and zero rejections. The downloaded ZIP
+SHA-256 matched GitHub's artifact digest. Independent local reanalysis matched every embedded
+receipt, checkpoint, stdout/stderr and calibration digest and reproduced all five green guards.
+
+C73 goodput changed by -0.000004%, CPU seconds per operation increased by 0.316%, and p99 increased
+by 0.274%, all inside the frozen 2%/3%/3% budgets. Its RSS and anonymous-PSS Theil-Sen slope fell
+from 30.5605 to 21.0045 bytes/s; the decisive moving-block 95% upper bound fell from 86.3800 to
+61.7818 bytes/s, a 28.48% reduction. This is a passed six-hour qualification, not a completed
+release claim: it opens one separately authorized 24-hour confirmation for the exact same frozen
+identities and method. `w10-long-run-v2-qualification-passed-36532416869.toml` records that boundary;
+the resulting confirmation run is evaluated separately and `final_c73_allowed` remains false until
+its complete artifact passes independent verification.
+
+Run `36622527013` began that confirmation with the frozen identities. I73 completed the full
+24-hour role with 1.0368 billion operations and 1,442 checkpoints. C73 then remained healthy for
+352 checkpoints and 252,728,137 operations before GitHub Actions delivered an external
+cancellation at 5 hours 51 minutes. The partial role had no errors, timeouts, rejections or major
+faults, stderr was empty, and the immediate post-C73 calibration passed on the same host and lease.
+The workflow retained a complete-or-incomplete artifact whose external and completed-role nested
+SHA-256 values were independently verified. Because C73 produced neither a final receipt nor a
+campaign seal, the attempt is append-only diagnostic evidence: it cannot be promoted, spliced or
+used for a comparison.
+
+`w10-long-run-v2-confirmation-interrupted-36622527013.toml` records the failed boundary. The
+tooling-only correction keeps the six-hour workflow unchanged but runs future confirmation roles
+as two sequential jobs under one approval and host lease. A checksummed I73 continuation packet is
+verified before C73 may start; only the C73 job can seal the complete pair. Each job stays below
+29 hours, while product identities, order, workload, 24-hour duration, estimator, seed and
+thresholds remain frozen. No replacement run is automatic or authorized by this correction.
+
+## Durable W11 release archive
+
+GitHub Actions artifacts are a 30-day staging copy, not the permanent Release 0.73 record. The
+machine-readable policy is `release-archive-contract.toml`. If replacement confirmation run
+`36839197349` passes independent verification, W11 creates the append-only branch
+`evidence/0.73/w10-confirmation` and publishes the run-bound archive under
+`docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349/`. The branch retains original
+normal-sized provider archives, all accepted/rejected/interrupted attempt records, `SHA256SUMS`, an
+artifact manifest, sanitized replay inputs and a verification receipt for the outer downloads,
+nested hashes, I73-to-C73 handoff and frozen guards. Oversize originals use versioned immutable
+object storage and remain bound from the branch by permanent object identity and SHA-256.
+
+The archive branch is created only after the final artifact verifies and is never force-pushed.
+Before tagging, release evidence records its full commit SHA and manifest digest. The shipped
+release note must retain both the browseable branch link and commit-pinned links to the archive,
+manifest and `SHA256SUMS`; a moving branch URL or expiring Actions URL alone is insufficient.
+
+Replacement run `36839197349` completed both isolated 24-hour roles successfully. The I73 stage
+artifact and final artifact matched GitHub's external SHA-256 digests; all 13 continuation entries
+were byte-identical across the handoff; and independent local reanalysis reproduced both role
+receipts, 1,442 checkpoints per role, all four calibrations, the canary's intended rejection and all
+five comparison guards. Each role completed 1.0368 billion operations with zero errors, timeouts or
+rejections. Goodput changed by effectively zero (-0.0000000115%), CPU/operation increased 0.260%,
+and p99 improved 0.328%. The decisive RSS and anonymous-PSS 95% upper slope bound fell from
+30.1448 to 20.3181 bytes/s, 32.60% lower, while remaining a boundedness guard rather than a portable
+memory-improvement claim.
+
+The durable W11 archive is published at immutable commit
+[`570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`](https://github.com/javaquasar/hydracache/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349).
+It retains all eight provider ZIPs, including every failed, rejected and interrupted attempt, plus
+the final extracted packet, verification receipt, artifact manifest and complete `SHA256SUMS`.
+W10 is closed and `v0.73.0` points to exact candidate
+`d1db9937e61295341ac95f289bace275641b1650`.
+
+The first tag-triggered CI attempt is retained separately as
+`w11-tag-ci-rejected-37149833980.toml`: all executed jobs except the Redis release proof passed, but
+that job drifted to Rust/Clippy 1.99.0 and stopped before its Docker and resource checks. The
+tooling-only exact-SHA repair is retained as `w11-redis-proof-repair-passed-37150976176.toml`; it
+checked out the unchanged tag SHA, used reviewed Rust 1.94.0, and passed the previously skipped
+proof. Its complete workflow closed with 14 successful jobs, 27 conditionally skipped jobs and no
+failures or cancellations. These W11 records do not modify the immutable W10 measurement archive
+or promote the proof to a Redis performance comparison.

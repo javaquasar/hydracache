@@ -131,6 +131,49 @@ fn release_evidence_reports_every_manifest_work_item_exactly_once() {
 }
 
 #[test]
+fn active_ship_blocker_artifact_is_preserved_by_the_manifest_schema() {
+    let manifest = xtask::release_evidence::parse_manifest_text(
+        r#"
+schema_version = 1
+release = "0.73.0"
+plan = "docs/plans/0.73.md"
+
+[[work_item]]
+id = "W11"
+required_sources = ["docs/plans/0.73.md"]
+required_tests = []
+required_artifacts = ["docs/testing/rejected.toml"]
+active_ship_blocker_artifacts = ["docs/testing/rejected.toml"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        manifest.work_item[0].active_ship_blocker_artifacts,
+        ["docs/testing/rejected.toml"]
+    );
+
+    let repo = ScratchRepo::new();
+    let blocker = repo.root.join("docs/testing/rejected.toml");
+    fs::create_dir_all(blocker.parent().unwrap()).unwrap();
+    fs::write(&blocker, "ship_allowed = false\n").unwrap();
+    assert_eq!(
+        xtask::release_evidence::active_ship_blocker_problems(&repo.root, &manifest.work_item[0]),
+        ["active ship blocker artifact docs/testing/rejected.toml"]
+    );
+
+    fs::remove_file(blocker).unwrap();
+    assert!(xtask::release_evidence::active_ship_blocker_problems(
+        &repo.root,
+        &manifest.work_item[0]
+    )
+    .is_empty());
+}
+
+#[test]
 fn release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release() {
     let root = root();
     let current = xtask::release_evidence::build_report(&root, "0.64", None).unwrap();

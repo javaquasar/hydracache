@@ -1,0 +1,86 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w10-focused-host-comparison-073-v1"
+state = "preregistered-before-host-harness-implementation"
+candidate_identity = "C73-provisional-1"
+baseline_identity = "I73"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+runtime_patch_id = "9beb1a0e4891a25d7db939bc7d92953e393d7a0c"
+candidate_ledger = "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml"
+local_smoke_evidence = "docs/testing/performance/0.73/w10-integrated-process-smoke-passed-e192e615.toml"
+host_profile = "docs/testing/performance/0.73/host-profile.toml"
+host_admission = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml"
+baseline_freeze = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+scenario_matrix = "docs/testing/performance/0.73/scenario-matrix.toml"
+statistics = "docs/testing/performance/0.73/statistics.toml"
+
+product_mutation_allowed = false
+candidate_identity_change_allowed = false
+baseline_identity_change_allowed = false
+volume_reduction_allowed = false
+threshold_change_allowed = false
+host_dispatch_allowed_before_harness_local_receipt = false
+push_trigger_allowed = false
+silent_retry_allowed = false
+isolated_gain_addition_allowed = false
+allocation_or_rss_promotion_allowed = false
+published_072_compatibility_satisfied = false
+long_run_allowed = false
+candidate_is_final_c73 = false
+
+dedicated_admitted_host_required = true
+protected_environment_required = true
+serialized_lease_required = true
+common_harness_overlay_required = true
+overlay_identical_between_roles = true
+overlay_may_change_product_sources = false
+prebuilt_role_binaries_required = true
+binary_sha256_required = true
+scenario_sha256_required = true
+pre_post_calibration_required = true
+counterbalanced_order_required = true
+independent_process_per_role_required = true
+complete_outcome_accounting_required = true
+per_surface_guard_required = true
+raw_series_required = true
+failed_attempt_retention_required = true
+final_owner_reconciliation_required = true
+canary_required_before_dispatch = true
+
+profile_id = "integrated-focused-host-073-v1"
+instrumentation_mode = "production"
+rates_per_second = [5000, 12000, 17000]
+pairs_per_rate = 5
+window_seconds = 10
+warmup_operations = 5000
+run_order_seed = 731073
+operations_per_role = [50000, 120000, 170000]
+mixed_weights_percent = [35, 30, 15, 10, 5, 5]
+persistence_cells = ["off", "sync-acknowledged-companion"]
+unexpected_failures_allowed = 0
+
+primary_claim = "The exact integrated C73 candidate does not regress mixed-runtime goodput by more than 2%, CPU per completed operation by more than 3%, or p99 by more than 3% versus exact I73 at any frozen rate, while every protocol surface completes equal work and all final owners reconcile."
+resource_classification = "Allocation, RSS, peak RSS, page faults, and durable file-backed observations are retained as paired diagnostic series only. Their thresholds remain unresolved by the frozen single-maintainer review and cannot be promoted or used to rescue a failed primary guard."
+durable_companion_rule = "Run the same fixed-count sync-acknowledged write/overwrite/read/reopen/confirmed-GC companion once per independently started role process. Keep it separate from persistence-off mixed-runtime medians and require semantic equality before admitting a pair."
+overlay_rule = "Build one standalone harness revision outside both product trees, record its source hash, and bind it by path dependencies to each exact checkout. The overlay may contain only harness, runner, workflow, and evidence-validation code; copying or patching product source, manifests, lockfiles, configuration defaults, or generated wire code invalidates the campaign."
+pair_rule = "For each rate and repeat, alternate I73/C73 order from seed 731073. Both role processes use the same trace bytes, rate, warmup, duration, CPU/NUMA policy, system allocator, scenario, harness revision, and daemon/loadgen placement. Missing either role invalidates the pair."
+surface_rule = "Record attempted, success, rejected, timeout, late, and incomplete separately for HC2, RESP, HC1, direct, tag invalidation, and TTL/refill. Aggregate goodput cannot hide a nonzero error field or unequal per-surface work."
+calibration_rule = "Capture admitted host identity, mutable probes, lease, and calibration before and after the campaign block. Fingerprint, policy, lease, and calibration must remain within the frozen host-profile limits."
+selection_rule = "Apply the preregistered paired estimator to within-pair C73-versus-I73 differences at each frozen rate. Every primary guard and every semantic/resource-owner falsifier must pass; do not add isolated W2-W7 percentages or select a favorable rate after observation."
+failure_rule = "Retain every attempted process and pair. Any identity drift, overlay drift, missing outcome, per-surface harm, failed calibration, missing final checkpoint, canary survival, or primary regression rejects the focused candidate result and keeps long runs closed."
+success_rule = "Five complete counterbalanced pairs at each of all three frozen rates pass equal-work, per-surface, semantic, owner, host, goodput, CPU, and p99 guards. Success may open published-0.72 compatibility and rollback qualification; it does not itself finalize C73 or authorize a long run."
+next_evidence = "Implement and locally falsify the common standalone integrated harness plus manual-only protected workflow. Check in a tooling receipt with exact hashes before requesting a host dispatch."
+
+[[regression_budget]]
+metric = "goodput_operations_per_second"
+maximum_relative_regression = 0.02
+
+[[regression_budget]]
+metric = "cpu_seconds_per_completed_operation"
+maximum_relative_regression = 0.03
+
+[[regression_budget]]
+metric = "p99_latency_seconds"
+maximum_relative_regression = 0.03

@@ -1,0 +1,100 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-slow-consumer-profile-ff432801-v1"
+state = "local-application-slow-consumer-client-owned-and-bounded"
+contract = "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml"
+source_commit = "ff43280136644d887053b8f3a7642d54329e0756"
+profile_tool = "tools/hc2-connection-profile-073"
+binary_sha256 = "1f1de4353f262bffc1615287888d49ca1679909696818974e85d7d2cb24ed4d7"
+contract_sha256 = "37b9e3eca68091fbe82d531d009cf3419f2534c3289b70cde3fb735a70b691d8"
+tool_source_sha256 = "c087beafe93dfd6eb3873d526b2fd3fb44b3d45bac9d5d4ded4c846a8e95bb07"
+tool_lock_sha256 = "4c9c7d4ed4341f91c5a2f94560c4e86f4fcef1cd31c568693db771241761a893"
+pairs = 5
+attempts = 10
+failed_attempts = 0
+connections = 100
+subscriptions = 100
+mutations_per_attempt = 110000
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+server_queued_byte_claim_allowed = false
+release_numerical_claim_allowed = false
+control_invariant_passed = true
+treatment_invariant_passed = true
+close_invariant_passed = true
+stderr_empty = true
+raw_results = [
+  "pair1-drained.json:b66ad84da351ead0696a84b5a459da89f840e7eadff7dbb7a7e93bf42eebd6b8",
+  "pair1-unread.json:62ee45bbbf7e9715466b9e602107d6beaaa7e1210b3ad868910a5a9bed6c4766",
+  "pair2-drained.json:e3229c1e66fac80a06474f61944ae45bf9ea727b097e88a6316a10d3cf3502fe",
+  "pair2-unread.json:528026bee7f5a1ef58ba10e93d2db59901273a0fd6850d49e51f8c3220ff9a1c",
+  "pair3-drained.json:b59fcafc1857e2b2bb954109e073bec4563f172ee18fcc518e6f979ad8d10a5c",
+  "pair3-unread.json:4261c4ccd88280efc26ca7a7c342b0d915cc65763a1fa6c1e42874a5e8ca4978",
+  "pair4-drained.json:cdb0410478fd34d73c46adbc4868058c2aa9d866cd395c671317f98d8ff5b6c9",
+  "pair4-unread.json:3b11e01ebdae81bd456a4f6029ea1624c7081043deff88fbdd83237e8173b77f",
+  "pair5-drained.json:af62ce1ce985f055f97ca309873e38a397c68e1c20e85bf6e1b98da6f0d8fbc9",
+  "pair5-unread.json:27ff87c4bc608608733228087cecf8cde811215a54388068da0f6cc03d49203e",
+]
+median_paired_client_gross_allocated_delta_bytes = 20037582
+median_paired_server_gross_allocated_delta_bytes = -1829
+median_paired_client_working_set_delta_bytes = 21204992
+median_paired_server_working_set_delta_bytes = -57344
+median_paired_client_pagefile_delta_bytes = 21495808
+median_paired_server_pagefile_delta_bytes = -81920
+median_unread_events = 51300
+median_unread_dropped_events = 117494
+control_events = 110000
+control_dropped_events = 0
+interpretation = "With equal real-mTLS connections, subscriptions, keys, values, and 110,000 completed mutations, unread application receivers added about 20.0 MB of client allocation churn and 21.2 MB of client working set relative to drained receivers. Server allocation and working-set paired medians remained around zero. The retained owner is therefore the bounded client subscription path, while the transport reader continues to drain HTTP/2."
+fixture_correction = "The retained 0.71 helper opened 100 subscriptions but produced all mutations through clients[0]; HC/2 subscriptions are stream-local, so only one subscription received pressure. This profile uses one unique prefix and producer per connection, making all 100 consumers active pressure owners."
+boundedness = "Every unread run converged to 51,300 accepted events and 117,493-117,495 explicit drops across 100 clients; every drained run delivered 110,000 events with zero drops. The 1,024-item client queue is bounded, but mixed Event/Gap item sizes mean this result is not a byte cap."
+decision = "accept-application-slow-consumer-as-client-owned-no-server-candidate"
+next_evidence = "Preregister a raw HC/2 peer that completes handshake/subscription and then stops polling the HTTP/2 response stream. Use it only to decide whether the server's 16-item outbound channel needs a byte cap; do not reinterpret this application-consumer result as network backpressure."
+
+[[pair]]
+index = 1
+client_gross_allocated_delta_bytes = 19988199
+server_gross_allocated_delta_bytes = -3897
+client_working_set_delta_bytes = 21282816
+server_working_set_delta_bytes = -57344
+unread_events = 51300
+unread_dropped_events = 117493
+
+[[pair]]
+index = 2
+client_gross_allocated_delta_bytes = 20037573
+server_gross_allocated_delta_bytes = -5261
+client_working_set_delta_bytes = 20471808
+server_working_set_delta_bytes = 53248
+unread_events = 51300
+unread_dropped_events = 117494
+
+[[pair]]
+index = 3
+client_gross_allocated_delta_bytes = 20037582
+server_gross_allocated_delta_bytes = 488
+client_working_set_delta_bytes = 21204992
+server_working_set_delta_bytes = 98304
+unread_events = 51300
+unread_dropped_events = 117495
+
+[[pair]]
+index = 4
+client_gross_allocated_delta_bytes = 20086911
+server_gross_allocated_delta_bytes = 7864
+client_working_set_delta_bytes = 21258240
+server_working_set_delta_bytes = -94208
+unread_events = 51300
+unread_dropped_events = 117494
+
+[[pair]]
+index = 5
+client_gross_allocated_delta_bytes = 20087027
+server_gross_allocated_delta_bytes = -1829
+client_working_set_delta_bytes = 20721664
+server_working_set_delta_bytes = -98304
+unread_events = 51300
+unread_dropped_events = 117493

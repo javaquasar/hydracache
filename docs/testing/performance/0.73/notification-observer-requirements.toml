@@ -1,0 +1,65 @@
+schema_version = 1
+release = "0.73"
+contract_id = "notification-observer-requirements-073-v1"
+state = "local-screening-passed-awaiting-d3"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+prototype_scope = "completed-lab-prototype"
+d2_authorized = true
+product_mutation_allowed = true
+candidate_measurements_allowed = false
+local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
+review_status = "d2-authorized-pinned-fork"
+selected_direction = "post-removal observer with version-conditional deferred cleanup"
+
+owner_split = [
+  "memory counters are decremented synchronously from immutable removed-entry metadata",
+  "tag membership cleanup is deferred and conditional on the removed entry version",
+  "an exact quiescent snapshot drains through an acknowledged observer epoch or fails closed",
+]
+
+callback_constraints = [
+  "must run only after a logical removal wins",
+  "must not await or return a future",
+  "must not acquire Moka's listener-enabled per-key lock",
+  "must not allocate a boxed future or spawn one task per removal",
+  "must perform only bounded atomic accounting and bounded notification publication",
+]
+
+ordering_invariants = [
+  "every inserted entry carries an immutable monotonically unique entry version",
+  "a removal notification identifies the exact removed entry version",
+  "deferred cleanup removes a tag membership only when its recorded version matches the removed version",
+  "a delayed removal for version N cannot remove membership or accounting owned by version N+1",
+  "duplicate delivery is detected and cannot decrement counters twice",
+]
+
+delivery_invariants = [
+  "explicit remove, replacement, invalidation, flush, TTL expiry, and capacity eviction are observable",
+  "no acknowledged removal may be silently dropped",
+  "bounded queue saturation marks the observer epoch dirty and makes exact snapshot fail closed",
+  "shutdown either drains all acknowledged removals or reports an incomplete epoch",
+  "panic or cancellation cannot convert incomplete accounting into an exact snapshot",
+]
+
+required_falsifiers = [
+  "delay cleanup for version N until after version N+1 is inserted under the same key",
+  "deliver the same removal twice",
+  "saturate the cleanup queue",
+  "cancel during removal publication and during drain",
+  "expire and capacity-evict tagged entries without an explicit HydraCache remove call",
+  "request an exact snapshot while the observer epoch is dirty or not fully acknowledged",
+]
+
+compatibility_invariants = [
+  "public cache configuration and default behavior remain unchanged",
+  "value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged",
+  "the observer is not exposed as a general public event API",
+  "a Moka fork, patch, upgrade, or replacement remains a separately reviewed dependency delta",
+]
+
+prototype_exit = "The exact-SHA reference model and isolated Moka implementation passed the ordering, delivery, panic, feature, package, supply-chain, and supported-target gates required to authorize D2."
+implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
+implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
+local_screening_evidence = "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml"
+next_evidence = "Admit the dedicated Linux host, freeze scenario windows and stable offered rates, and run the preregistered D3 qualification. Every local result remains non-promotable."

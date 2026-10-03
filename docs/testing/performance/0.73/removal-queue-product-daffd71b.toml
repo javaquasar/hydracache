@@ -1,0 +1,92 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "removal-queue-product-daffd71b-v1"
+state = "local-correctness-passed-awaiting-baseline-repeat"
+contract = "docs/testing/performance/0.73/removal-queue-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-9bba762c.toml"
+implementation_commit = "daffd71bf71e3640f33c9ddfd190e5cbce61a0c8"
+implementation_parent = "3d1d9018cee87c76ffa0fcb7bfcec1ff4cd40e4b"
+reviewed_at = "2026-09-25"
+selected_dependency = "crossbeam-queue 0.3.12"
+queue_type = "crossbeam_queue::ArrayQueue"
+queue_capacity = 4096
+capacity_changed = false
+callback_may_block = false
+callback_may_await = false
+callback_may_allocate_queue_nodes = false
+duplicate_delivery_remains_idempotent = true
+overflow_marks_observer_dirty = true
+slot_collision_marks_observer_dirty = true
+accepted_acknowledged_barrier_preserved = true
+version_conditional_tag_cleanup_preserved = true
+reconciliation_recovery_preserved = true
+consumer_claim_cancellation_safe = true
+correctness_surface_changed = false
+public_api_changed = false
+thresholds_changed = false
+promotable = false
+numerical_claim_eligible = false
+candidate_measurement_authorized = false
+baseline_only_repeat_allowed = true
+scope_variance = "The preregistered product file ledger omitted tools/performance-observer-073/Cargo.lock. The standalone locked harness resolves the workspace hydracache crate and therefore had to record the new direct crossbeam-queue dependency at the already-selected exact 0.3.12 version. No harness source, threshold, scenario, public API, or product behavior outside the authorized queue replacement changed."
+race_argument = "accepted and acknowledged remain the exactness barrier. A drain that cannot acquire the single-consumer claim returns without acknowledging work, so ensure_clean fails closed. The RAII guard releases the claim when the drain future completes or is dropped; reconciliation waits for the claim before clearing the bounded queue and resetting the epoch."
+decision = "repeat-unchanged-baseline-only-contract"
+next_evidence = "Run observer-baseline-pilot-073-v1 unchanged on the admitted host. Freeze I73 only if at least three offered rates pass every original stability and overhead guard."
+
+changed_files = [
+  "Cargo.lock",
+  "Cargo.toml",
+  "crates/hydracache/Cargo.toml",
+  "crates/hydracache/src/removal_observer.rs",
+  "tools/performance-observer-073/Cargo.lock",
+]
+
+validation = [
+  "cargo test -p hydracache removal_observer --lib --locked: 5 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --features instrumentation-lab --locked: 6 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --features instrumentation-lab --locked: 4 passed",
+  "cargo check -p hydracache --lib --tests --features instrumentation-lab --locked: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "cargo fmt -p hydracache -- --check: passed",
+  "cargo fmt --manifest-path tools/performance-observer-073/Cargo.toml -- --check: passed",
+  "cargo deny check: advisories, bans, licenses, and sources passed",
+  "cargo xtask performance-contract-check --release 0.73: passed before receipt registration",
+  "cargo xtask doc-check: passed before receipt registration",
+]
+
+[[falsifier]]
+id = "bounded-nonblocking-publication"
+status = "passed"
+evidence = "The callback performs ArrayQueue::push into a preallocated 4,096-ticket queue and marks the observer dirty when push cannot be accepted; it has no await, lock, or unbounded queue allocation."
+
+[[falsifier]]
+id = "single-consumer-cancellation"
+status = "passed"
+evidence = "The unit test proves a second claim is rejected while the RAII guard is alive and succeeds after the guard is dropped."
+
+[[falsifier]]
+id = "empty-drain-claim-elision"
+status = "passed"
+evidence = "An empty drain does not acquire the consumer claim, pending work forces one claim, and the next empty drain leaves the count unchanged."
+
+[[falsifier]]
+id = "duplicate-and-saturation-fail-closed"
+status = "passed"
+evidence = "Duplicate delivery remains idempotent and a one-slot collision or full queue marks the observer dirty until reconciliation."
+
+[[falsifier]]
+id = "pending-work-not-hidden"
+status = "passed"
+evidence = "Exact state remains unavailable while accepted differs from acknowledged; failing to acquire the consumer claim does not advance acknowledged."
+
+[[falsifier]]
+id = "versioned-cleanup"
+status = "passed"
+evidence = "Delayed cleanup of an older entry version cannot remove the newer same-tag membership."
+
+[[falsifier]]
+id = "exact-reconciliation"
+status = "passed"
+evidence = "The memory-footprint and memory-accounting suites preserve exact reconciliation across explicit, replacement, expiry, capacity, tag, and flush paths."

@@ -205,6 +205,149 @@
       }
     },
     {
+      "path": ".github/workflows/compatibility-073.yml",
+      "purpose": "Run the exact published 0.72 to frozen 0.73 wire, durable and rolling compatibility matrix",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["compatibility-073"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["compatibility"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "compatibility": {"reason": "artifact identity uses the validated tooling SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-baseline-pilot-073.yml",
+      "purpose": "Run the serialized 0.73 baseline pilot and exact integrated comparison handoff",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["pilot", "integrated"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "integrated": "Reusable-workflow callers cannot declare timeout-minutes; performance-integrated-host-073.yml#compare owns the 180 minute timeout"
+      }
+    },
+    {
+      "path": ".github/workflows/performance-cpu-attribution-073.yml",
+      "purpose": "Capture protected-host CPU attribution evidence for the preregistered 0.73 branch",
+      "triggers": ["push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host"],
+      "classes": {
+        "core": ["attribute"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/performance-host-admission-073.yml",
+      "purpose": "Serialize host admission, compatibility and long-run dispatch for an explicit reviewed 0.73 tooling SHA",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["inputs.lease_owner", "performance-reference-073-host"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "authorize-long-run",
+          "admit",
+          "compatibility",
+          "long-run-qualification",
+          "long-run-confirmation-i73",
+          "long-run-confirmation-c73"
+        ],
+        "publish": []
+      },
+      "dependencies": {
+        "long-run-qualification": ["authorize-long-run"],
+        "long-run-confirmation-i73": ["authorize-long-run"],
+        "long-run-confirmation-c73": ["long-run-confirmation-i73"]
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "long-run-qualification": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the selected phase timeout",
+        "long-run-confirmation-i73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the I73 confirmation timeout",
+        "long-run-confirmation-c73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the C73 confirmation timeout"
+      },
+      "artifact_identity_exemptions": {
+        "compatibility": {"reason": "artifact identity uses the validated source SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-integrated-host-073.yml",
+      "purpose": "Execute the exact frozen I73 and C73 integrated same-host comparison",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host", "github.run_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["compare"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "compare": {"reason": "artifact identity uses the validated tooling SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-073.yml",
+      "purpose": "Execute serialized six-hour qualification or explicit 24-hour-per-role confirmation for frozen I73 and C73",
+      "triggers": ["workflow_call"],
+      "concurrency_markers": ["performance-reference-073-host", "github.run_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["qualify"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 2,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "qualify": "The phase-selected 900/3480 minute timeout expression is validated by the 0.73 performance contract"
+      },
+      "artifact_identity_exemptions": {
+        "qualify": {"reason": "artifact identity uses the validated tooling SHA and phase inputs plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
       "path": ".github/workflows/post-publish.yml",
       "purpose": "Verify published packages through a version- and SHA-scoped reusable workflow",
       "triggers": ["workflow_call", "workflow_dispatch"],

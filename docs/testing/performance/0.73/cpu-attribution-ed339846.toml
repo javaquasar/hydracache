@@ -1,0 +1,89 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-cpu-attribution-ed339846-v1"
+contract_id = "observer-cpu-attribution-073-v1"
+state = "complete-diagnostic"
+evidence_class = "dedicated_host_diagnostic_only"
+workflow_run_id = 36066691730
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36066691730"
+source_sha = "ed3398469c6a6eb4920a9d89831ded0dba470115"
+binary_sha256 = "153780b0ae4dfa7e4bb2c54a3f4becd12a8fcb788a4e47a4218a87d1f4327a79"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10836294071
+artifact_name = "performance-cpu-attribution-073-ed3398469c6a6eb4920a9d89831ded0dba470115-36066691730-1"
+artifact_sha256 = "bd1fcab55e1a44dc17eb955c677d60632f106e57fd5fd819783c570075f2da3e"
+campaign_manifest_sha256 = "d8f8e87e7304422f355062db71a798e5ac87c0d72d8ed08b89e2cbd5730fa723"
+preflight_sha256 = "3fdb4c4c7ee0f22950909ed59344dd339281afa0310a692f349ac5665be0fa7b"
+postflight_sha256 = "64ff8838d4c2a11525e7b40b962692cb3281dc25bb01b514972dfe013b9c7371"
+cpu_attribution_sha256 = "f5af68a42f5afc1b146762779e39ce9445335b47b7a3f060011bff98d1d01325"
+pre_calibration_relative_spread = 0.042682323786541
+post_calibration_relative_spread = 0.0208944153320266
+attempts = 20
+failed_attempts = 0
+diagnostic_complete = true
+candidate_data_present = false
+candidate_measurement_authorized = false
+promotable = false
+numerical_claim_eligible = false
+acceptance_decision_allowed = false
+thresholds_changed = false
+silent_retry_allowed = false
+conclusion = "Counter updates alone were indistinguishable from the off control. Empty post-removal observer delivery added 1.42% median CPU per operation, and the full callback/cleanup path added a further 1.99%; the complete production path was 3.24% above off in this diagnostic. Both observer delivery and HydraCache callback work contribute, with callback/cleanup the larger preregistered adjacent median delta."
+decision = "optimize-empty-removal-drain-fast-path-locally"
+next_evidence = "Add a race-safe accepted-versus-acknowledged fast path before taking the async receiver mutex when no removal cleanup is pending. Prove unchanged saturation, duplicate, pending-barrier, versioned cleanup, and exact-reconciliation behavior locally before any new dedicated-host run."
+
+[[mode]]
+name = "off"
+cpu_microseconds_per_operation_median = 4.25566
+allocated_bytes_per_operation_median = 4970.49064
+goodput_per_second_median = 9998.911136575267
+p99_microseconds_median = 1910.0
+correctness_complete = true
+
+[[mode]]
+name = "counters-only"
+cpu_microseconds_per_operation_median = 4.24736
+allocated_bytes_per_operation_median = 4970.0276
+goodput_per_second_median = 9998.159640754558
+p99_microseconds_median = 1960.0
+correctness_complete = false
+
+[[mode]]
+name = "observer-noop"
+cpu_microseconds_per_operation_median = 4.30762
+allocated_bytes_per_operation_median = 5017.37252
+goodput_per_second_median = 9997.60028999903
+p99_microseconds_median = 1932.0
+correctness_complete = false
+
+[[mode]]
+name = "production"
+cpu_microseconds_per_operation_median = 4.39346
+allocated_bytes_per_operation_median = 4990.72308
+goodput_per_second_median = 9998.494692629143
+p99_microseconds_median = 1925.0
+correctness_complete = true
+
+[[comparison]]
+name = "off_to_counters_only"
+cpu_microseconds_per_operation_delta = -0.0083
+cpu_relative_delta = -0.0019503437774635217
+allocation_bytes_per_operation_delta = -0.4630399999996371
+
+[[comparison]]
+name = "counters_only_to_observer_noop"
+cpu_microseconds_per_operation_delta = 0.06026
+cpu_relative_delta = 0.014187636555413205
+allocation_bytes_per_operation_delta = 47.34491999999955
+
+[[comparison]]
+name = "observer_noop_to_production"
+cpu_microseconds_per_operation_delta = 0.08584
+cpu_relative_delta = 0.019927477354084042
+allocation_bytes_per_operation_delta = -26.64944000000014
+
+[[comparison]]
+name = "off_to_production"
+cpu_microseconds_per_operation_delta = 0.1378
+cpu_relative_delta = 0.03238040632945276
+allocation_bytes_per_operation_delta = 20.23243999999977

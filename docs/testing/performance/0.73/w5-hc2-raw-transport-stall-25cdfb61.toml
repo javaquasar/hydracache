@@ -1,0 +1,141 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-raw-transport-stall-25cdfb61-v1"
+state = "local-raw-transport-stall-payload-sensitive-and-bounded"
+contract = "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-contract.toml"
+source_commit = "25cdfb6153e9ffe04ca67c3a7ac4bdba11380f55"
+profile_tool = "tools/hc2-connection-profile-073"
+binary_sha256 = "6bd116af583a9a02472b274c0890cf51f57500c9b570422b8dd9cf432f7c81cc"
+contract_sha256 = "600b8adc596499ebc246ff0535e1dc34d0bf3c6f47feac6dd6a840599156940f"
+tool_source_sha256 = "464c79b81c005b290fa0e87974593584284effbbef55c4dab34eb7263c4a91cf"
+tool_lock_sha256 = "181093b981828bfa2ebfc8ea6663734e60e033d608344714708308265ae1c390"
+pairs_per_value_size = 5
+attempts = 20
+matrix_failed_attempts = 0
+fixture_smoke_failures = 2
+connections = 8
+subscriptions = 8
+offered_value_bytes_per_connection = 8388608
+value_bytes = [4096, 262144]
+mutations_per_connection = [2048, 32]
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+exact_server_queued_byte_claim_allowed = false
+release_numerical_claim_allowed = false
+control_invariant_passed = true
+treatment_invariant_passed = true
+stability_invariant_passed = true
+close_invariant_passed = true
+stderr_empty = true
+default_hyper_client_stream_window_bytes = 2097152
+default_hyper_client_connection_window_bytes = 5242880
+transport_dependency = "hyper-1.11.1"
+raw_results = [
+  "4096-attempt1-drained.json:c61daa40d9274da515cc4eb3fc9b4e0ad2d9a084f83de5d6bd8240385593128e",
+  "4096-attempt2-unpolled.json:2a70b1eb5edaa65eb844b0aaae5f00043032bfadeebd2f4cbaf78e43c79487d1",
+  "4096-attempt3-unpolled.json:ad9d3eea148e1181374994910518f83c03c14ac3da2ef5ee4f0261729dd06fd0",
+  "4096-attempt4-drained.json:34a65ff343de98f2a036778a139e8a5ad5a9b91d516c37db2882fdc377b404ae",
+  "4096-attempt5-drained.json:f277a3b3c1548517bff33efbfce0fd7ac906beeab9dca350046334a9095cf081",
+  "4096-attempt6-unpolled.json:8e808f52027fe486f4e553553a99ee771f2ed71bce32f1b65f6bf6d952df2a76",
+  "4096-attempt7-unpolled.json:7d3fb69f04e5e8780c570520c14687155e726c9eac3165aa1210c607c11a74ab",
+  "4096-attempt8-drained.json:29951aed44a707addb84b8e8b12858e54bc31b9c41231db7f078c2fca7ec3729",
+  "4096-attempt9-drained.json:51b05dd703554411f8274316671854bed942cd98117e98ccca61ee1e2cfae669",
+  "4096-attempt10-unpolled.json:a54fe1d36709e45f27e2d63fa771d0519d516c10b47135440f8149fd058460b3",
+  "262144-attempt1-drained.json:435478435086238b1dfe99cf4c1d4fcace0c5e54b1663ba6be6846ef05617bdb",
+  "262144-attempt2-unpolled.json:6788e45c3acefc1e3001d43cc6c8cdada4813209d265d2d5096004d092e4997d",
+  "262144-attempt3-unpolled.json:3530122e11d62b5f2a4d9e0adcc62514767e6a9b4666718de3aba70bb6205ab2",
+  "262144-attempt4-drained.json:7bfea60111af268bd4b95b59274ec118a866d287d5eb380d8ce3d0c56d51b031",
+  "262144-attempt5-drained.json:a243f04cafc50c7af2decae6b05b8efebbea7ac4637c35c1340b7b69f9a43a8c",
+  "262144-attempt6-unpolled.json:b719b8164d9c4e053cace85d12def07932d3890760d33d94b0f6f7c044ca3a71",
+  "262144-attempt7-unpolled.json:7eae762f3a09358742df2476c5300d3d68eb7944643c2df3e04a010e57a15385",
+  "262144-attempt8-drained.json:6497d4f852b98d5fd87dcf0ddb015ed41cd36b2b4008a06aee11c99b20fe7788",
+  "262144-attempt9-drained.json:b0625f7255e9ef91c3b4058adfa61b4895ac86afd358e4e17ae0444b184c091e",
+  "262144-attempt10-unpolled.json:b82dcbada5140b2f0bc123f7fe23ca2d1117730da5b4a39d18f243597d70a2a1",
+]
+median_unpolled_dispatch_4096 = 4160
+median_unpolled_dispatch_262144 = 128
+median_paired_server_working_set_delta_4096_bytes = 9216000
+median_paired_server_working_set_delta_262144_bytes = 22667264
+median_paired_server_pagefile_delta_4096_bytes = 9461760
+median_paired_server_pagefile_delta_262144_bytes = 22663168
+working_set_payload_ratio = 2.459201388888889
+interpretation = "A peer that retains but never polls the production HC/2 response stream creates repeatable, bounded, payload-sensitive server retention. Relative to drained controls, the server working-set delta was positive in all ten pairs and the median rose from 9,216,000 bytes at 4 KiB to 22,667,264 bytes at 256 KiB. This is a local process-level result, not an exact Tokio-channel byte count."
+source_attribution = "The locked Hyper 1.11.1 client defaults to a 2 MiB stream receive window and a 5 MiB connection receive window. Median treatment dispatch was 520 mutations per peer at 4 KiB and 16 per peer at 256 KiB. The first shape is approximately 512 value-bearing events authorized by the 2 MiB stream window plus a bounded application-channel tail; the second is approximately eight window-resident events plus a similar tail. Gap and invocation frames share those budgets, so this is a source-supported decomposition rather than an exact occupancy claim."
+fixture_failures = "Before the frozen 25cdfb61 binary, one smoke run misclassified legitimate EventGap frames as unexpected and one exposed that simply dropping a stalled tonic stream did not reconcile promptly. The fixture now counts gaps and, after the pressure snapshot, drains the already offered frames before close. Neither failed smoke was included or replaced in the 20-attempt matrix."
+boundedness = "Every unpolled run stopped below the offered volume and stayed unchanged for 500 ms; every drained control completed all offered mutations; all unpolled snapshots had zero application-polled response frames; every attempt ended with eight accepted and eight closed connections and zero live server resources."
+decision = "preregister-hc2-outbound-byte-admission-candidate"
+next_evidence = "Freeze an application outbound-byte admission design that accounts encoded ServerEnvelope bytes while queued, preserves the existing 16-item limit, permits one bounded oversize frame without deadlock, and leaves HTTP/2/TLS/socket ownership explicitly outside the claim. Prove semantics and cleanup locally before any hosted candidate run."
+
+[[pair]]
+value_bytes = 4096
+index = 1
+unpolled_dispatch = 4171
+paired_server_working_set_delta_bytes = 8486912
+paired_server_pagefile_delta_bytes = 8675328
+
+[[pair]]
+value_bytes = 4096
+index = 2
+unpolled_dispatch = 4160
+paired_server_working_set_delta_bytes = 9216000
+paired_server_pagefile_delta_bytes = 9461760
+
+[[pair]]
+value_bytes = 4096
+index = 3
+unpolled_dispatch = 4160
+paired_server_working_set_delta_bytes = 8351744
+paired_server_pagefile_delta_bytes = 8478720
+
+[[pair]]
+value_bytes = 4096
+index = 4
+unpolled_dispatch = 4156
+paired_server_working_set_delta_bytes = 9449472
+paired_server_pagefile_delta_bytes = 9474048
+
+[[pair]]
+value_bytes = 4096
+index = 5
+unpolled_dispatch = 4146
+paired_server_working_set_delta_bytes = 10461184
+paired_server_pagefile_delta_bytes = 11005952
+
+[[pair]]
+value_bytes = 262144
+index = 1
+unpolled_dispatch = 127
+paired_server_working_set_delta_bytes = 22343680
+paired_server_pagefile_delta_bytes = 22380544
+
+[[pair]]
+value_bytes = 262144
+index = 2
+unpolled_dispatch = 128
+paired_server_working_set_delta_bytes = 22859776
+paired_server_pagefile_delta_bytes = 23105536
+
+[[pair]]
+value_bytes = 262144
+index = 3
+unpolled_dispatch = 125
+paired_server_working_set_delta_bytes = 21446656
+paired_server_pagefile_delta_bytes = 21204992
+
+[[pair]]
+value_bytes = 262144
+index = 4
+unpolled_dispatch = 128
+paired_server_working_set_delta_bytes = 22667264
+paired_server_pagefile_delta_bytes = 22663168
+
+[[pair]]
+value_bytes = 262144
+index = 5
+unpolled_dispatch = 128
+paired_server_working_set_delta_bytes = 23887872
+paired_server_pagefile_delta_bytes = 24317952
+

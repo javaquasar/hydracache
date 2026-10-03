@@ -22,7 +22,7 @@ sha256 = "c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/ownership-registry.toml"
-sha256 = "b8b497f434e14b4e5c6b6ffceed164e6dd92e83f02b526bb4c150b9040bf7e6a"
+sha256 = "90bc6785a626c6e810a3a39c7ccdbcd0e9c6f0ee7d9ff5c6c3e3f651031c8b54"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/allocator-capabilities.toml"
@@ -46,7 +46,7 @@ sha256 = "cb975242c95c17c7ab944d1e6a2f37a10456557436f85b92a9f656453639a128"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/ci-topology.json"
-sha256 = "2b0f3302e19dde126e5c943622be3d89ecf095b3eb5fcd200b2a406b3bfeccce"
+sha256 = "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-requirements.toml"

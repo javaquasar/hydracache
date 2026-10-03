@@ -1,0 +1,16 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w5-shared-event-bytes-073-v1"
+state = "preregistered-candidate-implementation-authorized"
+triggering_evidence = "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml"
+candidate_source_parent = "a792df8e"
+product_mutation_allowed = true
+candidate_data_present = false
+dedicated_host_run_allowed = false
+local_results_promotable = false
+candidate = "Pass immutable Bytes key/value through emit_matching_events and shallow-clone them into each CacheEvent instead of allocating per-subscriber payload copies."
+forbidden_changes = ["outbound channel capacity", "send await backpressure", "subscription matching", "event ordering", "watermark and gap semantics", "wire payload bytes", "connection resource reconciliation"]
+acceptance = "All 20 processes pass with the same retained frames and zero measured payload allocations/bytes in every shape; HC/2 unit and real-mTLS tests pass unchanged."
+rejection = "Reject on any allocation, changed frame cardinality, changed event bytes/order/watermark behavior, resource leak, or failed disconnect reconciliation."
+interpretation_limit = "Acceptance removes only per-subscriber event payload copies. Tonic, HTTP/2, TLS, channel storage, task, CPU, latency, and RSS costs remain unmeasured."
+next_decision = "If accepted, retain W5 event-copy evidence and continue the separate connection/channel census without a dedicated-host run."

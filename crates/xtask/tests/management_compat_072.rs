@@ -53,8 +53,21 @@ fn compatibility_registry_is_complete_and_version_locked() {
     let workspace = fs::read_to_string(root.join("Cargo.toml"))
         .unwrap()
         .replace("\r\n", "\n");
-    assert!(workspace.contains("[workspace.package]\nversion = \"0.72.0\""));
-    assert!(!workspace.contains("version = \"0.70.0\""));
+    let workspace_document: toml::Value = toml::from_str(&workspace).unwrap();
+    let current_version = workspace_document["workspace"]["package"]["version"]
+        .as_str()
+        .expect("workspace package version");
+    let mut components = current_version.split('.');
+    assert_eq!(components.next(), Some("0"));
+    let minor = components
+        .next()
+        .expect("workspace minor version")
+        .parse::<u32>()
+        .expect("numeric workspace minor version");
+    assert!(
+        minor >= 72,
+        "the retained 0.72 compatibility registry cannot be consumed by a pre-0.72 workspace"
+    );
 }
 
 #[test]
@@ -101,6 +114,31 @@ fn compatibility_guards_are_wired_to_product_and_package_tests() {
 
     let readiness = fs::read_to_string(root.join("scripts/verify-release-readiness.ps1")).unwrap();
     let packager = fs::read_to_string(root.join("scripts/package-publishable.ps1")).unwrap();
+    for marker in [
+        "Invoke-WorkspaceFormatCheck",
+        "cargo metadata --locked --no-deps --format-version 1",
+        "cargo fmt --all",
+        "@($metadata.workspace_members)",
+        r#"@("fmt", "-p", $packageName, "--", "--check")"#,
+    ] {
+        assert!(
+            readiness.contains(marker),
+            "release readiness omits Windows-safe format guard {marker}"
+        );
+    }
+    for marker in [
+        "Invoke-WorkspaceClippyCheck",
+        "Windows clippy check: validating the supported allocator and feature matrix.",
+        r#""--all-features", "--exclude", "hydracache""#,
+        "durable-value-store,durable-values,tiered-values,testing,allocator-system",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc",
+        r#""--features", "allocator-mimalloc""#,
+    ] {
+        assert!(
+            readiness.contains(marker),
+            "release readiness omits Windows-safe clippy guard {marker}"
+        );
+    }
     assert!(packager.contains("[switch]$NoVerify"));
     assert!(packager.contains("$args += \"--no-verify\""));
     let packages = [

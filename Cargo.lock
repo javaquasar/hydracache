@@ -2080,19 +2080,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-moka"
+version = "0.12.15-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a"
+dependencies = [
+ "async-lock",
+ "crossbeam-channel",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+ "equivalent",
+ "event-listener",
+ "futures-util",
+ "parking_lot 0.12.5",
+ "portable-atomic",
+ "smallvec",
+ "tagptr",
+ "uuid",
+]
+
+[[package]]
 name = "hydracache"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
  "criterion",
+ "crossbeam-queue",
  "futures-util",
+ "hydra-moka",
  "hydracache-core",
  "hydracache-macros",
  "jsonschema",
  "loom",
  "mimalloc",
- "moka",
  "proptest",
  "serde",
  "serde_json",
@@ -2105,7 +2126,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-actuator-axum"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "axum",
  "hydracache",
@@ -2118,14 +2139,14 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cache-sim"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "sha2 0.11.0",
 ]
 
 [[package]]
 name = "hydracache-cdc-postgres"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "hydracache-db",
  "thiserror 2.0.18",
@@ -2134,7 +2155,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2153,7 +2174,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-hc2"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2172,7 +2193,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-plane-spike"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "bytes",
  "ed25519-dalek",
@@ -2198,7 +2219,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "bytes",
  "postcard",
@@ -2208,7 +2229,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2228,7 +2249,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "hydracache",
  "hydracache-cluster-chitchat",
@@ -2238,7 +2259,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-chitchat"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "chitchat",
@@ -2249,7 +2270,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-raft"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2274,7 +2295,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-testkit"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2289,7 +2310,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-transport-axum"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2308,7 +2329,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2319,7 +2340,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "criterion",
@@ -2337,7 +2358,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -2372,13 +2393,14 @@ dependencies = [
 
 [[package]]
 name = "hydracache-loadgen"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
  "bytes",
  "futures-util",
  "hdrhistogram",
+ "hydra-moka",
  "hydracache",
  "hydracache-cache-sim",
  "hydracache-client-hc2",
@@ -2398,7 +2420,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2408,7 +2430,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2420,7 +2442,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-operator"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "futures-util",
  "http",
@@ -2439,7 +2461,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-post-publish-consumer"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "hydracache",
  "hydracache-actuator-axum",
@@ -2460,7 +2482,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "bytes",
  "futures-util",
@@ -2481,7 +2503,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sandbox"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "axum",
  "chitchat",
@@ -2508,7 +2530,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2522,7 +2544,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-server"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2543,6 +2565,7 @@ dependencies = [
  "hydracache-redis-compat",
  "hydracache-sim",
  "proptest",
+ "prost",
  "raft",
  "rcgen",
  "redis",
@@ -2562,7 +2585,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "hydracache",
  "hydracache-cluster-raft",
@@ -2578,7 +2601,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim-wasm"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "hydracache-sim",
  "serde_json",
@@ -2588,7 +2611,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sql-lint"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "proptest",
  "serde",
@@ -2600,7 +2623,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2615,7 +2638,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-nats"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-nats",
  "async-trait",
@@ -2628,7 +2651,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-redis"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3461,26 +3484,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "moka"
-version = "0.12.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "957228ad12042ee839f93c8f257b62b4c0ab5eaae1d4fa60de53b27c9d7c5046"
-dependencies = [
- "async-lock",
- "crossbeam-channel",
- "crossbeam-epoch",
- "crossbeam-utils",
- "equivalent",
- "event-listener",
- "futures-util",
- "parking_lot 0.12.5",
- "portable-atomic",
- "smallvec",
- "tagptr",
- "uuid",
 ]
 
 [[package]]
@@ -6964,7 +6967,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "flate2",
  "hydracache",

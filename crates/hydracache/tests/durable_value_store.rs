@@ -126,6 +126,44 @@ fn durable_value_store_corrupt_record_is_detected_not_served() {
     let error = store.get("user:42").unwrap_err();
 
     assert!(error.to_string().contains("durable value"));
+    assert!(store.total_bytes().is_err());
+}
+
+#[test]
+fn durable_value_store_budget_total_tracks_replace_remove_missing_and_reopen() {
+    let path = temp_store_path("budget-total");
+    let mut store = DurableValueStore::open_with_budget(&path, 8).unwrap();
+    let value = |version, bytes| {
+        ReplicatedValueRecord::value(
+            PartitionId::new(1),
+            version,
+            ClusterEpoch::new(1),
+            vec![version as u8; bytes],
+        )
+    };
+
+    store.upsert("a", value(1, 8)).unwrap();
+    assert!(store.upsert("b", value(1, 1)).is_err());
+    store.upsert("a", value(2, 4)).unwrap();
+    store.upsert("b", value(1, 4)).unwrap();
+    store.remove("a").unwrap();
+    store.remove("missing").unwrap();
+    store.upsert("c", value(1, 4)).unwrap();
+    assert_eq!(store.total_bytes().unwrap(), 8);
+    drop(store);
+
+    let mut reopened = (0..100)
+        .find_map(|_| match DurableValueStore::open_with_budget(&path, 8) {
+            Ok(store) => Some(store),
+            Err(error) if error.to_string().contains("could not acquire lock") => {
+                thread::sleep(Duration::from_millis(10));
+                None
+            }
+            Err(error) => panic!("reopening durable value store failed: {error}"),
+        })
+        .expect("durable value store lock was not released within one second");
+    assert!(reopened.upsert("d", value(1, 1)).is_err());
+    assert_eq!(reopened.total_bytes().unwrap(), 8);
 }
 
 fn temp_store_path(name: &str) -> PathBuf {

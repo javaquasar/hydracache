@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-local-qualification-passed-132917fd-v1"
+state = "local-qualification-passed-integrated-process-contract-pending"
+contract = "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml"
+durable_amendment = "docs/testing/performance/0.73/w10-local-qualification-amendment-6c107abf.toml"
+static_amendment = "docs/testing/performance/0.73/w10-static-qualification-amendment-a725077d.toml"
+qualification_source_commit = "132917fdbb8d097aee44b5055e848e07e1e7b909"
+candidate_identity = "C73-provisional-1"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+contract_sha256 = "0694c520fdb1e1e82107f8bc31d9ba005a9f97b0035ec9bc7520ff7a37ca2cf3"
+durable_amendment_sha256 = "b8a85bbda29a08df7f7a97d0e5a31dc3d2ec8e082180f1ebd454d8cff1bb082a"
+static_amendment_sha256 = "758b68e3032f9e87fbe5a7398a60024de87c2476fdb97e4525255c498e273c88"
+
+test_suites = 32
+tests_passed = 342
+tests_failed = 0
+tests_ignored_by_explicit_gate = 25
+corrected_commands = 2
+invalid_attempts_retained = 2
+clippy_packages = 5
+clippy_all_targets_passed = true
+warnings_denied = true
+contract_canary_tests_passed = 93
+performance_contract_check_passed = true
+product_mutation_present = false
+candidate_source_changed = false
+threshold_changed = false
+failed_attempt_hidden = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+integrated_process_contract_present = false
+host_dispatch_allowed = false
+long_run_allowed = false
+candidate_is_final_d4 = false
+
+suite_accounting = [
+  "hydracache-client-transport-axum: 65 passed, 2 scheduled soaks ignored",
+  "hydracache-core: 34 unit and doctests passed",
+  "hydracache-redis-compat: 136 passed, 23 external-client/oracle/resource tests ignored behind explicit gates",
+  "hydracache-server lib plus HC2 memory/process: 91 passed",
+  "hydracache memory/tag/event cross-tests: 11 passed",
+  "hydracache durable-value-store corrected feature cell: 5 passed",
+]
+
+semantic_coverage = "The integrated branch preserved active-expiry quota release, protocol fixtures, tag/event ownership and ordering, HC/2 exact encoded-byte charge and permit release, real-mTLS drain-to-zero, RESP2/RESP3 golden bytes, memory reconciliation, tag-index reference-model behavior, durable reopen/corruption/future-format refusal, and cached budget replacement/remove/reopen accounting."
+static_coverage = "All targets for hydracache-client-transport-axum, hydracache-core, hydracache-redis-compat, hydracache-server, and hydracache passed Clippy with warnings denied after explicitly enabling the feature required by the durable compatibility example."
+claim_boundary = "This receipt admits design and implementation of the missing integrated process comparison only. It does not freeze final C73, authorize a protected-host dispatch, prove a numerical improvement, satisfy published-0.72 compatibility, or replace long-running qualification."
+decision = "pass-local-correctness-and-static-admission-design-integrated-process-contract"
+next_evidence = "Preregister and implement a local integrated process smoke that covers event-delivery, expiry-tag accounting, mixed-protocol, and durable companion groups with complete outcomes. Only after that smoke and its falsifier pass may a separate protected-host I73/C73 contract be considered."
+
+[[invalid_attempt]]
+id = "w7-zero-tests"
+command = "cargo test -p hydracache --test durable_value_store --locked"
+outcome = "exit-zero-invalid"
+reason = "0 tests executed because durable-value-store was not enabled"
+replacement = "cargo test -p hydracache --features durable-value-store --test durable_value_store --locked"
+replacement_outcome = "5 passed"
+
+[[invalid_attempt]]
+id = "all-targets-missing-durable-feature"
+command = "cargo clippy -p hydracache-client-transport-axum -p hydracache-core -p hydracache-redis-compat -p hydracache-server -p hydracache --all-targets --locked -- -D warnings"
+outcome = "compile-failed-invalid"
+reason = "memory_compat_driver_071 imported cfg-gated durable exports without the feature"
+replacement = "cargo clippy -p hydracache-client-transport-axum -p hydracache-core -p hydracache-redis-compat -p hydracache-server -p hydracache --all-targets --features hydracache/durable-value-store --locked -- -D warnings"
+replacement_outcome = "passed"

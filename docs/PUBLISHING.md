@@ -130,8 +130,19 @@ To also execute the full local release gate from the same script:
 ```
 
 On Windows, set `CARGO_BUILD_JOBS=1` before `-RunGate` if the machine has
-recently hit MSVC `LNK1104` file locks. The release script also includes the
-short DB soak route test used by the `0.36.0` database rollout gate:
+recently hit MSVC `LNK1104` file locks. The release script automatically runs
+the workspace format check one package at a time on Windows. This preserves
+`rustfmt --check` coverage while avoiding Windows process command-line error
+206 in large workspaces; non-Windows hosts continue to use `cargo fmt --all`.
+The script also mirrors the platform-aware Clippy matrix from `cargo xtask
+verify`. Windows checks every non-runtime workspace crate with all features and
+checks the `hydracache` runtime separately with its common, system-allocator and
+mimalloc configurations. It does not attempt the unsupported Unix-only
+`tikv-jemalloc-sys` build. Linux keeps the canonical all-features workspace
+Clippy gate, including jemalloc. This is a platform-support distinction, not a
+waiver of warnings or feature coverage.
+The release script also includes the short DB soak route test used by the
+`0.36.0` database rollout gate:
 
 ```powershell
 $env:CARGO_BUILD_JOBS = '1'

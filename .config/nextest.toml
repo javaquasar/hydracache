@@ -19,7 +19,10 @@ slow-timeout = { period = "120s", terminate-after = 3 }
 [[profile.ci.overrides]]
 filter = "test(checked_in_registry_closes_current_production_inventory)"
 threads-required = "num-test-threads"
-slow-timeout = { period = "120s", terminate-after = 2 }
+# A full production-owner inventory scan takes about five minutes on the
+# supported Windows release workstation. Keep the override test-specific so
+# every other CI test retains the global two-minute fail-closed timeout.
+slow-timeout = { period = "120s", terminate-after = 5 }
 
 [[profile.ci.overrides]]
 filter = """

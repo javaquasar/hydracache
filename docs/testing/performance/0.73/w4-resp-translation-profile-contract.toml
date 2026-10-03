@@ -1,0 +1,79 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w4-resp-translation-profile-073-v1"
+state = "preregistered-after-source-audit-before-profile-tooling"
+parent_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
+source_parent = "cfe3d4ab991010bb72ec66fe60a7be298d51e12a"
+profile_tool = "tools/resp-translation-profile-073"
+ownership_scope = "RESP input copy and argument materialization, binary-key hex expansion, execution-plan batch ownership, response-frame construction, and final encoded Vec copy"
+source_files = ["crates/hydracache-redis-compat/src/lib.rs"]
+stages = ["decode", "translate", "encode", "roundtrip"]
+dialects = ["resp2", "resp3"]
+key_bytes = [0, 16, 64, 256]
+key_shapes = ["ascii", "binary"]
+batch_sizes = [1, 16, 256]
+batch_topologies = ["distinct", "all-duplicate"]
+response_payload_bytes = [0, 64, 4096, 1048576]
+repeats_per_scenario = 5
+scenario_count = 92
+attempts = 460
+default_operations_per_process = 256
+large_response_operations_per_process = 16
+independent_processes_required = true
+prebuilt_release_binary_required = true
+binary_safe_roundtrip_required = true
+resp2_resp3_semantic_equality_required = true
+duplicate_del_semantics_required = true
+production_counter_addition = false
+product_mutation_allowed = false
+candidate_data_allowed = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+
+metrics = [
+  "gross_allocated_bytes",
+  "live_allocated_bytes",
+  "elapsed_nanoseconds",
+  "wire_input_bytes",
+  "decoded_argument_bytes",
+  "structured_key_bytes",
+  "execution_plan_request_count",
+  "response_payload_bytes",
+  "wire_output_bytes",
+]
+source_audit = "Decode copies the input into Bytes and materializes owned command arguments; every non-empty Redis key becomes a redis-binary-v1- string with two lowercase hex characters per byte; batch DEL clones structured keys between lookup and follow-up and deduplicates by linear Vec search; response encoding fills BytesMut and copies it into Vec."
+falsifier = "Reject and retain an attempt on process failure or stderr, incomplete frame consumption, RESP2/RESP3 semantic mismatch, binary key roundtrip failure, wrong 16+2N structured-key length, changed duplicate DEL cardinality, response wire mismatch, missing allocator fields, or a scenario count other than 92. Never replace a failed attempt silently."
+interpretation_limit = "Gross allocation can locate repeatable copy churn, but one-process elapsed time cannot establish server throughput or latency. Structured-key bytes are required compatibility output, while temporary frame copies, duplicate plan ownership, and final buffer copies are candidate owners only after phase isolation."
+decision_rule = "Authorize one W4 candidate only when a phase-local allocation component scales beyond required input/output ownership across at least three sizes and can be removed without changing public Redis bytes, binary key identity, batch order/cardinality, or error behavior. Otherwise close W4 as measured-no-win."
+next_decision = "Implement a standalone four-stage counting-allocator profiler over all 92 frozen scenarios, run 460 independent local processes, and keep product code unchanged until one owner satisfies the decision rule."
+
+[[scenario_group]]
+id = "decode-corpus"
+scenario_count = 16
+cross_product = "2 dialects x 8 frozen commands"
+commands = ["get-64", "set-64-64", "set-64-4096", "mget-16", "mget-256", "mset-16", "del-256-duplicate", "hc-tag-64"]
+
+[[scenario_group]]
+id = "single-key-translation"
+scenario_count = 24
+cross_product = "4 key sizes x 2 key shapes x 3 command families"
+command_families = ["get", "set", "hc-invalidate"]
+
+[[scenario_group]]
+id = "batch-translation"
+scenario_count = 30
+cross_product = "3 batch sizes x 2 key shapes x 5 command/topology cells"
+command_cells = ["mget-distinct", "mset-distinct", "exists-distinct", "del-distinct", "del-all-duplicate"]
+
+[[scenario_group]]
+id = "response-encode"
+scenario_count = 16
+cross_product = "2 dialects x 4 payload sizes x 2 response shapes"
+response_shapes = ["bulk", "array-16"]
+
+[[scenario_group]]
+id = "roundtrip-controls"
+scenario_count = 6
+cross_product = "2 dialects x 3 frozen command/response controls"
+controls = ["get-binary-64-hit", "mget-binary-16-mixed", "del-duplicate-256"]

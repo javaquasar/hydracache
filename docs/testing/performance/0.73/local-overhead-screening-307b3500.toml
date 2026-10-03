@@ -1,0 +1,59 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_screening"
+promotable = false
+numerical_claim_eligible = false
+source_sha = "307b350062e00397593a9e6893585996f0a93f0c"
+binary_sha256 = "42c2c94e3b39d1590b4d670f31cab7534e61a1af97fdc61b68e9c1a0c49a03fb"
+host_fingerprint_sha256 = "6925691d8e0ce5d649fb02ae0f4c91f7be667aede4d0d23f62b24ac8cd34cc65"
+screening_sha256 = "70869c0a6944727500da79235219cf3493cb400d3967737b287814b6fc80b20b"
+run_order_seed = 73001
+pair_count = 3
+counterbalanced = true
+failed_attempts = 0
+thresholds_status = "screening_only_unqualified"
+decision = "blocked-instrumentation-overhead"
+suspected_owner = "production-only async eviction listener used for eviction accounting and tag cleanup"
+next_evidence = "isolate listener/counter allocation ownership, redesign or justify it, then rerun at least three local pairs before dedicated five-pair qualification"
+
+[[median_observations]]
+metric = "elapsed_ns"
+off = 35640100.0
+production = 34463700.0
+regression_fraction = -0.0330077637
+
+[[median_observations]]
+metric = "fill_allocated_bytes_per_operation"
+off = 2425.0625
+production = 3074.625
+regression_fraction = 0.2678539213
+
+[[median_observations]]
+metric = "steady_allocated_bytes_per_operation"
+off = 315.1875
+production = 315.1875
+regression_fraction = 0.0
+
+[[median_observations]]
+metric = "expire_delete_allocated_bytes_per_operation"
+off = 2267.125
+production = 3139.125
+regression_fraction = 0.3846281083
+
+[[median_observations]]
+metric = "refill_allocated_bytes_per_operation"
+off = 1120.96875
+production = 1299.59375
+regression_fraction = 0.1593487776
+
+[[median_observations]]
+metric = "post_idle_rss_delta_bytes"
+off = 524288.0
+production = 716800.0
+regression_fraction = 0.3671875
+
+[[median_observations]]
+metric = "peak_rss_delta_bytes"
+off = 663552.0
+production = 815104.0
+regression_fraction = 0.2283950617

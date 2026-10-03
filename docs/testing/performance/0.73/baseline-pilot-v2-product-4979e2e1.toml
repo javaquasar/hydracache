@@ -1,0 +1,63 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "baseline-pilot-v2-product-4979e2e1-v1"
+state = "local-tooling-passed-awaiting-first-run"
+contract = "docs/testing/performance/0.73/baseline-pilot-v2-contract.toml"
+implementation_commit = "4979e2e1ec2616ef8f6eddd53045500385600f61"
+implementation_parent = "b2f133ca982564f8db2e9c46791c4e4fc39fb9d9"
+reviewed_at = "2026-09-25"
+profile_id = "observer-baseline-pilot-073-v2"
+paired_estimator = "hodges-lehmann-v1"
+repeats_per_rate_and_mode = 5
+window_seconds = 10
+offered_rates_per_second = [2500, 5000, 10000, 20000]
+thresholds_changed = false
+workload_changed = false
+offered_rates_changed = false
+candidate_data_allowed = false
+promotable = false
+numerical_claim_eligible = false
+manual_dispatch_only = true
+push_trigger_present = false
+independent_mode_medians_used_for_decision = false
+within_pair_differences_used_for_decision = true
+failed_attempts_retained = true
+decision = "run-v2-baseline-only-once"
+next_evidence = "Dispatch one protected-environment v2 run on the exact integrated source. Retain the packet whether it admits at least three rates or rejects the baseline."
+
+changed_files = [
+  ".github/workflows/performance-baseline-pilot-073.yml",
+  "crates/xtask/tests/memory_host_profile_071.rs",
+  "scripts/perf/performance_baseline_pilot_073.py",
+  "scripts/perf/test_performance_baseline_pilot_073.py",
+]
+
+validation = [
+  "python -m py_compile scripts/perf/performance_baseline_pilot_073.py scripts/perf/test_performance_baseline_pilot_073.py: passed",
+  "python -m unittest scripts/perf/test_performance_baseline_pilot_073.py -v: 2 passed",
+  "cargo fmt -p xtask -- --check: passed",
+  "cargo test -p xtask --test memory_host_profile_071 --locked: 5 passed",
+  "cargo test -p xtask --test performance_contract_073 --locked: 42 passed",
+  "cargo xtask performance-contract-check --release 0.73: passed before receipt registration",
+  "cargo xtask doc-check: passed before receipt registration",
+]
+
+[[falsifier]]
+id = "regression-sign"
+status = "passed"
+evidence = "Synthetic paired receipts prove lower production goodput and higher production CPU/p99 produce positive regression values while allocation and RSS remain absolute deltas."
+
+[[falsifier]]
+id = "hodges-lehmann-walsh"
+status = "passed"
+evidence = "The unit test verifies the one-sample Walsh-average estimator on five ordered differences."
+
+[[falsifier]]
+id = "volume-not-reduced"
+status = "passed"
+evidence = "The script rejects any configuration other than five pairs, ten-second windows, the four frozen rates, seed 73073, and 5,000 warmup operations."
+
+[[falsifier]]
+id = "push-cannot-spend-host-budget"
+status = "passed"
+evidence = "The workflow contains only workflow_dispatch; the Rust source contract rejects a push trigger and requires the protected environment and serialized concurrency group."

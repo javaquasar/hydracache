@@ -1,0 +1,64 @@
+schema_version = 1
+release = "0.73"
+profile_id = "performance-reference-073-v1"
+state = "admitted-i73-frozen-candidate-ready"
+eligible = true
+candidate_measurements_allowed = true
+baseline_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+protected_environment = "performance-reference-073"
+dedicated_bare_metal_required = true
+serialized_lease_required = true
+pre_calibration_required = true
+post_calibration_required = true
+calibration_max_relative_spread = 0.05
+completed_bootstrap_admission_required = true
+identity_reuse_from_071_allowed = false
+local_or_shared_runner_promotable = false
+admission_receipt = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml"
+admitted_source_sha = "3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3"
+admitted_host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+admission_workflow_run_id = 36060837195
+
+required_platform = "linux-x86_64"
+companion_platforms = ["windows-x86_64", "linux-aarch64"]
+immutable_probes = [
+  "cpu-model",
+  "logical-cpus",
+  "physical-memory",
+  "kernel",
+  "microcode",
+  "rustc-vv",
+  "cargo-version",
+  "allocator",
+  "filesystem",
+]
+mutable_probes = [
+  "cpu-governor",
+  "cpu-frequency",
+  "transparent-huge-pages",
+  "swap",
+  "cgroup-limits",
+  "competing-load",
+  "temperature",
+  "free-memory",
+  "page-cache",
+]
+required_tools = [
+  "git",
+  "cargo",
+  "rustc",
+  "perf",
+  "pidstat",
+  "numactl",
+]
+cpu_binding_policy = "fixed-reviewed-cpu-set"
+numa_policy = "fixed-reviewed-node-policy"
+power_policy = "fixed-performance-policy"
+network_policy = "fixed-reviewed-loopback-or-dedicated-link"
+filesystem_policy = "fixed-mount-and-free-space-floor"
+
+candidate_constraints = [
+  "each candidate requires a sealed D2 proposal before observation",
+  "candidate comparisons use exact I73 e757556d and frozen 5000/12000/17000 rates",
+  "each claim requires at least five counterbalanced pairs with pre/post calibration",
+]

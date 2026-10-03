@@ -1,0 +1,56 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_feasibility"
+experiment = "moka-future-vs-sync-noop-listener"
+source_sha = "bf9f13829323ea5131ae91798b2ce74f5e623243"
+binary_sha256 = "a95d3b75b47cfe74b2801139c4cfd99a512ad634fc5f9bb20eed0c6dbf388421"
+receipt_sha256 = "aed7efec41f453cf712d518db6b999317a706554974d0afd8867bee84c761abd"
+operations_per_case = 1024
+repetitions = 3
+counterbalanced = true
+diagnostic_only = true
+product_semantics_eligible = false
+promotable = false
+decision = "sync-backend-insufficient"
+conclusion = "The sync backend reduced the incremental no-op-listener allocation cost, especially for removal, but retained a material insert penalty and does not preserve HydraCache's asynchronous backend semantics. A sync migration is not a sufficient instrumentation fix."
+next_evidence = "Keep D2 unauthorized; review a lab-only exact nonblocking removal-observation or replacement-ownership design and freeze allocation/RSS rejection limits before any product candidate measurement."
+
+[[median_observations]]
+backend = "moka-future"
+operation = "insert"
+listener_off_bytes_per_operation = 398.4140625
+listener_noop_bytes_per_operation = 756.6953125
+incremental_bytes_per_operation = 358.28125
+regression_fraction = 0.899268584426535
+
+[[median_observations]]
+backend = "moka-future"
+operation = "remove"
+listener_off_bytes_per_operation = 2281.34375
+listener_noop_bytes_per_operation = 3041.09375
+incremental_bytes_per_operation = 759.75
+regression_fraction = 0.3330274098324726
+
+[[median_observations]]
+backend = "moka-sync"
+operation = "insert"
+listener_off_bytes_per_operation = 372.6875
+listener_noop_bytes_per_operation = 644.0390625
+incremental_bytes_per_operation = 271.3515625
+regression_fraction = 0.7280940801609927
+
+[[median_observations]]
+backend = "moka-sync"
+operation = "remove"
+listener_off_bytes_per_operation = 2246.6875
+listener_noop_bytes_per_operation = 2502.71875
+incremental_bytes_per_operation = 256.03125
+regression_fraction = 0.11395944028708932
+
+[[comparisons]]
+operation = "insert"
+sync_incremental_reduction_fraction = 0.24262974269515913
+
+[[comparisons]]
+operation = "remove"
+sync_incremental_reduction_fraction = 0.6630059230009872

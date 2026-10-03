@@ -1,0 +1,74 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-v2-insufficient-2daccb47-v1"
+contract_id = "observer-baseline-pilot-073-v2"
+state = "executed-insufficient-baseline-one-stable-rate"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36073786075
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36073786075"
+source_sha = "2daccb47a854dee245d84c9fac238130ff7298b4"
+implementation_commit = "a205ce0ab8e3b76bcb9341483694587fb5e85838"
+binary_sha256 = "db1d2067ac384bb8f61f5473b18da85283553895c4540761d872c65fd19e73e0"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10839591990
+artifact_name = "performance-baseline-pilot-v2-073-2daccb47a854dee245d84c9fac238130ff7298b4-36073786075-1"
+artifact_sha256 = "0ea2507e2c340285d96e9048717870d4381dce6eabf7fc45ac5744a3ff1ffb6d"
+campaign_manifest_sha256 = "e3a33641519eb67700c782fecf08a29ed20d187b76aa5677cee4f462e2dd299e"
+preflight_sha256 = "4432ae95b526813b2066fb96ae6e78e7db1056586a45906e1fc8f1dda2d03291"
+postflight_sha256 = "8dfc92c156e6332b7f15db32a7222819c7c1545176b8d79418ab402b3893f2a6"
+baseline_pilot_sha256 = "6f98ef63171a22e60d4d46698126a00b499e519caf60f7d5b00f3dd98ecdeffc"
+packet_file_count = 164
+pre_calibration_relative_spread = 0.02674210142736835
+post_calibration_relative_spread = 0.020760235175803693
+attempts = 40
+failed_attempts = 0
+paired_estimator = "hodges-lehmann-v1"
+stable_rates = [20000]
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+derived_d3_rates_admitted = false
+thresholds_changed = false
+silent_retry_allowed = false
+code_effect_claimed = false
+manual_repeat_authorized = false
+decision = "attribute-persistent-allocation-and-observer-cost-locally"
+conclusion = "The retained-counter single-atomic source passed only 20000 operations/second at 1.80% paired CPU overhead. The 2500, 5000, and 10000 rates remained above the unchanged 3% ceiling at 3.53%, 4.69%, and 4.44%. All 40 attempts completed, goodput passed, and host calibration stayed below 2.68%. The baseline remains unfrozen and the run is not silently repeated."
+cross_run_interpretation = "The prior v2 run passed 5000 and 20000 while this run passed only 20000. Because the packets are independent campaigns rather than paired builds, the difference cannot establish that the counter change caused a regression. The current packet alone is sufficient to reject I73 freeze."
+next_evidence = "Use local diagnostic-only allocation and observer-path attribution to explain the persistent approximately 20-byte-per-operation production delta before preregistering any further product change. Do not spend another dedicated-host run on an unattributed micro-optimization."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.03530467829297882
+cpu_pair_regressions = [0.007631259063880272, 0.07316774053564529, 0.022293680332248926, 0.008818955350808441, 0.0617904012351492]
+allocation_overhead_bytes_per_operation = 20.17007999999987
+p99_relative_regression = 0.0010183299389002036
+goodput_relative_regression = -0.00006404876058262267
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.046908171618191156
+cpu_pair_regressions = [0.039590700047477806, 0.015531778860249592, 0.10307517084282464, 0.10560532157147262, -0.011788978335090312]
+allocation_overhead_bytes_per_operation = 20.125239999999394
+p99_relative_regression = 0.012840267077555213
+goodput_relative_regression = -0.000013248901239620041
+stable = false
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.04438998204561484
+cpu_pair_regressions = [0.04976273945307297, 0.05645532291359471, 0.008274570865419337, 0.058393469550049405, 0.03232464117763498]
+allocation_overhead_bytes_per_operation = 20.415660000000116
+p99_relative_regression = -0.009729659463904382
+goodput_relative_regression = 0.000044644485800728985
+stable = false
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.01795493087604866
+cpu_pair_regressions = [0.028832788152517042, 0.007077073599580282, 0.04755821289286532, -0.017551687814356044, 0.02576261569559201]
+allocation_overhead_bytes_per_operation = 20.52041999999983
+p99_relative_regression = 0.0010303967027305513
+goodput_relative_regression = -0.000013094657362931313
+stable = true

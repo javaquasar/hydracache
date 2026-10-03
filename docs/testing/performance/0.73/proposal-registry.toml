@@ -1,0 +1,86 @@
+schema_version = 1
+release = "0.73"
+registry_state = "i73_frozen_w1_classification_open"
+candidate_measurements_allowed = false
+local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
+product_mutations_allowed = true
+
+[[proposals]]
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+work_item = "W0-W1"
+state = "absorbed-into-frozen-i73"
+d2_authorized = true
+product_mutation_allowed = true
+owner = "Moka future-cache removal notification path"
+hypothesis = "Exact removal accounting can avoid listener-enabled per-mutation key locking only through a nonblocking post-removal observation seam or an equally exact replacement ownership design."
+primary_metric = "fill_allocated_bytes_per_operation"
+practical_minimum_effect = "fill allocations improve by at least 15%"
+threshold_status = "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28"
+compatibility_outcome = "public configuration, value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged"
+rollback_class = "remove isolated implementation and restore the exact I73 instrumentation path"
+dependency_delta = "exact crates.io package hydra-moka =0.12.15-hydra.1 with registry checksum 7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a; runtime observer source remains revision 352e53faa480c9997272b9c70798dd5b5c15d581; no range, branch, or floating tag is authorized"
+review_status = "d2-authorized-pinned-fork"
+candidate_measurements_allowed = false
+d3_measurement_required = false
+local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
+d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
+dependency_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml"
+implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
+implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
+local_screening_evidence = "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml"
+baseline_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+
+baseline_evidence = [
+  "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
+  "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml",
+  "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml",
+  "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml",
+  "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml",
+  "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml",
+  "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml",
+]
+
+source_findings = [
+  "moka 0.12.15 future cache creates a per-key lock path whenever a removal notifier is enabled",
+  "new inserts acquire that optional key lock before the backend knows whether the operation replaces an entry",
+  "updates and invalidations add shared boxed notification futures and cancellation guards",
+  "moka 0.12.16 retains blocking synchronous/asynchronous eviction-listener APIs and exposes no nonblocking post-removal observer",
+  "a counterbalanced future-versus-sync microprobe found that sync reduced but did not eliminate no-op-listener allocation overhead",
+  "a lab-only versioned observer reference model passes ordering, duplicate, saturation, reconciliation, shutdown, and removal-cause falsifiers without changing the product cache",
+  "an isolated Moka patch proved that omitting listener key locks removes the insert allocation penalty while boxed removal delivery remains a separate cost",
+  "a direct synchronous Moka observer matched listener-off allocation, delivered every removal cause, and passed the integrated versioned replacement cleanup falsifier",
+]
+
+rejected_approaches = [
+  "remove the listener and accept incomplete automatic-eviction accounting",
+  "decrement counters from CacheEntry Drop, because Moka clones values and final-drop time is not logical removal time",
+  "optimize only the HydraCache callback, because a registered no-op listener reproduced most fill and RSS overhead",
+  "replace exact bounded snapshots with an unannounced full-map reconciliation walk",
+  "raise allocation or RSS limits after observing the candidate",
+  "migrate to Moka sync solely to reduce listener cost, because insert overhead remained material and the migration changes async semantics",
+]
+
+candidate_options_requiring_d2 = [
+  "prototype an upstream-compatible nonblocking post-removal observer plus version-conditional bounded cleanup/drain lifecycle",
+  "prototype a backend strategy that provides exact removal ownership without listener-enabled mutation locking",
+]
+
+required_correctness_tests = [
+  "explicit remove, overwrite, invalidate, and flush reconcile exactly",
+  "TTL expiry and capacity eviction reconcile exactly",
+  "tag memberships and bounded generation state return to the expected owner count",
+  "concurrent snapshots fail non-atomic rather than reporting false exactness",
+  "cancellation and shutdown drain every acknowledged removal",
+  "default and all-feature public compatibility remain unchanged",
+]
+
+required_regression_guards = [
+  "goodput regression <= 2%",
+  "CPU per request regression <= 3%",
+  "p99 latency regression <= 3%",
+  "allocation and RSS limits frozen before candidate data",
+]
+
+next_evidence = "Treat the observer and shared-tag implementation as part of frozen I73, then complete W1 owner classification for every W2--W9 surface. Register a new D2 candidate before any candidate-host observation."

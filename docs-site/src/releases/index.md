@@ -10,6 +10,12 @@ repository notes, GitHub release source, search index and public site on the sam
 - [HydraCache 0.72.0](0.72.0.md) — Management Center 2.0, bounded operational visibility and
   exact-candidate long-run evidence.
 
+## Release candidates
+
+- [HydraCache 0.73.0](0.73.0.md) — evidence-driven allocation/copy reductions, bounded HC/2
+  backpressure and immutable six-/24-hour measurement archives. Publication remains conditional on
+  green corrected exact-SHA gates.
+
 ## Verification records
 
 - [HydraCache 0.72 verification](../reference/release-0.72-verification.md) — executable gates,

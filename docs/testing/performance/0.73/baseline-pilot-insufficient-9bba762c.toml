@@ -1,0 +1,59 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-insufficient-9bba762c-v1"
+contract_id = "observer-baseline-pilot-073-v1"
+state = "executed-insufficient-baseline-two-stable-rates"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36067885432
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36067885432"
+source_sha = "9bba762c27e4dd108d08651b6b7443a50957bce9"
+binary_sha256 = "fa92f1cf2b6b82da3786bfe7bb83882ad98e7f569075a2ab80ad4061daa7c2c6"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10837029100
+artifact_name = "performance-baseline-pilot-073-9bba762c27e4dd108d08651b6b7443a50957bce9-36067885432-1"
+artifact_sha256 = "cff6bd8d2940c45e5aeffb349f3bdcf57b890c1ced57a2aaa2b7373c3b062a66"
+campaign_manifest_sha256 = "556ec24aebcb79ff118cc510b1305eab057bd9468766b6ca66cde9ad3bdc0e61"
+preflight_sha256 = "58fbbb7cca320b20154ed428b0e815337d13ef8def8b4ad0c89321e447cb4de9"
+postflight_sha256 = "0eb4ab3ae5073a455e0887c59799eea055bd02a2a740c8ddc48e80d6dbd7c567"
+baseline_pilot_sha256 = "e0857ea99be7ac38e071d613f352d00eb8eff0ebfc2a6668773beb3b45157680"
+pre_calibration_relative_spread = 0.0260798272797177
+post_calibration_relative_spread = 0.0314583461026813
+attempts = 24
+failed_attempts = 0
+stable_rates = [10000, 20000]
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+thresholds_changed = false
+silent_retry_allowed = false
+decision = "retain-improvement-and-optimize-bounded-queue-locally"
+conclusion = "The empty-drain fast path reduced production CPU overhead enough for 10000 and 20000 operations/second to pass at 2.80% and 2.08%. The 2500 and 5000 rates remained just above the frozen ceiling at 3.52%, leaving only two stable rates where the unchanged contract requires three."
+next_evidence = "Replace the bounded Tokio mpsc plus async receiver mutex with a capacity-equivalent nonblocking ArrayQueue under a preregistered local contract. Preserve every fail-closed and ordering guarantee, then repeat local correctness before another baseline-only host run."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.0351535964978491
+cpu_microseconds_per_operation_delta = 0.29808
+allocation_overhead_bytes_per_operation = 21.70223999999962
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.035155190866928074
+cpu_microseconds_per_operation_delta = 0.19708
+allocation_overhead_bytes_per_operation = 20.925600000000486
+stable = false
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.028013734067071357
+cpu_microseconds_per_operation_delta = 0.11912
+allocation_overhead_bytes_per_operation = 20.590680000000248
+stable = true
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.020781777117858325
+cpu_microseconds_per_operation_delta = 0.07306
+allocation_overhead_bytes_per_operation = 20.52233999999953
+stable = true

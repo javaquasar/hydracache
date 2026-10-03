@@ -1,0 +1,90 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w7-durability-page-cache-profile-b5a327ce-v1"
+state = "local-profile-passed-candidate-owner-found"
+contract = "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml"
+source_commit = "b5a327cee100d02208e892f90beb4cc672be9c5d"
+binary_sha256 = "a06650148bc6af99b9c74f94a1d4ed7aadeb63ff789e4473f41e2b21b2344e64"
+contract_sha256 = "f5fc269ef05e53b0ea7eddb8c6540d81d57e8553fade0442080e1f46ed97b3e3"
+durable_store_source_sha256 = "d72ed696129e2ef018c29e4369a05d9e52c38777d3b77c349f4adff247d3fa2c"
+durability_source_sha256 = "5f49106bf56a5fe408cf578bc930fc1528df9a75974c01badcd16b390529cce7"
+tool_source_sha256 = "43aebe92a27ccbbeaaf9db0eea79f80f21ae80a82eefd21007a0db13142bcdfd"
+tool_lock_sha256 = "1cc64523a036593469c042f947988e29a718a3a540fee01839a9670134da3b51"
+raw_manifest_sha256 = "1e12b7745b48d8ef8950c0f2ab28dd1151f0ff66e718784383c3948f5af2613f"
+raw_manifest_canonicalization = "stdout filenames ordinal-sorted; each line is two spaces, quoted filename:lowercase-sha256, comma, LF; UTF-8 without BOM"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80e 2026-01-15)"
+
+attempts = 120
+failed_processes = 0
+nonempty_stderr = 0
+invariant_failures = 0
+scenario_count = 24
+repeats_per_scenario = 5
+independent_processes = true
+prebuilt_release_binary = true
+temporary_stores_removed = true
+exact_logical_bytes_passed = true
+reopen_content_equality_passed = true
+async_lag_reconciliation_passed = true
+gc_cardinality_reconciliation_passed = true
+os_memory_source = "windows-GetProcessMemoryInfo-working-set-private-commit; anon-file-split-unavailable"
+os_io_source = "windows-GetProcessIoCounters-transfer-bytes"
+anon_file_split_available_attempts = 0
+anon_file_split_unavailable_attempts = 120
+page_cache_residency_claim_allowed = false
+product_mutation_present = false
+production_counter_addition = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_used_for_decision = false
+
+store_cardinalities = [1, 16, 64, 256]
+payload_bytes = [64, 4096]
+payload64_fill_median_gross_bytes_per_operation = [6953.0, 9241.75, 15671.844, 40225.449]
+payload4096_fill_median_gross_bytes_per_operation = [35308.0, 67836.75, 179295.297, 597367.723]
+payload64_steady_read_median_gross_bytes_per_operation = [167.0, 167.0, 184.875, 183.844]
+payload4096_steady_read_median_gross_bytes_per_operation = [4199.0, 4199.0, 4216.875, 4215.844]
+payload64_overwrite_median_gross_bytes_per_operation = [7204.0, 9452.5, 21653.688, 70229.719]
+payload4096_overwrite_median_gross_bytes_per_operation = [51687.0, 114415.5, 320152.688, 1146996.004]
+payload64_fill_growth_16_to_256 = 4.352579
+payload4096_fill_growth_16_to_256 = 8.805960
+payload64_overwrite_growth_16_to_256 = 7.429751
+payload4096_overwrite_growth_16_to_256 = 10.024831
+
+write_path_cardinalities = [64, 256]
+ram_only_admit_median_gross_bytes_per_operation_payload64 = [114.0, 114.0]
+ram_only_admit_median_gross_bytes_per_operation_payload4096 = [4146.0, 4146.0]
+sync_admit_median_gross_bytes_per_operation_payload64 = [15710.844, 40264.449]
+sync_admit_median_gross_bytes_per_operation_payload4096 = [179334.297, 597406.723]
+async_admit_median_gross_bytes_per_operation_payload64 = [328.5, 333.375]
+async_admit_median_gross_bytes_per_operation_payload4096 = [4360.5, 4365.375]
+async_drain_median_gross_bytes_per_operation_payload64 = [15667.844, 40221.449]
+async_drain_median_gross_bytes_per_operation_payload4096 = [179291.297, 597363.723]
+async_admit_write_transfer_bytes_per_operation = [0.0, 0.0, 0.0, 0.0]
+async_lag_after_admit = [64, 256]
+async_lag_after_drain = [0, 0]
+
+gc_cardinalities = [64, 256]
+pending_gc_removed = [0, 0]
+pending_gc_remaining = [64, 256]
+pending_gc_write_transfer_bytes_per_operation = [0.0, 0.0]
+confirmed_gc_removed = [64, 256]
+confirmed_gc_remaining = [0, 0]
+confirmed_gc_reclaimed_bytes = [64, 256]
+confirmed_gc_median_gross_bytes_per_operation = [4450.812, 4588.441]
+
+allocation_interpretation = "Required steady-read allocation stays essentially cardinality-independent, while fill and overwrite gross bytes per operation grow sharply with store cardinality in both payload sizes. The shape matches DurableValueStore::would_fit calling total_bytes, which scans and decodes every record before each upsert. At 256 records, a 4 KiB overwrite allocates about 1.147 MB gross per operation to update a 4 KiB logical value."
+durability_interpretation = "RAM-only admission remains flat. Async-bounded admission allocates only the queued record and performs zero write transfer; its later drain has almost the same allocation and IO shape as sync admission because each DurableValueStore::upsert scans and flushes. This classifies where cost moves, but the local transfer counter does not prove physical-device write amplification."
+gc_interpretation = "Repair-pending GC removes nothing and writes nothing. Repair-confirmed GC removes and reclaims exactly the registered cardinality. Its roughly 4.5 KB gross per removal and per-record write transfer record the current remove-and-flush loop without authorizing a semantics change."
+memory_interpretation = "All 120 Windows attempts explicitly report the anonymous/file resident split as unavailable. Working set, private commit, directory length, and process IO remain separate observations; none is reinterpreted as Sled file-backed page-cache residency. A Linux smaps_rollup run would be required for that claim."
+decision = "authorize-cached-durable-budget-total-candidate"
+next_evidence = "Preregister a narrow candidate that initializes one validated logical-budget total at open and updates it after successful insert/remove ownership changes, while preserving the public total_bytes validation scan, store format, checksums, budget rejection, recovery, durability modes, and GC behavior. Rerun the full 120-process matrix and reject on any semantic drift."
+
+validation = [
+  "cargo check --manifest-path tools/durability-page-cache-profile-073/Cargo.toml --locked: passed",
+  "cargo test --manifest-path tools/durability-page-cache-profile-073/Cargo.toml --locked: 3 passed",
+  "cargo clippy --manifest-path tools/durability-page-cache-profile-073/Cargo.toml --locked --all-targets -- -D warnings: passed",
+  "120-process frozen profile matrix: passed with empty stderr, zero exit failures, no invariant failure, and every temporary store removed",
+]

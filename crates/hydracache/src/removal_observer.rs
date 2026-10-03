@@ -1,0 +1,362 @@
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
+
+use crossbeam_queue::ArrayQueue;
+use moka::notification::RemovalCause;
+
+use crate::entry::CacheEntry;
+use crate::memory_footprint::{EntryMemoryDelta, MemoryFootprintCounters, MemoryFootprintError};
+use crate::tag_index::TagIndex;
+
+const DEFAULT_CLEANUP_CAPACITY: usize = 4_096;
+
+#[derive(Debug)]
+struct CleanupTicket {
+    key: Arc<String>,
+    tags: Arc<[String]>,
+    version: u64,
+}
+
+#[derive(Debug)]
+pub(crate) struct RemovalObserver {
+    queue: ArrayQueue<CleanupTicket>,
+    draining: AtomicBool,
+    memory: Arc<MemoryFootprintCounters>,
+    accepted: AtomicU64,
+    acknowledged: AtomicU64,
+    dirty: AtomicBool,
+    inflight_versions: Box<[AtomicU64]>,
+    #[cfg(test)]
+    drain_claims: AtomicU64,
+}
+
+struct DrainGuard<'a> {
+    draining: &'a AtomicBool,
+}
+
+impl Drop for DrainGuard<'_> {
+    fn drop(&mut self) {
+        self.draining.store(false, Ordering::Release);
+    }
+}
+
+impl RemovalObserver {
+    pub(crate) fn new(memory: Arc<MemoryFootprintCounters>) -> Self {
+        Self::with_capacity(memory, DEFAULT_CLEANUP_CAPACITY)
+    }
+
+    fn with_capacity(memory: Arc<MemoryFootprintCounters>, capacity: usize) -> Self {
+        assert!(capacity > 0, "removal cleanup queue must be non-empty");
+        Self {
+            queue: ArrayQueue::new(capacity),
+            draining: AtomicBool::new(false),
+            memory,
+            accepted: AtomicU64::new(0),
+            acknowledged: AtomicU64::new(0),
+            dirty: AtomicBool::new(false),
+            inflight_versions: (0..capacity)
+                .map(|_| AtomicU64::new(0))
+                .collect::<Vec<_>>()
+                .into_boxed_slice(),
+            #[cfg(test)]
+            drain_claims: AtomicU64::new(0),
+        }
+    }
+
+    pub(crate) fn observe(&self, key: Arc<String>, entry: CacheEntry, _cause: RemovalCause) {
+        let slot_index = (entry.version % self.inflight_versions.len() as u64) as usize;
+        let slot = &self.inflight_versions[slot_index];
+        let slot_claimed =
+            match slot.compare_exchange(0, entry.version, Ordering::AcqRel, Ordering::Acquire) {
+                Ok(_) => true,
+                Err(version) if version == entry.version => return,
+                Err(_) => {
+                    self.dirty.store(true, Ordering::Release);
+                    false
+                }
+            };
+
+        let _mutation = self.memory.mutation();
+        match EntryMemoryDelta::new(
+            &key,
+            entry.value.len(),
+            &entry.tags,
+            entry.expires_at.is_some(),
+        ) {
+            Ok(delta) => self.memory.remove(delta),
+            Err(_) => {
+                self.memory.mark_fault();
+                self.dirty.store(true, Ordering::Release);
+            }
+        }
+
+        if !self.accept_one() {
+            return;
+        }
+
+        if !slot_claimed {
+            return;
+        }
+
+        let ticket = CleanupTicket {
+            key,
+            tags: entry.tags,
+            version: entry.version,
+        };
+        if self.queue.push(ticket).is_err() {
+            self.dirty.store(true, Ordering::Release);
+        }
+    }
+
+    pub(crate) async fn drain(&self, tag_index: &TagIndex) {
+        let accepted = self.accepted.load(Ordering::Acquire);
+        if accepted == self.acknowledged.load(Ordering::Acquire) {
+            return;
+        }
+        let Some(_guard) = self.try_claim_drain() else {
+            return;
+        };
+        #[cfg(test)]
+        self.drain_claims.fetch_add(1, Ordering::Relaxed);
+        while let Some(ticket) = self.queue.pop() {
+            tag_index
+                .unregister_if_version(&ticket.key, &ticket.tags, ticket.version)
+                .await;
+            self.acknowledge_one();
+            let slot_index = (ticket.version % self.inflight_versions.len() as u64) as usize;
+            let slot = &self.inflight_versions[slot_index];
+            if slot
+                .compare_exchange(ticket.version, 0, Ordering::AcqRel, Ordering::Acquire)
+                .is_err()
+            {
+                self.dirty.store(true, Ordering::Release);
+            }
+        }
+    }
+
+    pub(crate) fn ensure_clean(&self) -> Result<(), MemoryFootprintError> {
+        if self.dirty.load(Ordering::Acquire) {
+            return Err(MemoryFootprintError::RemovalObserverDirty);
+        }
+        let accepted = self.accepted.load(Ordering::Acquire);
+        let acknowledged = self.acknowledged.load(Ordering::Acquire);
+        if accepted == acknowledged {
+            Ok(())
+        } else {
+            Err(MemoryFootprintError::RemovalCleanupPending {
+                accepted,
+                acknowledged,
+            })
+        }
+    }
+
+    pub(crate) fn is_clean(&self) -> bool {
+        self.ensure_clean().is_ok()
+    }
+
+    pub(crate) async fn reset_after_reconcile(&self) {
+        let _guard = self.claim_drain().await;
+        while self.queue.pop().is_some() {}
+        for slot in &self.inflight_versions {
+            slot.store(0, Ordering::Release);
+        }
+        let accepted = self.accepted.load(Ordering::Acquire);
+        self.acknowledged.store(accepted, Ordering::Release);
+        self.dirty.store(false, Ordering::Release);
+    }
+
+    fn try_claim_drain(&self) -> Option<DrainGuard<'_>> {
+        self.draining
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .ok()
+            .map(|_| DrainGuard {
+                draining: &self.draining,
+            })
+    }
+
+    async fn claim_drain(&self) -> DrainGuard<'_> {
+        loop {
+            if let Some(guard) = self.try_claim_drain() {
+                return guard;
+            }
+            tokio::task::yield_now().await;
+        }
+    }
+
+    fn accept_one(&self) -> bool {
+        self.increment_sequence(&self.accepted)
+    }
+
+    fn acknowledge_one(&self) {
+        self.increment_sequence(&self.acknowledged);
+    }
+
+    fn increment_sequence(&self, sequence: &AtomicU64) -> bool {
+        let previous = sequence.fetch_add(1, Ordering::AcqRel);
+        if previous == u64::MAX {
+            self.dirty.store(true, Ordering::Release);
+            false
+        } else {
+            true
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Instant;
+
+    use bytes::Bytes;
+
+    use super::*;
+    use crate::memory_footprint::MemoryInstrumentationMode;
+
+    fn entry(version: u64, value_len: usize, tags: &[&str]) -> CacheEntry {
+        CacheEntry::new(
+            Bytes::from(vec![7_u8; value_len]),
+            tags.iter().map(|tag| (*tag).to_owned()).collect(),
+            Some(Instant::now()),
+            version,
+        )
+    }
+
+    #[tokio::test]
+    async fn delayed_old_cleanup_preserves_new_membership() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory.clone(), 2);
+        let index = TagIndex::default();
+        let old = entry(41, 8, &["blue"]);
+        memory.insert(EntryMemoryDelta::new("key", 8, &old.tags, true).unwrap());
+        index.register("key", &old.tags, old.version).await;
+
+        observer.observe(Arc::new("key".to_owned()), old, RemovalCause::Replaced);
+        let new = entry(42, 16, &["blue"]);
+        memory.insert(EntryMemoryDelta::new("key", 16, &new.tags, true).unwrap());
+        index.register("key", &new.tags, new.version).await;
+        observer.drain(&index).await;
+
+        assert!(index.contains_version("blue", "key", 42).await);
+        assert!(observer.ensure_clean().is_ok());
+    }
+
+    #[tokio::test]
+    async fn duplicate_delivery_is_idempotent_and_saturation_fails_closed() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory.clone(), 1);
+        let index = TagIndex::default();
+        let first = entry(1, 8, &["tag"]);
+        let second = entry(2, 8, &["tag"]);
+        for (key, item) in [("first", &first), ("second", &second)] {
+            memory.insert(EntryMemoryDelta::new(key, 8, &item.tags, true).unwrap());
+            index.register(key, &item.tags, item.version).await;
+        }
+
+        observer.observe(
+            Arc::new("first".to_owned()),
+            first.clone(),
+            RemovalCause::Explicit,
+        );
+        observer.observe(Arc::new("first".to_owned()), first, RemovalCause::Explicit);
+        observer.observe(Arc::new("second".to_owned()), second, RemovalCause::Size);
+
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalObserverDirty)
+        );
+        observer.drain(&index).await;
+        observer.reset_after_reconcile().await;
+        assert!(observer.ensure_clean().is_ok());
+    }
+
+    #[tokio::test]
+    async fn pending_cleanup_fails_closed_until_acknowledged() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory.clone(), 1);
+        let index = TagIndex::default();
+        let removed = entry(7, 8, &["tag"]);
+        memory.insert(EntryMemoryDelta::new("key", 8, &removed.tags, true).unwrap());
+        index.register("key", &removed.tags, removed.version).await;
+
+        observer.observe(Arc::new("key".to_owned()), removed, RemovalCause::Explicit);
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalCleanupPending {
+                accepted: 1,
+                acknowledged: 0,
+            })
+        );
+
+        observer.drain(&index).await;
+        assert!(observer.ensure_clean().is_ok());
+    }
+
+    #[tokio::test]
+    async fn empty_drain_skips_consumer_claim_without_hiding_pending_work() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory.clone(), 1);
+        let index = TagIndex::default();
+
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 0);
+
+        let removed = entry(11, 8, &["tag"]);
+        memory.insert(EntryMemoryDelta::new("key", 8, &removed.tags, true).unwrap());
+        index.register("key", &removed.tags, removed.version).await;
+        observer.observe(Arc::new("key".to_owned()), removed, RemovalCause::Explicit);
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 1);
+        assert!(observer.ensure_clean().is_ok());
+
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn consumer_claim_is_released_by_raii() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory, 1);
+
+        let guard = observer.try_claim_drain().expect("first claim");
+        assert!(observer.try_claim_drain().is_none());
+        drop(guard);
+        assert!(observer.try_claim_drain().is_some());
+    }
+
+    #[tokio::test]
+    async fn sequence_overflow_fails_closed_until_reconciliation() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory, 1);
+
+        observer.accepted.store(u64::MAX, Ordering::Release);
+        assert!(!observer.accept_one());
+        assert_eq!(observer.accepted.load(Ordering::Acquire), 0);
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalObserverDirty)
+        );
+
+        observer.dirty.store(false, Ordering::Release);
+        observer.acknowledged.store(u64::MAX, Ordering::Release);
+        observer.acknowledge_one();
+        assert_eq!(observer.acknowledged.load(Ordering::Acquire), 0);
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalObserverDirty)
+        );
+
+        observer.reset_after_reconcile().await;
+        assert!(observer.ensure_clean().is_ok());
+    }
+}

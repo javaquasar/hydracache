@@ -1,0 +1,2313 @@
+# Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together
+
+<!-- article-series:start hydracache-runtime -->
+## HydraCache Runtime Series
+
+This article is part of a practical series about building a Rust-native local-first cache runtime.
+
+You are reading: Draft.
+
+- [Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191)
+- [Part 2: Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d)
+- [Part 3: TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546)
+- [Part 4: Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935)
+- [Part 5: Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0)
+- [Part 6: How to Measure Cache Performance Without Measuring Noise](https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5)
+- Draft: Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together
+
+GitHub:
+
+https://github.com/javaquasar/hydracache
+
+crates.io:
+
+https://crates.io/crates/hydracache
+<!-- article-series:end -->
+
+Optimization work often starts with a profiler screenshot and a promising line of code.
+
+That is usually too late.
+
+Before changing the implementation, we need to decide what kind of cost we are trying to remove.
+A feature can leave total runtime unchanged while increasing allocation churn. It can reduce average
+latency while increasing resident memory. It can make one isolated operation cheaper by transferring
+work to cleanup, eviction, or a background task.
+
+These are different outcomes. A single benchmark number cannot distinguish them.
+
+While preparing HydraCache 0.73, we ran a small local experiment to measure the cost of production
+memory instrumentation. The experiment did not produce a release claim. It did something more useful
+at that stage: it found a concrete blocker before we paid for long dedicated-host runs.
+
+This article uses that experiment to explain:
+
+- how to compare an instrumented path with its uninstrumented control;
+- what gross allocation and resident set size (RSS) measurements actually mean;
+- why a faster elapsed time does not automatically clear an optimization;
+- how local screening can eliminate bad candidates before expensive qualification;
+- how to turn an observed regression into a testable ownership hypothesis.
+
+## The experiment: same binary, two modes
+
+The comparison used one optimized release binary in two runtime modes:
+
+- `off`: memory-footprint instrumentation did not update its production counters;
+- `production`: bounded counters and the associated eviction accounting were enabled.
+
+Each pair launched two independent processes. Three pairs were executed with alternating order:
+
+```text
+pair 1: off        -> production
+pair 2: production -> off
+pair 3: off        -> production
+```
+
+Alternating the order does not eliminate thermal drift, background activity, or cache effects, but
+it prevents one mode from always receiving the colder or quieter position. The run also bound the
+exact source commit, binary digest, host fingerprint, seed, attempt order, receipts, and raw resource
+series.
+
+The phrase “release pair” here means that the binary was compiled with the optimized release profile.
+It does **not** mean that three local pairs are release-grade performance evidence.
+
+## What we observed
+
+The table shows medians across the three local pairs. Regression is calculated as:
+
+```text
+(production - off) / off
+```
+
+| Metric | Instrumentation off | Production instrumentation | Change |
+| --- | ---: | ---: | ---: |
+| Total elapsed time | 35.64 ms | 34.46 ms | -3.3% |
+| Fill allocation per operation | 2,425 B | 3,075 B | +26.8% |
+| Steady-read allocation per operation | 315 B | 315 B | 0.0% |
+| Expire/delete allocation per operation | 2,267 B | 3,139 B | +38.5% |
+| Refill allocation per operation | 1,121 B | 1,300 B | +15.9% |
+| Post-idle RSS growth from cold | 512 KiB | 700 KiB | +36.7% |
+| Peak RSS growth from cold | 648 KiB | 796 KiB | +22.8% |
+
+The tempting headline would be that production instrumentation was 3.3% faster.
+
+That would be the wrong conclusion.
+
+Three short local runs cannot distinguish a small speed improvement from scheduler noise, timer
+resolution, process startup variance, or background activity. The responsible interpretation is:
+
+> This screen found no elapsed-time regression large enough to see locally.
+
+The allocation result is different. Reads were unchanged, while mutation phases repeatedly showed
+large directional deltas. That pattern is more useful than the aggregate elapsed number because it
+identifies where additional work enters the system.
+
+## Gross allocation is not retained memory
+
+“Allocated 3,139 bytes per delete” does not mean that every delete permanently increases memory by
+3,139 bytes.
+
+Gross allocation counts the sizes of successful allocation requests made while the operation runs.
+If the process allocates 1 KiB and frees it immediately, the full 1 KiB is still counted. A
+reallocation can also count the complete new allocation size rather than only the capacity delta.
+
+Gross allocation therefore measures **allocator traffic**, not live memory.
+
+It is useful because allocator traffic can imply:
+
+- additional allocator and synchronization work;
+- more temporary objects on a hot path;
+- increased cache and memory-bandwidth pressure;
+- higher sensitivity to concurrency and allocator choice;
+- future RSS growth when freed blocks remain in allocator arenas.
+
+It cannot tell us, by itself, how much memory remains live after the operation. For that we need live
+object accounting, allocator active/resident metrics, and process-level memory observations.
+
+## RSS is not the same as owned data
+
+RSS is the amount of a process currently resident in physical memory. It includes more than the
+cache entries we intended to measure:
+
+- application heaps and allocator arenas;
+- thread stacks;
+- executable and shared-library pages;
+- runtime and networking structures;
+- file-backed mappings;
+- measurement machinery itself.
+
+Absolute RSS is especially difficult to compare across independent short-lived processes. In this
+screen we used two relative values inside each process:
+
+- post-idle RSS minus the cold-process RSS;
+- peak RSS minus the cold-process RSS.
+
+That subtraction removes part of the process floor, but it does not transform RSS into an ownership
+measurement. The result is still a local diagnostic. On a qualification host we would also separate
+anonymous and file-backed pages, allocator active/resident/retained bytes, cgroup charges, and final
+live cardinality.
+
+## Why the combined reading matters
+
+The experiment produced four distinct signals:
+
+1. Total elapsed time did not expose a regression.
+2. Read allocation was unchanged.
+3. Mutation allocation increased materially.
+4. Post-idle and peak RSS growth moved in the same direction as mutation allocation.
+
+Together, these signals suggest a mutation-specific instrumentation cost. They do not prove its
+owner, but they narrow the search much more effectively than an overall throughput number.
+
+Source inspection supplied the next hypothesis. Production memory instrumentation enables an
+asynchronous eviction listener used for eviction accounting and tag-index cleanup. The listener is
+absent when instrumentation is off. Its lifecycle and queued asynchronous work are plausible owners
+for additional allocations during fill, expiry, deletion, reset, and refill.
+
+## The isolation experiment we actually built
+
+We did not immediately rewrite the listener or raise the budget. First, we added a deliberately
+narrow development-only seam that could remove exactly one factor from the experiment: listener
+registration.
+
+The normal public builder and server configuration were left unchanged. The seam was enabled only
+in the unpublished load generator and produced a new diagnostic profile. In that profile:
+
+- production atomic counters and retained-byte estimation stayed enabled;
+- the async eviction listener was not attached to the underlying cache;
+- the same eight workload phases and resource probes were used;
+- control and treatment still came from one optimized binary;
+- subprocess order remained counterbalanced;
+- every receipt declared `diagnostic_only: true` and
+  `counter_correctness_eligible: false`.
+
+That last marker matters. Without the listener, automatic eviction and removal accounting is
+incomplete. The treatment is therefore not a candidate implementation. It is an ablation: an
+intentionally incomplete configuration used to answer one ownership question.
+
+We built the release binary once, captured a source- and host-bound local context, and ran three new
+independent `off`/`production-counters-without-listener` pairs. Across those pairs, the median
+changes versus instrumentation-off were:
+
+| Metric | Counters without listener: change |
+| --- | ---: |
+| Fill allocation per operation | 0.0% |
+| Steady-read allocation per operation | 0.0% |
+| Expire/delete allocation per operation | 0.0% |
+| Refill allocation per operation | +3.3% |
+| Post-idle RSS growth from cold | +1.4% |
+| Peak RSS growth from cold | -1.8% |
+
+The elapsed median moved +7.4%, but one production sample was much faster than the other two. Three
+short local pairs cannot turn that distribution into a timing claim. We recorded the elapsed result
+as noisy rather than choosing the two convenient samples or reporting an apparent regression.
+
+Allocation and RSS tell the useful story. Removing listener registration eliminated the large fill
+and expire/delete allocation deltas and nearly eliminated the RSS deltas. A small refill residual
+remained, so we cannot claim that every byte of production-instrumentation cost belongs to the
+listener. We can say that the listener path owns the large effect that blocked the baseline.
+
+### The fill phase was the strongest clue
+
+The most informative result was not the delete phase. It was fill.
+
+The fill phase inserted 128 small entries into an empty cache whose capacity was far larger than the
+test dataset. It performed no explicit deletes and should not have needed capacity eviction. Yet the
+original production mode allocated 26.8% more bytes per operation during fill. When we retained the
+counters but did not register the listener, that delta fell to zero.
+
+This changes the hypothesis. The cost cannot be explained only as useful work performed after an
+entry is removed. Listener registration changes the backend's mutation machinery even on a phase
+that does not expect removal callbacks. Source inspection supports that interpretation: the future
+cache routes eviction notifications through listener/notifier infrastructure and represents the
+callback as a boxed future. Our callback also clones shared state and awaits tag-index cleanup when
+it is invoked.
+
+The first ablation did not yet split the cost among:
+
+- enabling the backend removal-notification machinery;
+- constructing and scheduling boxed listener futures;
+- cloning the counter and tag-index handles;
+- acquiring the tag-index lock and deleting memberships;
+- computing and subtracting the retained-byte estimate;
+- draining background maintenance before a phase ends.
+
+We therefore added a second ablation. This time the backend listener remained registered, but its
+HydraCache callback was empty: no counter subtraction, no retained-byte calculation, no shared-state
+clones in our closure, and no tag-index cleanup. The result still reproduced most of the original
+cost:
+
+| Metric | Registered no-op listener: change |
+| --- | ---: |
+| Fill allocation per operation | +23.9% |
+| Steady-read allocation per operation | 0.0% |
+| Expire/delete allocation per operation | +25.8% |
+| Refill allocation per operation | +30.5% |
+| Post-idle RSS growth from cold | +27.4% |
+| Peak RSS growth from cold | +21.3% |
+
+The refill result moved more than in the earlier screen, so three local pairs are not enough to
+decompose that phase numerically across separate source identities. The broader pattern is clear:
+an empty callback did not make listener-enabled mutations cheap. Fill remained close to the
+original +26.8%, and the RSS deltas remained material.
+
+This narrows the owner again. Most of the blocker belongs to enabling the future cache's removal
+notification path, not to the business logic inside our callback. The callback still adds work,
+especially when a removal actually occurs, but a callback-only rewrite cannot remove the fill cost
+and is therefore not a sufficient production fix.
+
+Together, the two ablations rule out a much broader and less useful explanation such as “atomic
+counters are generally expensive.” Steady reads stayed unchanged in every experiment. Mutation
+overhead disappeared when listener registration was removed while counters remained, then returned
+when an empty listener was registered. That is a causal sequence, not merely a hot-looking source
+line.
+
+Source inspection then explained the shape of the result. In the Moka future cache used by
+HydraCache, enabling a removal notifier also enables a per-key lock path. An insert attempts to
+acquire that optional lock before the backend knows whether it is creating or replacing an entry.
+Update and invalidation paths additionally protect listener delivery with shared boxed futures and
+cancellation guards. This is useful for immediate, ordered notification semantics, but it means an
+empty callback is not a free callback.
+
+We also checked the next Moka patch release rather than assuming an upgrade would solve the problem.
+Its public future-cache API still exposes synchronous and asynchronous eviction listeners, but no
+nonblocking post-removal observer. An opportunistic dependency bump therefore cannot be presented as
+the fix; an upstream seam, a reviewed backend change, or a different exact ownership design would
+each be a separate proposal.
+
+We then tested the cheapest-looking architectural shortcut: whether Moka's synchronous cache made
+the notification machinery cheap enough to justify a backend migration. This was deliberately a
+small allocation probe, not a HydraCache benchmark. It compared future and sync caches with the
+listener disabled and with a no-op listener, used 1,024 inserts or removals per case, repeated every
+case three times, and alternated `off/noop` order to reduce first-position bias.
+
+| Backend | Operation | Listener off, B/op | No-op listener, B/op | Increase |
+| --- | --- | ---: | ---: | ---: |
+| Moka future | Insert | 398.4 | 756.7 | +89.9% |
+| Moka future | Remove | 2,281.3 | 3,041.1 | +33.3% |
+| Moka sync | Insert | 372.7 | 644.0 | +72.8% |
+| Moka sync | Remove | 2,246.7 | 2,502.7 | +11.4% |
+
+The sync backend reduced the listener's incremental allocation by 24.3% on insert and 66.3% on
+remove. That is useful attribution, but not a solution. The no-op listener still added 271 bytes per
+insert and a 72.8% relative penalty. More importantly, replacing the future cache with the sync
+cache changes the backend and its asynchronous interaction model; the microprobe did not exercise
+HydraCache correctness, concurrency, expiry, tag cleanup, or production load.
+
+So the negative result saved a much more expensive experiment. We rejected “migrate to sync” as
+the instrumentation fix before building a product candidate or reserving a qualification host. The
+remaining design space is narrower: an exact nonblocking removal-observation seam or a replacement
+ownership design that avoids enabling listener-backed mutation locking. Either still needs review,
+pre-frozen allocation/RSS limits, and the full removal-correctness matrix before D2.
+
+### Turning the result into an implementable observer
+
+The chosen direction is a separate post-removal observer, not a faster implementation of the same
+async listener. The distinction matters. The observer must run only after a logical removal wins,
+must not return a future, acquire the listener-enabled per-key lock, allocate a boxed future, or
+spawn one task per removal. Its synchronous work is limited to atomic accounting and publication
+into a preallocated bounded cleanup channel.
+
+Removing the await point creates an ordering problem that the old listener previously hid. Suppose
+entry version 41 is removed, version 42 is inserted under the same key, and cleanup for 41 runs
+late. A key-only cleanup could delete version 42's tag membership. The replacement design therefore
+gives every entry an immutable version and stores that version with each tag membership. Deferred
+cleanup becomes `unregister_if_version(key, removed_version)`: a late notification can clean its own
+state but cannot mutate its successor.
+
+Duplicate accounting is also bounded rather than tied to an ever-growing event set. The production
+observer uses a fixed array of atomic version slots indexed by the immutable entry version. The
+first in-flight delivery claims its slot; a repeated delivery of the same version becomes a no-op.
+A collision with another in-flight version does not guess: it marks the observer epoch dirty so an
+exact snapshot requires reconciliation. This trades an impossible promise of collision-free
+deduplication for fixed memory and fail-closed semantics.
+
+The cleanup channel is bounded and never fails open. Saturation or closure marks the current
+observer epoch dirty. Lightweight snapshots may disclose that state, while an exact snapshot must
+either wait for every accepted cleanup, rebuild from an authoritative quiescent entry list, or
+return an error. It must never label incomplete counters or tag ownership as exact. Reconciliation
+also drains stale queued work before rebuilding, so an old ticket cannot mutate the rebuilt index.
+
+We first implemented these rules as a development-only reference model rather than altering the
+production cache. Its falsifiers cover delayed old-version cleanup, duplicate delivery, queue
+saturation, pending cleanup at an exact barrier, cancellation, and explicit, replacement, expiry,
+and capacity-removal causes. This separates proof of the lifecycle contract from the later Moka API
+spike and ensures that a low allocation number cannot excuse incorrect cleanup.
+
+The first implementation used a bounded Tokio channel and immediately demonstrated why this stage
+belongs on a local machine: although correctness passed, publication and drain allocated a median
+78.47 bytes per removal. Replacing it with a preallocated bounded ring removed those allocations.
+On the exact committed reference-model binary, both the atomic-counter control and the versioned
+observer reported 0 gross allocated bytes per operation in all three counterbalanced repetitions.
+The tiny-run elapsed values were retained but not promoted; the model does not yet contain Moka's
+automatic-removal delivery. The result proves feasibility of the HydraCache-side lifecycle, not the
+backend integration.
+
+The first isolated Moka patch then separated key locking from removal delivery. It added a
+lab-only observer builder mode that reused the existing delivery machinery but did not create the
+listener key-lock map. Median insert allocation became identical to listener-off: 400.44 B/op for
+both, versus 755.74 B/op with the ordinary listener. This directly confirmed that the key-lock path
+owned the fill penalty rather than merely correlating with it.
+
+Removal did not fall all the way to off. The observer measured 2,700.16 B/op, compared with
+2,276.23 off and 3,044.19 with the listener. Removing key locks cut 44.8% of the listener's
+incremental removal allocation, but the patch deliberately retained boxed listener futures and
+cancellation guards. That residual became the next isolated factor. The same spike verified real
+delivery for explicit removal, replacement, expiry, and capacity eviction, so the lower insert cost
+was not obtained by silently dropping an automatic-removal class.
+
+The second patch stopped representing the observer as an async listener at all. It called the
+synchronous observer directly at replacement, invalidation, expiry, and capacity-removal sites;
+ordinary listeners retained their existing locks, futures, cancellation safety, and behavior. The
+observer then matched listener-off insert allocation exactly at 400.69 B/op. Its remove median was
+2,275.41 B/op versus 2,287.78 off. We interpret the small negative difference as no detected
+allocation penalty, not as a speedup from observing removals.
+
+Finally, the harness connected those real Moka callbacks to the versioned bounded-cleanup model.
+It inserted key version 41, replaced it with version 42, delayed cleanup of 41 until after 42 was
+registered, and proved that version 42's membership and retained-byte accounting survived. At that
+point the local spike had implemented and falsified the complete proposed lifecycle: automatic
+delivery, immediate bounded accounting, duplicate suppression, conditional deferred cleanup,
+saturation/dirty epochs, reconciliation, shutdown drain, and fail-closed exact snapshots.
+
+At that point the result still did not authorize a product change. The successful code was an
+isolated patch against a development copy of Moka, not HydraCache's locked production dependency.
+The remaining boundary was governance and qualification: recorded review, baseline-only
+allocation/RSS rejection limits, an explicit dependency decision, D2 authorization, and only then
+product integration plus the full local and dedicated-host matrices.
+
+We turned that boundary into data rather than leaving it as a sentence in a plan. The D2 review
+candidate names the exact authorized surfaces, upstream-first and pinned-fork dependency choices,
+rollback, correctness falsifiers, and D3 measurements. Its proposed 15% fill-allocation minimum is
+derived from the smaller baseline-only listener overhead, not from the successful observer spike.
+Candidate evidence is kept in a separate exclusion list. Allocation and RSS guards reuse the
+previously reviewed practical envelopes. Because this is a single-maintainer project, we recorded a
+proposal-scoped exception instead of pretending that automation was an independent reviewer. The
+exception binds the earlier threshold commit by full SHA, separates governance, dependency,
+implementation, and measurement commits, retains every attempt, preserves dedicated-host
+qualification, and requires later publication to say “self-reviewed”. Completing a convincing
+prototype still only prepares the decision; it does not grant the prototype permission to become
+the product.
+
+### Turning a successful patch into an owned dependency
+
+We chose the pinned-fork path for the 0.73 integration window. That choice is narrower than “use
+our branch”: HydraCache consumes only the exact crates.io package
+`hydra-moka =0.12.15-hydra.1`, whose registry checksum is
+`7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a`. The package preserves the
+Rust library name `moka`, while its provenance binds the runtime observer code to commit
+`352e53faa480c9997272b9c70798dd5b5c15d581` in the project-owned fork. A branch name is useful for
+humans but mutable, so the contract rejects it as a dependency identity. The fork is one focused
+runtime commit over Moka `v0.12.15`; the receipt also records both source-tree ids,
+a stable patch id, and the digest of the earlier checked-in prototype patch. These identities make
+it possible to distinguish a reviewed source change from a later force-push or unrelated fork edit.
+
+Owning the repository does not make the dependency trustworthy by itself. We ran Moka's complete
+all-feature tests and doctests, denied every Clippy warning, verified the publishable package with
+the `future` feature, checked the declared Rust 1.71.1 MSRV using upstream-compatible dependency
+pins, and applied HydraCache's `cargo-deny` policy. We generated a CycloneDX 1.5 inventory and bound
+its SHA-256 to the decision. A feature-powerset run checked all 80 valid combinations containing
+`sync` or `future`, while target checks covered Windows x86_64 plus Linux x86_64 and aarch64. The
+isolated HydraCache harness then re-proved every removal cause and the delayed old-version cleanup
+case against the exact fork code.
+
+The review also changed the prototype in a safety-relevant way before it was pinned. An observer
+panic is caught; the observer is disabled after its first panic, and later cache operations remain
+usable. The API documentation prohibits blocking, I/O, and reentering the same cache. This does not
+prove that HydraCache's integration is correct—it makes the dependency contract precise enough for
+product tests to try to falsify it.
+
+We later opened upstream discussion `moka-rs/moka#606` and draft pull request `#607`, but their
+review remains independent of the HydraCache release clock. The receipt says `pending`, rather than
+implying that the Moka maintainers reviewed or accepted the API. An external review has an unbounded
+schedule, while a fork we own has explicit maintenance and rollback costs. We accepted those costs:
+recheck upstream and advisories at least monthly and before
+each release candidate, never broaden or move the exact package version in place, and require a new
+receipt, registry checksum, lockfile diff, SBOM, and full dependency gate for every version change.
+Rollback is one product
+commit restoring crates.io Moka 0.12.15 and the previous listener wiring.
+
+D2 therefore opens exactly one door: a later product-integration commit may use the pinned observer
+seam on the pre-authorized files and surfaces. It does not open measurement. Candidate runs remain
+forbidden until explicit removal, replacement, expiry, capacity eviction, duplicate delivery,
+saturation, reconciliation, cancellation, shutdown, reentrancy, panic, compatibility, and rollback
+tests pass in HydraCache. Local evidence will still be non-promotable, and the numerical claim still
+requires the admitted dedicated-host pairs frozen earlier.
+
+### What changed when the observer entered the product
+
+The product integration landed as commit
+`73fc38a131d26e78b246fe93d5edd71d33796bbf`. It originally pinned the reviewed Moka revision in the
+manifest and lockfile. Before publication we packaged that same runtime source as
+`hydra-moka 0.12.15-hydra.1`, verified the registry checksum, and replaced the Git source with an
+exact crates.io dependency. `Cargo.toml` and `Cargo.lock` now bind the immutable version and
+checksum; changing either still requires a new dependency receipt rather than moving a branch or
+tag.
+
+The callback does only work that must happen at logical removal time. It computes the already
+defined entry-memory delta, decrements the atomic counters, claims a bounded version slot, and uses
+`try_send` on a 4,096-ticket channel. It does not await, perform I/O, call back into HydraCache, or
+spawn a task per removal. Tag-index cleanup is performed later by ordinary cache operations,
+diagnostics, snapshot, or reconciliation drains. A membership is now `(key, entry_version)`, so a
+late ticket can remove version 41 without removing version 42.
+
+The queue is bounded, but the production implementation is intentionally not described as
+allocation-free before measurement. It uses Tokio's bounded MPSC channel rather than copying the
+laboratory ring into the product. The important correctness property is that saturation or a
+version-slot collision marks the epoch dirty. Admin snapshots become non-atomic and exact snapshots
+return an error until authoritative reconciliation rebuilds tag membership from the live cache.
+The local allocation screen must now determine whether this concrete integration preserves the
+observer seam's fill-path win and whether mutation costs stay inside the frozen guards.
+
+Adding an eight-byte entry version initially looked like it would invalidate the retained-memory
+baseline. We avoided changing the frozen 72-byte inline `CacheEntry` size by replacing the tag
+container's 24-byte `Vec` header with a 16-byte boxed slice and using the recovered eight bytes for
+the version. This is a useful optimization lesson in miniature: a new correctness field does not
+have to become a new retained-memory tax, but the layout claim must be checked by the existing
+golden estimator rather than inferred from source.
+
+The most valuable failure happened in a compatibility test. An early integration attached the
+observer even when memory instrumentation was `Off`. The cache concurrency matrix then showed a
+different capacity-pressure survivor, because merely enabling Moka's removal path can alter backend
+maintenance behavior. We changed the builder so `Off` attaches no observer at all. The default path
+therefore remains the previous path, while `Production` and the explicit instrumentation profiles
+receive exact removal accounting. This is precisely why performance refactors need behavioral tests
+that appear unrelated to the target metric.
+
+The admission run covered the full HydraCache test suite, compile-fail UI cases, focused memory,
+reclamation, tag-model, cancellation, capacity, replacement, duplicate, saturation, and pending
+barrier falsifiers, Clippy in normal and instrumentation-lab configurations, feature leakage,
+documentation contracts, and the repository supply-chain policy. A detached worktree at the parent
+commit also compiled against crates.io Moka 0.12.15 and passed the previous memory-footprint suite,
+so rollback is executable rather than aspirational.
+
+The implementation review found one governance defect rather than hiding it: the preliminary D2
+file list named the authorized surfaces but omitted several support files required to implement
+them, including `cache.rs`, `entry.rs`, the module declaration, the new observer module, and the
+source-policy file. We recorded that variance and the exact changed-file set in a separate admission
+receipt before running candidate measurements. The thresholds and public API did not change. This
+is another practical reason to separate implementation from measurement: the boundary can still be
+audited and corrected without contaminating the candidate result.
+
+At this point local screening is open only as rejection evidence. It can tell us that the integrated
+candidate is still too expensive and should return to design. It cannot support a published
+numerical improvement. That still requires the admitted Linux host, serialized lease, calibration,
+and five counterbalanced pairs frozen in the D3 contract.
+
+### What the integrated local screen found
+
+We did not compare the new candidate only with an old table. We rebuilt the exact pre-observer
+commit and the admitted candidate, captured a clean privacy-safe context for each, and ran five
+counterbalanced off/production pairs per source on the same local host with the same seed. The two
+source campaigns were sequential rather than interleaved, so the result remains a screen, not a
+qualification experiment.
+
+The primary allocation result nevertheless became clear enough for a local go/no-go decision:
+
+| Metric | Pre-observer production | Observer production | Change |
+| --- | ---: | ---: | ---: |
+| Fill allocation per operation | 3,040.38 B | 2,479.31 B | -18.45% |
+| Steady-read allocation per operation | 315.19 B | 316.44 B | +0.40% |
+| Expire/delete allocation per operation | 3,139.13 B | 2,315.63 B | -26.23% |
+| Refill allocation per operation | 1,402.34 B | 1,052.47 B | -24.95% |
+| Post-idle RSS growth from cold | 720 KiB | 548 KiB | -23.89% |
+| Peak RSS growth from cold | 800 KiB | 644 KiB | -19.50% |
+
+The fill result clears the preregistered 15% local rejection minimum without moving the threshold.
+More importantly, the within-candidate off/production medians were 2,480.88 and 2,479.31 B/op: the
+old listener's 581.06 B/op fill overhead was no longer visible. That normalized comparison matters
+because the absolute off floor moved slightly between source builds.
+
+The mutation result did not come from deleting accounting work. The same candidate passed exact
+reconciliation for explicit removal, replacement, expiry, capacity eviction, tag invalidation, and
+flush. Expire/delete still cost 48.5 B/op more in production than off, but that is 2.14%, inside the
+frozen 3% guard and far below the old 872 B/op listener overhead. Steady reads moved by 1.25 B/op,
+also inside both the 3% and 16-byte guard. The candidate's post-idle and peak RSS deltas were 20 KiB
+above its off mode, inside the 5%/1 MiB local envelope.
+
+Elapsed time is the least trustworthy part of this screen. Candidate production was 1.5% faster
+than the pre-observer production median, while individual within-source pairs varied widely. We
+record this as “no local slowdown detected,” not as a speedup. CPU per operation, p99, the 95%
+Hodges-Lehmann interval, host calibration, and stable offered-rate windows still belong to the
+dedicated D3 run.
+
+This is the desired role of local performance work: the candidate has earned the expensive run,
+not the conclusion. Had fill failed the 15% minimum or an allocation/RSS guard, we would have gone
+back to the design without consuming dedicated-host time.
+
+### The result changed governance, not just code direction
+
+Before the fork decision, the responsible next action was not to start editing the production cache.
+We recorded the owner as D1-classified and explicitly left D2 unauthorized. The proposal registry
+prevented candidate measurements and product mutation until four things existed:
+
+- a lab-only feasibility result for the viable backend designs (the sync shortcut is now rejected,
+  while the exact nonblocking designs remain to be evaluated);
+- a recorded independent or single-maintainer review policy for the selected proposal;
+- allocation and RSS rejection limits frozen in an earlier commit before product mutation;
+- exact correctness tests for every automatic and explicit removal path.
+
+Those prerequisites are now separated in time and commits. The threshold/review prerequisites and
+exact dependency decision are complete, so D2 permits implementation. The correctness prerequisite
+now gates the transition from implementation to measurement; it was not silently reclassified as
+already passing merely because the dependency itself passed its tests.
+
+We also froze the parts of the measurement method that were already inherited and defensible: at
+least five independently started admitted pairs, a 95% interval, Hodges-Lehmann paired estimates,
+moving-block bootstrap, Holm correction across primary claims, and the existing 2% goodput and 3%
+CPU/p99 regression guards. Allocation and RSS limits first remained named blockers instead of being
+chosen from the numbers we had just observed; the later single-maintainer review froze them against
+that earlier commit and kept the observer measurements explicitly outside their derivation.
+
+Finally, we created an unadmitted host-profile template. It describes the immutable and mutable host
+probes, serialized lease, CPU/NUMA/power policies, and pre/post calibration required for later
+qualification. It does not contain a convenient local-machine fingerprint and cannot authorize a
+release claim. This separation lets local work continue without allowing local evidence to promote
+itself.
+
+The first account-backed admission then converted that template into a real, separately identified
+host without converting it into a result. The workflow held a protected serialized lease, captured
+the same Linux x86_64 fingerprint before and after a cold release build, and ran five warmed
+calibration samples at each boundary. Relative spread was 3.05% before the build and 1.49% after it,
+below the preregistered 5% ceiling. Two earlier attempts remain in the ledger: a generic version
+probe called `pidstat --version`, which this implementation rejects in favor of `-V`. Treating that
+as an unavailable required tool made the lane red before any candidate work. Fixing the probe,
+rather than deleting the requirement or silently retrying, demonstrated why admission belongs ahead
+of expensive measurement.
+
+Host admission still did not authorize D3. It proved that the machine, toolchain, affinity policy,
+lease and short calibration boundary were reproducible. It did not yet establish stable offered
+rates or measurement-window length for I73. Those values must come from baseline-only pilots; only
+after they are frozen can the observer candidate be observed on this host. This is another useful
+separation: qualifying the laboratory is not the same as accepting an experiment performed in it.
+
+The first baseline-only pilot then produced exactly the kind of inconvenient result this separation
+was designed to preserve. Across four offered rates, all 24 processes completed without an outcome
+or reconciliation failure. Both modes delivered at least 99.96% of offered load, p99 stayed below
+two milliseconds, and goodput regression was effectively zero. On those dimensions the selected
+windows looked comfortably stable.
+
+The run still failed its preregistered decision rule. Production instrumentation consumed 4.14%,
+6.46%, 10.01%, and 5.27% more CPU per operation at 2,500, 5,000, 10,000, and 20,000 operations per
+second. The aggregate result was not created by one bad process: production used more CPU in all 12
+counterbalanced pairs, whether it ran first or second. Expressed as an absolute cost, the observed
+paired deltas ranged from roughly 0.08 to 0.62 microseconds per operation. Allocation supplied a
+second repeatable signal: production added about 19.4-20.4 bytes per operation at every rate.
+
+This is a useful example of why “the server kept up” is not the same statement as “the baseline is
+acceptable.” An open-loop workload can meet its offered rate while spending more CPU headroom to do
+so. That headroom matters before saturation and is exactly what the independent CPU gate protects.
+Because the 3% ceiling was frozen before the run, zero rates qualified and I73 remained unfrozen.
+The failed workflow is therefore retained evidence, not infrastructure noise and not permission to
+raise the limit.
+
+The right follow-up is narrower than repeating the entire scan. The existing laboratory seams can
+separate four configurations: instrumentation off; counters with backend removal observation
+disabled; a registered backend observer with an empty callback; and complete production accounting.
+Their adjacent differences attribute the cost respectively to counters, backend notification
+plumbing, and HydraCache cleanup/accounting work. That diagnostic remains non-promotable because two
+configurations deliberately break removal correctness. Its job is to tell us where to optimize; the
+unchanged off-versus-production contract must still make the eventual acceptance decision.
+
+The four-mode run made that distinction concrete. Counter-only instrumentation measured 0.20%
+below off, so the experiment detected no CPU cost attributable to the counters themselves. Adding
+an empty post-removal observer increased median CPU per operation by 1.42%; replacing it with the
+complete callback and cleanup path added another 1.99%. End to end, production was 3.24% above off,
+with about 20.23 additional allocated bytes per operation. All 20 processes completed, and the
+host's 4.27%/2.09% pre/post calibration spreads stayed inside the frozen 5% envelope.
+
+This result changes the implementation question from “are atomics expensive?” to “why do calls
+with no cleanup work still enter async coordination?” HydraCache asks the observer to drain before
+and after many mutations. Most of those calls find an empty channel, yet they still acquire the
+receiver's async mutex. The observer already maintains accepted and acknowledged sequence counters,
+so equality provides a cheap no-work hint. Checking that hint before locking is race-safe: the old
+implementation could also observe an empty receiver immediately before a concurrent publication,
+and every exact snapshot and later mutation drains again or fails closed on unequal sequences. The
+optimization can therefore remove repeated empty locks without weakening delivery, version checks,
+saturation handling, or exact reconciliation.
+
+That change was deliberately small. The drain path first loads the accepted and acknowledged
+sequences with acquire ordering and returns when they are equal. It does not advance either
+sequence, consume a ticket speculatively, or treat equality as proof for a later snapshot. Tests
+instrument the lock acquisition itself: an empty observer takes no lock, a published removal takes
+exactly one and reaches a clean acknowledged state, and the next empty drain again takes none. The
+broader observer and memory-accounting suites then re-prove duplicate handling, saturation,
+version-conditional tag cleanup, capacity eviction, expiry, and exact reconciliation. This is the
+kind of optimization a local machine can close completely at the mechanism/correctness layer before
+spending another admitted-host run on the quantitative question.
+
+The next unchanged baseline run showed both the value and the limit of that tactic. CPU overhead at
+10,000 and 20,000 operations per second fell inside the 3% ceiling, to 2.80% and 2.08%. At 2,500 and
+5,000 it was still 3.52%. Two rates therefore passed, but the preregistered rule required three.
+Calling that “close enough” would erase the purpose of the rate grid: fixed coordination costs are
+most visible when useful work is sparse.
+
+That shape points to the remaining coordination primitive. A Tokio bounded channel is appropriate
+when producers and consumers need asynchronous waiting; this callback is forbidden to wait, uses
+`try_send`, and is drained opportunistically by a caller already in async context. A bounded
+lock-free array queue better matches those semantics: fixed capacity, no per-ticket node allocation,
+nonblocking push, and direct pop without an async receiver mutex. The dependency was already in the
+resolved graph, but making it direct still requires an explicit supply-chain check. Most
+importantly, changing the container must not change the protocol around it: slot-based duplicate
+detection, dirty-on-overflow, accepted/acknowledged barriers, version-conditional tag cleanup, and
+reconciliation recovery remain the actual correctness contract.
+
+### Why the ablation must not become the fix
+
+It would be easy to stop here and ship production counters without the listener. That would make the
+benchmark green by deleting required work.
+
+The listener currently observes removals that are not all initiated by the public `remove` method:
+capacity eviction, expiry, replacement, invalidation, and backend maintenance can all affect live
+ownership. It also participates in tag-index cleanup. A cheaper design is acceptable only if it
+continues to account for every removal path and releases every secondary owner.
+
+The production replacement therefore needs deterministic proofs for at least:
+
+- explicit remove, overwrite, invalidate, flush, TTL expiry, and capacity eviction;
+- exact counter reconciliation at a quiescent barrier;
+- complete tag-membership cleanup and bounded generation state;
+- concurrent mutation snapshots being marked non-atomic rather than presented as exact;
+- cancellation and shutdown draining all acknowledged work;
+- unchanged public configuration, capacity semantics, and default behavior.
+
+Only after those tests pass should the full production profile be rerun locally. If the large
+allocation and RSS deltas remain gone, the candidate earns an expensive dedicated-host comparison.
+If they return, the design goes back to local attribution instead of consuming a qualification run.
+
+### What this step taught us about profiling
+
+An ablation does not have to be a valid product configuration to be a valid diagnostic. It must,
+however, state exactly which guarantees it breaks. Here, disabling the listener answered an
+ownership question while the receipt explicitly prohibited counter-correctness and release claims.
+
+The sequence was more valuable than a profiler screenshot alone:
+
+1. Measure the complete production behavior against an off control.
+2. Find the phases where the cost appears.
+3. Form an owner hypothesis from phase behavior and source inspection.
+4. Remove one factor without pretending the result is shippable.
+5. Re-run the same process-level comparison and retain the negative evidence.
+6. Turn the result into correctness constraints for the real redesign.
+
+This is how cheap local work protects expensive performance work. The first screen stopped us from
+freezing an instrumented baseline with a hidden cost. The second screen stopped us from optimizing
+the atomic counters that were not the main owner. Neither screen produced a release number, but both
+removed a large amount of uncertainty before dedicated-host qualification.
+
+## Do not move the threshold after seeing the result
+
+The observed allocation regressions were larger than expected. One easy response would be to set the
+allowed allocation overhead above 38.5% and declare the instrumentation acceptable.
+
+That would turn a measurement into a justification.
+
+A release threshold must be chosen before candidate data is observed. It should represent the
+largest practical cost the product is willing to accept, not the smallest value that makes the
+current implementation pass.
+
+For this experiment, throughput, CPU per request, and p99 latency already had inherited regression
+ceilings. Allocation and RSS limits had intentionally remained unmeasured blockers. After seeing the
+screen, they remained blockers. The result was recorded as negative, non-promotable evidence rather
+than used to manufacture a permissive budget.
+
+This distinction is central to evidence-driven optimization:
+
+```text
+measurement answers “what happened?”
+policy answers “what cost is acceptable?”
+```
+
+The measurement cannot be allowed to rewrite the policy that judges it.
+
+## What the first dedicated runs changed
+
+The first admitted-host baseline did not validate the production observer. All four offered rates
+exceeded the preregistered 3% CPU-per-operation ceiling, even though every attempt completed and the
+host stayed inside its calibration envelope. A four-mode attribution run then split the cost into
+three layers: counters alone had no detected CPU penalty, registering an empty backend observer
+added about 1.4%, and HydraCache's real callback and cleanup added about another 2.0%. That result
+gave us an owner, not permission to relax the ceiling.
+
+The first code change removed an async receiver-lock acquisition from empty drains. Repeating the
+same baseline contract moved the 10,000 and 20,000 operations/second points below the ceiling, at
+2.80% and 2.08%, but the 2,500 and 5,000 points both remained at about 3.52%. Two stable rates were
+progress; the frozen contract required three. We retained the failed campaign and did not average
+the passing high-load points into an acceptance claim.
+
+The shape of the result matters. When a percentage penalty falls as offered load rises, a fixed
+per-drain or synchronization cost is a stronger suspect than work proportional to every request.
+That is an inference to test, not proof. It led to a second, narrowly preregistered change: replace
+the bounded Tokio channel and async receiver mutex with a preallocated bounded `ArrayQueue` and an
+atomic single-consumer claim.
+
+The implementation preserves the safety properties that performance work is most likely to erode:
+
+- capacity remains 4,096 tickets rather than becoming an unbounded queue;
+- publication still cannot await or block;
+- a full queue or version-slot collision marks the observer dirty;
+- accepted and acknowledged sequences remain the exactness barrier;
+- delayed cleanup remains conditional on entry version;
+- reconciliation still repairs a dirty epoch;
+- an RAII guard releases the consumer claim if a drain future is dropped.
+
+Local tests establish those properties, but they do not establish that the change is faster. Even
+an intuitively cheaper primitive can lose because of cache-line contention, retry behavior, or a
+different workload mix. The next legitimate performance statement must therefore come from another
+unchanged baseline-only run on the admitted host. If it still fails, the failure remains evidence;
+if at least three rates pass, only then may the release freeze its integrated baseline and proceed
+to candidate qualification.
+
+That repeat produced another useful rejection. The two high rates improved to 2.48% and 0.99% CPU
+overhead, but 5,000 operations/second remained just outside the ceiling at 3.23%, and 2,500 measured
+7.04%. All 24 attempts completed, throughput and p99 did not regress, and host calibration was
+tighter than 0.3%, so this was not dismissed as an infrastructure failure. The `ArrayQueue` change
+was retained for its simpler bounded publication path and green correctness proof, but the run did
+not establish a performance improvement: cross-run differences are diagnostic, not paired evidence.
+
+The next suspected cost is smaller and more mechanical. Both publication and acknowledgement use a
+checked atomic update expressed as a compare-and-swap loop. Replacing each with one `fetch_add` can
+remove retries and branching while still detecting wrap from the returned previous value. The
+important constraint is semantic: overflow must still make the observer dirty and exact snapshots
+must remain unavailable until reconciliation. This optimization is preregistered and tested locally
+before another host minute is spent.
+
+The implementation made the atomic operation itself the sequence linearization point. If
+`fetch_add` returns `u64::MAX`, the counter has wrapped, but the observer marks the epoch dirty before
+returning. Exactness checks consult that dirty bit before comparing the counters, so two equal zeros
+cannot masquerade as a clean state. A forced-overflow test covers both publication and
+acknowledgement and verifies that reconciliation is the only recovery path. This is a useful pattern
+for micro-optimization: remove mechanism, not the invariant that mechanism was protecting.
+
+The next dedicated repeat invalidated a different assumption: the pilot itself was not repeatable
+enough to steer another micro-optimization. At 5,000 operations/second, successive admitted runs
+reported 3.23% and 10.13% CPU overhead; at 10,000 they reported 2.48% and 5.46%. The host calibration
+spread stayed below 1.21%, every operation completed, and the intervening code change only replaced
+two atomic increment loops. Calling that change a regression would be as unjustified as calling the
+earlier result an improvement.
+
+Counterbalancing alone does not make an estimator paired. The first pilot launched off and
+production in alternating order, but then calculated a median for each mode independently and took
+their ratio. With three short pairs, one expensive production process could move the decision while
+its adjacent control observation was discarded as a pair. The corrected pilot keeps the same
+workload, rates, and ceilings, but uses five ten-second pairs and applies Hodges-Lehmann to the five
+within-pair differences. This increases measurement volume; it does not widen the acceptance gate.
+
+We also removed the workflow's push trigger. Dedicated-host qualification is now manual-only behind
+the protected environment. Cheap correctness and contract checks still run locally, while a normal
+documentation or implementation push cannot accidentally start an expensive campaign.
+
+The tool enforces those choices rather than relying on operator memory. It refuses fewer than five
+pairs, shorter than ten-second windows, a changed rate grid, warmup, or seed. Every raw attempt still
+has its own directory and digest. The aggregate carries both the per-pair deltas and their
+Hodges-Lehmann estimate, so a reviewer can reconstruct the decision and see whether a single pair
+was influential. Improving measurement here is part of the optimization: it prevents us from
+spending code complexity on a fluctuation the benchmark cannot reproduce.
+
+The first strengthened run still rejected the baseline, but with a much clearer shape. Five paired
+ten-second observations produced Hodges-Lehmann CPU overhead estimates of 3.85%, 1.23%, 3.86%, and
+0.94%. Goodput and p99 passed, all 40 processes completed, and calibration stayed within 1.44%.
+Only two rates passed. This is stronger evidence than the earlier short runs: the residual cost is
+small, workload-dependent, and still real enough to keep I73 unfrozen.
+
+The paired samples also prevent overreacting to one anomaly. One 10,000-rate pair measured 13.61%
+CPU overhead, while the other four measured roughly 1.99%, 2.26%, 3.86%, and 3.94%. The robust
+estimate was 3.86%. Removing the outlier because it is inconvenient would be wrong; letting it
+single-handedly set the answer would also be wrong. Retaining both the samples and the estimator
+makes that distinction reviewable.
+
+The next code target follows directly from attribution and code structure. Each removal updates
+eight retained-memory counters, and every update is a checked compare-and-swap loop. Those counters
+are already protected by an active-mutation epoch. A single `fetch_add` or `fetch_sub` can detect
+wrap from its returned old value and set the fault bit before the guard releases quiescence. That
+removes retry loops without weakening exact snapshots. The active-mutation, version, and epoch
+algorithms remain unchanged because their overflow windows have different synchronization risks.
+
+We implemented that narrower change and resisted the tempting global rewrite. The eight data
+counters now perform one atomic read-modify-write each. Overflow and underflow do modify the raw
+counter by wrapping, unlike the old failed compare-and-swap update, but that value is never allowed
+to become evidence: the same operation's old value exposes the fault, the permanent fault flag is
+published while the mutation is still active, and both barrier and capture reject the subsystem
+before reading it as exact. There is no recovery path that silently blesses the wrapped number.
+
+This distinction matters. A data counter lives inside a wider mutation protocol, so fail-closed
+wrap detection after its linearization point is sufficient. The active-mutation count, version,
+and epoch *are* that protocol; changing them to wrapping operations would create different windows
+where quiescence or snapshot identity could be misreported. Similar-looking atomics therefore do
+not automatically have the same safe optimization. We removed retry machinery only where the
+surrounding invariant already supplied the safety boundary.
+
+The local proof deliberately targets the dangerous ordering, not just the happy path. Tests hold
+the mutation guard, force overflow or underflow, and ask for a barrier before releasing the guard.
+Receiving `CounterFault` instead of `NotQuiescent` demonstrates that the permanent fault became
+visible first. Capture is rejected while the guard is active, and the barrier remains rejected
+after it drops. Existing reconciliation and memory-accounting suites then show that ordinary
+insert, replace, delete, expiry, and flush behavior did not move.
+
+That is still not a performance result. Local tests prove that the proposed cheaper mechanism
+preserves failure semantics; they cannot prove that fewer possible CAS retries reduce CPU on the
+reference host. The receipt therefore authorizes exactly one unchanged manual v2 baseline repeat.
+If three rates pass, we can freeze I73. If they do not, the packet becomes another retained
+falsifier instead of an invitation to move the threshold.
+
+The repeat did not pass. With the single-atomic counter implementation, paired CPU overhead was
+3.53%, 4.69%, 4.44%, and 1.80% across the four rates; only 20,000 operations/second stayed below the
+3% ceiling. All 40 attempts completed, goodput remained essentially unchanged, and calibration
+spread stayed below 2.68%. This is a valid negative measurement, not an infrastructure failure.
+
+It would also be incorrect to call the counter change a regression. The preceding V2 campaign had
+two stable rates, but the old and new binaries were measured in separate campaigns rather than as
+paired treatments inside one schedule. Cross-run movement describes repeatability; it does not
+isolate causality. The new campaign alone is enough to reject the baseline freeze, while the code
+change remains acceptable only on its independently proven simplicity and correctness merits.
+
+One signal repeated across every cell: production allocated roughly 20.1--20.5 more bytes per
+operation than off. Unlike the CPU estimate, that delta barely changed with offered rate. It does
+not prove that allocation causes all CPU overhead, but it gives the next local investigation a
+specific target. We stop spending reference-host minutes and return to allocation attribution:
+observer delivery, queue publication, cleanup, and tag-index work must be separated before another
+product optimization is selected.
+
+The local split found the owner without another bare-metal campaign. Counter updates changed gross
+allocation by only a few bytes per operation, and get-only traffic was neutral. Enabling an empty
+post-removal observer, however, added about 79 B/op to replacement, 81 B/op to remove/refill,
+118 B/op to tag invalidation/refill, and 76 B/op to TTL puts. The complete production callback did
+not add the positive adjacent delta; remove and tag invalidation retained +76 and +86 B/op versus
+off, which combined into +24.80 B/op in the original mixed workload.
+
+The code explains the shape. Moka must deliver an owned value to the observer and calls
+`entry.value.clone()`. HydraCache's value derives `Clone` and stores tags as `Box<[String]>`, so
+cloning a removed entry copies the slice and every tag string before the callback can move that copy
+into its bounded cleanup ticket. Reads do not invoke the observer, and counters do not clone the
+entry, matching the two neutral ablations. This is stronger attribution than merely noticing that
+allocations correlate with CPU: the metric, operation family, ablation boundary, and source-level
+ownership all agree.
+
+The next optimization therefore changes ownership rather than shaving another atomic instruction.
+Sharing immutable tags between the stored entry, Moka's observer clone, and the cleanup ticket can
+turn the deep clone into a refcount increment. That proposal still needs its own safety contract:
+versioned tag cleanup, bounded queue behavior, retained-memory estimates, and public APIs must stay
+unchanged, and the exact 120-process local matrix must show that the identified allocation moved
+before any dedicated-host run is considered.
+
+That ownership change produced the local result the hypothesis predicted. The entry and cleanup
+ticket now share immutable tags through `Arc<[String]>`. Moka can still clone and deliver an owned
+entry, but cloning the tag field increments a reference count instead of allocating a new slice and
+copying every string. Public events deliberately remain unchanged: when an event is actually
+published, HydraCache materializes owned strings at that boundary.
+
+The important comparison is not the absolute allocation level, which also includes the workload
+and allocator, but the same adjacent ablation boundary before and after the change. Replacement
+moved from +78.62 to +1.68 B/op when enabling the noop observer; remove/refill moved from +81.02 to
+-1.94 B/op; tag invalidation/refill moved from +117.85 to -6.47 B/op; and TTL puts moved from
++76.03 to +0.24 B/op. Reads remained neutral. In other words, the allocation appeared exactly when
+observer delivery began before the change and disappeared at that boundary after ownership became
+shared.
+
+Production results add a useful nuance. Remove/refill fell from +76.17 to -1.99 B/op relative to
+off, while tag invalidation/refill fell from +85.71 to +14.83 B/op. The remaining positive tag cost
+is downstream of the noop observer boundary and is consistent with constructing the intentionally
+owned public event payload. We do not call negative local deltas speedups: independent short
+processes and allocator reuse can move medians by tens of bytes. The defensible claim is narrower
+and stronger—the 76--118 B/op deep-clone owner was removed, and the remaining allocation belongs to
+a different, explicit API boundary.
+
+This is also the point where a local profiler has done its job. It selected a candidate, predicted
+which cells should move, and falsified the unwanted ownership pattern without consuming another
+reference-host campaign. It still cannot establish CPU overhead. The next expensive run is now
+justified as confirmation of a specific mechanism, so the evidence receipt permits one unchanged,
+manual paired V2 repeat and no automatic or post-result retry.
+
+The confirmation passed decisively. The exact-source reference-host run completed all 40 attempts,
+with pre/post calibration spread of 0.20% and 0.44%. All four offered rates were stable. Paired CPU
+overhead was 0.052%, 0.090%, 0.167%, and 0.594% from 2,500 through 20,000 operations per second;
+goodput and p99 stayed inside their unchanged guards. Production allocation was consistently about
+26 B/op below off, reversing the earlier roughly +20 B/op signal without changing the workload or
+thresholds.
+
+The local and hosted results answer different questions. The 120-process local ablation explains
+*why* the allocation moved: the noop-observer boundary lost its deep tag clone. The dedicated-host
+paired campaign establishes that the integrated production instrumentation now fits its frozen CPU,
+latency, allocation, and stability budget. Neither result should be stretched into a claim that this
+commit caused a particular CPU improvement versus an older campaign; those campaigns were not a
+paired code comparison. Together they are sufficient for the intended governance decision: freeze
+`I73` at the measured source, select the 20,000 ops/s knee, derive 5,000/12,000/17,000 ops/s D3
+cells, and permit candidate observation only under separately preregistered comparisons.
+
+The next source audit also changed how we plan instrumentation. The cache already has an exact
+retained-byte snapshot split by entries, values, keys, tags, tag-index memberships, expiry metadata,
+and generation metadata. HC/2 already reconciles live connections, invocations, subscriptions, and
+sessions; the durable store exposes logical bytes and GC reclamation; management paths already have
+hard concurrency and response bounds. Adding parallel counters for those owners would increase the
+cost of the baseline while producing duplicate evidence.
+
+The real gaps are narrower: lock wait and cloned expiry keys in the shared client store; copied
+bytes at RESP and HC/2 boundaries; queued HC/2 bytes; management collector wakeups and retained
+cursor/history bytes; durable staging buffers versus file-backed pages; and allocator
+allocated/active/resident/retained state. Some of those belong in focused test-only or production
+counters, some in allocation probes, and some only in OS or allocator-native telemetry. Treating
+every unknown as a new hot-path counter would confuse observability with ownership—and could recreate
+the overhead problem we just removed.
+
+The first follow-up probe demonstrates why the measurement layer matters. The shared client store's
+bounded expiry sweep used an owned `Vec<StoreKey>` for every examined entry, then cloned expired
+keys into a second vector and cloned the final examined key once more into the cursor. Because a
+`StoreKey` contains three owned strings, this is not a cheap tuple copy. It is three allocations and
+all identity bytes copied for every clone, while the store mutex remains held.
+
+A profile-only feature called the real sweep from a standalone release binary; it added no counters
+or timers to the frozen production path. The fixed fixture contained 512 entries, a 256-entry scan
+budget, and 96 identity bytes per tuple key. Five independent processes per shape produced identical
+results. With no expired entries, the sweep made 772 allocations and allocated 43,104 gross bytes.
+Of those bytes, 18,432 are the reserved 256-element examined vector and 24,672 are the three strings
+in 256 examined-key clones plus one cursor clone. Crossing the ordered-map boundary produced exactly
+the same result, which is evidence that wraparound itself is not a separate owner.
+
+When half the examined entries were expired, the result rose to 1,162 allocations and 73,536 bytes;
+when all were expired, it reached 1,547 allocations and 104,256 bytes. The increase is explained by
+the necessary owned removal keys plus geometric growth of the filtered expired vector. Gross
+allocation deliberately counts the full destination size of every reallocation, so this is churn,
+not retained memory. The decomposition predicts every observed byte: it is a much stronger basis for
+a change than an RSS correlation.
+
+The candidate boundary is now narrow. Removal still needs owned expired keys because the map is
+mutated after scanning, and bounded progress still needs one owned cursor. The examined keys need
+neither. A borrowed scan can retain only expired tuples and the final cursor, reducing the fixed
+43,104-byte no-expiry cost to the cursor's 96 bytes while preserving the 256-entry budget, wrap
+semantics, and quota cleanup.
+We do not yet claim shorter lock duration: the allocation is under the mutex, so that outcome is
+plausible, but it requires a separate measurement rather than inference.
+
+The candidate matched that byte model exactly. In all four shapes it removed 43,008 gross bytes,
+769 allocations, and 24,576 copied identity bytes per bounded scan. No-expiry and cursor-wrap both
+fell from 43,104 bytes and 772 allocations to 96 bytes and three allocations: precisely one owned
+three-string cursor. Half-expired fell from 73,536 to 30,528 bytes, and all-expired from 104,256 to
+61,248 bytes. Five fresh processes per shape returned identical results.
+
+The percentage is deliberately secondary to the decomposition. Depending on how many keys expired,
+the reduction is 99.78%, 58.49%, or 41.25%, but the removed owner is invariant. Correctness tests
+also retained the scan budget, explicit wraparound, full sweep without a cursor, empty-store cursor
+cleanup, and tenant quota release. That combination lets us accept W2 locally without buying a
+dedicated-host run. CPU and mutex-wait claims remain open; W2 will join a later integrated candidate
+rather than receiving a bespoke expensive campaign.
+
+The next owner appeared at a transport boundary. HC/2 already represents the mutation key and value
+as immutable reference-counted `Bytes`, but event fan-out converted them back to slices and called
+`Bytes::copy_from_slice` for every matching subscription. The outbound channel is bounded and awaits
+capacity, so this is not an unbounded queue bug. It is bounded amplification: every queued event owns
+another complete key and value allocation.
+
+A standalone allocation probe reproduced only those two constructor calls, with its frame vector
+reserved before measurement. The result was exact in 20 independent processes: two allocations per
+subscriber and gross bytes equal to `fanout × (key bytes + value bytes)`. A 64-byte key plus 128-byte
+value cost 192 bytes at fan-out one, 1,536 bytes at fan-out eight, and 3,072 bytes at fan-out sixteen.
+With a 4,096-byte value and sixteen subscribers, one event created 66,560 bytes of payload copies
+before protobuf, HTTP/2, or TLS buffering was considered.
+
+This decomposition keeps the candidate small. Passing `Bytes` through the fan-out function and
+shallow-cloning it into each immutable wire message should remove the payload allocations while the
+last queued event still owns the backing storage. Ordering, watermarks, bounded `send().await`
+backpressure, and disconnect reconciliation remain the falsifiers. Tonic and TLS buffer ownership is
+a separate W5 subproblem and must not be inferred from this result.
+
+The first candidate probe correctly failed its zero-allocation contract. Every shape reported two
+allocations and 48 bytes, independent of fan-out and payload size. The invariant exposed a fixture
+error: cloning `Bytes` created directly from a unique `Vec` performs a one-time promotion to shared
+ownership. The real server already performs that promotion in `mutation_event`, before entering the
+fan-out function. The red result is retained; the fixture must reproduce that ownership state before
+we can judge the per-subscriber clones.
+
+The corrected fixture retained both owners before measurement, exactly as the server does after
+`mutation_event`. Under that preregistered rerun, all 20 processes reported zero allocation in the
+fan-out window while retaining every frame. An actual server test additionally verified that two
+event frames preserved their bytes and shared the original backing pointers; the real-mTLS test
+continued to deliver the event and reconcile all connection-owned resources to zero after close.
+Thus the event-copy subproblem is accepted locally. W5 itself remains open for channel storage,
+connection-task allocation, and transport buffers.
+
+There is a broader lesson in the failed 48-byte run. Two values can have the same Rust type and
+different allocation behavior because their internal ownership state differs. A `Bytes` created
+from a unique `Vec` has not yet paid the transition to shared ownership; a `Bytes` cloned from a
+decoded request has. A benchmark that recreates the type but not the ownership history can charge a
+setup transition to the operation under test. The corrected fixture therefore retained both the
+original and cloned owners before opening the allocation window. This was not a statistical
+adjustment: the threshold stayed at zero, the failed packet remained in the ledger, and the new
+fixture encoded a source-level fact that can be falsified.
+
+The queue model also constrains what we can claim. Each HC/2 connection has a bounded Tokio channel
+whose capacity equals `max_streams_per_connection` (16 by default), and `send().await` stops the
+single connection producer when that channel is full. A blocked send can retain its producer-held
+frame in addition to queued frames. Sharing payload buffers removes multiplicative copies across
+those frames, but it does not remove the channel slots, protobuf encode buffers, HTTP/2 flow-control
+state, TLS records, or the connection task itself. Those owners need a connection census with exact
+logical reconciliation before process memory can be divided by connection count.
+
+That census used the real mTLS listener and client, not a mocked channel. Groups of 1, 10, 100, and
+1,000 clients were opened in sequence. At every plateau, `active_connections` equaled the requested
+cardinality and `accepted_connections - closed_connections` equaled the live count; subscriptions,
+sessions, and pending invocations stayed at zero. Every client also reported empty pending maps and
+restored permits. After each group closed, accepted equaled closed and every server-side live owner
+returned to zero. The 1,000-connection group completed inside the same local test in 6.69 seconds.
+
+This is a denominator, not a memory result. We now know that a process-level delta at 1,000 clients
+cannot be explained by silently missing or already-closed logical connections. We still cannot divide
+RSS by 1,000 and call the quotient a connection cost: allocator arenas, shared TLS state, code pages,
+HTTP/2 buffers, task stacks, and nonlinear capacity growth must be separated through independent
+processes and multiple cardinalities.
+
+The independent-process profile then supplied the missing shape, while also showing why that warning
+matters. Across three fresh processes at each cardinality, cumulative allocation during connection
+creation was almost perfectly linear: the median stayed between 278,280 and 278,316 gross bytes per
+local client/server pair from one through 1,000 connections. That number is allocation churn, not
+retained memory. It includes both endpoints, certificate and TLS setup, HTTP/2 state, runtime work,
+and anything freed before the plateau. Its stability makes it a useful decomposition target, but it
+does not make it a server-side bytes-per-connection result.
+
+Working set told a different story. Median plateau deltas were 2,699,264 bytes at one connection,
+4,198,400 at ten, 15,675,392 at one hundred, and 122,925,056 at one thousand. The marginal change
+from 100 to 1,000 was about 119,166 bytes per additional local pair, far below the gross-allocation
+figure and different from the older D0 slope. That is expected: gross allocation counts churn, while
+working set is a noisy retained-page snapshot with fixed process warm-up, allocator size classes,
+shared runtime state, and both sides of the loopback connection. A single straight line through all
+four points would hide the fixed floor and manufacture false precision.
+
+After close, median working set still sat 2,748,416, 3,489,792, 4,358,144, and 6,656,000 bytes above
+the corresponding baselines. Yet accepted equaled closed, the server reported no live connection,
+invocation, subscription, or session owner, and every client map and permit set reconciled. The
+residual is therefore evidence of process high-water behavior, not evidence of a logical leak. It
+may be reusable allocator or runtime capacity, and W8 must test that reuse explicitly before anyone
+proposes trimming it.
+
+This local result closes one question and opens a narrower one. Scaling is material enough to justify
+separating the endpoints, but the combined process cannot tell us whether the dominant owner is the
+client, HydraCache server state, tonic/HTTP2, TLS, or allocator bookkeeping. The next probe must keep
+the same protocol and cardinalities while placing server and clients in different processes and
+sampling both. Only then is it responsible to choose among initial-buffer sizing, queue-byte caps,
+or idle buffer release; RSS alone still does not authorize any of them.
+
+Separating the endpoints made the decomposition much sharper. Over the 100-to-1,000 interval, the
+client process contributed about 181,324 gross allocation bytes and 70,529 working-set bytes per
+additional connection; the server contributed about 97,023 gross allocation bytes and 49,625
+working-set bytes. The allocation slopes sum to 278,348 bytes per pair, only 0.024% away from the
+combined-process slope. The working-set slopes sum to 120,154 bytes, 0.83% above the combined result.
+Those close reconstructions are a useful consistency check: process separation changed fixed floors,
+but did not invent a different scaling phenomenon.
+
+The server-only working-set slope is especially informative. Its local 49,625 bytes per connection
+is 7.48% above the older D0 observation of 46,171, despite a different harness and measurement date.
+That resemblance increases confidence that the original signal was real, while the difference is a
+warning against turning either number into a universal constant. Client process state accounts for
+roughly 65.1% of allocation churn and 58.7% of split working-set growth, but it was absent from the
+old server RSS slope. Endpoint scope explains why both measurements can be correct.
+
+Even the server number is not yet an application-owner number. One process contains the HydraCache
+subscription/session maps and bounded channel, but also tonic, HTTP/2 flow control, rustls records,
+Tokio tasks, socket buffers charged into the process, and allocator bookkeeping. The idle matrix
+therefore accepts the endpoint attribution without authorizing a buffer change. The next frozen cell
+is one hundred slow consumers: it can test the bounded queue/frame-retention model and exact cleanup,
+which is the remaining application-level W5 hypothesis, while leaving generic TLS tuning alone.
+
+The slow-consumer fixture itself needed correction before it could answer that question. The older
+helper opened one subscription on each of one hundred clients but issued all 1,100 mutations through
+the first client. HC/2 subscription maps are stream-local, so ninety-nine nominal slow consumers saw
+no events. The corrected profile gave every connection a unique prefix and made every client produce
+1,100 matching mutations. Both drained and unread sides therefore completed the same 110,000 real
+mTLS mutations while retaining exactly one hundred active subscriptions.
+
+Five counterbalanced process pairs isolated the unread receiver. Relative to continuously drained
+receivers, it added a median 20,037,582 gross allocation bytes and 21,204,992 working-set bytes in
+the client process. The paired server medians were -1,829 allocation bytes and -57,344 working-set
+bytes: noise around zero under the same mutation load. All controls delivered 110,000 events with
+zero drops. Every unread run accepted exactly 51,300 events and recorded 117,493 to 117,495 drops.
+The repeatability and endpoint separation identify the retained owner much more strongly than a
+whole-process RSS difference could.
+
+The apparently surprising 51,300 count follows the protocol model. The server watermark is global,
+while each unique-prefix subscription sees only its matching mutations, so gap notifications share
+the client's 1,024-item subscription queue with events. Once that bounded queue fills, subsequent
+gap/event delivery attempts are rejected and coalesced into repair state instead of growing memory
+without limit. This is honest bounded degradation: the application must repair after the gap, but
+the transport reader and server are not blocked by an application that stopped calling `next()`.
+
+That last distinction prevents another overclaim. This experiment closes the normal application
+slow-consumer hypothesis as client-owned and bounded; it does not simulate a hostile peer that stops
+polling the HTTP/2 response stream itself. The server still has a 16-item outbound channel, but an
+item limit is not a byte limit when frames vary in size. A raw transport-stall probe is the next
+legitimate way to decide whether byte admission is needed. The 21 MB client result cannot be used as
+evidence for changing the server queue.
+
+The raw probe made that hostile boundary real without changing product counters. Eight wire-level
+clients completed mTLS, handshake, and subscription acknowledgement. Controls kept polling the
+response stream; treatments retained the same `Streaming` objects and request senders but made no
+response poll during the pressure window. Each peer offered exactly 8 MiB of values in both cells:
+2,048 mutations at 4 KiB or 32 mutations at 256 KiB. A server-side dispatch counter sampled after a
+two-second settle and again 500 milliseconds later proved that every treatment had actually stopped,
+while every control completed its full volume.
+
+Across five counterbalanced pairs per payload, unpolled-minus-drained server working-set deltas were
+positive in all ten pairs. Their median rose from 9,216,000 bytes at 4 KiB to 22,667,264 bytes at
+256 KiB; pagefile medians moved from 9,461,760 to 22,663,168 bytes. This is repeatable payload-size
+sensitivity, but still a process-level result. It does not tell us that those bytes all occupy the
+Tokio channel: protobuf encoding, Hyper/h2 send state, rustls, socket handoff, and allocator pages
+remain in the same server process.
+
+Source and measurement together give a stronger boundedness model. The locked Hyper 1.11.1 client
+uses a 2 MiB default stream receive window and a 5 MiB connection window. Median stalled dispatch
+was 4,160 mutations in the 4 KiB cell, or 520 per peer. That is approximately 512 value-bearing
+events admitted by a 2 MiB stream window plus a small bounded tail. At 256 KiB, the median was 128,
+or sixteen per peer: approximately eight events in the stream window plus a similar tail. Invocation
+responses and global-watermark gap frames share the path, so this is a source-supported decomposition,
+not an exact queue-occupancy equation. It does explain why an item bound alone cannot express the
+memory exposure.
+
+The fixture produced two useful red smoke tests before the frozen matrix. The first classified
+legitimate gap frames as unexpected; the second showed that merely dropping a stalled tonic stream
+did not reconcile quickly enough for a deterministic close proof. The final fixture counts gaps,
+takes its pressure snapshot while the stream remains completely unpolled, then resumes reading only
+to drain the already offered frames before closing. Snapshot response counts remain zero, and every
+run finishes with accepted equal to closed and all server-owned live resources at zero. Neither red
+smoke result was silently replaced in the twenty-attempt matrix.
+
+This evidence is enough to preregister an application outbound-byte-admission candidate, not to
+declare it successful. The candidate must retain the existing 16-item limit, charge the encoded
+`ServerEnvelope` while it waits in the application queue, avoid deadlock for one legal frame larger
+than the byte budget, and release every permit on send failure or disconnect. Its claim must stop at
+the point where tonic polls the item: HTTP/2, TLS, and socket retention are downstream owners and
+need their own controls. That narrower statement turns “add a byte cap” from a slogan into a
+falsifiable ownership change.
+
+The candidate used a one-MiB semaphore per connection and charged each `ServerEnvelope` by its
+protobuf encoded length before the existing sixteen-item channel. The queued wrapper owns the
+weighted permit until tonic polls that item. A legal envelope larger than the budget consumes the
+whole budget rather than being rejected, so one oversize frame can always progress; the single
+connection producer means only one already-constructed frame can wait outside the admitted queue.
+This preserves protocol semantics while making the application-owned queue express both an item and
+a byte bound.
+
+The correctness proof targets the awkward edges, not only the happy path. Unit tests observe the
+exact encoded charge, show a second oversize frame blocking, then prove permit release on poll, on a
+closed receiver, and on disconnect. The real-mTLS test still preserves event ordering and shared
+payload bytes and reconciles connections, subscriptions, sessions, and invocations to zero. The
+complete server suite and strict clippy gate also pass; no public configuration, client API, or wire
+contract changed.
+
+Repeating the frozen twenty-process matrix separated the two active bounds. At 4 KiB, median stalled
+dispatch barely moved, from 4,160 to 4,152 total mutations, because the sixteen-item limit remains
+tighter than one MiB. Its paired working-set ranges overlapped, and the median moved from 9,216,000
+to 9,863,168 bytes; this is not a small-frame memory win. At 256 KiB, median stalled dispatch fell
+from 128 to 104, exactly the direction expected when the application tail changes from roughly eight
+value-bearing frames per peer to roughly four plus the producer-held frame.
+
+The high-payload retained-memory result moved with that dispatch bound. Median unpolled-minus-drained
+server working set fell from 22,667,264 to 15,949,824 bytes, a local reduction of 6,717,440 bytes or
+29.6%. Pagefile fell from 22,663,168 to 15,167,488 bytes, or 33.1%. Every one of the five candidate
+pairs was below every one of the five retained baseline pairs. All controls completed, all treatments
+were stable for the frozen interval with zero response polls, and every process closed eight of eight
+connections with no live server resources.
+
+The remaining roughly sixteen megabytes are as informative as the reduction. The new admission gate
+cannot reclaim a frame already polled by tonic, Hyper/h2's peer-advertised receive window, protobuf or
+TLS work buffers, socket ownership, or allocator high-water pages. The candidate is therefore
+accepted locally as an application-queue bound and retained for the later integrated W5/W2 campaign;
+the percentages are diagnostic, not release claims, and do not justify a dedicated-host run for this
+subproblem alone.
+
+The remaining Wave A surface was management overhead. Here the source audit prevented us from
+building the wrong benchmark. Management aggregation is not a periodic collector: it runs when a
+formation, consensus, health, or related snapshot is requested, and its one-second cache is populated
+by that request. The optional Prometheus history adapter is request-scoped as well. The management
+source files contain no `spawn` or `interval` loop. A generic “server idle” comparison would mostly
+measure the common expiry-maintenance task and Tokio runtime, then incorrectly charge them to the
+management API.
+
+We therefore split W6 into seven ownership cells in one standalone release binary. Five
+counterbalanced process pairs compared construction with management routes off and on. Five fresh
+processes each then measured sixty dashboard reads at one read per second, sixty cold aggregate
+refreshes, sixty hits against one retained aggregate, cursor saturation, and sixty valid history
+reads with the adapter disabled. Every process reported gross allocation, process-wide live
+allocation, working set, pagefile, response bytes, elapsed time, transport calls, and logical cursor
+cardinality. The full matrix completed 35 of 35 attempts with empty stderr and every route, cache,
+cursor, and history falsifier green.
+
+Mounting the management route graph added a median 95,261 gross allocation bytes and 21,797 live
+allocator bytes relative to the disabled route graph. Those numbers describe one-time construction,
+not a per-second tax. No idle process made an aggregate transport call, a disabled surface returned
+404 for the management route, and the source audit found no management-owned background task. This
+closes the feared “collector wakes even when nobody is reading” branch: there is no collector to
+optimize. Lazily replacing a small one-time route cost would add lifecycle complexity without
+addressing a recurring owner.
+
+The ordinary polling cells also put their scale in context. Sixty dashboard reads allocated exactly
+927,564 gross bytes in every repeat, or 15,459.4 bytes per read, while serializing 1,901 bytes per
+response. At one read per second that is roughly 15 KiB/s of allocation churn, not retained growth.
+A disabled-history read allocated 8,942 bytes and returned 351 bytes; its process-wide live delta was
+zero in every repeat, and every response said `no_adapter`. Constructing an upstream client or
+running DNS while history is disabled would have failed this cell, but neither happened.
+
+The aggregate cache, by contrast, proved that an existing optimization is doing real work. Sixty
+cold refreshes caused exactly sixty transport calls and a median 599,684 gross allocated bytes.
+Sixty reads of the same valid snapshot caused one transport call and 362,949 bytes. Cache reuse
+therefore removed about 39.5% of gross allocation and 32.0% of elapsed time in this local fixture,
+while returning the same 29,400 serialized bytes. This is not evidence for a new candidate; it is
+evidence to preserve the current epoch-, observation-, roster-, and TTL-bound cache semantics.
+
+Cursor saturation shows why logical bounds and allocator snapshots must be reported separately. The
+fixture issued 1,025 truncated formation pages against a 250-member snapshot, then retried the first
+cursor. All five processes rejected that oldest token and reported exactly 1,024 retained records,
+proving the hard eviction bound. The sequence allocated about 53.1 MB gross across 1,026 operations,
+roughly 51.8 KiB per response-and-cursor operation, mostly repeated formation projection and JSON
+work. Yet the process-wide live allocation delta was negative because unrelated earlier allocations
+were reclaimed during the window. Reporting that negative value as “negative cursor memory” would
+be nonsense. The defensible retained claim is the exact record count and eviction behavior, not a
+byte estimate reverse-engineered from allocator motion.
+
+Working set delivered a similar warning. Four idle pairs placed the on-minus-off delta between 8 KiB
+and 274 KiB, while the first pair produced a negative 13.7 MB outlier. We retained that attempt. The
+paired median was 143,360 bytes, but a five-pair local Windows working-set median cannot override the
+tight allocation decomposition or identify a management owner. Startup page faults, runtime
+warm-up, and allocator reuse can dominate a short process snapshot; this is exactly the sort of
+result that should block an RSS claim rather than be edited away.
+
+W6 therefore ends as measured-no-win. The request paths are bounded, disabled history is inert,
+idle management has no periodic owner, cache reuse already removes most repeated aggregation work,
+and cursors enforce both TTL and cardinality limits. No product mutation and no dedicated-host run
+are justified for this surface. The useful output is a protected baseline and a preservation rule:
+future changes must not introduce a background collector, bypass the aggregate cache, weaken the
+cursor bound, or make disabled history contact an upstream service.
+
+W3, the tag index, required a different decomposition. A tag participates in at least three kinds
+of ownership: the immutable tag slice retained by a cache entry, the reverse index from a tag to
+versioned keys, and the metadata copied into public cache events. Measuring only total process RSS
+would merge those owners. We instead ran 215 independent release processes: 256 entries with
+0/1/4/16/64 fixed-width tags, both a shared tag set and a unique tag set, 0/1/8 event subscribers,
+and invalidation fan-outs of 1/64/1,024. Each cell had five repeats, exact memory reconciliation,
+content checks for every delivered event, and its own stdout, stderr, and exit record. All attempts
+completed, stderr stayed empty, and every invariant passed.
+
+The exact retained-byte estimate grew by 184 bytes per logical membership and reached 3,014,656
+bytes at 16,384 memberships. It was deliberately identical for shared and unique topologies. That
+does not mean both layouts retain the same allocator memory: the estimator prices one logical
+membership from known lengths and versioned constants; it does not inspect `HashMap` capacity or
+deduplicate repeated strings. At 64 tags, the shared topology added about 154.8 live allocator bytes
+per membership over its zero-tag cell, while the unique topology added about 413.9. The extra cost is
+consistent with 16,384 distinct outer tag identities and their one-key maps. It identifies a real
+topology cost, but not a safe optimization: global string interning would add synchronization,
+reclamation, and adversarial-cardinality behavior to save memory only when names repeat.
+
+Gross allocation told a related but separate story. Shared tags cost about 490.1 gross bytes per
+membership and unique tags about 796.9. Some of that is unavoidable construction of entry and index
+state; some is transient, such as forming an owned key for a `HashMap::entry` lookup. These numbers
+are useful for later work, but changing index ownership first would mix several mechanisms and put
+generation fencing at risk. The stale-load test therefore remained an explicit gate: invalidating a
+tag while a load is in flight still discarded the stale store.
+
+The event cells produced a much cleaner owner. After subtracting the corresponding zero-tag event
+cost, one subscriber allocated 55.87 bytes per delivered 32-byte tag and eight subscribers allocated
+56.00 bytes. The arithmetic explains the result: cloning one `String` needs its 24-byte header and a
+new 32-byte payload allocation. `CacheEvent` currently stores `Vec<String>` and derives `Clone`, so
+Tokio broadcast delivery repeats that deep copy for each receiver. With 64 tags and eight
+subscribers, the shared-topology cell delivered 4,194,304 logical tag bytes and added 7,412,728 gross
+allocation bytes relative to no subscribers; 7,340,064 of those bytes were the tag-dependent part.
+The allocation owner scales with both tag count and subscriber fan-out while live retained memory
+after delivery remains essentially unchanged. This is allocation churn, not a leak.
+
+Invalidation did not expose another candidate. Every run removed exactly the requested 1, 64, or
+1,024 entries, exact reconciliation ended with zero memberships, and one bounded generation record
+remained to fence stale work. Median gross allocation at fan-out 1,024 was about 2.36 MB and elapsed
+time about 1.23 ms locally, both consistent with required per-key removal. Optimizing that loop
+without changing the removal contract would need a more specific owner than “linear in the work it
+must perform.”
+
+The W3 decision is therefore narrow: preserve the index and generation model, and preregister a
+candidate that changes only event tag ownership from a deeply cloned vector to an immutable shared
+slice. The public accessor can still return `&[String]`, event equality can remain content-based, and
+`Clone` can become an atomic reference-count increment instead of duplicating every tag. Acceptance
+must come from rerunning all 215 cells, not only the favorable 64-tag/eight-subscriber point; no-tag,
+zero-subscriber, single-subscriber, shared/unique, invalidation, exact-memory, and stale-load controls
+must stay green. These local figures locate the owner and authorize the experiment, but remain
+non-promotable release evidence.
+
+The preregistered experiment then changed one private field: `CacheEvent.tags` became an
+`Arc<[String]>`. Constructors still accept the same inputs, `tags()` still returns `&[String]`, and
+equality still compares contents. The important behavioral change is inside `Clone`: broadcast
+receivers now increment a reference count instead of cloning the slice and allocating every string
+payload. A focused unit test checks pointer identity after clone, while the existing public event,
+slow-subscriber, tag-index model, exact-memory, and stale-load tests protect observable semantics.
+
+The full candidate matrix again completed 215 of 215 attempts with empty stderr and no invariant
+failure. In the primary shared-topology cell with 64 tags and eight subscribers, median gross
+allocation fell from 15,628,164 to 8,686,476 bytes, a local reduction of 44.4% against a frozen 30%
+acceptance threshold. More revealing than the total is the slope: tag-dependent churn fell from
+56.00 to 3.01 bytes per delivered tag. With one subscriber it fell to exactly 24 bytes per tag. The
+remaining 24 bytes are the `String` headers copied once while converting the constructed vector into
+an immutable shared slice; with eight receivers that one-time cost amortizes to roughly three bytes
+per delivery. The 32-byte string payload is no longer reallocated by each receiver.
+
+The controls kept the conclusion narrow. Maximum no-subscriber gross regression was 1.11% against a
+5% limit, maximum index live-delta regression was 1.41% against 10%, and invalidation gross allocation
+did not regress. Logical membership counts, retained-byte estimates, fan-out removal, generation
+records, exact reconciliation, event contents, and delivery counts were unchanged. The candidate is
+therefore retained for integrated W3/W5 confirmation. It is a demonstrated local allocation win, not
+a published latency or capacity claim; elapsed time remained diagnostic and no dedicated-host run
+was spent on the isolated field change.
+
+W4 applied the same method to the Redis compatibility path, but split the path into four stages before
+looking for a change: wire decode, command translation, response encode, and complete roundtrip. The
+frozen matrix covered both RESP dialects, ASCII and binary keys, key sizes from zero to 256 bytes,
+batches from one to 256 arguments, distinct and duplicate topology, response payloads up to 1 MiB,
+and six end-to-end controls. Ninety-two scenarios with five independent process repeats produced 460
+attempts. Gross allocation was the ownership signal; elapsed time remained diagnostic because short
+single-process timings on a developer workstation cannot support a throughput claim.
+
+The first 460-process attempt was rejected, and retaining it exposed a useful profiling lesson. The
+nominally distinct ASCII generator repeated after 26 bytes. Consequently, the 256-key DEL fixture
+contained only 26 identities. Five processes exited successfully and wrote clean stderr, but both the
+expected structured-byte invariant and command-cardinality invariant failed in every repeat: ten
+false invariant fields across five attempts. A profiler that checked only exit codes would have turned
+a fixture defect into a product conclusion. We fixed the generator to include a fixed-width unique
+prefix, added a 256-key distinctness test, rebuilt the binary, and ran a second complete matrix. The
+rejected raw manifest remains bound into the evidence alongside the accepted one.
+
+The clean matrix confirmed that binary-key expansion itself is required compatibility work. A
+non-empty key becomes `redis-binary-v1-` plus two lowercase hexadecimal characters per source byte,
+so its structured length is exactly `16 + 2N`; the empty sentinel is 21 bytes. The measured GET cells
+followed that identity at 16, 64, and 256 source bytes, and a distinct 256-key batch carried 36,864
+logical structured bytes per operation. Those bytes cannot be optimized away without changing key
+identity. Separating logical output from gross allocation prevents us from calling required data an
+accidental copy.
+
+Batch translation still exposed a secondary owner. At 256 binary keys, MGET and EXISTS allocated
+about 55.5 KiB gross per operation, MSET about 43.3 KiB, while distinct DEL allocated about 116.8 KiB.
+Duplicate DEL fell back to 55.8 KiB because it produced only one structured key. The additional
+distinct-DEL work is consistent with follow-up ownership and linear deduplication, but changing it
+first would touch order, duplicate semantics, and execution planning. It is now a measured follow-up,
+not a license for an unfocused collection rewrite.
+
+Decode showed an even larger but less isolated signal. RESP2 gross allocation ranged from roughly
+2.05 to 6.19 times wire input in the frozen corpus. RESP3 ranged from 2.27 times for a large SET to
+52.00 times for the small, array-heavy HC.TAG command; GET-64 was 14.40 times and the 256-key MGET and
+DEL shapes were about 12.13 times. This deserves further ownership work, but the cost spans parser
+frames and external value types. A broad parser change would combine lifetime, protocol, and API
+risk, so those ratios are recorded rather than immediately “optimized.”
+
+Encode provided the clean owner. A 1 MiB bulk response emitted 1,048,588 wire bytes but allocated
+2,097,176 bytes gross per operation; array responses showed the same near-two-times relationship in
+both dialects. The implementation fills a local `BytesMut`, then calls `to_vec()`, which allocates a
+second buffer and copies the complete frame. In the pinned `bytes` implementation,
+`Vec::from(BytesMut)` transfers a unique backing allocation and copies only when the buffer is shared.
+The encoder's buffer is local and unique. That gives W4 a narrow candidate: replace the two final
+copies with ownership transfer, keep every public response byte identical, and rerun all 460 cells.
+The preregistered bar is at least 40% less gross allocation in every 1 MiB encode cell, zero wire or
+roundtrip changes, and no more than 5% gross regression in decode or translation. Only that evidence,
+not the attractiveness of the source diff, decides whether the change stays.
+
+The implementation changed exactly the two registered return expressions. The RESP2 and RESP3
+encoders now consume their `BytesMut` with `Vec::from(output)`. Compatibility tests still covered
+golden scalar, array, binary, error, null, pipeline, boundary, listener, and mined-corpus behavior;
+97 unit tests and 39 active integration tests passed, as did `clippy` and the full workspace check.
+That test layer matters before measurement: a faster encoder with one changed byte is a protocol bug,
+not an optimization.
+
+The candidate matrix then completed 460 of 460 independent processes with empty stderr, zero failed
+invariants, and no wire difference in any encode or roundtrip cell. All 70 pure decode and translation
+medians were byte-for-byte unchanged in gross allocation. The four 1 MiB encode cells reduced gross
+allocation by 49.96% to 50.00%, clearing the frozen 40% threshold. Bulk frames made the mechanism
+especially visible: a 1,048,588-byte response went from 2,097,176 gross bytes per operation to exactly
+1,048,588. At 4,096 payload bytes, bulk allocation likewise fell from 8,210 to the 4,105-byte frame.
+The removed allocation is the full-frame copy, not a statistical inference.
+
+Array encoding did not fall all the way to its wire length, which is the next useful distinction. At
+1 MiB, RESP2 retained 640 gross bytes above its 1,048,741-byte wire frame; RESP3 retained 1,664. Those
+small fixed residuals correspond to array-element frame construction and RESP3-specific structure,
+not a second payload-sized buffer. They should not be folded into the same claim or chased without a
+new size-scaling profile. Even the small encode controls improved rather than regressed, from 5.4%
+for the empty RESP3 array to 50% for bulk payloads.
+
+Local elapsed medians in the four large cells also fell by 32.7% to 41.4%, but those figures remain
+diagnostic. Allocation identity is deterministic enough to accept the ownership change locally;
+portable latency and capacity still require a qualified host and representative server workload.
+W4 therefore keeps the two-line candidate for integration, defers RESP3 decode and distinct-DEL work
+as separately measured owners, and does not spend a dedicated-host campaign on an isolated copy whose
+semantic controls and allocation mechanism are already explicit.
+
+W7 started with a terminology trap: durable memory is not one owner. It includes short-lived record
+encoding and decoding buffers, Sled's own process state, allocator high-water pages, operating-system
+file cache, logical bytes charged to the durable budget, and bytes written through the process. RSS
+cannot separate those categories. The local profile therefore measured allocation phases, exact
+logical bytes, directory length, process IO transfer, working set, and private commit independently.
+On Linux it can additionally read anonymous and file PSS from `smaps_rollup`; on this Windows run that
+split was explicitly unavailable in all 120 attempts. We recorded `null`, not an invented file-cache
+number. Consequently, this run cannot support a page-cache residency claim.
+
+The source audit found a more direct owner before any OS-memory interpretation was needed. Every
+`DurableValueStore::upsert` asks `would_fit` whether the budget permits the record. `would_fit` reads
+the existing record and calls `total_bytes()`. That method scans the complete Sled prefix and decodes
+every durable record. Upsert then reads the existing record again, merges, encodes into a payload
+vector and a second framed vector, inserts, and flushes. The sync coordinator flushes again; the
+async coordinator queues cheaply, but drain calls the same flushing upsert for every item and then
+performs one final flush. These are distinct candidate owners and must be measured separately.
+
+The frozen matrix used 24 scenarios and five fresh processes each: store lifecycle at 1/16/64/256
+records and 64/4,096-byte payloads; RAM-only, sync, and async-bounded write paths; and repair-pending
+versus repair-confirmed tombstone GC. All 120 processes exited cleanly, reopened content matched,
+logical-byte accounting reconciled, async lag returned to zero, GC cardinality was exact, and every
+temporary store was removed.
+
+Steady reads supplied the control. A 64-byte record cost roughly 167--185 gross bytes per read across
+all cardinalities; a 4 KiB record cost roughly 4.20 KiB. Fill did not stay flat. For 64-byte payloads,
+median gross allocation per upsert rose from 9.24 KiB at 16 records to 40.23 KiB at 256, a 4.35-times
+increase. For 4 KiB payloads it rose from 67.84 KiB to 597.37 KiB, or 8.81 times. Overwrite grew even
+faster: 7.43 and 10.02 times over the same cardinality interval. At 256 records, updating one 4 KiB
+logical value allocated about 1.147 MB gross. Required record bytes are constant within each series;
+the changing term is the full-store decode scan.
+
+The durability modes showed where work moves. RAM-only admission stayed exactly flat at 114 gross
+bytes for a 64-byte payload and 4,146 for a 4 KiB payload. Async admission performed zero write
+transfer and cost only about 329--333 or 4,361--4,365 gross bytes while lag grew to the registered
+64 or 256 entries. Drain then reproduced almost exactly the sync allocation and IO shape, and lag
+returned to zero. That does not prove device-level write amplification: the Windows transfer counter
+observes process IO above the storage stack. It does show that the current async queue defers the
+full scan-and-flush work rather than batching it away.
+
+GC preserved the safety boundary. With repair pending, it removed zero records and issued zero write
+transfer. Once repair was confirmed, it removed and reclaimed exactly 64 or 256 tombstones. The
+roughly 4.5 KiB gross allocation per removal and per-record writes identify the remove-and-flush loop,
+but do not by themselves authorize weakening repair fencing or batching durability semantics.
+
+The first W7 candidate is therefore narrower than “optimize Sled.” Cache only the logical byte total
+used by admission, initialize it from one validated scan at open, and update it after successful
+ownership changes. Keep the public validation scan, format and checksum behavior, budget rejection,
+recovery, sync-before-ack, async backpressure, and repair-fenced GC unchanged. A candidate must flatten
+the fill/overwrite cardinality slope in both payload series and rerun all 120 scenarios. File-cache
+ownership and redundant flush work remain separately measured follow-ups rather than being bundled
+into that counter change.
+
+The implementation added a private `budget_used_bytes` value to the durable store. Opening a store
+performs one checksum-validating scan to initialize it. Admission then combines that total with the
+same existing-record and incoming-record byte arithmetic as before; a successful insert updates the
+counter before flush, and remove subtracts only an actually removed record. The public
+`total_bytes()` method still scans and validates every record, so the optimization does not turn a
+cached admission value into an observability claim. A focused test exercises replacement shrinkage,
+budget release after remove, missing-key remove, reopen reconstruction, and rejection at the restored
+limit. Corruption, recovery, sync-before-ack, async backpressure, scrub, and repair-fenced GC suites
+remained green.
+
+The unchanged 120-process matrix passed again. At 256 records, fill gross allocation fell from
+40.23 KiB to 7.78 KiB per 64-byte record, an 80.7% reduction, and from 597.37 KiB to 50.84 KiB per
+4 KiB record, a 91.5% reduction. Overwrite fell from 70.23 KiB to 5.25 KiB and from 1.147 MB to
+45.79 KiB, reductions of 92.5% and 96.0%. More important than any one endpoint, the 16-to-256
+cardinality growth collapsed from 4.35--8.81 times to 1.11--1.43 for fill, and from 7.43--10.02
+times to 1.01--1.10 for overwrite. The term proportional to all existing records is gone.
+
+The tradeoff also appeared where preregistration predicted it. Combined reopen plus reopen-read
+allocation increased by at most 4.68%, below the 10% ceiling, because reconstruction now validates
+the store once. That one-time cost replaces a validation scan before every future write. Steady reads
+and RAM-only admission did not regress, and maximum GC allocation regression was 0.114%. Exact logical
+bytes, content after reopen, queue lag, GC removal, and temporary-directory cleanup all reconciled.
+
+W7 therefore closes as accepted with one narrow product change. The local allocation percentages are
+not release-grade performance claims, and the Windows run still says nothing about anonymous versus
+file-backed residency. The per-record flush behavior remains a measured owner, but batching it would
+change durability timing and was outside the one-candidate W7 authorization. Leaving that work
+explicitly deferred is part of the optimization result: removing one proven owner does not grant
+permission to redesign every adjacent subsystem.
+
+W8 tested the allocator-high-water hypothesis without treating RSS as an allocator counter. The
+existing 0.71 provider protocol had a subtle gap: setting `MIMALLOC_SHOW_STATS` proved only that a
+provider was nominally enabled. Unless a separate metrics document was supplied, its snapshot path
+fell back to process RSS and normalized that value into allocation-shaped fields. That fallback is
+useful for old process-level diagnostics, but it cannot answer whether memory is live, committed,
+reserved, resident, or reusable. The W8 contract therefore rejects RSS substitution and requires
+every unavailable native field to carry a reason.
+
+The profiling build selected exactly one of the existing `allocator-system`, `allocator-mimalloc`,
+or `allocator-jemalloc` features. On Windows, system and mimalloc are applicable and jemalloc is an
+explicit target-level non-applicability, not a failed candidate. The fixed trace used 16,384 entries
+with 4 KiB payloads, 65,536 steady reads, exact full deletion, refill, and a two-second no-purge idle.
+Five independent system/mimalloc pairs ran in alternating order. Five additional mimalloc processes
+performed a force-collect checkpoint followed by a second refill. All 15 processes passed the exact
+phase, cardinality, payload, stderr, and raw-evidence checks.
+
+The native API audit itself produced a result. In the release mimalloc 3.3.2 build,
+`mi_stats_get_json` exposed committed and reserved bytes, process information, arenas, faults and
+purge counters. Its `malloc_requested.current` field remained zero because v3 provides no supported
+process merge API in this binding; the older `mi_stats_merge` declaration has no linked v3 symbol,
+and the main-heap JSON route returned no usable snapshot. We treated those probes as invalid and
+recorded live/requested bytes as unavailable. The JSON's `process.rss_current` is likewise process
+RSS, not allocator-owned resident memory, so resident remains unavailable and RSS stays in the
+separate OS snapshot. Enabling mimalloc's debug mode would have changed the measured allocator build,
+while copying RSS into either native field would have changed the meaning of the metric. Neither is
+a valid repair.
+
+The Windows comparison exposed a real tradeoff rather than a winner. Mimalloc's median trace time
+was 4.13% lower, and refill incurred 3,158 new page faults versus 34,333 for system, a 90.80%
+reduction. That is consistent with fast reuse of pages that remained committed. At the exact empty
+checkpoint after deleting every entry, however, system working set was about 8.29 MiB and private
+commit 4.92 MiB, while mimalloc remained at 148.92 MiB and 162.04 MiB: 17.95 and 32.97 times the
+system values. After equal-cardinality refill and idle, mimalloc still used 8.75% more working set
+and 11.71% more private commit. Faster reuse and lower idle footprint point in opposite directions;
+choosing one number would hide the cost paid by the other.
+
+Mimalloc also reserved roughly 1.076 GB throughout the run. That is virtual address space, not a
+gigabyte of resident or live application data. It cannot be compared with the system allocator's
+missing native retained field. This is why an allocator table must carry source and semantics beside
+every byte count: identical units do not imply identical concepts.
+
+The purge experiment did not resolve the tradeoff. Force collect advanced the native purge-call
+counter by three and reported 1.125 MiB purged. Median working set fell only 0.55%; private commit
+and native committed bytes rose by about 0.08%, and the second refill expanded working set to about
+291.19 MiB. A positive purge counter proves that the API ran, not that the operating system recovered
+useful capacity or that calling it in production is free. No purge policy was authorized.
+
+W8 therefore retains the system default and records a terminal deferral for the Linux-only part of
+the allocator matrix. This Windows screen is enough to reject a mimalloc default change, but not to
+rank jemalloc or make a portable claim. A future allocator proposal must justify the expense of an
+admitted Linux system/mimalloc/jemalloc run, preserve native missing-field semantics, and add an ADR
+plus the complete compatibility, CPU, and latency matrix before changing any default. A measured
+tradeoff is a valid optimization outcome: no product mutation is safer than selecting the faster
+allocator while hiding its retention behavior.
+
+W9 asked a deliberately different question: do the preceding measurements justify a new opt-in
+limit on retained cache bytes? The existence of a retained-byte estimator does not answer it. An
+estimator is a ruler; admission is a behavioral policy. The latter decides whether an operation is
+accepted, which scope pays for it, how replacement deltas are reserved, how a failed batch rolls
+back, what a retry observes, and when the reservation is released. Turning reporting into rejection
+without a demonstrated pressure owner would be a semantic change disguised as instrumentation.
+
+We preregistered two possible terminal outcomes before making that decision. `authorize-d2` required
+one measured owner that was both attributable to logical retained bytes and still unbounded after
+W2--W8. `not-applicable` was required when no such owner survived. RSS, private commit, allocator
+arenas, virtual reservations, file-backed page cache, transient copied bytes, and an already bounded
+queue were forbidden substitutes. These quantities matter, but a logical retained-byte limit cannot
+promise to control them.
+
+The owner-by-owner audit found no qualifying gap. W2's expiry work and W3/W4's tag and RESP changes
+removed allocation or copy churn without discovering unbounded live retention. W6 kept already
+bounded management services after a measured-no-win result. W7 already has a separate durable
+logical-byte budget; conflating that on-disk owner with in-memory retained estimates would charge the
+same application value for different lifecycles. W8's committed and reusable allocator pages are
+external state: rejecting the next cache write cannot guarantee that an allocator purges old pages
+or that the operating system lowers RSS.
+
+W5 was the one real pressure finding, and it demonstrates why owner-specific admission comes first.
+The HC/2 application queue now charges the encoded envelope against a one-MiB budget and holds the
+permit until the item is polled or dropped. That closes the exact unbounded owner we measured. The
+remaining producer frame, tonic/h2 flow-control window, protobuf/TLS buffers, socket state, and
+allocator high-water do not share one logical retained-byte lifecycle. Adding a global cache limit
+would double-limit the queue-adjacent request while leaving several of those external owners
+untouched.
+
+Existing controls also cover different, explicit contracts. The generic admission controller bounds
+in-flight request bytes and FIFO depth. Multitenancy enforces request and value ceilings plus
+tenant/namespace logical-value quotas. Its batch path prevalidates the final last-write-wins state,
+commits accounting only after the mutation commits, and leaves the old usage intact on abort. These
+properties are useful building blocks, but their existence is not evidence that another global
+policy is needed.
+
+We reran five local suites containing 32 focused tests. They covered estimator overflow and Moka's
+`u32` boundary, exact replace/delete/flush reconciliation, capacity eviction accounting, request
+permit release, retryable overload, tenant isolation, pre-mutation oversize rejection, duplicate-key
+batch accounting, aborted-batch rollback, and idempotent quota release. The legacy builder still
+weighs encoded value bytes for `max_capacity`; the reporting estimator's `try_moka_weight` adapter is
+deliberately not installed. Thus no absent configuration silently changes behavior.
+
+W9 closes as `not-applicable`, with no product or configuration change. This does not claim that
+HydraCache can never need retained-byte admission. It defines the evidence needed to reopen the
+question: equal-workload process or cgroup pressure must reconcile to a specific still-unbounded
+logical owner after existing limits, and a new D2 contract must freeze scopes, reservation/release
+semantics, rollback, retry behavior, absent-setting compatibility, and thresholds before candidate
+code or measurements. Refusing an unevidenced feature is part of optimization discipline: every
+limit consumes compatibility and operational complexity, even when its default is “off.”
+
+W10 changes the unit of reasoning from isolated patches to one provisional integrated candidate.
+Six product changes survived local screening: borrowed expiry keys, shared HC/2 event bytes, an
+encoded-byte HC/2 outbound budget, shared event tags, RESP buffer ownership transfer, and the cached
+durable budget total. Their percentages cannot be added. Three changes meet in the event-delivery
+pipeline; expiry and tags share cleanup/accounting outcomes; RESP joins them in the mixed-protocol
+workload; durability must remain a separate persistence companion. The integration ledger records
+that composition order and those interaction groups before any combined measurement.
+
+The first local qualification pass also caught two examples of a dangerous testing failure mode:
+green or red commands that do not exercise the intended configuration. The initial durable command
+exited successfully but ran zero tests because `durable_value_store` is feature-gated. We marked the
+attempt invalid, added `--features durable-value-store` in a separate pre-rerun amendment, and then
+executed all five durability tests. The original all-targets Clippy command failed for the inverse
+reason: it tried to compile a durable compatibility example while the exports it imports were still
+disabled. A second amendment kept the same packages and targets but enabled the required package
+feature; the corrected warnings-denied run passed.
+
+This is why exit status alone is not a test result. A gate needs a minimum executed-test count and a
+declared feature/target matrix. Zero tests is not success, and a configuration error is not evidence
+of a product regression. Both invalid attempts remain in the ledger instead of disappearing behind
+their corrected reruns.
+
+After correction, the integrated branch ran 342 tests with no failures. Another 25 tests remained
+explicitly gated scheduled soaks, external Redis client/oracle checks, or resource smokes; we did not
+silently count them as passes. The executed set covered client-surface compatibility and quota
+release, event bytes/tags/order, HC/2 byte permits and real-mTLS drain, RESP2/RESP3 golden bytes,
+memory and tag reconciliation, and durable reopen/corruption/budget behavior. All targets of the five
+affected crates then passed Clippy with warnings denied, and 93 evidence-canary tests kept the
+candidate, amendments, and non-promotion boundary immutable.
+
+That local result opens only the next cheap step: an integrated process smoke for the four declared
+interaction groups. It does not open a dedicated host, freeze final `C73`, prove compatibility with
+the published 0.72 binaries, or justify six- and 24-hour runs. Expensive qualification begins only
+after the combined process scenario can account for every outcome and can fail its own interaction
+canaries locally.
+
+The integrated smoke turned that boundary into executable code rather than another checklist. One
+test binary is built once and then invoked as four independent processes: event delivery,
+expiry/tag accounting, the frozen mixed-protocol workload, and a sync-acknowledged durable
+companion. Every cell schedules exactly 1,000 operations and emits the same complete outcome vector.
+The runner rejects a zero-test process, a missing receipt, a second receipt, any nonzero rejection,
+timeout, late or incomplete count, or any change to the 35/30/15/10/5/5 mixed allocation. It keeps
+stdout and stderr hashes per process and records the source tree and binary hash.
+
+This local layer exercises real boundaries without pretending to be a benchmark host. The event
+cell starts the production daemon and a real mTLS HC/2 stream. Three hundred concurrent puts are
+allowed to fill the subscriber side before reads resume, so shared event tags and bytes meet the
+encoded-byte queue budget under backpressure; the cell then proves monotone watermarks, zero drops,
+and zero client and server owners after close. The mixed cell uses the same real daemon for 350 HC/2,
+300 RESP and 150 HC/1 operations, adds 100 direct-cache, 50 tag-invalidation and 50 TTL operations,
+and checks the management endpoint rather than trusting only client success.
+
+The expiry/tag cell revealed why “local” should not mean “mocked.” Exact cache reconciliation proves
+that entries, tag memberships and estimated retained bytes return to zero, but HydraCache's local
+cache has no tenant quota. A real isolated `ClientSurfaceState` therefore fills a one-entry/value
+quota, advances the active-expiry clock without reading the key, observes zero retained quota owners,
+and refills successfully. The durable process similarly uses the feature-gated sled store rather
+than an in-memory substitute: it covers overwrite, read, tombstone, repair-confirmed GC, reopen,
+budget rejection and corrupt-envelope refusal while making no local timing or page-residency claim.
+
+The failed attempts were as informative as the green run. A two-record durable GC scan repeatedly
+visited the sorted live prefix and never reached later tombstones; increasing the number of calls
+could not repair the wrong scan model. The first runner parser missed valid receipts because libtest
+placed the JSON after its test-name prefix. The first stalled-event design assumed subscriptions
+cross HC/2 streams, and a longer timeout merely confirmed that the semantic assumption was wrong.
+All three failures remain in the evidence ledger with their corrections. This is the practical
+difference between retaining failed evidence and silently retrying until green.
+
+On the clean implementation commit, all four processes reported 4,000 attempted and 4,000 successful
+operations in total, with zero rejected, timed out, late or incomplete outcomes. A fifth process
+enabled `HYDRACACHE_CANARY_DEFECT=W10`, deliberately removed one success from accounting, and failed
+with `HC-CANARY-RED:W10`. The canary matters more than the all-green summary: it proves that the
+runner can reject incomplete work instead of merely recording it. This result admits design of a
+focused protected-host comparison. It still supplies no throughput, latency, allocation, RSS,
+capacity or release-improvement number and does not itself authorize an expensive dispatch.
+
+The next step was not to start that expensive comparison immediately. We first made the host harness
+prove that it could preserve the preregistered experiment. The standalone overlay compiles against
+both exact product identities without editing either tree: frozen `I73` and provisional `C73` keep
+their own server binaries, while byte-identical harness sources bind to each checkout through path
+dependencies. The workflow verifies the candidate tree object, hashes both role binaries, both
+harness binaries, the common overlay, the scenario, and the runner, then checks that neither product
+worktree changed during the build. This turns “we probably tested the right revisions” into a
+machine-rejectable identity condition.
+
+Process placement needed the same treatment. The first harness measured the combined CPU of daemon
+and load generator, but the daemon inherited the load generator's CPU affinity. A total CPU number
+can still be arithmetically correct while the experiment violates its isolation policy. The corrected
+harness accepts two distinct CPU sets, starts the daemon through its own `taskset` boundary, records
+both sets in every receipt, and lets the runner reject a mismatch. This is a useful general lesson:
+resource accounting and resource placement are separate assertions, and a benchmark needs both.
+
+We also tightened event accounting between warm-up and measurement. Merely requiring at least as many
+HC/2 events as successful puts allowed delayed warm-up events to mask a missing measured event. The
+harness now waits for the exact warm-up event count, resets the event counter only after that drain,
+and then requires exact equality for the measured 35% HC/2 share. At 1,000 local operations the
+receipt therefore contains exactly 350 HC/2 events—not “350 or more.” This small change illustrates
+why reconciliation should be phase-scoped: a correct lifetime total can hide a wrong measurement
+window.
+
+The campaign runner freezes the full expensive matrix instead of accepting convenient command-line
+reductions: 5,000, 12,000, and 17,000 operations per second, ten-second windows, five pairs per rate,
+and 5,000 warm-up operations. That is thirty independently started role processes. Order is derived
+from the preregistered seed; missing roles invalidate a pair; every attempt retains stdout, stderr,
+receipt hash, exit code, and actual command. For every rate it calculates within-pair C73-versus-I73
+differences and only then applies the frozen Walsh-average Hodges-Lehmann estimator. Goodput, CPU per
+completed operation, and p99 retain their 2%/3%/3% guards. RSS stays diagnostic, and combined-process
+allocation is explicitly unavailable because adding an allocator counter to either frozen product
+role would mutate the objects being compared. “Unavailable” is safer evidence than a precise-looking
+partial allocation number.
+
+Finally, the workflow is manual-only, protected by the admitted environment, and serialized with the
+same host lease as the earlier campaigns. It captures calibration before and after the complete
+block, refuses host-identity or lease drift, and uploads the packet even when a primary guard fails.
+Before any real pair, it runs a defect-injection canary. The local canary removed one HC/2 success,
+exited with `HC-CANARY-RED:W10-HOST`, and emitted no receipt. The normal local composition run
+completed 1,000/1,000 mixed operations, all six exact surface shares, 350 measured events, owner
+reconciliation, and the 1,000-operation durable companion. These local facts qualify the tooling and
+open one manual host dispatch; they are deliberately not performance evidence and cannot finalize
+`C73`, authorize a long run, or support a release claim.
+
+The first protected-host attempts also exposed an important boundary: an expensive run starts only
+when the first measured process starts. A dispatch rejected before a runner, a nested concurrency
+deadlock, a missing collector CPU assignment, a Cargo overlay that cannot resolve its workspace, or
+a stale worktree registration consumes engineering time, but none of them is a performance sample.
+We retained every such attempt with its run and artifact identity instead of relabelling a later retry
+as “the first run.” This keeps infrastructure selection out of the candidate result: a failed setup
+cannot vote against the product, and a convenient retry cannot vote for it.
+
+Persistent performance hosts make lifecycle state part of experiment design. Fixed temporary paths
+look deterministic, but after cancellation Git may remember a worktree whose directory no longer
+exists. Reusing that name then fails before compilation. The corrected workflow prunes missing
+registrations and derives all product and overlay paths from `run_id` plus `run_attempt`; it also
+writes an explicit incomplete manifest when canary or campaign artifacts do not exist. The broader
+lesson is that fail-closed evidence must cover orchestration too: partial packets need a machine-
+readable reason, and cleanup residue must never be mistaken for a product regression.
+
+Once those orchestration defects were removed, the protected campaign finally crossed the boundary
+into measurement. It completed all thirty independent processes: five counterbalanced `I73/C73`
+pairs at 5,000, 12,000, and 17,000 operations per second. Across the matrix, 3.4 million offered
+operations all completed successfully, with no errors, timeouts, or rejections; 1.19 million HC/2
+events reconciled exactly, and all 30,000 durability-companion operations passed. The pre/post
+calibration spreads were 1.33% and 2.26%, below the frozen 5% limit, with the same host identity,
+policy, and lease on both sides.
+
+The Hodges-Lehmann paired estimates passed every primary guard. Candidate CPU per completed
+operation changed by +0.32%, +0.49%, and +0.12% across the three rates, against a +3% regression
+budget. Goodput changes rounded to +0.005%, +0.0002%, and -0.004%, against a 2% budget. P99 changed
+by -3.55%, -0.11%, and +0.14%, against a +3% budget. These are best read as “the integrated
+optimizations did not create a material throughput, CPU, or tail-latency regression,” not as three
+portable improvement claims. The low-rate p99 reduction is welcome, but five pairs on one admitted
+profile do not make it a universal speedup.
+
+Post-run RSS estimates ranged from -0.01% to +0.39%, and peak RSS from -0.01% to +0.33%. We retain
+them as diagnostics only. The frozen product roles did not contain a combined-process allocation
+counter, and patching one in after candidate freeze would have changed the compared objects. The
+correct conclusion is therefore narrower: the focused integrated guard passed and opens the real
+published-0.72 compatibility and rollback matrix. It does not promote RSS, establish allocator
+improvement, finalize `C73`, or authorize six-hour and 24-hour runs before compatibility is proved.
+
+The next local screen made that compatibility boundary executable rather than rhetorical. We built
+one standalone harness twice: once against the exact commit referenced by the published `v0.72.0`
+tag, and once against the frozen C73 commit. Those two client binaries were crossed with the two real
+server binaries, producing four independent process cells. Every cell ran 18 assertions across
+HC/1, HC/2, RESP, management routes, console assets, protocol-appropriate keys and binary values,
+TTL expiry, tenant isolation, malformed input, tag invalidation where RESP exposes it, and live-owner
+cleanup. All four
+cells passed. The surface-applicability table matters: claiming an HC/2 tag test when HC/2 does not
+offer that operation would be fake coverage, so the contract assigns each behavior only to the
+surface that owns it and forbids substituting one surface for another.
+
+Durable compatibility used the same discipline but, critically, not a fresh directory per phase.
+The B72-linked binary created a live record and tombstone and reopened the store. The C73-linked
+binary then read those exact old bytes, wrote a new record, flushed, and reopened. Finally the B72
+binary reopened the same directory and read both the old record and the candidate-written record.
+Separate fault stores proved repair-confirmed tombstone collection, rejection before a one-byte
+budget could be exceeded, and loud checksum-corruption refusal followed by restoration from the
+preserved raw record. This is stronger than serializing equivalent structs in two unit tests: the
+actual old and new libraries took turns owning the same on-disk database.
+
+We also falsified the orchestrator, not just the product. The canary deliberately removed the
+`C73 client -> B72 server` cell. The matrix validator emitted the preregistered
+`HC-CANARY-RED:W10-COMPAT` marker and produced no campaign pass receipt. The real local campaign then
+recorded SHA-256 identities for both harnesses, both servers, every per-cell receipt, and every
+durable transition. Two frozen lockfiles are retained because B72 and C73 resolve different product
+dependency graphs; silently regenerating a single convenient lockfile would make the builds less
+reproducible, not more.
+
+This result is intentionally non-promotable. It rejects obvious client/server and durable-format
+incompatibility cheaply on a developer machine, but it does not exercise leadership transfer,
+mixed-version quorum behavior, follower restart, or same-disk daemon rollback. Those six rolling
+scenarios remain the next gate, and long-duration performance runs remain closed until that gate is
+complete. This is the purpose of a profiling ladder: spend seconds or minutes locally to eliminate
+bad candidates and broken evidence logic, then reserve the expensive environment for the failure
+modes that only a real cluster can reveal.
+
+The local rolling driver then exercised exactly those six transitions. It bootstrapped three B72
+processes so the initial leader was unambiguously old, upgraded both followers to C73, forced a
+leadership change, restored a B72 follower on its existing storage, restarted that follower again,
+completed the C73 rollout, and finally replaced one C73 process with B72 on the same disk. The third
+local attempt passed all six states with a healthy quorum and readable old and new management views.
+
+Why the third attempt? The first two failures were useful failures of the proof. The first demanded
+`completeness=complete` after full upgrade even though the established management contract permits a
+partial aggregate while quorum remains healthy. The second copied a 0.71-era expectation that the
+management route disappears after rollback; B72 already contains that route, so an unauthenticated
+probe correctly returned 401 instead of 404. Neither correction changed a product binary. We kept
+both failed attempts, narrowed the assertions to actual B72/C73 guarantees, and reran. This is an
+important distinction in profiling and release testing: weakening a product invariant to obtain
+green is unacceptable, but correcting a version-inapplicable oracle is necessary. The audit trail
+must make the difference visible.
+
+The first retained Linux campaign then found a different weakness. All four crossed wire cells and
+all three durable transitions passed, but the first rolling assertion failed: after the two follower
+upgrades, a C73 follower had won an election instead of the original B72 bootstrap leader. That did
+not demonstrate an incompatible message or disk format. It demonstrated that the test had confused
+the leader observed after startup with a leader guaranteed to remain elected. Faster or differently
+scheduled Linux process startup exposed the distinction that the local Windows sequence had hidden.
+The packet was sealed as incomplete, with its successful wire and durable results still retained;
+the missing rolling receipt prevented it from opening long runs.
+
+The correction was topology control, not a product retry. Before upgrading any follower, the driver
+now selects the B72 node with the lowest stable Raft election rank. If another B72 node happened to
+win bootstrap, the driver stops that winner once, waits for the preferred B72 node to become leader,
+restarts the stopped old node, and verifies that all three old nodes converge under the preferred
+leader. Only then does it begin the six preregistered compatibility states. The receipt records
+whether bootstrap already supplied that topology or the controlled precondition was needed. The
+fourth local attempt passed with unchanged product binaries.
+
+This is a broader profiling lesson: scheduling is part of the test fixture whenever a result depends
+on role ownership. “Start the old binary first” is not a deterministic mixed-version topology, and
+repeating until the desired leader appears would silently select a favorable attempt. Establish the
+role through a declared deterministic rule, record the setup separately from the measured or
+compatibility scenario, and let every subsequent transition fail without an automatic retry.
+
+The next serialized Linux run passed. Its downloaded manifest binds tooling commit `9508330b`, the
+published B72 commit, the frozen C73 commit and tree, and SHA-256 digests for the canary, wire/durable
+campaign, and rolling receipt. The negative canary still removed one crossed wire cell and failed
+without a pass receipt. The real packet contains four of four wire cells, three of three durable
+transitions, and six of six rolling scenarios; the rolling receipt also says that the lowest-rank
+B72 node was already the bootstrap leader in this attempt. We independently rehashed every nested
+receipt after download instead of treating the green Actions badge as evidence.
+
+Compatibility therefore opens the *contract* for the six-hour qualification; it does not justify
+starting an improvised soak. The long run must first freeze equal I73/C73 duration, phase schedule,
+offered work, resource checkpoints, complete outcome accounting, failure policy, artifact budget,
+and the rule that decides whether a 24-hour confirmation may start. Nor does the compatibility pass
+turn diagnostic RSS or allocation observations into performance claims. A gate should authorize
+exactly one next decision, not erase the boundaries of every later gate.
+
+For this release the frozen long-run shape is deliberately finite. I73 runs first and C73 second as
+independent continuous processes, each for six measured hours at the already qualified 12,000
+operations/second mixed workload; a later confirmation repeats the same identities for 24 hours per
+role only if the six-hour pair passes. Both roles keep the 35/30/15/10/5/5 HC/2, RESP, HC/1, direct,
+tag-invalidation and TTL/refill mix, 256-key cardinality, 4 KiB payload, production instrumentation,
+CPU placement, and five-minute post-work idle. The six-hour pair is capped at 15 runner-hours and
+the 24-hour pair at 58, so a configuration mistake cannot consume an unbounded lease.
+
+One-minute checkpoints cover outcomes, surface counters, owner state, RSS, anonymous and file PSS,
+CPU, faults, threads and file descriptors. I73's post-warmup Theil-Sen slopes and moving-block 95%
+upper bounds are sealed before C73 starts; the candidate cannot redefine them after observation.
+Both combined RSS and anonymous PSS must stay within those baseline-only bounds. Peak RSS and page
+faults remain diagnostics, and the long pair retains the earlier 2% goodput, 3% CPU/op and 3% p99
+regression ceilings. This single pair confirms endurance; it is not counted as five independent
+samples and cannot manufacture a new improvement estimate.
+
+The artifact policy is part of the experiment, too. Minute series and compact receipts are kept,
+while values, credentials and raw payloads are not. A role may emit at most 64 MiB and the whole
+packet at most 256 MiB. Missing or more-than-90-second-gapped checkpoints, a restarted process,
+incomplete outcomes, nonzero final owners, host or lease drift, an oversized packet, a surviving
+canary, or a favorable retry all fail the phase. This is how a long test remains an auditable
+experiment instead of becoming twelve or forty-eight hours of terminal output.
+
+We implemented and exercised that measurement path locally before spending the host lease. The
+same integrated harness now has an exact long-run profile and writes append-only JSONL checkpoints
+before work, once per interval, at the end of offered work, and after the idle/reconciliation phase.
+On Linux each checkpoint samples the harness and daemon together: CPU time, RSS, peak RSS,
+anonymous/file PSS, faults, threads and file descriptors. The runner validates sequence numbers,
+time gaps, final owner reconciliation, exact operations and per-surface outcomes before it computes
+any slope. I73's bounds are written before C73 can start, and the workflow statically contains one
+I73 role, one C73 role and no confirmation command.
+
+The local falsifier deliberately suppressed the final checkpoint. It completed the product work
+but was still rejected because the receipt and checkpoint series were incomplete, and no campaign
+receipt was admitted. A subsequent two-second I73-then-C73 screen produced five and four checkpoints
+respectively and a compact 23,979-byte packet. Those counts are useful evidence about plumbing, not
+about performance: Windows resource sampling was intentionally unavailable, the load was only 1,000
+operations/second, and the phase explicitly sets both performance claims and confirmation to false.
+The correct conclusion is that the expensive experiment is now runnable and falsifiable—not that
+C73 is faster, smaller, or stable for six hours.
+
+This cheap screen also paid for itself by finding an orchestration defect before host time was
+booked. An input-verification refactor had left the identity-map return behind an earlier return, so
+the first canary failed in the runner with `None` rather than reaching the harness. Moving validation
+back onto the live path and adding a regression test fixed the class of error. Three earlier Windows
+staging attempts likewise exposed package aliasing, symlink privilege, and missing root `docs`/lock
+inputs. None was hidden by retrying the benchmark; each failure refined the reproducible build
+fixture while product commits and release thresholds remained unchanged.
+
+There is one more boundary before the six-hour pair. A new workflow file on a feature branch is not
+automatically a registered GitHub `workflow_dispatch` endpoint. The local tooling receipt therefore
+does not claim that host dispatch is open. It requires a reviewed adapter through an already
+registered manual entry, preserving the protected environment and the shared serialized lease.
+Only after that route is validated should the single 15-hour-capped qualification consume the
+dedicated host.
+
+The adapter is intentionally narrow. The already registered
+`performance-host-admission-073.yml` remains the public manual entry and the sole owner of the
+shared `performance-reference-073-host` concurrency group. A lease owner beginning with
+`long-run-073@` selects exactly one reusable qualification job; the entry forwards the exact
+tooling commit, lease owner and lease end, while the nested workflow uses a run-unique technical
+group. This split avoids the nested-concurrency self-deadlock seen in an earlier campaign without
+allowing two performance campaigns onto the host. The ordinary admission and published-0.72
+compatibility modes remain separate branches of the same registered entry.
+
+The protected environment approval is also part of the evidence chain, not an inconvenient click
+to automate away. Dispatch first created a waiting deployment for the exact reviewed commit. The
+same authenticated repository account approved that deployment, after GitHub confirmed it was an
+allowed reviewer, and only then did the self-hosted job begin. The job subsequently verified the
+tooling SHA, lease, required host tools and clean exact worktrees before compilation. This gives us
+three distinct identities to audit later: who requested the run, who approved use of the protected
+host, and which immutable bytes the runner checked out.
+
+The first protected attempt is run `36278780653`, bound to tooling commit `8f8d4457`, with a lease
+that covers the full qualification cap. Its setup, identity, tooling, exact I73/C73 materialization
+and four release builds passed. The injected missing-final-checkpoint canary was rejected, then the
+pre-I73 host calibration passed, so the first six-hour I73 process started. That is still not a
+partial performance result: it proves only that the registered path reached the admitted host and
+that the measurement pipeline rejected its known defect before accepting real work. I73 completion,
+its post-calibration, C73 pre-calibration, the equal-duration C73 role, its post-calibration and final
+packet sealing must all pass in this same attempt. No replacement run is created merely because a
+later stage might fail.
+
+The attempt eventually completed both six-hour roles rather than failing early. Each role executed
+259.2 million operations, produced 362 checkpoints, drained its backlog, reported zero errors,
+timeouts, and rejections, reconciled all observed events and management owners, and passed the
+durable reopen/corruption checks. Independent verification of the downloaded packet matched all
+twelve embedded receipt, checkpoint, stdout/stderr, and calibration SHA-256 values. Goodput was
+effectively unchanged, CPU per operation improved by 0.20%, and p99 increased by 1.43%; all three
+stayed inside their frozen regression budgets.
+
+The final qualification still failed, correctly and narrowly. C73's moving-block 95% upper slope
+bound was 3.7926 bytes/s, above I73's already sealed 3.2508 bytes/s bound, for both combined RSS and
+anonymous PSS. The raw Theil-Sen point estimate moved in the favorable direction (34.13 to 9.84
+bytes/s), but the contract explicitly makes the upper-bound comparison decisive; a favorable point
+estimate cannot rescue it. This is why a job may perform twelve hours of healthy work and then exit
+red at sealing: successful execution is not the same thing as passing a preregistered decision.
+
+The initial audit found no tooling or orchestration fault. Changing the estimator after seeing
+these values, rounding away the 0.54 bytes/s gap, loosening the bound, or selecting a retry would
+have converted a qualification into post-hoc threshold fitting. Run `36278780653` was therefore
+retained as a complete failed attempt, automatic retry remained forbidden, and the 24-hour
+confirmation was not opened.
+
+A later consistency check found a different problem without changing the statistical question. In
+both roles the reported “upper 95% bound” was below its own Theil-Sen point estimate: 3.25 versus
+34.13 bytes/s for I73 and 3.79 versus 9.84 bytes/s for C73. That is not evidence that the candidate
+barely lost. It is evidence that the implementation and the label described different statistics.
+The analyzer sampled contiguous blocks of absolute memory *levels*, randomly concatenated those
+levels, and then assigned the selected blocks new increasing time coordinates. Randomizing levels
+this way erased the original trend before calculating each bootstrap slope. The resulting
+distribution was centered near zero regardless of the trend the point estimator had just measured.
+
+The repair was derived from the already-used `memory-statistics-071-v1` contract rather than from
+the desired verdict. It converts adjacent checkpoints into rates in their original time direction,
+resamples contiguous twelve-rate blocks with the same seed and 10,000 iterations, restores the
+original number of deltas, and takes the 95th percentile of the resampled mean rates. A new
+falsifier uses a perfectly linear 36-checkpoint series: both the known slope and its resampled upper
+bound must remain exactly 1/6 unit per second. The old code failed this property; the corrected code
+passes it deterministically.
+
+We then downloaded the original artifact again and reanalyzed it offline. The verifier matched the
+original campaign digest plus all role receipt, checkpoint, stdout, stderr, and calibration hashes.
+No product process was rerun, and no workload, source identity, threshold, block size, iteration
+count, or seed changed. The corrected I73 upper bound is 117.0801 bytes/s and the corrected C73
+bound is 62.7351 bytes/s for both combined RSS and anonymous PSS. C73 therefore passes the frozen
+candidate-at-or-below-baseline rule; goodput, CPU/op, p99, correctness, durability, and
+reconciliation were already green.
+
+This correction does not delete the first verdict. The original red campaign and analyzer output
+remain immutable evidence of a tooling defect, while the new receipt records an append-only offline
+reanalysis. It also does not automatically open confirmation or declare the later registry-packaged
+candidate final: D4 must still review the analyzer correction and the `hydra-moka` distribution
+identity. The immediate operational consequence is nevertheless useful—there is no justification
+for renting the host merely to repeat the same six-hour observations in search of a green sample.
+
+That distribution review produced a useful counterexample to the tempting phrase “the code is the
+same.” The Git revision used by the campaign and `hydra-moka 0.12.15-hydra.1` have the same 52
+runtime source files. A canonical path-and-content manifest has the same SHA-256 on both sides, and
+the release `Cargo.toml` is byte-identical to the registry package's `Cargo.toml.orig`. The only
+release-commit changes outside those sources are CI version pins, package metadata, changelog, and
+README. HydraCache enables the `future` feature, while the only README include is guarded by the
+`sync` doctest configuration. Runtime sources do not read the Cargo package name or version.
+
+Those facts establish source equivalence, not build identity. Cargo now resolves a different
+package name, version, source, checksum, and lockfile entry. Those values participate in the build
+graph, and we did not establish byte-identical final HydraCache executables. More importantly, the
+rule was frozen before seeing either result: a dependency or source change after candidate freeze
+invalidates affected receipts. Relaxing that rule because inspection suggests the change is benign
+would make identity enforcement optional exactly when it becomes inconvenient.
+
+The old twelve-hour observation is therefore retained but not transferred to the registry-backed
+candidate. It proved the workload, exposed and then helped falsify the analyzer defect, and passed
+all guards under the corrected method for the old identity. It does not admit the new identity to
+confirmation. The cost-saving move is to finish versioning, release notes, generated/package
+assets, features, SBOM inputs, and lockfiles before renting the host again. Only then should the
+final candidate receive one six-hour qualification and, if green, one 24-hour confirmation. This
+avoids both dishonest evidence reuse and a second invalidation caused by late release packaging.
+
+The first dispatch of that final registry candidate exposed one more orchestration boundary before
+any performance sample was taken. The standalone harness overlay was byte-identical for I73 and
+C73, but its single `Cargo.lock` encoded I73's local packages as 0.72.0 and Moka as the frozen Git
+revision. I73 compiled; C73 presented the same path packages as 0.73.0 and `hydra-moka` as a registry
+package, so Cargo refused to rewrite the lock under `--locked`. That red build is useful evidence:
+both product servers and the baseline harness were buildable, while the candidate harness was never
+created, the canary never started, and no timing or memory observation exists. Treating it as a
+performance loss—or silently rerunning it—would be a category error.
+
+The correction keeps the comparison symmetric without pretending that different product identities
+have the same dependency graph. The overlay now carries two reviewed lockfiles: the original I73
+lock and a C73 lock derived for the frozen registry candidate. The workflow verifies both SHA-256
+values, builds each harness with its matching lock under `--locked`, restores the canonical overlay
+tree, and performs a recursive equality check before the canary or either role can run. Thus the
+harness source and workload remain byte-identical, dependency resolution remains reproducible, and
+the temporary role-specific build input cannot leak into the measured overlay identity. The failed
+artifact and its two post-calibration files remain append-only evidence; the frozen product commits,
+workload, durations, estimator and thresholds were not changed.
+
+This incident generalizes beyond Rust. “Use the same harness” and “use one lockfile” are not the
+same requirement when the harness deliberately links two released product graphs. Reproducibility
+means pinning each graph explicitly and proving that all non-product inputs return to the same state
+before measurement. A locked failure during setup is cheaper and more trustworthy than allowing a
+package manager to resolve dependencies online during a rented-host campaign.
+
+The corrected build then reached the expensive part and exposed a second, subtler identity defect.
+I73 completed its full six-hour role—259.2 million successful operations, 362 checkpoints, exact
+reconciliation and no errors, timeouts or rejections. All surrounding calibrations remained on the
+same admitted host and lease. C73 nevertheless stopped in one second, before starting its server:
+the Python runner supplied the final frozen candidate SHA, while the Rust harness still contained
+the earlier source candidate in its own allow-list. The harness correctly rejected the mismatch;
+the orchestration had failed to update and cross-check two copies of the same identity.
+
+That failure revealed an even more important flaw in the negative canary. The canary was meant to
+prove that a packet missing its final reconciled checkpoint is rejected. Its implementation treated
+*any* exception as success, including a harness startup error with no receipt and no checkpoints.
+In other words, the guard was red, but for the wrong reason. A negative test is trustworthy only
+when it proves both halves of the claim: the producer successfully reaches the intended fault, and
+the consumer rejects that exact fault. “The command failed” is not sufficient evidence.
+
+The repaired canary is therefore narrow and fail-closed. It first requires a zero process exit and
+both output files. It validates the C73 identity and every ordinary receipt field after neutralizing
+only the declared final-checkpoint flag. It then proves that the checkpoint stream ends in
+`final-work`, contains no `post-idle-reconciled` record, and is rejected by the normal validator. A
+startup failure, absent packet, unrelated malformed field or unexpectedly accepted packet now makes
+the canary fail. Structural Rust and Python tests also bind the harness allow-list to the final C73
+SHA so that changing the runner alone cannot recreate this split identity.
+
+The six hours of valid I73 data remain useful diagnostics, but they are not half of a result that we
+may splice into another run. The preregistered experiment requires serial I73 and C73 roles plus a
+single final seal under one attempt. Because C73 never started and the campaign was not sealed, the
+attempt is retained as incomplete evidence, automatic retry remains off, and confirmation stays
+closed. This is painful on a rented machine, but it preserves the distinction between saved compute
+and valid comparative evidence.
+
+This ordering keeps the meaning of green steps monotonic. A successful build says the intended
+bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
+calibration says the host is admissible at that boundary. None of those statements predicts the
+next one, and none can be combined into an early claim about C73. Long-running evidence becomes
+valid only when the final sealer can point backward to every required boundary receipt.
+
+The corrected campaign finally demonstrated that property end to end. Run `36532416869` first
+proved its negative control for the intended reason: the producer exited successfully, emitted an
+otherwise valid C73 packet whose stream ended at `final-work`, and the ordinary validator rejected
+the missing `post-idle-reconciled` checkpoint. It then held one admitted host and lease across four
+calibrations and two serial six-hour roles. I73 and the final registry-backed C73 each completed
+259.2 million operations, emitted 362 checkpoints, drained the backlog and reconciled events and
+management ownership exactly, with no errors, timeouts or rejections.
+
+Downloading a green artifact was not the end of the audit. We hashed the ZIP independently and
+matched GitHub's recorded digest, recomputed every nested receipt, checkpoint, stdout/stderr and
+calibration SHA-256, then reran role validation and the frozen comparison logic against the raw
+packet. That matters because the previous campaigns had shown three different ways for a green or
+red surface signal to be misleading: a build could fail before measurement, an identity mismatch
+could stop only the candidate, and an overbroad negative canary could pass on an unrelated startup
+failure. The independent pass reproduced the sealed statistics and all five guards rather than
+trusting the workflow conclusion alone.
+
+The result is deliberately modest and precise. Goodput changed by -0.000004%, effectively zero.
+CPU seconds per completed operation increased by 0.316%, and p99 increased by 0.274%; both are far
+inside their frozen 3% budgets. C73's RSS and anonymous-PSS Theil-Sen slope was 21.0045 bytes/s
+against I73's 30.5605 bytes/s. More importantly, the preregistered moving-block 95% upper bound was
+61.7818 versus 86.3800 bytes/s, 28.48% lower, so the boundedness decision does not depend on a
+favorable point estimate alone. This is stronger than saying “no obvious leak”: the candidate
+survived equal-duration baseline comparison under the exact estimator that previously exposed and
+corrected our bootstrap mistake.
+
+It is also not permission to overstate the result. A single integrated six-hour pair does not prove
+portable capacity, universal latency improvement, or final release behavior. The small positive
+CPU and latency deltas are accepted regressions within budget, not improvements. The qualification
+opens a separately authorized 24-hour confirmation for the exact frozen candidate; it does not
+substitute for that confirmation. We therefore recorded `confirmation_allowed = true` alongside
+`confirmation_started = false`, kept `final_c73_allowed = false`, and did not launch another paid
+run automatically. The useful engineering lesson is that cost control and evidentiary rigor are the
+same workflow: cheap falsifiers eliminate broken orchestration early, while an expensive success is
+accepted only after its raw packet survives an independent audit.
+
+The separately authorized confirmation then exposed an orchestration lifetime risk rather than a
+product failure. Run `36622527013` completed the full 24-hour I73 role: 1.0368 billion successful
+operations, 1,442 checkpoints, exact reconciliation, no errors, timeouts or rejections, and a
+frozen RSS/anonymous-PSS upper slope bound of 32.5177 bytes/s. C73 started on the same admitted host
+and lease and remained healthy for 352 checkpoints. At 5 hours 51 minutes it had completed
+252,728,137 operations with no errors, timeouts, rejections or major faults. GitHub Actions then
+delivered `The operation was canceled`; the harness had emitted a heartbeat one second earlier,
+stderr was empty, and the immediate post-C73 host calibration passed. The retained Actions log does
+not name the cancellation initiator, so the narrow supported conclusion is an external orchestration
+cancellation—not a C73 regression and not a successful confirmation.
+
+The incomplete artifact was still valuable because the workflow's `always()` path preserved all
+four calibrations, the complete I73 receipt and bounds, the partial C73 series, process logs and the
+negative canary. We matched the downloaded ZIP to GitHub's SHA-256 and independently hashed every
+retained nested file. We did not estimate a final C73 slope from the prefix, splice the completed
+I73 role into a later run, or silently restart the candidate. Equal duration and a single final seal
+remain part of the experiment, so `final_c73_allowed` stays false.
+
+The tooling correction reduces the blast radius without changing the experiment. Qualification
+continues as one serial six-hour pair. Confirmation is split into two sequential, role-isolated
+jobs under one approved parent workflow and one host concurrency lease. The first job runs I73 and
+uploads a continuation packet whose files are all SHA-256 listed. The second job verifies those
+hashes and the complete I73 receipt before it can start C73, repeats binary and host identity checks,
+and alone may seal the pair. Each job stays below 29 hours, while product commits, role order,
+24-hour duration, offered load, estimator, seed and thresholds are unchanged. This is not checkpoint
+resume: a failed role still invalidates the attempt, and a replacement confirmation must start from
+I73 after explicit authorization.
+
+The replacement showed why a savepoint must be a cryptographic boundary, not merely “some files we
+can reuse.” Run `36839197349` completed I73 in its own job, sealed 13 files in
+`continuation-SHA256SUMS`, and uploaded the packet. The C73 job downloaded it independently,
+verified every hash, required the complete 1.0368-billion-operation I73 receipt and exact final
+reconciliation, then repeated the build, host, lease and calibration guards before starting C73.
+Only that second job was allowed to seal the combined campaign. Losing the GitHub job boundary no
+longer meant losing a valid completed role, but changing a role, reusing a partial role or combining
+different attempts still failed closed.
+
+Both 24-hour roles then completed: 1.0368 billion operations and 1,442 checkpoints each, zero
+errors, timeouts and rejections, exact surface/event/durable accounting, and the same admitted host
+and lease. Independent analysis matched the two provider ZIP digests, every nested continuation
+hash, both stdout/stderr hashes, four calibrations, raw checkpoint-derived statistics and all five
+guards. Goodput changed by -0.0000000115%, effectively zero. CPU per operation increased by 0.260%
+and p99 decreased by 0.328%, both comfortably inside the frozen budgets. The RSS and anonymous-PSS
+95% upper slope bound fell from 30.1448 to 20.3181 bytes/s, a 32.60% reduction. The candidate
+therefore passed the preregistered boundedness decision; the long pair still does not become a
+portable claim about capacity, allocations or another product.
+
+Archiving was treated as another correctness boundary. Actions artifacts expire, so all eight ZIPs
+from the campaign history—including rejected and interrupted attempts—were copied byte-for-byte to
+the append-only `evidence/0.73/w10-confirmation` branch. A commit-pinned manifest, full-file
+`SHA256SUMS`, extracted accepted packet and verification receipt make the release decision
+replayable after provider retention ends. We also disabled Git text conversion inside the archive:
+without that small detail, a Windows checkout could change line endings and make truthful hashes
+appear corrupt. Finally, the verifier hashes runner and scenario bytes from the frozen Git commit,
+not the platform-transformed worktree. Reproducible evidence depends on preserving byte identity at
+both boundaries.
+
+## A green long run can still fail release admission
+
+The final exact-tree CI check provided one last useful falsification. PR #214 pointed at the measured
+candidate `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. GitHub tested a synthetic merge commit, but its
+tree hash exactly matched the candidate tree, so the result cannot be dismissed as merge drift. The
+HC/2 workflow passed its Linux, Java 17, Java 21 and Docker jobs. The main CI and documentation
+workflows did not pass.
+
+The failures were mundane but release-relevant. The docs examples lockfile still named the local
+HydraCache crates as 0.72.0 after the workspace moved to 0.73.0, so a locked documentation build
+correctly refused to rewrite it. The frozen topology inventory did not list the newly added 0.73
+workflows. The memory ownership registry did not yet include the removal observer and HC/2 outbound
+queue. The gated-test registry omitted the rolling-compatibility environment gate, a retained 0.72
+test required the whole workspace to remain exactly version 0.72.0, and the instruction tripwire
+ended without benchmark summaries. Several admission jobs then failed by design because they
+aggregate those upstream results.
+
+None of those outcomes invalidates the 24-hour boundedness measurement, and none can be repaired by
+reinterpreting its statistics. They invalidate publication of that exact Git identity under the
+current release contract. A lockfile or registry can be easy to edit, but a frozen candidate cannot
+be edited in place. The honest next step is therefore a reviewed choice: freeze a corrected
+candidate and repeat the evidence whose identity changes, or explicitly revise the release contract
+without converting a red gate into a waiver. Until then the failed CI attempt remains evidence,
+`v0.73.0` remains absent, and the successful long run remains necessary but insufficient.
+
+The project chose the corrected-candidate path. The correction is deliberately narrower than the
+measured product: runtime sources, workload, duration, estimator, seed and thresholds are frozen;
+only publication inputs, governance registries, compatibility assertions and CI lock preparation
+may change. The 0.72 docs lock is regenerated for 0.73, and the instruction tripwire now rebuilds
+an independent harness lock for each side before reconciling an intentional dependency transition.
+The rejected run remains append-only. All affected exact-SHA gates must run again, while the
+six-hour and 24-hour product packets remain attributable because no measured runtime path changed.
+
+## A profiling ladder that avoids expensive runs
+
+Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
+levels.
+
+### 1. Deterministic unit and model tests
+
+Use these to prove semantics, accounting identities, bounds, and failure behavior. They are fast and
+should run on every relevant change. They do not prove performance.
+
+Examples include:
+
+- every attempted operation is classified as success, rejection, timeout, late, or incomplete;
+- a retained-byte estimate equals the sum of its checked components;
+- an instrumentation-off snapshot cannot masquerade as an available production snapshot;
+- a failed attempt remains in the evidence ledger.
+
+### 2. In-process allocation probes
+
+A counting allocator can attribute gross allocation to a narrowly bounded future or operation. This
+is useful for finding churn without relying on RSS. Run the process quiescently: unrelated tasks in
+the same process can otherwise enter the allocation count.
+
+### 3. Local counterbalanced process screening
+
+Build the binary once, then launch independent control and treatment processes in alternating order.
+Bind every attempt to exact hashes and retain raw output. This level can reject gross regressions and
+validate the evidence pipeline.
+
+It cannot establish portable capacity or a release-grade numerical improvement.
+
+### 4. Sampling and tracing for ownership
+
+After a metric moves, use stack sampling, allocation profiling, tracing, or subsystem counters to
+find its owner. Profiling builds must remain distinct from production-mode comparison builds: a
+profiler can alter scheduling, allocation, code generation, and memory layout.
+
+### 5. Dedicated-host paired qualification
+
+Only candidates that survive the cheaper levels need the expensive run. Use a stable admitted host,
+prebuilt binaries, fixed offered load, identical traces, complete outcome accounting, pre/post host
+calibration, and at least the preregistered number of independently started pairs.
+
+### 6. Integrated and long-running confirmation
+
+An isolated optimization may transfer cost to another subsystem. Re-run affected mixed workloads,
+compatibility, rollback, and boundedness tests on the exact integrated candidate. A candidate-only
+long run can show boundedness, but a comparative slope or plateau claim needs an equal-duration
+baseline.
+
+## What local screening should save
+
+A useful local run produces more than terminal output. Retain at least:
+
+- source commit and dirty-tree state;
+- binary and scenario hashes;
+- privacy-safe host and toolchain fingerprint;
+- run-order seed and actual order;
+- one directory per attempt;
+- stdout and stderr, including failed attempts;
+- raw allocation and memory series;
+- complete operation outcome counts;
+- a machine-readable aggregate explicitly marked non-promotable.
+
+The output directory should be append-only. If a run fails halfway through, the correct result is a
+failed attempt with its partial artifacts—not a silent retry that replaces history.
+
+## A practical review checklist
+
+Before accepting an optimization or an instrumentation change, ask:
+
+1. Is the control the exact behavior we intend to compare against?
+2. Are control and treatment doing equal logical work?
+3. Did they use the same binary, scenario, trace, cardinality, and host?
+4. Was process order counterbalanced?
+5. Are failures, timeouts, rejections, late completions, and incomplete operations visible?
+6. Does a lower latency result hide lower goodput or dropped work?
+7. Are allocation, live ownership, allocator state, and RSS reported as separate concepts?
+8. Was profile-mode evidence kept separate from production-mode evidence?
+9. Were thresholds frozen before candidate observations?
+10. Can the result reject the candidate, or is the harness designed only to produce green output?
+
+The last question is the most important. A performance test that cannot say “no” is a demo.
+
+## The lesson
+
+Optimization is not the act of making one number smaller.
+
+It is the process of locating a cost, assigning it to an owner, changing that owner without moving
+the cost somewhere worse, and proving the result under a method chosen before the answer was known.
+
+In this case, a small local screen prevented us from treating production instrumentation as free.
+It also prevented us from wasting a dedicated-host campaign on an unresolved baseline. The screen
+did not tell us what threshold to publish or what optimization to ship. It told us exactly what to
+investigate next.
+
+That is what a good profiler and a good benchmark should do.

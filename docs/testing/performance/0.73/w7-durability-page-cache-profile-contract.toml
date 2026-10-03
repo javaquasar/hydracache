@@ -1,0 +1,78 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w7-durability-page-cache-profile-073-v1"
+state = "preregistered-after-source-audit-before-profile-tooling"
+parent_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
+source_parent = "fc10d9572bfde8a080177ace583c47c9a1bd19e6"
+profile_tool = "tools/durability-page-cache-profile-073"
+ownership_scope = "Sled process and file-backed state, durable record encode/decode staging, O(n) logical-budget scans, sync and async-bounded flush behavior, reopen/read ownership, tombstone GC, and explicit OS memory/IO attribution limits"
+source_files = ["crates/hydracache/src/grid/durable_store.rs", "crates/hydracache/src/grid/durability.rs", "crates/hydracache/src/grid/persistence_policy.rs"]
+durability_modes = ["ram-only", "sync", "async-bounded"]
+store_cardinalities = [1, 16, 64, 256]
+write_path_cardinalities = [64, 256]
+gc_cardinalities = [64, 256]
+payload_bytes = [64, 4096]
+gc_repair_states = ["pending", "confirmed"]
+repeats_per_scenario = 5
+scenario_count = 24
+attempts = 120
+independent_processes_required = true
+prebuilt_release_binary_required = true
+temporary_store_per_process_required = true
+store_removed_after_measurement_required = true
+exact_logical_bytes_required = true
+reopen_content_equality_required = true
+async_lag_reconciliation_required = true
+gc_cardinality_reconciliation_required = true
+os_memory_source_required = true
+os_io_source_required = true
+unsupported_anon_file_split_must_be_explicit = true
+product_mutation_allowed = false
+production_counter_addition = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_is_acceptance_metric = false
+
+metrics = [
+  "phase_gross_allocated_bytes",
+  "phase_live_allocated_delta_bytes",
+  "phase_elapsed_nanoseconds",
+  "logical_durable_bytes",
+  "record_count",
+  "directory_logical_bytes",
+  "process_read_transfer_bytes",
+  "process_write_transfer_bytes",
+  "working_set_bytes",
+  "private_commit_bytes",
+  "resident_anonymous_bytes",
+  "resident_file_bytes",
+  "async_lag",
+  "gc_scanned",
+  "gc_removed",
+  "gc_reclaimed_bytes",
+]
+source_audit = "DurableValueStore::upsert calls would_fit; would_fit decodes the existing record and then total_bytes scans and decodes every durable record before every write. Upsert then reads the existing record again, builds a payload Vec plus a second encoded Vec, inserts, and flushes. DurabilityWritePath sync flushes again after upsert, while async drain calls the flushing upsert for every queued record and then flushes once more. Remove also flushes per record during GC."
+platform_attribution = "Linux may populate anonymous/file resident fields from /proc/self/smaps_rollup. Windows must report process working set and private commit plus GetProcessIoCounters transfer bytes, and must leave anonymous/file resident fields unavailable rather than inventing a split. Absence of that split forbids a page-cache RSS claim but does not invalidate allocation, logical-byte, IO, or boundedness classification."
+falsifier = "Reject and retain an attempt on process failure or stderr, missing phase metrics, wrong record/logical-byte count, reopened content mismatch, nonzero async lag after drain, wrong pending/confirmed GC behavior, an undeclared unavailable OS field, leaked temporary store, or a scenario count other than 24. Never reinterpret directory size or process working set as file-backed resident memory."
+candidate_rule = "Authorize at most one W7 candidate only if an isolated source owner scales beyond required record bytes across at least three cardinalities or produces redundant flush IO in both payload sizes, and the candidate can preserve format, checksum, budget rejection, recovery, sync-before-ack, async backpressure, and repair-fenced GC semantics."
+interpretation_limit = "Local allocation and IO counters can identify staging, rescans, and redundant flush ownership. They cannot establish portable storage latency, write amplification below the OS cache, page-cache residency on a platform without anon/file split, server goodput, p99, or release-grade percentages."
+next_decision = "Implement a standalone counting-allocator durability profiler, run all 120 independent local processes without product mutation, retain raw phase receipts, and either preregister one narrow W7 candidate or close the surface as measured-no-win/external page-cache ownership."
+
+[[scenario_group]]
+id = "store-lifecycle"
+scenario_count = 8
+cross_product = "4 cardinalities x 2 payload sizes"
+phases = ["open", "fill", "steady-read", "overwrite", "reopen-read"]
+
+[[scenario_group]]
+id = "write-path-modes"
+scenario_count = 12
+cross_product = "3 durability modes x 2 cardinalities x 2 payload sizes"
+phases = ["open", "admit", "drain-or-sync", "reopen-read"]
+
+[[scenario_group]]
+id = "tombstone-gc"
+scenario_count = 4
+cross_product = "2 cardinalities x 2 repair states"
+phases = ["fill-tombstones", "gc", "reopen"]

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "release": "0.73",
+  "profile_id": "local-screening-073-v1",
+  "attempt_id": "example-i73-baseline-pair-1",
+  "source_sha": "1111111111111111111111111111111111111111",
+  "dirty_worktree": false,
+  "binary_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "scenario_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "host_fingerprint_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+  "raw_series_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+  "environment_class": "local_screening",
+  "promotable": false,
+  "numerical_claim_eligible": false,
+  "non_promotion_reason": "Example data from a local screening environment cannot support a release claim.",
+  "instrumentation_mode": "production",
+  "run_order_seed": 730001,
+  "pair_index": 1,
+  "block_order": "baseline_candidate",
+  "candidate_role": "baseline",
+  "candidate_id": "I73",
+  "started_at_utc": "2026-09-23T00:00:00Z",
+  "result": "success",
+  "outcomes": {
+    "attempted": 1000,
+    "success": 1000,
+    "rejected": 0,
+    "timeout": 0,
+    "late": 0,
+    "incomplete": 0
+  }
+}

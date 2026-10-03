@@ -109,6 +109,82 @@ function Invoke-CheckedCommand {
     }
 }
 
+function Invoke-WorkspaceFormatCheck {
+    $isWindowsPlatform = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::Windows
+    )
+    if (-not $isWindowsPlatform) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @("fmt", "--all", "--", "--check")
+        return
+    }
+
+    # `cargo fmt --all` expands every workspace target into one rustfmt command.
+    # Large workspaces can exceed Windows' process command-line limit (os error
+    # 206), so preserve the same check while invoking rustfmt one package at a
+    # time. Package discovery is locked to the current workspace metadata.
+    $metadataJson = & cargo metadata --locked --no-deps --format-version 1
+    if ($LASTEXITCODE -ne 0) {
+        throw "cargo metadata failed while preparing the Windows format check."
+    }
+    $metadata = $metadataJson | ConvertFrom-Json
+    $workspaceMembers = @($metadata.workspace_members)
+    $packageNames = @(
+        $metadata.packages |
+            Where-Object { $workspaceMembers -contains $_.id } |
+            Sort-Object name |
+            Select-Object -ExpandProperty name
+    )
+    if ($packageNames.Count -eq 0) {
+        throw "cargo metadata returned no workspace packages for the Windows format check."
+    }
+
+    Write-Host "Windows format check: validating $($packageNames.Count) workspace packages individually."
+    foreach ($packageName in $packageNames) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @("fmt", "-p", $packageName, "--", "--check")
+    }
+}
+
+function Invoke-WorkspaceClippyCheck {
+    $isWindowsPlatform = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::Windows
+    )
+    if (-not $isWindowsPlatform) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+            "clippy", "--workspace", "--all-targets", "--all-features", "--locked", "--", "-D", "warnings"
+        )
+        return
+    }
+
+    # jemalloc is neither supported nor built by the Windows release. Keep the
+    # platform gate aligned with `cargo xtask verify`: lint every other crate
+    # with all features, then lint HydraCache's common, system-allocator and
+    # mimalloc configurations explicitly. This is stricter than silently
+    # dropping `--all-features` and avoids asking tikv-jemalloc-sys to execute
+    # its Unix `sh` configure script on Windows.
+    Write-Host "Windows clippy check: validating the supported allocator and feature matrix."
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "--workspace", "--all-targets", "--all-features", "--exclude", "hydracache", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "--workspace", "--all-targets", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--all-targets", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--all-targets", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-system", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--lib", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--lib", "--features", "allocator-mimalloc", "--locked", "--", "-D", "warnings"
+    )
+}
+
 Push-Location $repoRoot
 try {
     $workspaceVersion = Get-WorkspaceVersion -ManifestPath "Cargo.toml"
@@ -175,7 +251,13 @@ try {
     if ($RunGate) {
         Write-Host ""
         Write-Host "Running release gate..."
-        foreach ($command in $gateCommands) {
+        Invoke-WorkspaceFormatCheck
+        for ($gateIndex = 1; $gateIndex -lt $gateCommands.Count; $gateIndex++) {
+            if ($gateIndex -eq 4) {
+                Invoke-WorkspaceClippyCheck
+                continue
+            }
+            $command = $gateCommands[$gateIndex]
             Invoke-CheckedCommand -Executable $command[0] -Arguments $command[1]
         }
     }

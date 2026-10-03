@@ -1,0 +1,58 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "performance-host-admission-3ba09fcc-v1"
+profile_id = "performance-reference-073-v1"
+state = "admitted-host-candidate-measurement-closed"
+workflow_run_id = 36060837195
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36060837195"
+source_sha = "3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3"
+baseline_sha = "24927c28c279c6c34ad90111ee6470b4065e0815"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10834153995
+artifact_name = "performance-host-admission-073-3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3-36060837195-1"
+artifact_sha256 = "1d64b40c5ddd1f8e6f2ffa6a8a405750369b05d21c78f5a72c70d22fddb38469"
+admission_manifest_sha256 = "dd4613fde6f3e78f432493811d987293bde762d819e83c6f6a4347813d12e98e"
+preflight_sha256 = "8f728fc9e20187c35945abc28094a9ab20022730bdac2ee54c25858af781fe7a"
+postflight_sha256 = "7396792103e636c0274e285f3551794b4a643e8ca41cdde8add5825dda0c8c55"
+calibration_limit = 0.05
+pre_calibration_relative_spread = 0.030527957062441848
+post_calibration_relative_spread = 0.01486477333665286
+same_fingerprint_before_after = true
+same_identity_probes_before_after = true
+same_lease_before_after = true
+dedicated_bare_metal = true
+protected_environment = "performance-reference-073"
+runner_label = "hydracache-release"
+platform = "linux-x86_64"
+toolchain = "rustc 1.98.1; cargo 1.98.1"
+silent_retry_allowed = false
+failed_attempts_retained = true
+identity_reuse_from_071 = false
+self_reviewed = true
+candidate_measurement_authorized = false
+decision = "host-admitted-awaiting-baseline-only-scenario-freeze"
+next_evidence = "Freeze I73 measurement windows and stable offered rates from baseline-only pilots, then run the separately reviewed five-pair D3 observer qualification with pre/post calibration around every block."
+
+[[attempt]]
+run_id = 36060427773
+source_sha = "645c8b5039ff0173d9e6779a34ff6474a76a75a3"
+result = "blocked-host"
+artifact_id = 10833448797
+artifact_sha256 = "0601fd6299f97b7e292af8e8d666a95e0694c40fde9ac94f800d7d81aac4b6a0"
+reason = "The generic tool-version probe invoked pidstat with unsupported --version, so the present tool was conservatively classified as unavailable."
+
+[[attempt]]
+run_id = 36060688889
+source_sha = "8c6d8235383b4dbdb3189f8de859daea8385de30"
+result = "workflow-failed"
+artifact_id = 0
+artifact_sha256 = ""
+reason = "The provisioning guard found pidstat, but its verification repeated the unsupported --version invocation and stopped before preflight."
+
+[[attempt]]
+run_id = 36060837195
+source_sha = "3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3"
+result = "admitted"
+artifact_id = 10834153995
+artifact_sha256 = "1d64b40c5ddd1f8e6f2ffa6a8a405750369b05d21c78f5a72c70d22fddb38469"
+reason = "The corrected pidstat -V probe passed; pre/post identity, lease, required tools, and calibration checks all passed."

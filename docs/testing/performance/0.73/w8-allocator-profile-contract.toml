@@ -1,0 +1,70 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w8-allocator-profile-073-v1"
+state = "preregistered-before-profiler-implementation"
+source_parent = "669be78b1e71b0d303c7a01e1a807c4c5dd9bf64"
+historical_capabilities = "docs/testing/memory/0.71/allocator-capabilities.toml"
+historical_provider_protocol = "scripts/perf/memory-providers/README.md"
+profile_tool = "tools/allocator-profile-073"
+scope = "Compare allocator high-water, reuse, and release behavior with identical phase traces while keeping allocator-native and operating-system memory signals distinct."
+
+allocators = ["system", "mimalloc", "jemalloc"]
+windows_applicable_allocators = ["system", "mimalloc"]
+windows_not_applicable_allocators = ["jemalloc"]
+linux_required_allocators = ["system", "mimalloc", "jemalloc"]
+build_features = ["allocator-system", "allocator-mimalloc", "allocator-jemalloc"]
+mutually_exclusive_features_required = true
+locked_release_builds_required = true
+independent_processes_required = true
+identical_trace_required = true
+identical_payload_required = true
+identical_runtime_required = true
+binary_sha256_required = true
+tool_source_sha256_required = true
+lock_sha256_required = true
+attempt_manifest_required = true
+failed_attempt_retention_required = true
+
+phases = ["cold", "fill", "steady_read", "delete", "refill", "post_idle"]
+optional_purge_phases = ["pre_purge", "post_purge", "second_refill"]
+cardinality = 16384
+payload_bytes = 4096
+steady_read_operations = 65536
+idle_milliseconds = 2000
+repeats_per_allocator = 5
+minimum_windows_attempts = 10
+minimum_linux_attempts = 15
+
+required_process_fields = ["working_set_bytes", "peak_working_set_bytes", "private_commit_bytes", "page_fault_count"]
+required_native_concepts = ["allocated_or_live", "active_or_committed", "resident", "retained_or_reserved"]
+native_unavailable_requires_reason = true
+rss_substitution_for_native_fields_allowed = false
+missing_native_field_imputation_allowed = false
+cross_allocator_native_name_equivalence_allowed = false
+raw_native_payload_required = true
+units_must_be_bytes = true
+counter_semantics_required = true
+purge_activation_proof_required = true
+no_purge_run_required = true
+purge_run_is_optional = true
+second_refill_required_when_purge_runs = true
+
+windows_system_native_status = "unavailable-with-reason"
+windows_mimalloc_native_status = "required"
+windows_jemalloc_status = "not-applicable-target"
+linux_system_native_status = "mallinfo2-or-unavailable-with-reason"
+linux_mimalloc_native_status = "required"
+linux_jemalloc_native_status = "required"
+
+product_mutation_allowed = false
+allocator_default_change_allowed = false
+allocator_tuning_change_allowed = false
+adr_required_for_default_change = true
+full_compatibility_latency_matrix_required_for_default_change = true
+local_host_promotable = false
+release_numerical_claim_allowed = false
+
+falsifier = "Reject an attempt if allocator features are not mutually exclusive, a build or trace identity differs, any phase is missing or reordered, a native field is filled from RSS, units or counter semantics are unknown, an unavailable field lacks a reason, purge is claimed without activation evidence, or a failed attempt is discarded."
+interpretation_limit = "Windows can qualify the system/mimalloc paths and provide directional process-memory evidence, but cannot compare jemalloc or authorize a portable default. Allocator-native concepts remain provider-specific and are not treated as numerically interchangeable."
+decision_rule = "Keep the current system default unless a separately preregistered D2 proposal, ADR, complete Linux system/mimalloc/jemalloc matrix, Windows compatibility matrix, and full latency/CPU/correctness qualification all pass. W8 may close as measured-no-win, not-applicable, rejected, or deferred with an external blocker."
+next_decision = "Implement the profiling-only tool, validate native mimalloc JSON and explicit unavailable fields, run the complete Windows local matrix, then decide whether evidence justifies a Linux reference-host comparison or a terminal measured-no-win/deferred disposition."

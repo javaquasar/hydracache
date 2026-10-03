@@ -1,0 +1,29 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-long-run-v2-dispatch-rejected-36404123541-v1"
+state = "rejected-before-product-checkout"
+contract = "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml"
+workflow_run = 36404123541
+workflow_url = "https://github.com/javaquasar/hydracache/actions/runs/36404123541"
+artifact_id = 10961378294
+artifact_name = "performance-long-run-qualification-073-80392243d91f2add6603b637bdb182d7b716074f-36404123541-1"
+artifact_zip_sha256 = "3678d5ddde90c257fbc67920a620bb42a1cd41f36e17ce4ceca4e23314857316"
+post_i73_calibration_sha256 = "4918522a85f8f02e49567398fd0d3235e190fb1a77fb19133d8f36b675002df0"
+post_c73_calibration_sha256 = "1249678a7bab7f87b3b1abf383d8b401150d231b61badc7405979667a72b5195"
+
+workflow_revision = "8039224330d2c11383584bab9c782058e82ed9c8"
+submitted_tooling_sha = "80392243d91f2add6603b637bdb182d7b716074f"
+expected_tooling_sha = "8039224330d2c11383584bab9c782058e82ed9c8"
+candidate_source_commit = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_checkout_started = false
+candidate_build_started = false
+baseline_role_started = false
+candidate_role_started = false
+measurement_observations_produced = false
+automatic_retry_performed = false
+
+failure = "The manually submitted tooling SHA was reconstructed incorrectly from a short prefix and does not exist in the repository. actions/checkout rejected it before the identity guard, product worktrees, builds, canary, or either long-running role."
+artifact_boundary = "The always steps ran from the self-hosted workspace left at the previous 8f8d4457 checkout and emitted two blocked-host post-calibration files. They are retained only as incomplete-attempt diagnostics and are not product or host-admission evidence."
+decision = "retain-rejected-dispatch-and-submit-one-corrected-pre-product-attempt"
+retry_boundary = "A corrected manual dispatch is not a favorable measurement retry because no product binary was built or executed and no performance observation exists. It must use the exact full SHA returned by git rev-parse, keep C73, I73, workload, thresholds, seed and contract unchanged, and retain this attempt."
+next_evidence = "Commit this rejection receipt, push it, and dispatch the registered workflow once with that commit's exact full SHA obtained directly from git rev-parse HEAD."

@@ -1,0 +1,61 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-insufficient-90a40510-v1"
+contract_id = "observer-baseline-pilot-073-v1"
+state = "executed-insufficient-baseline-two-stable-rates"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36069607878
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36069607878"
+duplicate_dispatch_run_id = 36069619626
+duplicate_dispatch_state = "cancelled-before-job"
+source_sha = "90a405109e6f0a57474fb2c0ece1f6d6454d44ea"
+binary_sha256 = "01b9a5a038880653209fcf32862d77cceb743c4ff352124f6d449be49815559b"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10837672645
+artifact_name = "performance-baseline-pilot-073-90a405109e6f0a57474fb2c0ece1f6d6454d44ea-36069607878-1"
+artifact_sha256 = "9807a065b006331d47976bff5066f079301566cf93c7cefe481ebf5c30adbe89"
+campaign_manifest_sha256 = "69c2b3c143f23a5a0cf428d200b72e1d26a31e7d5abcb941acd094e62641df48"
+preflight_sha256 = "857f97e3e669b0c2f07764ee0f87d413e3d8f5d7eae0c26df06e81481edfc375"
+postflight_sha256 = "33fd182a0549266f1a14532b51a36e31d0115630a02b433cfa226e0b4ada2f5e"
+baseline_pilot_sha256 = "d0a9c017c00508c70c758b1dac17a36dedd9f9c77bc55e34a84b0be798c022d0"
+pre_calibration_relative_spread = 0.0023101684718367897
+post_calibration_relative_spread = 0.001493288221284986
+attempts = 24
+failed_attempts = 0
+stable_rates = [10000, 20000]
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+thresholds_changed = false
+silent_retry_allowed = false
+decision = "retain-array-queue-and-optimize-sequence-increments-locally"
+conclusion = "The bounded ArrayQueue retained exact correctness and improved the 10000 and 20000 operations/second CPU overhead to 2.48% and 0.99%. The 5000 rate narrowly missed the unchanged 3% ceiling at 3.23%, while the 2500 rate measured 7.04%. Exactly two rates remained stable, so I73 cannot freeze."
+next_evidence = "Preregister a local-only replacement of the accepted and acknowledged fetch_update CAS loops with fail-closed fetch_add overflow detection. Preserve dirty-on-overflow, queue bounds, exactness, and reconciliation, then repeat correctness gates before considering another host run."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.07044532889227606
+cpu_microseconds_per_operation_delta = 0.59896
+allocation_overhead_bytes_per_operation = 20.10352000000057
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.03233354304659175
+cpu_microseconds_per_operation_delta = 0.18296
+allocation_overhead_bytes_per_operation = 20.725600000000668
+stable = false
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.02484764126100348
+cpu_microseconds_per_operation_delta = 0.10568
+allocation_overhead_bytes_per_operation = 20.636919999999918
+stable = true
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.0099242125229647
+cpu_microseconds_per_operation_delta = 0.03495
+allocation_overhead_bytes_per_operation = 20.408979999999247
+stable = true

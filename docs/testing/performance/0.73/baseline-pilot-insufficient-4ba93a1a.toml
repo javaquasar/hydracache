@@ -1,0 +1,95 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-insufficient-4ba93a1a-v1"
+contract_id = "observer-baseline-pilot-073-v1"
+state = "executed-insufficient-baseline"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36064788229
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36064788229"
+source_sha = "4ba93a1a1334799f94974a7dcadcda62dae7b587"
+binary_sha256 = "de04d888a210a94aa676b412b4469eddbd58fa45eec8a69ea593471556f375d2"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10836226123
+artifact_name = "performance-baseline-pilot-073-4ba93a1a1334799f94974a7dcadcda62dae7b587-36064788229-1"
+artifact_sha256 = "28a218a2d1bc6e4cdb91e8d7e098796ae44a12bf707a8b6cbbc345b677bbb69c"
+campaign_manifest_sha256 = "a54b103d8b5b3e567efdc536c434fef7a2ea68da504e665df17bf9077c0cd781"
+preflight_sha256 = "ec54f3b729a0b9558a1f82c865365dc3950a08d927cb638b48fe0ce900cf0b47"
+postflight_sha256 = "83869348c241c95d208eb5d11775820a6b64930c157445ffc35b82fdaf77e925"
+baseline_pilot_sha256 = "e46c8871b2366ed99274c220976c76ecd2da5852263b46df3744f5e7e59d69fc"
+pre_calibration_relative_spread = 0.02097843457050102
+post_calibration_relative_spread = 0.02506379172880265
+attempts = 24
+failed_attempts = 0
+stable_rates = 0
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+thresholds_changed = false
+silent_retry_allowed = false
+decision = "retain-negative-baseline-and-attribute-cpu-cost"
+conclusion = "All 24 baseline-only attempts completed with exact outcome accounting and stable offered load, but production exceeded the frozen 3% CPU-per-operation ceiling at every aggregate rate. I73 remains unfrozen and D3 candidate measurement remains closed."
+next_evidence = "Run a preregistered, non-promotable four-mode CPU attribution on the same admitted host to separate counter cost, backend notification plumbing, and HydraCache removal-observer callback work. Do not move the 3% ceiling or silently repeat this pilot."
+
+[[rate]]
+offered_per_second = 2500
+minimum_achieved_ratio = 0.9997194619236972
+goodput_regression = 0.0001313924009443536
+cpu_per_operation_regression = 0.041354512852287695
+p99_regression = 0.029443254817987152
+allocation_overhead_bytes_per_operation = 19.43087999999989
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+minimum_achieved_ratio = 0.9997748327117264
+goodput_regression = 0.00003552637958877875
+cpu_per_operation_regression = 0.06464375287011144
+p99_regression = 0.0070921985815602835
+allocation_overhead_bytes_per_operation = 19.83375999999953
+stable = false
+
+[[rate]]
+offered_per_second = 10000
+minimum_achieved_ratio = 0.9996839922924381
+goodput_regression = -0.00008892550267944754
+cpu_per_operation_regression = 0.10012489988940167
+p99_regression = 0.011929460580912862
+allocation_overhead_bytes_per_operation = 20.356760000000577
+stable = false
+
+[[rate]]
+offered_per_second = 20000
+minimum_achieved_ratio = 0.9996657207799626
+goodput_regression = 0.0000454231855730507
+cpu_per_operation_regression = 0.05266800093034752
+p99_regression = 0.011000523834468309
+allocation_overhead_bytes_per_operation = 20.411380000000463
+stable = false
+
+[[paired_cpu_observation]]
+offered_per_second = 2500
+production_slower_pairs = 3
+pairs = 3
+delta_microseconds_per_operation_min = 0.26
+delta_microseconds_per_operation_max = 0.50
+
+[[paired_cpu_observation]]
+offered_per_second = 5000
+production_slower_pairs = 3
+pairs = 3
+delta_microseconds_per_operation_min = 0.17
+delta_microseconds_per_operation_max = 0.62
+
+[[paired_cpu_observation]]
+offered_per_second = 10000
+production_slower_pairs = 3
+pairs = 3
+delta_microseconds_per_operation_min = 0.08
+delta_microseconds_per_operation_max = 0.48
+
+[[paired_cpu_observation]]
+offered_per_second = 20000
+production_slower_pairs = 3
+pairs = 3
+delta_microseconds_per_operation_min = 0.14
+delta_microseconds_per_operation_max = 0.20
