@@ -2181,6 +2181,31 @@ appear corrupt. Finally, the verifier hashes runner and scenario bytes from the 
 not the platform-transformed worktree. Reproducible evidence depends on preserving byte identity at
 both boundaries.
 
+## A green long run can still fail release admission
+
+The final exact-tree CI check provided one last useful falsification. PR #214 pointed at the measured
+candidate `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. GitHub tested a synthetic merge commit, but its
+tree hash exactly matched the candidate tree, so the result cannot be dismissed as merge drift. The
+HC/2 workflow passed its Linux, Java 17, Java 21 and Docker jobs. The main CI and documentation
+workflows did not pass.
+
+The failures were mundane but release-relevant. The docs examples lockfile still named the local
+HydraCache crates as 0.72.0 after the workspace moved to 0.73.0, so a locked documentation build
+correctly refused to rewrite it. The frozen topology inventory did not list the newly added 0.73
+workflows. The memory ownership registry did not yet include the removal observer and HC/2 outbound
+queue. The gated-test registry omitted the rolling-compatibility environment gate, a retained 0.72
+test required the whole workspace to remain exactly version 0.72.0, and the instruction tripwire
+ended without benchmark summaries. Several admission jobs then failed by design because they
+aggregate those upstream results.
+
+None of those outcomes invalidates the 24-hour boundedness measurement, and none can be repaired by
+reinterpreting its statistics. They invalidate publication of that exact Git identity under the
+current release contract. A lockfile or registry can be easy to edit, but a frozen candidate cannot
+be edited in place. The honest next step is therefore a reviewed choice: freeze a corrected
+candidate and repeat the evidence whose identity changes, or explicitly revise the release contract
+without converting a red gate into a waiver. Until then the failed CI attempt remains evidence,
+`v0.73.0` remains absent, and the successful long run remains necessary but insufficient.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
