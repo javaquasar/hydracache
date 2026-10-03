@@ -5,7 +5,7 @@
 > - **Why:** 0.71 shipped correct accounting and active TTL reclamation, but its accepted D4 evidence did not demonstrate a numerical RSS win. The deferred W2b/W5-W11 ideas need new owner/stack attribution and same-host comparisons before product changes are justified.
 > - **After (depends on):** published `0.72.0`. The external baseline and compatibility binary are bound to annotated tag `v0.72.0` (peeled runtime candidate `24927c28c279c6c34ad90111ee6470b4065e0815`); the 0.73 instrumentation baseline and release candidate remain separate exact commits. The 0.71 AX42 campaign is historical hypothesis evidence, not a substitute baseline.
 > - **Unblocks:** defensible per-profile sizing and efficiency claims, or an explicit measured no-win result without weakening correctness, durability, security, or release gates.
-> - **Status:** corrected candidate in final admission — six-hour qualification `36532416869` and the
+> - **Status:** in-progress — corrected candidate in final admission; six-hour qualification `36532416869` and the
 >   split 24-hour replacement confirmation `36839197349` passed every frozen guard for candidate
 >   `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`, and the confirmation archive is immutable at
 >   `570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`. Final exact-tree admission PR #214 then failed CI

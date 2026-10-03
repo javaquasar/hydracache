@@ -12,6 +12,7 @@ const pages = [
   "/guides/memory-accounting.html",
   "/releases/0.71.0.html",
   "/releases/0.72.0.html",
+  "/releases/0.73.0.html",
   "/reference/api-links.html",
   "/reference/release-0.72-verification.html",
 ];
