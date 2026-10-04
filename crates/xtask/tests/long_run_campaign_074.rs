@@ -414,6 +414,26 @@ fn supervisor_builder_produces_a_promotable_two_role_packet() {
         &continuation.packet_manifest_path,
     )
     .is_err());
+
+    let replacement = record(1, GENESIS, "i74");
+    fs::write(
+        campaign.join("roles/i74/checkpoints.jsonl"),
+        format!("{}\n", serde_json::to_string(&replacement).unwrap()),
+    )
+    .unwrap();
+    wrong_binding.continuation_packet_sha256 = Some(continuation.packet_manifest_sha256.clone());
+    let role_drift_packet = build_packet(
+        &campaign,
+        &root.path().join("outputs/role-drift"),
+        &wrong_binding,
+        limits,
+    )
+    .unwrap();
+    assert!(verify_continuation_binding(
+        &role_drift_packet.packet_manifest_path,
+        &continuation.packet_manifest_path,
+    )
+    .is_err());
 }
 
 #[test]

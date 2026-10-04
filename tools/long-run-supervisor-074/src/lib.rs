@@ -24,6 +24,7 @@ pub mod mutation;
 pub mod process_identity;
 pub mod protocol;
 pub mod seal_artifact;
+pub mod seal_input;
 #[cfg(target_os = "linux")]
 pub mod seal_lifecycle;
 mod sealed_permissions;

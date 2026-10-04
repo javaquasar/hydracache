@@ -161,6 +161,27 @@ pub fn build_or_recover_seal_artifact(
     Ok(result)
 }
 
+pub fn load_seal_artifact_result(
+    campaign_directory: &Path,
+    role: Role,
+) -> Result<SealArtifactResult, SealArtifactError> {
+    let campaign_directory = canonical_directory(campaign_directory)?;
+    let result: SealArtifactResult = read_canonical_document(
+        &campaign_directory.join(format!("{}-seal-result.json", role_name(&role))),
+    )?;
+    if result.schema_version != 1
+        || result.role != role
+        || campaign_directory
+            .file_name()
+            .and_then(|value| value.to_str())
+            != Some(result.campaign_id.as_str())
+        || !is_hash(&result.packet_manifest_sha256)
+    {
+        return Err(SealArtifactError::Binding);
+    }
+    Ok(result)
+}
+
 fn recover_or_build_packet(
     campaign_directory: &Path,
     packet_directory: &Path,

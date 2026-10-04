@@ -39,7 +39,7 @@ struct GuardResult {
     evidence_sha256: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RoleManifest {
     id: String,
@@ -291,6 +291,11 @@ pub fn verify_continuation_binding(
     let continuation_bytes = fs::read(continuation_manifest_path)?;
     let continuation_manifest: PacketManifest =
         parse_canonical_json(&continuation_bytes, "continuation packet manifest")?;
+    let final_i74 = final_manifest.roles.iter().find(|role| role.id == "i74");
+    let continuation_i74 = continuation_manifest
+        .roles
+        .iter()
+        .find(|role| role.id == "i74");
     if continuation_manifest.promotable
         || continuation_manifest.result != "complete"
         || continuation_manifest.continuation_packet_sha256.is_some()
@@ -298,6 +303,7 @@ pub fn verify_continuation_binding(
         || final_manifest.campaign_manifest_sha256 != continuation_manifest.campaign_manifest_sha256
         || final_manifest.continuation_packet_sha256.as_deref()
             != Some(hex(&Sha256::digest(&continuation_bytes)).as_str())
+        || final_i74 != continuation_i74
     {
         return Err(
             "final packet does not bind the exact compatible I74 continuation manifest".into(),
