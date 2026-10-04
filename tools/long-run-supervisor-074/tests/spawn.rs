@@ -1,6 +1,9 @@
 use hydracache_long_run_supervisor_074::spawn::{
-    prepare_spawn_intent, start_or_recover, IntentDisposition, SpawnBackend, SpawnError,
-    SpawnIntent, SpawnObservation, SpawnResolution,
+    apply_spawn_result, prepare_spawn_intent, start_or_recover, IntentDisposition, SpawnBackend,
+    SpawnError, SpawnIntent, SpawnMismatch, SpawnObservation, SpawnResolution,
+};
+use hydracache_long_run_supervisor_074::state::{
+    CampaignState, DurableCampaignState, FrozenIdentity,
 };
 use hydracache_long_run_supervisor_074::{ProcessIdentity, Role};
 use std::convert::Infallible;
@@ -66,6 +69,42 @@ fn exact(unit_name: &str) -> SpawnObservation {
     SpawnObservation::Exact {
         harness: process(unit_name, 10),
         daemon: process(unit_name, 11),
+    }
+}
+
+fn starting_state(role: &Role) -> DurableCampaignState {
+    DurableCampaignState {
+        revision: 1,
+        campaign_state: match role {
+            Role::I74 => CampaignState::I74Starting,
+            Role::C74 => CampaignState::C74Starting,
+        },
+        identity: FrozenIdentity {
+            campaign_id: hash('a'),
+            manifest_sha256: hash('c'),
+            contract_sha256: hash('e'),
+            scenario_sha256: hash('f'),
+            tooling_sha256: hash('1'),
+            source_bundle_sha256: hash('2'),
+            binary_bundle_sha256: hash('3'),
+            workload_bundle_sha256: hash('4'),
+            machine_id: "machine-a".to_owned(),
+            boot_id: "boot-a".to_owned(),
+            host_receipt_sha256: hash('5'),
+            mount_identity: "mount-a".to_owned(),
+            isolated_cpuset: "2-7".to_owned(),
+            housekeeping_cpuset: "0-1".to_owned(),
+            command_environment_sha256: hash('6'),
+            lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
+            lease_deadline_unix_seconds: 2_000_000_000,
+        },
+        harness: None,
+        daemon: None,
+        checkpoint: None,
+        controller_lease: None,
+        recorded_failure: false,
+        duplicate_executor: false,
+        durable_history_corrupt: false,
     }
 }
 
@@ -145,6 +184,7 @@ fn mismatched_existing_unit_is_preserved_as_terminal_evidence() {
     prepare_spawn_intent(temporary.path(), &intent).unwrap();
     let mut backend = FakeBackend {
         live: Some(SpawnObservation::Mismatch {
+            reason: SpawnMismatch::Identity,
             harness: Some(process("reused.service", 10)),
             daemon: None,
         }),
@@ -152,8 +192,55 @@ fn mismatched_existing_unit_is_preserved_as_terminal_evidence() {
     };
     let result = start_or_recover(temporary.path(), &intent, &mut backend).unwrap();
     assert_eq!(result.resolution, SpawnResolution::Mismatch);
+    assert_eq!(result.mismatch, Some(SpawnMismatch::Identity));
     assert_eq!(result.harness.unwrap().unit_name, "reused.service");
     assert_eq!(backend.start_calls, 0);
+}
+
+#[test]
+fn spawn_outcomes_advance_state_without_placeholder_processes_or_checkpoints() {
+    let started_root = tempfile::tempdir().unwrap();
+    let i74 = intent(Role::I74);
+    let mut started_backend = FakeBackend::default();
+    let started = start_or_recover(started_root.path(), &i74, &mut started_backend).unwrap();
+    let running = apply_spawn_result(&starting_state(&Role::I74), &Role::I74, &started).unwrap();
+    assert_eq!(running.revision, 2);
+    assert_eq!(running.campaign_state, CampaignState::I74Running);
+    assert!(running.harness.is_some());
+    assert!(running.daemon.is_some());
+    assert!(running.checkpoint.is_none());
+
+    let absent_root = tempfile::tempdir().unwrap();
+    prepare_spawn_intent(absent_root.path(), &i74).unwrap();
+    let mut absent_backend = FakeBackend::default();
+    let absent = start_or_recover(absent_root.path(), &i74, &mut absent_backend).unwrap();
+    let failed = apply_spawn_result(&starting_state(&Role::I74), &Role::I74, &absent).unwrap();
+    assert_eq!(failed.campaign_state, CampaignState::FailedIncomplete);
+    assert!(failed.recorded_failure);
+    assert!(failed.harness.is_none());
+    assert!(failed.checkpoint.is_none());
+
+    let mismatch_root = tempfile::tempdir().unwrap();
+    prepare_spawn_intent(mismatch_root.path(), &i74).unwrap();
+    let mut mismatch_backend = FakeBackend {
+        live: Some(SpawnObservation::Mismatch {
+            reason: SpawnMismatch::MultipleExecutors,
+            harness: Some(process("reused.service", 10)),
+            daemon: Some(process("reused.service", 11)),
+        }),
+        ..FakeBackend::default()
+    };
+    let mismatch = start_or_recover(mismatch_root.path(), &i74, &mut mismatch_backend).unwrap();
+    let quarantined =
+        apply_spawn_result(&starting_state(&Role::I74), &Role::I74, &mismatch).unwrap();
+    assert_eq!(
+        quarantined.campaign_state,
+        CampaignState::CorruptQuarantined
+    );
+    assert!(quarantined.recorded_failure);
+    assert!(quarantined.durable_history_corrupt);
+    assert!(quarantined.duplicate_executor);
+    assert!(quarantined.harness.is_none());
 }
 
 #[test]

@@ -1,3 +1,4 @@
+use crate::state::{transition, CampaignState, DurableCampaignState, Transition};
 use crate::{canonical_json, is_hash, sha256_hex, ProcessIdentity, Role};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::fmt::Display;
@@ -54,9 +55,17 @@ pub enum SpawnObservation {
     },
     Absent,
     Mismatch {
+        reason: SpawnMismatch,
         harness: Option<ProcessIdentity>,
         daemon: Option<ProcessIdentity>,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SpawnMismatch {
+    Identity,
+    MultipleExecutors,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -76,6 +85,7 @@ pub struct SpawnResult {
     pub intent_sha256: String,
     pub unit_name: String,
     pub resolution: SpawnResolution,
+    pub mismatch: Option<SpawnMismatch>,
     pub harness: Option<ProcessIdentity>,
     pub daemon: Option<ProcessIdentity>,
 }
@@ -125,6 +135,8 @@ pub enum SpawnError {
     Io(#[from] std::io::Error),
     #[error("spawn evidence serialization failed: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("spawn result cannot be applied to the durable campaign state")]
+    State,
 }
 
 pub fn deterministic_unit_name(campaign_id: &str, role: &Role) -> Result<String, SpawnError> {
@@ -199,25 +211,81 @@ pub fn start_or_recover<B: SpawnBackend>(
     Ok(result)
 }
 
+pub fn apply_spawn_result(
+    state: &DurableCampaignState,
+    role: &Role,
+    result: &SpawnResult,
+) -> Result<DurableCampaignState, SpawnError> {
+    let expected_starting = match role {
+        Role::I74 => CampaignState::I74Starting,
+        Role::C74 => CampaignState::C74Starting,
+    };
+    if state.campaign_state != expected_starting
+        || state.identity.campaign_id != result.campaign_id
+        || state.harness.is_some()
+        || state.daemon.is_some()
+        || state.checkpoint.is_some()
+        || result.schema_version != 1
+        || !is_hash(&result.intent_sha256)
+        || result.unit_name != deterministic_unit_name(&result.campaign_id, role)?
+    {
+        return Err(SpawnError::State);
+    }
+    validate_result_shape(result, &result.unit_name).map_err(|_| SpawnError::State)?;
+    let mut next = state.clone();
+    next.revision = next.revision.checked_add(1).ok_or(SpawnError::State)?;
+    match result.resolution {
+        SpawnResolution::Started | SpawnResolution::Adopted => {
+            let (harness, daemon) = result.exact_identities().ok_or(SpawnError::State)?;
+            next.campaign_state = transition(
+                state.campaign_state,
+                match role {
+                    Role::I74 => Transition::MarkI74Running,
+                    Role::C74 => Transition::MarkC74Running,
+                },
+            )
+            .map_err(|_| SpawnError::State)?;
+            next.harness = Some(harness.clone());
+            next.daemon = Some(daemon.clone());
+        }
+        SpawnResolution::Absent => {
+            next.campaign_state = transition(state.campaign_state, Transition::Fail)
+                .map_err(|_| SpawnError::State)?;
+            next.recorded_failure = true;
+        }
+        SpawnResolution::Mismatch => {
+            next.campaign_state = transition(state.campaign_state, Transition::Quarantine)
+                .map_err(|_| SpawnError::State)?;
+            next.recorded_failure = true;
+            next.durable_history_corrupt = true;
+            next.duplicate_executor = result.mismatch == Some(SpawnMismatch::MultipleExecutors);
+        }
+    }
+    Ok(next)
+}
+
 fn result_from_observation(
     intent: &SpawnIntent,
     intent_sha256: &str,
     disposition: IntentDisposition,
     observation: SpawnObservation,
 ) -> SpawnResult {
-    let (resolution, harness, daemon) = match observation {
+    let (resolution, mismatch, harness, daemon) = match observation {
         SpawnObservation::Exact { harness, daemon } => (
             match disposition {
                 IntentDisposition::Created => SpawnResolution::Started,
                 IntentDisposition::Recovered => SpawnResolution::Adopted,
             },
+            None,
             Some(harness),
             Some(daemon),
         ),
-        SpawnObservation::Absent => (SpawnResolution::Absent, None, None),
-        SpawnObservation::Mismatch { harness, daemon } => {
-            (SpawnResolution::Mismatch, harness, daemon)
-        }
+        SpawnObservation::Absent => (SpawnResolution::Absent, None, None, None),
+        SpawnObservation::Mismatch {
+            reason,
+            harness,
+            daemon,
+        } => (SpawnResolution::Mismatch, Some(reason), harness, daemon),
     };
     SpawnResult {
         schema_version: 1,
@@ -225,6 +293,7 @@ fn result_from_observation(
         intent_sha256: intent_sha256.to_owned(),
         unit_name: intent.unit_name.clone(),
         resolution,
+        mismatch,
         harness,
         daemon,
     }
@@ -261,21 +330,32 @@ fn validate_result(
     {
         return Err(SpawnError::Document);
     }
+    validate_result_shape(result, &intent.unit_name)
+}
+
+fn validate_result_shape(result: &SpawnResult, unit_name: &str) -> Result<(), SpawnError> {
     match result.resolution {
         SpawnResolution::Started | SpawnResolution::Adopted => {
+            if result.mismatch.is_some() {
+                return Err(SpawnError::Document);
+            }
             let (Some(harness), Some(daemon)) = (&result.harness, &result.daemon) else {
                 return Err(SpawnError::Document);
             };
-            if harness.unit_name != intent.unit_name || daemon.unit_name != intent.unit_name {
+            if harness.unit_name != unit_name || daemon.unit_name != unit_name {
                 return Err(SpawnError::Document);
             }
         }
         SpawnResolution::Absent => {
-            if result.harness.is_some() || result.daemon.is_some() {
+            if result.mismatch.is_some() || result.harness.is_some() || result.daemon.is_some() {
                 return Err(SpawnError::Document);
             }
         }
-        SpawnResolution::Mismatch => {}
+        SpawnResolution::Mismatch => {
+            if result.mismatch.is_none() {
+                return Err(SpawnError::Document);
+            }
+        }
     }
     Ok(())
 }
