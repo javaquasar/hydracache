@@ -244,6 +244,39 @@ fn independent_verifier_accepts_exact_packet_and_rejects_manifest_drift() {
 }
 
 #[test]
+fn seal_input_inventory_schema_is_strict_and_portable() {
+    let schema = schema("seal-input-inventory.schema.json");
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let mut inventory = json!({
+        "schema_version": 1,
+        "release": "0.74",
+        "campaign_id": "a".repeat(64),
+        "campaign_manifest_sha256": "b".repeat(64),
+        "role": "i74",
+        "result": "complete",
+        "terminal_reason": null,
+        "journal_relative_path": "roles/i74/checkpoints.jsonl",
+        "guard_evidence": [{
+            "id": "semantic",
+            "passed": true,
+            "source_relative_path": "roles/i74/guards/semantic.json"
+        }],
+        "raw_files": [
+            "campaign-start.json",
+            "roles/i74/checkpoints.jsonl",
+            "roles/i74/guards/semantic.json",
+            "roles/i74/seal-input-inventory.json"
+        ]
+    });
+    validator.validate(&inventory).unwrap();
+    inventory["unknown"] = json!(true);
+    assert!(validator.validate(&inventory).is_err());
+    inventory.as_object_mut().unwrap().remove("unknown");
+    inventory["raw_files"][0] = json!("../escape");
+    assert!(validator.validate(&inventory).is_err());
+}
+
+#[test]
 fn supervisor_builder_produces_a_deterministic_independently_verified_packet() {
     let first_root = tempfile::tempdir().unwrap();
     let second_root = tempfile::tempdir().unwrap();

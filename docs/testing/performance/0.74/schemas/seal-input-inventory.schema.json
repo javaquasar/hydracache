@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/seal-input-inventory.schema.json",
+  "title": "HydraCache 0.74 role seal input inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "release", "campaign_id", "campaign_manifest_sha256",
+    "role", "result", "terminal_reason", "journal_relative_path",
+    "guard_evidence", "raw_files"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.74" },
+    "campaign_id": { "$ref": "#/$defs/hash" },
+    "campaign_manifest_sha256": { "$ref": "#/$defs/hash" },
+    "role": { "enum": ["i74", "c74"] },
+    "result": { "enum": ["complete", "incomplete"] },
+    "terminal_reason": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1, "maxLength": 128 }
+      ]
+    },
+    "journal_relative_path": { "$ref": "#/$defs/relativePath" },
+    "guard_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "passed", "source_relative_path"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "passed": { "type": "boolean" },
+          "source_relative_path": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    },
+    "raw_files": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20000,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/relativePath" }
+    }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    }
+  }
+}

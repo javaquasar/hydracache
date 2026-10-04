@@ -318,6 +318,40 @@ Value ownership also produced a useful non-change. Raw embedded values already s
 the canonical request core, so the investigation recorded the boundary instead of inventing a
 zero-copy wrapper.
 
+## Making the long test as strict as the benchmark
+
+The release work exposed a second kind of performance problem: a six-hour or 24-hour measurement
+is not useful if losing the CI controller also loses the only trustworthy account of what ran. The
+solution was not to make a dead benchmark resumable. It was to move process lifetime and evidence
+ownership onto a narrowly constrained host supervisor, while keeping identity, workload, seed,
+duration and thresholds frozen outside it.
+
+That distinction matters. An attach may observe the original process, but it may never spawn a
+replacement and call the combined samples one run. Durable checkpoint records form a hash chain
+and retain boot, PID-start, process-group, cgroup, harness and daemon identity. Terminal admission
+requires the original retained systemd unit, a terminal checkpoint and consistent process
+identity. A crash between an event append, state update, packet build and response can be replayed;
+a different request or different evidence cannot be substituted.
+
+I74 now seals into an immutable continuation packet. The final C74 packet records the SHA-256 of
+that exact canonical I74 manifest. Offline verification takes both manifests, recomputes the
+digest, checks campaign identity and compares the complete I74 role manifest. A 64-character value
+that merely looks like a digest is insufficient, and recapturing the I74 journal after it changed
+does not produce a valid final result.
+
+The packet input boundary is explicit too. Each role writes a canonical
+`seal-input-inventory.json` naming its journal, every raw input and one evidence file for every
+guard frozen before the run. The supervisor does not sweep a directory and hope that everything
+inside is evidence. Unknown fields, unlisted files, cross-role paths, traversal, symlinks,
+hardlinks and limit overflow fail closed. Before C74 can reuse I74, the resolver reopens the
+read-only sealed packet and compares the original input bytes with the sealed copies.
+
+Finally, packet and archive publication use create-new staging directories, sync their contents,
+apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
+completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
+mechanics do not make the local throughput numbers promotable, but they make it possible for a
+future admitted-host run to survive controller loss without quietly changing the experiment.
+
 ## What the local campaign actually delivered
 
 The final local branch contains attribution tools, exact receipts, regression coverage and the

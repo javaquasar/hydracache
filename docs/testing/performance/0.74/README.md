@@ -134,7 +134,14 @@ rejected:
 
 ```text
 cargo xtask long-run-campaign-check --release 0.74 --manifest <packet-manifest.json>
+cargo xtask long-run-campaign-check --release 0.74 --manifest <final-packet-manifest.json> --continuation-manifest <i74-packet-manifest.json>
 ```
+
+A one-role I74 packet must carry a null continuation digest. Every two-role final packet carries the
+SHA-256 of the exact canonical I74 packet manifest, and the final offline command requires that
+manifest as a separate input. It recomputes the digest, campaign/manifest identity and the complete
+I74 role manifest; a valid-looking digest, a different continuation, or recaptured I74 journal is
+rejected.
 
 The supervisor library also creates the final archive without trusting directory iteration order or
 filesystem metadata. It sorts bytewise-normalized paths, emits fixed uid/gid/mode/mtime tar
@@ -246,15 +253,26 @@ directory and compare all hashes/counts before returning a receipt. Tests delibe
 write permission only to model privileged tampering, after which verification fails closed. At
 source `9b4d93a7`, the same 125-test WSL suite and six independent packet-verifier tests pass.
 
+The next local seal-input slice removes directory discovery from the server adapter. Each measured
+role must close a canonical `roles/<role>/seal-input-inventory.json` that explicitly names its
+journal, exact raw files and one evidence file for every guard frozen in the campaign manifest.
+Unknown fields, cross-role paths, missing self/campaign/journal entries, duplicate guards, symlink
+or hardlink inputs and byte/file-limit overflow fail closed. C74 planning re-opens the durable I74
+seal result, verifies the published read-only packet against the original I74 inventory and checks
+that every still-present I74 source byte equals the sealed copy before it can combine the two
+inventories. Unlisted campaign files are never swept into an artifact. The independent final-packet
+verifier also compares the complete I74 role manifest with the supplied continuation rather than
+accepting a matching top-level digest alone.
+
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
 The live server seal/abort routes, diagnostics and lease-expiry termination remain implementation
-work. Deterministic packet construction, durable artifact recovery and the seal lifecycle
-coordinator are complete local components, but server dispatch still needs to derive the exact
-PacketPlan from frozen campaign evidence, inspect the retained unit over D-Bus and invoke the
-coordinator. Production uid/gid ownership still needs admitted-host rehearsal. No real service
-claim is made until that adapter and rehearsal exist.
+work. Deterministic packet construction, strict inventory-based PacketPlan derivation, durable
+artifact recovery and the seal lifecycle coordinator are complete local components, but server
+dispatch still needs to inspect the retained unit over D-Bus and invoke the coordinator.
+Production uid/gid ownership still needs admitted-host rehearsal. No real service claim is made
+until that adapter and rehearsal exist.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

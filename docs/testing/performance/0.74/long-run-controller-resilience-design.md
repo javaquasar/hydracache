@@ -489,7 +489,9 @@ The packet digest covers canonical packet-manifest.json. A tar.zst is produced o
 are closed and synced. outer-sha256.txt covers the exact archive bytes.
 
 I74 sealing produces an immutable continuation packet. Final sealing includes that exact digest and
-the C74 packet. An incomplete seal has the same structural integrity but result=incomplete and an
+the C74 packet. Offline verification requires the separately downloaded I74 manifest, recomputes
+its digest and requires the final I74 role manifest to be byte-semantically identical. An incomplete
+seal has the same structural integrity but result=incomplete and an
 enumerated terminal reason. Artifact byte/file limits are checked before copy, during copy and
 before rename. Sealed directories are read-only and never modified; a repeated seal returns the
 existing digest.
@@ -502,6 +504,15 @@ files and directories are synced. The independently implemented xtask verifier a
 one-role continuation and two-role promotable fixtures, and separately built archives are
 byte-identical. Archive publication also uses a synced create-new staging directory and atomic
 rename, followed by exact directory/digest verification.
+
+PacketPlan derivation is also explicit. A canonical
+`roles/<role>/seal-input-inventory.json` names the role journal, exact bounded raw file set and
+evidence path/result for every frozen guard. The resolver never scans the campaign directory,
+requires every non-manifest path to stay under the active role root, and rejects unlisted or
+cross-role data. C74 resolution combines the two explicit inventories, obtains the continuation
+digest only from the durable I74 seal result, re-verifies the published read-only I74 packet and
+compares every original I74 input with its sealed copy before final assembly. Thus mutable source
+drift is rejected before a final artifact is created, not deferred to release review.
 
 The durable artifact subtransaction now persists a canonical request/role/plan/limit-bound intent
 before building. On retry it verifies and adopts exact final packet/archive directories, recovers a
@@ -517,9 +528,10 @@ same request digest, writes the signed response only after the artifact and seal
 re-verifies artifacts on response replay. `COMPLETE_SEALED` clears the retained process, checkpoint
 and controller lease before the durable response; only then is host-marker removal attempted, and
 that removal is idempotent across a lost response. Local I74/C74 tests exercise continuation and
-promotable packets plus event/state and marker-release crash windows. The remaining server adapter
-must derive PacketPlan from frozen on-disk evidence, perform the real D-Bus observation and enforce
-production uid/gid ownership before this becomes a live-service claim.
+promotable packets plus event/state and marker-release crash windows. The strict inventory resolver
+now derives PacketPlan from frozen on-disk evidence. The remaining server adapter must perform the
+real D-Bus observation, invoke the coordinator and enforce production uid/gid ownership before this
+becomes a live-service claim.
 
 Publication modes are now part of the verified artifact contract on Unix. Packet and archive
 staging trees are recursively changed to `0400` files and `0500` directories, metadata is synced,

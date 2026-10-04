@@ -128,6 +128,10 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     let implementation = controller["local_implementation"].as_table().unwrap();
     for (path_field, digest_field) in [
         ("packet_manifest_schema", "packet_manifest_schema_sha256"),
+        (
+            "seal_input_inventory_schema",
+            "seal_input_inventory_schema_sha256",
+        ),
         ("raw_manifest_schema", "raw_manifest_schema_sha256"),
         ("start_manifest_schema", "start_manifest_schema_sha256"),
         ("host_observation_schema", "host_observation_schema_sha256"),
@@ -143,6 +147,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "raw_file_set_verification_complete",
         "campaign_manifest_binding_complete",
         "continuation_packet_digest_binding_complete",
+        "strict_seal_input_resolver_complete",
         "guard_evidence_binding_complete",
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",
