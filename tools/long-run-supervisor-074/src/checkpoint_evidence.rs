@@ -1,5 +1,5 @@
 use crate::state::{CampaignState, DurableCampaignState};
-use crate::{verify_journal, ChainError, Role, VerificationReport};
+use crate::{verify_journal, ChainError, Phase, Role, VerificationReport};
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -58,15 +58,35 @@ pub fn verify_checkpoint_evidence(
     Ok(report)
 }
 
+pub fn verify_terminal_checkpoint_evidence(
+    campaign_directory: &Path,
+    state: &DurableCampaignState,
+) -> Result<VerificationReport, CheckpointEvidenceError> {
+    if !matches!(
+        state.campaign_state,
+        CampaignState::I74Running
+            | CampaignState::I74Terminal
+            | CampaignState::C74Running
+            | CampaignState::C74Terminal
+    ) {
+        return Err(CheckpointEvidenceError::State);
+    }
+    let report = verify_checkpoint_evidence(campaign_directory, state)?;
+    if report.last_phase != Phase::Terminal {
+        return Err(CheckpointEvidenceError::Binding);
+    }
+    Ok(report)
+}
+
 fn role_directory(
     campaign_directory: &Path,
     campaign_state: CampaignState,
 ) -> Result<(PathBuf, Role), CheckpointEvidenceError> {
     match campaign_state {
-        CampaignState::I74Starting | CampaignState::I74Running => {
+        CampaignState::I74Starting | CampaignState::I74Running | CampaignState::I74Terminal => {
             Ok((campaign_directory.join("roles").join("i74"), Role::I74))
         }
-        CampaignState::C74Starting | CampaignState::C74Running => {
+        CampaignState::C74Starting | CampaignState::C74Running | CampaignState::C74Terminal => {
             Ok((campaign_directory.join("roles").join("c74"), Role::C74))
         }
         _ => Err(CheckpointEvidenceError::State),

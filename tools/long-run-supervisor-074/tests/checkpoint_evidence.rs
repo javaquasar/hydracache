@@ -1,5 +1,5 @@
 use hydracache_long_run_supervisor_074::checkpoint_evidence::{
-    verify_checkpoint_evidence, CheckpointEvidenceError,
+    verify_checkpoint_evidence, verify_terminal_checkpoint_evidence, CheckpointEvidenceError,
 };
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
@@ -44,6 +44,13 @@ fn payload(role: Role, sequence: u64) -> CheckpointPayload {
         harness: process(100),
         daemon: process(101),
     }
+}
+
+fn terminal_payload(role: Role, sequence: u64) -> CheckpointPayload {
+    let mut payload = payload(role, sequence);
+    payload.phase = Phase::Terminal;
+    payload.milestone = "terminal".to_owned();
+    payload
 }
 
 fn state(head: String) -> DurableCampaignState {
@@ -147,5 +154,36 @@ fn non_regular_checkpoint_journal_is_rejected_before_parsing() {
     assert!(matches!(
         verify_checkpoint_evidence(temporary.path(), &state),
         Err(CheckpointEvidenceError::Chain(ChainError::UnsafeJournal))
+    ));
+}
+
+#[test]
+fn terminal_evidence_requires_the_final_phase_and_retains_role_identity() {
+    let (temporary, mut state) = fixture();
+    assert!(matches!(
+        verify_terminal_checkpoint_evidence(temporary.path(), &state),
+        Err(CheckpointEvidenceError::Binding)
+    ));
+
+    let role = temporary.path().join("roles/i74");
+    let journal = role.join("checkpoints.jsonl");
+    let head = role.join("checkpoints.head");
+    let third = build_record(
+        3,
+        &state.checkpoint.as_ref().unwrap().record_sha256,
+        terminal_payload(Role::I74, 3),
+    )
+    .unwrap();
+    append_record(&journal, &head, &third).unwrap();
+    state.checkpoint.as_mut().unwrap().sequence = 3;
+    state.checkpoint.as_mut().unwrap().record_sha256 = third.record_sha256;
+    assert!(verify_terminal_checkpoint_evidence(temporary.path(), &state).is_ok());
+
+    state.campaign_state = CampaignState::I74Terminal;
+    assert!(verify_terminal_checkpoint_evidence(temporary.path(), &state).is_ok());
+    state.campaign_state = CampaignState::I74Sealed;
+    assert!(matches!(
+        verify_terminal_checkpoint_evidence(temporary.path(), &state),
+        Err(CheckpointEvidenceError::State)
     ));
 }

@@ -132,6 +132,7 @@ pub fn build_transient_unit_spec(
         ("User", UnitProperty::Text(SERVICE_USER.to_owned())),
         ("Group", UnitProperty::Text(SERVICE_GROUP.to_owned())),
         ("Type", UnitProperty::Text("exec".to_owned())),
+        ("RemainAfterExit", UnitProperty::Boolean(true)),
         ("Restart", UnitProperty::Text("no".to_owned())),
         ("KillMode", UnitProperty::Text("control-group".to_owned())),
         ("Delegate", UnitProperty::Boolean(false)),
@@ -246,6 +247,37 @@ pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, Un
             Ok(None)
         }
         Err(error) => Err(error),
+    }
+}
+
+pub fn verify_unit_terminal(
+    harness: &crate::ProcessIdentity,
+    daemon: &crate::ProcessIdentity,
+    snapshot: &UnitSnapshot,
+) -> Result<(), UnitError> {
+    let mut mismatches = Vec::new();
+    if harness.unit_name != daemon.unit_name || snapshot.unit_name != harness.unit_name {
+        mismatches.push(UnitMismatch::UnitName);
+    }
+    if snapshot.active_state != "active" {
+        mismatches.push(UnitMismatch::ActiveState);
+    }
+    if snapshot.sub_state != "exited" {
+        mismatches.push(UnitMismatch::SubState);
+    }
+    if snapshot.main_pid != 0 {
+        mismatches.push(UnitMismatch::MainPid);
+    }
+    if harness.cgroup_path != daemon.cgroup_path || snapshot.control_group != harness.cgroup_path {
+        mismatches.push(UnitMismatch::ControlGroup);
+    }
+    if snapshot.result != "success" {
+        mismatches.push(UnitMismatch::Result);
+    }
+    if mismatches.is_empty() {
+        Ok(())
+    } else {
+        Err(UnitError::Mismatch(mismatches))
     }
 }
 

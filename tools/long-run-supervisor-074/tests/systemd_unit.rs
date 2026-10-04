@@ -7,8 +7,9 @@ use hydracache_long_run_supervisor_074::manifest::{
 use hydracache_long_run_supervisor_074::spawn::SpawnIntent;
 use hydracache_long_run_supervisor_074::systemd_unit::{
     build_transient_unit_spec, expected_command_environment_sha256, inspect_unit,
-    verify_unit_identity, UnitError, UnitMismatch, UnitProperty, UnitSnapshot,
-    MAXIMUM_ROLE_RUNTIME_SECONDS, UNIT_MEMORY_MAX_BYTES, UNIT_NOFILE_LIMIT, UNIT_TASKS_MAX,
+    verify_unit_identity, verify_unit_terminal, UnitError, UnitMismatch, UnitProperty,
+    UnitSnapshot, MAXIMUM_ROLE_RUNTIME_SECONDS, UNIT_MEMORY_MAX_BYTES, UNIT_NOFILE_LIMIT,
+    UNIT_TASKS_MAX,
 };
 use hydracache_long_run_supervisor_074::{ProcessIdentity, Role};
 use std::path::Path;
@@ -211,6 +212,29 @@ fn every_unit_drift_is_reported_together() {
 }
 
 #[test]
+fn retained_successful_exit_is_the_only_terminal_unit_shape() {
+    let harness = process(100);
+    let daemon = process(101);
+    let terminal = UnitSnapshot {
+        unit_name: harness.unit_name.clone(),
+        active_state: "active".to_owned(),
+        sub_state: "exited".to_owned(),
+        main_pid: 0,
+        control_group: harness.cgroup_path.clone(),
+        result: "success".to_owned(),
+    };
+    assert!(verify_unit_terminal(&harness, &daemon, &terminal).is_ok());
+
+    let UnitError::Mismatch(mismatches) =
+        verify_unit_terminal(&harness, &daemon, &snapshot()).unwrap_err()
+    else {
+        panic!("expected running unit to fail terminal admission");
+    };
+    assert!(mismatches.contains(&UnitMismatch::SubState));
+    assert!(mismatches.contains(&UnitMismatch::MainPid));
+}
+
+#[test]
 fn dbus_lookup_rejects_arbitrary_unit_names_before_connecting() {
     assert!(matches!(
         inspect_unit("dbus.service"),
@@ -250,6 +274,10 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
     assert_eq!(
         property(&spec, "TasksMax"),
         &UnitProperty::Unsigned(UNIT_TASKS_MAX)
+    );
+    assert_eq!(
+        property(&spec, "RemainAfterExit"),
+        &UnitProperty::Boolean(true)
     );
     let UnitProperty::Strings(environment) = property(&spec, "Environment") else {
         panic!("environment property must be a string array");
