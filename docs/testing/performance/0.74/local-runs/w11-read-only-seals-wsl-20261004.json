@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-read-only-sealed-publication",
+  "status": "passed-local-non-promotable",
+  "source_sha": "9b4d93a7",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p hydracache-long-run-supervisor-074 --test archive --test seal_artifact --locked",
+    "wsl.exe bash -lc 'cargo check -p hydracache-long-run-supervisor-074 --all-targets --locked'",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "wsl.exe bash -lc 'cargo test -p xtask --test long_run_campaign_074 --locked'"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 125,
+  "packet_verifier_tests_passed": 6,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "Unix sealed packet and archive files are published with mode 0400",
+    "Unix sealed packet and archive directories are published with mode 0500",
+    "permissions are applied and synced before the staging directory is atomically renamed",
+    "packet and archive builders re-open and verify the final renamed directory before returning",
+    "replay verification rejects permission drift as well as byte, entry, symlink and hardlink drift",
+    "privileged-tamper fixtures must explicitly restore write permission before mutation and are then rejected",
+    "the independent xtask verifier still accepts deterministic continuation and promotable packet output"
+  ],
+  "limitations": [
+    "Windows local tests cannot prove Unix mode bits; the exact mode assertions pass in WSL",
+    "production uid/gid ownership and mount semantics still require the admitted Linux host",
+    "the Unix server does not yet derive PacketPlan or dispatch the seal coordinator",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

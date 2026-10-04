@@ -89,6 +89,7 @@ guard_evidence_binding_complete = true
 deterministic_archive_builder = "tools/long-run-supervisor-074/src/archive.rs"
 deterministic_archive_creation_complete = true
 atomic_archive_publication_complete = true
+read_only_sealed_publication_complete = true
 deterministic_packet_builder = "tools/long-run-supervisor-074/src/artifact.rs"
 deterministic_packet_builder_complete = true
 independent_packet_roundtrip_complete = true

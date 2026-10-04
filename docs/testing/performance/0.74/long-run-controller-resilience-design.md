@@ -508,10 +508,7 @@ before building. On retry it verifies and adopts exact final packet/archive dire
 fully verified `.building` directory through the missing rename, and repairs only the narrow synced
 JSON-before-sidecar window. A canonical result binds all nested manifest hashes, the raw set and
 file/byte counts, and the archive hash/size; exact replay re-verifies the published artifacts, while
-conflicting intent or any drift fails closed. The remaining live transaction must still prove the
-terminal unit/checkpoint predicates, commit lifecycle event/state and durable protocol response in
-the right order, apply read-only ownership/modes, and release the host claim only after the final
-complete seal.
+conflicting intent or any drift fails closed.
 
 The Linux seal lifecycle coordinator now implements that ordering around an internally supplied
 PacketPlan and already observed terminal UnitSnapshot. It commits each lifecycle event before its
@@ -522,7 +519,14 @@ and controller lease before the durable response; only then is host-marker remov
 that removal is idempotent across a lost response. Local I74/C74 tests exercise continuation and
 promotable packets plus event/state and marker-release crash windows. The remaining server adapter
 must derive PacketPlan from frozen on-disk evidence, perform the real D-Bus observation and enforce
-final read-only ownership/modes before this becomes a live-service claim.
+production uid/gid ownership before this becomes a live-service claim.
+
+Publication modes are now part of the verified artifact contract on Unix. Packet and archive
+staging trees are recursively changed to `0400` files and `0500` directories, metadata is synced,
+and only then is the tree renamed. The builders immediately re-open the final location through the
+same replay verifier used after a crash. Missing read-only modes, unexpected entries, digest drift,
+hardlinks or symlinks all reject the artifact. This closes local immutability mechanics; the
+provisioned account/group ownership and mount behavior remain host-rehearsal evidence.
 
 The workflow uploads:
 

@@ -733,6 +733,14 @@ at source `cba4a336`, with one real-system-bus test still manual. The claim rema
 narrow: the Unix server does not yet derive PacketPlan from the frozen evidence or dispatch `seal`,
 and no real D-Bus/systemd rehearsal has run.
 
+Artifact immutability then became an executable invariant rather than a prose promise. On Unix the
+staging tree is converted to `0400` files and `0500` directories, synced, atomically renamed and
+immediately re-opened by the replay verifier. A later mode change is evidence drift even when bytes
+still hash correctly. Privileged-tamper tests change permissions explicitly, alter the artifact and
+confirm fail-closed replay. At source `9b4d93a7`, all 125 ordinary WSL supervisor tests and six
+independent packet-verifier tests pass. This proves the local mode/hash boundary, not production
+uid/gid or mount enforcement; those still belong to admitted-host rehearsal.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

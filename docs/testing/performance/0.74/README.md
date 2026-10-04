@@ -239,6 +239,13 @@ packets, request-id conflict, unit drift, event-ahead-of-state recovery and repl
 release. At source `cba4a336`, 125 ordinary WSL supervisor tests pass; the real-system-bus test is
 still manual and ignored.
 
+Sealed packet and archive publication is now immutable at the local Unix filesystem boundary.
+Before the final rename, ordinary files are changed to `0400` and directories to `0500`; those modes
+are synced and then required by every replay verification. Both builders re-open the final renamed
+directory and compare all hashes/counts before returning a receipt. Tests deliberately restore
+write permission only to model privileged tampering, after which verification fails closed. At
+source `9b4d93a7`, the same 125-test WSL suite and six independent packet-verifier tests pass.
+
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
@@ -246,7 +253,8 @@ The live server seal/abort routes, diagnostics and lease-expiry termination rema
 work. Deterministic packet construction, durable artifact recovery and the seal lifecycle
 coordinator are complete local components, but server dispatch still needs to derive the exact
 PacketPlan from frozen campaign evidence, inspect the retained unit over D-Bus and invoke the
-coordinator. No real service claim is made until that adapter and admitted-host rehearsal exist.
+coordinator. Production uid/gid ownership still needs admitted-host rehearsal. No real service
+claim is made until that adapter and rehearsal exist.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
