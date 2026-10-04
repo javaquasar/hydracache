@@ -1,5 +1,9 @@
 #![recursion_limit = "256"]
 
+use hydracache_long_run_supervisor_074::host_receipt::{
+    encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
+    HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
+};
 use hydracache_long_run_supervisor_074::manifest::{
     frozen_identity_from_manifest, parse_and_validate, ManifestError, MAX_MANIFEST_BYTES,
 };
@@ -7,12 +11,17 @@ use hydracache_long_run_supervisor_074::manifest_evidence::{
     verify_manifest_evidence, ManifestEvidenceError,
 };
 use hydracache_long_run_supervisor_074::protocol::{ControllerIdentity, Operation, Request};
+use hydracache_long_run_supervisor_074::start_evidence::{
+    prepare_campaign_evidence, StartEvidenceError,
+};
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
 };
 use hydracache_long_run_supervisor_074::ProcessIdentity;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
+use std::fs;
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
@@ -105,6 +114,60 @@ fn fixture_request(bytes: &[u8]) -> Request {
     }
 }
 
+fn host_receipt() -> HostObservationReceipt {
+    let campaign_mount = MountIdentity {
+        mount_id: 31,
+        device_major_minor: "8:2".to_owned(),
+        root: "/".to_owned(),
+        mount_point: "/var/lib/hydracache-performance".to_owned(),
+        mount_options: vec!["relatime".to_owned(), "rw".to_owned()],
+        filesystem_type: "ext4".to_owned(),
+        source: "/dev/nvme0n1p2".to_owned(),
+        super_options: vec!["errors=remount-ro".to_owned(), "rw".to_owned()],
+    };
+    let mount_identity = hex(&Sha256::digest(
+        serde_json::to_vec(&serde_json::to_value(&campaign_mount).unwrap()).unwrap(),
+    ));
+    HostObservationReceipt {
+        schema_version: 1,
+        machine_id: "machine-a".to_owned(),
+        boot_id: "boot-a".to_owned(),
+        kernel_release: "6.8.0-90-generic".to_owned(),
+        kernel_command_line_sha256: "a".repeat(64),
+        campaign_mount,
+        mount_identity,
+        online_cpuset: "0-3".to_owned(),
+        isolated_cpuset: "1-2".to_owned(),
+        housekeeping_cpuset: "0,3".to_owned(),
+        cpu_governors: (0..4)
+            .map(|cpu| (format!("cpu{cpu}"), "performance".to_owned()))
+            .collect(),
+        kernel_tunables: [
+            "kernel.numa_balancing",
+            "kernel.sched_autogroup_enabled",
+            "kernel.sched_migration_cost_ns",
+            "kernel.watchdog",
+            "vm.dirty_background_ratio",
+            "vm.dirty_ratio",
+            "vm.swappiness",
+        ]
+        .into_iter()
+        .map(|key| (key.to_owned(), "0".to_owned()))
+        .collect::<BTreeMap<_, _>>(),
+        supervisor_binary: BinaryIdentity {
+            path: SUPERVISOR_BINARY_PATH.to_owned(),
+            sha256: "b".repeat(64),
+            size: 1_024,
+            inode: 44,
+            device: 8,
+            uid: 0,
+            gid: 0,
+            mode: 0o755,
+        },
+        reference_host_freeze_sha256: "c".repeat(64),
+    }
+}
+
 fn process(pid: u32) -> ProcessIdentity {
     ProcessIdentity {
         boot_id: "boot-a".to_owned(),
@@ -144,6 +207,60 @@ fn exact_canonical_prepared_manifest_is_accepted() {
     let mut newline = bytes.clone();
     newline.push(b'\n');
     assert!(parse_and_validate(&newline, &request, 1_000).is_ok());
+}
+
+#[test]
+fn start_evidence_is_validated_then_atomically_imported_once() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+
+    let receipt = host_receipt();
+    let receipt_bytes = encode_host_receipt(&receipt).unwrap();
+    let receipt_sha256 = hex(&Sha256::digest(&receipt_bytes));
+    let mut value = manifest();
+    value["host_receipt_sha256"] = json!(receipt_sha256);
+    value["mount_identity"] = json!(receipt.mount_identity.clone());
+    value["isolated_cpuset"] = json!(receipt.isolated_cpuset.clone());
+    value["housekeeping_cpuset"] = json!(receipt.housekeeping_cpuset.clone());
+    let manifest_bytes = encoded(&value);
+    let mut request = fixture_request(&manifest_bytes);
+    let staging = staging_root.join(&request.campaign_id);
+    fs::create_dir(&staging).unwrap();
+    request.manifest_path = Some(
+        staging
+            .join("campaign-start.json")
+            .to_str()
+            .unwrap()
+            .to_owned(),
+    );
+    fs::write(staging.join("campaign-start.json"), &manifest_bytes).unwrap();
+    fs::write(
+        staging.join("campaign-start.sha256"),
+        format!("{}\n", request.manifest_sha256),
+    )
+    .unwrap();
+    fs::write(staging.join(HOST_RECEIPT_NAME), &receipt_bytes).unwrap();
+    fs::write(
+        staging.join(HOST_RECEIPT_HEAD_NAME),
+        format!("{receipt_sha256}\n"),
+    )
+    .unwrap();
+
+    let prepared =
+        prepare_campaign_evidence(&campaign_root, &staging_root, &request, 1_000).unwrap();
+    assert_eq!(prepared.manifest.campaign_id, request.campaign_id);
+    assert_eq!(prepared.host_receipt, receipt);
+    assert_eq!(
+        fs::read(prepared.campaign_directory.join("campaign-start.json")).unwrap(),
+        manifest_bytes
+    );
+    assert!(matches!(
+        prepare_campaign_evidence(&campaign_root, &staging_root, &request, 1_000),
+        Err(StartEvidenceError::Path)
+    ));
 }
 
 #[test]

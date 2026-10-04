@@ -147,17 +147,28 @@ pub fn verify_receipt_binding(
     manifest: &CampaignManifest,
     state: &DurableCampaignState,
 ) -> Result<(), HostReceiptError> {
-    if receipt.machine_id != manifest.machine_id
-        || receipt.boot_id != manifest.boot_id
-        || receipt.mount_identity != manifest.mount_identity
-        || receipt.isolated_cpuset != manifest.isolated_cpuset
-        || receipt.housekeeping_cpuset != manifest.housekeeping_cpuset
-        || state.identity.machine_id != manifest.machine_id
+    verify_receipt_manifest_binding(receipt, manifest)?;
+    if state.identity.machine_id != manifest.machine_id
         || state.identity.boot_id != manifest.boot_id
         || state.identity.mount_identity != manifest.mount_identity
         || state.identity.isolated_cpuset != manifest.isolated_cpuset
         || state.identity.housekeeping_cpuset != manifest.housekeeping_cpuset
         || state.identity.host_receipt_sha256 != manifest.host_receipt_sha256
+    {
+        return Err(HostReceiptError::Binding);
+    }
+    Ok(())
+}
+
+pub fn verify_receipt_manifest_binding(
+    receipt: &HostObservationReceipt,
+    manifest: &CampaignManifest,
+) -> Result<(), HostReceiptError> {
+    if receipt.machine_id != manifest.machine_id
+        || receipt.boot_id != manifest.boot_id
+        || receipt.mount_identity != manifest.mount_identity
+        || receipt.isolated_cpuset != manifest.isolated_cpuset
+        || receipt.housekeeping_cpuset != manifest.housekeeping_cpuset
     {
         return Err(HostReceiptError::Binding);
     }
