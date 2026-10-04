@@ -1,6 +1,6 @@
 use hydracache_cluster_testkit::value_plane_admission_075::{
     AdmissionError, AdmissionLimits, DataWork, FairAdmissionQueue, NamespaceError,
-    NamespaceLifecycle, NamespacePhase, WorkItem,
+    NamespaceLifecycle, NamespacePhase, ReclamationOwners, ReclamationWatermarks, WorkItem,
 };
 
 fn data(tenant: &str, partition: u32, request_id: u64) -> DataWork {
@@ -70,20 +70,59 @@ fn all_admission_dimensions_are_finite_and_enforced() {
 #[test]
 fn namespace_reuse_waits_for_delete_and_listener_watermarks() {
     let mut lifecycle = NamespaceLifecycle::new(3).unwrap();
-    lifecycle.begin_delete(10).unwrap();
-    lifecycle.advance_reclamation(10, 9);
-    assert_eq!(lifecycle.phase(), NamespacePhase::Deleting);
+    lifecycle.begin_delete().unwrap();
+    assert_eq!(lifecycle.phase(), NamespacePhase::Draining);
+    lifecycle
+        .commit_delete(
+            10,
+            ReclamationOwners {
+                entries: 2,
+                ttl_tasks: 1,
+                tombstones: 1,
+                dedup_results: 1,
+                subscriptions: 1,
+                staging_files: 1,
+                quota_owners: 1,
+            },
+        )
+        .unwrap();
+    lifecycle.advance_reclamation(ReclamationWatermarks {
+        replica_applied: 10,
+        listener_cutover: 9,
+        dedup_expired: 10,
+        transfer_closed: 10,
+        tombstone_gc: 10,
+    });
+    assert_eq!(lifecycle.phase(), NamespacePhase::DeleteCommitted);
     assert_eq!(lifecycle.recreate(), Err(NamespaceError::NotReclaimable));
-    lifecycle.advance_reclamation(8, 10);
+    lifecycle.advance_reclamation(ReclamationWatermarks {
+        replica_applied: 8,
+        listener_cutover: 10,
+        dedup_expired: 8,
+        transfer_closed: 8,
+        tombstone_gc: 8,
+    });
     assert_eq!(lifecycle.phase(), NamespacePhase::Reclaimable);
+    assert_eq!(lifecycle.reclaim_step(3).unwrap(), 3);
+    assert_eq!(lifecycle.recreate(), Err(NamespaceError::OwnersRemain(5)));
+    assert_eq!(lifecycle.reclaim_step(5).unwrap(), 5);
     assert_eq!(lifecycle.recreate().unwrap(), 4);
 }
 
 #[test]
 fn old_namespace_generation_never_crosses_recreate() {
     let mut lifecycle = NamespaceLifecycle::new(1).unwrap();
-    lifecycle.begin_delete(5).unwrap();
-    lifecycle.advance_reclamation(5, 5);
+    lifecycle.begin_delete().unwrap();
+    lifecycle
+        .commit_delete(5, ReclamationOwners::default())
+        .unwrap();
+    lifecycle.advance_reclamation(ReclamationWatermarks {
+        replica_applied: 5,
+        listener_cutover: 5,
+        dedup_expired: 5,
+        transfer_closed: 5,
+        tombstone_gc: 5,
+    });
     lifecycle.recreate().unwrap();
     assert!(matches!(
         lifecycle.validate_request(1),
@@ -93,4 +132,46 @@ fn old_namespace_generation_never_crosses_recreate() {
         })
     ));
     lifecycle.validate_request(2).unwrap();
+}
+
+#[test]
+fn namespace_reclamation_requires_every_owner_watermark_and_bounded_cleanup() {
+    let mut lifecycle = NamespaceLifecycle::new(9).unwrap();
+    lifecycle.begin_delete().unwrap();
+    lifecycle
+        .commit_delete(
+            20,
+            ReclamationOwners {
+                entries: 1,
+                ttl_tasks: 1,
+                tombstones: 1,
+                dedup_results: 1,
+                subscriptions: 1,
+                staging_files: 1,
+                quota_owners: 1,
+            },
+        )
+        .unwrap();
+    lifecycle.advance_reclamation(ReclamationWatermarks {
+        replica_applied: 20,
+        listener_cutover: 20,
+        dedup_expired: 20,
+        transfer_closed: 19,
+        tombstone_gc: 20,
+    });
+    assert_eq!(lifecycle.phase(), NamespacePhase::DeleteCommitted);
+    assert_eq!(
+        lifecycle.reclaim_step(1),
+        Err(NamespaceError::NotReclaimable)
+    );
+    lifecycle.advance_reclamation(ReclamationWatermarks {
+        transfer_closed: 20,
+        ..ReclamationWatermarks::default()
+    });
+    assert_eq!(
+        lifecycle.reclaim_step(0),
+        Err(NamespaceError::InvalidBound("reclaim_items"))
+    );
+    assert_eq!(lifecycle.reclaim_step(2).unwrap(), 2);
+    assert_eq!(lifecycle.owners().total(), 5);
 }

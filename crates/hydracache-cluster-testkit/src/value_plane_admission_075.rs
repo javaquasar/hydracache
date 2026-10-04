@@ -133,15 +133,51 @@ impl FairAdmissionQueue {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NamespacePhase {
     Active,
-    Deleting,
+    Draining,
+    DeleteCommitted,
     Reclaimable,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReclamationWatermarks {
+    pub replica_applied: u64,
+    pub listener_cutover: u64,
+    pub dedup_expired: u64,
+    pub transfer_closed: u64,
+    pub tombstone_gc: u64,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReclamationOwners {
+    pub entries: usize,
+    pub ttl_tasks: usize,
+    pub tombstones: usize,
+    pub dedup_results: usize,
+    pub subscriptions: usize,
+    pub staging_files: usize,
+    pub quota_owners: usize,
+}
+
+impl ReclamationOwners {
+    pub fn total(self) -> usize {
+        self.entries
+            .saturating_add(self.ttl_tasks)
+            .saturating_add(self.tombstones)
+            .saturating_add(self.dedup_results)
+            .saturating_add(self.subscriptions)
+            .saturating_add(self.staging_files)
+            .saturating_add(self.quota_owners)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NamespaceError {
     StaleGeneration { expected: u64, actual: u64 },
     NotActive,
+    NotDraining,
     NotReclaimable,
+    OwnersRemain(usize),
+    InvalidBound(&'static str),
     InvalidGeneration,
 }
 
@@ -151,8 +187,8 @@ pub struct NamespaceLifecycle {
     generation: u64,
     phase: NamespacePhase,
     delete_watermark: Option<u64>,
-    delete_applied: u64,
-    listener_cutover: u64,
+    watermarks: ReclamationWatermarks,
+    owners: ReclamationOwners,
 }
 
 impl NamespaceLifecycle {
@@ -164,8 +200,8 @@ impl NamespaceLifecycle {
             generation,
             phase: NamespacePhase::Active,
             delete_watermark: None,
-            delete_applied: 0,
-            listener_cutover: 0,
+            watermarks: ReclamationWatermarks::default(),
+            owners: ReclamationOwners::default(),
         })
     }
 
@@ -190,31 +226,97 @@ impl NamespaceLifecycle {
         Ok(())
     }
 
-    pub fn begin_delete(&mut self, watermark: u64) -> Result<(), NamespaceError> {
+    pub fn begin_delete(&mut self) -> Result<(), NamespaceError> {
         if self.phase != NamespacePhase::Active {
             return Err(NamespaceError::NotActive);
         }
-        self.phase = NamespacePhase::Deleting;
-        self.delete_watermark = Some(watermark);
+        self.phase = NamespacePhase::Draining;
         Ok(())
     }
 
-    pub fn advance_reclamation(&mut self, delete_applied: u64, listener_cutover: u64) {
-        self.delete_applied = self.delete_applied.max(delete_applied);
-        self.listener_cutover = self.listener_cutover.max(listener_cutover);
+    pub fn commit_delete(
+        &mut self,
+        watermark: u64,
+        owners: ReclamationOwners,
+    ) -> Result<(), NamespaceError> {
+        if self.phase != NamespacePhase::Draining {
+            return Err(NamespaceError::NotDraining);
+        }
+        if watermark == 0 {
+            return Err(NamespaceError::InvalidGeneration);
+        }
+        self.phase = NamespacePhase::DeleteCommitted;
+        self.delete_watermark = Some(watermark);
+        self.owners = owners;
+        Ok(())
+    }
+
+    pub fn advance_reclamation(&mut self, watermarks: ReclamationWatermarks) {
+        self.watermarks.replica_applied = self
+            .watermarks
+            .replica_applied
+            .max(watermarks.replica_applied);
+        self.watermarks.listener_cutover = self
+            .watermarks
+            .listener_cutover
+            .max(watermarks.listener_cutover);
+        self.watermarks.dedup_expired = self.watermarks.dedup_expired.max(watermarks.dedup_expired);
+        self.watermarks.transfer_closed = self
+            .watermarks
+            .transfer_closed
+            .max(watermarks.transfer_closed);
+        self.watermarks.tombstone_gc = self.watermarks.tombstone_gc.max(watermarks.tombstone_gc);
         if let Some(required) = self.delete_watermark {
-            if self.phase == NamespacePhase::Deleting
-                && self.delete_applied >= required
-                && self.listener_cutover >= required
+            if self.phase == NamespacePhase::DeleteCommitted
+                && self.watermarks.replica_applied >= required
+                && self.watermarks.listener_cutover >= required
+                && self.watermarks.dedup_expired >= required
+                && self.watermarks.transfer_closed >= required
+                && self.watermarks.tombstone_gc >= required
             {
                 self.phase = NamespacePhase::Reclaimable;
             }
         }
     }
 
+    pub fn reclaim_step(&mut self, max_items: usize) -> Result<usize, NamespaceError> {
+        if max_items == 0 {
+            return Err(NamespaceError::InvalidBound("reclaim_items"));
+        }
+        if self.phase != NamespacePhase::Reclaimable {
+            return Err(NamespaceError::NotReclaimable);
+        }
+        let before = self.owners.total();
+        let mut remaining = max_items;
+        for owner in [
+            &mut self.owners.entries,
+            &mut self.owners.ttl_tasks,
+            &mut self.owners.tombstones,
+            &mut self.owners.dedup_results,
+            &mut self.owners.subscriptions,
+            &mut self.owners.staging_files,
+            &mut self.owners.quota_owners,
+        ] {
+            let removed = (*owner).min(remaining);
+            *owner -= removed;
+            remaining -= removed;
+            if remaining == 0 {
+                break;
+            }
+        }
+        Ok(before.saturating_sub(self.owners.total()))
+    }
+
+    pub const fn owners(&self) -> ReclamationOwners {
+        self.owners
+    }
+
     pub fn recreate(&mut self) -> Result<u64, NamespaceError> {
         if self.phase != NamespacePhase::Reclaimable {
             return Err(NamespaceError::NotReclaimable);
+        }
+        if self.owners.total() != 0 {
+            return Err(NamespaceError::OwnersRemain(self.owners.total()));
         }
         self.generation = self
             .generation
@@ -222,8 +324,8 @@ impl NamespaceLifecycle {
             .ok_or(NamespaceError::InvalidGeneration)?;
         self.phase = NamespacePhase::Active;
         self.delete_watermark = None;
-        self.delete_applied = 0;
-        self.listener_cutover = 0;
+        self.watermarks = ReclamationWatermarks::default();
+        self.owners = ReclamationOwners::default();
         Ok(self.generation)
     }
 }
