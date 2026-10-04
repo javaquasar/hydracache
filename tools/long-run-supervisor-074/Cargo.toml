@@ -9,7 +9,9 @@ ed25519-dalek.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+tar = "0.4.44"
 thiserror.workspace = true
+zstd = "0.13.3"
 
 [dev-dependencies]
 tempfile = "3"
