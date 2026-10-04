@@ -59,9 +59,12 @@ Implementation adds these repository paths:
 | tools/long-run-supervisor-074/src/manifest.rs | strict campaign manifest parsing and allowlist validation |
 | tools/long-run-supervisor-074/src/host_receipt.rs | canonical admitted-host collection and live revalidation |
 | tools/long-run-supervisor-074/src/start_evidence.rs | create-new staging validation and immutable campaign evidence import |
-| tools/long-run-supervisor-074/src/state.rs | state machine, locks, atomic snapshot and journal recovery |
-| tools/long-run-supervisor-074/src/systemd.rs | fixed transient-unit construction and process identity |
-| tools/long-run-supervisor-074/src/checkpoint.rs | chain verification and phase-aware progress |
+| tools/long-run-supervisor-074/src/state.rs and state_store.rs | phase-aware state model, campaign locks and atomic snapshots |
+| tools/long-run-supervisor-074/src/host_execution.rs | host-wide active-campaign claim retained across supervisor restart |
+| tools/long-run-supervisor-074/src/event.rs and mutation.rs | request/lifecycle event chain and event-ahead snapshot recovery |
+| tools/long-run-supervisor-074/src/spawn.rs and start_lifecycle.rs | durable spawn intent/result and crash-safe I74 start coordinator |
+| tools/long-run-supervisor-074/src/systemd_unit.rs and process_identity.rs | fixed-namespace unit and process identity inspection |
+| tools/long-run-supervisor-074/src/checkpoint_evidence.rs and watchdog.rs | chain verification and phase-aware progress |
 | tools/long-run-supervisor-074/src/diagnostics.rs | bounded allowlisted diagnostic capture |
 | tools/long-run-supervisor-074/src/artifact.rs | deterministic sealing and artifact limits |
 | tools/long-run-supervisor-074/tests/ | protocol, state, crash, fault and security fixtures |
@@ -261,6 +264,10 @@ state.previous.json
 events.jsonl
 events.head
 lock
+i74-spawn-intent.json
+i74-spawn-intent.sha256
+i74-spawn-result.json
+i74-spawn-result.sha256
 inputs/
 roles/i74/{checkpoints.jsonl,checkpoints.head,stdout.log,stderr.log,diagnostics/,raw/,seal/}
 roles/c74/{checkpoints.jsonl,checkpoints.head,stdout.log,stderr.log,diagnostics/,raw/,seal/}
@@ -270,6 +277,11 @@ final/seal/
 Files are never reused by another campaign. Mutable log limits are enforced while writing. A
 campaign whose limit is reached is stopped and sealed incomplete; truncating an over-limit stream
 and continuing is forbidden.
+
+The campaign-root directory separately contains `.host-execution.lock` and `active-campaign`.
+The flock serializes a live mutation owner, while the create-new marker survives supervisor restart
+and prevents a different campaign from using the host until a later reviewed terminal cleanup
+slice releases it. C74 uses the corresponding `c74-spawn-*` evidence names.
 
 `host-observation.json` is create-new root evidence with mode `0400`. It binds the pre-existing
 reference-host freeze receipt, machine/boot/kernel identity, command line, campaign mount
@@ -327,6 +339,16 @@ manifest digest and nonce. It then calls systemd and records spawn_result. Recov
 crash window by querying exactly that unit name. If no unit exists, the attempt becomes
 FAILED_INCOMPLETE; recovery never calls StartTransientUnit. If one unit exists and all identities
 match, it is adopted. More than one matching process quarantines the campaign.
+
+The local coordinator implements these ordering rules behind a typed spawn backend. It appends
+PREPARED and I74_STARTING lifecycle events before their state snapshots, writes the intent before
+the backend side effect, and writes the result before the final lifecycle transition. Recovery can
+repair a missing or one-revision-stale snapshot from the authoritative event chain. Once an intent
+exists, the coordinator calls only `observe`; it never calls `start_once` again. An absent unit is
+retained as FAILED_INCOMPLETE, an exact unit is adopted, and identity mismatch or multiple
+executors is quarantined. Local fake-backend tests exercise every window. The production
+StartTransientUnit backend and live `start` dispatch remain deliberately incomplete, so this is
+not host-rehearsal or release evidence.
 
 State snapshots include state_revision, campaign state, role/phase, unit name, MainPID, harness and
 daemon PIDs, /proc start ticks, process group, cgroup path and inode, machine id, boot id, binary

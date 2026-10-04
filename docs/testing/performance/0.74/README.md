@@ -160,10 +160,30 @@ Start evidence preparation is now implemented separately from process launch. Th
 only a revision-zero `start`, requires the staging campaign to be an exact direct child, rejects
 symlink/hardlink/oversize/digest substitution, validates the manifest and host receipt together,
 then writes create-new `0400` evidence into a private directory and atomically publishes the final
-campaign directory after fsync. Repeating the import cannot overwrite the first result. This closes
-the immutable evidence-copy portion only: no initial state, spawn intent, host execution lock or
-`StartTransientUnit` call exists yet. At source `5343ca1f`, the local Linux total is 82 ordinary
-supervisor tests.
+campaign directory after fsync. Repeating the import cannot overwrite the first result. At source
+`5343ca1f`, this closed the immutable evidence-copy portion and raised the local Linux total to 82
+ordinary supervisor tests.
+
+The next start-lifecycle slice removes the remaining placeholder-state shortcut without invoking a
+real process. PREPARED and `*_STARTING` snapshots contain no fabricated PID or checkpoint. A
+host-wide flock plus persistent active-campaign marker admits recovery only for the same campaign.
+Role-specific canonical `spawn-intent` and `spawn-result` documents have create-new SHA-256
+sidecars and deterministic unit names. The intent is durable before the backend call; after that
+boundary every retry observes or adopts the exact unit and can never call start again. An absent
+unit becomes FAILED_INCOMPLETE, identity mismatch is quarantined, and multiple executors set the
+duplicate-executor guard.
+
+Internal PREPARED, STARTING and spawn-outcome records now share the supervisor hash-chain with
+external request records without consuming request replay identity. The I74 coordinator recovers a
+missing or one-revision-stale state snapshot from an event-ahead crash window and verifies durable
+spawn evidence on replay. Windows and WSL fake-backend tests cover normal start, repeated start,
+lost response, crash before and after the side effect, missing/stale state, absent unit,
+symlink/hardlink substitution and cross-campaign exclusion. This remains local non-promotable
+evidence: the real StartTransientUnit adapter, accepted live `start` response, terminal marker
+release, C74 orchestration, sealing/abort/diagnostics and admitted-host rehearsal are still open.
+The full local WSL suite now passes 101 ordinary supervisor tests with only the explicitly manual
+real-system-bus inspection ignored; the Windows-portable subset passes 77 tests, and
+`clippy -D warnings` is green.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

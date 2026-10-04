@@ -2419,3 +2419,40 @@ run binaries, not source-level arguments about which function should be unaffect
 So the receipts were retained and the candidate was reverted. The lesson is stronger than “check
 for cost shifting.” A focused optimization can win its own benchmark by a wide margin and still be
 the wrong release composition when independent controls reject the exact built artifact.
+
+## The measurement process is part of the evidence
+
+Release 0.74 also exposed a less obvious source of false confidence: a long-running benchmark can
+have a sound estimator and still lose its identity when the CI controller disappears. Restarting a
+harness from a checkpoint is not reattachment. The allocator, RSS history, process-local caches,
+socket state and timing sequence belong to the original process lifetime; a replacement process
+creates a new attempt.
+
+The local supervisor work therefore treats launch as a durable transaction. PREPARED and STARTING
+states contain no placeholder PID or invented checkpoint. Before any process side effect, the
+supervisor persists a spawn intent that binds the campaign, request, manifest, nonce, role and a
+deterministic systemd unit name. After this boundary a retry may only inspect that exact unit. If it
+is absent, the attempt fails incomplete; if its full process identity matches, recovery adopts it;
+if identities conflict or multiple executors appear, the campaign is quarantined. It is never
+silently respawned.
+
+This requires two levels of serialization. A process-held host flock prevents concurrent mutation,
+while a persistent active-campaign marker prevents another campaign from taking the same admitted
+host after a supervisor restart. Per-campaign state still uses revision-checked replacement. The
+event journal records PREPARED, STARTING and the spawn outcome before advancing each snapshot, so a
+crash after the journal sync but before `state.json` replacement has one deterministic repair:
+finish that exact compare-and-swap from the authoritative hash-chain.
+
+Fake-backend tests are valuable here because they can stop at every unsafe boundary: after intent
+but before launch, after launch but before result, after a lost backend response, and after an event
+append but before snapshot replacement. They proved the local exactly-once decision logic without
+starting HydraCache or touching a real systemd unit. That distinction is essential. It is confirmed
+implementation evidence, but it is not yet confirmation that a provisioned Linux host preserves
+the process through controller and supervisor loss. The real systemd adapter, service dispatch,
+bounded rehearsal and overhead measurement must still pass before this mechanism can support a
+release claim.
+
+The broader lesson is that reproducibility includes process continuity. A hash-identical workload
+executed by a replacement process is not the same sample, just as a benchmark with a changed seed
+or duration is not the same sample. Long-run infrastructure must be able to retain an incomplete
+attempt instead of manufacturing continuity.
