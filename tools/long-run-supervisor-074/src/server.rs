@@ -1,13 +1,17 @@
+use crate::archive::ArchiveLimits;
+use crate::artifact::PacketLimits;
 use crate::config::ServerConfig;
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::verify_host_receipt_evidence;
-use crate::manifest::frozen_identity_from_manifest;
+use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
 use crate::manifest_evidence::verify_manifest_evidence;
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
 use crate::protocol::{
     parse_wire_request, sign_response, Operation, Response, ResponseBody, WireRequest,
 };
+use crate::seal_input::resolve_packet_plan;
+use crate::seal_lifecycle::{drive_seal_request, SealLifecycleError};
 use crate::service::{authorize_wire, AuthorizedRequest, ServiceError, ServicePolicy};
 use crate::spawn::SpawnBackend;
 use crate::start_evidence::{
@@ -16,12 +20,15 @@ use crate::start_evidence::{
 use crate::start_lifecycle::{
     drive_c74_start_request, drive_i74_start_request, StartLifecycleError,
 };
-use crate::state::{apply_attach, AttachRequest, FrozenIdentity};
+use crate::state::{
+    apply_attach, AttachRequest, CampaignState, DurableCampaignState, FrozenIdentity,
+};
 use crate::state_store::{CampaignLock, StateStoreError};
 use crate::systemd_spawn::SystemdSpawnBackend;
-use crate::systemd_unit::{inspect_unit, verify_unit_identity};
+use crate::systemd_unit::{inspect_unit, verify_unit_identity, UnitSnapshot};
 use crate::unix_transport::{SeqpacketListener, TransportError};
 use serde_json::Value;
+use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
@@ -41,6 +48,20 @@ pub struct SupervisorServer {
     listener: SeqpacketListener,
     policy: ServicePolicy,
     config: ServerConfig,
+}
+
+pub trait SealObservationBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String>;
+
+    fn inspect_terminal(
+        &mut self,
+        harness: &crate::ProcessIdentity,
+    ) -> Result<UnitSnapshot, String>;
 }
 
 impl SupervisorServer {
@@ -66,19 +87,27 @@ impl SupervisorServer {
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None)
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None)
     }
 
     pub fn serve_one_with_start_backend<B: SpawnBackend>(
         &self,
         backend: &mut B,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner(Some(backend))
+        self.serve_one_inner(Some(backend), None)
+    }
+
+    pub fn serve_one_with_seal_backend(
+        &self,
+        backend: &mut dyn SealObservationBackend,
+    ) -> Result<(), ServerError> {
+        self.serve_one_inner::<SystemdSpawnBackend>(None, Some(backend))
     }
 
     fn serve_one_inner<B: SpawnBackend>(
         &self,
         start_backend: Option<&mut B>,
+        seal_backend: Option<&mut dyn SealObservationBackend>,
     ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
         let packet = connection.receive_packet()?;
@@ -89,7 +118,7 @@ impl SupervisorServer {
         let now = unix_seconds();
         let response = match connection.peer_credentials() {
             Ok(peer) => match authorize_wire(wire.clone(), &peer, now, &self.policy) {
-                Ok(authorized) => self.dispatch(&authorized, now, start_backend),
+                Ok(authorized) => self.dispatch(&authorized, now, start_backend, seal_backend),
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
             },
             Err(_) => error_response(&wire, now, 3),
@@ -103,6 +132,7 @@ impl SupervisorServer {
         authorized: &AuthorizedRequest,
         now: u64,
         start_backend: Option<&mut B>,
+        seal_backend: Option<&mut dyn SealObservationBackend>,
     ) -> Result<Response, ServerError> {
         let request = &authorized.request;
         if request.operation == Operation::Start {
@@ -113,6 +143,9 @@ impl SupervisorServer {
         }
         if request.operation == Operation::Attach {
             return self.dispatch_attach(authorized, now);
+        }
+        if request.operation == Operation::Seal {
+            return self.dispatch_seal(authorized, now, seal_backend);
         }
         if request.operation != Operation::Status {
             return Ok(error_response_from_request(request, now, 11)?);
@@ -358,6 +391,200 @@ impl SupervisorServer {
         }
         Ok(transaction.accept(next.ok_or(MutationError::Diverged)?)?)
     }
+
+    fn dispatch_seal(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+        mut seal_backend: Option<&mut dyn SealObservationBackend>,
+    ) -> Result<Response, ServerError> {
+        let request = &authorized.request;
+        let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
+            Ok(lock) => lock,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    state_error_code(&error),
+                )?)
+            }
+        };
+        let state = match reconcile_campaign(&lock) {
+            Ok(state) => state,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    mutation_error_code(&error),
+                )?)
+            }
+        };
+        let manifest =
+            match verify_manifest_evidence(lock.campaign_directory(), request, &state, now) {
+                Ok(manifest) => manifest,
+                Err(_) => {
+                    return Ok(error_response_with_revision(
+                        request,
+                        now,
+                        state.revision,
+                        5,
+                    )?)
+                }
+            };
+        let host_verified = match seal_backend.as_deref_mut() {
+            Some(backend) => backend
+                .verify_host(lock.campaign_directory(), &manifest, &state)
+                .is_ok(),
+            None => {
+                verify_host_receipt_evidence(lock.campaign_directory(), &manifest, &state).is_ok()
+            }
+        };
+        if !host_verified {
+            return Ok(error_response_with_revision(
+                request,
+                now,
+                state.revision,
+                5,
+            )?);
+        }
+        let role = match state.campaign_state {
+            CampaignState::I74Running | CampaignState::I74Terminal | CampaignState::I74Sealed => {
+                crate::Role::I74
+            }
+            CampaignState::C74Running
+            | CampaignState::C74Terminal
+            | CampaignState::CompleteSealed => crate::Role::C74,
+            _ => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    5,
+                )?)
+            }
+        };
+        let plan = match resolve_packet_plan(
+            lock.campaign_directory(),
+            &self.config.seal_root,
+            &manifest,
+            &request.manifest_sha256,
+            role,
+        ) {
+            Ok(plan) => plan,
+            Err(_) => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    5,
+                )?)
+            }
+        };
+        let host_claim = if state.campaign_state == CampaignState::CompleteSealed {
+            HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id)
+        } else {
+            HostExecutionClaim::recover(&self.config.campaign_root, &request.campaign_id)
+        };
+        let host_claim = match host_claim {
+            Ok(claim) => claim,
+            Err(error) => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    host_execution_error_code(&error),
+                )?)
+            }
+        };
+        let observed = match state.harness.as_ref() {
+            Some(harness) => match seal_backend.as_deref_mut() {
+                Some(backend) => match backend.inspect_terminal(harness) {
+                    Ok(snapshot) => snapshot,
+                    Err(_) => {
+                        return Ok(error_response_with_revision(
+                            request,
+                            now,
+                            state.revision,
+                            11,
+                        )?)
+                    }
+                },
+                None => match inspect_unit(&harness.unit_name) {
+                    Ok(snapshot) => snapshot,
+                    Err(_) => {
+                        return Ok(error_response_with_revision(
+                            request,
+                            now,
+                            state.revision,
+                            11,
+                        )?)
+                    }
+                },
+            },
+            None => UnitSnapshot {
+                unit_name: String::new(),
+                active_state: String::new(),
+                sub_state: String::new(),
+                main_pid: 0,
+                control_group: String::new(),
+                result: String::new(),
+            },
+        };
+        let maximum_files = match usize::try_from(manifest.output_limits.files) {
+            Ok(value) => value,
+            Err(_) => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    5,
+                )?)
+            }
+        };
+        let archive_files = match maximum_files.checked_add(2) {
+            Some(value) => value,
+            None => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    5,
+                )?)
+            }
+        };
+        let result = drive_seal_request(
+            &host_claim,
+            &lock,
+            request,
+            now,
+            &observed,
+            &plan,
+            &self.config.seal_root,
+            PacketLimits {
+                maximum_files,
+                maximum_bytes: manifest.output_limits.final_artifact_bytes,
+            },
+            ArchiveLimits {
+                maximum_files: archive_files,
+                maximum_uncompressed_bytes: manifest.output_limits.final_artifact_bytes,
+                maximum_archive_bytes: manifest.output_limits.final_artifact_bytes,
+            },
+        );
+        match result {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                let revision = reconcile_campaign(&lock)
+                    .map(|current| current.revision)
+                    .unwrap_or(state.revision);
+                Ok(error_response_with_revision(
+                    request,
+                    now,
+                    revision,
+                    seal_lifecycle_error_code(&error),
+                )?)
+            }
+        }
+    }
 }
 
 enum StartAdmission {
@@ -511,6 +738,21 @@ fn start_lifecycle_error_code(error: &StartLifecycleError) -> u32 {
         StartLifecycleError::State(error) => state_error_code(error),
         StartLifecycleError::Mutation(error) => mutation_error_code(error),
         StartLifecycleError::Event(_) | StartLifecycleError::Spawn(_) => 11,
+    }
+}
+
+fn seal_lifecycle_error_code(error: &SealLifecycleError) -> u32 {
+    match error {
+        SealLifecycleError::Event(crate::event::EventError::ReplayConflict { .. }) => 3,
+        SealLifecycleError::Binding => 5,
+        SealLifecycleError::State(error) => state_error_code(error),
+        SealLifecycleError::Mutation(error) => mutation_error_code(error),
+        SealLifecycleError::Event(_)
+        | SealLifecycleError::Checkpoint(_)
+        | SealLifecycleError::Unit(_)
+        | SealLifecycleError::Artifact(_)
+        | SealLifecycleError::Host(_)
+        | SealLifecycleError::Json(_) => 11,
     }
 }
 

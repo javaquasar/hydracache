@@ -4,6 +4,7 @@ schema_version = 1
 socket_path = "/run/hydracache-perf/supervisor-v1.sock"
 campaign_root = "/var/lib/hydracache-performance/campaigns"
 staging_root = "/var/lib/hydracache-performance/staging"
+seal_root = "/var/lib/hydracache-performance/seals"
 socket_mode = 432
 expected_repository_id = 0 # <numeric GitHub repository id>
 allowed_actor_ids = [] # <protected-environment actor ids>

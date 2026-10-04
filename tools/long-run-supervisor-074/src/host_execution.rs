@@ -36,6 +36,18 @@ pub struct HostExecutionClaim {
 
 impl HostExecutionClaim {
     pub fn acquire(campaign_root: &Path, campaign_id: &str) -> Result<Self, HostExecutionError> {
+        Self::acquire_inner(campaign_root, campaign_id, true)
+    }
+
+    pub fn recover(campaign_root: &Path, campaign_id: &str) -> Result<Self, HostExecutionError> {
+        Self::acquire_inner(campaign_root, campaign_id, false)
+    }
+
+    fn acquire_inner(
+        campaign_root: &Path,
+        campaign_id: &str,
+        create_if_missing: bool,
+    ) -> Result<Self, HostExecutionError> {
         if !is_hash(campaign_id) {
             return Err(HostExecutionError::Path);
         }
@@ -59,10 +71,13 @@ impl HostExecutionClaim {
                 }
                 ClaimDisposition::Recovered
             }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound && create_if_missing => {
                 create_marker(&marker, campaign_id)?;
                 sync_directory(&root)?;
                 ClaimDisposition::Created
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Err(HostExecutionError::Path)
             }
             Err(error) => return Err(error.into()),
         };

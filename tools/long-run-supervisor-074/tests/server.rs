@@ -2,28 +2,39 @@
 #![recursion_limit = "256"]
 
 use ed25519_dalek::{Signer, SigningKey};
+use hydracache_long_run_supervisor_074::artifact::PacketResult;
 use hydracache_long_run_supervisor_074::auth::{
     canonical_document, canonical_message, AuthorizationBody, SignedAuthorization,
 };
 use hydracache_long_run_supervisor_074::client::exchange;
 use hydracache_long_run_supervisor_074::config::ServerConfig;
 use hydracache_long_run_supervisor_074::event::{
-    append_lifecycle_event, request_sha256, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
+    append_lifecycle_event, append_or_replay, request_sha256, EventOutcome, LifecycleEvent,
+    EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
 };
+use hydracache_long_run_supervisor_074::host_execution::ACTIVE_CAMPAIGN_NAME;
 use hydracache_long_run_supervisor_074::host_receipt::{
     encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
     HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
 };
+use hydracache_long_run_supervisor_074::manifest::CampaignManifest;
 use hydracache_long_run_supervisor_074::protocol::{
-    ControllerIdentity, Operation, Request, WireRequest,
+    sign_response, ControllerIdentity, Operation, Request, ResponseBody, WireRequest,
 };
-use hydracache_long_run_supervisor_074::server::SupervisorServer;
+use hydracache_long_run_supervisor_074::seal_input::{
+    InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
+};
+use hydracache_long_run_supervisor_074::server::{SealObservationBackend, SupervisorServer};
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
-    CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
+    CampaignState, CheckpointHead, ControllerLease, DurableCampaignState, FrozenIdentity,
 };
 use hydracache_long_run_supervisor_074::state_store::CampaignLock;
-use hydracache_long_run_supervisor_074::ProcessIdentity;
+use hydracache_long_run_supervisor_074::systemd_unit::UnitSnapshot;
+use hydracache_long_run_supervisor_074::{
+    append_record, build_record, CheckpointPayload, Phase, ProcessIdentity, Role, GENESIS_HASH,
+};
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::fs;
@@ -32,6 +43,10 @@ use std::path::Path;
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn canonical<T: Serialize>(value: &T) -> Vec<u8> {
+    serde_json::to_vec(&serde_json::to_value(value).unwrap()).unwrap()
 }
 
 fn process(pid: u32) -> ProcessIdentity {
@@ -158,11 +173,13 @@ fn server_config(socket: &Path, campaign_root: &Path) -> ServerConfig {
     let uid = unsafe { libc::geteuid() };
     let gid = unsafe { libc::getegid() };
     let staging_root = campaign_root.parent().unwrap().join("staging");
+    let seal_root = campaign_root.parent().unwrap().join("seals");
     let document = format!(
-        "schema_version=1\nsocket_path={:?}\ncampaign_root={:?}\nstaging_root={:?}\nsocket_mode=432\nexpected_repository_id=10\nallowed_actor_ids=[30]\nallowed_client_uids=[{uid}]\nrequired_client_gid={gid}\nverification_key_hex=\"{}\"\n",
+        "schema_version=1\nsocket_path={:?}\ncampaign_root={:?}\nstaging_root={:?}\nseal_root={:?}\nsocket_mode=432\nexpected_repository_id=10\nallowed_actor_ids=[30]\nallowed_client_uids=[{uid}]\nrequired_client_gid={gid}\nverification_key_hex=\"{}\"\n",
         socket.as_os_str().as_bytes().escape_ascii().to_string(),
         campaign_root.as_os_str().as_bytes().escape_ascii().to_string(),
         staging_root.as_os_str().as_bytes().escape_ascii().to_string(),
+        seal_root.as_os_str().as_bytes().escape_ascii().to_string(),
         hex(key.verifying_key().as_bytes())
     );
     ServerConfig::parse(document.as_bytes(), false).unwrap()
@@ -192,6 +209,42 @@ fn exchange_start_once<B: SpawnBackend + Send>(
         server.serve_one_with_start_backend(backend).unwrap();
         client.join().unwrap().unwrap()
     })
+}
+
+fn exchange_seal_once(
+    server: &SupervisorServer,
+    socket: &Path,
+    packet: &[u8],
+    backend: &mut dyn SealObservationBackend,
+) -> hydracache_long_run_supervisor_074::protocol::Response {
+    std::thread::scope(|scope| {
+        let client = scope.spawn(|| exchange(socket, packet));
+        server.serve_one_with_seal_backend(backend).unwrap();
+        client.join().unwrap().unwrap()
+    })
+}
+
+struct FakeSealBackend {
+    snapshot: UnitSnapshot,
+    host_checks: usize,
+    unit_checks: usize,
+}
+
+impl SealObservationBackend for FakeSealBackend {
+    fn verify_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.host_checks += 1;
+        Ok(())
+    }
+
+    fn inspect_terminal(&mut self, _harness: &ProcessIdentity) -> Result<UnitSnapshot, String> {
+        self.unit_checks += 1;
+        Ok(self.snapshot.clone())
+    }
 }
 
 #[derive(Default)]
@@ -408,6 +461,161 @@ fn signed_packet(mut request: Request, key: &SigningKey, now: u64) -> Vec<u8> {
     .unwrap()
 }
 
+fn seal_packet(start_packet: &[u8], key: &SigningKey, revision: u64, now: u64) -> Vec<u8> {
+    let mut request: WireRequest = serde_json::from_slice(start_packet).unwrap();
+    request.request.request_id = "623e4567-e89b-42d3-a456-426614174000".to_owned();
+    request.request.operation = Operation::Seal;
+    request.request.expected_state_revision = revision;
+    request.request.manifest_path = None;
+    signed_packet(request.request, key, now)
+}
+
+fn prepare_i74_terminal_evidence(
+    campaign_root: &Path,
+    seal_packet: &[u8],
+    now: u64,
+) -> UnitSnapshot {
+    let wire: WireRequest = serde_json::from_slice(seal_packet).unwrap();
+    let request = wire.request;
+    let lock = CampaignLock::acquire(campaign_root, &request.campaign_id).unwrap();
+    let mut next = lock.read().unwrap();
+    assert_eq!(next.revision, 2);
+    assert_eq!(next.campaign_state, CampaignState::I74Running);
+    let harness = next.harness.clone().unwrap();
+    let daemon = next.daemon.clone().unwrap();
+    let role_root = lock.campaign_directory().join("roles/i74");
+    fs::create_dir_all(role_root.join("guards")).unwrap();
+    let record = build_record(
+        1,
+        GENESIS_HASH,
+        CheckpointPayload {
+            campaign_id: request.campaign_id.clone(),
+            role: Role::I74,
+            phase: Phase::Terminal,
+            phase_epoch: 1,
+            monotonic_elapsed_ns: 1_000,
+            wall_clock_utc: "2026-10-05T00:00:01Z".to_owned(),
+            completed: 1,
+            failed: 0,
+            rejected: 0,
+            timed_out: 0,
+            outstanding: 0,
+            telemetry_sequence: 1,
+            milestone: "terminal".to_owned(),
+            surface_counters: BTreeMap::new(),
+            resource_counters: BTreeMap::new(),
+            owner_counters: BTreeMap::new(),
+            harness: harness.clone(),
+            daemon: daemon.clone(),
+        },
+    )
+    .unwrap();
+    append_record(
+        &role_root.join("checkpoints.jsonl"),
+        &role_root.join("checkpoints.head"),
+        &record,
+    )
+    .unwrap();
+    for guard in ["semantic", "native-non-regression", "retention"] {
+        fs::write(
+            role_root.join(format!("guards/{guard}.json")),
+            format!("{{\"guard\":\"{guard}\",\"passed\":true}}"),
+        )
+        .unwrap();
+    }
+    let inventory = SealInputInventory {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: request.campaign_id.clone(),
+        campaign_manifest_sha256: request.manifest_sha256.clone(),
+        role: Role::I74,
+        result: PacketResult::Complete,
+        terminal_reason: None,
+        journal_relative_path: "roles/i74/checkpoints.jsonl".into(),
+        guard_evidence: ["semantic", "native-non-regression", "retention"]
+            .into_iter()
+            .map(|guard| InventoryGuardEvidence {
+                id: guard.to_owned(),
+                passed: true,
+                source_relative_path: format!("roles/i74/guards/{guard}.json").into(),
+            })
+            .collect(),
+        raw_files: [
+            "campaign-start.json",
+            "roles/i74/checkpoints.jsonl",
+            "roles/i74/guards/native-non-regression.json",
+            "roles/i74/guards/retention.json",
+            "roles/i74/guards/semantic.json",
+            "roles/i74/seal-input-inventory.json",
+        ]
+        .into_iter()
+        .map(Into::into)
+        .collect(),
+    };
+    fs::write(
+        role_root.join(SEAL_INPUT_INVENTORY_NAME),
+        canonical(&inventory),
+    )
+    .unwrap();
+
+    next.revision = 3;
+    next.checkpoint = Some(CheckpointHead {
+        sequence: 1,
+        record_sha256: record.record_sha256,
+        useful_progress_unix_seconds: now,
+    });
+    next.controller_lease = Some(ControllerLease {
+        holder_request_id: "723e4567-e89b-42d3-a456-426614174000".to_owned(),
+        authorization_sha256: request.controller.authorization_sha256.clone(),
+        repository_id: request.controller.repository_id,
+        run_id: request.controller.run_id,
+        actor_id: request.controller.actor_id,
+        expires_unix_seconds: now + 300,
+    });
+    let attach_request = Request {
+        schema_version: 1,
+        request_id: "723e4567-e89b-42d3-a456-426614174000".to_owned(),
+        operation: Operation::Attach,
+        campaign_id: request.campaign_id.clone(),
+        expected_state_revision: 2,
+        manifest_path: None,
+        manifest_sha256: request.manifest_sha256,
+        controller: request.controller,
+        abort_reason: None,
+        approval_nonce_sha256: None,
+    };
+    let response = sign_response(ResponseBody {
+        schema_version: 1,
+        request_id: attach_request.request_id.clone(),
+        campaign_id: attach_request.campaign_id.clone(),
+        ok: true,
+        state_revision: 3,
+        server_time_unix_seconds: now,
+        result: Some(serde_json::to_value(&next).unwrap()),
+        error_code: None,
+    })
+    .unwrap();
+    append_or_replay(
+        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+        now,
+        attach_request,
+        EventOutcome::Accepted,
+        response,
+        Some(next.clone()),
+    )
+    .unwrap();
+    lock.compare_and_swap(2, &next).unwrap();
+    UnitSnapshot {
+        unit_name: harness.unit_name,
+        active_state: "active".to_owned(),
+        sub_state: "exited".to_owned(),
+        main_pid: 0,
+        control_group: harness.cgroup_path,
+        result: "success".to_owned(),
+    }
+}
+
 fn c74_start_packet(i74_packet: &[u8], key: &SigningKey, revision: u64, now: u64) -> Vec<u8> {
     let mut request: WireRequest = serde_json::from_slice(i74_packet).unwrap();
     request.request.request_id = "423e4567-e89b-42d3-a456-426614174000".to_owned();
@@ -519,6 +727,122 @@ fn attach_guard_rejection_is_durable_and_exactly_replayed() {
     let lock = CampaignLock::acquire(&campaign_root, &"a".repeat(64)).unwrap();
     assert_eq!(lock.read().unwrap(), state(0));
     assert!(lock.campaign_directory().join("events.jsonl").exists());
+}
+
+#[test]
+fn seal_dispatch_fails_closed_before_dbus_or_host_claim_on_missing_evidence() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(campaign_root.join("a".repeat(64))).unwrap();
+    let lock = CampaignLock::acquire(&campaign_root, &"a".repeat(64)).unwrap();
+    lock.initialize(&state(0)).unwrap();
+    drop(lock);
+
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let socket = temporary.path().join("supervisor-seal.sock");
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = signed_packet(
+        Request {
+            schema_version: 1,
+            request_id: "523e4567-e89b-42d3-a456-426614174000".to_owned(),
+            operation: Operation::Seal,
+            campaign_id: "a".repeat(64),
+            expected_state_revision: 0,
+            manifest_path: None,
+            manifest_sha256: "b".repeat(64),
+            controller: ControllerIdentity {
+                repository_id: 10,
+                run_id: 20,
+                run_attempt: 1,
+                actor_id: 30,
+                authorization_sha256: "0".repeat(64),
+            },
+            abort_reason: None,
+            approval_nonce_sha256: None,
+        },
+        &key,
+        now,
+    );
+    let mut backend = FakeSealBackend {
+        snapshot: UnitSnapshot {
+            unit_name: "hc-a.service".to_owned(),
+            active_state: "active".to_owned(),
+            sub_state: "exited".to_owned(),
+            main_pid: 0,
+            control_group: "/hc/a".to_owned(),
+            result: "success".to_owned(),
+        },
+        host_checks: 0,
+        unit_checks: 0,
+    };
+    let response = exchange_seal_once(&server, &socket, &packet, &mut backend);
+    assert!(!response.body.ok);
+    assert_eq!(response.body.error_code, Some(5));
+    assert_eq!(response.body.state_revision, 0);
+    assert_eq!(backend.host_checks, 0);
+    assert_eq!(backend.unit_checks, 0);
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn seal_dispatch_composes_observation_inventory_and_durable_lifecycle() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary.path().join("supervisor-seal-positive.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let packet = seal_packet(&start_packet, &key, 3, now);
+    let snapshot = prepare_i74_terminal_evidence(&campaign_root, &packet, now);
+    let mut backend = FakeSealBackend {
+        snapshot,
+        host_checks: 0,
+        unit_checks: 0,
+    };
+    let packet_directory = seal_root.join(format!("{}-i74-packet", "1".repeat(64)));
+    fs::create_dir(&packet_directory).unwrap();
+    let interrupted = exchange_seal_once(&server, &socket, &packet, &mut backend);
+    assert!(!interrupted.body.ok);
+    assert_eq!(interrupted.body.state_revision, 4);
+    assert_eq!(interrupted.body.error_code, Some(11));
+    fs::remove_dir(&packet_directory).unwrap();
+
+    let sealed = exchange_seal_once(&server, &socket, &packet, &mut backend);
+    assert!(sealed.body.ok);
+    assert_eq!(sealed.body.state_revision, 5);
+    assert_eq!(
+        sealed.body.result.as_ref().unwrap()["state"]["campaign_state"],
+        "I74_SEALED"
+    );
+    assert_eq!(backend.host_checks, 2);
+    assert_eq!(backend.unit_checks, 2);
+    assert!(packet_directory.is_dir());
+    assert!(seal_root
+        .join(format!("{}-i74-archive", "1".repeat(64)))
+        .is_dir());
+
+    let replay = exchange_seal_once(&server, &socket, &packet, &mut backend);
+    assert_eq!(replay, sealed);
+    assert_eq!(backend.host_checks, 3);
+    assert_eq!(backend.unit_checks, 2);
 }
 
 #[test]

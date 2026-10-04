@@ -73,6 +73,16 @@ fn one_campaign_claim_survives_restart_and_blocks_every_other_campaign() {
 }
 
 #[test]
+fn recovery_never_creates_a_missing_active_campaign_marker() {
+    let temporary = tempfile::tempdir().unwrap();
+    assert!(matches!(
+        HostExecutionClaim::recover(temporary.path(), &"a".repeat(64)),
+        Err(HostExecutionError::Path)
+    ));
+    assert!(!temporary.path().join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
 fn unsafe_marker_lock_and_campaign_identity_fail_closed() {
     let temporary = tempfile::tempdir().unwrap();
     assert!(matches!(
