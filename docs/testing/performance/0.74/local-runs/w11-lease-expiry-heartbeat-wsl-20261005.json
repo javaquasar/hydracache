@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-lease-expiry-heartbeat",
+  "status": "passed-local-non-promotable",
+  "source_sha": "04b38f5e",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test unix_transport --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test host_execution --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test lease_expiry --test event_journal --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test manifest --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --lib abort_backend --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'for run in 1 2 3 4 5; do cargo test -p hydracache-long-run-supervisor-074 --test server --locked -- --test-threads=8 || exit 1; done'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo xtask performance-contract-check --release 0.74"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_stop_called": false,
+  "supervisor_tests_passed": 147,
+  "manual_system_bus_tests_ignored": 1,
+  "parallel_server_repetitions_passed": 5,
+  "parallel_server_test_cases_passed": 35,
+  "failed": 0,
+  "confirmed": [
+    "the listener wakes without an incoming controller request and does not expire at the exact deadline",
+    "the host lock and validated active-campaign marker select the only maintenance target without directory scanning",
+    "LEASE_EXPIRY_REQUESTED is durable before the external effect and retains process and checkpoint identity",
+    "a backend failure preserves the intent and the same automatic cause completes without spawning a replacement",
+    "the stored canonical manifest remains digest-bound and reconstructs the exact frozen identity after expiry",
+    "the diagnostic binds campaign, lease id, deadline, role, durable state and allowlisted unit snapshot",
+    "LEASE_EXPIRY_COMPLETED clears retained execution state and releases the host claim only after backend success",
+    "the complete supervisor regression suite and five parallel server repetitions pass"
+  ],
+  "limitations": [
+    "no real StopUnit call was made and no HydraCache or unrelated systemd unit was touched",
+    "system-bus authorization, root/performance-account ownership and actual stop timing require admitted-host rehearsal",
+    "the one-second wake-up and diagnostic grace were verified with deterministic local boundaries, not a privileged live process",
+    "the Windows clippy run does not compile Linux-only modules; those modules were compiled and exercised by WSL tests",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

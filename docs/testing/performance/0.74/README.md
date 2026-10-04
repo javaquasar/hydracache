@@ -271,8 +271,8 @@ machine-readable local receipt is
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
-The live server still lacks the abort route, diagnostics and lease-expiry termination. The signed
-live `seal` route now
+At that source the live server still lacked the abort route, diagnostics and lease-expiry
+termination; the later slices below close those local code paths. The signed live `seal` route now
 revalidates persistent manifest/host evidence, observes the retained unit through the production
 D-Bus path, derives the exact inventory-bound plan and invokes the recoverable coordinator. A
 dedicated root-owned seal root prevents the unprivileged measured role from publishing artifacts.
@@ -326,6 +326,30 @@ rejection pass; see `local-runs/w11-systemd-abort-backend-wsl-20261005.json`.
 
 No live unit was stopped. The real system-bus call, root/performance-account ownership and timing
 behavior still require the admitted-host rehearsal, so this remains local non-promotable evidence.
+
+Product-lease expiry is now driven by the supervisor itself rather than by a controller request.
+The `SOCK_SEQPACKET` listener wakes at a bounded one-second interval, recovers only the campaign
+named by the host-locked `active-campaign` marker, and compares the current time with the immutable
+deadline. At the first second beyond that deadline it commits `LEASE_EXPIRY_REQUESTED` while
+retaining process and checkpoint identity, publishes a cause-bound bounded diagnostic through the
+same exact-unit systemd backend, stops the unit, then commits `LEASE_EXPIRY_COMPLETED`, clears the
+retained execution state and releases the host claim. Failure after the first commit leaves enough
+identity for an identical automatic retry; a restart after the completion commit can finish marker
+release without repeating the external effect.
+
+The expired path reopens the original canonical manifest by its stored digest and reconstructs the
+complete frozen identity. It does not weaken validation by pretending the already expired deadline
+must still be in the future. The expiry diagnostic is independently bound to campaign, lease id,
+deadline, role, durable state and the allowlisted unit snapshot; an absent unit is accepted only
+when those exact bytes already exist. Local WSL coverage now totals 147 passing ordinary supervisor
+tests with one intentionally ignored manual real-system-bus test. The server integration test
+proves no effect at the exact deadline and completion on the following second without any incoming
+request; the parallel server suite also passed five consecutive repetitions. See
+`local-runs/w11-lease-expiry-heartbeat-wsl-20261005.json`.
+
+This closes the local implementation flag, not the host qualification. No real `StopUnit` was
+issued, no product process was started, and system-bus authorization, account ownership, actual
+one-second wake-up timing and diagnostic-grace behavior remain admitted-host rehearsal work.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

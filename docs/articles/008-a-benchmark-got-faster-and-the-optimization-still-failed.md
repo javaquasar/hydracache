@@ -374,6 +374,21 @@ an already absent unit requires the exact diagnostic bytes; a conflicting pre-ex
 closed. This completes the code path, but not its host proof: no live unit was stopped during local
 development, and system-bus permissions and timing still need the admitted-host rehearsal.
 
+Product-lease expiry now uses the same ordering without relying on a surviving controller. A
+bounded listener wake-up checks only the host-locked active campaign. Once the immutable deadline
+is past, the supervisor records `LEASE_EXPIRY_REQUESTED` with the original process and checkpoint
+identity still present, writes a diagnostic bound to the campaign, lease id and deadline, and asks
+systemd to stop the exact retained unit. It records `LEASE_EXPIRY_COMPLETED` and releases the host
+claim only after that effect succeeds. The automatic retry path therefore cannot manufacture a
+replacement process or forget which unit it was terminating.
+
+This implementation also exposed a useful test-harness lesson. The first full parallel suite found
+that some older server fixtures reused a wall-clock second captured before the server wrote its own
+event. Crossing a second boundary made a later fixture event look time-reversed. The fix was not to
+relax journal monotonicity; fixtures now continue from the durable event clock. Five parallel
+repetitions and the complete 147-test local WSL suite then passed. That is strong local recovery
+evidence, but still not proof of real system-bus authorization or stop latency on the admitted host.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
@@ -747,10 +762,11 @@ intent/result files. Its replay and lost-response paths cannot issue a second ba
 source `286863e4`, 114 ordinary supervisor tests pass locally under WSL2; Windows strict clippy
 also passes.
 
-No real transient unit or HydraCache process was launched for that result. The admitted-host
-account/directory permissions, controller and supervisor restart, controller-loss reattachment,
-overhead budget, seal/abort/diagnostics and lease-expiry termination remain unproved or
-unfinished. The point is the same as for the performance candidates: implemented mechanics and
+No real transient unit or HydraCache process was launched for that result. At that source the
+admitted-host account/directory permissions, controller and supervisor restart,
+controller-loss reattachment, overhead budget, seal/abort/diagnostics and lease-expiry
+termination remained unproved or unfinished; later local slices close the code paths but not the
+host proof. The point is the same as for the performance candidates: implemented mechanics and
 release evidence are different claims.
 
 The next local sealing slice deliberately stopped before claiming a live seal. It made successful

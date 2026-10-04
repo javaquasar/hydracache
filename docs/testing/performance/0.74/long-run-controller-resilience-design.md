@@ -619,6 +619,15 @@ margin. The supervisor checks it at start, periodically, before attach, before a
 seal. On expiry it captures diagnostics, terminates the role cgroup and writes
 LEASE_EXPIRED_INCOMPLETE. No controller can renew the product lease through this API.
 
+The local implementation performs the periodic check from a one-second bounded accept loop. It
+recovers the single active campaign under the host execution lock, verifies the stored canonical
+manifest and complete frozen identity, commits `LEASE_EXPIRY_REQUESTED`, invokes the exact-unit
+bounded diagnostic/stop backend, commits `LEASE_EXPIRY_COMPLETED`, and only then clears retained
+identity and removes the active marker. An interrupted backend call resumes from the durable intent;
+an already absent unit requires the exact existing lease-expiry diagnostic. Local fake-backend and
+socket-loop tests cover these recovery boundaries. Real system-bus permissions, uid/gid ownership,
+stop timing and diagnostic grace still require the privileged admitted-host rehearsal.
+
 The operator runbook is:
 
 1. obtain campaign id and manifest digest from the pre-spawn start artifact;
