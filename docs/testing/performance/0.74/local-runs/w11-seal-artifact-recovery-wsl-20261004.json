@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-seal-artifact-recovery",
+  "status": "passed-local-non-promotable",
+  "source_sha": "75e7df26",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p hydracache-long-run-supervisor-074 --test seal_artifact --test archive --locked",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test seal_artifact --test archive --locked'",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 121,
+  "ignored_manual_system_bus_tests": 1,
+  "targeted_archive_tests_passed_per_platform": 4,
+  "targeted_seal_artifact_tests_passed_per_platform": 3,
+  "failed": 0,
+  "confirmed": [
+    "published packets and archives are independently re-opened and verified before a receipt is returned",
+    "archives are written into a deterministic create-new staging directory and atomically renamed only after sync",
+    "seal intent binds request id and digest, role, packet plan, packet limits and archive limits",
+    "exact replay re-verifies packet and archive bytes before returning the durable result",
+    "completed final artifacts and fully built staging artifacts are adopted without rebuilding",
+    "the canonical document-before-sidecar crash window is recovered without accepting conflicting bytes",
+    "archive tampering and conflicting replay intent fail closed",
+    "Linux directory link counts are handled separately while hardlinked ordinary files remain rejected"
+  ],
+  "limitations": [
+    "the durable artifact subtransaction is not yet wired into the live seal server operation",
+    "terminal observation, lifecycle event/state commit, durable protocol response and host-claim release are not yet one transaction",
+    "read-only final ownership and mode policy still require the admitted Linux host",
+    "WSL nightly toolchain lacks the clippy component; clippy passed on Windows and Linux compilation/tests passed in WSL",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "abort, diagnostics, lease-expiry termination and incomplete sealing remain incomplete",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

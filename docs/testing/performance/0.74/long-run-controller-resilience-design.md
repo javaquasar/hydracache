@@ -494,14 +494,24 @@ enumerated terminal reason. Artifact byte/file limits are checked before copy, d
 before rename. Sealed directories are read-only and never modified; a repeated seal returns the
 existing digest.
 
-The local packet builder now implements the content boundary before the live transaction. Raw
+The local packet builder implements the content boundary before the live transaction. Raw
 sources are explicit safe relative paths under the campaign directory; every component is checked
 before a create-new copy. The builder derives journal metadata from the copied bytes, not from a
 mutable source read, and atomically publishes canonical raw and packet manifests only after all
 files and directories are synced. The independently implemented xtask verifier accepts generated
 one-role continuation and two-role promotable fixtures, and separately built archives are
-byte-identical. Publishing read-only permissions, durable seal intent/result recovery and returning
-the existing digest on replay remain responsibilities of the live seal transaction.
+byte-identical. Archive publication also uses a synced create-new staging directory and atomic
+rename, followed by exact directory/digest verification.
+
+The durable artifact subtransaction now persists a canonical request/role/plan/limit-bound intent
+before building. On retry it verifies and adopts exact final packet/archive directories, recovers a
+fully verified `.building` directory through the missing rename, and repairs only the narrow synced
+JSON-before-sidecar window. A canonical result binds all nested manifest hashes, the raw set and
+file/byte counts, and the archive hash/size; exact replay re-verifies the published artifacts, while
+conflicting intent or any drift fails closed. The remaining live transaction must still prove the
+terminal unit/checkpoint predicates, commit lifecycle event/state and durable protocol response in
+the right order, apply read-only ownership/modes, and release the host claim only after the final
+complete seal.
 
 The workflow uploads:
 

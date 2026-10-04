@@ -708,6 +708,19 @@ verifier tests pass under WSL. The remaining distinction is deliberate: determin
 but live `seal` still must make terminal observation, packet publication, response replay and host
 claim release one recoverable transaction.
 
+That distinction led to another isolated slice rather than a premature server route. Packet and
+archive readers now verify their own published output, and the archive is exposed only by a synced
+staging-directory rename. A durable seal-artifact intent binds the signed request identity, role,
+packet plan and resource limits before copying begins. After a crash, an exact retry can adopt an
+already verified final artifact, finish the rename of a complete `.building` artifact, or recover a
+synced canonical JSON document whose digest sidecar was not yet written. It cannot reuse a different
+request or plan, and every replay re-hashes the packet and archive before returning the original
+result. At source `75e7df26`, 121 ordinary supervisor tests pass under WSL, including explicit
+tamper, conflicting-intent and crash-window tests; the one real-system-bus test remains manual. This
+is evidence for recoverable artifact mechanics, not yet for live sealing: terminal state/event CAS,
+the protocol response, read-only publication and host-claim release still need one ordered server
+transaction and admitted-host rehearsal.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

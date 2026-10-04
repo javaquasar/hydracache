@@ -151,8 +151,9 @@ the copied checkpoint journals, binds guard evidence by its copied digest, write
 packets cannot contain an incomplete role or failed required guard, and promotable packets require
 both I74 and C74. The independent `xtask` verifier accepts both a generated I74 continuation and a
 generated two-role promotable packet. Two builds from separate roots produce identical manifests
-and archive SHA-256. The live sealing state transition, interrupted-build recovery policy and Linux
-filesystem rehearsal remain incomplete.
+and archive SHA-256. Published packets and archives are re-opened and verified before they are
+returned. Archive publication now uses its own synced create-new staging directory and atomic
+rename, so a size-limit or write failure cannot expose a final directory containing partial bytes.
 
 The initial supervisor package passed all 30 targeted tests under local WSL2 Ubuntu at exact source
 `37566d71`. The live-status slice at `1a29aef1` passed 43 supervisor tests plus three durable
@@ -219,12 +220,22 @@ removed only after a clean `COMPLETE_SEALED` state with no retained process, che
 At source `f35e276c`, 117 ordinary supervisor tests pass under WSL; the real-system-bus test remains
 manual and ignored.
 
+The next local slice makes packet/archive creation recoverable across supervisor crashes without
+claiming a live `seal` route. A canonical seal intent binds request id/digest, role, packet plan and
+limits before artifact work begins. Canonical intent/result documents have synced SHA-256 sidecars;
+a retry verifies and adopts an exact completed packet/archive, completes an exact `.building`
+rename, repairs the narrow document-before-sidecar crash window, or rejects conflicts and tampering.
+The result binds the packet/raw-manifest digests, raw set, file/byte counts and archive digest/size,
+and exact replay re-verifies both published directories before returning it. At source `75e7df26`,
+121 ordinary supervisor tests pass under WSL; one real-system-bus test remains manual and ignored.
+
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
-The live seal/abort routes, diagnostics and lease-expiry termination remain implementation work;
-deterministic packet construction is complete, but it is not yet joined to the terminal predicates,
-durable response and final host-marker release as one seal transaction.
+The live seal/abort routes, diagnostics and lease-expiry termination remain implementation work.
+Deterministic packet construction and durable artifact recovery are complete local components, but
+the server has not yet joined terminal observation, lifecycle CAS/event commit, artifact result,
+durable protocol response and final host-marker release into one live seal transaction.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
