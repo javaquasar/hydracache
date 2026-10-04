@@ -430,6 +430,14 @@ ignored; the final focused server and transport suites pass 9/9 and 8/8. This cl
 path, not the host proof. The workflow was not dispatched, no service was installed, and the
 admitted-host uid/gid, socket and mount behavior remains a release-blocking rehearsal.
 
+Multipart transport added one more failure window: the controller can disappear after the signed
+request and manifest but before the host receipt. That disconnect now terminates only the accepted
+connection, not the supervisor loop. The partial request publishes no staging directory and calls
+no spawn backend; a complete request on the same server instance then succeeds exactly once. At
+source `af0bff6d`, the focused server suite is 10/10 and the complete WSL count is 154 ordinary
+passes plus the one intentionally ignored real-system-bus test. Internal mutation and lease
+maintenance failures remain fatal, so “survive the client” does not become “ignore corruption.”
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

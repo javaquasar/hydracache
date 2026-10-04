@@ -639,6 +639,13 @@ revalidates the fixed six-file inventory and dispatch identities, then invokes t
 Production uid/gid, socket and filesystem behavior remain a separate admitted-host rehearsal, not
 a local completion claim.
 
+An accepted connection is also not allowed to own the service lifetime. Empty, truncated,
+oversized, timed-out or disconnected client transport is contained to that connection; the listener
+returns to its bounded maintenance loop. Internal mutation errors, response serialization failures,
+listener failure and lease-expiry maintenance failure remain fatal. A local regression abandons a
+revision-zero upload after the manifest and proves that neither staging nor spawn occurs before a
+complete request succeeds on the same server instance.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 

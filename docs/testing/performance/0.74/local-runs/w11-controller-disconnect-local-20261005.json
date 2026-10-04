@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-controller-disconnect",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "af0bff6d",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test server --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-disconnect.json"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 154,
+  "manual_system_bus_tests_ignored": 1,
+  "focused_server_tests_passed": 10,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "disconnect after the signed request and manifest publishes no staging directory",
+    "the partial upload never calls the spawn backend",
+    "transport failure is scoped to the accepted connection instead of terminating the service loop",
+    "a complete revision-zero request succeeds exactly once on the same server instance",
+    "internal mutation, serialization, listener and lease-maintenance errors remain fatal",
+    "the qualification dry-run accepted the updated contract and executed zero commands"
+  ],
+  "limitations": [
+    "the disconnect was injected against the local WSL socket rather than an installed service",
+    "runner-service restart, real network loss and production socket ownership remain admitted-host rehearsal",
+    "the workflow was not dispatched and no systemd or product process was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

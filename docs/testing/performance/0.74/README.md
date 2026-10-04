@@ -438,6 +438,14 @@ ignored; the final upload-focused server and transport suites pass 9/9 and 8/8. 
 not dispatched and the service was not installed, so the distinct admitted-host ownership/socket
 rehearsal flag remains false. See `local-runs/w11-start-upload-local-20261005.json`.
 
+A subsequent disconnect regression closes the service-loop edge around multipart upload. Transport
+failure on one accepted connection is now scoped to that connection; mutation, serialization,
+lease-maintenance and listener failures still remain fatal. A client that sends the signed request
+and manifest but disconnects before the receipt produces no staging directory and no backend call;
+the same server instance then accepts the complete request and starts exactly once. The WSL total is
+now 154 passing ordinary tests plus the one ignored manual system-bus test, with the focused server
+suite at 10/10. See `local-runs/w11-controller-disconnect-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future
