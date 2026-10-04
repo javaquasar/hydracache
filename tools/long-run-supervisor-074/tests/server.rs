@@ -18,6 +18,9 @@ use hydracache_long_run_supervisor_074::host_receipt::{
     encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
     HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
 };
+use hydracache_long_run_supervisor_074::lease_expiry::{
+    LeaseExpiryBackend, LeaseExpiryCause, LeaseExpiryOutcome,
+};
 use hydracache_long_run_supervisor_074::manifest::CampaignManifest;
 use hydracache_long_run_supervisor_074::protocol::{
     sign_response, ControllerIdentity, Operation, Request, ResponseBody, WireRequest,
@@ -26,7 +29,8 @@ use hydracache_long_run_supervisor_074::seal_input::{
     InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
 };
 use hydracache_long_run_supervisor_074::server::{
-    AbortObservationBackend, SealObservationBackend, SupervisorServer,
+    AbortObservationBackend, LeaseExpiryObservationBackend, SealObservationBackend,
+    SupervisorServer,
 };
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
@@ -271,6 +275,41 @@ impl AbortObservationBackend for FakeAbortBackend {
         _manifest: &CampaignManifest,
         _state: &DurableCampaignState,
     ) -> Result<(), String> {
+        Ok(())
+    }
+}
+
+#[derive(Default)]
+struct FakeLeaseExpiryBackend {
+    host_checks: usize,
+    stop_calls: usize,
+}
+
+impl LeaseExpiryBackend for FakeLeaseExpiryBackend {
+    fn capture_and_stop_expired(
+        &mut self,
+        _campaign_directory: &Path,
+        cause: &LeaseExpiryCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.stop_calls += 1;
+        assert_eq!(cause.campaign_id, state.identity.campaign_id);
+        assert_eq!(cause.lease_id, state.identity.lease_id);
+        assert_eq!(state.campaign_state, CampaignState::LeaseExpiredIncomplete);
+        assert!(state.harness.is_some());
+        assert!(state.daemon.is_some());
+        Ok(())
+    }
+}
+
+impl LeaseExpiryObservationBackend for FakeLeaseExpiryBackend {
+    fn verify_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.host_checks += 1;
         Ok(())
     }
 }
@@ -955,6 +994,63 @@ fn abort_dispatch_reports_committed_intent_and_identical_retry_completes() {
     assert_eq!(replay, completed);
     assert_eq!(backend.calls, 2);
     assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn maintenance_expires_the_active_campaign_without_a_controller_request() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary.path().join("supervisor-expiry.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let mut backend = FakeLeaseExpiryBackend::default();
+    assert_eq!(
+        server
+            .maintain_lease_expiry_with_backend(now + 10_000, &mut backend)
+            .unwrap(),
+        Some(LeaseExpiryOutcome::NotDue)
+    );
+    assert_eq!(backend.host_checks, 0);
+    assert_eq!(backend.stop_calls, 0);
+    assert_eq!(
+        server
+            .maintain_lease_expiry_with_backend(now + 10_001, &mut backend)
+            .unwrap(),
+        Some(LeaseExpiryOutcome::Completed { state_revision: 4 })
+    );
+    assert_eq!(backend.host_checks, 1);
+    assert_eq!(backend.stop_calls, 1);
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let expired = lock.read().unwrap();
+    assert_eq!(
+        expired.campaign_state,
+        CampaignState::LeaseExpiredIncomplete
+    );
+    assert!(expired.harness.is_none());
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+    drop(lock);
+
+    assert_eq!(
+        server
+            .maintain_lease_expiry_with_backend(now + 10_002, &mut backend)
+            .unwrap(),
+        None
+    );
+    assert_eq!(backend.stop_calls, 1);
 }
 
 #[test]

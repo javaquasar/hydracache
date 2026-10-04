@@ -5,8 +5,9 @@ use crate::artifact::PacketLimits;
 use crate::config::ServerConfig;
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::verify_host_receipt_evidence;
+use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryBackend, LeaseExpiryOutcome};
 use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
-use crate::manifest_evidence::verify_manifest_evidence;
+use crate::manifest_evidence::{verify_manifest_evidence, verify_stored_manifest_evidence};
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
 use crate::protocol::{
@@ -28,11 +29,13 @@ use crate::state::{
 use crate::state_store::{CampaignLock, StateStoreError};
 use crate::systemd_spawn::SystemdSpawnBackend;
 use crate::systemd_unit::{inspect_unit, verify_unit_identity, UnitSnapshot};
-use crate::unix_transport::{SeqpacketListener, TransportError};
+use crate::unix_transport::{SeqpacketConnection, SeqpacketListener, TransportError};
 use serde_json::Value;
 use std::path::Path;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
+
+const MAINTENANCE_INTERVAL: Duration = Duration::from_secs(1);
 
 #[derive(Debug, Error)]
 pub enum ServerError {
@@ -44,6 +47,8 @@ pub enum ServerError {
     Notify(#[from] std::io::Error),
     #[error("durable supervisor mutation failed: {0}")]
     Mutation(#[from] MutationError),
+    #[error("supervisor lease-expiry maintenance failed: {0}")]
+    LeaseExpiry(String),
 }
 
 pub struct SupervisorServer {
@@ -75,7 +80,30 @@ pub trait AbortObservationBackend: AbortBackend {
     ) -> Result<(), String>;
 }
 
+pub trait LeaseExpiryObservationBackend: LeaseExpiryBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String>;
+}
+
 impl AbortObservationBackend for SystemdAbortBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        verify_host_receipt_evidence(campaign_directory, manifest, state)
+            .map_err(|error| error.to_string())?;
+        self.bind_manifest(manifest.clone());
+        Ok(())
+    }
+}
+
+impl LeaseExpiryObservationBackend for SystemdAbortBackend {
     fn verify_host(
         &mut self,
         campaign_directory: &Path,
@@ -106,9 +134,40 @@ impl SupervisorServer {
 
     pub fn serve(self) -> Result<(), ServerError> {
         crate::systemd_notify::ready()?;
+        let mut lease_backend = SystemdAbortBackend::new();
         loop {
-            self.serve_one()?;
+            self.maintain_lease_expiry_with_backend(unix_seconds(), &mut lease_backend)?;
+            if let Some(connection) = self.listener.accept_timeout(MAINTENANCE_INTERVAL)? {
+                self.serve_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
+            }
         }
+    }
+
+    pub fn maintain_lease_expiry_with_backend(
+        &self,
+        now: u64,
+        backend: &mut dyn LeaseExpiryObservationBackend,
+    ) -> Result<Option<LeaseExpiryOutcome>, ServerError> {
+        let Some(host_claim) = HostExecutionClaim::recover_active(&self.config.campaign_root)
+            .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?
+        else {
+            return Ok(None);
+        };
+        let lock = CampaignLock::acquire(&self.config.campaign_root, host_claim.campaign_id())
+            .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        let state = reconcile_campaign(&lock)
+            .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        if now <= state.identity.lease_deadline_unix_seconds {
+            return Ok(Some(LeaseExpiryOutcome::NotDue));
+        }
+        let manifest = verify_stored_manifest_evidence(lock.campaign_directory(), &state)
+            .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        backend
+            .verify_host(lock.campaign_directory(), &manifest, &state)
+            .map_err(ServerError::LeaseExpiry)?;
+        let outcome = drive_lease_expiry(&host_claim, &lock, now, backend)
+            .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        Ok(Some(outcome))
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
@@ -143,6 +202,16 @@ impl SupervisorServer {
         abort_backend: Option<&mut dyn AbortObservationBackend>,
     ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
+        self.serve_connection_inner(connection, start_backend, seal_backend, abort_backend)
+    }
+
+    fn serve_connection_inner<B: SpawnBackend>(
+        &self,
+        connection: SeqpacketConnection,
+        start_backend: Option<&mut B>,
+        seal_backend: Option<&mut dyn SealObservationBackend>,
+        abort_backend: Option<&mut dyn AbortObservationBackend>,
+    ) -> Result<(), ServerError> {
         let packet = connection.receive_packet()?;
         let wire = match parse_wire_request(&packet) {
             Ok(wire) => wire,
