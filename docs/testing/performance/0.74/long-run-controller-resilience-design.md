@@ -138,7 +138,8 @@ hydracache-perf-<first-24-hex-of-campaign>-<i74|c74>.service
 ~~~
 
 The supervisor constructs the complete transient unit itself. The request cannot supply properties.
-The unit has User=hydracache-perf, Group=hydracache-perf, Restart=no, KillMode=control-group,
+The unit has User=hydracache-perf, Group=hydracache-perf, Restart=no, RemainAfterExit=yes,
+KillMode=control-group,
 Delegate=no, a contract-frozen CPUAffinity and memory/FD/process limits, WorkingDirectory inside the
 campaign staging directory, RuntimeMaxSec equal to the frozen role duration plus diagnostic grace,
 and StandardOutput/StandardError append targets inside that campaign. ExecStart is an argv array
@@ -321,8 +322,11 @@ any state with corrupt durable history -> CORRUPT_QUARANTINED
 
 Attach and status are observations, not workload state transitions. A controller lease subrecord
 changes independently and contains holder request id, authorization digest, attach time, expiry and
-last observed state revision. Losing a controller lease does not stop a healthy role and never
-starts one. Seal and abort require an unexpired controller lease.
+last observed state revision. The durable lease also retains the signed repository, run and actor
+principals; a later mutation cannot compare authorization-document digests because every operation
+has distinct signed bytes. `github.run_attempt` is not a lease principal because the authorization
+body does not sign it. Losing a controller lease does not stop a healthy role and never starts one.
+Seal and abort require an unexpired controller lease for those exact signed principals.
 
 Allowed commands are:
 
@@ -361,6 +365,14 @@ for deterministic socket tests. This closes the local implementation boundary, n
 no service or measured unit was installed or started, account ownership has not been rehearsed on
 the admitted host, and the controller/supervisor-loss fault matrix and overhead budget remain
 unexecuted.
+
+The local terminal predicate requires both independent sources: a checkpoint chain ending in the
+`Terminal` phase with the original harness/daemon identities, and the retained systemd unit in
+`active/exited` with zero MainPID, `Result=success`, and the original unit/cgroup identity. The
+transient policy uses `RemainAfterExit` so this proof is not replaced by PID absence or a
+garbage-collected unit. The host-wide marker is releasable only after `COMPLETE_SEALED` has cleared
+process, checkpoint and controller-lease state. Packet construction and the live seal transaction
+still have to join these predicates before the route can return success.
 
 State snapshots include state_revision, campaign state, role/phase, unit name, MainPID, harness and
 daemon PIDs, /proc start ticks, process group, cgroup path and inode, machine id, boot id, binary

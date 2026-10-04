@@ -687,6 +687,16 @@ overhead budget, seal/abort/diagnostics and lease-expiry termination remain unpr
 unfinished. The point is the same as for the performance candidates: implemented mechanics and
 release evidence are different claims.
 
+The next local sealing slice deliberately stopped before claiming a live seal. It made successful
+termination provable from two sources: a final `Terminal` checkpoint with the original process
+identities, and a retained systemd `active/exited` unit with zero MainPID, success result and exact
+unit/cgroup identity. It also corrected controller-lease ownership: later operations compare the
+repository/run/actor principals covered by the signature, not the inevitably different digest of
+an earlier attach request. Finally, the host claim can be released only from a clean
+`COMPLETE_SEALED` state. At source `f35e276c`, 117 ordinary WSL supervisor tests pass. Packet
+assembly and the live seal route remain unfinished, so these predicates do not yet authorize an
+artifact or release claim.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

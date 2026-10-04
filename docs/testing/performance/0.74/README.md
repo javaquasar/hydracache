@@ -198,10 +198,22 @@ journals a byte-exact accepted response before reply. At source `286863e4`, the 
 suite passes 114 ordinary supervisor tests with only the explicitly manual real-system-bus
 inspection ignored. Windows `clippy -D warnings` is green.
 
+The first sealing prerequisite slice keeps successful exit independently observable. Transient
+roles use `RemainAfterExit=true`; terminal admission accepts only the retained
+`active/exited`, zero-MainPID, `Result=success` unit with the original unit/cgroup identity and a
+checkpoint chain whose final phase is `Terminal`. A running unit or a merely dead PID cannot
+impersonate completion. Controller leases now retain the repository/run/actor values covered by
+the authorization signature, so a later signed `seal` or `abort` can prove the same controller
+principal even though its request digest is necessarily different. The active-host marker can be
+removed only after a clean `COMPLETE_SEALED` state with no retained process, checkpoint or lease.
+At source `f35e276c`, 117 ordinary supervisor tests pass under WSL; the real-system-bus test remains
+manual and ignored.
+
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
-supervisor restart, controller loss, bounded overhead, terminal marker release, sealing, abort and
-diagnostics still require the admitted Linux host or further implementation.
+supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
+Packet construction, the live seal/abort routes, diagnostics and lease-expiry termination remain
+implementation work; the terminal predicates and final host-marker release alone are not a seal.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

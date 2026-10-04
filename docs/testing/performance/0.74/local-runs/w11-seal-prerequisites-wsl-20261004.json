@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-seal-prerequisites",
+  "status": "passed-local-non-promotable",
+  "source_sha": "f35e276c",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 117,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "terminal checkpoint admission requires a complete chain ending in Phase::Terminal",
+    "terminal checkpoint evidence retains the original role and harness/daemon identities",
+    "the transient unit policy retains a successful exit for later inspection",
+    "only active/exited, zero-MainPID, Result=success with exact unit and cgroup identity is terminal-success",
+    "controller leases bind the signed repository, run and actor principals across distinct operations",
+    "the active host marker is releasable only after clean COMPLETE_SEALED state"
+  ],
+  "limitations": [
+    "packet assembly and the live seal route are not implemented",
+    "the retained successful systemd exit shape was tested structurally but not exercised on the admitted host",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "abort, diagnostics, lease-expiry termination and incomplete sealing remain incomplete",
+    "controller-loss, supervisor-restart and overhead-budget qualification remain unexecuted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
