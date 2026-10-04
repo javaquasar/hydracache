@@ -486,8 +486,16 @@ hash-binds the raw authorization document to the request and checks operation, c
 repository, workflow run, actor, issue time, expiry, maximum ten-minute lifetime and clock skew.
 The Rust manifest parser independently requires canonical strict JSON, checks its raw digest and
 request identity, rejects unknown fields and plaintext-looking secret values, and freezes cadence,
-progress, diagnostic, lease and artifact limits. The production public key remains explicitly
-`UNRESOLVED`; the test key can prove verification behavior but cannot authorize a campaign.
+progress, diagnostic, lease and artifact limits. The complete start-manifest data contract is now
+implemented on both sides rather than left as a prose-only list. A strict JSON schema, the Python
+builder and the independent Rust parser cover source commits, tree and Cargo.lock identities,
+clean-tree assertions, installed binary path/hash/inode/device/owner/mode metadata, exact argv and
+environment identity, ordered roles and phase durations, workload/statistics digests, output
+limits, output-schema identities and final guard identifiers. Nested unknown fields, binary/argv
+drift, dirty sources, duplicate guards and limits outside the campaign envelope are negative tests.
+This narrows a future host failure to provisioning or execution rather than ambiguity in the
+manifest format. The production public key remains explicitly `UNRESOLVED`; the test key can prove
+verification behavior but cannot authorize a campaign.
 
 W12 now has a fail-closed evidence skeleton listing all 29 plan items in exact release order. It
 does not promote incomplete rows: the first local report contained 23 planned items, five locally
@@ -498,9 +506,9 @@ test. Later commits intentionally require a fresh exact-commit canary receipt.
 
 This is deliberately not described as a completed resilient qualification system. The live Unix
 `SOCK_SEQPACKET` service, OS peer-credential and supplemental-group checks, production verification
-key, systemd process ownership, full installed-binary/argv/phase manifest fields, provisioning,
-bounded diagnostics, deterministic archive creation and real controller-loss rehearsals still
-require implementation or Linux-host evidence. No six-hour or 24-hour 0.74 run has started.
+key, systemd process ownership, installed-file verification, provisioning, bounded diagnostics,
+deterministic archive creation and real controller-loss rehearsals still require implementation or
+Linux-host evidence. No six-hour or 24-hour 0.74 run has started.
 
 Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a
 and W9a were rejected and the other proposals are deferred or unauthorized, there is no honest

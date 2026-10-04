@@ -70,13 +70,17 @@ maximum lifetime with bounded clock skew. The production verification key remain
 The Rust supervisor foundation also independently parses the create-new start manifest. It
 requires canonical strict JSON, binds the raw manifest digest, campaign and repository to the
 request, freezes timing/limit fields, rejects plaintext-looking secret identifiers, and refuses
-expired leases. The broader design's installed-binary, argv/environment and per-phase fields are
-not implemented yet, so `full_design_manifest_fields_complete` remains false.
+expired leases. The full design manifest is now represented by a strict schema and independently
+validated by the Python builder and Rust parser: source/tree/lock identities, clean-tree assertions,
+installed binary metadata, argv/environment identity, role order, phase durations, workload and
+statistics digests, output limits, output-schema digests and required final guards all fail closed.
+This completes the manifest data contract only; it does not implement process launch or prove the
+installed-file metadata against a Linux host.
 
 `scripts/perf/performance_long_run_074.py --prepare` builds only a create-new start manifest. It
 uses the frozen campaign-id component order, removes the raw nonce after deriving its digest,
-rejects unknown, floating-point and secret-bearing fields, fsyncs both files, and has no process
-execution mode.
+rejects unknown, nested-schema, floating-point, dirty-tree, path/argv-binding, oversized-output and
+secret-bearing fields, fsyncs both files, and has no process execution mode.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
