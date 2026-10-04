@@ -40,6 +40,8 @@ pub enum LifecycleEvent {
     CompleteSealed,
     AbortRequested,
     AbortCompleted,
+    LeaseExpiryRequested,
+    LeaseExpiryCompleted,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -728,6 +730,9 @@ fn validate_lifecycle_event(
         LifecycleEvent::AbortRequested | LifecycleEvent::AbortCompleted => {
             crate::state::CampaignState::AbortedIncomplete
         }
+        LifecycleEvent::LeaseExpiryRequested | LifecycleEvent::LeaseExpiryCompleted => {
+            crate::state::CampaignState::LeaseExpiredIncomplete
+        }
     };
     if cause_request_id.is_empty()
         || cause_request_id.len() > 128
@@ -748,6 +753,7 @@ fn validate_lifecycle_event(
                 | LifecycleEvent::I74SpawnMismatch
                 | LifecycleEvent::C74SpawnMismatch
                 | LifecycleEvent::AbortCompleted
+                | LifecycleEvent::LeaseExpiryCompleted
         ) && (state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some()))
         || (matches!(
             transition,
@@ -761,6 +767,9 @@ fn validate_lifecycle_event(
                 || state.daemon.is_none()
                 || state.controller_lease.is_none()))
         || (transition == LifecycleEvent::AbortCompleted && state.controller_lease.is_some())
+        || (transition == LifecycleEvent::LeaseExpiryRequested
+            && (state.harness.is_none() || state.daemon.is_none()))
+        || (transition == LifecycleEvent::LeaseExpiryCompleted && state.controller_lease.is_some())
     {
         return Err(EventError::Binding {
             sequence: event.sequence,

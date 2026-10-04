@@ -21,6 +21,8 @@ pub mod config;
 pub mod event;
 pub mod host_execution;
 pub mod host_receipt;
+#[cfg(target_os = "linux")]
+pub mod lease_expiry;
 pub mod manifest;
 pub mod manifest_evidence;
 pub mod mutation;
