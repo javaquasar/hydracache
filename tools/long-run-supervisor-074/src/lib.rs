@@ -12,6 +12,7 @@ pub mod auth;
 pub mod client;
 #[cfg(target_os = "linux")]
 pub mod config;
+pub mod event;
 pub mod manifest;
 #[cfg(target_os = "linux")]
 pub mod process_identity;
@@ -332,7 +333,16 @@ fn validate_record(
     Ok(())
 }
 
-fn record_hash(
+pub(crate) fn record_hash(
+    sequence: u64,
+    previous_record_sha256: &str,
+    payload_sha256: &str,
+) -> Result<String, ChainError> {
+    chain_hash(DOMAIN, sequence, previous_record_sha256, payload_sha256)
+}
+
+pub(crate) fn chain_hash(
+    domain: &[u8],
     sequence: u64,
     previous_record_sha256: &str,
     payload_sha256: &str,
@@ -346,7 +356,7 @@ fn record_hash(
         field: "payload_sha256",
     })?;
     let mut digest = Sha256::new();
-    digest.update(DOMAIN);
+    digest.update(domain);
     digest.update([0]);
     digest.update(sequence.to_be_bytes());
     digest.update(previous);
@@ -354,15 +364,15 @@ fn record_hash(
     Ok(hex(&digest.finalize()))
 }
 
-fn canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, serde_json::Error> {
+pub(crate) fn canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, serde_json::Error> {
     serde_json::to_vec(&serde_json::to_value(value)?)
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     hex(&Sha256::digest(bytes))
 }
 
-fn is_hash(value: &str) -> bool {
+pub(crate) fn is_hash(value: &str) -> bool {
     value.len() == 64
         && value
             .bytes()
