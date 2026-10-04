@@ -1,3 +1,4 @@
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -8,7 +9,7 @@ use thiserror::Error;
 pub const ARCHIVE_NAME: &str = "packet.tar.zst";
 pub const OUTER_DIGEST_NAME: &str = "outer-sha256.txt";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct ArchiveLimits {
     pub maximum_files: usize,
     pub maximum_uncompressed_bytes: u64,

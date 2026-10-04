@@ -1,5 +1,5 @@
 use crate::{canonical_json, is_hash, sha256_hex, verify_journal, ProcessIdentity, Role};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File, OpenOptions};
@@ -15,28 +15,28 @@ const MAXIMUM_FILES: usize = 20_000;
 const MAXIMUM_BYTES: u64 = 21_474_836_480;
 const MAXIMUM_MANIFEST_BYTES: u64 = 64 * 1024 * 1024;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PacketResult {
     Complete,
     Incomplete,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct GuardEvidenceInput {
     pub id: String,
     pub passed: bool,
     pub source_relative_path: PathBuf,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RoleEvidenceInput {
     pub role: Role,
     pub result: PacketResult,
     pub journal_relative_path: PathBuf,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct PacketPlan {
     pub campaign_id: String,
     pub campaign_manifest_sha256: String,
@@ -49,7 +49,7 @@ pub struct PacketPlan {
     pub raw_files: Vec<PathBuf>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct PacketLimits {
     pub maximum_files: usize,
     pub maximum_bytes: u64,
