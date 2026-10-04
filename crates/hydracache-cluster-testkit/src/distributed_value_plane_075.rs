@@ -398,6 +398,12 @@ impl DistributedValuePlaneSimulator {
         Ok(())
     }
 
+    pub fn advance_logical_time(&mut self, delta: u64) {
+        for node in self.nodes.values_mut() {
+            node.plane.advance_logical_time(delta);
+        }
+    }
+
     pub fn promote_backup(
         &mut self,
         partition: u32,
@@ -677,7 +683,7 @@ pub fn run_seeded_chaos_campaign(
     let mut violations = Vec::new();
     for step in 0..bounds.steps {
         let partition = generator.next_u64() as u32 % 3;
-        let action = generator.next_u64() % 6;
+        let action = generator.next_u64() % 13;
         let key = keys[partition as usize].clone();
         let sequence = step as u64 + 1;
         let epoch = simulator.epoch();
@@ -686,13 +692,101 @@ pub fn run_seeded_chaos_campaign(
             .expect("campaign partition exists")
             .clone();
         let value = vec![(generator.next_u64() & 0xff) as u8, step as u8];
-        let plan = campaign_put(sequence, key.clone(), value, epoch);
         let label = match action {
             0 => {
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::Put {
+                        value,
+                        ttl: crate::value_plane_model_075::TtlDirective::ExpireAfter(3),
+                    },
+                    epoch,
+                );
                 simulator.execute(&assignment.owner, plan)?;
                 format!("put:p{partition}:e{epoch}")
             }
             1 => {
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::PutIfAbsent {
+                        value,
+                        ttl: crate::value_plane_model_075::TtlDirective::Eternal,
+                    },
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("put-if-absent:p{partition}:e{epoch}")
+            }
+            2 => {
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::ReplaceIfPresent {
+                        value,
+                        ttl: crate::value_plane_model_075::TtlDirective::Preserve,
+                    },
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("replace-if-present:p{partition}:e{epoch}")
+            }
+            3 => {
+                let expected = simulator
+                    .read(&assignment.owner, &key, 0)?
+                    .unwrap_or_else(|| vec![0xff]);
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::ReplaceIfValue {
+                        expected,
+                        value,
+                        ttl: crate::value_plane_model_075::TtlDirective::Eternal,
+                    },
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("replace-if-value:p{partition}:e{epoch}")
+            }
+            4 => {
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::GetAndPut {
+                        value,
+                        ttl: crate::value_plane_model_075::TtlDirective::Eternal,
+                    },
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("get-and-put:p{partition}:e{epoch}")
+            }
+            5 => {
+                let expected = simulator
+                    .read(&assignment.owner, &key, 0)?
+                    .unwrap_or_else(|| vec![0xff]);
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::RemoveIfValue { expected },
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("remove-if-value:p{partition}:e{epoch}")
+            }
+            6 => {
+                let plan = campaign_mutation(
+                    sequence,
+                    key.clone(),
+                    crate::value_plane_model_075::MutationOperation::GetAndRemove,
+                    epoch,
+                );
+                simulator.execute(&assignment.owner, plan)?;
+                format!("get-and-remove:p{partition}:e{epoch}")
+            }
+            7 => {
+                let plan = campaign_put(sequence, key.clone(), value, epoch);
                 let first = simulator.execute_with_fault(
                     &assignment.owner,
                     plan.clone(),
@@ -705,7 +799,8 @@ pub fn run_seeded_chaos_campaign(
                 }
                 format!("response-loss-replay:p{partition}:e{epoch}")
             }
-            2 => {
+            8 => {
+                let plan = campaign_put(sequence, key.clone(), value, epoch);
                 simulator.fail_node(&assignment.backup)?;
                 if !matches!(
                     simulator.execute(&assignment.owner, plan),
@@ -717,18 +812,18 @@ pub fn run_seeded_chaos_campaign(
                 simulator.repair_backup(partition, &assignment.backup)?;
                 format!("backup-loss-repair:p{partition}:e{epoch}")
             }
-            3 => {
+            9 => {
                 simulator.fail_node(&assignment.owner)?;
                 let promoted = simulator.promote_backup(partition, epoch.saturating_add(1))?;
                 simulator.restore_node(&assignment.owner)?;
                 simulator.repair_backup(partition, &promoted.backup)?;
                 format!("owner-loss-promote-repair:p{partition}:e{}", epoch + 1)
             }
-            4 => {
+            10 => {
                 simulator.rebalance(partition, &assignment.backup, epoch.saturating_add(1))?;
                 format!("rebalance:p{partition}:e{}", epoch + 1)
             }
-            _ => {
+            11 => {
                 let stale_epoch = epoch.saturating_sub(1);
                 let stale = campaign_put(sequence, key, vec![0xff], stale_epoch);
                 if !matches!(
@@ -738,6 +833,10 @@ pub fn run_seeded_chaos_campaign(
                     violations.push(format!("step {step}: stale epoch was not rejected"));
                 }
                 format!("stale-epoch-canary:p{partition}:e{stale_epoch}")
+            }
+            _ => {
+                simulator.advance_logical_time(3);
+                format!("advance-time-expiry:p{partition}:e{epoch}")
             }
         };
         trace.push(label);
@@ -765,17 +864,33 @@ pub fn run_seeded_chaos_campaign(
 }
 
 fn campaign_put(sequence: u64, key: CanonicalMapKey, value: Vec<u8>, epoch: u64) -> MutationPlan {
-    let digest = value.iter().fold(sequence, |digest, byte| {
-        digest.wrapping_mul(16777619) ^ u64::from(*byte)
-    });
-    MutationPlan::new(
-        MutationIdentity::new("chaos-client", sequence),
-        crate::value_plane_model_075::MutationDigest::new(digest),
+    campaign_mutation(
+        sequence,
         key,
         crate::value_plane_model_075::MutationOperation::Put {
             value,
             ttl: crate::value_plane_model_075::TtlDirective::Eternal,
         },
+        epoch,
+    )
+}
+
+fn campaign_mutation(
+    sequence: u64,
+    key: CanonicalMapKey,
+    operation: crate::value_plane_model_075::MutationOperation,
+    epoch: u64,
+) -> MutationPlan {
+    let digest = format!("{operation:?}")
+        .bytes()
+        .fold(sequence, |digest, byte| {
+            digest.wrapping_mul(16777619) ^ u64::from(byte)
+        });
+    MutationPlan::new(
+        MutationIdentity::new("chaos-client", sequence),
+        crate::value_plane_model_075::MutationDigest::new(digest),
+        key,
+        operation,
         epoch,
     )
 }

@@ -161,6 +161,9 @@ pub enum MutationOperation {
         value: Vec<u8>,
         ttl: TtlDirective,
     },
+    RemoveIfValue {
+        expected: Vec<u8>,
+    },
     GetAndPut {
         value: Vec<u8>,
         ttl: TtlDirective,
@@ -179,6 +182,7 @@ impl MutationOperation {
             Self::ReplaceIfValue {
                 expected, value, ..
             } => expected.len().saturating_add(value.len()),
+            Self::RemoveIfValue { expected } => expected.len(),
             Self::GetAndRemove | Self::Delete => 0,
         }
     }
@@ -812,6 +816,9 @@ impl ReferenceValuePlane {
                 Some(value.clone()),
                 Some(*ttl),
             ),
+            MutationOperation::RemoveIfValue { expected } => {
+                (previous.as_ref() == Some(expected), None, None)
+            }
             MutationOperation::GetAndRemove | MutationOperation::Delete => {
                 (previous.is_some(), None, None)
             }

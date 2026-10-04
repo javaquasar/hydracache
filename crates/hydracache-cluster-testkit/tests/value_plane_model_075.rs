@@ -250,6 +250,70 @@ fn logical_ttl_never_depends_on_wall_clock() {
 }
 
 #[test]
+fn conditional_remove_matches_bytes_and_expiry_never_resurrects() {
+    let mut model = ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
+    model.set_logical_time(LogicalTime::new(10));
+    applied_through_replica(
+        &mut model,
+        MutationPlan::new(
+            identity(1),
+            MutationDigest::new(1),
+            key(b"key"),
+            MutationOperation::Put {
+                value: b"value".to_vec(),
+                ttl: TtlDirective::ExpireAfter(2),
+            },
+            1,
+        ),
+    );
+    let mismatch = MutationPlan::new(
+        identity(2),
+        MutationDigest::new(2),
+        key(b"key"),
+        MutationOperation::RemoveIfValue {
+            expected: b"other".to_vec(),
+        },
+        1,
+    );
+    let mismatch_id = mismatch.identity.clone();
+    applied_through_replica(&mut model, mismatch);
+    assert!(
+        !model
+            .mutation(&mismatch_id)
+            .unwrap()
+            .outcome
+            .as_ref()
+            .unwrap()
+            .applied
+    );
+    assert_eq!(model.live_value(&key(b"key")), Some(b"value".as_slice()));
+
+    model.advance_logical_time(2);
+    assert_eq!(model.live_value(&key(b"key")), None);
+    let expired_remove = MutationPlan::new(
+        identity(3),
+        MutationDigest::new(3),
+        key(b"key"),
+        MutationOperation::RemoveIfValue {
+            expected: b"value".to_vec(),
+        },
+        1,
+    );
+    let expired_id = expired_remove.identity.clone();
+    applied_through_replica(&mut model, expired_remove);
+    assert!(
+        !model
+            .mutation(&expired_id)
+            .unwrap()
+            .outcome
+            .as_ref()
+            .unwrap()
+            .applied
+    );
+    assert_eq!(model.live_value(&key(b"key")), None);
+}
+
+#[test]
 fn history_oracle_accepts_atomic_conditionals_and_ambiguous_response_loss() {
     let mut history = ValuePlaneHistory::new(8).unwrap();
     history

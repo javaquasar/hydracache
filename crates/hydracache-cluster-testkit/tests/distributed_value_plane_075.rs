@@ -250,6 +250,7 @@ fn seeded_chaos_is_deterministic_and_safe() {
 
 #[test]
 fn seeded_chaos_sweep_preserves_invariants() {
+    let mut covered = std::collections::BTreeSet::new();
     for seed in 0..128 {
         let report = run_seeded_chaos_campaign(
             seed,
@@ -264,6 +265,24 @@ fn seeded_chaos_sweep_preserves_invariants() {
             "seed {seed} violations: {:?}; trace: {:?}",
             report.violations,
             report.trace
+        );
+        for event in report.trace {
+            covered.insert(event.split(':').next().unwrap().to_owned());
+        }
+    }
+    for required in [
+        "put",
+        "put-if-absent",
+        "replace-if-present",
+        "replace-if-value",
+        "get-and-put",
+        "remove-if-value",
+        "get-and-remove",
+        "advance-time-expiry",
+    ] {
+        assert!(
+            covered.contains(required),
+            "missing chaos action {required}"
         );
     }
 }

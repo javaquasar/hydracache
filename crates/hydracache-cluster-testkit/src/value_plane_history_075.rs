@@ -16,6 +16,7 @@ pub enum HistoryOperation {
     PutIfAbsent(Vec<u8>),
     ReplaceIfPresent(Vec<u8>),
     ReplaceIfValue { expected: Vec<u8>, value: Vec<u8> },
+    RemoveIfValue { expected: Vec<u8> },
     GetAndPut(Vec<u8>),
     GetAndRemove,
     Delete,
@@ -328,6 +329,20 @@ fn apply_operation(
                 (
                     next,
                     HistoryResult::Mutation(HistoryOutcome::applied(previous, Some(value.clone()))),
+                )
+            } else {
+                (
+                    next,
+                    HistoryResult::Mutation(HistoryOutcome::rejected(previous)),
+                )
+            }
+        }
+        HistoryOperation::RemoveIfValue { expected } => {
+            if previous.as_ref() == Some(expected) {
+                next.remove(key);
+                (
+                    next,
+                    HistoryResult::Mutation(HistoryOutcome::applied(previous, None)),
                 )
             } else {
                 (
