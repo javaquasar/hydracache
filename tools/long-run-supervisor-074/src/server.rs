@@ -11,11 +11,12 @@ use crate::protocol::{
 use crate::service::{authorize_wire, AuthorizedRequest, ServiceError, ServicePolicy};
 use crate::spawn::SpawnBackend;
 use crate::start_evidence::{
-    load_campaign_evidence, prepare_campaign_evidence, StartEvidenceError,
+    load_campaign_evidence, prepare_campaign_evidence, PreparedCampaignEvidence, StartEvidenceError,
 };
 use crate::start_lifecycle::{drive_i74_start_request, StartLifecycleError};
-use crate::state::{apply_attach, AttachRequest};
+use crate::state::{apply_attach, AttachRequest, FrozenIdentity};
 use crate::state_store::{CampaignLock, StateStoreError};
+use crate::systemd_spawn::SystemdSpawnBackend;
 use crate::systemd_unit::{inspect_unit, verify_unit_identity};
 use crate::unix_transport::{SeqpacketListener, TransportError};
 use serde_json::Value;
@@ -63,7 +64,7 @@ impl SupervisorServer {
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
-        self.serve_one_inner::<UnavailableStartBackend>(None)
+        self.serve_one_inner::<SystemdSpawnBackend>(None)
     }
 
     pub fn serve_one_with_start_backend<B: SpawnBackend>(
@@ -105,7 +106,7 @@ impl SupervisorServer {
         if request.operation == Operation::Start {
             return match start_backend {
                 Some(backend) => self.dispatch_start(authorized, now, backend),
-                None => Ok(error_response_from_request(request, now, 11)?),
+                None => self.dispatch_systemd_start(authorized, now),
             };
         }
         if request.operation == Operation::Attach {
@@ -138,6 +139,34 @@ impl SupervisorServer {
         now: u64,
         backend: &mut B,
     ) -> Result<Response, ServerError> {
+        match self.admit_start(authorized, now)? {
+            StartAdmission::Rejected(response) => Ok(response),
+            StartAdmission::Ready(admission) => finish_start(authorized, now, admission, backend),
+        }
+    }
+
+    fn dispatch_systemd_start(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+    ) -> Result<Response, ServerError> {
+        match self.admit_start(authorized, now)? {
+            StartAdmission::Rejected(response) => Ok(response),
+            StartAdmission::Ready(admission) => {
+                let mut backend = SystemdSpawnBackend::new(
+                    admission.evidence.manifest.clone(),
+                    admission.evidence.campaign_directory.clone(),
+                );
+                finish_start(authorized, now, admission, &mut backend)
+            }
+        }
+    }
+
+    fn admit_start(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+    ) -> Result<StartAdmission, ServerError> {
         let request = &authorized.request;
         let campaign_directory = self.config.campaign_root.join(&request.campaign_id);
         let evidence = if campaign_directory.exists() {
@@ -153,55 +182,49 @@ impl SupervisorServer {
         let evidence = match evidence {
             Ok(evidence) => evidence,
             Err(error) => {
-                return Ok(error_response_from_request(
+                return Ok(StartAdmission::Rejected(error_response_from_request(
                     request,
                     now,
                     start_evidence_error_code(&error),
-                )?)
+                )?))
             }
         };
         let host_claim =
             match HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id) {
                 Ok(claim) => claim,
                 Err(error) => {
-                    return Ok(error_response_from_request(
+                    return Ok(StartAdmission::Rejected(error_response_from_request(
                         request,
                         now,
                         host_execution_error_code(&error),
-                    )?)
+                    )?))
                 }
             };
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(error_response_from_request(
+                return Ok(StartAdmission::Rejected(error_response_from_request(
                     request,
                     now,
                     state_error_code(&error),
-                )?)
+                )?))
             }
         };
         let identity =
             match frozen_identity_from_manifest(&evidence.manifest, &request.manifest_sha256) {
                 Ok(identity) => identity,
-                Err(_) => return Ok(error_response_from_request(request, now, 9)?),
+                Err(_) => {
+                    return Ok(StartAdmission::Rejected(error_response_from_request(
+                        request, now, 9,
+                    )?))
+                }
             };
-        match drive_i74_start_request(
-            &host_claim,
-            &lock,
-            request,
+        Ok(StartAdmission::Ready(AdmittedStart {
+            evidence,
+            host_claim,
+            lock,
             identity,
-            evidence.manifest.nonce_sha256,
-            now,
-            backend,
-        ) {
-            Ok(response) => Ok(response),
-            Err(error) => Ok(error_response_from_request(
-                request,
-                now,
-                start_lifecycle_error_code(&error),
-            )?),
-        }
+        }))
     }
 
     fn dispatch_attach(
@@ -332,6 +355,43 @@ impl SupervisorServer {
     }
 }
 
+enum StartAdmission {
+    Ready(AdmittedStart),
+    Rejected(Response),
+}
+
+struct AdmittedStart {
+    evidence: PreparedCampaignEvidence,
+    host_claim: HostExecutionClaim,
+    lock: CampaignLock,
+    identity: FrozenIdentity,
+}
+
+fn finish_start<B: SpawnBackend>(
+    authorized: &AuthorizedRequest,
+    now: u64,
+    admission: AdmittedStart,
+    backend: &mut B,
+) -> Result<Response, ServerError> {
+    let request = &authorized.request;
+    match drive_i74_start_request(
+        &admission.host_claim,
+        &admission.lock,
+        request,
+        admission.identity,
+        admission.evidence.manifest.nonce_sha256,
+        now,
+        backend,
+    ) {
+        Ok(response) => Ok(response),
+        Err(error) => Ok(error_response_from_request(
+            request,
+            now,
+            start_lifecycle_error_code(&error),
+        )?),
+    }
+}
+
 fn success_response(
     request: &crate::protocol::Request,
     now: u64,
@@ -433,23 +493,6 @@ fn start_lifecycle_error_code(error: &StartLifecycleError) -> u32 {
         StartLifecycleError::State(error) => state_error_code(error),
         StartLifecycleError::Mutation(error) => mutation_error_code(error),
         StartLifecycleError::Event(_) | StartLifecycleError::Spawn(_) => 11,
-    }
-}
-
-struct UnavailableStartBackend;
-
-impl SpawnBackend for UnavailableStartBackend {
-    type Error = &'static str;
-
-    fn start_once(
-        &mut self,
-        _intent: &crate::spawn::SpawnIntent,
-    ) -> Result<crate::spawn::SpawnObservation, Self::Error> {
-        Err("live start backend is unavailable")
-    }
-
-    fn observe(&mut self, _unit_name: &str) -> Result<crate::spawn::SpawnObservation, Self::Error> {
-        Err("live start backend is unavailable")
     }
 }
 

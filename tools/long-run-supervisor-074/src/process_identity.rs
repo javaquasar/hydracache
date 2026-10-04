@@ -249,6 +249,9 @@ fn safe_cgroup_relative_path(value: &str) -> Result<&Path, ProcessIdentityError>
         || path
             .components()
             .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+        || value
+            .split('/')
+            .any(|component| matches!(component, "." | ".."))
         || value.contains('\0')
         || value.contains('\n')
         || value.contains('\r')

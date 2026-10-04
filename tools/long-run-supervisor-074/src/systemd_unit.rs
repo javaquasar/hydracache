@@ -236,6 +236,19 @@ pub fn inspect_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
     inspect_loaded_unit(unit_name)
 }
 
+pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
+    validate_unit_name(unit_name)?;
+    match inspect_loaded_unit(unit_name) {
+        Ok(snapshot) => Ok(Some(snapshot)),
+        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+            if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error),
+    }
+}
+
 fn inspect_loaded_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
     let connection = Connection::system()?;
     let manager = Proxy::new(
@@ -379,7 +392,13 @@ fn parse_cpu(value: &str) -> Result<usize, UnitError> {
 }
 
 fn safe_absolute_text_path(value: &str) -> bool {
-    safe_absolute_path(Path::new(value)) && !value.contains(['\0', '\n', '\r'])
+    safe_absolute_path(Path::new(value))
+        && !value
+            .chars()
+            .any(|value| matches!(value, '\0' | '\n' | '\r'))
+        && !value
+            .split('/')
+            .any(|component| matches!(component, "." | ".."))
 }
 
 fn safe_absolute_path(path: &Path) -> bool {
