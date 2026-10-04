@@ -75,11 +75,32 @@ fn one_campaign_claim_survives_restart_and_blocks_every_other_campaign() {
 #[test]
 fn recovery_never_creates_a_missing_active_campaign_marker() {
     let temporary = tempfile::tempdir().unwrap();
+    assert!(HostExecutionClaim::recover_active(temporary.path())
+        .unwrap()
+        .is_none());
     assert!(matches!(
         HostExecutionClaim::recover(temporary.path(), &"a".repeat(64)),
         Err(HostExecutionError::Path)
     ));
     assert!(!temporary.path().join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn active_recovery_returns_the_validated_marker_identity_under_the_host_lock() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign = "a".repeat(64);
+    let created = HostExecutionClaim::acquire(temporary.path(), &campaign).unwrap();
+    drop(created);
+
+    let recovered = HostExecutionClaim::recover_active(temporary.path())
+        .unwrap()
+        .unwrap();
+    assert_eq!(recovered.campaign_id(), campaign);
+    assert_eq!(recovered.disposition(), ClaimDisposition::Recovered);
+    assert!(matches!(
+        HostExecutionClaim::recover_active(temporary.path()),
+        Err(HostExecutionError::Busy)
+    ));
 }
 
 #[test]

@@ -43,6 +43,28 @@ impl HostExecutionClaim {
         Self::acquire_inner(campaign_root, campaign_id, false)
     }
 
+    pub fn recover_active(campaign_root: &Path) -> Result<Option<Self>, HostExecutionError> {
+        let metadata = fs::symlink_metadata(campaign_root)?;
+        if !metadata.is_dir() || metadata.file_type().is_symlink() {
+            return Err(HostExecutionError::Path);
+        }
+        let root = fs::canonicalize(campaign_root)?;
+        let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
+        FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
+        let marker = root.join(ACTIVE_CAMPAIGN_NAME);
+        let campaign_id = match fs::symlink_metadata(&marker) {
+            Ok(_) => read_marker(&marker)?,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(error.into()),
+        };
+        Ok(Some(Self {
+            lock,
+            root,
+            campaign_id,
+            disposition: ClaimDisposition::Recovered,
+        }))
+    }
+
     fn acquire_inner(
         campaign_root: &Path,
         campaign_id: &str,
