@@ -20,15 +20,44 @@ pub enum EventOutcome {
     Rejected,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum LifecycleEvent {
+    Prepared,
+    I74Starting,
+    I74Started,
+    I74Adopted,
+    I74SpawnAbsent,
+    I74SpawnMismatch,
+    C74Starting,
+    C74Started,
+    C74Adopted,
+    C74SpawnAbsent,
+    C74SpawnMismatch,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(tag = "event_type", rename_all = "snake_case", deny_unknown_fields)]
+pub enum SupervisorEventKind {
+    Request {
+        request_sha256: String,
+        request: Box<Request>,
+        outcome: EventOutcome,
+        response: Box<Response>,
+    },
+    Lifecycle {
+        cause_request_id: String,
+        cause_request_sha256: String,
+        transition: LifecycleEvent,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SupervisorEventPayload {
     pub campaign_id: String,
     pub occurred_at_unix_seconds: u64,
-    pub request_sha256: String,
-    pub request: Request,
-    pub outcome: EventOutcome,
-    pub response: Response,
+    #[serde(flatten)]
+    pub event: SupervisorEventKind,
     pub state_after: Option<Box<DurableCampaignState>>,
 }
 
@@ -127,10 +156,12 @@ pub fn build_event(
     let payload = SupervisorEventPayload {
         campaign_id: request.campaign_id.clone(),
         occurred_at_unix_seconds,
-        request_sha256,
-        request,
-        outcome,
-        response,
+        event: SupervisorEventKind::Request {
+            request_sha256,
+            request: Box::new(request),
+            outcome,
+            response: Box::new(response),
+        },
         state_after: state_after.map(Box::new),
     };
     let payload_sha256 = sha256_hex(&canonical_json(&payload)?);
@@ -145,6 +176,50 @@ pub fn build_event(
     };
     validate_event(&event, sequence, previous_record_sha256)?;
     Ok(event)
+}
+
+pub fn append_lifecycle_event(
+    journal: &Path,
+    head: &Path,
+    occurred_at_unix_seconds: u64,
+    cause_request_id: String,
+    cause_request_sha256: String,
+    transition: LifecycleEvent,
+    state_after: DurableCampaignState,
+) -> Result<Box<EventEnvelope>, EventError> {
+    let existing = load_existing(journal, head)?;
+    let sequence = existing.as_ref().map_or(1, |report| report.records + 1);
+    let previous = existing
+        .as_ref()
+        .map_or(GENESIS_HASH, |report| report.head_sha256.as_str());
+    if existing.as_ref().is_some_and(|report| {
+        report.campaign_id != state_after.identity.campaign_id
+            || occurred_at_unix_seconds < report.last_occurred_at_unix_seconds
+    }) {
+        return Err(EventError::Binding { sequence });
+    }
+    let payload = SupervisorEventPayload {
+        campaign_id: state_after.identity.campaign_id.clone(),
+        occurred_at_unix_seconds,
+        event: SupervisorEventKind::Lifecycle {
+            cause_request_id,
+            cause_request_sha256,
+            transition,
+        },
+        state_after: Some(Box::new(state_after)),
+    };
+    let payload_sha256 = sha256_hex(&canonical_json(&payload)?);
+    let event = EventEnvelope {
+        schema_version: 1,
+        sequence,
+        previous_record_sha256: previous.to_owned(),
+        record_sha256: event_record_hash(sequence, previous, &payload_sha256)?,
+        payload,
+        payload_sha256,
+    };
+    validate_event(&event, sequence, previous)?;
+    append_event(journal, head, &event, existing.as_ref())?;
+    Ok(Box::new(event))
 }
 
 pub fn verify_event_journal(
@@ -234,25 +309,37 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
         } else {
             campaign_id = Some(event.payload.campaign_id.clone());
         }
-        if let Some(existing) = replay_index.get(&event.payload.request.request_id) {
-            let existing: &ReplayEntry = existing;
-            if existing.request_sha256 != event.payload.request_sha256 {
+        if let SupervisorEventKind::Request {
+            request_sha256,
+            request,
+            response,
+            ..
+        } = &event.payload.event
+        {
+            if replay_index.contains_key(&request.request_id) {
                 return Err(EventError::ReplayConflict {
-                    request_id: event.payload.request.request_id.clone(),
+                    request_id: request.request_id.clone(),
                 });
             }
-            return Err(EventError::ReplayConflict {
-                request_id: event.payload.request.request_id.clone(),
-            });
+            replay_index.insert(
+                request.request_id.clone(),
+                ReplayEntry {
+                    request_sha256: request_sha256.clone(),
+                    response: response.as_ref().clone(),
+                },
+            );
         }
-        replay_index.insert(
-            event.payload.request.request_id.clone(),
-            ReplayEntry {
-                request_sha256: event.payload.request_sha256.clone(),
-                response: event.payload.response.clone(),
-            },
-        );
         if let Some(state) = event.payload.state_after.as_deref() {
+            if let Some(previous_state) = &latest_state_after {
+                let previous_state: &DurableCampaignState = previous_state;
+                if state.identity != previous_state.identity
+                    || state.revision != previous_state.revision.saturating_add(1)
+                {
+                    return Err(EventError::Binding {
+                        sequence: event.sequence,
+                    });
+                }
+            }
             latest_state_after = Some(state.clone());
         }
         last_time = event.payload.occurred_at_unix_seconds;
@@ -281,14 +368,8 @@ pub fn append_or_replay(
     state_after: Option<DurableCampaignState>,
 ) -> Result<EventAppend, EventError> {
     let digest = request_sha256(&request)?;
-    let existing = match fs::symlink_metadata(journal) {
-        Ok(_) => {
-            let report = verify_event_journal(journal, head)?;
-            if report.recovered_incomplete_trailing_bytes != 0 {
-                return Err(EventError::TornTailRequiresRecovery {
-                    bytes: report.recovered_incomplete_trailing_bytes,
-                });
-            }
+    let existing = match load_existing(journal, head)? {
+        Some(report) => {
             if report.campaign_id != request.campaign_id {
                 return Err(EventError::CampaignDrift {
                     sequence: report.records + 1,
@@ -305,8 +386,7 @@ pub fn append_or_replay(
             }
             Some(report)
         }
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-        Err(error) => return Err(error.into()),
+        None => None,
     };
     let sequence = existing.as_ref().map_or(1, |report| report.records + 1);
     let previous = existing
@@ -329,6 +409,25 @@ pub fn append_or_replay(
     )?;
     append_event(journal, head, &event, existing.as_ref())?;
     Ok(EventAppend::Appended(Box::new(event)))
+}
+
+fn load_existing(
+    journal: &Path,
+    head: &Path,
+) -> Result<Option<EventVerificationReport>, EventError> {
+    match fs::symlink_metadata(journal) {
+        Ok(_) => {
+            let report = verify_event_journal(journal, head)?;
+            if report.recovered_incomplete_trailing_bytes != 0 {
+                return Err(EventError::TornTailRequiresRecovery {
+                    bytes: report.recovered_incomplete_trailing_bytes,
+                });
+            }
+            Ok(Some(report))
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error.into()),
+    }
 }
 
 fn append_event(
@@ -374,7 +473,6 @@ fn validate_event(
     }
     for (field, value) in [
         ("previous_record_sha256", &event.previous_record_sha256),
-        ("request_sha256", &event.payload.request_sha256),
         ("payload_sha256", &event.payload_sha256),
         ("record_sha256", &event.record_sha256),
     ] {
@@ -390,57 +488,18 @@ fn validate_event(
             sequence: event.sequence,
         });
     }
-    if event.payload.campaign_id != event.payload.request.campaign_id
-        || event.payload.response.body.request_id != event.payload.request.request_id
-        || event.payload.response.body.campaign_id != event.payload.request.campaign_id
-        || event.payload.request.operation == Operation::Verify
-        || verify_response(&event.payload.response).is_err()
-    {
-        return Err(EventError::Binding {
-            sequence: event.sequence,
-        });
-    }
-    if (event.payload.outcome == EventOutcome::Accepted) != event.payload.response.body.ok {
-        return Err(EventError::Outcome {
-            sequence: event.sequence,
-        });
-    }
-    match (
-        event.payload.request.operation,
-        event.payload.outcome,
-        event.payload.state_after.as_deref(),
-    ) {
-        (Operation::Attach, EventOutcome::Accepted, Some(state))
-            if state.identity.campaign_id == event.payload.campaign_id
-                && state.identity.manifest_sha256 == event.payload.request.manifest_sha256
-                && state.revision
-                    == event
-                        .payload
-                        .request
-                        .expected_state_revision
-                        .saturating_add(1)
-                && state.revision == event.payload.response.body.state_revision
-                && state.controller_lease.as_ref().is_some_and(|lease| {
-                    lease.holder_request_id == event.payload.request.request_id
-                        && lease.authorization_sha256
-                            == event.payload.request.controller.authorization_sha256
-                }) => {}
-        (Operation::Attach, EventOutcome::Accepted, _) => {
-            return Err(EventError::Binding {
-                sequence: event.sequence,
-            });
-        }
-        (_, EventOutcome::Rejected, None) | (Operation::Status, EventOutcome::Accepted, None) => {}
-        _ => {
-            return Err(EventError::Binding {
-                sequence: event.sequence,
-            });
-        }
-    }
-    if request_sha256(&event.payload.request)? != event.payload.request_sha256 {
-        return Err(EventError::Binding {
-            sequence: event.sequence,
-        });
+    match &event.payload.event {
+        SupervisorEventKind::Request {
+            request_sha256: digest,
+            request,
+            outcome,
+            response,
+        } => validate_request_event(event, digest, request.as_ref(), *outcome, response.as_ref())?,
+        SupervisorEventKind::Lifecycle {
+            cause_request_id,
+            cause_request_sha256,
+            transition,
+        } => validate_lifecycle_event(event, cause_request_id, cause_request_sha256, *transition)?,
     }
     let expected_payload = sha256_hex(&canonical_json(&event.payload)?);
     if expected_payload != event.payload_sha256 {
@@ -455,6 +514,119 @@ fn validate_event(
     )?;
     if expected_record != event.record_sha256 {
         return Err(EventError::RecordHash {
+            sequence: event.sequence,
+        });
+    }
+    Ok(())
+}
+
+fn validate_request_event(
+    event: &EventEnvelope,
+    digest: &str,
+    request: &Request,
+    outcome: EventOutcome,
+    response: &Response,
+) -> Result<(), EventError> {
+    if !is_hash(digest)
+        || event.payload.campaign_id != request.campaign_id
+        || response.body.request_id != request.request_id
+        || response.body.campaign_id != request.campaign_id
+        || request.operation == Operation::Verify
+        || verify_response(response).is_err()
+        || request_sha256(request)? != digest
+    {
+        return Err(EventError::Binding {
+            sequence: event.sequence,
+        });
+    }
+    if (outcome == EventOutcome::Accepted) != response.body.ok {
+        return Err(EventError::Outcome {
+            sequence: event.sequence,
+        });
+    }
+    match (
+        request.operation,
+        outcome,
+        event.payload.state_after.as_deref(),
+    ) {
+        (Operation::Attach, EventOutcome::Accepted, Some(state))
+            if state.identity.campaign_id == event.payload.campaign_id
+                && state.identity.manifest_sha256 == request.manifest_sha256
+                && state.revision == request.expected_state_revision.saturating_add(1)
+                && state.revision == response.body.state_revision
+                && state.controller_lease.as_ref().is_some_and(|lease| {
+                    lease.holder_request_id == request.request_id
+                        && lease.authorization_sha256 == request.controller.authorization_sha256
+                }) => {}
+        (Operation::Attach, EventOutcome::Accepted, _) => {
+            return Err(EventError::Binding {
+                sequence: event.sequence,
+            });
+        }
+        (_, EventOutcome::Rejected, None) | (Operation::Status, EventOutcome::Accepted, None) => {}
+        _ => {
+            return Err(EventError::Binding {
+                sequence: event.sequence,
+            });
+        }
+    }
+    Ok(())
+}
+
+fn validate_lifecycle_event(
+    event: &EventEnvelope,
+    cause_request_id: &str,
+    cause_request_sha256: &str,
+    transition: LifecycleEvent,
+) -> Result<(), EventError> {
+    let Some(state) = event.payload.state_after.as_deref() else {
+        return Err(EventError::Binding {
+            sequence: event.sequence,
+        });
+    };
+    let expected_state = match transition {
+        LifecycleEvent::Prepared => crate::state::CampaignState::Prepared,
+        LifecycleEvent::I74Starting => crate::state::CampaignState::I74Starting,
+        LifecycleEvent::I74Started | LifecycleEvent::I74Adopted => {
+            crate::state::CampaignState::I74Running
+        }
+        LifecycleEvent::I74SpawnAbsent | LifecycleEvent::C74SpawnAbsent => {
+            crate::state::CampaignState::FailedIncomplete
+        }
+        LifecycleEvent::I74SpawnMismatch | LifecycleEvent::C74SpawnMismatch => {
+            crate::state::CampaignState::CorruptQuarantined
+        }
+        LifecycleEvent::C74Starting => crate::state::CampaignState::C74Starting,
+        LifecycleEvent::C74Started | LifecycleEvent::C74Adopted => {
+            crate::state::CampaignState::C74Running
+        }
+    };
+    if cause_request_id.is_empty()
+        || cause_request_id.len() > 128
+        || !is_hash(cause_request_sha256)
+        || state.identity.campaign_id != event.payload.campaign_id
+        || state.campaign_state != expected_state
+        || (transition == LifecycleEvent::Prepared && state.revision != 0)
+        || (transition != LifecycleEvent::Prepared && state.revision == 0)
+        || (matches!(
+            transition,
+            LifecycleEvent::Prepared
+                | LifecycleEvent::I74Starting
+                | LifecycleEvent::C74Starting
+                | LifecycleEvent::I74SpawnAbsent
+                | LifecycleEvent::C74SpawnAbsent
+                | LifecycleEvent::I74SpawnMismatch
+                | LifecycleEvent::C74SpawnMismatch
+        ) && (state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some()))
+        || (matches!(
+            transition,
+            LifecycleEvent::I74Started
+                | LifecycleEvent::I74Adopted
+                | LifecycleEvent::C74Started
+                | LifecycleEvent::C74Adopted
+        ) && (state.harness.is_none() || state.daemon.is_none() || state.checkpoint.is_some()))
+    {
+        return Err(EventError::Binding {
             sequence: event.sequence,
         });
     }

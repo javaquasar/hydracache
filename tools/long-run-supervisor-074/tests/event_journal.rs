@@ -1,6 +1,7 @@
 use hydracache_long_run_supervisor_074::event::{
-    append_or_replay, build_event, request_sha256, verify_event_bytes, verify_event_journal,
-    EventAppend, EventError, EventOutcome,
+    append_lifecycle_event, append_or_replay, build_event, request_sha256, verify_event_bytes,
+    verify_event_journal, EventAppend, EventError, EventOutcome, LifecycleEvent, EVENT_HEAD_NAME,
+    EVENT_JOURNAL_NAME,
 };
 use hydracache_long_run_supervisor_074::protocol::{
     sign_response, ControllerIdentity, Operation, Request, ResponseBody,
@@ -344,6 +345,50 @@ fn rejects_invalid_response_binding_and_outcome() {
         Err(EventError::Outcome { .. })
     ));
     assert_eq!(request_sha256(&original).unwrap().len(), 64);
+}
+
+#[test]
+fn lifecycle_transitions_share_the_chain_without_consuming_request_replay_identity() {
+    let directory = tempdir().unwrap();
+    let journal = directory.path().join(EVENT_JOURNAL_NAME);
+    let head = directory.path().join(EVENT_HEAD_NAME);
+    let cause = request("123e4567-e89b-42d3-a456-426614174000", 0);
+    let cause_sha256 = request_sha256(&cause).unwrap();
+    let mut prepared = state_after(&cause, 0);
+    prepared.campaign_state = CampaignState::Prepared;
+    prepared.harness = None;
+    prepared.daemon = None;
+    prepared.checkpoint = None;
+    prepared.controller_lease = None;
+    append_lifecycle_event(
+        &journal,
+        &head,
+        10,
+        cause.request_id.clone(),
+        cause_sha256.clone(),
+        LifecycleEvent::Prepared,
+        prepared.clone(),
+    )
+    .unwrap();
+
+    let mut starting = prepared;
+    starting.revision = 1;
+    starting.campaign_state = CampaignState::I74Starting;
+    append_lifecycle_event(
+        &journal,
+        &head,
+        11,
+        cause.request_id.clone(),
+        cause_sha256,
+        LifecycleEvent::I74Starting,
+        starting.clone(),
+    )
+    .unwrap();
+
+    let report = verify_event_journal(&journal, &head).unwrap();
+    assert_eq!(report.records, 2);
+    assert!(report.replay_index.is_empty());
+    assert_eq!(report.latest_state_after, Some(starting));
 }
 
 use std::io::Write;
