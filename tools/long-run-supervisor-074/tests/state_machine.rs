@@ -124,6 +124,17 @@ fn attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift() {
 }
 
 #[test]
+fn future_useful_progress_timestamp_cannot_bypass_staleness() {
+    let mut state = state();
+    let mut request = request(&state);
+    state.checkpoint.useful_progress_unix_seconds = request.now_unix_seconds + 1;
+    request.checkpoint = state.checkpoint.clone();
+    let decision = evaluate_attach(&state, &request, 180);
+    assert!(!decision.admitted);
+    assert!(decision.failures.contains(&AttachFailure::CheckpointDrift));
+}
+
+#[test]
 fn state_machine_cannot_skip_roles_or_restart_terminal_work() {
     let state = transition(CampaignState::Prepared, Transition::StartI74).unwrap();
     let state = transition(state, Transition::MarkI74Running).unwrap();

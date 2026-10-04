@@ -230,7 +230,9 @@ pub fn evaluate_attach(
     if request.harness != state.harness || request.daemon != state.daemon {
         failures.push(AttachFailure::ProcessIdentityDrift);
     }
-    if request.checkpoint != state.checkpoint {
+    if request.checkpoint != state.checkpoint
+        || state.checkpoint.useful_progress_unix_seconds > request.now_unix_seconds
+    {
         failures.push(AttachFailure::CheckpointDrift);
     }
     if request.now_unix_seconds
