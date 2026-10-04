@@ -67,6 +67,12 @@ operation, campaign, manifest, repository, run and actor identities and enforces
 maximum lifetime with bounded clock skew. The production verification key remains explicitly
 `UNRESOLVED`; local test keys cannot authorize a campaign and release admission stays closed.
 
+The Rust supervisor foundation also independently parses the create-new start manifest. It
+requires canonical strict JSON, binds the raw manifest digest, campaign and repository to the
+request, freezes timing/limit fields, rejects plaintext-looking secret identifiers, and refuses
+expired leases. The broader design's installed-binary, argv/environment and per-phase fields are
+not implemented yet, so `full_design_manifest_fields_complete` remains false.
+
 `scripts/perf/performance_long_run_074.py --prepare` builds only a create-new start manifest. It
 uses the frozen campaign-id component order, removes the raw nonce after deriving its digest,
 rejects unknown, floating-point and secret-bearing fields, fsyncs both files, and has no process
