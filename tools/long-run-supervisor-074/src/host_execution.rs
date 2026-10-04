@@ -1,3 +1,4 @@
+use crate::state::{CampaignState, DurableCampaignState};
 use fs2::FileExt;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
@@ -83,6 +84,28 @@ impl HostExecutionClaim {
 
     pub fn campaign_root(&self) -> &Path {
         &self.root
+    }
+
+    pub fn release_after_complete_seal(
+        &self,
+        state: &DurableCampaignState,
+    ) -> Result<(), HostExecutionError> {
+        if state.campaign_state != CampaignState::CompleteSealed
+            || state.identity.campaign_id != self.campaign_id
+            || state.harness.is_some()
+            || state.daemon.is_some()
+            || state.checkpoint.is_some()
+            || state.controller_lease.is_some()
+        {
+            return Err(HostExecutionError::Path);
+        }
+        let marker = self.root.join(ACTIVE_CAMPAIGN_NAME);
+        if read_marker(&marker)? != self.campaign_id {
+            return Err(HostExecutionError::Path);
+        }
+        fs::remove_file(marker)?;
+        sync_directory(&self.root)?;
+        Ok(())
     }
 }
 
