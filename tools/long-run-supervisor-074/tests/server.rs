@@ -10,8 +10,8 @@ use hydracache_long_run_supervisor_074::auth::{
 use hydracache_long_run_supervisor_074::client::exchange;
 use hydracache_long_run_supervisor_074::config::ServerConfig;
 use hydracache_long_run_supervisor_074::event::{
-    append_lifecycle_event, append_or_replay, request_sha256, EventOutcome, LifecycleEvent,
-    EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
+    append_lifecycle_event, append_or_replay, request_sha256, verify_event_journal, EventOutcome,
+    LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
 };
 use hydracache_long_run_supervisor_074::host_execution::ACTIVE_CAMPAIGN_NAME;
 use hydracache_long_run_supervisor_074::host_receipt::{
@@ -579,6 +579,7 @@ fn prepare_i74_terminal_evidence(
     let wire: WireRequest = serde_json::from_slice(seal_packet).unwrap();
     let request = wire.request;
     let lock = CampaignLock::acquire(campaign_root, &request.campaign_id).unwrap();
+    let now = durable_event_time(&lock, now);
     let mut next = lock.read().unwrap();
     assert_eq!(next.revision, 2);
     assert_eq!(next.campaign_state, CampaignState::I74Running);
@@ -729,6 +730,7 @@ fn seal_i74_for_c74(campaign_root: &Path, i74_packet: &[u8], now: u64) {
     let request: WireRequest = serde_json::from_slice(i74_packet).unwrap();
     let digest = request_sha256(&request.request).unwrap();
     let lock = CampaignLock::acquire(campaign_root, &request.request.campaign_id).unwrap();
+    let now = durable_event_time(&lock, now);
     let mut terminal = lock.read().unwrap();
     assert_eq!(terminal.revision, 2);
     terminal.revision = 3;
@@ -762,6 +764,16 @@ fn seal_i74_for_c74(campaign_root: &Path, i74_packet: &[u8], now: u64) {
     )
     .unwrap();
     lock.compare_and_swap(3, &sealed).unwrap();
+}
+
+fn durable_event_time(lock: &CampaignLock, proposed: u64) -> u64 {
+    verify_event_journal(
+        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+    )
+    .map_or(proposed, |report| {
+        proposed.max(report.last_occurred_at_unix_seconds)
+    })
 }
 
 #[test]
