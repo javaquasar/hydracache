@@ -26,6 +26,7 @@ pub mod protocol;
 pub mod server;
 #[cfg(target_os = "linux")]
 pub mod service;
+pub mod spawn;
 pub mod start_evidence;
 pub mod state;
 pub mod state_store;
