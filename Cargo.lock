@@ -2477,6 +2477,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-performance-integrated-074"
+version = "0.0.0"
+dependencies = [
+ "hydracache-long-run-supervisor-074",
+ "serde",
+ "tempfile",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hydracache-post-publish-consumer"
 version = "0.73.0"
 dependencies = [

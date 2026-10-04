@@ -1,0 +1,13 @@
+[package]
+name = "hydracache-performance-integrated-074"
+version = "0.0.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+hydracache-long-run-supervisor-074 = { path = "../long-run-supervisor-074" }
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

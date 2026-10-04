@@ -35,6 +35,7 @@ members = [
     "fuzz",
     "tests/post-publish-consumer",
     "tools/long-run-supervisor-074",
+    "tools/performance-integrated-074",
 ]
 resolver = "2"
 
