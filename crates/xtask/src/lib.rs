@@ -27,6 +27,7 @@ pub mod gated_tests;
 pub mod host_attestation;
 pub mod imap_contract;
 pub mod imap_distributed_correctness;
+pub mod imap_foundation_component_proofs;
 pub mod imap_foundation_evidence;
 pub mod imap_foundation_generate;
 pub mod imap_hazelcast_source;

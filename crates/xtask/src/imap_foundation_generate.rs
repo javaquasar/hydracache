@@ -1,3 +1,4 @@
+use crate::imap_foundation_component_proofs::{execute_component_proof, ComponentProofKind};
 use crate::imap_foundation_evidence;
 use crate::imap_value_plane_model::{execute_for_test, git_head, hex_digest};
 use hydracache_cluster_testkit::distributed_value_plane_075::{
@@ -47,12 +48,18 @@ pub fn generate_at_root(
     let fault = fault_receipt(&source_sha, seed)?;
     let linear = linearizability_receipt(&source_sha)?;
     let rpo = rpo_receipt(&source_sha)?;
-    let receipts = [
+    let mut receipts = vec![
         ("authority-model.json", model),
         ("fault-schedule.json", fault),
         ("linearizability.json", linear),
         ("rpo-rto.json", rpo),
     ];
+    for kind in ComponentProofKind::ALL {
+        receipts.push((
+            kind.file_name(),
+            component_receipt(&source_sha, seed, kind)?,
+        ));
+    }
     let mut paths = Vec::new();
     for (name, receipt) in receipts {
         let path = output.join(name);
@@ -68,6 +75,24 @@ pub fn generate_at_root(
         return Err(format!("generated receipt set is invalid: {problems:?}").into());
     }
     Ok(paths)
+}
+
+fn component_receipt(
+    source_sha: &str,
+    seed: u64,
+    kind: ComponentProofKind,
+) -> Result<Value, Box<dyn Error>> {
+    let proof = execute_component_proof(kind, seed)?;
+    Ok(json!({
+        "schema": kind.schema(),
+        "release": RELEASE,
+        "source_sha": source_sha,
+        "kind": kind.kind(),
+        "seed": proof.seed,
+        "steps": proof.steps,
+        "proof_sha256": proof.proof_sha256,
+        "result": "passed"
+    }))
 }
 
 fn fault_receipt(source_sha: &str, seed: u64) -> Result<Value, Box<dyn Error>> {

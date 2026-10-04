@@ -13,10 +13,12 @@ pub mod reference_model;
 pub mod value_plane_ack_075;
 pub mod value_plane_admission_075;
 pub mod value_plane_bulk_075;
+pub mod value_plane_explorer_075;
 pub mod value_plane_history_075;
 pub mod value_plane_listener_075;
 pub mod value_plane_model_075;
 pub mod value_plane_security_075;
+pub mod value_plane_surface_075;
 pub mod value_plane_transfer_075;
 
 use std::collections::{BTreeMap, VecDeque};

@@ -154,7 +154,7 @@ fn print_usage() {
          cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
          cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
          cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \
-         cargo xtask imap-foundation-evidence-generate --release 0.75 --output <dir> [--seed <u64>]  # execute local model/fault/history/RPO probes and emit four receipts\n  \
+         cargo xtask imap-foundation-evidence-generate --release 0.75 --output <dir> [--seed <u64>]  # execute local model/fault/history/RPO/transfer/listener/bulk/lifecycle probes and emit eight receipts\n  \
          cargo xtask imap-hazelcast-source-check --release 0.75 [--upstream <path>]  # validate the pinned Hazelcast provenance map and optional checkout hashes\n  \
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \

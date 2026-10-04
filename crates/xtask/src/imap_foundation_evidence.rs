@@ -1,3 +1,4 @@
+use crate::imap_foundation_component_proofs::{execute_component_proof, ComponentProofKind};
 use crate::imap_value_plane_model::{
     git_head, hex_digest, sha256_file, AuthorityModelReceipt, MODEL_SOURCE, RECEIPT_SCHEMA,
 };
@@ -17,7 +18,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const RELEASE: &str = "0.75";
-const REQUIRED_SCHEMAS: [(&str, &str); 4] = [
+const REQUIRED_SCHEMAS: [(&str, &str); 8] = [
     ("authority_model", "hydracache.imap.model-receipt.v1"),
     (
         "fault_schedule",
@@ -28,6 +29,10 @@ const REQUIRED_SCHEMAS: [(&str, &str); 4] = [
         "hydracache.imap.linearizability-receipt.v1",
     ),
     ("rpo_rto", "hydracache.imap.rpo-rto-receipt.v1"),
+    ("transfer", "hydracache.imap.transfer-receipt.v1"),
+    ("listener", "hydracache.imap.listener-receipt.v1"),
+    ("bulk", "hydracache.imap.bulk-receipt.v1"),
+    ("lifecycle", "hydracache.imap.lifecycle-receipt.v1"),
 ];
 
 #[derive(Debug, Deserialize)]
@@ -91,6 +96,10 @@ pub fn check_receipt_set_at_root(
         "fault-schedule.json",
         "linearizability.json",
         "rpo-rto.json",
+        "transfer.json",
+        "listener.json",
+        "bulk.json",
+        "lifecycle.json",
     ]
     .into_iter()
     .collect::<BTreeSet<_>>();
@@ -108,7 +117,7 @@ pub fn check_receipt_set_at_root(
         .collect::<BTreeSet<_>>();
     if actual_names != expected_files {
         problems.push(format!(
-            "receipt set must contain exactly the four canonical JSON files; found {actual_names:?}"
+            "receipt set must contain exactly the eight canonical JSON files; found {actual_names:?}"
         ));
     }
     let mut schema_ids = BTreeSet::new();
@@ -182,8 +191,9 @@ pub fn check_at_root(
         .collect::<BTreeSet<_>>();
     let required = REQUIRED_SCHEMAS.into_iter().collect::<BTreeSet<_>>();
     if actual != required {
-        problems
-            .push("foundation evidence registry must contain exactly four required schemas".into());
+        problems.push(
+            "foundation evidence registry must contain exactly eight required schemas".into(),
+        );
     }
     for entry in &contract.schemas {
         if entry.required_test_id.trim().is_empty() {
@@ -260,7 +270,45 @@ fn validate_receipt(
         "hydracache.imap.linearizability-receipt.v1" => {
             validate_array_checksum(&receipt, "history", "history_sha256", problems)
         }
+        schema if ComponentProofKind::from_schema(schema).is_some() => {
+            validate_component_proof(&receipt, problems)?
+        }
         _ => {}
+    }
+    Ok(())
+}
+
+fn validate_component_proof(
+    receipt: &Value,
+    problems: &mut Vec<String>,
+) -> Result<(), Box<dyn Error>> {
+    let Some(schema) = receipt.get("schema").and_then(Value::as_str) else {
+        return Ok(());
+    };
+    let Some(kind) = ComponentProofKind::from_schema(schema) else {
+        return Ok(());
+    };
+    let Some(seed) = receipt.get("seed").and_then(Value::as_u64) else {
+        return Ok(());
+    };
+    let expected = execute_component_proof(kind, seed)?;
+    if receipt.get("kind").and_then(Value::as_str) != Some(kind.kind()) {
+        problems.push(format!(
+            "{} receipt kind does not match schema",
+            kind.kind()
+        ));
+    }
+    if receipt.get("steps").and_then(Value::as_u64) != Some(expected.steps as u64) {
+        problems.push(format!(
+            "{} receipt step count does not replay",
+            kind.kind()
+        ));
+    }
+    if receipt.get("proof_sha256").and_then(Value::as_str) != Some(expected.proof_sha256.as_str()) {
+        problems.push(format!(
+            "{} receipt proof fingerprint does not replay from seed",
+            kind.kind()
+        ));
     }
     Ok(())
 }

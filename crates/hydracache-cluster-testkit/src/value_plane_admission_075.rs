@@ -1,6 +1,7 @@
 //! Provisional, deterministic 0.75 fairness and namespace-lifecycle reference models.
 
 use std::collections::{BTreeMap, VecDeque};
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AdmissionLimits {
@@ -180,6 +181,14 @@ pub enum NamespaceError {
     InvalidBound(&'static str),
     InvalidGeneration,
 }
+
+impl fmt::Display for NamespaceError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for NamespaceError {}
 
 /// Generation-fenced delete/reclaim/recreate state machine.
 #[derive(Debug, Clone, PartialEq, Eq)]

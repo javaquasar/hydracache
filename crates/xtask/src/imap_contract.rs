@@ -492,6 +492,14 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "cross_language_reference_key_codec",
         "local_distributed_correctness_gate",
         "seeded_stateful_chaos_campaign",
+        "bounded_replica_ack_tracker",
+        "resumable_partition_transfer_model",
+        "cluster_listener_watermark_model",
+        "partition_grouped_bulk_retry_model",
+        "complete_namespace_lifecycle_model",
+        "composite_authority_explorer_and_shrinker",
+        "cross_surface_reference_projection",
+        "component_proof_receipts",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(

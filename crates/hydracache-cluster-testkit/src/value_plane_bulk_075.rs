@@ -1,6 +1,7 @@
 //! Bounded partition-grouped bulk execution model with stable partial retry receipts.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt;
 
 use crate::value_plane_model_075::{CanonicalMapKey, MutationIdentity};
 
@@ -66,6 +67,14 @@ pub enum BulkError {
     GenerationMustAdvance,
     ConflictingCompletion,
 }
+
+impl fmt::Display for BulkError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for BulkError {}
 
 #[derive(Debug, Clone)]
 struct ItemState {

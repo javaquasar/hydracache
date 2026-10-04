@@ -6,7 +6,11 @@
     {"kind": "authority_model", "id": "hydracache.imap.model-receipt.v1", "path": "schemas/model-receipt.schema.json", "required_test_id": "HC-IMAP-075-MODEL-RECEIPT"},
     {"kind": "fault_schedule", "id": "hydracache.imap.fault-schedule-receipt.v1", "path": "schemas/fault-schedule-receipt.schema.json", "required_test_id": "HC-IMAP-075-FAULT-RECEIPT"},
     {"kind": "linearizability", "id": "hydracache.imap.linearizability-receipt.v1", "path": "schemas/linearizability-receipt.schema.json", "required_test_id": "HC-IMAP-075-HISTORY-RECEIPT"},
-    {"kind": "rpo_rto", "id": "hydracache.imap.rpo-rto-receipt.v1", "path": "schemas/rpo-rto-receipt.schema.json", "required_test_id": "HC-IMAP-075-RPO-RTO-RECEIPT"}
+    {"kind": "rpo_rto", "id": "hydracache.imap.rpo-rto-receipt.v1", "path": "schemas/rpo-rto-receipt.schema.json", "required_test_id": "HC-IMAP-075-RPO-RTO-RECEIPT"},
+    {"kind": "transfer", "id": "hydracache.imap.transfer-receipt.v1", "path": "schemas/transfer-receipt.schema.json", "required_test_id": "HC-IMAP-075-TRANSFER-RECEIPT"},
+    {"kind": "listener", "id": "hydracache.imap.listener-receipt.v1", "path": "schemas/listener-receipt.schema.json", "required_test_id": "HC-IMAP-075-LISTENER-RECEIPT"},
+    {"kind": "bulk", "id": "hydracache.imap.bulk-receipt.v1", "path": "schemas/bulk-receipt.schema.json", "required_test_id": "HC-IMAP-075-BULK-RECEIPT"},
+    {"kind": "lifecycle", "id": "hydracache.imap.lifecycle-receipt.v1", "path": "schemas/lifecycle-receipt.schema.json", "required_test_id": "HC-IMAP-075-LIFECYCLE-RECEIPT"}
   ],
   "admission": "structural_only_until_0_74_published",
   "production_capability": "disabled_fail_closed"

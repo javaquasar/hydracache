@@ -1,6 +1,7 @@
 //! Partition-watermarked, gap-visible listener model for provisional 0.75 proofs.
 
 use std::collections::{BTreeMap, VecDeque};
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ListenerBounds {
@@ -39,6 +40,14 @@ pub enum ListenerError {
     RepairNotRequired,
     RepairBehindWatermark,
 }
+
+impl fmt::Display for ListenerError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for ListenerError {}
 
 #[derive(Debug, Clone)]
 struct PartitionCursor {

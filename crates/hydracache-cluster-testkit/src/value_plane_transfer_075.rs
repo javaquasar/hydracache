@@ -1,6 +1,7 @@
 //! Bounded resumable partition-transfer state machine for provisional 0.75 proofs.
 
 use std::collections::BTreeMap;
+use std::fmt;
 
 use sha2::{Digest, Sha256};
 
@@ -56,6 +57,14 @@ pub enum TransferError {
     EpochMustAdvance,
     AlreadyCommitted,
 }
+
+impl fmt::Display for TransferError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for TransferError {}
 
 #[derive(Debug, Clone)]
 pub struct PartitionTransfer {
