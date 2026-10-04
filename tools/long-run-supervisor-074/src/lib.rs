@@ -10,6 +10,8 @@ pub mod archive;
 pub mod auth;
 pub mod manifest;
 pub mod protocol;
+#[cfg(target_os = "linux")]
+pub mod service;
 pub mod state;
 pub mod state_store;
 pub mod watchdog;

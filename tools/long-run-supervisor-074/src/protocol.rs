@@ -1,3 +1,4 @@
+use crate::auth::SignedAuthorization;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -40,6 +41,13 @@ pub struct Request {
     pub controller: ControllerIdentity,
     pub abort_reason: Option<String>,
     pub approval_nonce_sha256: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WireRequest {
+    pub request: Request,
+    pub authorization: Option<SignedAuthorization>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -89,6 +97,27 @@ pub fn parse_request(packet: &[u8]) -> Result<Request, ProtocolError> {
         .map_err(|error| ProtocolError::Json(error.to_string()))?;
     validate_request(&request)?;
     Ok(request)
+}
+
+pub fn parse_wire_request(packet: &[u8]) -> Result<WireRequest, ProtocolError> {
+    if packet.is_empty() || packet.len() > MAX_PACKET_BYTES {
+        return Err(ProtocolError::Size);
+    }
+    let mut deserializer = serde_json::Deserializer::from_slice(packet);
+    let wire = WireRequest::deserialize(&mut deserializer)
+        .map_err(|error| ProtocolError::Json(error.to_string()))?;
+    deserializer
+        .end()
+        .map_err(|error| ProtocolError::Json(error.to_string()))?;
+    validate_request(&wire.request)?;
+    let authorization_required = matches!(
+        wire.request.operation,
+        Operation::Start | Operation::Attach | Operation::Seal | Operation::Abort
+    );
+    if authorization_required != wire.authorization.is_some() {
+        return Err(ProtocolError::OperationFields);
+    }
+    Ok(wire)
 }
 
 pub fn validate_request(request: &Request) -> Result<(), ProtocolError> {

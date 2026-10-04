@@ -109,6 +109,10 @@ pub fn canonical_message(body: &AuthorizationBody) -> Result<Vec<u8>, Authorizat
     Ok(message)
 }
 
+pub fn canonical_document(document: &SignedAuthorization) -> Result<Vec<u8>, AuthorizationError> {
+    serde_json::to_vec(document).map_err(|_| AuthorizationError::Document)
+}
+
 fn decode_exact<const N: usize>(value: &str) -> Option<[u8; N]> {
     if value.len() != N * 2 {
         return None;

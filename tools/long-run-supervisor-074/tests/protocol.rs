@@ -1,5 +1,6 @@
 use hydracache_long_run_supervisor_074::protocol::{
-    parse_request, sign_response, verify_response, ProtocolError, ResponseBody, MAX_PACKET_BYTES,
+    parse_request, parse_wire_request, sign_response, verify_response, ProtocolError, ResponseBody,
+    MAX_PACKET_BYTES,
 };
 use serde_json::json;
 
@@ -22,6 +23,41 @@ fn request(operation: &str) -> serde_json::Value {
         "abort_reason": if operation == "abort" { Some("operator-request") } else { None },
         "approval_nonce_sha256": if operation == "abort" { Some("d".repeat(64)) } else { None }
     })
+}
+
+#[test]
+fn wire_envelope_requires_authorization_only_for_mutating_operations() {
+    let status = json!({"request": request("status"), "authorization": null});
+    assert!(parse_wire_request(&serde_json::to_vec(&status).unwrap()).is_ok());
+
+    let attach_without_authorization = json!({"request": request("attach"), "authorization": null});
+    assert_eq!(
+        parse_wire_request(&serde_json::to_vec(&attach_without_authorization).unwrap()),
+        Err(ProtocolError::OperationFields)
+    );
+
+    let unexpected = json!({
+        "request": request("status"),
+        "authorization": {
+            "body": {
+                "schema_version": 1,
+                "request_id": "123e4567-e89b-42d3-a456-426614174000",
+                "operation": "status",
+                "campaign_id": "a".repeat(64),
+                "manifest_sha256": "b".repeat(64),
+                "repository_id": 1,
+                "run_id": 2,
+                "actor_id": 3,
+                "issued_at_unix_seconds": 1,
+                "expires_at_unix_seconds": 2
+            },
+            "signature_hex": "c".repeat(128)
+        }
+    });
+    assert_eq!(
+        parse_wire_request(&serde_json::to_vec(&unexpected).unwrap()),
+        Err(ProtocolError::OperationFields)
+    );
 }
 
 #[test]
