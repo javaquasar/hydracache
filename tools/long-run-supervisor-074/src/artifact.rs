@@ -1,3 +1,4 @@
+use crate::sealed_permissions::{make_tree_read_only, verify_tree_read_only};
 use crate::{canonical_json, is_hash, sha256_hex, verify_journal, ProcessIdentity, Role};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -219,18 +220,23 @@ pub fn build_packet(
     write_new_synced(&staging.join(PACKET_MANIFEST_NAME), &packet_manifest_bytes)?;
     sync_tree_directories(&raw_directory)?;
     sync_directory(&staging)?;
+    make_tree_read_only(&staging)?;
     fs::rename(&staging, &output_directory)?;
     sync_directory(&output_parent)?;
-
-    Ok(PacketReceipt {
+    let expected = PacketReceipt {
         packet_manifest_path: output_directory.join(PACKET_MANIFEST_NAME),
-        packet_directory: output_directory,
+        packet_directory: output_directory.clone(),
         packet_manifest_sha256,
         raw_manifest_sha256,
         raw_manifest_set_sha256,
         raw_file_count: raw_files.len(),
         raw_total_bytes,
-    })
+    };
+    let verified = verify_packet(&output_directory, plan, limits)?;
+    if verified != expected {
+        return Err(ArtifactError::Contract);
+    }
+    Ok(verified)
 }
 
 pub fn verify_packet(
@@ -240,6 +246,9 @@ pub fn verify_packet(
 ) -> Result<PacketReceipt, ArtifactError> {
     validate_plan(plan, limits)?;
     let packet_directory = canonical_directory(packet_directory)?;
+    if !verify_tree_read_only(&packet_directory)? {
+        return Err(ArtifactError::File);
+    }
     verify_packet_root_entries(&packet_directory)?;
     let raw_directory = canonical_directory(&packet_directory.join("raw"))?;
     let raw_files = collect_existing_raw_files(&raw_directory, limits)?;

@@ -1,3 +1,4 @@
+use crate::sealed_permissions::{make_tree_read_only, verify_tree_read_only};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
@@ -152,9 +153,15 @@ pub fn create_deterministic_archive(
     digest.sync_all()?;
     drop(digest);
     sync_directory(&staging_output)?;
+    make_tree_read_only(&staging_output)?;
     fs::rename(&staging_output, &resolved_output)?;
     sync_directory(&output_parent)?;
-
+    verify_archive(
+        &resolved_output,
+        &archive_sha256,
+        archive_bytes,
+        limits.maximum_archive_bytes,
+    )?;
     Ok(ArchiveReceipt {
         archive_path: resolved_output.join(ARCHIVE_NAME),
         outer_digest_path: resolved_output.join(OUTER_DIGEST_NAME),
@@ -185,6 +192,9 @@ pub fn verify_archive(
         return Err(ArchiveError::Path);
     }
     let output_directory = fs::canonicalize(output_directory)?;
+    if !verify_tree_read_only(&output_directory)? {
+        return Err(ArchiveError::Changed);
+    }
     let entries = fs::read_dir(&output_directory)?
         .map(|entry| entry.map(|entry| entry.file_name()))
         .collect::<Result<std::collections::BTreeSet<_>, _>>()?;

@@ -83,6 +83,30 @@ fn archive_bytes_and_headers_are_deterministic() {
     );
     assert!(first_output.join(ARCHIVE_NAME).is_file());
     assert!(first_output.join(OUTER_DIGEST_NAME).is_file());
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        assert_eq!(
+            fs::metadata(&first_output).unwrap().permissions().mode() & 0o777,
+            0o500
+        );
+        assert_eq!(
+            fs::metadata(first_output.join(ARCHIVE_NAME))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o400
+        );
+        assert_eq!(
+            fs::metadata(first_output.join(OUTER_DIGEST_NAME))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o400
+        );
+    }
 }
 
 #[test]
@@ -99,6 +123,11 @@ fn archive_replay_verification_rejects_digest_and_extra_file_drift() {
         limits().maximum_archive_bytes,
     )
     .is_err());
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&output, fs::Permissions::from_mode(0o700)).unwrap();
+    }
     fs::write(output.join("unexpected"), b"drift").unwrap();
     assert!(verify_archive(
         &output,

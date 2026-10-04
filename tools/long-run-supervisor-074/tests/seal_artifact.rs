@@ -143,6 +143,28 @@ fn durable_seal_artifact_is_exactly_replayed_and_tamper_fails_closed() {
         archive_limits,
     )
     .unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let packet = seal_root.join(&first.packet_directory_name);
+        let archive = seal_root.join(&first.archive_directory_name);
+        assert_eq!(
+            fs::metadata(&packet).unwrap().permissions().mode() & 0o777,
+            0o500
+        );
+        assert_eq!(
+            fs::metadata(packet.join("packet-manifest.json"))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o400
+        );
+        assert_eq!(
+            fs::metadata(&archive).unwrap().permissions().mode() & 0o777,
+            0o500
+        );
+    }
     fs::remove_file(campaign.join("i74-seal-intent.json.sha256")).unwrap();
     fs::remove_file(campaign.join("i74-seal-result.json.sha256")).unwrap();
     let replay = build_or_recover_seal_artifact(
@@ -166,13 +188,15 @@ fn durable_seal_artifact_is_exactly_replayed_and_tamper_fails_closed() {
         assert!(campaign.join(name).is_file(), "missing {name}");
     }
 
-    fs::write(
-        seal_root
-            .join(&first.archive_directory_name)
-            .join(ARCHIVE_NAME),
-        b"tampered",
-    )
-    .unwrap();
+    let archive_path = seal_root
+        .join(&first.archive_directory_name)
+        .join(ARCHIVE_NAME);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&archive_path, fs::Permissions::from_mode(0o600)).unwrap();
+    }
+    fs::write(&archive_path, b"tampered").unwrap();
     assert!(build_or_recover_seal_artifact(
         &campaign,
         &seal_root,
