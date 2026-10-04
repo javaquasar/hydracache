@@ -466,13 +466,16 @@ digest breaks, identity drift and timestamp reversal. Recovery tolerates at most
 trailing JSON record; appending after that tail is forbidden until explicit recovery archives it.
 
 A separate `xtask` verifier reimplements the digest calculation instead of trusting the writer.
-It now binds each journal's byte length, raw SHA-256, record count and hash-chain head. Manifest
-disagreement, duplicate roles, parent traversal, symlink substitution and any promotable packet
-without complete I74 and C74 journals are rejected. The pure supervisor state machine separately
-proves that attach can update only controller lease and revision; host/boot, PID-start, cgroup,
-cpuset, checkpoint, lease, failure, duplicate-executor or durable-history drift all fail closed.
-Its typed 64-KiB protocol rejects unknown and duplicate fields, malformed packets and
-cross-operation fields, and exposes no arbitrary command or environment surface.
+It now validates strict packet and raw-manifest schemas, canonical campaign identity, the exact
+sorted raw file set, every file size and SHA-256, required guard evidence, role/process identities,
+and each journal's byte length, raw SHA-256, record count, first record and hash-chain head.
+Unlisted files, manifest disagreement, duplicate roles or guards, missing evidence, parent
+traversal, symlink or hardlink substitution and any promotable packet without complete I74 and C74
+journals are rejected. The pure supervisor state machine separately proves that attach can update
+only controller lease and revision; host/boot, PID-start, cgroup, cpuset, checkpoint, lease,
+failure, duplicate-executor or durable-history drift all fail closed. Its typed 64-KiB protocol
+rejects unknown and duplicate fields, malformed packets and cross-operation fields, and exposes no
+arbitrary command or environment surface.
 
 The disposable GitHub-side monitor is also implemented as a strictly read-only observer. It
 validates the full durable-state shape plus campaign and manifest identities, reports controller

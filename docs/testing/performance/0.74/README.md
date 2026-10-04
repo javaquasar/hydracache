@@ -44,9 +44,12 @@ socket authorization, process/cgroup ownership, attach leases, provisioning and 
 rehearsals remain incomplete and release admission stays closed.
 
 Offline packet verification is independently implemented in `xtask` (it does not call the
-supervisor library). The packet binds each journal's byte length, SHA-256, record count and
-hash-chain head; traversal, symlink substitution, duplicate roles, torn promotable journals and
-manifest/content drift are rejected:
+supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
+manifest identity, the exact sorted raw file set, every file size and SHA-256, required guard
+evidence, role results, process identities, and each journal's byte length, SHA-256, record count,
+first record and hash-chain head. Unlisted files, traversal, symlink or hardlink substitution,
+duplicate roles/guards, missing evidence, torn promotable journals and manifest/content drift are
+rejected:
 
 ```text
 cargo xtask long-run-campaign-check --release 0.74 --manifest <packet-manifest.json>
