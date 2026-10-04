@@ -11,6 +11,7 @@ pub mod auth;
 pub mod manifest;
 pub mod protocol;
 pub mod state;
+pub mod state_store;
 pub mod watchdog;
 
 pub const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
