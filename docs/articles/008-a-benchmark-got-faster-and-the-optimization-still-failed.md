@@ -530,11 +530,35 @@ proved expected-red behavior at clean commit `38a8117e`; PID-only/restart/lease/
 acceptance failed with the registered signature instead of being counted as an ordinary green
 test. Later commits intentionally require a fresh exact-commit canary receipt.
 
-This is deliberately not described as a completed resilient qualification system. The live Unix
-`SOCK_SEQPACKET` service, OS peer-credential and supplemental-group checks, production verification
-key, systemd process ownership, installed-file verification, provisioning, bounded diagnostics,
-live sealing orchestration and real controller-loss rehearsals still require implementation or
-Linux-host evidence. No six-hour or 24-hour 0.74 run has started.
+This was deliberately not described as a completed resilient qualification system. At that point
+the live Unix service, OS peer checks, systemd ownership, provisioning, diagnostics, sealing and
+controller-loss rehearsal were still missing. The next local slice reduced that list without
+pretending to finish it.
+
+The durable state is no longer only a pure transition model. A campaign store now holds an
+exclusive file lock, parses strict bounded `state.json`, applies revision compare-and-swap, saves
+`state.previous.json`, and replaces both snapshots through create-new temporary files, file sync,
+rename and parent-directory sync. Stale revisions and manifest-identity drift leave the current
+state byte-for-byte unchanged. A separate integrated-0.74 component writes the checkpoint chain:
+it first asks a cloned phase watchdog to admit progress, persists and syncs the record, and only
+then advances its in-memory sequence. A rejected sample therefore cannot create a gap or poison a
+retry.
+
+The socket boundary now exists as real Linux code rather than a schema test. It uses Unix
+`SOCK_SEQPACKET`, rejects empty or oversized packets, preserves message boundaries, obtains
+`SO_PEERCRED`, reads supplemental groups from the peer's `/proc` status, and removes its socket on
+shutdown only if device and inode still match the socket it created. Mutating envelopes require a
+canonical signed authorization bound to the request. Read-only status requires no signature but
+still checks the exact uid/group, repository and actor admission.
+
+The same binary now has `serve`, `request` and `verify` modes. The live server can return an exact
+durable status snapshot and rejects stale revisions; the client independently checks the response
+digest and request/campaign identity. WSL2 ran 43 supervisor tests and three integrated checkpoint
+tests at source `1a29aef1`. This is still local, non-promotable evidence. The mutating operations
+deliberately return error 11 after authentication because no systemd/process-identity adapter has
+yet proved that they can spawn or attach exactly once. A production key, installed service,
+diagnostics, sealing orchestration and controller-loss rehearsal remain unresolved. No six-hour or
+24-hour 0.74 run has started.
 
 Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a
 and W9a were rejected and the other proposals are deferred or unauthorized, there is no honest

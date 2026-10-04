@@ -39,9 +39,24 @@ The controller-resilience contract is frozen in
 [`long-run-controller-resilience-contract.toml`](long-run-controller-resilience-contract.toml).
 The first local implementation slice, `tools/long-run-supervisor-074`, writes and independently
 verifies canonical hash-chained checkpoint envelopes, rejects identity/timestamp/hash drift, and
-recovers at most one incomplete trailing line. This is not yet the live systemd supervisor: Unix
-socket authorization, process/cgroup ownership, attach leases, provisioning and real host fault
-rehearsals remain incomplete and release admission stays closed.
+recovers at most one incomplete trailing line. A later local slice adds atomic revision-checked
+`state.json` replacement, `state.previous.json`, exclusive campaign locks and the first integrated
+0.74 harness component. That component refuses to append a checkpoint until the phase-aware
+watchdog accepts it, and it cannot reuse an existing or torn journal as a new process lifetime.
+
+The Linux executable now also provides a real `SOCK_SEQPACKET` transport and authenticated
+read-only status service. Packet boundaries and the 65,536-byte limit are enforced by the socket
+layer; `SO_PEERCRED` plus `/proc/<pid>/status` supply uid, primary gid and supplemental groups.
+The wire envelope requires a strict Ed25519 authorization document for mutating operations, while
+status remains read-only but still checks the admitted peer, repository and actor. The client
+verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
+round-trip the exact durable state and reject stale revisions.
+
+This is still not the complete systemd supervisor. `start`, `attach`, `seal` and `abort` currently
+authenticate and then fail with stable internal error 11 without mutation; they cannot launch or
+adopt a process until the `/proc`/cgroup/systemd identity adapter is implemented. Production
+provisioning, bounded diagnostics and real host fault rehearsals remain incomplete, so release
+admission stays closed.
 
 Offline packet verification is independently implemented in `xtask` (it does not call the
 supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
@@ -63,10 +78,11 @@ non-regular files. Tests compare byte-identical archives built from differently 
 inspect every tar header. The live sealing state transition and Linux filesystem rehearsal remain
 incomplete.
 
-The complete supervisor package also passes all 30 targeted tests under local WSL2 Ubuntu at exact
-source `37566d71`, including the Unix directory-sync and link-count branches. The checked-in
-`local-runs/w11-supervisor-wsl-20261004.json` receipt is explicitly local and non-promotable: no
-service was installed, no product process was started and no admitted-host fault rehearsal ran.
+The initial supervisor package passed all 30 targeted tests under local WSL2 Ubuntu at exact source
+`37566d71`. The later live-status slice at `1a29aef1` passes 43 supervisor tests plus three durable
+checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
+non-promotable: no service was installed, no product process was started and no admitted-host fault
+rehearsal ran.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

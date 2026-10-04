@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-linux-live-status-and-checkpoint-writer",
+  "status": "passed-local-non-promotable",
+  "source_sha": "1a29aef16d022271e9506a5ec8cbc0158685846a",
+  "platform": "WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-performance-integrated-074 --locked -q"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "test_suites": {
+    "archive": 3,
+    "authorization": 3,
+    "chain": 5,
+    "config": 2,
+    "manifest": 4,
+    "protocol": 5,
+    "server": 1,
+    "service": 2,
+    "state_machine": 6,
+    "state_store": 4,
+    "unix_transport": 3,
+    "watchdog": 5,
+    "integrated_checkpoint_writer": 3
+  },
+  "passed": 46,
+  "failed": 0,
+  "confirmed": [
+    "Linux SOCK_SEQPACKET preserves packet boundaries and enforces the frozen packet limit",
+    "peer uid, primary gid and supplemental groups participate in admission",
+    "signed mutating envelopes bind request, repository, actor and expiry",
+    "read-only status round-trips exact durable state and rejects stale revision",
+    "checkpoint progress is validated before a durable append advances writer state"
+  ],
+  "limitations": [
+    "WSL is not the admitted release host",
+    "no systemd supervisor service was installed or started",
+    "mutating operations remain fail-closed and do not start, attach, seal or abort",
+    "no controller-loss or product-process rehearsal was performed",
+    "this receipt cannot authorize release admission"
+  ]
+}
