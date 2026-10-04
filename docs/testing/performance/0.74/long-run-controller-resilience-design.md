@@ -529,9 +529,12 @@ re-verifies artifacts on response replay. `COMPLETE_SEALED` clears the retained 
 and controller lease before the durable response; only then is host-marker removal attempted, and
 that removal is idempotent across a lost response. Local I74/C74 tests exercise continuation and
 promotable packets plus event/state and marker-release crash windows. The strict inventory resolver
-now derives PacketPlan from frozen on-disk evidence. The remaining server adapter must perform the
-real D-Bus observation, invoke the coordinator and enforce production uid/gid ownership before this
-becomes a live-service claim.
+now derives PacketPlan from frozen on-disk evidence. The signed socket `seal` dispatch composes
+persistent manifest and host checks, production D-Bus observation, the resolver and coordinator;
+it reports the reconciled revision if artifact work fails after the terminal transition and permits
+same-request recovery without spawning. The configured seal root is a distinct root-owned
+directory. Production system-bus and uid/gid behavior still require admitted-host rehearsal before
+this becomes a live-service claim.
 
 Publication modes are now part of the verified artifact contract on Unix. Packet and archive
 staging trees are recursively changed to `0400` files and `0500` directories, metadata is synced,

@@ -148,6 +148,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "campaign_manifest_binding_complete",
         "continuation_packet_digest_binding_complete",
         "strict_seal_input_resolver_complete",
+        "live_seal_dispatch_complete",
         "guard_evidence_binding_complete",
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",

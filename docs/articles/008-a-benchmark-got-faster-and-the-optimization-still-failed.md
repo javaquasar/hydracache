@@ -351,6 +351,10 @@ apply read-only Unix modes and atomically rename the completed trees. Recovery c
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
 mechanics do not make the local throughput numbers promotable, but they make it possible for a
 future admitted-host run to survive controller loss without quietly changing the experiment.
+The signed socket `seal` path now connects those pieces: it revalidates frozen host evidence,
+observes the retained systemd unit, derives the inventory-bound packet plan and drives the durable
+seal transaction. A local injected observation boundary tests failure-after-terminal and exact
+retry without pretending that it proves the production D-Bus or uid/gid setup.
 
 ## What the local campaign actually delivered
 

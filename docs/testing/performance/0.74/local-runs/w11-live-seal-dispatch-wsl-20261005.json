@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-live-seal-dispatch",
+  "status": "passed-local-non-promotable",
+  "source_sha": "8d673777",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --locked -- -D warnings",
+    "wsl.exe bash -lc 'cargo check -p hydracache-long-run-supervisor-074 --all-targets --locked'",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo test -p xtask --test long_run_campaign_074 --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 132,
+  "server_integration_tests_passed": 5,
+  "packet_verifier_tests_passed": 7,
+  "performance_contract_tests_passed": 16,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "the authenticated socket dispatcher accepts the seal operation and composes persistent manifest, host, inventory and lifecycle checks",
+    "production dispatch uses live host-receipt verification and systemd D-Bus unit inspection",
+    "the test observation backend is an explicit in-process boundary and is not reachable through the socket protocol",
+    "a missing active-campaign marker is never recreated while recovering a live seal",
+    "an artifact failure after terminal-state commit reports the reconciled revision and the identical request completes on retry without respawn",
+    "successful I74 seal publication and exact response replay pass through the server route",
+    "sealed artifacts use a distinct configured root-owned directory"
+  ],
+  "limitations": [
+    "the positive integration uses a fake observation backend; the real system bus remains an explicit manual test",
+    "production uid/gid ownership and supervisor restart require admitted-host rehearsal",
+    "abort dispatch, diagnostic capture and lease-expiry termination remain implementation work",
+    "the measured harness still has to publish the terminal seal-input inventory",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

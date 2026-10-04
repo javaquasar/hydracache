@@ -271,12 +271,17 @@ machine-readable local receipt is
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
-The live server seal/abort routes, diagnostics and lease-expiry termination remain implementation
-work. Deterministic packet construction, strict inventory-based PacketPlan derivation, durable
-artifact recovery and the seal lifecycle coordinator are complete local components, but server
-dispatch still needs to inspect the retained unit over D-Bus and invoke the coordinator.
-Production uid/gid ownership still needs admitted-host rehearsal. No real service claim is made
-until that adapter and rehearsal exist.
+The live server still lacks the abort route, diagnostics and lease-expiry termination. The signed
+live `seal` route now
+revalidates persistent manifest/host evidence, observes the retained unit through the production
+D-Bus path, derives the exact inventory-bound plan and invokes the recoverable coordinator. A
+dedicated root-owned seal root prevents the unprivileged measured role from publishing artifacts.
+Local socket integration covers rejection before host claim, terminal-state commit followed by an
+artifact failure, same-request recovery, durable I74 seal and exact response replay. Production
+uid/gid ownership and the real system bus still need admitted-host rehearsal; no real service claim
+is made until that rehearsal exists.
+At source `8d673777`, the full WSL suite passes 132 ordinary tests with one manual system-bus test
+ignored. See `local-runs/w11-live-seal-dispatch-wsl-20261005.json`.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
