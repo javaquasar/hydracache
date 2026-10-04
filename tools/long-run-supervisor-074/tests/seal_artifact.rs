@@ -104,6 +104,7 @@ fn fixture(root: &Path) -> (PathBuf, PathBuf, PacketPlan) {
     let plan = PacketPlan {
         campaign_id: "a".repeat(64),
         campaign_manifest_sha256: hex(&Sha256::digest(&manifest)),
+        continuation_packet_sha256: None,
         result: PacketResult::Complete,
         promotable: false,
         terminal_reason: None,

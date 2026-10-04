@@ -2,7 +2,9 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
-use xtask::long_run_campaign::{raw_file_set_sha256, verify_manifest, RawFile};
+use xtask::long_run_campaign::{
+    raw_file_set_sha256, verify_continuation_binding, verify_manifest, RawFile,
+};
 
 use hydracache_long_run_supervisor_074::archive::{create_deterministic_archive, ArchiveLimits};
 use hydracache_long_run_supervisor_074::artifact::{
@@ -117,6 +119,7 @@ fn packet_fixture(directory: &Path) -> PathBuf {
         "raw_manifest": "raw-manifest.json",
         "raw_manifest_sha256": hex(&Sha256::digest(&raw_manifest)),
         "raw_manifest_set_sha256": set_sha256,
+        "continuation_packet_sha256": null,
         "result": "incomplete",
         "promotable": false,
         "terminal_reason": "local-fixture",
@@ -178,6 +181,7 @@ fn built_packet_fixture(
     let plan = PacketPlan {
         campaign_id: "a".repeat(64),
         campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+        continuation_packet_sha256: None,
         result: PacketResult::Complete,
         promotable: false,
         terminal_reason: None,
@@ -307,46 +311,55 @@ fn supervisor_builder_produces_a_promotable_two_role_packet() {
     )
     .unwrap();
     let campaign_bytes = fs::read(campaign.join("campaign-start.json")).unwrap();
-    let final_packet = build_packet(
-        &campaign,
-        &root.path().join("outputs/final"),
-        &PacketPlan {
-            campaign_id: "a".repeat(64),
-            campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
-            result: PacketResult::Complete,
-            promotable: true,
-            terminal_reason: None,
-            required_final_guards: vec!["semantic".to_owned()],
-            guard_evidence: vec![GuardEvidenceInput {
-                id: "semantic".to_owned(),
-                passed: true,
-                source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
-            }],
-            roles: vec![
-                RoleEvidenceInput {
-                    role: Role::C74,
-                    result: PacketResult::Complete,
-                    journal_relative_path: PathBuf::from("roles/c74/checkpoints.jsonl"),
-                },
-                RoleEvidenceInput {
-                    role: Role::I74,
-                    result: PacketResult::Complete,
-                    journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
-                },
-            ],
-            raw_files: vec![
-                PathBuf::from("campaign-start.json"),
-                PathBuf::from("roles/i74/guards/semantic.json"),
-                PathBuf::from("roles/i74/checkpoints.jsonl"),
-                PathBuf::from("roles/c74/checkpoints.jsonl"),
-            ],
-        },
-        PacketLimits {
-            maximum_files: 2_000,
-            maximum_bytes: 1_073_741_824,
-        },
-    )
-    .unwrap();
+    let limits = PacketLimits {
+        maximum_files: 2_000,
+        maximum_bytes: 1_073_741_824,
+    };
+    let plan = PacketPlan {
+        campaign_id: "a".repeat(64),
+        campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+        continuation_packet_sha256: Some(continuation.packet_manifest_sha256.clone()),
+        result: PacketResult::Complete,
+        promotable: true,
+        terminal_reason: None,
+        required_final_guards: vec!["semantic".to_owned()],
+        guard_evidence: vec![GuardEvidenceInput {
+            id: "semantic".to_owned(),
+            passed: true,
+            source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
+        }],
+        roles: vec![
+            RoleEvidenceInput {
+                role: Role::C74,
+                result: PacketResult::Complete,
+                journal_relative_path: PathBuf::from("roles/c74/checkpoints.jsonl"),
+            },
+            RoleEvidenceInput {
+                role: Role::I74,
+                result: PacketResult::Complete,
+                journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
+            },
+        ],
+        raw_files: vec![
+            PathBuf::from("campaign-start.json"),
+            PathBuf::from("roles/i74/guards/semantic.json"),
+            PathBuf::from("roles/i74/checkpoints.jsonl"),
+            PathBuf::from("roles/c74/checkpoints.jsonl"),
+        ],
+    };
+    let mut missing_binding = plan.clone();
+    missing_binding.continuation_packet_sha256 = None;
+    assert!(matches!(
+        build_packet(
+            &campaign,
+            &root.path().join("outputs/missing-binding"),
+            &missing_binding,
+            limits,
+        ),
+        Err(ArtifactError::Contract)
+    ));
+    let final_packet =
+        build_packet(&campaign, &root.path().join("outputs/final"), &plan, limits).unwrap();
     let reports = verify_manifest(&final_packet.packet_manifest_path).unwrap();
     assert_eq!(reports.len(), 2);
     assert_eq!(
@@ -356,6 +369,51 @@ fn supervisor_builder_produces_a_promotable_two_role_packet() {
             .collect::<Vec<_>>(),
         ["c74", "i74"]
     );
+    assert_eq!(
+        verify_continuation_binding(
+            &final_packet.packet_manifest_path,
+            &continuation.packet_manifest_path,
+        )
+        .unwrap(),
+        reports
+    );
+    assert!(xtask::long_run_campaign::run(vec![
+        "--release".to_owned(),
+        "0.74".to_owned(),
+        "--manifest".to_owned(),
+        final_packet.packet_manifest_path.display().to_string(),
+    ])
+    .is_err());
+    assert!(xtask::long_run_campaign::run(vec![
+        "--release".to_owned(),
+        "0.74".to_owned(),
+        "--manifest".to_owned(),
+        final_packet.packet_manifest_path.display().to_string(),
+        "--continuation-manifest".to_owned(),
+        continuation.packet_manifest_path.display().to_string(),
+    ])
+    .is_ok());
+    assert!(verify_continuation_binding(
+        &final_packet.packet_manifest_path,
+        &final_packet.packet_manifest_path,
+    )
+    .is_err());
+
+    let mut wrong_binding = plan;
+    wrong_binding.continuation_packet_sha256 = Some("b".repeat(64));
+    let wrong_packet = build_packet(
+        &campaign,
+        &root.path().join("outputs/wrong-binding"),
+        &wrong_binding,
+        limits,
+    )
+    .unwrap();
+    assert!(verify_manifest(&wrong_packet.packet_manifest_path).is_ok());
+    assert!(verify_continuation_binding(
+        &wrong_packet.packet_manifest_path,
+        &continuation.packet_manifest_path,
+    )
+    .is_err());
 }
 
 #[test]
@@ -372,6 +430,7 @@ fn supervisor_builder_rejects_unsafe_sources_before_publishing_a_packet() {
     let plan = PacketPlan {
         campaign_id: "a".repeat(64),
         campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+        continuation_packet_sha256: None,
         result: PacketResult::Complete,
         promotable: false,
         terminal_reason: None,
@@ -425,6 +484,13 @@ fn independent_verifier_rejects_hash_identity_and_traversal_failures() {
     packet["roles"][0]["journal"] = json!("../escape.jsonl");
     fs::write(&manifest, canonical(&packet)).unwrap();
     assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
+
+    let directory = tempfile::tempdir().unwrap();
+    let manifest = packet_fixture(directory.path());
+    let mut packet: Value = serde_json::from_slice(&fs::read(&manifest).unwrap()).unwrap();
+    packet["continuation_packet_sha256"] = json!("b".repeat(64));
+    fs::write(&manifest, canonical(&packet)).unwrap();
+    assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
 }
 
 #[test]
@@ -463,5 +529,23 @@ fn independent_verifier_rejects_raw_file_and_guard_tampering() {
     let manifest = packet_fixture(directory.path());
     let packet: Value = serde_json::from_slice(&fs::read(&manifest).unwrap()).unwrap();
     fs::write(&manifest, serde_json::to_vec_pretty(&packet).unwrap()).unwrap();
+    assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
+
+    let directory = tempfile::tempdir().unwrap();
+    let manifest = packet_fixture(directory.path());
+    let mut packet: Value = serde_json::from_slice(&fs::read(&manifest).unwrap()).unwrap();
+    packet["result"] = json!("complete");
+    packet["terminal_reason"] = Value::Null;
+    packet["guard_results"][0]["passed"] = json!(false);
+    fs::write(&manifest, canonical(&packet)).unwrap();
+    assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
+
+    let directory = tempfile::tempdir().unwrap();
+    let manifest = packet_fixture(directory.path());
+    let mut packet: Value = serde_json::from_slice(&fs::read(&manifest).unwrap()).unwrap();
+    packet["result"] = json!("complete");
+    packet["terminal_reason"] = Value::Null;
+    packet["roles"][0]["result"] = json!("incomplete");
+    fs::write(&manifest, canonical(&packet)).unwrap();
     assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
 }

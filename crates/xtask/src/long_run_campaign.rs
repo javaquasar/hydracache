@@ -22,6 +22,7 @@ struct PacketManifest {
     raw_manifest: PathBuf,
     raw_manifest_sha256: String,
     raw_manifest_set_sha256: String,
+    continuation_packet_sha256: Option<String>,
     result: String,
     promotable: bool,
     terminal_reason: Option<String>,
@@ -112,6 +113,7 @@ pub struct JournalReport {
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut release = None;
     let mut manifest = None;
+    let mut continuation_manifest = None;
     let mut args = args.into_iter();
     while let Some(name) = args.next() {
         let value = args
@@ -120,6 +122,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         match name.as_str() {
             "--release" => release = Some(value),
             "--manifest" => manifest = Some(PathBuf::from(value)),
+            "--continuation-manifest" => continuation_manifest = Some(PathBuf::from(value)),
             _ => return Err(format!("unsupported long-run-campaign-check argument {name}").into()),
         }
     }
@@ -127,7 +130,23 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("long-run-campaign-check currently requires --release 0.74".into());
     }
     let manifest = manifest.ok_or("--manifest is required")?;
-    verify_manifest(&manifest)?;
+    let reports = verify_manifest(&manifest)?;
+    match (reports.len(), continuation_manifest.as_deref()) {
+        (2, Some(continuation)) => {
+            verify_continuation_binding(&manifest, continuation)?;
+        }
+        (2, None) => {
+            return Err(
+                "a final packet requires --continuation-manifest for exact digest verification"
+                    .into(),
+            );
+        }
+        (1, None) => {}
+        (1, Some(_)) => {
+            return Err("an I74 continuation packet cannot use --continuation-manifest".into());
+        }
+        _ => return Err("packet role shape is invalid".into()),
+    }
     println!("long-run-campaign-check 0.74: OK ({})", manifest.display());
     Ok(())
 }
@@ -154,6 +173,15 @@ pub fn verify_manifest(path: &Path) -> Result<Vec<JournalReport>, Box<dyn Error>
     if value.promotable && (value.result != "complete" || value.roles.len() != 2) {
         return Err("promotable packet requires complete I74 and C74 roles".into());
     }
+    let has_continuation = value.continuation_packet_sha256.is_some();
+    if value
+        .continuation_packet_sha256
+        .as_deref()
+        .is_some_and(|digest| !is_hash(digest))
+        || has_continuation != (value.roles.len() == 2)
+    {
+        return Err("only a final two-role packet must bind one continuation packet digest".into());
+    }
     let root = path.parent().unwrap_or_else(|| Path::new("."));
     let packet_relative = path
         .file_name()
@@ -178,8 +206,8 @@ pub fn verify_manifest(path: &Path) -> Result<Vec<JournalReport>, Box<dyn Error>
         if !matches!(role.result.as_str(), "complete" | "incomplete") {
             return Err(format!("{} role result is invalid", role.id).into());
         }
-        if value.promotable && role.result != "complete" {
-            return Err("promotable packet requires complete role results".into());
+        if value.result == "complete" && role.result != "complete" {
+            return Err("complete packet requires complete role results".into());
         }
         validate_process_identity(&role.harness)?;
         validate_process_identity(&role.daemon)?;
@@ -243,6 +271,41 @@ pub fn verify_manifest(path: &Path) -> Result<Vec<JournalReport>, Box<dyn Error>
     Ok(reports)
 }
 
+pub fn verify_continuation_binding(
+    final_manifest_path: &Path,
+    continuation_manifest_path: &Path,
+) -> Result<Vec<JournalReport>, Box<dyn Error>> {
+    let final_reports = verify_manifest(final_manifest_path)?;
+    let continuation_reports = verify_manifest(continuation_manifest_path)?;
+    if final_reports.len() != 2
+        || continuation_reports.len() != 1
+        || continuation_reports[0].role != "i74"
+    {
+        return Err(
+            "continuation binding requires a final I74+C74 packet and an I74 packet".into(),
+        );
+    }
+
+    let final_bytes = fs::read(final_manifest_path)?;
+    let final_manifest: PacketManifest = parse_canonical_json(&final_bytes, "packet manifest")?;
+    let continuation_bytes = fs::read(continuation_manifest_path)?;
+    let continuation_manifest: PacketManifest =
+        parse_canonical_json(&continuation_bytes, "continuation packet manifest")?;
+    if continuation_manifest.promotable
+        || continuation_manifest.result != "complete"
+        || continuation_manifest.continuation_packet_sha256.is_some()
+        || final_manifest.campaign_id != continuation_manifest.campaign_id
+        || final_manifest.campaign_manifest_sha256 != continuation_manifest.campaign_manifest_sha256
+        || final_manifest.continuation_packet_sha256.as_deref()
+            != Some(hex(&Sha256::digest(&continuation_bytes)).as_str())
+    {
+        return Err(
+            "final packet does not bind the exact compatible I74 continuation manifest".into(),
+        );
+    }
+    Ok(final_reports)
+}
+
 fn validate_packet_guards(value: &PacketManifest) -> Result<(), Box<dyn Error>> {
     if !is_hash(&value.campaign_manifest_sha256)
         || !is_hash(&value.raw_manifest_sha256)
@@ -275,10 +338,9 @@ fn validate_packet_guards(value: &PacketManifest) -> Result<(), Box<dyn Error>> 
         .collect::<BTreeSet<_>>();
     if results != required
         || results.len() != value.guard_results.len()
-        || value
-            .guard_results
-            .iter()
-            .any(|guard| !is_hash(&guard.evidence_sha256) || (value.promotable && !guard.passed))
+        || value.guard_results.iter().any(|guard| {
+            !is_hash(&guard.evidence_sha256) || (value.result == "complete" && !guard.passed)
+        })
     {
         return Err("guard results do not exactly satisfy the required guards".into());
     }

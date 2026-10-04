@@ -291,6 +291,7 @@ fn fixture() -> Fixture {
     let plan = PacketPlan {
         campaign_id: campaign_id.clone(),
         campaign_manifest_sha256: manifest_sha256,
+        continuation_packet_sha256: None,
         result: PacketResult::Complete,
         promotable: false,
         terminal_reason: None,
@@ -458,7 +459,9 @@ fn terminal_unit_drift_fails_before_state_or_artifact_mutation() {
 #[test]
 fn c74_complete_seal_releases_host_claim_and_replays_after_release() {
     let fixture = fixture();
-    seal(&fixture);
+    let continuation_response = seal(&fixture);
+    let continuation: SealResponseResult =
+        serde_json::from_value(continuation_response.body.result.unwrap()).unwrap();
     let campaign = fixture.lock.campaign_directory();
     let campaign_id = fixture.request.campaign_id.clone();
     let events = campaign.join(EVENT_JOURNAL_NAME);
@@ -580,6 +583,7 @@ fn c74_complete_seal_releases_host_claim_and_replays_after_release() {
     let plan = PacketPlan {
         campaign_id,
         campaign_manifest_sha256: fixture.plan.campaign_manifest_sha256.clone(),
+        continuation_packet_sha256: Some(continuation.artifact.packet_manifest_sha256),
         result: PacketResult::Complete,
         promotable: true,
         terminal_reason: None,

@@ -7,7 +7,7 @@
   "required": [
     "schema_version", "release", "campaign_id", "campaign_manifest",
     "campaign_manifest_sha256", "raw_manifest", "raw_manifest_sha256",
-    "raw_manifest_set_sha256", "result", "promotable", "terminal_reason",
+    "raw_manifest_set_sha256", "continuation_packet_sha256", "result", "promotable", "terminal_reason",
     "required_final_guards", "guard_results", "roles"
   ],
   "properties": {
@@ -19,6 +19,12 @@
     "raw_manifest": { "const": "raw-manifest.json" },
     "raw_manifest_sha256": { "$ref": "#/$defs/hash" },
     "raw_manifest_set_sha256": { "$ref": "#/$defs/hash" },
+    "continuation_packet_sha256": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/hash" }
+      ]
+    },
     "result": { "enum": ["complete", "incomplete"] },
     "promotable": { "type": "boolean" },
     "terminal_reason": {

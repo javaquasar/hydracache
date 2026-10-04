@@ -142,6 +142,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     for field in [
         "raw_file_set_verification_complete",
         "campaign_manifest_binding_complete",
+        "continuation_packet_digest_binding_complete",
         "guard_evidence_binding_complete",
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",

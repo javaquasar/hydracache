@@ -41,6 +41,7 @@ pub struct RoleEvidenceInput {
 pub struct PacketPlan {
     pub campaign_id: String,
     pub campaign_manifest_sha256: String,
+    pub continuation_packet_sha256: Option<String>,
     pub result: PacketResult,
     pub promotable: bool,
     pub terminal_reason: Option<String>,
@@ -135,6 +136,7 @@ struct PacketManifest<'a> {
     raw_manifest: &'static str,
     raw_manifest_sha256: &'a str,
     raw_manifest_set_sha256: &'a str,
+    continuation_packet_sha256: &'a Option<String>,
     result: PacketResult,
     promotable: bool,
     terminal_reason: &'a Option<String>,
@@ -208,6 +210,7 @@ pub fn build_packet(
         raw_manifest: RAW_MANIFEST_NAME,
         raw_manifest_sha256: &raw_manifest_sha256,
         raw_manifest_set_sha256: &raw_manifest_set_sha256,
+        continuation_packet_sha256: &plan.continuation_packet_sha256,
         result: plan.result,
         promotable: plan.promotable,
         terminal_reason: &plan.terminal_reason,
@@ -283,6 +286,7 @@ pub fn verify_packet(
         raw_manifest: RAW_MANIFEST_NAME,
         raw_manifest_sha256: &raw_manifest_sha256,
         raw_manifest_set_sha256: &raw_manifest_set_sha256,
+        continuation_packet_sha256: &plan.continuation_packet_sha256,
         result: plan.result,
         promotable: plan.promotable,
         terminal_reason: &plan.terminal_reason,
@@ -364,8 +368,14 @@ fn validate_plan(plan: &PacketPlan, limits: PacketLimits) -> Result<(), Artifact
         .iter()
         .map(|role| role_name(&role.role))
         .collect::<BTreeSet<_>>();
+    let contains_c74 = roles.contains("c74");
     if roles.len() != plan.roles.len()
         || !roles.contains("i74")
+        || contains_c74 != plan.continuation_packet_sha256.is_some()
+        || plan
+            .continuation_packet_sha256
+            .as_deref()
+            .is_some_and(|digest| !is_hash(digest))
         || plan
             .roles
             .iter()
