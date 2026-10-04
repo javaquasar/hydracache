@@ -438,6 +438,20 @@ def assemble_start_bundle(
 def verify_start_bundle(directory: pathlib.Path) -> tuple[str, str]:
     """Re-hash a transported bundle before any privileged staging boundary consumes it."""
 
+    expected_directory_names = {
+        MANIFEST_NAME,
+        MANIFEST_HEAD_NAME,
+        HOST_RECEIPT_NAME,
+        HOST_RECEIPT_HEAD_NAME,
+        START_BUNDLE_NAME,
+        START_BUNDLE_HEAD_NAME,
+    }
+    if (
+        not directory.is_dir()
+        or directory.is_symlink()
+        or {path.name for path in directory.iterdir()} != expected_directory_names
+    ):
+        raise ValueError("start bundle directory differs from the fixed six-file layout")
     bundle_bytes, bundle_digest = _read_document_pair(
         directory, START_BUNDLE_NAME, START_BUNDLE_HEAD_NAME
     )

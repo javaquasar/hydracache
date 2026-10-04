@@ -11,6 +11,7 @@ use thiserror::Error;
 
 const LISTEN_BACKLOG: libc::c_int = 16;
 const MAX_ACCEPT_TIMEOUT: Duration = Duration::from_secs(60);
+const MAX_RECEIVE_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PeerCredentials {
@@ -36,6 +37,8 @@ pub enum TransportError {
     PeerCredentials,
     #[error("accept timeout must be between 1 millisecond and 60 seconds")]
     AcceptTimeout,
+    #[error("receive timeout must be between 1 millisecond and 60 seconds")]
+    ReceiveTimeout,
     #[error("Unix socket I/O failed: {0}")]
     Io(#[from] io::Error),
 }
@@ -228,6 +231,64 @@ impl SeqpacketConnection {
     }
 
     pub fn receive_packet(&self) -> Result<Vec<u8>, TransportError> {
+        self.receive_packet_inner()
+    }
+
+    pub fn receive_packet_timeout(
+        &self,
+        timeout: Duration,
+    ) -> Result<Option<Vec<u8>>, TransportError> {
+        if timeout < Duration::from_millis(1) || timeout > MAX_RECEIVE_TIMEOUT {
+            return Err(TransportError::ReceiveTimeout);
+        }
+        let deadline = Instant::now()
+            .checked_add(timeout)
+            .ok_or(TransportError::ReceiveTimeout)?;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Ok(None);
+            }
+            let timeout_millis = remaining.as_millis().clamp(1, i32::MAX as u128) as libc::c_int;
+            let mut descriptor = libc::pollfd {
+                fd: self.fd.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            };
+            // SAFETY: descriptor points to one initialized pollfd for the duration of poll.
+            let ready = unsafe { libc::poll(&mut descriptor, 1, timeout_millis) };
+            if ready == 0 {
+                return Ok(None);
+            }
+            if ready < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(error.into());
+            }
+            if descriptor.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
+                return Err(io::Error::other(format!(
+                    "connected socket poll failed with revents {:#x}",
+                    descriptor.revents
+                ))
+                .into());
+            }
+            if descriptor.revents & libc::POLLIN != 0 {
+                return self.receive_packet_inner().map(Some);
+            }
+            if descriptor.revents & libc::POLLHUP != 0 {
+                return Ok(None);
+            }
+            return Err(io::Error::other(format!(
+                "connected socket poll returned unexpected revents {:#x}",
+                descriptor.revents
+            ))
+            .into());
+        }
+    }
+
+    fn receive_packet_inner(&self) -> Result<Vec<u8>, TransportError> {
         let mut packet = vec![0_u8; MAX_PACKET_BYTES + 1];
         // MSG_TRUNC makes Linux return the original packet length when the buffer is too small.
         // SAFETY: packet is writable for its full capacity and fd is connected.

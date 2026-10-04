@@ -159,6 +159,8 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "live_attach_lease_admission_complete",
         "start_bundle_builder_complete",
         "start_bundle_transport_verifier_complete",
+        "supervisor_owned_start_upload_complete",
+        "privileged_start_bundle_staging_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
@@ -167,7 +169,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         Some(false)
     );
     assert_eq!(
-        implementation["privileged_start_bundle_staging_complete"].as_bool(),
+        implementation["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
         Some(false)
     );
     assert_eq!(
@@ -451,6 +453,12 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
     assert!(signing_key < self_hosted);
     assert!(workflow.contains("build-request"));
     assert!(workflow.contains("request.sha256"));
+    assert!(workflow.contains("actions: read"));
+    assert!(workflow.contains("start_bundle_run_id"));
+    assert!(workflow.contains("start_bundle_artifact_name"));
+    assert!(workflow.contains("--verify-start-bundle"));
+    assert!(workflow.contains("request-start"));
+    assert!(workflow.contains("inputs.expected_state_revision == '0'"));
     assert!(workflow.contains("Capture a best-effort read-only status snapshot"));
     assert!(!workflow.contains("continue-on-error: true"));
 }

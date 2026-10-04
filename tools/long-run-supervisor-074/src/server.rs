@@ -18,7 +18,8 @@ use crate::seal_lifecycle::{drive_seal_request, SealLifecycleError};
 use crate::service::{authorize_wire, AuthorizedRequest, ServiceError, ServicePolicy};
 use crate::spawn::SpawnBackend;
 use crate::start_evidence::{
-    load_campaign_evidence, prepare_campaign_evidence, PreparedCampaignEvidence, StartEvidenceError,
+    load_campaign_evidence, prepare_campaign_evidence, publish_received_start_evidence,
+    PreparedCampaignEvidence, StartEvidenceError,
 };
 use crate::start_lifecycle::{
     drive_c74_start_request, drive_i74_start_request, StartLifecycleError,
@@ -36,6 +37,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
 const MAINTENANCE_INTERVAL: Duration = Duration::from_secs(1);
+const START_EVIDENCE_PACKET_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Debug, Error)]
 pub enum ServerError {
@@ -221,13 +223,55 @@ impl SupervisorServer {
         let response = match connection.peer_credentials() {
             Ok(peer) => match authorize_wire(wire.clone(), &peer, now, &self.policy) {
                 Ok(authorized) => {
-                    self.dispatch(&authorized, now, start_backend, seal_backend, abort_backend)
+                    if self.requires_start_evidence_upload(&authorized)
+                        && self
+                            .receive_start_evidence(&connection, &authorized, now)
+                            .is_err()
+                    {
+                        Ok(error_response_from_request(&authorized.request, now, 9)?)
+                    } else {
+                        self.dispatch(&authorized, now, start_backend, seal_backend, abort_backend)
+                    }
                 }
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
             },
             Err(_) => error_response(&wire, now, 3),
         }?;
         connection.send_packet(&serde_json::to_vec(&response)?)?;
+        Ok(())
+    }
+
+    fn requires_start_evidence_upload(&self, authorized: &AuthorizedRequest) -> bool {
+        authorized.request.operation == Operation::Start
+            && authorized.request.expected_state_revision == 0
+            && !self
+                .config
+                .staging_root
+                .join(&authorized.request.campaign_id)
+                .exists()
+    }
+
+    fn receive_start_evidence(
+        &self,
+        connection: &SeqpacketConnection,
+        authorized: &AuthorizedRequest,
+        now: u64,
+    ) -> Result<(), StartEvidenceError> {
+        let manifest = connection
+            .receive_packet_timeout(START_EVIDENCE_PACKET_TIMEOUT)
+            .map_err(|error| StartEvidenceError::Io(std::io::Error::other(error.to_string())))?
+            .ok_or(StartEvidenceError::Input)?;
+        let host_receipt = connection
+            .receive_packet_timeout(START_EVIDENCE_PACKET_TIMEOUT)
+            .map_err(|error| StartEvidenceError::Io(std::io::Error::other(error.to_string())))?
+            .ok_or(StartEvidenceError::Input)?;
+        publish_received_start_evidence(
+            &self.config.staging_root,
+            &authorized.request,
+            now,
+            &manifest,
+            &host_receipt,
+        )?;
         Ok(())
     }
 

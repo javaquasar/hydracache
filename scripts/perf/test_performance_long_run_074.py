@@ -278,6 +278,10 @@ class PerformanceLongRun074Tests(unittest.TestCase):
             manifest_path.write_bytes(manifest_path.read_bytes() + b" ")
             with self.assertRaisesRegex(ValueError, "digest does not match|file identity differs"):
                 MODULE.verify_start_bundle(root / "bundle")
+            manifest_path.write_bytes((root / "manifest" / MODULE.MANIFEST_NAME).read_bytes())
+            (root / "bundle" / "unexpected").write_text("extra", encoding="ascii")
+            with self.assertRaisesRegex(ValueError, "six-file layout"):
+                MODULE.verify_start_bundle(root / "bundle")
 
             drifted = json.loads(
                 (root / "receipt" / MODULE.HOST_RECEIPT_NAME).read_text(encoding="utf-8")

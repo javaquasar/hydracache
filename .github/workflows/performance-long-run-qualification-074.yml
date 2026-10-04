@@ -41,9 +41,20 @@ on:
         required: false
         default: ""
         type: string
+      start_bundle_run_id:
+        description: Source workflow run containing the immutable start bundle; revision-zero start only
+        required: false
+        default: ""
+        type: string
+      start_bundle_artifact_name:
+        description: Exact artifact name containing the six-file start bundle; revision-zero start only
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: long-run-074-${{ inputs.host_id }}
@@ -74,6 +85,8 @@ jobs:
           INPUT_REVISION: ${{ inputs.expected_state_revision }}
           INPUT_REQUEST_ID: ${{ inputs.request_id }}
           INPUT_APPROVAL_NONCE: ${{ inputs.approval_nonce_sha256 }}
+          INPUT_START_BUNDLE_RUN_ID: ${{ inputs.start_bundle_run_id }}
+          INPUT_START_BUNDLE_ARTIFACT: ${{ inputs.start_bundle_artifact_name }}
         run: |
           set -euo pipefail
           [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -92,6 +105,13 @@ jobs:
           fi
           if [[ "$INPUT_OPERATION" != start ]]; then
             test "$INPUT_REVISION" -gt 0
+          fi
+          if [[ "$INPUT_OPERATION" = start && "$INPUT_REVISION" = 0 ]]; then
+            [[ "$INPUT_START_BUNDLE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+            [[ "$INPUT_START_BUNDLE_ARTIFACT" =~ ^long-run-074-start-bundle-[0-9a-f]{64}$ ]]
+          else
+            test -z "$INPUT_START_BUNDLE_RUN_ID"
+            test -z "$INPUT_START_BUNDLE_ARTIFACT"
           fi
 
       - name: Build the reviewed typed client
@@ -202,6 +222,16 @@ jobs:
           name: long-run-074-request-${{ inputs.request_id }}
           path: target/controller-request-074
 
+      - name: Download the immutable revision-zero start bundle
+        if: inputs.operation == 'start' && inputs.expected_state_revision == '0'
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.start_bundle_artifact_name }}
+          path: target/controller-start-bundle-074
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.start_bundle_run_id }}
+
       - name: Verify source and packet transport digest
         shell: bash
         env:
@@ -214,14 +244,58 @@ jobs:
           test "$(sha256sum target/controller-request-074/request.json | cut -d' ' -f1)" = "$expected"
           cargo build -p hydracache-long-run-supervisor-074 --release --locked
 
+      - name: Verify the transported revision-zero start bundle
+        if: inputs.operation == 'start' && inputs.expected_state_revision == '0'
+        shell: bash
+        env:
+          INPUT_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+          INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_074.py \
+            --verify-start-bundle \
+            --output target/controller-start-bundle-074
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          bundle = json.loads(
+              pathlib.Path("target/controller-start-bundle-074/start-bundle.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          if bundle["campaign_id"] != os.environ["INPUT_CAMPAIGN_ID"]:
+              raise SystemExit("start bundle campaign differs from dispatch identity")
+          if bundle["manifest_sha256"] != os.environ["INPUT_MANIFEST_SHA256"]:
+              raise SystemExit("start bundle manifest differs from dispatch identity")
+          PY
+
       - name: Execute the one typed operation
         id: request
+        if: inputs.operation != 'start' || inputs.expected_state_revision != '0'
         shell: bash
         run: |
           set +e
           target/release/hydracache-long-run-supervisor-074 request \
             /run/hydracache-perf/supervisor-v1.sock \
             target/controller-request-074/request.json \
+            > target/controller-request-074/response.json
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit "$code"
+
+      - name: Upload and execute the revision-zero start operation
+        id: request_start
+        if: inputs.operation == 'start' && inputs.expected_state_revision == '0'
+        shell: bash
+        run: |
+          set +e
+          target/release/hydracache-long-run-supervisor-074 request-start \
+            /run/hydracache-perf/supervisor-v1.sock \
+            target/controller-request-074/request.json \
+            target/controller-start-bundle-074 \
             > target/controller-request-074/response.json
           code=$?
           set -e

@@ -122,3 +122,47 @@ fn bounded_accept_rejects_zero_and_excessive_timeouts() {
         Err(TransportError::AcceptTimeout)
     ));
 }
+
+#[test]
+fn bounded_receive_times_out_and_preserves_the_next_packet() {
+    let temporary = tempfile::tempdir().unwrap();
+    let socket = temporary.path().join("supervisor.sock");
+    let listener = SeqpacketListener::bind(&socket, 0o660, unsafe { libc::getegid() }).unwrap();
+    let client = SeqpacketConnection::connect(&socket).unwrap();
+    let connection = listener.accept().unwrap();
+
+    let started = Instant::now();
+    assert!(connection
+        .receive_packet_timeout(Duration::from_millis(25))
+        .unwrap()
+        .is_none());
+    assert!(started.elapsed() >= Duration::from_millis(20));
+    assert!(started.elapsed() < Duration::from_secs(1));
+
+    client.send_packet(b"ready").unwrap();
+    assert_eq!(
+        connection
+            .receive_packet_timeout(Duration::from_secs(1))
+            .unwrap()
+            .unwrap(),
+        b"ready"
+    );
+}
+
+#[test]
+fn bounded_receive_rejects_zero_and_excessive_timeouts() {
+    let temporary = tempfile::tempdir().unwrap();
+    let socket = temporary.path().join("supervisor.sock");
+    let listener = SeqpacketListener::bind(&socket, 0o660, unsafe { libc::getegid() }).unwrap();
+    let _client = SeqpacketConnection::connect(&socket).unwrap();
+    let connection = listener.accept().unwrap();
+
+    assert!(matches!(
+        connection.receive_packet_timeout(Duration::ZERO),
+        Err(TransportError::ReceiveTimeout)
+    ));
+    assert!(matches!(
+        connection.receive_packet_timeout(Duration::from_secs(61)),
+        Err(TransportError::ReceiveTimeout)
+    ));
+}

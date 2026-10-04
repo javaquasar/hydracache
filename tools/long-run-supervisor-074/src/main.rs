@@ -30,6 +30,14 @@ fn run() -> u8 {
             request(&PathBuf::from(socket), &PathBuf::from(request_path))
         }
         #[cfg(target_os = "linux")]
+        [command, socket, request_path, bundle_directory] if command == "request-start" => {
+            request_start(
+                &PathBuf::from(socket),
+                &PathBuf::from(request_path),
+                &PathBuf::from(bundle_directory),
+            )
+        }
+        #[cfg(target_os = "linux")]
         [command, campaign_directory] if command == "collect-host-receipt" => {
             collect_host_receipt(&PathBuf::from(campaign_directory))
         }
@@ -44,9 +52,53 @@ fn run() -> u8 {
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | serve <config.toml> | request <socket> <request.json> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn request_start(
+    socket: &std::path::Path,
+    request_path: &std::path::Path,
+    bundle_directory: &std::path::Path,
+) -> u8 {
+    use hydracache_long_run_supervisor_074::client::exchange_start_with_evidence;
+    use hydracache_long_run_supervisor_074::protocol::parse_wire_request;
+    use hydracache_long_run_supervisor_074::start_evidence::load_start_transport_inputs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let result = std::fs::read(request_path)
+        .map_err(|error| error.to_string())
+        .and_then(|packet| {
+            let wire = parse_wire_request(&packet).map_err(|error| error.to_string())?;
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map_err(|error| error.to_string())?
+                .as_secs();
+            let (manifest, host_receipt) =
+                load_start_transport_inputs(bundle_directory, &wire.request, now)
+                    .map_err(|error| error.to_string())?;
+            exchange_start_with_evidence(socket, &packet, &manifest, &host_receipt)
+                .map_err(|error| error.to_string())
+        });
+    match result {
+        Ok(response) => {
+            let code = response.body.error_code.unwrap_or(0);
+            match serde_json::to_string(&response) {
+                Ok(encoded) => println!("{encoded}"),
+                Err(error) => {
+                    eprintln!("{error}");
+                    return 11;
+                }
+            }
+            u8::try_from(code).unwrap_or(11)
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            11
         }
     }
 }

@@ -20,6 +20,212 @@ pub struct PreparedCampaignEvidence {
     pub host_receipt: HostObservationReceipt,
 }
 
+pub fn load_start_transport_inputs(
+    bundle_directory: &Path,
+    request: &Request,
+    now_unix_seconds: u64,
+) -> Result<(Vec<u8>, Vec<u8>), StartEvidenceError> {
+    if request.operation != Operation::Start || request.expected_state_revision != 0 {
+        return Err(StartEvidenceError::Path);
+    }
+    let bundle_directory = canonical_directory(bundle_directory)?;
+    let manifest_bytes = read_input(
+        &bundle_directory.join(CAMPAIGN_MANIFEST_NAME),
+        MAX_MANIFEST_BYTES as u64,
+    )?;
+    verify_head(
+        &bundle_directory.join(CAMPAIGN_MANIFEST_HEAD_NAME),
+        &request.manifest_sha256,
+    )?;
+    let manifest = parse_manifest(&manifest_bytes, request, now_unix_seconds)?;
+    let host_receipt_bytes = read_input(
+        &bundle_directory.join(HOST_RECEIPT_NAME),
+        MAX_HOST_RECEIPT_BYTES as u64,
+    )?;
+    verify_head(
+        &bundle_directory.join(HOST_RECEIPT_HEAD_NAME),
+        &manifest.host_receipt_sha256,
+    )?;
+    let receipt = parse_host_receipt(&host_receipt_bytes, &manifest.host_receipt_sha256)?;
+    verify_receipt_manifest_binding(&receipt, &manifest)?;
+    Ok((manifest_bytes, host_receipt_bytes))
+}
+
+pub fn publish_received_start_evidence(
+    staging_root: &Path,
+    request: &Request,
+    now_unix_seconds: u64,
+    manifest_bytes: &[u8],
+    host_receipt_bytes: &[u8],
+) -> Result<PathBuf, StartEvidenceError> {
+    if request.operation != Operation::Start
+        || request.expected_state_revision != 0
+        || !is_hash(&request.campaign_id)
+        || manifest_bytes.is_empty()
+        || manifest_bytes.len() > MAX_MANIFEST_BYTES
+        || host_receipt_bytes.is_empty()
+        || host_receipt_bytes.len() > MAX_HOST_RECEIPT_BYTES
+    {
+        return Err(StartEvidenceError::Input);
+    }
+    let requested_manifest = request
+        .manifest_path
+        .as_deref()
+        .map(Path::new)
+        .filter(|path| path.is_absolute())
+        .ok_or(StartEvidenceError::Path)?;
+    if requested_manifest
+        != staging_root
+            .join(&request.campaign_id)
+            .join(CAMPAIGN_MANIFEST_NAME)
+    {
+        return Err(StartEvidenceError::Path);
+    }
+    let staging_root = canonical_directory(staging_root)?;
+    let final_directory = staging_root.join(&request.campaign_id);
+
+    validate_received_bytes(
+        request,
+        now_unix_seconds,
+        manifest_bytes,
+        host_receipt_bytes,
+    )?;
+    if final_directory.exists() {
+        verify_received_directory(
+            &staging_root,
+            &final_directory,
+            request,
+            now_unix_seconds,
+            manifest_bytes,
+            host_receipt_bytes,
+        )?;
+        return Ok(final_directory);
+    }
+
+    let temporary_directory = staging_root.join(format!(".{}.upload", request.campaign_id));
+    if temporary_directory.exists() {
+        verify_received_directory(
+            &staging_root,
+            &temporary_directory,
+            request,
+            now_unix_seconds,
+            manifest_bytes,
+            host_receipt_bytes,
+        )?;
+    } else {
+        create_private_directory(&temporary_directory)?;
+        write_new(
+            &temporary_directory.join(CAMPAIGN_MANIFEST_NAME),
+            manifest_bytes,
+        )?;
+        write_new(
+            &temporary_directory.join(CAMPAIGN_MANIFEST_HEAD_NAME),
+            format!("{}\n", request.manifest_sha256).as_bytes(),
+        )?;
+        let manifest = parse_manifest(manifest_bytes, request, now_unix_seconds)?;
+        write_new(
+            &temporary_directory.join(HOST_RECEIPT_NAME),
+            host_receipt_bytes,
+        )?;
+        write_new(
+            &temporary_directory.join(HOST_RECEIPT_HEAD_NAME),
+            format!("{}\n", manifest.host_receipt_sha256).as_bytes(),
+        )?;
+        sync_directory(&temporary_directory)?;
+    }
+    fs::rename(&temporary_directory, &final_directory)?;
+    sync_directory(&staging_root)?;
+    verify_received_directory(
+        &staging_root,
+        &final_directory,
+        request,
+        now_unix_seconds,
+        manifest_bytes,
+        host_receipt_bytes,
+    )?;
+    Ok(final_directory)
+}
+
+fn validate_received_bytes(
+    request: &Request,
+    now_unix_seconds: u64,
+    manifest_bytes: &[u8],
+    host_receipt_bytes: &[u8],
+) -> Result<(), StartEvidenceError> {
+    let manifest = parse_manifest(manifest_bytes, request, now_unix_seconds)?;
+    let host_receipt = parse_host_receipt(host_receipt_bytes, &manifest.host_receipt_sha256)?;
+    verify_receipt_manifest_binding(&host_receipt, &manifest)?;
+    Ok(())
+}
+
+fn verify_received_directory(
+    staging_root: &Path,
+    directory: &Path,
+    request: &Request,
+    now_unix_seconds: u64,
+    manifest_bytes: &[u8],
+    host_receipt_bytes: &[u8],
+) -> Result<(), StartEvidenceError> {
+    let directory = canonical_direct_child(staging_root, directory)?;
+    verify_received_permissions(&directory)?;
+    let stored_manifest = read_input(
+        &directory.join(CAMPAIGN_MANIFEST_NAME),
+        MAX_MANIFEST_BYTES as u64,
+    )?;
+    let stored_receipt = read_input(
+        &directory.join(HOST_RECEIPT_NAME),
+        MAX_HOST_RECEIPT_BYTES as u64,
+    )?;
+    if stored_manifest != manifest_bytes || stored_receipt != host_receipt_bytes {
+        return Err(StartEvidenceError::Input);
+    }
+    verify_head(
+        &directory.join(CAMPAIGN_MANIFEST_HEAD_NAME),
+        &request.manifest_sha256,
+    )?;
+    let manifest = parse_manifest(&stored_manifest, request, now_unix_seconds)?;
+    verify_head(
+        &directory.join(HOST_RECEIPT_HEAD_NAME),
+        &manifest.host_receipt_sha256,
+    )?;
+    let receipt = parse_host_receipt(&stored_receipt, &manifest.host_receipt_sha256)?;
+    verify_receipt_manifest_binding(&receipt, &manifest)?;
+    Ok(())
+}
+
+#[cfg(unix)]
+fn verify_received_permissions(directory: &Path) -> Result<(), StartEvidenceError> {
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+    let directory_metadata = fs::symlink_metadata(directory)?;
+    if directory_metadata.permissions().mode() & 0o7777 != 0o750
+        || directory_metadata.uid() != unsafe { libc::geteuid() }
+        || directory_metadata.gid() != unsafe { libc::getegid() }
+    {
+        return Err(StartEvidenceError::Input);
+    }
+    for name in [
+        CAMPAIGN_MANIFEST_NAME,
+        CAMPAIGN_MANIFEST_HEAD_NAME,
+        HOST_RECEIPT_NAME,
+        HOST_RECEIPT_HEAD_NAME,
+    ] {
+        let metadata = fs::symlink_metadata(directory.join(name))?;
+        if metadata.permissions().mode() & 0o7777 != 0o400
+            || metadata.uid() != directory_metadata.uid()
+            || metadata.gid() != directory_metadata.gid()
+        {
+            return Err(StartEvidenceError::Input);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn verify_received_permissions(_directory: &Path) -> Result<(), StartEvidenceError> {
+    Ok(())
+}
+
 #[derive(Debug, Error)]
 pub enum StartEvidenceError {
     #[error("start evidence request or path is outside the create-new staging contract")]

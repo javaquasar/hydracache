@@ -7,7 +7,7 @@ use hydracache_long_run_supervisor_074::artifact::PacketResult;
 use hydracache_long_run_supervisor_074::auth::{
     canonical_document, canonical_message, AuthorizationBody, SignedAuthorization,
 };
-use hydracache_long_run_supervisor_074::client::exchange;
+use hydracache_long_run_supervisor_074::client::{exchange, exchange_start_with_evidence};
 use hydracache_long_run_supervisor_074::config::ServerConfig;
 use hydracache_long_run_supervisor_074::event::{
     append_lifecycle_event, append_or_replay, request_sha256, verify_event_journal, EventOutcome,
@@ -46,6 +46,7 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
 fn hex(bytes: &[u8]) -> String {
@@ -213,6 +214,22 @@ fn exchange_start_once<B: SpawnBackend + Send>(
 ) -> hydracache_long_run_supervisor_074::protocol::Response {
     std::thread::scope(|scope| {
         let client = scope.spawn(|| exchange(socket, packet));
+        server.serve_one_with_start_backend(backend).unwrap();
+        client.join().unwrap().unwrap()
+    })
+}
+
+fn exchange_uploaded_start_once<B: SpawnBackend + Send>(
+    server: &SupervisorServer,
+    socket: &Path,
+    packet: &[u8],
+    manifest: &[u8],
+    host_receipt: &[u8],
+    backend: &mut B,
+) -> hydracache_long_run_supervisor_074::protocol::Response {
+    std::thread::scope(|scope| {
+        let client =
+            scope.spawn(|| exchange_start_with_evidence(socket, packet, manifest, host_receipt));
         server.serve_one_with_start_backend(backend).unwrap();
         client.join().unwrap().unwrap()
     })
@@ -1063,6 +1080,102 @@ fn maintenance_expires_the_active_campaign_without_a_controller_request() {
         None
     );
     assert_eq!(backend.stop_calls, 1);
+}
+
+#[test]
+fn revision_zero_start_uploads_evidence_through_the_privileged_supervisor() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    let socket = temporary.path().join("supervisor-upload-start.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = stage_start(&staging_root, &key, now);
+    let staged = staging_root.join("1".repeat(64));
+    let manifest = fs::read(staged.join("campaign-start.json")).unwrap();
+    let host_receipt = fs::read(staged.join(HOST_RECEIPT_NAME)).unwrap();
+    fs::remove_dir_all(&staged).unwrap();
+
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeStartBackend::default();
+    let response = exchange_uploaded_start_once(
+        &server,
+        &socket,
+        &packet,
+        &manifest,
+        &host_receipt,
+        &mut backend,
+    );
+
+    assert!(response.body.ok);
+    assert_eq!(backend.starts, 1);
+    assert_eq!(
+        fs::read(staged.join("campaign-start.json")).unwrap(),
+        manifest
+    );
+    assert_eq!(
+        fs::read(staged.join(HOST_RECEIPT_NAME)).unwrap(),
+        host_receipt
+    );
+    assert_eq!(
+        fs::metadata(&staged).unwrap().permissions().mode() & 0o777,
+        0o750
+    );
+    assert_eq!(
+        fs::metadata(staged.join("campaign-start.json"))
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o777,
+        0o400
+    );
+    assert!(campaign_root
+        .join("1".repeat(64))
+        .join("state.json")
+        .exists());
+}
+
+#[test]
+fn revision_zero_upload_rejects_tampered_receipt_before_staging_or_spawn() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    let socket = temporary.path().join("supervisor-upload-reject.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = stage_start(&staging_root, &key, now);
+    let staged = staging_root.join("1".repeat(64));
+    let manifest = fs::read(staged.join("campaign-start.json")).unwrap();
+    let mut host_receipt = fs::read(staged.join(HOST_RECEIPT_NAME)).unwrap();
+    host_receipt[0] ^= 1;
+    fs::remove_dir_all(&staged).unwrap();
+
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeStartBackend::default();
+    let response = exchange_uploaded_start_once(
+        &server,
+        &socket,
+        &packet,
+        &manifest,
+        &host_receipt,
+        &mut backend,
+    );
+
+    assert!(!response.body.ok);
+    assert_eq!(response.body.error_code, Some(9));
+    assert_eq!(backend.starts, 0);
+    assert!(!staged.exists());
+    assert!(!campaign_root.join("1".repeat(64)).exists());
 }
 
 #[test]
