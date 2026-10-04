@@ -1,7 +1,8 @@
 use crate::imap_foundation_evidence;
 use crate::imap_value_plane_model::{execute_for_test, git_head, hex_digest};
 use hydracache_cluster_testkit::distributed_value_plane_075::{
-    DistributedValuePlaneSimulator, ExecutionFault, SimulatorBounds,
+    run_seeded_chaos_campaign, ChaosCampaignBounds, DistributedValuePlaneSimulator, ExecutionFault,
+    SimulatorBounds,
 };
 use hydracache_cluster_testkit::value_plane_history_075::{
     HistoryCall, HistoryOperation, HistoryOutcome, HistoryResult, ValuePlaneHistory,
@@ -86,6 +87,16 @@ fn fault_receipt(source_sha: &str, seed: u64) -> Result<Value, Box<dyn Error>> {
     if !replay.replayed || replay.outcome != result.outcome {
         return Err("response-loss probe did not replay the retained outcome".into());
     }
+    let chaos = run_seeded_chaos_campaign(
+        seed,
+        ChaosCampaignBounds {
+            steps: 128,
+            max_trace_events: 128,
+        },
+    )?;
+    if !chaos.passed() {
+        return Err(format!("seeded chaos probe failed: {:?}", chaos.violations).into());
+    }
     let checkpoints = json!([
         "before_owner_apply",
         "after_owner_apply",
@@ -102,6 +113,8 @@ fn fault_receipt(source_sha: &str, seed: u64) -> Result<Value, Box<dyn Error>> {
         "release": RELEASE,
         "source_sha": source_sha,
         "seed": seed,
+        "chaos_steps": chaos.steps_completed,
+        "chaos_trace_fingerprint": format!("{:016x}", chaos.trace_fingerprint),
         "checkpoints": checkpoints,
         "schedule_sha256": canonical_digest(&checkpoints),
         "result": "passed"

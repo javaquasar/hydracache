@@ -1,6 +1,9 @@
 use crate::imap_value_plane_model::{
     git_head, hex_digest, sha256_file, AuthorityModelReceipt, MODEL_SOURCE, RECEIPT_SCHEMA,
 };
+use hydracache_cluster_testkit::distributed_value_plane_075::{
+    run_seeded_chaos_campaign, ChaosCampaignBounds,
+};
 use hydracache_cluster_testkit::value_plane_model_075::{
     AUTHORITY_INVARIANT_IDS, AUTHORITY_MODEL_ID,
 };
@@ -251,12 +254,48 @@ fn validate_receipt(
     match schema_id {
         RECEIPT_SCHEMA => validate_model_receipt(root, receipt, problems)?,
         "hydracache.imap.fault-schedule-receipt.v1" => {
-            validate_array_checksum(&receipt, "checkpoints", "schedule_sha256", problems)
+            validate_array_checksum(&receipt, "checkpoints", "schedule_sha256", problems);
+            validate_fault_chaos(&receipt, problems)?;
         }
         "hydracache.imap.linearizability-receipt.v1" => {
             validate_array_checksum(&receipt, "history", "history_sha256", problems)
         }
         _ => {}
+    }
+    Ok(())
+}
+
+fn validate_fault_chaos(receipt: &Value, problems: &mut Vec<String>) -> Result<(), Box<dyn Error>> {
+    let Some(seed) = receipt.get("seed").and_then(Value::as_u64) else {
+        return Ok(());
+    };
+    let Some(steps) = receipt.get("chaos_steps").and_then(Value::as_u64) else {
+        return Ok(());
+    };
+    if steps != 128 {
+        problems.push("fault receipt must retain the fixed 128-step chaos campaign".into());
+        return Ok(());
+    }
+    let report = run_seeded_chaos_campaign(
+        seed,
+        ChaosCampaignBounds {
+            steps: 128,
+            max_trace_events: 128,
+        },
+    )?;
+    if !report.passed() {
+        problems.push(format!(
+            "fault receipt chaos replay violates invariants: {:?}",
+            report.violations
+        ));
+    }
+    let expected = format!("{:016x}", report.trace_fingerprint);
+    if receipt
+        .get("chaos_trace_fingerprint")
+        .and_then(Value::as_str)
+        != Some(expected.as_str())
+    {
+        problems.push("fault receipt chaos trace fingerprint does not replay from seed".into());
     }
     Ok(())
 }

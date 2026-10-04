@@ -2,10 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "hydracache.imap.fault-schedule-receipt.v1",
   "type": "object", "additionalProperties": false,
-  "required": ["schema", "release", "source_sha", "seed", "checkpoints", "schedule_sha256", "result"],
+  "required": ["schema", "release", "source_sha", "seed", "chaos_steps", "chaos_trace_fingerprint", "checkpoints", "schedule_sha256", "result"],
   "properties": {
     "schema": {"const": "hydracache.imap.fault-schedule-receipt.v1"}, "release": {"const": "0.75"},
     "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "seed": {"type": "integer", "minimum": 0},
+    "chaos_steps": {"const": 128},
+    "chaos_trace_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
     "checkpoints": {"type": "array", "minItems": 1, "items": {"enum": ["before_owner_apply", "after_owner_apply", "after_replica_proof", "after_acknowledgement", "response_loss", "promotion", "repair", "full_member_restart", "whole_cluster_loss"]}},
     "schedule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "result": {"const": "passed"}
   }

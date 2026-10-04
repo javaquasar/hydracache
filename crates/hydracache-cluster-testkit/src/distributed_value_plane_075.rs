@@ -110,6 +110,40 @@ pub struct SimEvent {
     pub mutation: Option<MutationIdentity>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ChaosCampaignBounds {
+    pub steps: usize,
+    pub max_trace_events: usize,
+}
+
+impl Default for ChaosCampaignBounds {
+    fn default() -> Self {
+        Self {
+            steps: 64,
+            max_trace_events: 64,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChaosCampaignReport {
+    pub seed: u64,
+    pub requested_steps: usize,
+    pub steps_completed: usize,
+    pub final_epoch: u64,
+    pub trace_fingerprint: u64,
+    pub trace: Vec<String>,
+    pub violations: Vec<String>,
+}
+
+impl ChaosCampaignReport {
+    pub fn passed(&self) -> bool {
+        self.steps_completed == self.requested_steps
+            && self.steps_completed == self.trace.len()
+            && self.violations.is_empty()
+    }
+}
+
 #[derive(Debug, Clone)]
 struct SimNode {
     live: bool,
@@ -357,6 +391,9 @@ impl DistributedValuePlaneSimulator {
             .nodes
             .get_mut(node_id)
             .ok_or_else(|| SimulatorError::UnknownNode(node_id.to_owned()))?;
+        if node.plane.epoch() < self.epoch {
+            node.plane.promote(self.epoch, node_id.to_owned())?;
+        }
         node.live = true;
         Ok(())
     }
@@ -388,7 +425,7 @@ impl DistributedValuePlaneSimulator {
                     .then_some(node_id.clone())
             })
             .unwrap_or(current.owner.clone());
-        self.advance_cluster_epoch(new_epoch, &current.backup)?;
+        self.advance_cluster_epoch(new_epoch)?;
         let assignment = PartitionAssignment {
             partition,
             epoch: new_epoch,
@@ -420,11 +457,12 @@ impl DistributedValuePlaneSimulator {
             .get(&assignment.owner)
             .expect("owner checked above")
             .plane
-            .clone();
+            .partition_snapshot(partition);
         self.nodes
             .get_mut(target)
             .expect("target checked above")
-            .plane = source;
+            .plane
+            .install_partition_snapshot(source)?;
         let assignment = self
             .assignments
             .get_mut(&partition)
@@ -465,12 +503,13 @@ impl DistributedValuePlaneSimulator {
             .get(&current.owner)
             .expect("owner checked above")
             .plane
-            .clone();
+            .partition_snapshot(partition);
         self.nodes
             .get_mut(target)
             .expect("target checked above")
-            .plane = source;
-        self.advance_cluster_epoch(new_epoch, target)?;
+            .plane
+            .install_partition_snapshot(source)?;
+        self.advance_cluster_epoch(new_epoch)?;
         let assignment = PartitionAssignment {
             partition,
             epoch: new_epoch,
@@ -503,6 +542,44 @@ impl DistributedValuePlaneSimulator {
         Ok(node.plane.live_value(key).map(<[u8]>::to_vec))
     }
 
+    pub fn invariant_violations(&self, partition: u32, keys: &[CanonicalMapKey]) -> Vec<String> {
+        let mut violations = Vec::new();
+        let Some(assignment) = self.assignments.get(&partition) else {
+            return vec![format!("partition {partition} has no assignment")];
+        };
+        if assignment.epoch != self.epoch {
+            violations.push(format!(
+                "partition {partition} epoch {} differs from cluster epoch {}",
+                assignment.epoch, self.epoch
+            ));
+        }
+        if assignment.owner == assignment.backup {
+            violations.push(format!("partition {partition} owner equals backup"));
+        }
+        if !self.node_live(&assignment.owner) {
+            violations.push(format!("partition {partition} owner is unavailable"));
+        }
+        if assignment.backup_proved {
+            if !self.node_live(&assignment.backup) {
+                violations.push(format!(
+                    "partition {partition} proved backup is unavailable"
+                ));
+            } else {
+                for key in keys.iter().filter(|key| key.partition == partition) {
+                    let owner = self.node_value(&assignment.owner, key);
+                    let backup = self.node_value(&assignment.backup, key);
+                    if owner != backup {
+                        violations.push(format!(
+                            "partition {partition} owner/backup state diverged for {:?}",
+                            key.key_bytes
+                        ));
+                    }
+                }
+            }
+        }
+        violations
+    }
+
     fn assignment_for_key(
         &self,
         key: &CanonicalMapKey,
@@ -524,14 +601,10 @@ impl DistributedValuePlaneSimulator {
         self.nodes.get(node_id).is_some_and(|node| node.live)
     }
 
-    fn advance_cluster_epoch(
-        &mut self,
-        new_epoch: u64,
-        authority: &str,
-    ) -> Result<(), SimulatorError> {
-        for node in self.nodes.values_mut() {
+    fn advance_cluster_epoch(&mut self, new_epoch: u64) -> Result<(), SimulatorError> {
+        for (node_id, node) in &mut self.nodes {
             if node.live {
-                node.plane.promote(new_epoch, authority.to_owned())?;
+                node.plane.promote(new_epoch, node_id.clone())?;
             }
         }
         self.epoch = new_epoch;
@@ -565,6 +638,170 @@ impl DistributedValuePlaneSimulator {
             mutation,
         });
         self.next_event_sequence = self.next_event_sequence.saturating_add(1);
+    }
+}
+
+pub fn run_seeded_chaos_campaign(
+    seed: u64,
+    bounds: ChaosCampaignBounds,
+) -> Result<ChaosCampaignReport, SimulatorError> {
+    if bounds.steps == 0 {
+        return Err(SimulatorError::InvalidBound("chaos_steps"));
+    }
+    if bounds.max_trace_events < bounds.steps {
+        return Err(SimulatorError::InvalidBound("chaos_trace_events"));
+    }
+    let mut simulator = DistributedValuePlaneSimulator::new(
+        ["node-a", "node-b", "node-c"],
+        SimulatorBounds {
+            partitions: 3,
+            max_proxy_hops: 1,
+            max_bulk_items: 16,
+            max_listener_events: 64,
+        },
+        ValuePlaneBounds::default(),
+    )?;
+    let keys = (0..3)
+        .map(|partition| {
+            CanonicalMapKey::new(
+                "chaos-tenant",
+                "chaos-map",
+                1,
+                vec![b'k', partition as u8],
+                partition,
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut generator = CampaignGenerator::new(seed);
+    let mut trace = Vec::with_capacity(bounds.steps);
+    let mut violations = Vec::new();
+    for step in 0..bounds.steps {
+        let partition = generator.next_u64() as u32 % 3;
+        let action = generator.next_u64() % 6;
+        let key = keys[partition as usize].clone();
+        let sequence = step as u64 + 1;
+        let epoch = simulator.epoch();
+        let assignment = simulator
+            .assignment(partition)
+            .expect("campaign partition exists")
+            .clone();
+        let value = vec![(generator.next_u64() & 0xff) as u8, step as u8];
+        let plan = campaign_put(sequence, key.clone(), value, epoch);
+        let label = match action {
+            0 => {
+                simulator.execute(&assignment.owner, plan)?;
+                format!("put:p{partition}:e{epoch}")
+            }
+            1 => {
+                let first = simulator.execute_with_fault(
+                    &assignment.owner,
+                    plan.clone(),
+                    0,
+                    ExecutionFault::LoseResponseAfterAcknowledgement,
+                )?;
+                let replay = simulator.execute(&assignment.owner, plan)?;
+                if first.outcome != replay.outcome || !replay.replayed {
+                    violations.push(format!("step {step}: response-loss replay diverged"));
+                }
+                format!("response-loss-replay:p{partition}:e{epoch}")
+            }
+            2 => {
+                simulator.fail_node(&assignment.backup)?;
+                if !matches!(
+                    simulator.execute(&assignment.owner, plan),
+                    Err(SimulatorError::RequiredBackupUnavailable(_))
+                ) {
+                    violations.push(format!("step {step}: missing backup did not reject"));
+                }
+                simulator.restore_node(&assignment.backup)?;
+                simulator.repair_backup(partition, &assignment.backup)?;
+                format!("backup-loss-repair:p{partition}:e{epoch}")
+            }
+            3 => {
+                simulator.fail_node(&assignment.owner)?;
+                let promoted = simulator.promote_backup(partition, epoch.saturating_add(1))?;
+                simulator.restore_node(&assignment.owner)?;
+                simulator.repair_backup(partition, &promoted.backup)?;
+                format!("owner-loss-promote-repair:p{partition}:e{}", epoch + 1)
+            }
+            4 => {
+                simulator.rebalance(partition, &assignment.backup, epoch.saturating_add(1))?;
+                format!("rebalance:p{partition}:e{}", epoch + 1)
+            }
+            _ => {
+                let stale_epoch = epoch.saturating_sub(1);
+                let stale = campaign_put(sequence, key, vec![0xff], stale_epoch);
+                if !matches!(
+                    simulator.execute(&assignment.owner, stale),
+                    Err(SimulatorError::StaleEpoch { .. })
+                ) {
+                    violations.push(format!("step {step}: stale epoch was not rejected"));
+                }
+                format!("stale-epoch-canary:p{partition}:e{stale_epoch}")
+            }
+        };
+        trace.push(label);
+        for partition in 0..3 {
+            violations.extend(
+                simulator
+                    .invariant_violations(partition, &keys)
+                    .into_iter()
+                    .map(|violation| format!("step {step}: {violation}")),
+            );
+        }
+        if !violations.is_empty() {
+            break;
+        }
+    }
+    Ok(ChaosCampaignReport {
+        seed,
+        requested_steps: bounds.steps,
+        steps_completed: trace.len(),
+        final_epoch: simulator.epoch(),
+        trace_fingerprint: trace_fingerprint(seed, &trace),
+        trace,
+        violations,
+    })
+}
+
+fn campaign_put(sequence: u64, key: CanonicalMapKey, value: Vec<u8>, epoch: u64) -> MutationPlan {
+    let digest = value.iter().fold(sequence, |digest, byte| {
+        digest.wrapping_mul(16777619) ^ u64::from(*byte)
+    });
+    MutationPlan::new(
+        MutationIdentity::new("chaos-client", sequence),
+        crate::value_plane_model_075::MutationDigest::new(digest),
+        key,
+        crate::value_plane_model_075::MutationOperation::Put {
+            value,
+            ttl: crate::value_plane_model_075::TtlDirective::Eternal,
+        },
+        epoch,
+    )
+}
+
+fn trace_fingerprint(seed: u64, trace: &[String]) -> u64 {
+    trace
+        .iter()
+        .flat_map(|entry| entry.bytes())
+        .fold(0xcbf2_9ce4_8422_2325 ^ seed, |fingerprint, byte| {
+            (fingerprint ^ u64::from(byte)).wrapping_mul(0x100_0000_01b3)
+        })
+}
+
+struct CampaignGenerator(u64);
+
+impl CampaignGenerator {
+    fn new(seed: u64) -> Self {
+        let state = seed ^ 0x9e37_79b9_7f4a_7c15;
+        Self(if state == 0 { u64::MAX } else { state })
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.0 ^= self.0 << 13;
+        self.0 ^= self.0 >> 7;
+        self.0 ^= self.0 << 17;
+        self.0
     }
 }
 

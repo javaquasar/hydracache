@@ -225,6 +225,8 @@ independent of the unfinished 0.74 production shape:
 - an executable three-node logical value-plane simulator covering bounded proxy routing,
   synchronous backup proof, response-loss replay, promotion, repair, rebalance, partial bulk and
   listener gap behavior without making the simulator reachable from production crates;
+- a reproducible seeded stateful chaos campaign with continuous owner/backup/epoch invariants,
+  partition-scoped transfer regression coverage and a trace fingerprint retained in fault evidence;
 - executable tenant/replay/replica-proof/redirect/generation/trust/audit/decode security guards and
   an exact-source generator/validator for the complete model, fault, history and RPO receipt set.
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;

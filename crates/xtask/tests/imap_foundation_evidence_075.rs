@@ -4,6 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 use xtask::imap_foundation_evidence::check_at_root;
+use xtask::imap_foundation_generate::generate_at_root;
 use xtask::imap_value_plane_model::{execute_for_test, git_head, hex_digest};
 
 fn root() -> PathBuf {
@@ -61,6 +62,8 @@ fn unknown_fault_checkpoint_is_rejected() {
         "release": "0.75",
         "source_sha": git_head(&workspace).unwrap(),
         "seed": 117,
+        "chaos_steps": 128,
+        "chaos_trace_fingerprint": "0000000000000075",
         "schedule_sha256": canonical_digest(&checkpoints),
         "checkpoints": checkpoints,
         "result": "passed"
@@ -90,4 +93,21 @@ fn truncated_history_checksum_is_rejected() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("canonical history")));
+}
+
+#[test]
+fn tampered_chaos_fingerprint_is_rejected_by_seed_replay() {
+    let workspace = root();
+    let temp = tempdir().unwrap();
+    let output = temp.path().join("evidence");
+    generate_at_root(&workspace, &output, 117).unwrap();
+    let path = output.join("fault-schedule.json");
+    let mut receipt: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    receipt["chaos_trace_fingerprint"] = json!("0000000000000000");
+    fs::write(&path, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
+
+    let problems = check_at_root(&workspace, "0.75", Some(&path)).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("does not replay from seed")));
 }

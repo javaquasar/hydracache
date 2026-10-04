@@ -276,6 +276,15 @@ pub struct MutationHistoryEvent {
     pub stage: MutationStage,
 }
 
+/// Opaque partition-scoped state used by the test-only repair/rebalance simulator.
+#[derive(Debug, Clone)]
+pub struct ReferencePartitionSnapshot {
+    partition: u32,
+    entries: BTreeMap<CanonicalMapKey, EntryState>,
+    mutations: BTreeMap<MutationIdentity, MutationRecord>,
+    history: Vec<MutationHistoryEvent>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum EntryState {
     Live {
@@ -386,6 +395,82 @@ impl ReferenceValuePlane {
             }) if expires_at.is_none_or(|deadline| deadline > self.logical_time) => Some(value),
             Some(EntryState::Live { .. }) | Some(EntryState::Tombstone { .. }) | None => None,
         }
+    }
+
+    pub fn partition_snapshot(&self, partition: u32) -> ReferencePartitionSnapshot {
+        let entries = self
+            .entries
+            .iter()
+            .filter(|(key, _)| key.partition == partition)
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+        let mutations = self
+            .mutations
+            .iter()
+            .filter(|(_, record)| record.plan.key.partition == partition)
+            .map(|(identity, record)| (identity.clone(), record.clone()))
+            .collect::<BTreeMap<_, _>>();
+        let identities = mutations.keys().collect::<std::collections::BTreeSet<_>>();
+        let history = self
+            .history
+            .iter()
+            .filter(|event| identities.contains(&event.identity))
+            .cloned()
+            .collect();
+        ReferencePartitionSnapshot {
+            partition,
+            entries,
+            mutations,
+            history,
+        }
+    }
+
+    pub fn install_partition_snapshot(
+        &mut self,
+        snapshot: ReferencePartitionSnapshot,
+    ) -> Result<(), ValuePlaneError> {
+        let retained_mutations = self
+            .mutations
+            .len()
+            .saturating_sub(
+                self.mutations
+                    .values()
+                    .filter(|record| record.plan.key.partition == snapshot.partition)
+                    .count(),
+            )
+            .saturating_add(snapshot.mutations.len());
+        self.check_bound(
+            "dedup_entries",
+            self.bounds.max_dedup_entries,
+            retained_mutations,
+        )?;
+        let removed_identities = self
+            .mutations
+            .iter()
+            .filter(|(_, record)| record.plan.key.partition == snapshot.partition)
+            .map(|(identity, _)| identity.clone())
+            .collect::<std::collections::BTreeSet<_>>();
+        let retained_history = self
+            .history
+            .iter()
+            .filter(|event| !removed_identities.contains(&event.identity))
+            .count()
+            .saturating_add(snapshot.history.len());
+        self.check_bound(
+            "history_events",
+            self.bounds.max_history_events,
+            retained_history,
+        )?;
+        self.entries
+            .retain(|key, _| key.partition != snapshot.partition);
+        self.entries.extend(snapshot.entries);
+        self.mutations
+            .retain(|_, record| record.plan.key.partition != snapshot.partition);
+        self.mutations.extend(snapshot.mutations);
+        self.history
+            .retain(|event| !removed_identities.contains(&event.identity));
+        self.history.extend(snapshot.history);
+        Ok(())
     }
 
     pub fn validate_bulk(&self, plans: &[MutationPlan]) -> Result<(), ValuePlaneError> {

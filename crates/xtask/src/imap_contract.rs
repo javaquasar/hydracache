@@ -491,6 +491,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "complete_foundation_receipt_generation",
         "cross_language_reference_key_codec",
         "local_distributed_correctness_gate",
+        "seeded_stateful_chaos_campaign",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(

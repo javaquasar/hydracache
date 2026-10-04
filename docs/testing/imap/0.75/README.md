@@ -20,9 +20,10 @@ cargo xtask imap-foundation-evidence-check --release 0.75 --receipts target/imap
 ```
 
 The generator runs the bounded authority explorer, deterministic response-loss/replay probe,
-linearizability oracle, and acknowledged-owner-loss/RPO probe. The testkit also runs a three-node
-logical simulator for proxy routing, replication proof, promotion, repair, rebalance, partial bulk,
-and listener overflow, plus executable guards for every threat in `security-contract.json`.
+128-step seeded stateful chaos campaign, linearizability oracle, and acknowledged-owner-loss/RPO
+probe. The testkit also sweeps deterministic three-node schedules for proxy routing, replication
+proof, promotion, partition-scoped repair/rebalance, epoch catch-up, partial bulk and listener
+overflow, plus executable guards for every threat in `security-contract.json`.
 
 Run all locally available Rust distributed-foundation proofs and optionally retain their evidence
 with one command:

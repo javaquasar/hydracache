@@ -1,6 +1,6 @@
 use hydracache_cluster_testkit::distributed_value_plane_075::{
-    certainty_label, DistributedValuePlaneSimulator, ExecutionFault, SimEventKind, SimulatorBounds,
-    SimulatorError,
+    certainty_label, run_seeded_chaos_campaign, ChaosCampaignBounds,
+    DistributedValuePlaneSimulator, ExecutionFault, SimEventKind, SimulatorBounds, SimulatorError,
 };
 use hydracache_cluster_testkit::value_plane_model_075::{
     CanonicalMapKey, MutationDigest, MutationIdentity, MutationOperation, MutationPlan,
@@ -201,5 +201,93 @@ fn proxy_loops_and_unbounded_shapes_fail_closed() {
             limit: 4,
             actual: 5
         })
+    );
+}
+
+#[test]
+fn partition_transfer_preserves_unrelated_partition_state() {
+    let mut sim = simulator(16);
+    let partition_zero = key(0, 1);
+    let partition_one = key(1, 1);
+    let p0 = sim.assignment(0).unwrap().clone();
+    let p1 = sim.assignment(1).unwrap().clone();
+    sim.execute(&p0.owner, put(1, partition_zero.clone(), b"p0", 1))
+        .unwrap();
+    sim.execute(&p1.owner, put(2, partition_one.clone(), b"p1", 1))
+        .unwrap();
+
+    sim.rebalance(0, &p0.backup, 2).unwrap();
+
+    assert_eq!(
+        sim.read(&p1.owner, &partition_one, 0).unwrap(),
+        Some(b"p1".to_vec())
+    );
+    assert_eq!(
+        sim.node_value(&p1.backup, &partition_one).unwrap(),
+        Some(b"p1".to_vec())
+    );
+    assert!(sim
+        .invariant_violations(0, &[partition_zero.clone(), partition_one.clone()])
+        .is_empty());
+    assert!(sim
+        .invariant_violations(1, &[partition_zero, partition_one])
+        .is_empty());
+}
+
+#[test]
+fn seeded_chaos_is_deterministic_and_safe() {
+    let bounds = ChaosCampaignBounds {
+        steps: 128,
+        max_trace_events: 128,
+    };
+    let first = run_seeded_chaos_campaign(0x75, bounds).unwrap();
+    let replay = run_seeded_chaos_campaign(0x75, bounds).unwrap();
+    assert!(first.passed(), "violations: {:?}", first.violations);
+    assert_eq!(first.trace, replay.trace);
+    assert_eq!(first.trace_fingerprint, replay.trace_fingerprint);
+    assert_eq!(first.steps_completed, 128);
+}
+
+#[test]
+fn seeded_chaos_sweep_preserves_invariants() {
+    for seed in 0..128 {
+        let report = run_seeded_chaos_campaign(
+            seed,
+            ChaosCampaignBounds {
+                steps: 64,
+                max_trace_events: 64,
+            },
+        )
+        .unwrap();
+        assert!(
+            report.passed(),
+            "seed {seed} violations: {:?}; trace: {:?}",
+            report.violations,
+            report.trace
+        );
+    }
+}
+
+#[test]
+fn chaos_campaign_bounds_fail_closed() {
+    assert_eq!(
+        run_seeded_chaos_campaign(
+            1,
+            ChaosCampaignBounds {
+                steps: 0,
+                max_trace_events: 1,
+            }
+        ),
+        Err(SimulatorError::InvalidBound("chaos_steps"))
+    );
+    assert_eq!(
+        run_seeded_chaos_campaign(
+            1,
+            ChaosCampaignBounds {
+                steps: 2,
+                max_trace_events: 1,
+            }
+        ),
+        Err(SimulatorError::InvalidBound("chaos_trace_events"))
     );
 }

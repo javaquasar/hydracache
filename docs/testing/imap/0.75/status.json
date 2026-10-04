@@ -23,7 +23,8 @@
       "executable_security_guards",
       "complete_foundation_receipt_generation",
       "cross_language_reference_key_codec",
-      "local_distributed_correctness_gate"
+      "local_distributed_correctness_gate",
+      "seeded_stateful_chaos_campaign"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",
