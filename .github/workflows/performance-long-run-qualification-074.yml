@@ -1,0 +1,292 @@
+name: Performance Long-Run Controller 0.74
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+      operation:
+        description: Explicit typed supervisor mutation; status remains available through the monitor
+        required: true
+        type: choice
+        options:
+          - start
+          - attach
+          - seal
+          - abort
+      campaign_id:
+        description: Existing frozen 64-character campaign id
+        required: true
+        type: string
+      manifest_sha256:
+        description: Exact frozen campaign manifest SHA-256
+        required: true
+        type: string
+      expected_state_revision:
+        description: Exact durable revision expected by this operation
+        required: true
+        type: string
+      request_id:
+        description: New UUIDv4; retry must reuse the original packet artifact instead
+        required: true
+        type: string
+      approval_nonce_sha256:
+        description: Required only for abort; 64 lowercase hex from the protected approval
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: long-run-074-${{ inputs.host_id }}
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Build exact signed controller packet
+    runs-on: ubuntu-latest
+    environment: performance-reference-074
+    timeout-minutes: 15
+    steps:
+      - name: Check out the reviewed tooling commit
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Validate immutable dispatch identity
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_HOST_ID: ${{ inputs.host_id }}
+          INPUT_OPERATION: ${{ inputs.operation }}
+          INPUT_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+          INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          INPUT_REVISION: ${{ inputs.expected_state_revision }}
+          INPUT_REQUEST_ID: ${{ inputs.request_id }}
+          INPUT_APPROVAL_NONCE: ${{ inputs.approval_nonce_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          [[ "$INPUT_HOST_ID" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]
+          [[ "$INPUT_OPERATION" =~ ^(start|attach|seal|abort)$ ]]
+          [[ "$INPUT_CAMPAIGN_ID" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$INPUT_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$INPUT_REVISION" =~ ^(0|[1-9][0-9]*)$ ]]
+          [[ "$INPUT_REQUEST_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
+          if [[ "$INPUT_OPERATION" = abort ]]; then
+            [[ "$INPUT_APPROVAL_NONCE" =~ ^[0-9a-f]{64}$ ]]
+          else
+            test -z "$INPUT_APPROVAL_NONCE"
+          fi
+          if [[ "$INPUT_OPERATION" != start ]]; then
+            test "$INPUT_REVISION" -gt 0
+          fi
+
+      - name: Build the reviewed typed client
+        shell: bash
+        run: cargo build -p hydracache-long-run-supervisor-074 --release --locked
+
+      - name: Construct the strict unsigned request
+        shell: bash
+        env:
+          INPUT_OPERATION: ${{ inputs.operation }}
+          INPUT_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+          INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          INPUT_REVISION: ${{ inputs.expected_state_revision }}
+          INPUT_REQUEST_ID: ${{ inputs.request_id }}
+          INPUT_APPROVAL_NONCE: ${{ inputs.approval_nonce_sha256 }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p target/controller-request-074
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          operation = os.environ["INPUT_OPERATION"]
+          campaign = os.environ["INPUT_CAMPAIGN_ID"]
+          revision = int(os.environ["INPUT_REVISION"])
+          request = {
+              "schema_version": 1,
+              "request_id": os.environ["INPUT_REQUEST_ID"],
+              "operation": operation,
+              "campaign_id": campaign,
+              "expected_state_revision": revision,
+              "manifest_path": (
+                  f"/var/lib/hydracache-performance/staging/{campaign}/campaign-start.json"
+                  if operation == "start" and revision == 0 else None
+              ),
+              "manifest_sha256": os.environ["INPUT_MANIFEST_SHA256"],
+              "controller": {
+                  "repository_id": int(os.environ["REPOSITORY_ID"]),
+                  "run_id": int(os.environ["RUN_ID"]),
+                  "run_attempt": int(os.environ["RUN_ATTEMPT"]),
+                  "actor_id": int(os.environ["ACTOR_ID"]),
+                  "authorization_sha256": "0" * 64,
+              },
+              "abort_reason": "operator-request" if operation == "abort" else None,
+              "approval_nonce_sha256": (
+                  os.environ["INPUT_APPROVAL_NONCE"] if operation == "abort" else None
+              ),
+          }
+          path = pathlib.Path("target/controller-request-074/unsigned.json")
+          path.write_text(json.dumps(request, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+          PY
+
+      - name: Sign and self-verify the request packet
+        shell: bash
+        env:
+          SIGNING_KEY_HEX: ${{ secrets.HYDRACACHE_074_AUTH_SIGNING_KEY_HEX }}
+        run: |
+          set -euo pipefail
+          test -n "$SIGNING_KEY_HEX"
+          umask 077
+          key_file="$RUNNER_TEMP/hydracache-074-signing-key"
+          trap 'rm -f "$key_file"' EXIT
+          printf '%s\n' "$SIGNING_KEY_HEX" > "$key_file"
+          issued="$(date +%s)"
+          expires="$((issued + 300))"
+          target/release/hydracache-long-run-supervisor-074 build-request \
+            target/controller-request-074/unsigned.json \
+            "$key_file" "$issued" "$expires" \
+            target/controller-request-074/request.json \
+            > target/controller-request-074/request.sha256
+          rm -f "$key_file"
+          trap - EXIT
+          test "$(sha256sum target/controller-request-074/request.json | cut -d' ' -f1)" = \
+            "$(tr -d '\r\n' < target/controller-request-074/request.sha256)"
+
+      - name: Publish the immutable controller packet
+        uses: actions/upload-artifact@v4
+        with:
+          name: long-run-074-request-${{ inputs.request_id }}
+          path: |
+            target/controller-request-074/request.json
+            target/controller-request-074/request.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+  dispatch:
+    name: Send packet to the detached host supervisor
+    needs: authorize
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 15
+    steps:
+      - name: Check out the exact reviewed tooling commit
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Download the exact signed packet
+        uses: actions/download-artifact@v5
+        with:
+          name: long-run-074-request-${{ inputs.request_id }}
+          path: target/controller-request-074
+
+      - name: Verify source and packet transport digest
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          expected="$(tr -d '\r\n' < target/controller-request-074/request.sha256)"
+          test "$(sha256sum target/controller-request-074/request.json | cut -d' ' -f1)" = "$expected"
+          cargo build -p hydracache-long-run-supervisor-074 --release --locked
+
+      - name: Execute the one typed operation
+        id: request
+        shell: bash
+        run: |
+          set +e
+          target/release/hydracache-long-run-supervisor-074 request \
+            /run/hydracache-perf/supervisor-v1.sock \
+            target/controller-request-074/request.json \
+            > target/controller-request-074/response.json
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit "$code"
+
+      - name: Capture a best-effort read-only status snapshot
+        if: always()
+        shell: bash
+        env:
+          INPUT_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+          INPUT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          INPUT_REVISION: ${{ inputs.expected_state_revision }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import uuid
+
+          request = {
+              "schema_version": 1,
+              "request_id": str(uuid.uuid4()),
+              "operation": "status",
+              "campaign_id": os.environ["INPUT_CAMPAIGN_ID"],
+              "expected_state_revision": int(os.environ["INPUT_REVISION"]),
+              "manifest_path": None,
+              "manifest_sha256": os.environ["INPUT_MANIFEST_SHA256"],
+              "controller": {
+                  "repository_id": int(os.environ["REPOSITORY_ID"]),
+                  "run_id": int(os.environ["RUN_ID"]),
+                  "run_attempt": int(os.environ["RUN_ATTEMPT"]),
+                  "actor_id": int(os.environ["ACTOR_ID"]),
+                  "authorization_sha256": "0" * 64,
+              },
+              "abort_reason": None,
+              "approval_nonce_sha256": None,
+          }
+          wire = {"request": request, "authorization": None}
+          pathlib.Path("target/controller-request-074/status.json").write_text(
+              json.dumps(wire, sort_keys=True, separators=(",", ":")), encoding="utf-8"
+          )
+          PY
+          set +e
+          target/release/hydracache-long-run-supervisor-074 request \
+            /run/hydracache-perf/supervisor-v1.sock \
+            target/controller-request-074/status.json \
+            > target/controller-request-074/status-response.json
+          echo "$?" > target/controller-request-074/status-exit-code.txt
+          exit 0
+
+      - name: Upload controller response and status snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: long-run-074-response-${{ inputs.request_id }}
+          path: |
+            target/controller-request-074/request.sha256
+            target/controller-request-074/response.json
+            target/controller-request-074/status-response.json
+            target/controller-request-074/status-exit-code.txt
+          if-no-files-found: error
+          retention-days: 30

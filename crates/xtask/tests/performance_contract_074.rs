@@ -414,3 +414,36 @@ fn unmatched_surface_trace_and_three_percent_native_regression_are_rejected() {
     assert!(has(&problems, "does not use the matched trace"));
     assert!(has(&problems, "regresses goodput beyond 2%"));
 }
+
+#[test]
+fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-qualification-074.yml"),
+    )
+    .unwrap();
+    assert!(workflow.contains("workflow_dispatch:"));
+    assert!(!workflow.contains("pull_request:"));
+    assert!(!workflow.contains("schedule:"));
+    assert!(workflow.contains("group: long-run-074-${{ inputs.host_id }}"));
+    assert!(workflow.contains("cancel-in-progress: false"));
+    assert!(workflow.contains("environment: performance-reference-074"));
+    assert!(workflow.contains("runs-on: ubuntu-latest"));
+    assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
+    assert_eq!(
+        workflow
+            .matches("secrets.HYDRACACHE_074_AUTH_SIGNING_KEY_HEX")
+            .count(),
+        1
+    );
+    let signing_key = workflow
+        .find("secrets.HYDRACACHE_074_AUTH_SIGNING_KEY_HEX")
+        .unwrap();
+    let self_hosted = workflow
+        .find("runs-on: [self-hosted, linux, x64, hydracache-release]")
+        .unwrap();
+    assert!(signing_key < self_hosted);
+    assert!(workflow.contains("build-request"));
+    assert!(workflow.contains("request.sha256"));
+    assert!(workflow.contains("Capture a best-effort read-only status snapshot"));
+    assert!(!workflow.contains("continue-on-error: true"));
+}
