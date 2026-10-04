@@ -560,6 +560,23 @@ yet proved that they can spawn or attach exactly once. A production key, install
 diagnostics, sealing orchestration and controller-loss rehearsal remain unresolved. No six-hour or
 24-hour 0.74 run has started.
 
+One more local step made the service artifacts internally coherent. A `0660` socket is useless to
+the runner if it remains `root:root`, so the listener now changes the socket to the exact admitted
+client-group gid before listening and tests the inode's real gid. The staged systemd unit uses
+`Type=notify`; the binary emits one bounded readiness datagram and supports both filesystem and
+abstract Linux notify sockets. Sysusers and tmpfiles definitions create the unprivileged measured
+account, client group and bounded state directories. The checked-in configuration template keeps
+the repository id, uid/gid allowlists and production Ed25519 key deliberately invalid, so copying
+the template cannot accidentally authorize a campaign.
+
+Attach also needs more than “the PID still exists.” The Linux identity reader now parses start
+ticks and process group from `/proc/<pid>/stat`, including command names with spaces and closing
+parentheses, binds the host boot id, reads the single cgroup-v2 path and its inode, and verifies the
+expected systemd unit component. A test changes every field at once and requires all mismatches to
+be reported. At `882b3ed2`, 51 supervisor tests and three integrated checkpoint tests pass under
+WSL2. The service files were not installed, systemd did not own a measured unit, and attach remains
+closed until unit-state inspection, checkpoint validation and durable request replay are combined.
+
 Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a
 and W9a were rejected and the other proposals are deferred or unauthorized, there is no honest
 C74 to freeze. Tooling progress is not a substitute for a product candidate, and isolated local

@@ -58,6 +58,21 @@ adopt a process until the `/proc`/cgroup/systemd identity adapter is implemented
 provisioning, bounded diagnostics and real host fault rehearsals remain incomplete, so release
 admission stays closed.
 
+The next local slice adds the repository-side service definition, sysusers/tmpfiles definitions,
+a deliberately invalid configuration template and `Type=notify` readiness support. The socket is
+changed to the exact configured client-group gid before `listen`, avoiding a nominal `0660` socket
+that is still unusable by the runner. Static tests require the confinement properties and reject a
+shell, sudo, `systemd-run` or inherited environment file. These are reviewed provisioning inputs,
+not evidence that they have been installed on an admitted host; `systemd_confinement_complete`
+therefore remains false.
+
+Linux process identity inspection is also implemented independently of PID liveness. It parses
+`/proc/<pid>/stat` after the final command-name parenthesis, reads the single unified cgroup row,
+binds the cgroup inode and boot id, and compares start ticks, process group, cgroup path/inode and
+unit component. Tests cover command names containing spaces/parentheses and report all concurrent
+identity mismatches. The remaining attach implementation must combine this verifier with systemd
+unit state, checkpoint head verification and durable request replay before it may mutate a lease.
+
 Offline packet verification is independently implemented in `xtask` (it does not call the
 supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
 manifest identity, the exact sorted raw file set, every file size and SHA-256, required guard
@@ -79,8 +94,9 @@ inspect every tar header. The live sealing state transition and Linux filesystem
 incomplete.
 
 The initial supervisor package passed all 30 targeted tests under local WSL2 Ubuntu at exact source
-`37566d71`. The later live-status slice at `1a29aef1` passes 43 supervisor tests plus three durable
-checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
+`37566d71`. The live-status slice at `1a29aef1` passed 43 supervisor tests plus three durable
+checkpoint-writer tests. The provisioning/process-identity slice at `882b3ed2` passes 51 supervisor
+tests plus the same three checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
 non-promotable: no service was installed, no product process was started and no admitted-host fault
 rehearsal ran.
 

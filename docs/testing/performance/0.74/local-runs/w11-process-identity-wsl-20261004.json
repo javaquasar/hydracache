@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-linux-provisioning-and-process-identity",
+  "status": "passed-local-non-promotable",
+  "source_sha": "882b3ed2b46b9c2bd9dc7677daf7446d39662c6c",
+  "platform": "WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-performance-integrated-074 --locked -q"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 51,
+  "checkpoint_writer_tests_passed": 3,
+  "failed": 0,
+  "confirmed": [
+    "socket inode receives the configured client-group gid before listen",
+    "systemd readiness uses one bounded Unix datagram",
+    "service, sysusers and tmpfiles assets satisfy the local static confinement contract",
+    "current-process start ticks, process group, boot id and cgroup inode are readable",
+    "boot, start-tick, process-group, cgroup-path, cgroup-inode and unit drift all reject identity"
+  ],
+  "limitations": [
+    "WSL is not the admitted release host",
+    "provisioning assets were validated but not installed",
+    "no transient measured systemd unit was created or adopted",
+    "mutating operations remain fail-closed",
+    "this receipt cannot authorize release admission"
+  ]
+}
