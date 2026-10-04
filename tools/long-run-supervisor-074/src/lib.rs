@@ -10,6 +10,7 @@ pub mod auth;
 pub mod manifest;
 pub mod protocol;
 pub mod state;
+pub mod watchdog;
 
 pub const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 pub const GENESIS_HASH: &str = "0000000000000000000000000000000000000000000000000000000000000000";
