@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 final class DistributedSemanticFoundationTest {
@@ -121,6 +122,41 @@ final class DistributedSemanticFoundationTest {
     assertThrows(SemanticMismatchException.class, () -> progress.completeRepair(1, 1, 5));
     progress.completeRepair(1, 4, 5);
     assertTrue(progress.accept(1, 6));
+  }
+
+  @Test
+  void seededScenariosReplayAcrossAdaptersAndCoverDistributedSemantics() throws Exception {
+    ScenarioManifest first = SeededSemanticScenario.generate(117, 90);
+    ScenarioManifest replay = SeededSemanticScenario.generate(117, 90);
+    assertEquals(SeededSemanticScenario.fingerprint(first),
+        SeededSemanticScenario.fingerprint(replay));
+    assertEquals("08cd0f692503e5105b115e71a62f165ebdc3ebb3aaf1376d06f0a5ca8e956bfe",
+        SeededSemanticScenario.fingerprint(first));
+    assertFalse(SeededSemanticScenario.fingerprint(first).equals(
+        SeededSemanticScenario.fingerprint(SeededSemanticScenario.generate(118, 90))));
+    Set<Operation> operations = first.steps().stream()
+        .map(ScenarioStep::operation)
+        .collect(java.util.stream.Collectors.toSet());
+    assertTrue(operations.containsAll(Set.of(Operation.REPLACE, Operation.REMOVE_IF_VALUE,
+        Operation.SET_TTL, Operation.GET_ALL, Operation.LISTENER_GAP)));
+    try (MapSemanticAdapter left = InMemorySemanticAdapter.strict("seed-left");
+         MapSemanticAdapter right = InMemorySemanticAdapter.strict("seed-right")) {
+      OracleReport report = new SemanticOracle().compare(first, left, right);
+      assertTrue(report.equivalent(), report::render);
+    }
+  }
+
+  @Test
+  void seededShrinkerIsDeterministicAndGeneratorIsBounded() {
+    List<ScenarioStep> original = SeededSemanticScenario.generate(7, 18).steps();
+    List<ScenarioStep> minimized = SeededSemanticScenario.shrink(original,
+        candidate -> candidate.stream().anyMatch(step -> step.operation() == Operation.SET_TTL));
+    assertEquals(1, minimized.size());
+    assertEquals(Operation.SET_TTL, minimized.get(0).operation());
+    assertEquals(minimized, SeededSemanticScenario.shrink(original,
+        candidate -> candidate.stream().anyMatch(step -> step.operation() == Operation.SET_TTL)));
+    assertThrows(IllegalArgumentException.class, () -> SeededSemanticScenario.generate(1, 0));
+    assertThrows(IllegalArgumentException.class, () -> SeededSemanticScenario.generate(1, 10_001));
   }
 
   private static ItemOutcome item(int index, BytesValue key) {

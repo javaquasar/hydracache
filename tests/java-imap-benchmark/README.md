@@ -16,6 +16,8 @@ The module currently provides:
 - an independent bounded canonical-key reference codec matching the Rust UTF-8 and empty-binary
   golden vectors without allocating a production partition hash or wire identity;
 - fail-closed HydraCache and Hazelcast product adapter placeholders.
+- reproducible seeded scenario generation, deterministic shrinking, and a JaCoCo coverage ratchet
+  for the new distributed-semantic helpers.
 
 ## Blocked by 0.74
 
