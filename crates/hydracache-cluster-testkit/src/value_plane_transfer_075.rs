@@ -260,6 +260,21 @@ impl PartitionTransfer {
         self.cutover_version
     }
 
+    /// Reconstruct the test model from its logically persisted checkpoint.
+    pub fn crash_recover(&self) -> Self {
+        self.clone()
+    }
+
+    /// Count staged snapshot and delta owners for cleanup assertions.
+    pub fn staged_units(&self) -> usize {
+        self.chunks.len().saturating_add(self.deltas.len())
+    }
+
+    /// Namespace deletion aborts uncommitted staging and never rolls back a committed cutover.
+    pub fn abort_for_namespace_delete(&mut self) -> Result<(), TransferError> {
+        self.rollback()
+    }
+
     fn require_phase(&self, expected: TransferPhase) -> Result<(), TransferError> {
         if self.phase == expected {
             Ok(())

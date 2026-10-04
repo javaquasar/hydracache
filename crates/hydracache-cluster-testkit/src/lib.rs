@@ -13,6 +13,7 @@ pub mod reference_model;
 pub mod value_plane_ack_075;
 pub mod value_plane_admission_075;
 pub mod value_plane_bulk_075;
+pub mod value_plane_bulk_control_075;
 pub mod value_plane_dedup_075;
 pub mod value_plane_durable_075;
 pub mod value_plane_explorer_075;
@@ -22,6 +23,7 @@ pub mod value_plane_loopback_075;
 pub mod value_plane_model_075;
 pub mod value_plane_resources_075;
 pub mod value_plane_security_075;
+pub mod value_plane_subscriptions_075;
 pub mod value_plane_surface_075;
 pub mod value_plane_transfer_075;
 

@@ -95,3 +95,20 @@ fn rollback_clears_staging_but_cannot_undo_committed_cutover() {
     committed.commit(4).unwrap();
     assert_eq!(committed.rollback(), Err(TransferError::AlreadyCommitted));
 }
+
+#[test]
+fn every_uncommitted_phase_recovers_or_aborts_without_leaked_staging() {
+    let chunks = [b"snapshot-a".as_slice(), b"snapshot-b".as_slice()];
+    let mut transfer = transfer();
+    transfer.accept_chunk(0, chunks[0].to_vec()).unwrap();
+    let mut recovered = transfer.crash_recover();
+    assert_eq!(recovered.resume_from(), Some(1));
+    recovered.accept_chunk(1, chunks[1].to_vec()).unwrap();
+    recovered.finish_snapshot().unwrap();
+    recovered.stage_delta(3, 33).unwrap();
+    let mut delta_recovered = recovered.crash_recover();
+    assert_eq!(delta_recovered.staged_units(), 3);
+    delta_recovered.abort_for_namespace_delete().unwrap();
+    assert_eq!(delta_recovered.staged_units(), 0);
+    assert_eq!(delta_recovered.phase(), TransferPhase::RolledBack);
+}

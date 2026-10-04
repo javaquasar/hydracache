@@ -35,6 +35,9 @@ pub struct CompositeSnapshot {
     pub namespace_generation: u64,
     pub record_generation: Option<u64>,
     pub namespace: CompositeNamespacePhase,
+    pub bulk_pending: u8,
+    pub listener_gap: bool,
+    pub dedup_entries: u8,
 }
 
 impl Default for CompositeSnapshot {
@@ -54,6 +57,9 @@ impl Default for CompositeSnapshot {
             namespace_generation: 1,
             record_generation: None,
             namespace: CompositeNamespacePhase::Active,
+            bulk_pending: 0,
+            listener_gap: false,
+            dedup_entries: 0,
         }
     }
 }
@@ -73,10 +79,16 @@ pub enum CompositeAction {
     CommitNamespaceDelete,
     ProveReclaimable,
     RecreateNamespace,
+    StartBulk,
+    CompleteBulkItem,
+    OpenListenerGap,
+    RepairListenerGap,
+    RetainDedupOutcome,
+    EvictDedupOutcome,
 }
 
 impl CompositeAction {
-    const ALL: [Self; 13] = [
+    pub const ALL: [Self; 19] = [
         Self::PutExpiring,
         Self::Delete,
         Self::Tick,
@@ -90,6 +102,12 @@ impl CompositeAction {
         Self::CommitNamespaceDelete,
         Self::ProveReclaimable,
         Self::RecreateNamespace,
+        Self::StartBulk,
+        Self::CompleteBulkItem,
+        Self::OpenListenerGap,
+        Self::RepairListenerGap,
+        Self::RetainDedupOutcome,
+        Self::EvictDedupOutcome,
     ];
 }
 
@@ -112,6 +130,7 @@ pub struct CompositeReport {
     pub max_depth_reached: usize,
     pub truncated: bool,
     pub violations: Vec<CompositeViolation>,
+    pub action_coverage: BTreeSet<CompositeAction>,
 }
 
 impl CompositeReport {
@@ -148,6 +167,7 @@ impl CompositeExplorer {
         let mut max_depth_reached = 0_usize;
         let mut truncated = false;
         let mut violations = Vec::new();
+        let mut action_coverage = BTreeSet::new();
         while let Some((state, trace)) = queue.pop_front() {
             max_depth_reached = max_depth_reached.max(trace.len());
             for invariant in composite_invariant_violations(&state) {
@@ -163,6 +183,7 @@ impl CompositeExplorer {
                 let Some(next) = apply_action(&state, action) else {
                     continue;
                 };
+                action_coverage.insert(action);
                 explored_transitions = explored_transitions.saturating_add(1);
                 if seen.contains(&next) {
                     continue;
@@ -183,6 +204,7 @@ impl CompositeExplorer {
             max_depth_reached,
             truncated,
             violations,
+            action_coverage,
         }
     }
 }
@@ -212,6 +234,11 @@ pub fn composite_invariant_violations(state: &CompositeSnapshot) -> Vec<&'static
         && state.live_version <= state.tombstone_version
     {
         violations.push("stale_value_resurrection");
+    }
+    if state.namespace == CompositeNamespacePhase::Reclaimable
+        && (state.bulk_pending > 0 || state.listener_gap || state.dedup_entries > 0)
+    {
+        violations.push("namespace_reclaimable_with_live_owners");
     }
     violations
 }
@@ -313,7 +340,10 @@ fn apply_action(state: &CompositeSnapshot, action: CompositeAction) -> Option<Co
             next.record_generation = None;
         }
         CompositeAction::ProveReclaimable
-            if state.namespace == CompositeNamespacePhase::DeleteCommitted =>
+            if state.namespace == CompositeNamespacePhase::DeleteCommitted
+                && state.bulk_pending == 0
+                && !state.listener_gap
+                && state.dedup_entries == 0 =>
         {
             next.namespace = CompositeNamespacePhase::Reclaimable;
         }
@@ -322,6 +352,30 @@ fn apply_action(state: &CompositeSnapshot, action: CompositeAction) -> Option<Co
         {
             next.namespace = CompositeNamespacePhase::Active;
             next.namespace_generation += 1;
+        }
+        CompositeAction::StartBulk
+            if state.namespace == CompositeNamespacePhase::Active && state.bulk_pending == 0 =>
+        {
+            next.bulk_pending = 2;
+        }
+        CompositeAction::CompleteBulkItem if state.bulk_pending > 0 => {
+            next.bulk_pending -= 1;
+        }
+        CompositeAction::OpenListenerGap
+            if !state.listener_gap && state.namespace == CompositeNamespacePhase::Active =>
+        {
+            next.listener_gap = true;
+        }
+        CompositeAction::RepairListenerGap if state.listener_gap => {
+            next.listener_gap = false;
+        }
+        CompositeAction::RetainDedupOutcome
+            if state.namespace == CompositeNamespacePhase::Active && state.dedup_entries < 2 =>
+        {
+            next.dedup_entries += 1;
+        }
+        CompositeAction::EvictDedupOutcome if state.dedup_entries > 0 => {
+            next.dedup_entries -= 1;
         }
         _ => return None,
     }

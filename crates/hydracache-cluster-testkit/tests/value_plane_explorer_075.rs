@@ -12,9 +12,10 @@ fn composite_explorer_covers_transfer_expiry_failover_and_lifecycle() {
     .unwrap()
     .explore();
     assert!(report.passed(), "{report:#?}");
-    assert!(report.explored_states > 500);
+    assert!(report.explored_states > 5_000);
     assert!(report.explored_transitions >= report.explored_states);
     assert_eq!(report.max_depth_reached, 9);
+    assert_eq!(report.action_coverage.len(), 19);
 }
 
 #[test]
