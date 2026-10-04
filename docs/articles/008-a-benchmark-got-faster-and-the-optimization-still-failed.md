@@ -507,6 +507,19 @@ and W9a were rejected and the other proposals are deferred or unauthorized, ther
 C74 to freeze. Tooling progress is not a substitute for a product candidate, and isolated local
 percentages are not added together.
 
+After publication we also tested the most conservative-looking W3 retry: leave pipeline-one on the
+old response path and activate coalescing only when a second complete frame is already present in
+the current read buffer. An 18-cell pre-candidate TCP baseline confirmed the owner mechanically:
+every cell performed exactly one server write and one explicit flush per response. The new shallow
+and partial-frame guards passed, and ten buffered replies remained byte-exact and ordered.
+
+The candidate still failed before performance measurement. With the first connection's write gate
+closed, it committed two SET mutations before the first response made write progress; the retained
+baseline guard permits one. The buffering was bounded, but it nevertheless moved backpressure
+from the socket boundary to already-executed commands. The product diff was removed, no candidate
+SHA was created, and no numeric win was claimed. This closes the simple "detect a deep read, then
+batch" design: preserving pipeline-one latency is insufficient if slow-reader admission changes.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

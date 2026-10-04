@@ -35,7 +35,7 @@ sha256 = "ed7e82de289acb45c2df184adb352b45d65a81ec1dccd4bf880ffdd2b5e77fdd"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/composition-ledger.toml"
-sha256 = "37d1379fe60ecfe0adfdc27ffcb4ae963d7ed4ef7a49c8700e7de38cb8d4717c"
+sha256 = "91d00c915346bb2186e694dedc1fc1b29376f433244b2f3bbc1f189a5b57a934"
 
 [[phases]]
 id = "Q0-identity-and-contract"

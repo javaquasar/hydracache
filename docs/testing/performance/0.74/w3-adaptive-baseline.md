@@ -40,3 +40,15 @@ mechanical owner to remove without inferring kernel syscall counts.
 The high-concurrency pipeline-50 p99 values are retained rather than filtered. They reinforce why
 the candidate must preserve the frozen tail and favorable-pair guards instead of selecting only
 the highest-throughput cells.
+
+## Candidate disposition
+
+The adaptive lookahead candidate was stopped before comparative performance measurements. It kept
+the exact sequential pipeline-one path and did not delay a reply behind an incomplete next frame,
+but the retained slow-reader guard observed two committed SET mutations before the closed write
+gate made progress; the baseline permits one. Batching already-executed replies therefore weakened
+the established backpressure boundary even though the output bytes and order were correct.
+
+The product diff was removed without changing the guard. The structured negative receipt is
+`local-runs/w3-adaptive-semantic-rejection.json`. No candidate source was committed and no numeric
+improvement claim exists for this attempt.

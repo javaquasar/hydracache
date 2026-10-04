@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.74"
 contract_id = "w3-adaptive-coalescing-074-v1"
-state = "preregistered-before-candidate"
+state = "rejected-semantic-backpressure-before-measurement"
 promotable = false
 hypothesis = "coalesce only when a second complete RESP frame is already buffered; preserve the exact pipeline-1 response path"
 baseline_product_sha = "461c6c298419251dd208bc2949ae92fc594a9cf1"
@@ -20,6 +20,8 @@ pairs = 5
 pair_order = "abba-counterbalanced-v1"
 instrumentation_enabled = true
 numeric_claims_allowed = false
+attempt_disposition = "candidate removed before performance comparison; no candidate source was committed"
+negative_evidence = "local-runs/w3-adaptive-semantic-rejection.json"
 
 [activation]
 minimum_complete_frames_in_current_read = 2

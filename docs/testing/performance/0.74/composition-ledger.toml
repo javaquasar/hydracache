@@ -19,9 +19,9 @@ rollback = "candidate removed"
 [[proposal]]
 id = "W3"
 owner = "RESP output write and flush amplification"
-disposition = "rejected-local-shallow-tail-guards"
+disposition = "rejected-local-shallow-tail-guards-and-adaptive-backpressure-guard"
 compatibility_class = "wire-byte-preserving"
-rollback = "candidate removed"
+rollback = "both candidates removed; adaptive retry was never committed as product code"
 
 [[proposal]]
 id = "W4"

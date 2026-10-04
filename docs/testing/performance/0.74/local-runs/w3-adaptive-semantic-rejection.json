@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "attempt_id": "w3-adaptive-buffered-lookahead-v1",
+  "tier": "local-semantic",
+  "promotable": false,
+  "baseline_product_sha": "461c6c298419251dd208bc2949ae92fc594a9cf1",
+  "baseline_measurement_sha": "7c5e0d09598c6ede551c3dc00f1a6bbced63c5f1",
+  "candidate_source_sha": null,
+  "candidate_product_code_committed": false,
+  "hypothesis": "activate response coalescing only when a second complete RESP frame is already buffered",
+  "passing_guards": [
+    "sequential pipeline-one returned each response before the next request",
+    "an incomplete second frame did not delay the first complete response",
+    "ten already-buffered responses remained byte-exact and ordered"
+  ],
+  "failed_guard": {
+    "test": "closed_write_gate_backpressures_one_connection_without_starving_another",
+    "expected_committed_mutations_before_write_progress": 1,
+    "observed_committed_mutations_before_write_progress": 2,
+    "failure": "the batch executed a second SET before the blocked first response made write progress"
+  },
+  "performance_comparison_started": false,
+  "numeric_improvement_claims": [],
+  "disposition": "rejected-and-reverted-only-the-uncommitted-adaptive-W3-candidate",
+  "reason": "coalescing already-executed replies weakened the existing slow-reader backpressure boundary"
+}

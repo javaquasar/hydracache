@@ -228,7 +228,7 @@ fn w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds() {
     let value = contract("w3-adaptive-coalescing-contract.toml");
     assert_eq!(
         value["state"].as_str(),
-        Some("preregistered-before-candidate")
+        Some("rejected-semantic-backpressure-before-measurement")
     );
     assert_eq!(value["pairs"].as_integer(), Some(5));
     assert_eq!(
@@ -255,6 +255,10 @@ fn w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds() {
     assert_eq!(
         value["semantic_guards"]["native_surfaces_unchanged"].as_bool(),
         Some(true)
+    );
+    assert_eq!(
+        value["negative_evidence"].as_str(),
+        Some("local-runs/w3-adaptive-semantic-rejection.json")
     );
 }
 
