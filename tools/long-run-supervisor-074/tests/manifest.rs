@@ -1,9 +1,16 @@
 #![recursion_limit = "256"]
 
 use hydracache_long_run_supervisor_074::manifest::{
-    parse_and_validate, ManifestError, MAX_MANIFEST_BYTES,
+    frozen_identity_from_manifest, parse_and_validate, ManifestError, MAX_MANIFEST_BYTES,
+};
+use hydracache_long_run_supervisor_074::manifest_evidence::{
+    verify_manifest_evidence, ManifestEvidenceError,
 };
 use hydracache_long_run_supervisor_074::protocol::{ControllerIdentity, Operation, Request};
+use hydracache_long_run_supervisor_074::state::{
+    CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
+};
+use hydracache_long_run_supervisor_074::ProcessIdentity;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
@@ -98,6 +105,37 @@ fn fixture_request(bytes: &[u8]) -> Request {
     }
 }
 
+fn process(pid: u32) -> ProcessIdentity {
+    ProcessIdentity {
+        boot_id: "boot-a".to_owned(),
+        pid,
+        start_ticks: u64::from(pid) * 100,
+        process_group: 10,
+        cgroup_path: "/hc/a".to_owned(),
+        cgroup_inode: 50,
+        unit_name: "hc-a.service".to_owned(),
+    }
+}
+
+fn durable_state(identity: FrozenIdentity) -> DurableCampaignState {
+    DurableCampaignState {
+        revision: 0,
+        campaign_state: CampaignState::I74Running,
+        identity,
+        harness: process(100),
+        daemon: process(101),
+        checkpoint: CheckpointHead {
+            sequence: 1,
+            record_sha256: "9".repeat(64),
+            useful_progress_unix_seconds: 1_000,
+        },
+        controller_lease: None,
+        recorded_failure: false,
+        duplicate_executor: false,
+        durable_history_corrupt: false,
+    }
+}
+
 #[test]
 fn exact_canonical_prepared_manifest_is_accepted() {
     let bytes = encoded(&manifest());
@@ -186,4 +224,49 @@ fn execution_identity_and_nested_unknown_fields_fail_closed() {
         parse_and_validate(&bytes, &fixture_request(&bytes), 1_000),
         Err(ManifestError::Document)
     );
+}
+
+#[test]
+fn persistent_manifest_reconstructs_the_exact_frozen_identity() {
+    let bytes = encoded(&manifest());
+    let mut request = fixture_request(&bytes);
+    let parsed = parse_and_validate(&bytes, &request, 1_000).unwrap();
+    let identity = frozen_identity_from_manifest(&parsed, &request.manifest_sha256).unwrap();
+    assert_eq!(
+        identity,
+        frozen_identity_from_manifest(&parsed, &request.manifest_sha256).unwrap()
+    );
+    let state = durable_state(identity);
+    request.operation = Operation::Attach;
+    request.manifest_path = None;
+    let temporary = tempfile::tempdir().unwrap();
+    std::fs::write(temporary.path().join("campaign-start.json"), &bytes).unwrap();
+    std::fs::write(
+        temporary.path().join("campaign-start.sha256"),
+        format!("{}\n", request.manifest_sha256),
+    )
+    .unwrap();
+
+    assert_eq!(
+        verify_manifest_evidence(temporary.path(), &request, &state, 1_000)
+            .unwrap()
+            .campaign_id,
+        request.campaign_id
+    );
+
+    let mut drifted = state;
+    drifted.identity.source_bundle_sha256 = "0".repeat(64);
+    assert!(matches!(
+        verify_manifest_evidence(temporary.path(), &request, &drifted, 1_000),
+        Err(ManifestEvidenceError::Binding)
+    ));
+    std::fs::write(
+        temporary.path().join("campaign-start.sha256"),
+        format!("{}\n", "f".repeat(64)),
+    )
+    .unwrap();
+    assert!(matches!(
+        verify_manifest_evidence(temporary.path(), &request, &drifted, 1_000),
+        Err(ManifestEvidenceError::Head)
+    ));
 }

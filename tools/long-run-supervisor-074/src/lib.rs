@@ -15,6 +15,7 @@ pub mod client;
 pub mod config;
 pub mod event;
 pub mod manifest;
+pub mod manifest_evidence;
 pub mod mutation;
 #[cfg(target_os = "linux")]
 pub mod process_identity;

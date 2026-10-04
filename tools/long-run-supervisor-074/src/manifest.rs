@@ -1,4 +1,6 @@
 use crate::protocol::Request;
+use crate::state::FrozenIdentity;
+use crate::{canonical_json, sha256_hex};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::HashSet;
@@ -154,6 +156,61 @@ pub fn parse_and_validate(
     }
     validate(&manifest, request, now_unix_seconds)?;
     Ok(manifest)
+}
+
+pub fn frozen_identity_from_manifest(
+    manifest: &CampaignManifest,
+    manifest_sha256: &str,
+) -> Result<FrozenIdentity, serde_json::Error> {
+    let source_bundle_sha256 = hash_json(&(
+        &manifest.i74_source_sha,
+        &manifest.c74_source_sha,
+        &manifest.i74_tree_sha,
+        &manifest.c74_tree_sha,
+        &manifest.i74_cargo_lock_sha256,
+        &manifest.c74_cargo_lock_sha256,
+    ))?;
+    let binary_bundle_sha256 = hash_json(&manifest.installed_binaries)?;
+    let workload_bundle_sha256 = hash_json(&(
+        &manifest.workload_sha256,
+        &manifest.offered_load_sha256,
+        &manifest.estimator_sha256,
+        &manifest.thresholds_sha256,
+        manifest.seed,
+        manifest.checkpoint_cadence_seconds,
+        manifest.progress_warning_gap_seconds,
+        manifest.progress_rejection_gap_seconds,
+        manifest.diagnostic_grace_seconds,
+        &manifest.argv_templates,
+        &manifest.phase_durations_seconds,
+        &manifest.output_limits,
+        &manifest.expected_output_schema_sha256s,
+        &manifest.required_final_guards,
+        &manifest.secret_identifiers,
+    ))?;
+    Ok(FrozenIdentity {
+        campaign_id: manifest.campaign_id.clone(),
+        manifest_sha256: manifest_sha256.to_owned(),
+        contract_sha256: manifest.contract_sha256.clone(),
+        scenario_sha256: manifest.scenario_sha256.clone(),
+        tooling_sha256: sha256_hex(manifest.tooling_sha.as_bytes()),
+        source_bundle_sha256,
+        binary_bundle_sha256,
+        workload_bundle_sha256,
+        machine_id: manifest.machine_id.clone(),
+        boot_id: manifest.boot_id.clone(),
+        host_receipt_sha256: manifest.host_receipt_sha256.clone(),
+        mount_identity: manifest.mount_identity.clone(),
+        isolated_cpuset: manifest.isolated_cpuset.clone(),
+        housekeeping_cpuset: manifest.housekeeping_cpuset.clone(),
+        command_environment_sha256: manifest.command_environment_sha256.clone(),
+        lease_id: manifest.lease_id.clone(),
+        lease_deadline_unix_seconds: manifest.product_lease_deadline_unix_seconds,
+    })
+}
+
+fn hash_json<T: Serialize>(value: &T) -> Result<String, serde_json::Error> {
+    Ok(sha256_hex(&canonical_json(value)?))
 }
 
 fn validate(
