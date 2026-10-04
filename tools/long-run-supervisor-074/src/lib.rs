@@ -14,6 +14,9 @@ pub mod state;
 pub mod state_store;
 pub mod watchdog;
 
+#[cfg(target_os = "linux")]
+pub mod unix_transport;
+
 pub const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 pub const GENESIS_HASH: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
