@@ -557,8 +557,13 @@ must capture bounded allowlisted diagnostics and stop that retained unit without
 does the supervisor append the accepted request response and release the host-wide claim. The
 socket dispatcher revalidates manifest/host evidence first and reports the reconciled revision
 when the backend fails after the intent commit. Same-request recovery and response replay are
-locally exercised. The production diagnostics/systemd backend is still absent, so the ordinary
-service route cannot yet execute abort and fails without mutation.
+locally exercised. The ordinary service route now uses a production backend that admits only the
+exact campaign-bound I74/C74 unit. It verifies the retained process identities, atomically
+publishes a canonical bounded diagnostic containing frozen state plus the allowlisted unit
+snapshot, calls systemd `StopUnit`, and waits for unit removal or `inactive/dead` with MainPID zero.
+If the unit is already absent, recovery requires the exact previously published diagnostic. The
+namespace, limit, replay and tamper boundaries are locally tested; the actual system-bus stop and
+production account ownership remain admitted-host rehearsal work.
 
 Publication modes are now part of the verified artifact contract on Unix. Packet and archive
 staging trees are recursively changed to `0400` files and `0500` directories, metadata is synced,

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-systemd-abort-backend",
+  "status": "passed-local-non-promotable",
+  "source_sha": "879012c8",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo check -p hydracache-long-run-supervisor-074 --all-targets --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --lib abort_backend --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test systemd_unit --test abort_lifecycle --test server --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_stop_called": false,
+  "diagnostic_backend_tests_passed": 2,
+  "abort_lifecycle_tests_passed": 3,
+  "server_integration_tests_passed": 6,
+  "systemd_unit_tests_passed": 6,
+  "failed": 0,
+  "confirmed": [
+    "the ordinary abort route constructs the production systemd backend after authenticated admission",
+    "only the exact campaign-bound I74 or C74 transient-unit name is accepted",
+    "live and retained-terminal unit shapes are bound to the durable harness and daemon identities before capture",
+    "the diagnostic contains only canonical frozen campaign state and the allowlisted D-Bus unit snapshot",
+    "the manifest diagnostic-byte limit and divergent-existing-byte rejection fail closed",
+    "pre-link and linked-before-cleanup diagnostic publication windows recover only identical bytes",
+    "StopUnit completion requires unit removal or inactive/dead with MainPID zero",
+    "an already absent unit is accepted only with the exact durable diagnostic"
+  ],
+  "limitations": [
+    "no real StopUnit call was made and no HydraCache or unrelated systemd unit was touched",
+    "system-bus authorization, root/performance-account ownership and stop timing require admitted-host rehearsal",
+    "the diagnostic snapshot is intentionally metadata-only and does not execute external stack or tracing commands",
+    "lease-expiry termination remains separate implementation work",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

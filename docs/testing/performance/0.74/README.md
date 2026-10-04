@@ -314,10 +314,18 @@ no event and perform no effect. At source `108b96bb`, the local lifecycle and so
 normal completion, exact replay and the failure-after-intent window. See
 `local-runs/w11-abort-dispatch-wsl-20261005.json`.
 
-The injected backend is deliberately not a production claim. Its interface requires diagnostics
-and stop to be idempotent, but the real allowlisted diagnostic collector, systemd `StopUnit`
-adapter and post-stop identity check remain the next local package. Until those exist, the normal
-service route returns an internal-error response for `abort` without changing campaign state.
+The ordinary service route now supplies a production abort backend. It accepts only the exact
+0.74 I74/C74 transient-unit name bound to the campaign, verifies the retained process pair against
+the current D-Bus snapshot, and publishes a canonical diagnostic containing only frozen state and
+the allowlisted unit snapshot. The manifest diagnostic-byte limit is enforced. Publication is
+create-new, synced and recoverable across both hard-link crash windows. Only after that evidence is
+durable does the backend issue `StopUnit`; it accepts completion only after the unit disappears or
+becomes `inactive/dead` with no MainPID. A retry with an already absent unit requires the exact
+existing diagnostic. At source `879012c8`, local diagnostic replay/limit/tamper tests and namespace
+rejection pass; see `local-runs/w11-systemd-abort-backend-wsl-20261005.json`.
+
+No live unit was stopped. The real system-bus call, root/performance-account ownership and timing
+behavior still require the admitted-host rehearsal, so this remains local non-promotable evidence.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

@@ -364,9 +364,15 @@ needed for recovery. An idempotent backend boundary is then responsible for diag
 Only after it succeeds does `ABORT_COMPLETED` clear process/checkpoint/lease state, persist the
 signed response and release the host claim. If the backend fails after the intent commit, the
 caller sees the advanced revision and can resend the identical signed request; a different request
-cannot inherit that intent. Tests prove that exact replay does not repeat the backend effect. This
-is still a local transaction proof, not a production stop claim: the real allowlisted diagnostic
-collector, systemd adapter and post-stop verification remain deliberately separate work.
+cannot inherit that intent. Tests prove that exact replay does not repeat the backend effect.
+
+The production adapter then narrows the external effect itself. It accepts only the exact
+campaign-bound 0.74 unit, verifies retained process identity through D-Bus, and atomically publishes
+a bounded canonical snapshot of frozen state and allowlisted unit properties. Only then does it
+call `StopUnit`, accepting success after removal or `inactive/dead` with no MainPID. Recovery from
+an already absent unit requires the exact diagnostic bytes; a conflicting pre-existing file fails
+closed. This completes the code path, but not its host proof: no live unit was stopped during local
+development, and system-bus permissions and timing still need the admitted-host rehearsal.
 
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
