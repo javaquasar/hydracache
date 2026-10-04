@@ -65,6 +65,12 @@ uses the frozen campaign-id component order, removes the raw nonce after derivin
 rejects unknown, floating-point and secret-bearing fields, fsyncs both files, and has no process
 execution mode.
 
+`scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
+validates the complete durable-state shape and expected campaign/manifest identities, reports
+controller loss separately from stale useful progress and measurement loss, rejects future
+progress timestamps, and writes a create-new non-promotable receipt. It never starts, attaches,
+seals, aborts, or otherwise mutates a campaign.
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:
