@@ -7,6 +7,8 @@
 pub mod client_surface_conformance;
 pub mod invariants;
 pub mod reference_model;
+pub mod value_plane_history_075;
+pub mod value_plane_model_075;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::net::SocketAddr;
