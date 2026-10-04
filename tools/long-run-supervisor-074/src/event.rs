@@ -1,4 +1,5 @@
 use crate::protocol::{verify_response, Operation, Request, Response};
+use crate::state::DurableCampaignState;
 use crate::{canonical_json, chain_hash, is_hash, sha256_hex, GENESIS_HASH};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -28,6 +29,7 @@ pub struct SupervisorEventPayload {
     pub request: Request,
     pub outcome: EventOutcome,
     pub response: Response,
+    pub state_after: Option<Box<DurableCampaignState>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -55,6 +57,7 @@ pub struct EventVerificationReport {
     pub last_occurred_at_unix_seconds: u64,
     pub recovered_incomplete_trailing_bytes: usize,
     pub replay_index: BTreeMap<String, ReplayEntry>,
+    pub latest_state_after: Option<DurableCampaignState>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -118,6 +121,7 @@ pub fn build_event(
     request: Request,
     outcome: EventOutcome,
     response: Response,
+    state_after: Option<DurableCampaignState>,
 ) -> Result<EventEnvelope, EventError> {
     let request_sha256 = request_sha256(&request)?;
     let payload = SupervisorEventPayload {
@@ -127,6 +131,7 @@ pub fn build_event(
         request,
         outcome,
         response,
+        state_after: state_after.map(Box::new),
     };
     let payload_sha256 = sha256_hex(&canonical_json(&payload)?);
     let record_sha256 = event_record_hash(sequence, previous_record_sha256, &payload_sha256)?;
@@ -196,6 +201,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
     let mut last_time = 0;
     let mut last = None;
     let mut replay_index = BTreeMap::new();
+    let mut latest_state_after = None;
     for (index, line) in parts.iter().enumerate() {
         if line.is_empty() {
             return Err(EventError::Parse {
@@ -246,6 +252,9 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
                 response: event.payload.response.clone(),
             },
         );
+        if let Some(state) = event.payload.state_after.as_deref() {
+            latest_state_after = Some(state.clone());
+        }
         last_time = event.payload.occurred_at_unix_seconds;
         previous.clone_from(&event.record_sha256);
         last = Some(event);
@@ -258,6 +267,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
         last_occurred_at_unix_seconds: last_time,
         recovered_incomplete_trailing_bytes: recovered,
         replay_index,
+        latest_state_after,
     })
 }
 
@@ -268,6 +278,7 @@ pub fn append_or_replay(
     request: Request,
     outcome: EventOutcome,
     response: Response,
+    state_after: Option<DurableCampaignState>,
 ) -> Result<EventAppend, EventError> {
     let digest = request_sha256(&request)?;
     let existing = match fs::symlink_metadata(journal) {
@@ -314,6 +325,7 @@ pub fn append_or_replay(
         request,
         outcome,
         response,
+        state_after,
     )?;
     append_event(journal, head, &event, existing.as_ref())?;
     Ok(EventAppend::Appended(Box::new(event)))
@@ -392,6 +404,38 @@ fn validate_event(
         return Err(EventError::Outcome {
             sequence: event.sequence,
         });
+    }
+    match (
+        event.payload.request.operation,
+        event.payload.outcome,
+        event.payload.state_after.as_deref(),
+    ) {
+        (Operation::Attach, EventOutcome::Accepted, Some(state))
+            if state.identity.campaign_id == event.payload.campaign_id
+                && state.identity.manifest_sha256 == event.payload.request.manifest_sha256
+                && state.revision
+                    == event
+                        .payload
+                        .request
+                        .expected_state_revision
+                        .saturating_add(1)
+                && state.revision == event.payload.response.body.state_revision
+                && state.controller_lease.as_ref().is_some_and(|lease| {
+                    lease.holder_request_id == event.payload.request.request_id
+                        && lease.authorization_sha256
+                            == event.payload.request.controller.authorization_sha256
+                }) => {}
+        (Operation::Attach, EventOutcome::Accepted, _) => {
+            return Err(EventError::Binding {
+                sequence: event.sequence,
+            });
+        }
+        (_, EventOutcome::Rejected, None) | (Operation::Status, EventOutcome::Accepted, None) => {}
+        _ => {
+            return Err(EventError::Binding {
+                sequence: event.sequence,
+            });
+        }
     }
     if request_sha256(&event.payload.request)? != event.payload.request_sha256 {
         return Err(EventError::Binding {

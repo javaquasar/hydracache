@@ -5,7 +5,10 @@ use hydracache_long_run_supervisor_074::event::{
 use hydracache_long_run_supervisor_074::protocol::{
     sign_response, ControllerIdentity, Operation, Request, ResponseBody,
 };
-use hydracache_long_run_supervisor_074::GENESIS_HASH;
+use hydracache_long_run_supervisor_074::state::{
+    CampaignState, CheckpointHead, ControllerLease, DurableCampaignState, FrozenIdentity,
+};
+use hydracache_long_run_supervisor_074::{ProcessIdentity, GENESIS_HASH};
 use serde_json::json;
 use std::fs;
 use tempfile::tempdir;
@@ -49,6 +52,57 @@ fn response(
     .unwrap()
 }
 
+fn state_after(request: &Request, revision: u64) -> DurableCampaignState {
+    let hash = |byte: char| byte.to_string().repeat(64);
+    let process = |pid| ProcessIdentity {
+        boot_id: "boot-a".to_owned(),
+        pid,
+        start_ticks: u64::from(pid) * 100,
+        process_group: 10,
+        cgroup_path: "/hc/a".to_owned(),
+        cgroup_inode: 50,
+        unit_name: "hc-a.service".to_owned(),
+    };
+    DurableCampaignState {
+        revision,
+        campaign_state: CampaignState::I74Running,
+        identity: FrozenIdentity {
+            campaign_id: request.campaign_id.clone(),
+            manifest_sha256: request.manifest_sha256.clone(),
+            contract_sha256: hash('d'),
+            scenario_sha256: hash('e'),
+            tooling_sha256: hash('f'),
+            source_bundle_sha256: hash('1'),
+            binary_bundle_sha256: hash('2'),
+            workload_bundle_sha256: hash('3'),
+            machine_id: "machine-a".to_owned(),
+            boot_id: "boot-a".to_owned(),
+            host_receipt_sha256: hash('4'),
+            mount_identity: "mount-a".to_owned(),
+            isolated_cpuset: "2-7".to_owned(),
+            housekeeping_cpuset: "0-1".to_owned(),
+            command_environment_sha256: hash('5'),
+            lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
+            lease_deadline_unix_seconds: 2_000_000_000,
+        },
+        harness: process(100),
+        daemon: process(101),
+        checkpoint: CheckpointHead {
+            sequence: 8,
+            record_sha256: hash('6'),
+            useful_progress_unix_seconds: 1_000,
+        },
+        controller_lease: Some(ControllerLease {
+            holder_request_id: request.request_id.clone(),
+            authorization_sha256: request.controller.authorization_sha256.clone(),
+            expires_unix_seconds: 1_300,
+        }),
+        recorded_failure: false,
+        duplicate_executor: false,
+        durable_history_corrupt: false,
+    }
+}
+
 #[test]
 fn appends_and_verifies_a_durable_event_chain() {
     let directory = tempdir().unwrap();
@@ -65,6 +119,7 @@ fn appends_and_verifies_a_durable_event_chain() {
             first.clone(),
             EventOutcome::Accepted,
             response(&first, 1, true),
+            Some(state_after(&first, 1)),
         )
         .unwrap(),
         EventAppend::Appended(_)
@@ -77,6 +132,7 @@ fn appends_and_verifies_a_durable_event_chain() {
             second.clone(),
             EventOutcome::Rejected,
             response(&second, 1, false),
+            None,
         )
         .unwrap(),
         EventAppend::Appended(_)
@@ -108,6 +164,7 @@ fn returns_the_original_response_for_an_identical_request_without_appending() {
         original.clone(),
         EventOutcome::Accepted,
         original_response.clone(),
+        Some(state_after(&original, 5)),
     )
     .unwrap();
     let before = fs::read(&journal).unwrap();
@@ -123,6 +180,7 @@ fn returns_the_original_response_for_an_identical_request_without_appending() {
             4,
             false,
         ),
+        None,
     )
     .unwrap();
     assert_eq!(replay, EventAppend::Replayed(original_response));
@@ -142,6 +200,7 @@ fn rejects_request_id_reuse_with_different_request_bytes() {
         original.clone(),
         EventOutcome::Accepted,
         response(&original, 5, true),
+        Some(state_after(&original, 5)),
     )
     .unwrap();
     let changed = request("123e4567-e89b-42d3-a456-426614174000", 5);
@@ -154,6 +213,7 @@ fn rejects_request_id_reuse_with_different_request_bytes() {
             changed.clone(),
             EventOutcome::Accepted,
             response(&changed, 6, true),
+            Some(state_after(&changed, 6)),
         ),
         Err(EventError::ReplayConflict { .. })
     ));
@@ -172,6 +232,7 @@ fn detects_middle_corruption_and_a_mismatched_head() {
         first.clone(),
         EventOutcome::Accepted,
         response(&first, 1, true),
+        Some(state_after(&first, 1)),
     )
     .unwrap();
 
@@ -206,6 +267,7 @@ fn reports_a_torn_final_record_and_refuses_to_append_over_it() {
         first.clone(),
         EventOutcome::Accepted,
         response(&first, 1, true),
+        Some(state_after(&first, 1)),
     )
     .unwrap();
     fs::OpenOptions::new()
@@ -226,6 +288,7 @@ fn reports_a_torn_final_record_and_refuses_to_append_over_it() {
             second.clone(),
             EventOutcome::Accepted,
             response(&second, 2, true),
+            Some(state_after(&second, 2)),
         ),
         Err(EventError::TornTailRequiresRecovery { .. })
     ));
@@ -241,6 +304,7 @@ fn treats_a_complete_json_record_without_its_newline_as_a_torn_write() {
         original.clone(),
         EventOutcome::Accepted,
         response(&original, 1, true),
+        Some(state_after(&original, 1)),
     )
     .unwrap();
     let bytes = serde_json::to_vec(&event).unwrap();
@@ -263,6 +327,7 @@ fn rejects_invalid_response_binding_and_outcome() {
             original.clone(),
             EventOutcome::Accepted,
             response(&different, 1, true),
+            Some(state_after(&original, 1)),
         ),
         Err(EventError::Binding { .. })
     ));
@@ -274,6 +339,7 @@ fn rejects_invalid_response_binding_and_outcome() {
             original.clone(),
             EventOutcome::Rejected,
             response(&original, 1, true),
+            None,
         ),
         Err(EventError::Outcome { .. })
     ));
