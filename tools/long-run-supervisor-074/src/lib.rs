@@ -29,6 +29,7 @@ pub mod mutation;
 #[cfg(target_os = "linux")]
 pub mod process_identity;
 pub mod protocol;
+pub mod request_builder;
 pub mod seal_artifact;
 pub mod seal_input;
 #[cfg(target_os = "linux")]

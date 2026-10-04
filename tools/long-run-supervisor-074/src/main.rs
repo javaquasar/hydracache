@@ -7,9 +7,9 @@ fn main() -> ExitCode {
 }
 
 fn run() -> u8 {
-    let mut args = std::env::args().skip(1);
-    match (args.next().as_deref(), args.next(), args.next()) {
-        (Some("verify"), Some(path), None) => {
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    match args.as_slice() {
+        [command, path] if command == "verify" => {
             match verify_journal(&PathBuf::from(path))
                 .and_then(|report| serde_json::to_string(&report).map_err(Into::into))
             {
@@ -24,19 +24,62 @@ fn run() -> u8 {
             }
         }
         #[cfg(target_os = "linux")]
-        (Some("serve"), Some(config), None) => serve(&PathBuf::from(config)),
+        [command, config] if command == "serve" => serve(&PathBuf::from(config)),
         #[cfg(target_os = "linux")]
-        (Some("request"), Some(socket), Some(request_path)) => {
+        [command, socket, request_path] if command == "request" => {
             request(&PathBuf::from(socket), &PathBuf::from(request_path))
         }
         #[cfg(target_os = "linux")]
-        (Some("collect-host-receipt"), Some(campaign_directory), None) => {
+        [command, campaign_directory] if command == "collect-host-receipt" => {
             collect_host_receipt(&PathBuf::from(campaign_directory))
+        }
+        [command, request, key, issued, expires, output] if command == "build-request" => {
+            build_request(
+                &PathBuf::from(request),
+                &PathBuf::from(key),
+                issued,
+                expires,
+                &PathBuf::from(output),
+            )
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | serve <config.toml> | request <socket> <request.json> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | serve <config.toml> | request <socket> <request.json> | collect-host-receipt <campaign-directory>"
             );
+            2
+        }
+    }
+}
+
+fn build_request(
+    request: &std::path::Path,
+    signing_key: &std::path::Path,
+    issued: &str,
+    expires: &str,
+    output: &std::path::Path,
+) -> u8 {
+    let result = issued
+        .parse::<u64>()
+        .ok()
+        .zip(expires.parse::<u64>().ok())
+        .ok_or_else(|| "authorization times must be unsigned integers".to_owned())
+        .and_then(|(issued, expires)| {
+            hydracache_long_run_supervisor_074::request_builder::build_signed_request(
+                request,
+                signing_key,
+                issued,
+                expires,
+                output,
+            )
+            .map_err(|error| error.to_string())
+        });
+    match result {
+        Ok(digest) => {
+            println!("{digest}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
             2
         }
     }
