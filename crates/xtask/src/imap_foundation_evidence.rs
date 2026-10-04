@@ -122,6 +122,7 @@ pub fn check_receipt_set_at_root(
     }
     let mut schema_ids = BTreeSet::new();
     let mut source_shas = BTreeSet::new();
+    let mut seeded_receipt_seeds = BTreeSet::new();
     let mut model_seed = None;
     let mut fault_seed = None;
     for name in &actual_files {
@@ -133,6 +134,9 @@ pub fn check_receipt_set_at_root(
         }
         if let Some(source_sha) = value.get("source_sha").and_then(Value::as_str) {
             source_shas.insert(source_sha.to_owned());
+        }
+        if let Some(seed) = value.get("seed").and_then(Value::as_u64) {
+            seeded_receipt_seeds.insert(seed);
         }
         match name.as_str() {
             "authority-model.json" => model_seed = value.get("seed").and_then(Value::as_u64),
@@ -154,6 +158,9 @@ pub fn check_receipt_set_at_root(
     }
     if model_seed.is_none() || model_seed != fault_seed {
         problems.push("authority model and fault schedule receipts must use the same seed".into());
+    }
+    if seeded_receipt_seeds.len() != 1 {
+        problems.push("all seeded receipts must use the same seed".into());
     }
     Ok(problems)
 }

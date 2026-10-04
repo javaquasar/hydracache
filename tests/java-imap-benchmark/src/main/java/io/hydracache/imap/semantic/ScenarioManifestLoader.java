@@ -117,6 +117,7 @@ public final class ScenarioManifestLoader {
         case PUT, PUT_IF_ABSENT, REPLACE_IF_PRESENT, GET_AND_PUT ->
             pointWrite(id, operation, fields, false, limits, lineNumber);
         case REPLACE -> pointWrite(id, operation, fields, true, limits, lineNumber);
+        case REMOVE_IF_VALUE -> conditionalRemove(id, fields, limits, lineNumber);
         case GET_ALL, REMOVE_ALL -> bulkKeys(id, operation, fields, limits, lineNumber);
         case PUT_ALL -> bulkEntries(id, fields, limits, lineNumber);
         case SET_TTL -> ttlUpdate(id, fields, limits, lineNumber);
@@ -156,6 +157,19 @@ public final class ScenarioManifestLoader {
     if (expected.isPresent()) payload = checkedAdd(payload, expected.get().size(), "step payload", line);
     ScenarioStep step = new ScenarioStep(id, operation, List.of(),
         List.of(new ScenarioEntry(key, value)), expected, parseTtl(fields.get("ttl"), line), 0);
+    return new ParsedStep(step, payload);
+  }
+
+  private static ParsedStep conditionalRemove(
+      String id, Map<String, String> fields, ManifestLimits limits, int line)
+      throws ManifestException {
+    requireFields(fields, Set.of("key", "expected"), line);
+    BytesValue key = decode(fields.get("key"), limits.maxKeyBytes(), "key", line);
+    BytesValue expected = decode(
+        fields.get("expected"), limits.maxValueBytes(), "expected", line);
+    int payload = checkedAdd(key.size(), expected.size(), "step payload", line);
+    ScenarioStep step = new ScenarioStep(id, Operation.REMOVE_IF_VALUE, List.of(key), List.of(),
+        Optional.of(expected), TtlDirective.preserve(), 0);
     return new ParsedStep(step, payload);
   }
 

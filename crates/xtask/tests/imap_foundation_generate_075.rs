@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
+use xtask::imap_foundation_component_proofs::{execute_component_proof, ComponentProofKind};
 use xtask::imap_foundation_evidence::{check_at_root, check_receipt_set_at_root};
 use xtask::imap_foundation_generate::generate_at_root;
 
@@ -57,6 +58,28 @@ fn incomplete_or_mixed_seed_receipt_sets_fail_closed() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("eight canonical JSON files")));
+}
+
+#[test]
+fn individually_valid_receipts_cannot_mix_seeds() {
+    let temp = tempdir().unwrap();
+    let output = temp.path().join("evidence");
+    generate_at_root(&root(), &output, 117).unwrap();
+    let path = output.join("lifecycle.json");
+    let mut receipt: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let replacement = execute_component_proof(ComponentProofKind::Lifecycle, 118).unwrap();
+    receipt["seed"] = serde_json::json!(replacement.seed);
+    receipt["steps"] = serde_json::json!(replacement.steps);
+    receipt["proof_sha256"] = serde_json::json!(replacement.proof_sha256);
+    std::fs::write(&path, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
+    assert!(check_at_root(&root(), "0.75", Some(&path))
+        .unwrap()
+        .is_empty());
+    let problems = check_receipt_set_at_root(&root(), "0.75", &output).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("all seeded receipts")));
 }
 
 #[test]

@@ -56,6 +56,8 @@ public record ScenarioStep(
           && expected.isEmpty() && advanceTicks == 0, operation);
       case REPLACE -> require(entries.size() == 1 && keys.isEmpty()
           && expected.isPresent() && advanceTicks == 0, operation);
+      case REMOVE_IF_VALUE -> require(keys.size() == 1 && entries.isEmpty()
+          && expected.isPresent() && advanceTicks == 0, operation);
       case GET_ALL, REMOVE_ALL -> require(!keys.isEmpty() && entries.isEmpty()
           && expected.isEmpty() && advanceTicks == 0, operation);
       case PUT_ALL -> require(!entries.isEmpty() && keys.isEmpty()

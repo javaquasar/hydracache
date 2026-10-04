@@ -43,6 +43,13 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !status.success() {
         return Err("local distributed correctness suite failed".into());
     }
+    let java_status = Command::new(maven_program())
+        .args(["-B", "-f", "tests/java-imap-benchmark/pom.xml", "test"])
+        .current_dir(&root)
+        .status()?;
+    if !java_status.success() {
+        return Err("Java IMap semantic suite failed".into());
+    }
     let contract_problems = crate::imap_contract::check_at_root(&root, RELEASE)?;
     if !contract_problems.is_empty() {
         return Err(format!("IMap contract problems: {contract_problems:?}").into());
@@ -63,6 +70,14 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         "imap-distributed-correctness {RELEASE}: OK (local provisional proofs; production disabled)"
     );
     Ok(())
+}
+
+fn maven_program() -> &'static str {
+    if cfg!(windows) {
+        "mvn.cmd"
+    } else {
+        "mvn"
+    }
 }
 
 fn parse_args(args: &[String]) -> Result<Option<PathBuf>, Box<dyn Error>> {
@@ -90,4 +105,22 @@ fn parse_args(args: &[String]) -> Result<Option<PathBuf>, Box<dyn Error>> {
         return Err("imap-distributed-correctness requires --release 0.75".into());
     }
     Ok(evidence)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn platform_maven_program_is_executable_name() {
+        assert!(matches!(maven_program(), "mvn" | "mvn.cmd"));
+    }
+
+    #[test]
+    fn arguments_require_the_exact_provisional_release() {
+        assert!(parse_args(&["--release".into(), "0.75".into()]).is_ok());
+        assert!(parse_args(&["--release".into(), "0.74".into()]).is_err());
+        assert!(parse_args(&["--unknown".into(), "value".into()]).is_err());
+        assert!(parse_args(&["--release".into()]).is_err());
+    }
 }

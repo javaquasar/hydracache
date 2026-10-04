@@ -60,6 +60,7 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
       case GET_AND_PUT -> put(step.key(), step.value(), step.ttl(), true,
           defect == Defect.DROP_GET_AND_PUT);
       case GET_AND_REMOVE -> remove(step.key());
+      case REMOVE_IF_VALUE -> removeIfValue(step);
       case GET_ALL -> getAll(step.keys());
       case PUT_ALL -> putAll(step);
       case REMOVE_ALL -> removeAll(step.keys());
@@ -173,6 +174,16 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
     events.add(new MapEvent(MapEvent.Kind.REMOVED, key, Optional.empty(), logicalTick));
     return OperationOutcome.point(
         OutcomeKind.REMOVED, Optional.of(current.value()), TtlState.absent());
+  }
+
+  private OperationOutcome removeIfValue(ScenarioStep step) {
+    StoredValue current = live(step.key());
+    if (current == null) return absent();
+    if (!current.value().equals(step.expected().orElseThrow())) {
+      return OperationOutcome.point(
+          OutcomeKind.MISMATCH, Optional.of(current.value()), ttlState(current));
+    }
+    return remove(step.key());
   }
 
   private OperationOutcome getAll(List<BytesValue> keys) {

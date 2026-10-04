@@ -10,6 +10,7 @@ public enum Operation {
   REPLACE_IF_PRESENT,
   GET_AND_PUT,
   GET_AND_REMOVE,
+  REMOVE_IF_VALUE,
   GET_ALL,
   PUT_ALL,
   REMOVE_ALL,

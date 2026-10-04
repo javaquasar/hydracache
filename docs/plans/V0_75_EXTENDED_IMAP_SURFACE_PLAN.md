@@ -221,14 +221,20 @@ independent of the unfinished 0.74 production shape:
 - a test-only bounded reference mutation model, certainty-aware linearizability oracle and seeded
   fault vocabulary for owner/backup loss, promotion, rebalance, reconnect and response loss;
 - an isolated common Java semantic harness with bounded manifests, an equivalence oracle and
-  fail-closed HydraCache/Hazelcast adapter placeholders.
+  fail-closed HydraCache/Hazelcast adapter placeholders, conditional remove, TTL expiry,
+  partition-grouped pending-only bulk retry and generation-aware listener repair;
 - an executable three-node logical value-plane simulator covering bounded proxy routing,
   synchronous backup proof, response-loss replay, promotion, repair, rebalance, partial bulk and
   listener gap behavior without making the simulator reachable from production crates;
 - a reproducible seeded stateful chaos campaign with continuous owner/backup/epoch invariants,
   partition-scoped transfer regression coverage and a trace fingerprint retained in fault evidence;
 - executable tenant/replay/replica-proof/redirect/generation/trust/audit/decode security guards and
-  an exact-source generator/validator for the complete model, fault, history and RPO receipt set.
+  an exact-source generator/validator for eight model, fault, history, RPO, transfer, listener,
+  bulk and lifecycle receipts, including same-seed replay and tamper rejection;
+- bounded ACK accounting, resumable checksum-fenced transfer, listener watermark, stable partial
+  bulk and complete namespace drain/reclamation models, each with executable negative paths;
+- a composite transfer/expiry/failover/lifecycle explorer with deterministic schedule shrinking and
+  a test-only RESP/HC1/HC2 Rust/HC2 Java projection into one dedup/event/accounting owner;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

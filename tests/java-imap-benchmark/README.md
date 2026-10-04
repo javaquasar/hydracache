@@ -11,7 +11,8 @@ The module currently provides:
 - a common `MapSemanticAdapter` SPI;
 - deterministic in-memory adapters used to prove equivalence and mismatch detection;
 - barrier-started conditional races, request-indexed partial bulk outcomes, logical TTL
-  observation/mutation, and listener gap/repair cutover fencing;
+  observation/mutation, conditional remove, partition-grouped retry of pending bulk items, and
+  generation-aware listener watermark/gap/repair fencing;
 - an independent bounded canonical-key reference codec matching the Rust UTF-8 and empty-binary
   golden vectors without allocating a production partition hash or wire identity;
 - fail-closed HydraCache and Hazelcast product adapter placeholders.
@@ -44,6 +45,7 @@ step=s6 contains_key key=6b31
 step=s7 set_ttl key=6b31 ttl=expire_after:2
 step=s8 remaining_ttl key=6b31
 step=s9 listener_gap key=6b31
+step=s10 remove_if_value key=6b31 expected=7631
 ```
 
 Unknown versions, operations, fields, duplicates, malformed hex, oversized lines/manifests,
