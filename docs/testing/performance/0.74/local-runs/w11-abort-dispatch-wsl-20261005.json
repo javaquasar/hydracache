@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-abort-lifecycle-and-dispatch",
+  "status": "passed-local-non-promotable",
+  "source_sha": "108b96bb",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test abort_lifecycle --test server --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 136,
+  "abort_lifecycle_tests_passed": 3,
+  "server_integration_tests_passed": 6,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "abort requires exact revision, frozen reason and approval nonce, an unexpired product/controller lease and matching signed principals",
+    "ABORT_REQUESTED is durable before the external backend effect and retains exact recovery identity",
+    "a backend failure reports the reconciled intent revision and preserves the host claim",
+    "an identical request resumes from the durable intent, commits ABORT_COMPLETED and releases the host claim",
+    "the accepted response is durably replayed without calling the backend again",
+    "stale or unauthorized abort requests append no event and execute no backend effect",
+    "the authenticated socket dispatcher composes persistent manifest and host checks with the abort lifecycle"
+  ],
+  "limitations": [
+    "the positive socket path uses an injected backend boundary",
+    "the production allowlisted diagnostic collector, systemd StopUnit adapter and post-stop verification are not implemented",
+    "the ordinary production service path rejects abort without mutation until that backend exists",
+    "lease-expiry termination remains separate implementation work",
+    "no measured HydraCache process, service, systemd unit or expensive qualification run was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

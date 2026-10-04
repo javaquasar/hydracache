@@ -549,6 +549,17 @@ same-request recovery without spawning. The configured seal root is a distinct r
 directory. Production system-bus and uid/gid behavior still require admitted-host rehearsal before
 this becomes a live-service claim.
 
+Abort uses a separate two-transition transaction. `ABORT_REQUESTED` changes the campaign to
+`ABORTED_INCOMPLETE` but deliberately retains the exact harness, daemon, checkpoint and controller
+lease so an interrupted supervisor can finish the same request. An idempotent backend boundary
+must capture bounded allowlisted diagnostics and stop that retained unit without spawning.
+`ABORT_COMPLETED` then clears those retained fields; only after its event and snapshot are durable
+does the supervisor append the accepted request response and release the host-wide claim. The
+socket dispatcher revalidates manifest/host evidence first and reports the reconciled revision
+when the backend fails after the intent commit. Same-request recovery and response replay are
+locally exercised. The production diagnostics/systemd backend is still absent, so the ordinary
+service route cannot yet execute abort and fails without mutation.
+
 Publication modes are now part of the verified artifact contract on Unix. Packet and archive
 staging trees are recursively changed to `0400` files and `0500` directories, metadata is synced,
 and only then is the tree renamed. The builders immediately re-open the final location through the

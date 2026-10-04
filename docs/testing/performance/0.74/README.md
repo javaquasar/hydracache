@@ -302,6 +302,23 @@ qualification harness still has to call this library with its real semantic, nat
 non-regression and retention evidence, and production ownership/system-bus behavior remains a
 host rehearsal item.
 
+The explicit abort path now has a recoverable local lifecycle and authenticated socket dispatch.
+An admitted request must carry the frozen reason, approval nonce, exact revision and the same live
+controller principals. The supervisor commits `ABORT_REQUESTED` while retaining the process
+identities, then calls one narrow idempotent backend boundary for bounded diagnostics and stopping
+the exact unit. Only after that call succeeds does it commit `ABORT_COMPLETED`, clear the retained
+process/checkpoint/lease state, record the signed response and release the host claim. A backend
+failure after the first commit returns the reconciled revision; the byte-identical request resumes
+from that intent and a later replay does not call the backend. Stale or unauthorized requests leave
+no event and perform no effect. At source `108b96bb`, the local lifecycle and socket tests cover
+normal completion, exact replay and the failure-after-intent window. See
+`local-runs/w11-abort-dispatch-wsl-20261005.json`.
+
+The injected backend is deliberately not a production claim. Its interface requires diagnostics
+and stop to be idempotent, but the real allowlisted diagnostic collector, systemd `StopUnit`
+adapter and post-stop identity check remain the next local package. Until those exist, the normal
+service route returns an internal-error response for `abort` without changing campaign state.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,

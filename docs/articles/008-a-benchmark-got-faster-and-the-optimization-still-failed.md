@@ -358,6 +358,16 @@ inventory appears. The positive test then sends those exact producer bytes throu
 supervisor resolver, closing a subtle gap where a strict consumer existed but no equally strict
 way to generate its input did.
 
+The same principle applies to stopping a bad run. The local abort transaction now records an
+`ABORT_REQUESTED` state before invoking any external effect and retains the exact process identity
+needed for recovery. An idempotent backend boundary is then responsible for diagnostics and stop.
+Only after it succeeds does `ABORT_COMPLETED` clear process/checkpoint/lease state, persist the
+signed response and release the host claim. If the backend fails after the intent commit, the
+caller sees the advanced revision and can resend the identical signed request; a different request
+cannot inherit that intent. Tests prove that exact replay does not repeat the backend effect. This
+is still a local transaction proof, not a production stop claim: the real allowlisted diagnostic
+collector, systemd adapter and post-stop verification remain deliberately separate work.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
