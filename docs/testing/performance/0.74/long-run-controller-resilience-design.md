@@ -513,6 +513,17 @@ terminal unit/checkpoint predicates, commit lifecycle event/state and durable pr
 the right order, apply read-only ownership/modes, and release the host claim only after the final
 complete seal.
 
+The Linux seal lifecycle coordinator now implements that ordering around an internally supplied
+PacketPlan and already observed terminal UnitSnapshot. It commits each lifecycle event before its
+state CAS so reconciliation can finish a lost state write, binds terminal/sealed recovery to the
+same request digest, writes the signed response only after the artifact and sealed state exist, and
+re-verifies artifacts on response replay. `COMPLETE_SEALED` clears the retained process, checkpoint
+and controller lease before the durable response; only then is host-marker removal attempted, and
+that removal is idempotent across a lost response. Local I74/C74 tests exercise continuation and
+promotable packets plus event/state and marker-release crash windows. The remaining server adapter
+must derive PacketPlan from frozen on-disk evidence, perform the real D-Bus observation and enforce
+final read-only ownership/modes before this becomes a live-service claim.
+
 The workflow uploads:
 
 ~~~text

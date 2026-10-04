@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-seal-lifecycle-coordinator",
+  "status": "passed-local-non-promotable",
+  "source_sha": "cba4a336",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p hydracache-long-run-supervisor-074 --locked",
+    "wsl.exe bash -lc 'cargo check -p hydracache-long-run-supervisor-074 --all-targets --locked'",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 125,
+  "ignored_manual_system_bus_tests": 1,
+  "seal_lifecycle_tests_passed": 4,
+  "failed": 0,
+  "confirmed": [
+    "terminal checkpoint and retained successful unit evidence are verified before artifact mutation",
+    "terminal and sealed lifecycle events are durable before their state compare-and-swap",
+    "event-ahead-of-state recovery finishes the missing state write without duplicating artifact work",
+    "I74 continuation seal produces a durable signed response that is exactly replayed",
+    "C74 final seal binds a two-role promotable packet and reaches COMPLETE_SEALED",
+    "exact response replay re-verifies packet and archive bytes",
+    "request-id reuse with different request bytes fails closed",
+    "terminal unit drift fails before lifecycle or artifact mutation",
+    "host-marker release happens after the durable complete response and is idempotent on replay"
+  ],
+  "limitations": [
+    "the Unix server does not yet dispatch seal to the lifecycle coordinator",
+    "PacketPlan is supplied internally by the test fixture and is not yet derived by a frozen-evidence resolver",
+    "the retained UnitSnapshot is supplied to the coordinator; real D-Bus inspection remains server-adapter work",
+    "read-only final ownership and mode policy still require the admitted Linux host",
+    "WSL nightly toolchain lacks the clippy component; clippy passed on Windows and Linux compilation/tests passed in WSL",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "abort, diagnostics, lease-expiry termination and incomplete sealing remain incomplete",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

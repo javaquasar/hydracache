@@ -229,13 +229,24 @@ The result binds the packet/raw-manifest digests, raw set, file/byte counts and 
 and exact replay re-verifies both published directories before returning it. At source `75e7df26`,
 121 ordinary supervisor tests pass under WSL; one real-system-bus test remains manual and ignored.
 
+The local Linux seal coordinator now orders terminal checkpoint/unit verification, terminal
+lifecycle event, state CAS, recoverable artifact creation, sealed lifecycle event, state CAS and
+durable signed response. It reconciles an event committed immediately before a crash, binds
+recovery to the exact request digest, re-verifies artifacts on response replay, clears retained
+process/checkpoint/lease state only at the sealed transition, and releases the host marker only
+after a durable `COMPLETE_SEALED` response. Its I74 and C74 tests cover continuation and promotable
+packets, request-id conflict, unit drift, event-ahead-of-state recovery and replay after host-marker
+release. At source `cba4a336`, 125 ordinary WSL supervisor tests pass; the real-system-bus test is
+still manual and ignored.
+
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
-The live seal/abort routes, diagnostics and lease-expiry termination remain implementation work.
-Deterministic packet construction and durable artifact recovery are complete local components, but
-the server has not yet joined terminal observation, lifecycle CAS/event commit, artifact result,
-durable protocol response and final host-marker release into one live seal transaction.
+The live server seal/abort routes, diagnostics and lease-expiry termination remain implementation
+work. Deterministic packet construction, durable artifact recovery and the seal lifecycle
+coordinator are complete local components, but server dispatch still needs to derive the exact
+PacketPlan from frozen campaign evidence, inspect the retained unit over D-Bus and invoke the
+coordinator. No real service claim is made until that adapter and admitted-host rehearsal exist.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

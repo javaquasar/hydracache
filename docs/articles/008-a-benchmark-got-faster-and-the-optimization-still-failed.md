@@ -721,6 +721,18 @@ is evidence for recoverable artifact mechanics, not yet for live sealing: termin
 the protocol response, read-only publication and host-claim release still need one ordered server
 transaction and admitted-host rehearsal.
 
+The next slice supplied that ordered coordinator without hiding the remaining adapter. On Linux it
+first proves the terminal checkpoint chain and retained successful unit snapshot, commits terminal
+event before state, creates or recovers the exact packet/archive, commits sealed event before state,
+then journals the signed response. A replay is accepted only for the same request digest and
+re-hashes the artifacts. Final C74 sealing clears process/checkpoint/lease state before the response
+and removes the host marker afterward; both state reconciliation and marker removal tolerate the
+corresponding lost-response windows. I74 continuation and two-role final fixtures, unit drift,
+request conflict and event-ahead-of-state recovery raise the WSL suite to 125 passing ordinary tests
+at source `cba4a336`, with one real-system-bus test still manual. The claim remains deliberately
+narrow: the Unix server does not yet derive PacketPlan from the frozen evidence or dispatch `seal`,
+and no real D-Bus/systemd rehearsal has run.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
