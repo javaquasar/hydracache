@@ -595,6 +595,28 @@ from the socket boundary to already-executed commands. The product diff was remo
 SHA was created, and no numeric win was claimed. This closes the simple "detect a deep read, then
 batch" design: preserving pipeline-one latency is insufficient if slow-reader admission changes.
 
+The next W11 slice addressed a different kind of false confidence: treating a durable state file as
+proof that a controller mutation happened exactly once. The supervisor now records accepted and
+rejected requests in a separate canonical hash chain and indexes stable request ids by the digest
+of the canonical request. A retry with the same id and bytes receives the original signed response;
+the same id with different bytes is rejected. The event is synced before the state snapshot is
+replaced, and an accepted attach event contains the complete post-mutation state. A local crash
+fixture stops in that exact window and proves that restart completes only the recorded
+compare-and-swap. It also proves that same-revision content drift is not silently "repaired" from
+a convenient copy.
+
+Checkpoint admission was tightened at the same boundary. Attach evidence must now match the
+campaign, active role, sequence, head digest, harness identity and daemon identity in durable state.
+Both the journal and head must be bounded regular files. A complete JSON object without the final
+newline is still classified as a torn write; accepting it would let the next append concatenate two
+objects and corrupt the chain. Useful-progress timestamps from the future are rejected rather than
+allowed to postpone the frozen deadline.
+
+At source `35b2bc3f`, 65 supervisor tests and three integrated checkpoint-writer tests pass under
+local WSL2. This is implementation evidence, not throughput evidence: no product process, rented
+host or expensive qualification campaign ran. Live attach remains closed until exact systemd unit
+state and the immutable host/manifest checks are wired into the same transaction.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

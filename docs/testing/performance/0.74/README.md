@@ -53,10 +53,11 @@ verifies the response digest and request/campaign binding before printing it. En
 round-trip the exact durable state and reject stale revisions.
 
 This is still not the complete systemd supervisor. `start`, `attach`, `seal` and `abort` currently
-authenticate and then fail with stable internal error 11 without mutation; they cannot launch or
-adopt a process until the `/proc`/cgroup/systemd identity adapter is implemented. Production
-provisioning, bounded diagnostics and real host fault rehearsals remain incomplete, so release
-admission stays closed.
+authenticate and then fail with stable internal error 11 at the live server boundary. The attach
+internals now include durable replay, crash-window recovery and checkpoint evidence validation,
+but the server must not grant a lease until the systemd unit-state adapter and frozen host/manifest
+checks are combined with them. Production provisioning, bounded diagnostics and real host fault
+rehearsals remain incomplete, so release admission stays closed.
 
 The next local slice adds the repository-side service definition, sysusers/tmpfiles definitions,
 a deliberately invalid configuration template and `Type=notify` readiness support. The socket is
@@ -70,8 +71,24 @@ Linux process identity inspection is also implemented independently of PID liven
 `/proc/<pid>/stat` after the final command-name parenthesis, reads the single unified cgroup row,
 binds the cgroup inode and boot id, and compares start ticks, process group, cgroup path/inode and
 unit component. Tests cover command names containing spaces/parentheses and report all concurrent
-identity mismatches. The remaining attach implementation must combine this verifier with systemd
-unit state, checkpoint head verification and durable request replay before it may mutate a lease.
+identity mismatches. Checkpoint head verification and durable request replay are now implemented
+as separate fail-closed components; the remaining live attach work must combine them with exact
+systemd unit state and the immutable host/manifest evidence before it may mutate a lease.
+
+The supervisor event journal uses a distinct hash domain, canonical JSON lines, fdatasync before
+head replacement, a strict 64 MiB local bound and a durable request-id index. An identical request
+returns the recorded signed response without appending; reuse of an id with different canonical
+request bytes fails closed. Accepted attach events carry the complete post-mutation state, so the
+journal remains authoritative if the service crashes after syncing the event but before replacing
+`state.json`. Recovery completes exactly that one compare-and-swap window; same-revision drift,
+snapshot-ahead state and larger revision gaps are treated as corruption rather than repaired from
+`state.previous.json`.
+
+Checkpoint admission now verifies the bounded regular JSONL file, exact head file, campaign, role,
+sequence, head digest and both process identities against durable state. A syntactically complete
+JSON object without its terminal newline is treated as a torn final record; this closes the case
+where a later append could otherwise join two objects on one line. Future useful-progress times are
+also rejected instead of extending the frozen 180-second deadline.
 
 Offline packet verification is independently implemented in `xtask` (it does not call the
 supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
@@ -96,7 +113,9 @@ incomplete.
 The initial supervisor package passed all 30 targeted tests under local WSL2 Ubuntu at exact source
 `37566d71`. The live-status slice at `1a29aef1` passed 43 supervisor tests plus three durable
 checkpoint-writer tests. The provisioning/process-identity slice at `882b3ed2` passes 51 supervisor
-tests plus the same three checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
+tests plus the same three checkpoint-writer tests under WSL2. The durable
+event/recovery/checkpoint slice at `35b2bc3f` passes 65 supervisor tests plus the same three
+checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
 non-promotable: no service was installed, no product process was started and no admitted-host fault
 rehearsal ran.
 

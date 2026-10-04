@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-event-replay-recovery-and-checkpoint-admission",
+  "status": "passed-local-non-promotable",
+  "source_sha": "35b2bc3f",
+  "platform": "WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-performance-integrated-074 --locked -q"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 65,
+  "checkpoint_writer_tests_passed": 3,
+  "failed": 0,
+  "confirmed": [
+    "accepted and rejected supervisor requests form a canonical durable hash chain",
+    "same request id and digest replay the original signed response without another append",
+    "request id reuse with a different digest fails closed",
+    "event-before-state crash recovery completes exactly one recorded compare-and-swap",
+    "same-revision snapshot drift is rejected rather than repaired",
+    "checkpoint campaign, role, head, sequence and both process identities bind to durable state",
+    "a complete JSON record without its terminal newline is treated as a torn write",
+    "future useful-progress timestamps cannot extend the rejection deadline"
+  ],
+  "limitations": [
+    "WSL is not the admitted release host",
+    "the live server still rejects mutating operations with error 11",
+    "systemd unit-state and immutable host/manifest admission are not yet combined",
+    "no service was installed and no controller-loss fault rehearsal ran",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
