@@ -25,6 +25,7 @@ pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
+pub mod imap_contract;
 pub mod long_run_campaign;
 pub mod management_center;
 pub mod memory_baseline;

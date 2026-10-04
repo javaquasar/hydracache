@@ -1,0 +1,17 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "stages": [
+    {"id":"received","reads_may_observe":false,"client_retry":"safe with a new identity because admission has not occurred","failure_outcome":"not_applied","promoted_owner_proof_id":"proof.imap075.no_admission_record","test_id":"imap075::mutation::received_failure"},
+    {"id":"admitted","reads_may_observe":false,"client_retry":"same identity only","failure_outcome":"outcome_unknown until retained dedup record is queried","promoted_owner_proof_id":"proof.imap075.admission_identity","test_id":"imap075::mutation::admitted_failure"},
+    {"id":"routed","reads_may_observe":false,"client_retry":"refresh topology and retry the same identity","failure_outcome":"not_applied or deduplicated outcome","promoted_owner_proof_id":"proof.imap075.route_epoch","test_id":"imap075::mutation::routed_failure"},
+    {"id":"owner_decided","reads_may_observe":false,"client_retry":"same identity only; never compose another mutation","failure_outcome":"outcome_unknown","promoted_owner_proof_id":"proof.imap075.owner_decision_record","test_id":"imap075::mutation::owner_decided_failure"},
+    {"id":"owner_applied","reads_may_observe":false,"client_retry":"same identity only","failure_outcome":"outcome_unknown","promoted_owner_proof_id":"proof.imap075.owner_applied_watermark","test_id":"imap075::mutation::owner_applied_failure"},
+    {"id":"visible_owner","reads_may_observe":true,"client_retry":"same identity only","failure_outcome":"outcome_unknown; visibility is not acknowledgement","promoted_owner_proof_id":"proof.imap075.visible_version_fence","test_id":"imap075::mutation::visible_owner_failure"},
+    {"id":"replica_proved","reads_may_observe":true,"client_retry":"same identity only","failure_outcome":"outcome_unknown until acknowledgement record is proven","promoted_owner_proof_id":"proof.imap075.replica_apply_watermark","test_id":"imap075::mutation::replica_proved_failure"},
+    {"id":"acknowledged","reads_may_observe":true,"client_retry":"same identity returns retained outcome","failure_outcome":"applied_acknowledged_response_not_yet_proven","promoted_owner_proof_id":"proof.imap075.ack_watermark","test_id":"imap075::mutation::acknowledged_failure"},
+    {"id":"responded","reads_may_observe":true,"client_retry":"not required; duplicate same identity returns the same outcome","failure_outcome":"success_with_response","promoted_owner_proof_id":"proof.imap075.response_bound_to_ack","test_id":"imap075::mutation::responded"},
+    {"id":"outcome_unknown","reads_may_observe":true,"client_retry":"only query or retry with a still-retained identity","failure_outcome":"explicit_outcome_unknown","promoted_owner_proof_id":"proof.imap075.promotion_dedup_and_apply_watermark","test_id":"imap075::mutation::outcome_unknown"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "w0_disposition": "open",
+  "production_capability": "disabled_fail_closed",
+  "blocked_by_074": [
+    {
+      "id": "published-074-commit",
+      "required_artifact": "published 0.74.0 tag and exact source SHA",
+      "reason": "W0 cannot freeze old/new compatibility or final file ownership against an unpublished predecessor"
+    },
+    {
+      "id": "accepted-native-batch-baseline",
+      "required_artifact": "accepted 0.74 native and batch performance contract plus receipts",
+      "reason": "0.75 cannot select or change the predecessor's Bytes and batch path before its baseline is frozen"
+    },
+    {
+      "id": "final-wire-durable-identities",
+      "required_artifact": "reviewed post-0.74 compatibility ADR and docs/COMPAT.md allocation",
+      "reason": "this foundation deliberately assigns no final protocol or durable numeric identity"
+    }
+  ]
+}
