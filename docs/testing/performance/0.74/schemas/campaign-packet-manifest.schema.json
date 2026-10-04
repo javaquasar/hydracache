@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/campaign-packet-manifest.schema.json",
+  "title": "HydraCache 0.74 sealed campaign packet manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "release", "campaign_id", "result", "promotable", "roles"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.74" },
+    "campaign_id": { "$ref": "#/$defs/hash" },
+    "result": { "enum": ["complete", "incomplete"] },
+    "promotable": { "type": "boolean" },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "journal", "journal_sha256", "expected_bytes", "expected_records",
+          "expected_head_sha256", "allow_incomplete_trailing_bytes"
+        ],
+        "properties": {
+          "id": { "enum": ["i74", "c74"] },
+          "journal": { "type": "string", "minLength": 1 },
+          "journal_sha256": { "$ref": "#/$defs/hash" },
+          "expected_bytes": { "type": "integer", "minimum": 1, "maximum": 21474836480 },
+          "expected_records": { "type": "integer", "minimum": 1 },
+          "expected_head_sha256": { "$ref": "#/$defs/hash" },
+          "allow_incomplete_trailing_bytes": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

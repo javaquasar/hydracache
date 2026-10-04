@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+const MAX_CAMPAIGN_BYTES: u64 = 21_474_836_480;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -24,6 +25,8 @@ struct PacketManifest {
 struct RoleManifest {
     id: String,
     journal: PathBuf,
+    journal_sha256: String,
+    expected_bytes: u64,
     expected_records: u64,
     expected_head_sha256: String,
     allow_incomplete_trailing_bytes: bool,
@@ -96,11 +99,31 @@ pub fn verify_manifest(path: &Path) -> Result<Vec<JournalReport>, Box<dyn Error>
             || role
                 .journal
                 .components()
-                .any(|component| matches!(component, std::path::Component::ParentDir))
+                .any(|component| !matches!(component, std::path::Component::Normal(_)))
         {
-            return Err("role journal must be a relative path without parent traversal".into());
+            return Err("role journal must contain only relative normal path components".into());
         }
-        let report = verify_journal_bytes(&fs::read(root.join(&role.journal))?)?;
+        if !is_hash(&role.journal_sha256) {
+            return Err(format!("{} journal digest is invalid", role.id).into());
+        }
+        let journal_path = root.join(&role.journal);
+        reject_symlink_components(root, &role.journal)?;
+        let metadata = fs::metadata(&journal_path)?;
+        if !metadata.is_file()
+            || metadata.len() != role.expected_bytes
+            || metadata.len() > MAX_CAMPAIGN_BYTES
+        {
+            return Err(format!("{} journal size or file type is invalid", role.id).into());
+        }
+        let journal_bytes = fs::read(&journal_path)?;
+        if hex(&Sha256::digest(&journal_bytes)) != role.journal_sha256 {
+            return Err(format!(
+                "{} journal digest does not match the packet manifest",
+                role.id
+            )
+            .into());
+        }
+        let report = verify_journal_bytes(&journal_bytes)?;
         if report.campaign_id != value.campaign_id
             || report.role != role.id
             || report.records != role.expected_records
@@ -131,6 +154,20 @@ pub fn verify_manifest(path: &Path) -> Result<Vec<JournalReport>, Box<dyn Error>
         return Err("promotable packet must contain I74 and C74 exactly once".into());
     }
     Ok(reports)
+}
+
+fn reject_symlink_components(root: &Path, relative: &Path) -> Result<(), Box<dyn Error>> {
+    let mut current = root.to_path_buf();
+    for component in relative.components() {
+        let std::path::Component::Normal(name) = component else {
+            return Err("journal path contains a non-normal component".into());
+        };
+        current.push(name);
+        if fs::symlink_metadata(&current)?.file_type().is_symlink() {
+            return Err(format!("journal path contains symlink {}", current.display()).into());
+        }
+    }
+    Ok(())
 }
 
 pub fn verify_journal_bytes(bytes: &[u8]) -> Result<JournalReport, Box<dyn Error>> {

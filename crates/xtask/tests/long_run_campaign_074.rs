@@ -61,6 +61,8 @@ fn independent_verifier_accepts_exact_packet_and_rejects_manifest_drift() {
         ),
     )
     .unwrap();
+    let journal_bytes = fs::read(&journal).unwrap();
+    let journal_sha256 = hex(&Sha256::digest(&journal_bytes));
     let manifest = directory.path().join("packet.json");
     fs::write(
         &manifest,
@@ -69,6 +71,8 @@ fn independent_verifier_accepts_exact_packet_and_rejects_manifest_drift() {
             "result": "incomplete", "promotable": false,
             "roles": [{
                 "id": "i74", "journal": "i74.jsonl", "expected_records": 2,
+                "journal_sha256": journal_sha256,
+                "expected_bytes": journal_bytes.len(),
                 "expected_head_sha256": second["record_sha256"],
                 "allow_incomplete_trailing_bytes": false
             }]
@@ -111,6 +115,7 @@ fn independent_verifier_rejects_hash_identity_and_traversal_failures() {
             "result": "incomplete", "promotable": false,
             "roles": [{
                 "id": "i74", "journal": "../escape.jsonl", "expected_records": 1,
+                "journal_sha256": "c".repeat(64), "expected_bytes": 1,
                 "expected_head_sha256": "b".repeat(64),
                 "allow_incomplete_trailing_bytes": false
             }]
