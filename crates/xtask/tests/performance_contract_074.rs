@@ -147,6 +147,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "phase_progress_watchdog_complete",
         "full_design_manifest_fields_complete",
         "host_receipt_revalidation_complete",
+        "start_evidence_import_complete",
         "live_attach_lease_admission_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");

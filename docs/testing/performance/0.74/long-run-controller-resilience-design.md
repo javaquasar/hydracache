@@ -58,6 +58,7 @@ Implementation adds these repository paths:
 | tools/long-run-supervisor-074/src/auth.rs | peer credentials, role authorization, request replay protection |
 | tools/long-run-supervisor-074/src/manifest.rs | strict campaign manifest parsing and allowlist validation |
 | tools/long-run-supervisor-074/src/host_receipt.rs | canonical admitted-host collection and live revalidation |
+| tools/long-run-supervisor-074/src/start_evidence.rs | create-new staging validation and immutable campaign evidence import |
 | tools/long-run-supervisor-074/src/state.rs | state machine, locks, atomic snapshot and journal recovery |
 | tools/long-run-supervisor-074/src/systemd.rs | fixed transient-unit construction and process identity |
 | tools/long-run-supervisor-074/src/checkpoint.rs | chain verification and phase-aware progress |
@@ -238,6 +239,13 @@ RESOLVE_NO_MAGICLINKS. It rejects symlinks, hard-linked writable inputs, group/w
 parents, wrong owners/modes, device changes, non-regular inputs, hash/size changes and paths outside
 the configured staging root. It copies accepted inputs into an immutable campaign input directory,
 fsyncs files and directories, then verifies them again immediately before StartTransientUnit.
+
+The local importer now implements the create-new, bounded regular-file, single-link, canonical
+digest and direct-child portions of this boundary. It validates the start manifest and host receipt
+together, writes `0400` copies into a private temporary campaign directory, fsyncs them and
+atomically renames that directory to the final campaign id. A pre-existing final or interrupted
+temporary directory is a rejection. Linux ownership/mode admission for externally created staging
+parents and the later `openat2` descriptor walk remain part of the production-host start slice.
 
 ## Persistent layout
 

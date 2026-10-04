@@ -156,6 +156,15 @@ Windows formatting, tests and `clippy -D warnings` are also green. The real coll
 intentionally not promotable on WSL and no accepted lease claim is made until the same binary and
 receipt are rehearsed on the admitted bare-metal host.
 
+Start evidence preparation is now implemented separately from process launch. The importer accepts
+only a revision-zero `start`, requires the staging campaign to be an exact direct child, rejects
+symlink/hardlink/oversize/digest substitution, validates the manifest and host receipt together,
+then writes create-new `0400` evidence into a private directory and atomically publishes the final
+campaign directory after fsync. Repeating the import cannot overwrite the first result. This closes
+the immutable evidence-copy portion only: no initial state, spawn intent, host execution lock or
+`StartTransientUnit` call exists yet. At source `5343ca1f`, the local Linux total is 82 ordinary
+supervisor tests.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,

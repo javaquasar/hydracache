@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-start-evidence-import",
+  "status": "passed-local-non-promotable",
+  "source_sha": "5343ca1f",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "cargo test -p hydracache-long-run-supervisor-074",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets -- -D warnings",
+    "CARGO_TARGET_DIR=target/wsl cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl cargo test -p hydracache-performance-integrated-074 --locked -q",
+    "cargo test -p xtask --test performance_contract_074",
+    "cargo xtask performance-contract-check --release 0.74",
+    "cargo xtask doc-check",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-start-evidence.json"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 82,
+  "failed": 0,
+  "confirmed": [
+    "only a revision-zero start with a lowercase campaign digest reaches filesystem admission",
+    "the staging campaign must resolve as an exact direct child of the configured staging root",
+    "manifest and host-receipt bytes, sidecars and cross-bindings are validated before publication",
+    "symlink, hardlink, empty, oversized and non-regular inputs fail closed",
+    "evidence is written create-new with immutable Linux modes and directory fsync",
+    "the private directory is atomically published and cannot overwrite an existing campaign"
+  ],
+  "limitations": [
+    "the importer is not yet wired to the live start operation",
+    "openat2 and staging-parent ownership admission remain production-host work",
+    "host execution locking and durable spawn intent/result are not implemented",
+    "no systemd unit or product process was created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

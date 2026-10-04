@@ -654,6 +654,15 @@ locally under WSL2, with Windows tests and strict clippy also green. This proves
 mechanism, not a release campaign: no service or product process was started, and accepted attach,
 controller-loss and reboot rehearsals still require the admitted bare-metal host.
 
+The following start-path slice keeps evidence publication separate from execution. A revision-zero
+start can import only the exact direct-child staging directory for its campaign. The importer rejects
+symlink, hardlink, size, digest, manifest/receipt binding and pre-existing destination conflicts;
+writes create-new `0400` copies into a private directory; fsyncs them; and atomically publishes the
+campaign directory. An identical retry cannot overwrite the first publication. At source
+`5343ca1f`, 82 ordinary supervisor tests pass locally under WSL2. This does not claim exactly-once
+spawn: the host-wide execution lock, durable spawn intent/result and `StartTransientUnit` boundary
+are still intentionally absent.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
