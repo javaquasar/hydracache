@@ -24,6 +24,11 @@
   },
   "blocked_by_074": [
     {
+      "id": "published-074-dependency-policy",
+      "required_artifact": "published 0.74 source with cargo deny check licenses green, including an accepted license expression for hydracache-long-run-supervisor-074",
+      "reason": "the current published 0.74 branch fails the full verify dependency-policy gate before any 0.75-specific workspace tests run"
+    },
+    {
       "id": "published-074-commit",
       "required_artifact": "published 0.74.0 tag and exact source SHA",
       "reason": "W0 cannot freeze old/new compatibility or final file ownership against an unpublished predecessor"

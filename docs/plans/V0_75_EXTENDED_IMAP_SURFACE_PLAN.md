@@ -228,7 +228,10 @@ backend remains disabled and fail-closed. Backend extraction, partition ownershi
 wire/durable identities, SDK generation, production surface routing, performance qualification and
 release-candidate work remain blocked on the published 0.74 artifact and its accepted native/batch
 baseline. Machine-readable status is maintained in `docs/testing/imap/0.75/status.json` and the
-provisional gate is `cargo xtask imap-contract-check --release 0.75`.
+provisional gate is `cargo xtask imap-contract-check --release 0.75`. The current published 0.74
+tip also leaves the full workspace gate blocked at `cargo deny check licenses` because
+`hydracache-long-run-supervisor-074` has no accepted license expression; 0.75 records that exact
+predecessor artifact instead of weakening the dependency policy.
 
 ## W0. Freeze the compatibility and divergence ledger
 
