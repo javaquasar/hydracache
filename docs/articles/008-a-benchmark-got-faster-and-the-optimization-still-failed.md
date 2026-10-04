@@ -398,6 +398,22 @@ manual-only, host-serialized and has cancellation disabled. It has been structur
 not dispatched; candidate identity, admitted host and expensive qualification remain intentionally
 unresolved.
 
+The next gap looked deceptively like a file-copy step. It was not: production staging is owned by
+the performance account with mode `0750`, while the workflow runner intentionally has neither
+write permission, `sudo` nor arbitrary DBus access. Giving the job permission to copy files would
+have erased the security boundary the supervisor was built to provide. Instead, the local builder
+now creates a transport artifact before that boundary. It binds the start manifest to the admitted
+host receipt, inventories the exact four nested files by digest and size, publishes all six files
+create-new, and re-hashes them after transport. Drift in machine, boot, mount or cpuset identity,
+tampering, hardlinks and overwrite attempts all fail in 10/10 Windows and 10/10 WSL tests at
+source `fd51e8a6`.
+
+That work deliberately stops one step short of production staging. The contract still marks the
+privileged staging adapter incomplete. Closing it requires a supervisor-owned, typed delivery path
+and admitted-host ownership rehearsal; it does not justify broadening the GitHub runner's
+permissions. This is another instance of the release's main theme: completing the safe artifact is
+useful progress, but it is not evidence that the live campaign path has run.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

@@ -410,6 +410,19 @@ uses the frozen campaign-id component order, removes the raw nonce after derivin
 rejects unknown, nested-schema, floating-point, dirty-tree, path/argv-binding, oversized-output and
 secret-bearing fields, fsyncs both files, and has no process execution mode.
 
+The same tool now assembles and independently re-verifies an immutable start bundle before any
+privileged host staging occurs. The bundle contains the manifest, admitted host observation and
+their exact digest sidecars plus a canonical inventory binding every transported byte and size.
+Assembly checks the manifest-to-receipt digest and machine/boot/mount/cpuset identity, rejects
+non-regular, symlink/hardlink, oversized, non-canonical, changed or pre-existing inputs, publishes
+all files create-new and syncs the directory on Unix. Re-verification re-hashes both the outer
+inventory and all four nested files after transport. Windows and WSL2 each pass 10/10 builder tests,
+including host drift, tamper, hardlink and overwrite failures. This closes the unprivileged
+controller artifact boundary only: delivery into the root-owned `0750` production staging tree
+remains deliberately false in the contract until a supervisor-owned privileged staging adapter is
+implemented and rehearsed on the admitted host. See
+`local-runs/w11-start-bundle-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

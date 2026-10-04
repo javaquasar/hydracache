@@ -619,6 +619,16 @@ cancellation, key use in the self-hosted section and error suppression. Product 
 monitor/seal progression and expensive qualification remain disabled until their unresolved
 candidate, host, key and runner inputs are explicitly admitted.
 
+The local manifest tool separately implements the immutable artifact that a future
+`build-and-stage` job must transport. It pairs the canonical start manifest with the admitted host
+receipt, verifies their digest and machine/boot/mount/cpuset bindings, and writes a canonical
+six-file bundle: the four input files plus an inventory and its digest. A second mode re-hashes the
+complete inventory after transport. Inputs and outputs are bounded, create-new, single-link regular
+files and the directory is synced on Unix. This does not grant the workflow write access to the
+root-owned `0750` production staging tree. The privileged supervisor-owned delivery adapter remains
+an explicit incomplete boundary rather than adding `sudo`, DBus or group-write authority to the
+runner.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 

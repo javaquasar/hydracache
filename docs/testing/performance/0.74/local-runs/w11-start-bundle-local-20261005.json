@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-start-bundle",
+  "status": "passed-local-artifact-not-staged",
+  "source_sha": "fd51e8a6",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "python -m unittest scripts/perf/test_performance_long_run_074.py",
+    "wsl.exe -d Ubuntu -- bash -lc 'python3 -m unittest scripts/perf/test_performance_long_run_074.py'",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-start-bundle.json"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "production_staging_mutated": false,
+  "windows_builder_tests_passed": 10,
+  "wsl_builder_tests_passed": 10,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "the canonical manifest and admitted host receipt compose by digest and machine, boot, mount and cpuset identity",
+    "the bundle inventory binds the exact bytes and sizes of all four nested start-evidence files",
+    "bundle assembly and transport verification reject tamper, hardlinks, host drift and overwrite",
+    "bundle files are create-new and individually synced, and the containing directory is synced on Unix",
+    "the checked-in bundle schema digest is frozen by the W11 contract",
+    "the qualification dry-run accepted the updated content-addressed contract without executing a command"
+  ],
+  "limitations": [
+    "the bundle was created only in temporary local test directories and was not uploaded or staged on a host",
+    "the root-owned production staging tree remains inaccessible to the workflow runner by design",
+    "a supervisor-owned privileged staging adapter and admitted-host ownership rehearsal remain incomplete",
+    "the production verification key, candidate and admitted host remain unresolved",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
