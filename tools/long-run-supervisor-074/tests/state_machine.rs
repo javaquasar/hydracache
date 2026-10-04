@@ -161,3 +161,36 @@ fn lease_expiry_is_terminal_and_never_restarts() {
     assert_eq!(expired, CampaignState::LeaseExpiredIncomplete);
     assert!(transition(expired, Transition::StartC74).is_err());
 }
+
+#[test]
+fn controller_resilience_expected_red_canary() {
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() != Ok("PERF74-W11") {
+        return;
+    }
+
+    // Model the forbidden weak policy as one that trusts a reused PID and a
+    // checkpoint sequence alone. The real attach predicate above binds the
+    // complete process, host, lease, campaign and hash-chain identities.
+    let current = state();
+    let mut reused = request(&current);
+    reused.harness.start_ticks += 1;
+    reused.daemon.cgroup_inode += 1;
+    reused.identity.boot_id = "boot-reused".to_owned();
+    reused.identity.lease_deadline_unix_seconds = 1_000;
+    let weak_pid_only_policy = reused.harness.pid == current.harness.pid
+        && reused.daemon.pid == current.daemon.pid
+        && reused.checkpoint.sequence == current.checkpoint.sequence;
+    assert!(
+        weak_pid_only_policy,
+        "the expected-red weak policy was not activated"
+    );
+    assert!(!evaluate_attach(&current, &reused, 180).admitted);
+
+    let mut duplicate = current.clone();
+    duplicate.duplicate_executor = true;
+    assert!(!evaluate_attach(&duplicate, &request(&duplicate), 180).admitted);
+    assert!(transition(CampaignState::I74Terminal, Transition::StartI74).is_err());
+    assert!(transition(CampaignState::LeaseExpiredIncomplete, Transition::StartC74).is_err());
+
+    panic!("HC-CANARY-RED:PERF74-W11: PID-only/restart/lease/duplicate acceptance must stay red");
+}

@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "release": "0.74",
+  "entries": [
+    {
+      "w_item": "W11",
+      "guard": {
+        "file": "tools/long-run-supervisor-074/tests/state_machine.rs",
+        "function": "attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift"
+      },
+      "canary": {
+        "file": "tools/long-run-supervisor-074/tests/state_machine.rs",
+        "function": "controller_resilience_expected_red_canary"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "state_machine", "--locked", "attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift", "--", "--exact", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "state_machine", "--locked", "controller_resilience_expected_red_canary", "--", "--exact", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "PERF74-W11"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "PERF74-W11",
+      "expected_failure": "HC-CANARY-RED:PERF74-W11",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.74-W11.json"],
+      "red_evidence": "Controller reattachment must reject PID-only liveness, restarted roles, expired leases, identity drift, corrupt progress and duplicate executors."
+    }
+  ]
+}

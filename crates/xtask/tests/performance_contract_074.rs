@@ -138,6 +138,40 @@ fn w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal() {
 }
 
 #[test]
+fn w12_evidence_skeleton_is_exact_and_fail_closed() {
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),
+    )
+    .unwrap();
+    let expected = [
+        "W0", "W1", "W2", "W3", "W4", "W4a", "W4b", "W4c", "W4d", "W4e", "W5", "W6", "W6a", "W6b",
+        "W7", "W8", "W8a", "W8b", "W8c", "W9", "W9a", "W9b", "W9c", "W9d", "W9e", "W10", "W11",
+        "W12",
+    ];
+    let actual = manifest["work_item"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["id"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(actual, expected);
+    assert_eq!(
+        manifest["dynamic_canary_work_items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["W11"]
+    );
+    assert!(
+        xtask::canary_check::check_canary_registry_for_release(&root(), "0.74")
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[test]
 fn published_b73_requires_exact_tag_archive_and_runtime_relationship() {
     let mut value = contract("baseline-identities.toml");
     value["predecessor_candidate"]["annotated_tag_commit_sha"] =
