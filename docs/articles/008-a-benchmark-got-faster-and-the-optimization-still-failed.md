@@ -466,17 +466,41 @@ digest breaks, identity drift and timestamp reversal. Recovery tolerates at most
 trailing JSON record; appending after that tail is forbidden until explicit recovery archives it.
 
 A separate `xtask` verifier reimplements the digest calculation instead of trusting the writer.
-It rejects manifest/journal disagreement, duplicate roles, parent traversal and any promotable
-packet without complete I74 and C74 journals. The pure supervisor state machine separately proves
-that attach can update only controller lease and revision; host/boot, PID-start, cgroup, cpuset,
-checkpoint, lease, failure, duplicate-executor or durable-history drift all fail closed. Its typed
-64-KiB protocol rejects unknown and duplicate fields, malformed packets and cross-operation fields,
-and exposes no arbitrary command or environment surface.
+It now binds each journal's byte length, raw SHA-256, record count and hash-chain head. Manifest
+disagreement, duplicate roles, parent traversal, symlink substitution and any promotable packet
+without complete I74 and C74 journals are rejected. The pure supervisor state machine separately
+proves that attach can update only controller lease and revision; host/boot, PID-start, cgroup,
+cpuset, checkpoint, lease, failure, duplicate-executor or durable-history drift all fail closed.
+Its typed 64-KiB protocol rejects unknown and duplicate fields, malformed packets and
+cross-operation fields, and exposes no arbitrary command or environment surface.
+
+The disposable GitHub-side monitor is also implemented as a strictly read-only observer. It
+validates the full durable-state shape plus campaign and manifest identities, reports controller
+loss separately from stale useful progress, measurement loss and evidence corruption, and writes
+a create-new non-promotable receipt. Future progress timestamps are invalid rather than clamped to
+zero. The observer has no start, attach, seal or abort action, so replacing it cannot change the
+measured process lifetime.
+
+Two security layers were then added without inventing production credentials. The Ed25519 verifier
+hash-binds the raw authorization document to the request and checks operation, campaign, manifest,
+repository, workflow run, actor, issue time, expiry, maximum ten-minute lifetime and clock skew.
+The Rust manifest parser independently requires canonical strict JSON, checks its raw digest and
+request identity, rejects unknown fields and plaintext-looking secret values, and freezes cadence,
+progress, diagnostic, lease and artifact limits. The production public key remains explicitly
+`UNRESOLVED`; the test key can prove verification behavior but cannot authorize a campaign.
+
+W12 now has a fail-closed evidence skeleton listing all 29 plan items in exact release order. It
+does not promote incomplete rows: the first local report contained 23 planned items, five locally
+implemented items, zero fast-green items and zero ship-ready items. A release-scoped W11 canary
+proved expected-red behavior at clean commit `38a8117e`; PID-only/restart/lease/duplicate
+acceptance failed with the registered signature instead of being counted as an ordinary green
+test. Later commits intentionally require a fresh exact-commit canary receipt.
 
 This is deliberately not described as a completed resilient qualification system. The live Unix
-`SOCK_SEQPACKET` service, peer credentials and signature verification, systemd process ownership,
-provisioning, bounded diagnostics, deterministic sealing and real controller-loss rehearsals still
-require Linux-host implementation and evidence. No six-hour or 24-hour 0.74 run has started.
+`SOCK_SEQPACKET` service, OS peer-credential and supplemental-group checks, production verification
+key, systemd process ownership, full installed-binary/argv/phase manifest fields, provisioning,
+bounded diagnostics, deterministic archive creation and real controller-loss rehearsals still
+require implementation or Linux-host evidence. No six-hour or 24-hour 0.74 run has started.
 
 Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a
 and W9a were rejected and the other proposals are deferred or unauthorized, there is no honest
