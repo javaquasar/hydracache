@@ -29,11 +29,35 @@ fn run() -> u8 {
         (Some("request"), Some(socket), Some(request_path)) => {
             request(&PathBuf::from(socket), &PathBuf::from(request_path))
         }
+        #[cfg(target_os = "linux")]
+        (Some("collect-host-receipt"), Some(campaign_directory), None) => {
+            collect_host_receipt(&PathBuf::from(campaign_directory))
+        }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | serve <config.toml> | request <socket> <request.json>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | serve <config.toml> | request <socket> <request.json> | collect-host-receipt <campaign-directory>"
             );
             2
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn collect_host_receipt(campaign_directory: &std::path::Path) -> u8 {
+    use hydracache_long_run_supervisor_074::host_receipt::{
+        collect_host_observation, write_receipt_for_admission,
+    };
+
+    match collect_host_observation(campaign_directory)
+        .and_then(|receipt| write_receipt_for_admission(&receipt, campaign_directory))
+    {
+        Ok(digest) => {
+            println!("{digest}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            9
         }
     }
 }

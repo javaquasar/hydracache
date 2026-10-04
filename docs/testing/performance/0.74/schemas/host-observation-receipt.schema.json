@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/host-observation-receipt.schema.json",
+  "title": "HydraCache 0.74 admitted host observation receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "machine_id", "boot_id", "kernel_release",
+    "kernel_command_line_sha256", "campaign_mount", "mount_identity",
+    "online_cpuset", "isolated_cpuset", "housekeeping_cpuset", "cpu_governors",
+    "kernel_tunables", "supervisor_binary", "reference_host_freeze_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "machine_id": { "$ref": "#/$defs/bounded" },
+    "boot_id": { "$ref": "#/$defs/bounded" },
+    "kernel_release": { "$ref": "#/$defs/bounded" },
+    "kernel_command_line_sha256": { "$ref": "#/$defs/hash" },
+    "campaign_mount": { "$ref": "#/$defs/mount" },
+    "mount_identity": { "$ref": "#/$defs/hash" },
+    "online_cpuset": { "$ref": "#/$defs/cpuset" },
+    "isolated_cpuset": { "$ref": "#/$defs/cpuset" },
+    "housekeeping_cpuset": { "$ref": "#/$defs/cpuset" },
+    "cpu_governors": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 65536,
+      "propertyNames": { "pattern": "^cpu(?:0|[1-9][0-9]{0,4})$" },
+      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 64 }
+    },
+    "kernel_tunables": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kernel.numa_balancing", "kernel.sched_autogroup_enabled",
+        "kernel.sched_migration_cost_ns", "kernel.watchdog",
+        "vm.dirty_background_ratio", "vm.dirty_ratio", "vm.swappiness"
+      ],
+      "properties": {
+        "kernel.numa_balancing": { "$ref": "#/$defs/tunable" },
+        "kernel.sched_autogroup_enabled": { "$ref": "#/$defs/tunable" },
+        "kernel.sched_migration_cost_ns": { "$ref": "#/$defs/tunable" },
+        "kernel.watchdog": { "$ref": "#/$defs/tunable" },
+        "vm.dirty_background_ratio": { "$ref": "#/$defs/tunable" },
+        "vm.dirty_ratio": { "$ref": "#/$defs/tunable" },
+        "vm.swappiness": { "$ref": "#/$defs/tunable" }
+      }
+    },
+    "supervisor_binary": { "$ref": "#/$defs/binary" },
+    "reference_host_freeze_sha256": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "bounded": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[^\\u0000\\r\\n]+$" },
+    "path": { "type": "string", "minLength": 1, "maxLength": 4096, "pattern": "^[^\\u0000\\r\\n]+$" },
+    "cpuset": { "type": "string", "minLength": 1, "maxLength": 65536, "pattern": "^[0-9,-]+$" },
+    "tunable": { "type": "string", "minLength": 1, "maxLength": 4096, "pattern": "^[^\\u0000\\r\\n]+$" },
+    "options": {
+      "type": "array", "minItems": 1, "maxItems": 128, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[^\\u0000\\r\\n]+$" }
+    },
+    "mount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mount_id", "device_major_minor", "root", "mount_point", "mount_options", "filesystem_type", "source", "super_options"],
+      "properties": {
+        "mount_id": { "type": "integer", "minimum": 1 },
+        "device_major_minor": { "type": "string", "pattern": "^[0-9]+:[0-9]+$", "maxLength": 64 },
+        "root": { "$ref": "#/$defs/path" },
+        "mount_point": { "$ref": "#/$defs/path" },
+        "mount_options": { "$ref": "#/$defs/options" },
+        "filesystem_type": { "$ref": "#/$defs/bounded" },
+        "source": { "$ref": "#/$defs/path" },
+        "super_options": { "$ref": "#/$defs/options" }
+      }
+    },
+    "binary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size", "inode", "device", "uid", "gid", "mode"],
+      "properties": {
+        "path": { "const": "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074" },
+        "sha256": { "$ref": "#/$defs/hash" },
+        "size": { "type": "integer", "minimum": 1 },
+        "inode": { "type": "integer", "minimum": 1 },
+        "device": { "type": "integer", "minimum": 1 },
+        "uid": { "const": 0 },
+        "gid": { "const": 0 },
+        "mode": { "const": 493 }
+      }
+    }
+  }
+}

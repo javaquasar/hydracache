@@ -14,6 +14,7 @@ pub mod client;
 #[cfg(target_os = "linux")]
 pub mod config;
 pub mod event;
+pub mod host_receipt;
 pub mod manifest;
 pub mod manifest_evidence;
 pub mod mutation;
