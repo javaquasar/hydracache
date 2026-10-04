@@ -54,11 +54,11 @@ round-trip the exact durable state and reject stale revisions.
 
 This is still not the complete systemd supervisor. `start`, `seal` and `abort` authenticate and
 then fail with stable internal error 11 at the live server boundary. `attach` now executes the
-implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint and lease guards and durably
-records an exact rejection response. It cannot grant a lease yet: a mandatory named failure remains
-until the full host receipt (mount options, tuning and housekeeping partition) can be re-derived.
-Production provisioning, bounded diagnostics and real host fault rehearsals remain incomplete, so
-release admission stays closed.
+implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint, admitted-host and lease guards
+and durably records an exact response. There is no unconditional rejection left in the attach path:
+a lease can be granted only when every guard matches. Production provisioning, bounded diagnostics,
+an accepted attach rehearsal and real host fault rehearsals remain incomplete, so release admission
+stays closed.
 
 The next local slice adds the repository-side service definition, sysusers/tmpfiles definitions,
 a deliberately invalid configuration template and `Type=notify` readiness support. The socket is
@@ -74,8 +74,8 @@ binds the cgroup inode and boot id, and compares start ticks, process group, cgr
 unit component. Tests cover command names containing spaces/parentheses and report all concurrent
 identity mismatches. Checkpoint head verification and durable request replay are now implemented
 as separate fail-closed components and are composed with exact systemd unit state and immutable
-manifest evidence in the live request path. Full host-receipt revalidation remains the explicit
-guard preventing lease mutation.
+manifest evidence in the live request path. Full host-receipt revalidation is now a separate strict
+component rather than an unimplemented rejection.
 
 The supervisor event journal uses a distinct hash domain, canonical JSON lines, fdatasync before
 head replacement, a strict 64 MiB local bound and a durable request-id index. An identical request
@@ -108,6 +108,17 @@ their `Cpus_allowed_list`, verifies the checkpoint evidence and runs the pure le
 one locked transaction. Rejections name all independently discoverable failures, are hash-chained,
 and replay byte-exactly for the same request id.
 
+The admitted-host receipt closes the last deliberately unimplemented attach guard. A root-only
+`collect-host-receipt` operation writes create-new `0400` canonical evidence and its digest sidecar.
+The receipt binds the existing reference-host freeze digest, machine and boot ids, kernel release
+and command-line digest, the exact campaign mount selected from `/proc/self/mountinfo`, online /
+isolated / housekeeping CPU partition, every online CPU governor, the seven frozen kernel tunables,
+and the root-owned installed supervisor binary's content and inode metadata. Attach re-collects the
+same observation and requires byte-semantic equality with the persistent receipt, manifest and
+durable state. Missing cpufreq, empty isolation, a non-root collector, WSL, a changed mount option or
+any tuning/binary drift fails closed. This is local implementation evidence; no admitted host was
+changed or exercised.
+
 Offline packet verification is independently implemented in `xtask` (it does not call the
 supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
 manifest identity, the exact sorted raw file set, every file size and SHA-256, required guard
@@ -139,6 +150,11 @@ supervisor tests plus the same three checkpoint-writer tests. The composed attac
 checkpoint-writer tests. The checked-in receipts remain explicitly local and
 non-promotable: no service was installed, no product process was started and no admitted-host fault
 rehearsal ran.
+
+The host-receipt slice at `93710227` raises the local WSL supervisor total to 78 ordinary tests.
+Windows formatting, tests and `clippy -D warnings` are also green. The real collector is
+intentionally not promotable on WSL and no accepted lease claim is made until the same binary and
+receipt are rehearsed on the admitted bare-metal host.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

@@ -57,6 +57,7 @@ Implementation adds these repository paths:
 | tools/long-run-supervisor-074/src/protocol.rs | versioned request/response types and size limits |
 | tools/long-run-supervisor-074/src/auth.rs | peer credentials, role authorization, request replay protection |
 | tools/long-run-supervisor-074/src/manifest.rs | strict campaign manifest parsing and allowlist validation |
+| tools/long-run-supervisor-074/src/host_receipt.rs | canonical admitted-host collection and live revalidation |
 | tools/long-run-supervisor-074/src/state.rs | state machine, locks, atomic snapshot and journal recovery |
 | tools/long-run-supervisor-074/src/systemd.rs | fixed transient-unit construction and process identity |
 | tools/long-run-supervisor-074/src/checkpoint.rs | chain verification and phase-aware progress |
@@ -245,6 +246,8 @@ Each campaign directory contains:
 ~~~text
 campaign-start.json
 campaign-start.sha256
+host-observation.json
+host-observation.sha256
 state.json
 state.previous.json
 events.jsonl
@@ -259,6 +262,13 @@ final/seal/
 Files are never reused by another campaign. Mutable log limits are enforced while writing. A
 campaign whose limit is reached is stopped and sealed incomplete; truncating an over-limit stream
 and continuing is forbidden.
+
+`host-observation.json` is create-new root evidence with mode `0400`. It binds the pre-existing
+reference-host freeze receipt, machine/boot/kernel identity, command line, campaign mount
+device/options, complete online/isolated/housekeeping CPU partition, per-CPU governors, the frozen
+sysctl set and the exact installed supervisor binary. Attach re-collects this shape and compares it
+to the persistent receipt, start manifest and durable state; an unavailable probe is a rejection,
+not an omitted field.
 
 The supervisor serializes mutations with:
 

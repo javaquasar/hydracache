@@ -130,6 +130,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         ("packet_manifest_schema", "packet_manifest_schema_sha256"),
         ("raw_manifest_schema", "raw_manifest_schema_sha256"),
         ("start_manifest_schema", "start_manifest_schema_sha256"),
+        ("host_observation_schema", "host_observation_schema_sha256"),
     ] {
         let path = root().join(implementation[path_field].as_str().unwrap());
         let digest = Sha256::digest(std::fs::read(path).unwrap())
@@ -145,6 +146,8 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",
         "full_design_manifest_fields_complete",
+        "host_receipt_revalidation_complete",
+        "live_attach_lease_admission_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-admitted-host-receipt",
+  "status": "passed-local-non-promotable",
+  "source_sha": "93710227",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "cargo test -p hydracache-long-run-supervisor-074",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets -- -D warnings",
+    "CARGO_TARGET_DIR=target/wsl cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl cargo test -p hydracache-performance-integrated-074 --locked -q",
+    "cargo test -p xtask --test performance_contract_074",
+    "cargo xtask performance-contract-check --release 0.74",
+    "cargo xtask doc-check"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 78,
+  "checkpoint_writer_tests_passed": 3,
+  "failed": 0,
+  "confirmed": [
+    "the canonical receipt has a strict schema, fixed probe set and content digest",
+    "the online, isolated and housekeeping CPU sets must be canonical, disjoint and exhaustive",
+    "every online CPU must have an observed governor and all seven frozen tunables must be present",
+    "the campaign mount device and options are selected from the longest matching mountinfo entry",
+    "the installed root-owned 0755 supervisor binary is bound by content, device and inode",
+    "attach revalidates the persistent receipt against live observation, manifest and durable state",
+    "the previous unconditional host-revalidation rejection is removed"
+  ],
+  "limitations": [
+    "WSL is not the admitted release host and cannot produce promotable host evidence",
+    "an accepted attach path has not been rehearsed against the installed service",
+    "start, seal and abort remain disabled",
+    "no measured unit or product process was created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

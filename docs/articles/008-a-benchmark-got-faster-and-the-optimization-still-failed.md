@@ -639,6 +639,21 @@ Lease admission deliberately remains impossible: every attempt includes the name
 can be re-derived from the admitted host receipt. At source `1a484f6c`, 72 ordinary supervisor
 tests, one explicit real-system-bus test and three checkpoint-writer tests pass locally under WSL2.
 
+The next slice replaced that named placeholder with evidence, not with a weaker predicate. A
+root-only collector writes a canonical host observation and digest sidecar without overwrite. It
+binds the existing reference-host freeze receipt; machine, boot, kernel and command-line identity;
+the exact campaign mount and options from mountinfo; the full online/isolated/housekeeping CPU
+partition; every online CPU governor; the seven frozen kernel tunables; and the installed
+root-owned supervisor binary's digest and inode metadata. Attach re-collects the same shape and
+requires exact agreement with the persistent receipt, immutable start manifest and durable state.
+
+That change makes successful attach representable without making WSL look like an admitted host.
+Missing CPU-frequency state, empty isolation, a non-root collector or any mount, tuning, binary,
+machine or boot drift rejects the request. At source `93710227`, 78 ordinary supervisor tests pass
+locally under WSL2, with Windows tests and strict clippy also green. This proves the local admission
+mechanism, not a release campaign: no service or product process was started, and accepted attach,
+controller-loss and reboot rehearsals still require the admitted bare-metal host.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
