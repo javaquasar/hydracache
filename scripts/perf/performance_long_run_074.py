@@ -253,7 +253,8 @@ def validate_inputs(value: dict[str, Any]) -> list[str]:
     schemas = value.get("expected_output_schema_sha256s")
     if (
         not isinstance(schemas, dict)
-        or set(schemas) != {"checkpoint", "measurement", "reconciliation", "packet_manifest"}
+        or set(schemas)
+        != {"checkpoint", "measurement", "reconciliation", "raw_manifest", "packet_manifest"}
         or any(not re.fullmatch(r"[0-9a-f]{64}", str(item)) for item in schemas.values())
     ):
         problems.append("expected_output_schema_sha256s is invalid")

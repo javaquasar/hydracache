@@ -4,13 +4,51 @@
   "title": "HydraCache 0.74 sealed campaign packet manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "release", "campaign_id", "result", "promotable", "roles"],
+  "required": [
+    "schema_version", "release", "campaign_id", "campaign_manifest",
+    "campaign_manifest_sha256", "raw_manifest", "raw_manifest_sha256",
+    "raw_manifest_set_sha256", "result", "promotable", "terminal_reason",
+    "required_final_guards", "guard_results", "roles"
+  ],
   "properties": {
     "schema_version": { "const": 1 },
     "release": { "const": "0.74" },
     "campaign_id": { "$ref": "#/$defs/hash" },
+    "campaign_manifest": { "$ref": "#/$defs/relativePath" },
+    "campaign_manifest_sha256": { "$ref": "#/$defs/hash" },
+    "raw_manifest": { "const": "raw-manifest.json" },
+    "raw_manifest_sha256": { "$ref": "#/$defs/hash" },
+    "raw_manifest_set_sha256": { "$ref": "#/$defs/hash" },
     "result": { "enum": ["complete", "incomplete"] },
     "promotable": { "type": "boolean" },
+    "terminal_reason": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1, "maxLength": 128 }
+      ]
+    },
+    "required_final_guards": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+    },
+    "guard_results": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "passed", "evidence_sha256"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "passed": { "type": "boolean" },
+          "evidence_sha256": { "$ref": "#/$defs/hash" }
+        }
+      }
+    },
     "roles": {
       "type": "array",
       "minItems": 1,
@@ -19,22 +57,47 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "id", "journal", "journal_sha256", "expected_bytes", "expected_records",
-          "expected_head_sha256", "allow_incomplete_trailing_bytes"
+          "id", "result", "journal", "journal_sha256", "expected_bytes",
+          "expected_records", "first_record_sha256", "expected_head_sha256",
+          "allow_incomplete_trailing_bytes", "harness", "daemon"
         ],
         "properties": {
           "id": { "enum": ["i74", "c74"] },
-          "journal": { "type": "string", "minLength": 1 },
+          "result": { "enum": ["complete", "incomplete"] },
+          "journal": { "$ref": "#/$defs/relativePath" },
           "journal_sha256": { "$ref": "#/$defs/hash" },
           "expected_bytes": { "type": "integer", "minimum": 1, "maximum": 21474836480 },
           "expected_records": { "type": "integer", "minimum": 1 },
+          "first_record_sha256": { "$ref": "#/$defs/hash" },
           "expected_head_sha256": { "$ref": "#/$defs/hash" },
-          "allow_incomplete_trailing_bytes": { "type": "boolean" }
+          "allow_incomplete_trailing_bytes": { "type": "boolean" },
+          "harness": { "$ref": "#/$defs/process" },
+          "daemon": { "$ref": "#/$defs/process" }
         }
       }
     }
   },
   "$defs": {
-    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["boot_id", "pid", "start_ticks", "process_group", "cgroup_path", "cgroup_inode", "unit_name"],
+      "properties": {
+        "boot_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "pid": { "type": "integer", "minimum": 1 },
+        "start_ticks": { "type": "integer", "minimum": 1 },
+        "process_group": { "type": "integer", "minimum": 1 },
+        "cgroup_path": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "cgroup_inode": { "type": "integer", "minimum": 1 },
+        "unit_name": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    }
   }
 }

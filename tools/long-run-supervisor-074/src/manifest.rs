@@ -56,6 +56,7 @@ pub struct ExpectedOutputSchemaSha256s {
     pub checkpoint: String,
     pub measurement: String,
     pub reconciliation: String,
+    pub raw_manifest: String,
     pub packet_manifest: String,
 }
 
@@ -275,6 +276,7 @@ fn validate_execution_contract(manifest: &CampaignManifest) -> Result<(), Manife
         &manifest.expected_output_schema_sha256s.checkpoint,
         &manifest.expected_output_schema_sha256s.measurement,
         &manifest.expected_output_schema_sha256s.reconciliation,
+        &manifest.expected_output_schema_sha256s.raw_manifest,
         &manifest.expected_output_schema_sha256s.packet_manifest,
     ] {
         if !is_hash(digest) {

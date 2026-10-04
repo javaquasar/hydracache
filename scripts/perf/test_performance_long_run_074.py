@@ -73,7 +73,7 @@ def inputs() -> dict:
         "role_order": ["i74", "c74"],
         "phase_durations_seconds": {"warmup": 60, "measured": 300, "drain": 30, "durable_companion": 30, "post_work_idle": 60, "reconciliation": 30},
         "output_limits": {"stdout_bytes": 1048576, "stderr_bytes": 1048576, "diagnostic_bytes": 1048576, "final_artifact_bytes": 1073741824, "files": 2000},
-        "expected_output_schema_sha256s": {"checkpoint": "c" * 64, "measurement": "d" * 64, "reconciliation": "e" * 64, "packet_manifest": "f" * 64},
+        "expected_output_schema_sha256s": {"checkpoint": "c" * 64, "measurement": "d" * 64, "reconciliation": "e" * 64, "raw_manifest": "1" * 64, "packet_manifest": "f" * 64},
         "required_final_guards": ["semantic", "native-non-regression", "retention"],
         "secret_identifiers": ["github-environment-key-v1"],
     }

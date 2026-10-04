@@ -1,4 +1,5 @@
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 fn root() -> PathBuf {
@@ -118,6 +119,41 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
         xtask::performance_contract_074::check_at_root(Path::new(&root()), None)
             .unwrap()
             .is_empty()
+    );
+}
+
+#[test]
+fn w11_schema_hashes_and_local_completion_flags_are_exact() {
+    let controller = contract("long-run-controller-resilience-contract.toml");
+    let implementation = controller["local_implementation"].as_table().unwrap();
+    for (path_field, digest_field) in [
+        ("packet_manifest_schema", "packet_manifest_schema_sha256"),
+        ("raw_manifest_schema", "raw_manifest_schema_sha256"),
+        ("start_manifest_schema", "start_manifest_schema_sha256"),
+    ] {
+        let path = root().join(implementation[path_field].as_str().unwrap());
+        let digest = Sha256::digest(std::fs::read(path).unwrap())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        assert_eq!(implementation[digest_field].as_str(), Some(digest.as_str()));
+    }
+    for field in [
+        "raw_file_set_verification_complete",
+        "campaign_manifest_binding_complete",
+        "guard_evidence_binding_complete",
+        "phase_progress_watchdog_complete",
+        "full_design_manifest_fields_complete",
+    ] {
+        assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
+    }
+    assert_eq!(
+        implementation["live_service_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["release_admission_allowed"].as_bool(),
+        Some(false)
     );
 }
 

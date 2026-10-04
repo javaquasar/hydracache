@@ -103,11 +103,12 @@
     "expected_output_schema_sha256s": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["checkpoint", "measurement", "reconciliation", "packet_manifest"],
+      "required": ["checkpoint", "measurement", "reconciliation", "raw_manifest", "packet_manifest"],
       "properties": {
         "checkpoint": { "$ref": "#/$defs/hash" },
         "measurement": { "$ref": "#/$defs/hash" },
         "reconciliation": { "$ref": "#/$defs/hash" },
+        "raw_manifest": { "$ref": "#/$defs/hash" },
         "packet_manifest": { "$ref": "#/$defs/hash" }
       }
     },
