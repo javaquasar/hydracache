@@ -1,3 +1,4 @@
+use crate::abort_backend::SystemdAbortBackend;
 use crate::abort_lifecycle::{drive_abort_request, AbortBackend, AbortLifecycleError};
 use crate::archive::ArchiveLimits;
 use crate::artifact::PacketLimits;
@@ -72,6 +73,20 @@ pub trait AbortObservationBackend: AbortBackend {
         manifest: &CampaignManifest,
         state: &DurableCampaignState,
     ) -> Result<(), String>;
+}
+
+impl AbortObservationBackend for SystemdAbortBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        verify_host_receipt_evidence(campaign_directory, manifest, state)
+            .map_err(|error| error.to_string())?;
+        self.bind_manifest(manifest.clone());
+        Ok(())
+    }
 }
 
 impl SupervisorServer {
@@ -171,7 +186,10 @@ impl SupervisorServer {
         if request.operation == Operation::Abort {
             return match abort_backend {
                 Some(backend) => self.dispatch_abort(authorized, now, backend),
-                None => Ok(error_response_from_request(request, now, 11)?),
+                None => {
+                    let mut backend = SystemdAbortBackend::new();
+                    self.dispatch_abort(authorized, now, &mut backend)
+                }
             };
         }
         if request.operation != Operation::Status {

@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 #[cfg(target_os = "linux")]
+pub mod abort_backend;
+#[cfg(target_os = "linux")]
 pub mod abort_lifecycle;
 pub mod archive;
 pub mod artifact;

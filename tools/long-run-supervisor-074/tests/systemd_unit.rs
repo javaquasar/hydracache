@@ -7,9 +7,9 @@ use hydracache_long_run_supervisor_074::manifest::{
 use hydracache_long_run_supervisor_074::spawn::SpawnIntent;
 use hydracache_long_run_supervisor_074::systemd_unit::{
     build_transient_unit_spec, expected_command_environment_sha256, inspect_unit,
-    verify_unit_identity, verify_unit_terminal, UnitError, UnitMismatch, UnitProperty,
-    UnitSnapshot, MAXIMUM_ROLE_RUNTIME_SECONDS, UNIT_MEMORY_MAX_BYTES, UNIT_NOFILE_LIMIT,
-    UNIT_TASKS_MAX,
+    stop_unit_and_wait, verify_unit_identity, verify_unit_terminal, UnitError, UnitMismatch,
+    UnitProperty, UnitSnapshot, MAXIMUM_ROLE_RUNTIME_SECONDS, UNIT_MEMORY_MAX_BYTES,
+    UNIT_NOFILE_LIMIT, UNIT_TASKS_MAX,
 };
 use hydracache_long_run_supervisor_074::{ProcessIdentity, Role};
 use std::path::Path;
@@ -243,6 +243,14 @@ fn dbus_lookup_rejects_arbitrary_unit_names_before_connecting() {
     assert!(matches!(
         inspect_unit("../../hydracache-performance-074-a.service"),
         Err(UnitError::UnitName)
+    ));
+    assert!(matches!(
+        stop_unit_and_wait("dbus.service", 30),
+        Err(UnitError::UnitName)
+    ));
+    assert!(matches!(
+        stop_unit_and_wait("hydracache-performance-074-a.service", 0),
+        Err(UnitError::Policy)
     ));
 }
 

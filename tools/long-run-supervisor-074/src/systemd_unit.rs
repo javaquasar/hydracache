@@ -4,6 +4,7 @@ use crate::{canonical_json, sha256_hex, ProcessIdentity, Role};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::{Component, Path};
+use std::time::{Duration, Instant};
 use thiserror::Error;
 use zbus::blocking::{Connection, Proxy};
 use zbus::zvariant::{OwnedObjectPath, Value};
@@ -78,6 +79,8 @@ pub enum UnitError {
     Json(#[from] serde_json::Error),
     #[error("systemd unit identity differs: {0:?}")]
     Mismatch(Vec<UnitMismatch>),
+    #[error("systemd unit did not stop within the frozen diagnostic grace")]
+    StopTimeout,
 }
 
 pub fn build_transient_unit_spec(
@@ -247,6 +250,44 @@ pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, Un
             Ok(None)
         }
         Err(error) => Err(error),
+    }
+}
+
+pub fn stop_unit_and_wait(unit_name: &str, timeout_seconds: u64) -> Result<(), UnitError> {
+    validate_unit_name(unit_name)?;
+    if timeout_seconds == 0 || timeout_seconds > 300 {
+        return Err(UnitError::Policy);
+    }
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let _: OwnedObjectPath = manager.call("StopUnit", &(unit_name, "replace"))?;
+    let deadline = Instant::now() + Duration::from_secs(timeout_seconds);
+    loop {
+        match inspect_loaded_unit(unit_name) {
+            Ok(snapshot)
+                if snapshot.active_state == "inactive"
+                    && snapshot.sub_state == "dead"
+                    && snapshot.main_pid == 0 =>
+            {
+                return Ok(())
+            }
+            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+                if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+            {
+                return Ok(())
+            }
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+        if Instant::now() >= deadline {
+            return Err(UnitError::StopTimeout);
+        }
+        std::thread::sleep(Duration::from_millis(100));
     }
 }
 
