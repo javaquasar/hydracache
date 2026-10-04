@@ -6,8 +6,8 @@ use xtask::long_run_campaign::{raw_file_set_sha256, verify_manifest, RawFile};
 
 use hydracache_long_run_supervisor_074::archive::{create_deterministic_archive, ArchiveLimits};
 use hydracache_long_run_supervisor_074::artifact::{
-    build_packet, ArtifactError, GuardEvidenceInput, PacketLimits, PacketPlan, PacketResult,
-    RoleEvidenceInput,
+    build_packet, verify_packet, ArtifactError, GuardEvidenceInput, PacketLimits, PacketPlan,
+    PacketResult, RoleEvidenceInput,
 };
 use hydracache_long_run_supervisor_074::Role;
 
@@ -175,38 +175,39 @@ fn built_packet_fixture(
     .unwrap();
     let outputs = root.join("outputs");
     fs::create_dir_all(&outputs).unwrap();
-    build_packet(
-        &campaign,
-        &outputs.join(output_name),
-        &PacketPlan {
-            campaign_id: "a".repeat(64),
-            campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+    let plan = PacketPlan {
+        campaign_id: "a".repeat(64),
+        campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+        result: PacketResult::Complete,
+        promotable: false,
+        terminal_reason: None,
+        required_final_guards: vec!["semantic".to_owned()],
+        guard_evidence: vec![GuardEvidenceInput {
+            id: "semantic".to_owned(),
+            passed: true,
+            source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
+        }],
+        roles: vec![RoleEvidenceInput {
+            role: Role::I74,
             result: PacketResult::Complete,
-            promotable: false,
-            terminal_reason: None,
-            required_final_guards: vec!["semantic".to_owned()],
-            guard_evidence: vec![GuardEvidenceInput {
-                id: "semantic".to_owned(),
-                passed: true,
-                source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
-            }],
-            roles: vec![RoleEvidenceInput {
-                role: Role::I74,
-                result: PacketResult::Complete,
-                journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
-            }],
-            raw_files: vec![
-                PathBuf::from("roles/i74/checkpoints.jsonl"),
-                PathBuf::from("campaign-start.json"),
-                PathBuf::from("roles/i74/guards/semantic.json"),
-            ],
-        },
-        PacketLimits {
-            maximum_files: 2_000,
-            maximum_bytes: 1_073_741_824,
-        },
-    )
-    .unwrap()
+            journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
+        }],
+        raw_files: vec![
+            PathBuf::from("roles/i74/checkpoints.jsonl"),
+            PathBuf::from("campaign-start.json"),
+            PathBuf::from("roles/i74/guards/semantic.json"),
+        ],
+    };
+    let limits = PacketLimits {
+        maximum_files: 2_000,
+        maximum_bytes: 1_073_741_824,
+    };
+    let receipt = build_packet(&campaign, &outputs.join(output_name), &plan, limits).unwrap();
+    assert_eq!(
+        verify_packet(&receipt.packet_directory, &plan, limits).unwrap(),
+        receipt
+    );
+    receipt
 }
 
 #[test]

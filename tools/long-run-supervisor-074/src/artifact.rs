@@ -13,6 +13,7 @@ const CAMPAIGN_MANIFEST_NAME: &str = "campaign-start.json";
 const RELEASE: &str = "0.74";
 const MAXIMUM_FILES: usize = 20_000;
 const MAXIMUM_BYTES: u64 = 21_474_836_480;
+const MAXIMUM_MANIFEST_BYTES: u64 = 64 * 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -196,15 +197,7 @@ pub fn build_packet(
     let file_by_source = raw_files_by_source(&raw_files)?;
     let guard_results = build_guard_results(plan, &file_by_source)?;
     let roles = build_role_manifests(&raw_directory, plan, &file_by_source)?;
-    if (plan.result == PacketResult::Complete
-        && (roles
-            .iter()
-            .any(|role| role.result != PacketResult::Complete)
-            || guard_results.iter().any(|guard| !guard.passed)))
-        || (plan.promotable && roles.len() != 2)
-    {
-        return Err(ArtifactError::Contract);
-    }
+    validate_completed_shape(plan, &guard_results, &roles)?;
     let packet_manifest = PacketManifest {
         schema_version: 1,
         release: RELEASE,
@@ -233,6 +226,70 @@ pub fn build_packet(
         packet_manifest_path: output_directory.join(PACKET_MANIFEST_NAME),
         packet_directory: output_directory,
         packet_manifest_sha256,
+        raw_manifest_sha256,
+        raw_manifest_set_sha256,
+        raw_file_count: raw_files.len(),
+        raw_total_bytes,
+    })
+}
+
+pub fn verify_packet(
+    packet_directory: &Path,
+    plan: &PacketPlan,
+    limits: PacketLimits,
+) -> Result<PacketReceipt, ArtifactError> {
+    validate_plan(plan, limits)?;
+    let packet_directory = canonical_directory(packet_directory)?;
+    verify_packet_root_entries(&packet_directory)?;
+    let raw_directory = canonical_directory(&packet_directory.join("raw"))?;
+    let raw_files = collect_existing_raw_files(&raw_directory, limits)?;
+    let raw_total_bytes = checked_total_bytes(&raw_files).ok_or(ArtifactError::Limit)?;
+    let raw_manifest_set_sha256 = sha256_hex(&canonical_json(&raw_files)?);
+    let expected_raw_manifest = canonical_json(&RawManifest {
+        schema_version: 1,
+        release: RELEASE,
+        campaign_id: &plan.campaign_id,
+        file_count: raw_files.len(),
+        total_bytes: raw_total_bytes,
+        set_sha256: &raw_manifest_set_sha256,
+        files: &raw_files,
+    })?;
+    let raw_manifest_path = packet_directory.join(RAW_MANIFEST_NAME);
+    let raw_manifest_bytes = read_single_file(&raw_manifest_path, MAXIMUM_MANIFEST_BYTES)?;
+    if raw_manifest_bytes != expected_raw_manifest {
+        return Err(ArtifactError::Contract);
+    }
+    let raw_manifest_sha256 = sha256_hex(&raw_manifest_bytes);
+    verify_campaign_manifest(&packet_directory, plan)?;
+    let file_by_source = raw_files_by_source(&raw_files)?;
+    let guard_results = build_guard_results(plan, &file_by_source)?;
+    let roles = build_role_manifests(&raw_directory, plan, &file_by_source)?;
+    validate_completed_shape(plan, &guard_results, &roles)?;
+    let expected_packet_manifest = canonical_json(&PacketManifest {
+        schema_version: 1,
+        release: RELEASE,
+        campaign_id: &plan.campaign_id,
+        campaign_manifest: "raw/campaign-start.json",
+        campaign_manifest_sha256: &plan.campaign_manifest_sha256,
+        raw_manifest: RAW_MANIFEST_NAME,
+        raw_manifest_sha256: &raw_manifest_sha256,
+        raw_manifest_set_sha256: &raw_manifest_set_sha256,
+        result: plan.result,
+        promotable: plan.promotable,
+        terminal_reason: &plan.terminal_reason,
+        required_final_guards: &plan.required_final_guards,
+        guard_results,
+        roles: &roles,
+    })?;
+    let packet_manifest_path = packet_directory.join(PACKET_MANIFEST_NAME);
+    let packet_manifest_bytes = read_single_file(&packet_manifest_path, MAXIMUM_MANIFEST_BYTES)?;
+    if packet_manifest_bytes != expected_packet_manifest {
+        return Err(ArtifactError::Contract);
+    }
+    Ok(PacketReceipt {
+        packet_manifest_path,
+        packet_directory,
+        packet_manifest_sha256: sha256_hex(&packet_manifest_bytes),
         raw_manifest_sha256,
         raw_manifest_set_sha256,
         raw_file_count: raw_files.len(),
@@ -311,6 +368,24 @@ fn validate_plan(plan: &PacketPlan, limits: PacketLimits) -> Result<(), Artifact
     Ok(())
 }
 
+fn validate_completed_shape(
+    plan: &PacketPlan,
+    guards: &[GuardResult<'_>],
+    roles: &[RoleManifest],
+) -> Result<(), ArtifactError> {
+    if (plan.result == PacketResult::Complete
+        && (roles
+            .iter()
+            .any(|role| role.result != PacketResult::Complete)
+            || guards.iter().any(|guard| !guard.passed)))
+        || (plan.promotable && roles.len() != 2)
+    {
+        Err(ArtifactError::Contract)
+    } else {
+        Ok(())
+    }
+}
+
 fn unique_paths(paths: &[PathBuf]) -> Result<BTreeSet<PathBuf>, ArtifactError> {
     let mut unique = BTreeSet::new();
     for path in paths {
@@ -351,6 +426,129 @@ fn copy_raw_files(
     }
     files.sort_by(|left, right| left.path.as_bytes().cmp(right.path.as_bytes()));
     Ok(files)
+}
+
+fn collect_existing_raw_files(
+    raw_directory: &Path,
+    limits: PacketLimits,
+) -> Result<Vec<RawFile>, ArtifactError> {
+    let mut files = Vec::new();
+    collect_existing_raw(raw_directory, raw_directory, &mut files)?;
+    files.sort_by(|left, right| left.path.as_bytes().cmp(right.path.as_bytes()));
+    if files.is_empty()
+        || files.len() > limits.maximum_files
+        || checked_total_bytes(&files).is_none_or(|bytes| bytes > limits.maximum_bytes)
+    {
+        return Err(ArtifactError::Limit);
+    }
+    Ok(files)
+}
+
+fn collect_existing_raw(
+    root: &Path,
+    directory: &Path,
+    files: &mut Vec<RawFile>,
+) -> Result<(), ArtifactError> {
+    let mut entries = fs::read_dir(directory)?.collect::<Result<Vec<_>, _>>()?;
+    entries.sort_by_key(|entry| entry.file_name());
+    for entry in entries {
+        let path = entry.path();
+        let metadata = fs::symlink_metadata(&path)?;
+        if metadata.file_type().is_symlink() {
+            return Err(ArtifactError::File);
+        }
+        if metadata.is_dir() {
+            collect_existing_raw(root, &path, files)?;
+            continue;
+        }
+        if !metadata.is_file() || has_multiple_links(&path, &metadata)? {
+            return Err(ArtifactError::File);
+        }
+        let relative = path.strip_prefix(root).map_err(|_| ArtifactError::Path)?;
+        validate_relative_path(relative)?;
+        let (size, sha256) = hash_single_file(&path, MAXIMUM_BYTES)?;
+        files.push(RawFile {
+            path: format!("raw/{}", normalized(relative)?),
+            size,
+            sha256,
+        });
+    }
+    Ok(())
+}
+
+fn verify_packet_root_entries(packet_directory: &Path) -> Result<(), ArtifactError> {
+    let entries = fs::read_dir(packet_directory)?
+        .map(|entry| {
+            entry
+                .map(|entry| entry.file_name().to_string_lossy().into_owned())
+                .map_err(ArtifactError::from)
+        })
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    if entries
+        != BTreeSet::from([
+            "raw".to_owned(),
+            RAW_MANIFEST_NAME.to_owned(),
+            PACKET_MANIFEST_NAME.to_owned(),
+        ])
+    {
+        return Err(ArtifactError::Contract);
+    }
+    Ok(())
+}
+
+fn read_single_file(path: &Path, maximum_bytes: u64) -> Result<Vec<u8>, ArtifactError> {
+    let metadata = fs::symlink_metadata(path)?;
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || has_multiple_links(path, &metadata)?
+        || metadata.len() > maximum_bytes
+    {
+        return Err(ArtifactError::File);
+    }
+    let mut bytes = Vec::with_capacity(usize::try_from(metadata.len()).unwrap_or(0));
+    File::open(path)?
+        .take(maximum_bytes + 1)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() as u64 != metadata.len() {
+        return Err(ArtifactError::File);
+    }
+    Ok(bytes)
+}
+
+fn hash_single_file(path: &Path, maximum_bytes: u64) -> Result<(u64, String), ArtifactError> {
+    let metadata = fs::symlink_metadata(path)?;
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || has_multiple_links(path, &metadata)?
+        || metadata.len() > maximum_bytes
+    {
+        return Err(ArtifactError::File);
+    }
+    let mut file = File::open(path)?;
+    let mut digest = Sha256::new();
+    let mut read_total = 0_u64;
+    let mut buffer = vec![0_u8; 1024 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        read_total = read_total
+            .checked_add(read as u64)
+            .ok_or(ArtifactError::Limit)?;
+        if read_total > maximum_bytes {
+            return Err(ArtifactError::Limit);
+        }
+        digest.update(&buffer[..read]);
+    }
+    let after = file.metadata()?;
+    if read_total != metadata.len()
+        || after.len() != metadata.len()
+        || has_multiple_links(path, &after)?
+    {
+        return Err(ArtifactError::File);
+    }
+    Ok((read_total, hex(&digest.finalize())))
 }
 
 fn copy_one(
@@ -477,7 +675,10 @@ fn build_role_manifests(
 }
 
 fn verify_campaign_manifest(staging: &Path, plan: &PacketPlan) -> Result<(), ArtifactError> {
-    let bytes = fs::read(staging.join("raw").join(CAMPAIGN_MANIFEST_NAME))?;
+    let bytes = read_single_file(
+        &staging.join("raw").join(CAMPAIGN_MANIFEST_NAME),
+        MAXIMUM_MANIFEST_BYTES,
+    )?;
     let encoded = bytes.strip_suffix(b"\n").unwrap_or(&bytes);
     if sha256_hex(encoded) != plan.campaign_manifest_sha256
         || encoded.contains(&b'\n')
