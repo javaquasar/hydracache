@@ -8,6 +8,17 @@ campaign_root = "/var/lib/hydracache-performance/campaigns"
 supervisor_service = "hydracache-performance-supervisor-074.service"
 measured_unit_prefix = "hydracache-performance-074-"
 checkpoint_domain = "hydracache-long-run-record-v1"
+campaign_id_component_order = [
+  "contract_sha256",
+  "tooling_sha",
+  "i74_source_sha",
+  "c74_source_sha",
+  "scenario_sha256",
+  "host_receipt_sha256",
+  "lease_id",
+  "random_nonce",
+]
+campaign_id_component_encoding = "hex identities decoded to fixed-width bytes; UUID lease_id lowercase ASCII; no separators"
 checkpoint_cadence_seconds = 30
 progress_warning_gap_seconds = 90
 progress_rejection_gap_seconds = 180
@@ -65,6 +76,8 @@ offline_xtask_verifier = "crates/xtask/src/long_run_campaign.rs"
 offline_verifier_complete = true
 state_machine_and_attach_predicates_complete = true
 strict_protocol_schema_complete = true
+start_manifest_builder = "scripts/perf/performance_long_run_074.py"
+start_manifest_builder_complete = true
 live_service_complete = false
 systemd_confinement_complete = false
 host_rehearsal_complete = false

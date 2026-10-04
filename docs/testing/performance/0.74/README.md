@@ -60,6 +60,11 @@ limit, strict unknown/duplicate-field rejection, UUIDv4 and lowercase-digest val
 operation-specific fields, the single exact staging path for `start`, and canonical response
 digests. It intentionally exposes no argv, environment, shell, DBus or arbitrary-path field.
 
+`scripts/perf/performance_long_run_074.py --prepare` builds only a create-new start manifest. It
+uses the frozen campaign-id component order, removes the raw nonce after deriving its digest,
+rejects unknown, floating-point and secret-bearing fields, fsyncs both files, and has no process
+execution mode.
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:
