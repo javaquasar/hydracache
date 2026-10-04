@@ -224,9 +224,9 @@ fn attach_guard_rejection_is_durable_and_exactly_replayed() {
         .as_array()
         .unwrap();
     assert!(failures.len() >= 4);
-    assert!(failures.iter().any(|failure| {
-        failure.as_str() == Some("host:full-receipt-revalidation-unimplemented")
-    }));
+    assert!(failures
+        .iter()
+        .any(|failure| failure.as_str() == Some("host:manifest-unavailable")));
 
     let replay = exchange_once(&server, &socket, &packet);
     assert_eq!(replay, response);

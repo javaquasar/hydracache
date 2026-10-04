@@ -1,4 +1,5 @@
 use crate::config::ServerConfig;
+use crate::host_receipt::verify_host_receipt_evidence;
 use crate::manifest_evidence::verify_manifest_evidence;
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
@@ -160,16 +161,16 @@ impl SupervisorServer {
         ) {
             failures.push(format!("checkpoint:{error}"));
         }
-        if read_host_identity("/etc/machine-id").as_deref()
-            != Some(state.identity.machine_id.as_str())
-        {
-            failures.push("host:machine-id-drift".to_owned());
+        match manifest.as_ref() {
+            Some(manifest) => {
+                if let Err(error) =
+                    verify_host_receipt_evidence(lock.campaign_directory(), manifest, &state)
+                {
+                    failures.push(format!("host:{error}"));
+                }
+            }
+            None => failures.push("host:manifest-unavailable".to_owned()),
         }
-        // The admitted-host receipt also binds mount options, tuning and the housekeeping
-        // partition. Until the local collector can re-derive that complete receipt, attach must
-        // remain incapable of granting a controller lease even when every implemented guard is
-        // green.
-        failures.push("host:full-receipt-revalidation-unimplemented".to_owned());
         let authorization = authorized
             .authorization
             .as_ref()
@@ -286,12 +287,6 @@ fn mutation_error_code(error: &MutationError) -> u32 {
         MutationError::State(error) => state_error_code(error),
         MutationError::Operation | MutationError::Json(_) | MutationError::Io(_) => 11,
     }
-}
-
-fn read_host_identity(path: &str) -> Option<String> {
-    let value = std::fs::read_to_string(path).ok()?;
-    let value = value.trim();
-    (!value.is_empty() && value.len() <= 256).then(|| value.to_owned())
 }
 
 fn unix_seconds() -> u64 {
