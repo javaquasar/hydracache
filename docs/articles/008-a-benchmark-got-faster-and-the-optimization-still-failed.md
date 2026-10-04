@@ -617,6 +617,28 @@ local WSL2. This is implementation evidence, not throughput evidence: no product
 host or expensive qualification campaign ran. Live attach remains closed until exact systemd unit
 state and the immutable host/manifest checks are wired into the same transaction.
 
+The immutable-manifest half of that remaining admission is now concrete as well. The supervisor
+re-parses the persistent canonical start manifest, verifies its separate digest file, and
+deterministically reconstructs the frozen state identity from tooling, source/tree/lock, installed
+binary, workload/statistics, phase/limit and host fields. At source `6759b322`, the WSL total is 66
+supervisor tests plus three checkpoint-writer tests. Systemd unit state and live wiring remain the
+deliberate fail-closed boundary.
+
+That systemd boundary is now read-only executable code. A blocking D-Bus adapter resolves only the
+fixed HydraCache unit namespace and binds active/running state, main PID, cgroup and service result
+to the durable harness and daemon identities. During the first real local system-bus check, the
+test exposed an incorrect assumption that `ControlGroup` belonged to the generic Unit interface;
+on systemd 255 it is read from the Service interface. The adapter was corrected and the same real
+test passed without creating, stopping or restarting a unit.
+
+The live attach request path now composes replay recovery, persistent manifest, systemd, `/proc`
+start identity, live cpuset, checkpoint chain and lease predicates under the campaign lock. A
+rejected signed request is persisted and an identical retry returns the exact original response.
+Lease admission deliberately remains impossible: every attempt includes the named
+`host:full-receipt-revalidation-unimplemented` failure until mount, tuning and housekeeping state
+can be re-derived from the admitted host receipt. At source `1a484f6c`, 72 ordinary supervisor
+tests, one explicit real-system-bus test and three checkpoint-writer tests pass locally under WSL2.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

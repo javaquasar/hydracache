@@ -52,12 +52,13 @@ status remains read-only but still checks the admitted peer, repository and acto
 verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
 round-trip the exact durable state and reject stale revisions.
 
-This is still not the complete systemd supervisor. `start`, `attach`, `seal` and `abort` currently
-authenticate and then fail with stable internal error 11 at the live server boundary. The attach
-internals now include durable replay, crash-window recovery and checkpoint evidence validation,
-but the server must not grant a lease until the systemd unit-state adapter and frozen host/manifest
-checks are combined with them. Production provisioning, bounded diagnostics and real host fault
-rehearsals remain incomplete, so release admission stays closed.
+This is still not the complete systemd supervisor. `start`, `seal` and `abort` authenticate and
+then fail with stable internal error 11 at the live server boundary. `attach` now executes the
+implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint and lease guards and durably
+records an exact rejection response. It cannot grant a lease yet: a mandatory named failure remains
+until the full host receipt (mount options, tuning and housekeeping partition) can be re-derived.
+Production provisioning, bounded diagnostics and real host fault rehearsals remain incomplete, so
+release admission stays closed.
 
 The next local slice adds the repository-side service definition, sysusers/tmpfiles definitions,
 a deliberately invalid configuration template and `Type=notify` readiness support. The socket is
@@ -72,8 +73,9 @@ Linux process identity inspection is also implemented independently of PID liven
 binds the cgroup inode and boot id, and compares start ticks, process group, cgroup path/inode and
 unit component. Tests cover command names containing spaces/parentheses and report all concurrent
 identity mismatches. Checkpoint head verification and durable request replay are now implemented
-as separate fail-closed components; the remaining live attach work must combine them with exact
-systemd unit state and the immutable host/manifest evidence before it may mutate a lease.
+as separate fail-closed components and are composed with exact systemd unit state and immutable
+manifest evidence in the live request path. Full host-receipt revalidation remains the explicit
+guard preventing lease mutation.
 
 The supervisor event journal uses a distinct hash domain, canonical JSON lines, fdatasync before
 head replacement, a strict 64 MiB local bound and a durable request-id index. An identical request
@@ -89,6 +91,22 @@ sequence, head digest and both process identities against durable state. A synta
 JSON object without its terminal newline is treated as a torn final record; this closes the case
 where a later append could otherwise join two objects on one line. Future useful-progress times are
 also rejected instead of extending the frozen 180-second deadline.
+
+Persistent manifest admission reconstructs the durable frozen identity from the canonical
+`campaign-start.json`: tooling, both source/tree/lock identities, installed binary metadata,
+workload/statistics inputs, phase/cadence/limit policy and host identity are reduced through
+deterministic domain-specific bundles and compared with state. The separate manifest digest file,
+regular-file/link constraints and original request digest must all agree. This prevents a locally
+self-consistent state snapshot from substituting for the immutable start evidence.
+
+The systemd adapter talks directly to the system bus and resolves only names in the fixed
+`hydracache-performance-074-*.service` namespace. It binds `ActiveState=active`,
+`SubState=running`, `MainPID`, `ControlGroup` and `Result=success` to both durable process
+identities. A separate local WSL test read those properties from a real loaded service over D-Bus;
+it did not create, stop or restart a unit. Live attach also re-reads both `/proc` identities and
+their `Cpus_allowed_list`, verifies the checkpoint evidence and runs the pure lease predicates in
+one locked transaction. Rejections name all independently discoverable failures, are hash-chained,
+and replay byte-exactly for the same request id.
 
 Offline packet verification is independently implemented in `xtask` (it does not call the
 supervisor library). The strict packet and raw-manifest schemas bind the canonical campaign
@@ -115,7 +133,10 @@ The initial supervisor package passed all 30 targeted tests under local WSL2 Ubu
 checkpoint-writer tests. The provisioning/process-identity slice at `882b3ed2` passes 51 supervisor
 tests plus the same three checkpoint-writer tests under WSL2. The durable
 event/recovery/checkpoint slice at `35b2bc3f` passes 65 supervisor tests plus the same three
-checkpoint-writer tests under WSL2. The checked-in receipts remain explicitly local and
+checkpoint-writer tests under WSL2. The persistent-manifest slice at `6759b322` passes 66
+supervisor tests plus the same three checkpoint-writer tests. The composed attach-guard slice at
+`1a484f6c` passes 72 ordinary supervisor tests, one explicit real-system-bus test and the same three
+checkpoint-writer tests. The checked-in receipts remain explicitly local and
 non-promotable: no service was installed, no product process was started and no admitted-host fault
 rehearsal ran.
 

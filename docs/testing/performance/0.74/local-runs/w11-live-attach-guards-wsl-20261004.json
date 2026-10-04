@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-live-attach-guard-composition",
+  "status": "passed-local-non-promotable",
+  "source_sha": "1a484f6c",
+  "platform": "WSL2 Ubuntu with systemd 255",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "commands": [
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-long-run-supervisor-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-performance-integrated-074 --locked -q",
+    "CARGO_TARGET_DIR=target/wsl-074 cargo test -p hydracache-long-run-supervisor-074 systemd_unit::tests::reads_a_real_loaded_service_over_dbus --locked -- --ignored --exact"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 72,
+  "real_system_bus_tests_passed": 1,
+  "checkpoint_writer_tests_passed": 3,
+  "failed": 0,
+  "confirmed": [
+    "the read-only adapter obtains active state, substate, main PID, control group and result over the real system bus",
+    "arbitrary unit names are rejected before D-Bus connection and only the fixed HydraCache namespace is accepted",
+    "systemd properties bind to both durable process identities",
+    "both live process cpusets must match the frozen isolated cpuset",
+    "the server composes manifest, systemd, proc, cpuset, checkpoint and lease guards under the campaign lock",
+    "a signed attach rejection is durable and an identical retry returns the exact recorded response",
+    "status reconciles an event-before-state crash window from the authoritative journal"
+  ],
+  "limitations": [
+    "WSL is not the admitted release host",
+    "full host receipt revalidation remains a mandatory rejection, so attach cannot grant a lease",
+    "start, seal and abort remain disabled",
+    "no measured unit or product process was created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
