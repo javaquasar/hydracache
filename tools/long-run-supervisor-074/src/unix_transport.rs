@@ -6,9 +6,11 @@ use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 use thiserror::Error;
 
 const LISTEN_BACKLOG: libc::c_int = 16;
+const MAX_ACCEPT_TIMEOUT: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PeerCredentials {
@@ -32,6 +34,8 @@ pub enum TransportError {
     PacketSize,
     #[error("peer credentials or supplemental groups are unavailable")]
     PeerCredentials,
+    #[error("accept timeout must be between 1 millisecond and 60 seconds")]
+    AcceptTimeout,
     #[error("Unix socket I/O failed: {0}")]
     Io(#[from] io::Error),
 }
@@ -90,21 +94,77 @@ impl SeqpacketListener {
     }
 
     pub fn accept(&self) -> Result<SeqpacketConnection, TransportError> {
-        // SAFETY: fd is a listening socket; null address arguments intentionally discard it.
-        let accepted = unsafe {
-            libc::accept4(
-                self.fd.as_raw_fd(),
-                std::ptr::null_mut(),
-                std::ptr::null_mut(),
-                libc::SOCK_CLOEXEC,
-            )
-        };
-        if accepted < 0 {
-            return Err(io::Error::last_os_error().into());
+        loop {
+            // SAFETY: fd is a listening socket; null address arguments intentionally discard it.
+            let accepted = unsafe {
+                libc::accept4(
+                    self.fd.as_raw_fd(),
+                    std::ptr::null_mut(),
+                    std::ptr::null_mut(),
+                    libc::SOCK_CLOEXEC,
+                )
+            };
+            if accepted >= 0 {
+                // SAFETY: accept4 returned a new owned descriptor.
+                let fd = unsafe { OwnedFd::from_raw_fd(accepted) };
+                return Ok(SeqpacketConnection { fd });
+            }
+            let error = io::Error::last_os_error();
+            if error.kind() != io::ErrorKind::Interrupted {
+                return Err(error.into());
+            }
         }
-        // SAFETY: accept4 returned a new owned descriptor.
-        let fd = unsafe { OwnedFd::from_raw_fd(accepted) };
-        Ok(SeqpacketConnection { fd })
+    }
+
+    pub fn accept_timeout(
+        &self,
+        timeout: Duration,
+    ) -> Result<Option<SeqpacketConnection>, TransportError> {
+        if timeout < Duration::from_millis(1) || timeout > MAX_ACCEPT_TIMEOUT {
+            return Err(TransportError::AcceptTimeout);
+        }
+        let deadline = Instant::now()
+            .checked_add(timeout)
+            .ok_or(TransportError::AcceptTimeout)?;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Ok(None);
+            }
+            let timeout_millis = remaining.as_millis().clamp(1, i32::MAX as u128) as libc::c_int;
+            let mut descriptor = libc::pollfd {
+                fd: self.fd.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            };
+            // SAFETY: descriptor points to one initialized pollfd for the duration of poll.
+            let ready = unsafe { libc::poll(&mut descriptor, 1, timeout_millis) };
+            if ready == 0 {
+                return Ok(None);
+            }
+            if ready < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(error.into());
+            }
+            if descriptor.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
+                return Err(io::Error::other(format!(
+                    "listening socket poll failed with revents {:#x}",
+                    descriptor.revents
+                ))
+                .into());
+            }
+            if descriptor.revents & libc::POLLIN != 0 {
+                return self.accept().map(Some);
+            }
+            return Err(io::Error::other(format!(
+                "listening socket poll returned unexpected revents {:#x}",
+                descriptor.revents
+            ))
+            .into());
+        }
     }
 }
 
