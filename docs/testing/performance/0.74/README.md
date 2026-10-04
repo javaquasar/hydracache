@@ -52,8 +52,10 @@ status remains read-only but still checks the admitted peer, repository and acto
 verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
 round-trip the exact durable state and reject stale revisions.
 
-This is still not the complete systemd supervisor. `start`, `seal` and `abort` authenticate and
-then fail with stable internal error 11 at the live server boundary. `attach` now executes the
+This is still not the complete release supervisor. `start` now authenticates, imports immutable
+evidence, obtains the host-wide claim, advances the durable lifecycle and dispatches through the
+production-form systemd backend. `seal` and `abort` still fail with stable internal error 11.
+`attach` executes the
 implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint, admitted-host and lease guards
 and durably records an exact response. There is no unconditional rejection left in the attach path:
 a lease can be granted only when every guard matches. Production provisioning, bounded diagnostics,
@@ -178,12 +180,23 @@ external request records without consuming request replay identity. The I74 coor
 missing or one-revision-stale state snapshot from an event-ahead crash window and verifies durable
 spawn evidence on replay. Windows and WSL fake-backend tests cover normal start, repeated start,
 lost response, crash before and after the side effect, missing/stale state, absent unit,
-symlink/hardlink substitution and cross-campaign exclusion. This remains local non-promotable
-evidence: the real StartTransientUnit adapter, accepted live `start` response, terminal marker
-release, C74 orchestration, sealing/abort/diagnostics and admitted-host rehearsal are still open.
-The full local WSL suite now passes 101 ordinary supervisor tests with only the explicitly manual
-real-system-bus inspection ignored; the Windows-portable subset passes 77 tests, and
-`clippy -D warnings` is green.
+symlink/hardlink substitution and cross-campaign exclusion.
+
+The subsequent start slice connects the authenticated socket request to that coordinator. It
+revalidates already imported evidence on retry and journals the accepted response before reply, so
+an identical request returns the exact recorded response without touching the backend. The
+transient-unit policy contains an exact argv array with no shell, a digest-bound minimal
+environment, unprivileged user/group, CPU affinity, runtime and resource limits, output paths and
+hardening properties. The real backend issues `StartTransientUnit` in `fail` mode and observes the
+original MainPID plus exactly one daemon in the unit cgroup; boot, group, cgroup, cpuset and
+cardinality drift fail closed. At source `0e9d4c6a`, the full local WSL suite passes 110 ordinary
+supervisor tests with only the explicitly manual real-system-bus inspection ignored. Windows
+`clippy -D warnings`, eight manifest-builder tests and all 16 0.74 contract tests are green.
+
+This remains local non-promotable evidence. No supervisor service, transient measured unit or
+HydraCache process was started. Production account/directory ownership, real controller and
+supervisor restart, controller loss, bounded overhead, C74 orchestration, terminal marker release,
+sealing, abort and diagnostics still require the admitted Linux host or further implementation.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

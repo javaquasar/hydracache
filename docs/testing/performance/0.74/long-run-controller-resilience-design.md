@@ -346,9 +346,16 @@ the backend side effect, and writes the result before the final lifecycle transi
 repair a missing or one-revision-stale snapshot from the authoritative event chain. Once an intent
 exists, the coordinator calls only `observe`; it never calls `start_once` again. An absent unit is
 retained as FAILED_INCOMPLETE, an exact unit is adopted, and identity mismatch or multiple
-executors is quarantined. Local fake-backend tests exercise every window. The production
-StartTransientUnit backend and live `start` dispatch remain deliberately incomplete, so this is
-not host-rehearsal or release evidence.
+executors is quarantined. Local fake-backend tests exercise every window. The production-form
+backend now constructs the complete transient-unit property set from the immutable manifest,
+verifies the digest of a fixed role environment, calls systemd `StartTransientUnit` with mode
+`fail`, and observes the exact MainPID plus one daemon through the unit cgroup. It rejects boot,
+process-group, cgroup inode/path or cpuset drift and classifies a third process as a duplicate
+executor. The ordinary live `start` dispatch uses this backend; the injected backend remains only
+for deterministic socket tests. This closes the local implementation boundary, not the host proof:
+no service or measured unit was installed or started, account ownership has not been rehearsed on
+the admitted host, and the controller/supervisor-loss fault matrix and overhead budget remain
+unexecuted.
 
 State snapshots include state_revision, campaign state, role/phase, unit name, MainPID, harness and
 daemon PIDs, /proc start ticks, process group, cgroup path and inode, machine id, boot id, binary

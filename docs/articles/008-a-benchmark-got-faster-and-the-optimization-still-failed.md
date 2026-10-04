@@ -659,9 +659,30 @@ start can import only the exact direct-child staging directory for its campaign.
 symlink, hardlink, size, digest, manifest/receipt binding and pre-existing destination conflicts;
 writes create-new `0400` copies into a private directory; fsyncs them; and atomically publishes the
 campaign directory. An identical retry cannot overwrite the first publication. At source
-`5343ca1f`, 82 ordinary supervisor tests pass locally under WSL2. This does not claim exactly-once
-spawn: the host-wide execution lock, durable spawn intent/result and `StartTransientUnit` boundary
-are still intentionally absent.
+`5343ca1f`, 82 ordinary supervisor tests pass locally under WSL2. That slice alone did not claim
+exactly-once spawn; it established the immutable input boundary for the work that followed.
+
+The following slices add a host-wide flock plus a persistent active-campaign marker, role-specific
+spawn intent/result documents and lifecycle records in the same event chain. PREPARED and STARTING
+contain no invented PID. The intent is durable before the backend side effect; once it exists,
+recovery can only observe the deterministic unit name. An absent unit fails incomplete, an exact
+unit is adopted, and identity mismatch or multiple executors quarantines the campaign. The signed
+accepted response is also journalled before it is sent, so a lost reply is replayed exactly without
+another backend call.
+
+Finally, the normal live server path now owns a production-form systemd backend. Its unit policy is
+not supplied by the request: it derives exact argv, a digest-bound minimal environment, CPU mask,
+runtime and memory/FD/task limits, output paths and hardening properties from the admitted manifest
+and compiled policy, then uses `StartTransientUnit` with mode `fail`. Observation requires one
+MainPID and exactly one daemon with the original boot id, process group, cgroup path/inode and
+cpuset. At source `0e9d4c6a`, 110 ordinary supervisor tests pass locally under WSL2; Windows strict
+clippy, eight builder tests and 16 contract tests also pass.
+
+No real transient unit or HydraCache process was launched for that result. The admitted-host
+account/directory permissions, controller and supervisor restart, controller-loss reattachment,
+overhead budget, C74 role, seal/abort/diagnostics and lease-expiry termination remain unproved or
+unfinished. The point is the same as for the performance candidates: implemented mechanics and
+release evidence are different claims.
 
 ## The practical rule
 

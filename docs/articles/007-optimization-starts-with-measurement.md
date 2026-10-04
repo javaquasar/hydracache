@@ -2446,11 +2446,20 @@ finish that exact compare-and-swap from the authoritative hash-chain.
 Fake-backend tests are valuable here because they can stop at every unsafe boundary: after intent
 but before launch, after launch but before result, after a lost backend response, and after an event
 append but before snapshot replacement. They proved the local exactly-once decision logic without
-starting HydraCache or touching a real systemd unit. That distinction is essential. It is confirmed
-implementation evidence, but it is not yet confirmation that a provisioned Linux host preserves
-the process through controller and supervisor loss. The real systemd adapter, service dispatch,
-bounded rehearsal and overhead measurement must still pass before this mechanism can support a
-release claim.
+starting HydraCache or touching a real systemd unit. The next slice then implemented, but did not
+execute, the production boundary. A live authenticated `start` now imports and revalidates the
+immutable evidence, acquires the host claim, advances the lifecycle and dispatches through a
+systemd backend. The backend builds one fixed `StartTransientUnit` request: exact argv with no
+shell, a digest-bound minimal environment, the frozen CPU mask, runtime/memory/FD/task bounds and
+unprivileged ownership. It admits only the original MainPID and one daemon when boot id, process
+group, cgroup path/inode and cpuset all remain exact; a third process is a duplicate executor.
+
+That distinction is still essential. At source `0e9d4c6a`, 110 ordinary supervisor tests pass
+under WSL, while the only real-system-bus inspection remains explicitly ignored. This is confirmed
+local implementation evidence, not confirmation that a provisioned Linux host preserves the
+process through controller and supervisor loss. Installing the service, creating a measured unit,
+restarting the controller/supervisor, measuring overhead and exercising lease/abort/seal behavior
+must still pass before this mechanism can support a release claim.
 
 The broader lesson is that reproducibility includes process continuity. A hash-identical workload
 executed by a replacement process is not the same sample, just as a benchmark with a changed seed

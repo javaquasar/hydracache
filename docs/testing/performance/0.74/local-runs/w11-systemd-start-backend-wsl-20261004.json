@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-systemd-start-backend",
+  "status": "passed-local-non-promotable",
+  "source_sha": "0e9d4c6a",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "python -m unittest scripts/perf/test_performance_long_run_074.py"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 110,
+  "ignored_manual_system_bus_tests": 1,
+  "manifest_builder_tests_passed": 8,
+  "contract_tests_passed": 16,
+  "failed": 0,
+  "confirmed": [
+    "an authenticated start is dispatched through evidence admission, the host claim and the durable lifecycle",
+    "an accepted response is journalled and replayed without a second backend call",
+    "the transient unit policy uses exact argv without a shell and a digest-bound minimal environment",
+    "CPU affinity, runtime, memory, file-descriptor and task limits are explicit contract values",
+    "the production-form backend calls StartTransientUnit in fail mode and never restarts after a durable intent",
+    "only one MainPID and one daemon with exact boot, process-group, cgroup and cpuset identity are admitted",
+    "an additional cgroup process is classified as a duplicate executor"
+  ],
+  "limitations": [
+    "the StartTransientUnit call was compiled and locally tested through fakes but was not executed",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "production account and directory ownership still require an admitted-host rehearsal",
+    "openat2 staging-parent ownership admission remains production-host work",
+    "C74 orchestration, seal, abort, diagnostics, lease-expiry termination and terminal marker release remain incomplete",
+    "controller-loss, supervisor-restart and overhead-budget qualification remain unexecuted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
