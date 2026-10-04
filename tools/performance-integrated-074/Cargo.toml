@@ -7,6 +7,8 @@ publish = false
 [dependencies]
 hydracache-long-run-supervisor-074 = { path = "../long-run-supervisor-074" }
 serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
