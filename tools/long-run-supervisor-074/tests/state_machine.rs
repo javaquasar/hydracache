@@ -47,13 +47,13 @@ fn state() -> DurableCampaignState {
         revision: 7,
         campaign_state: CampaignState::I74Running,
         identity: identity(),
-        harness: process(100),
-        daemon: process(101),
-        checkpoint: CheckpointHead {
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
             sequence: 8,
             record_sha256: hash('5'),
             useful_progress_unix_seconds: 1_000,
-        },
+        }),
         controller_lease: None,
         recorded_failure: false,
         duplicate_executor: false,
@@ -68,9 +68,9 @@ fn request(state: &DurableCampaignState) -> AttachRequest {
         expected_revision: state.revision,
         authorization_sha256: hash('7'),
         identity: state.identity.clone(),
-        harness: state.harness.clone(),
-        daemon: state.daemon.clone(),
-        checkpoint: state.checkpoint.clone(),
+        harness: state.harness.clone().unwrap(),
+        daemon: state.daemon.clone().unwrap(),
+        checkpoint: state.checkpoint.clone().unwrap(),
         now_unix_seconds: 1_010,
         requested_controller_lease_seconds: 60,
     }
@@ -127,8 +127,12 @@ fn attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift() {
 fn future_useful_progress_timestamp_cannot_bypass_staleness() {
     let mut state = state();
     let mut request = request(&state);
-    state.checkpoint.useful_progress_unix_seconds = request.now_unix_seconds + 1;
-    request.checkpoint = state.checkpoint.clone();
+    state
+        .checkpoint
+        .as_mut()
+        .unwrap()
+        .useful_progress_unix_seconds = request.now_unix_seconds + 1;
+    request.checkpoint = state.checkpoint.clone().unwrap();
     let decision = evaluate_attach(&state, &request, 180);
     assert!(!decision.admitted);
     assert!(decision.failures.contains(&AttachFailure::CheckpointDrift));
@@ -188,9 +192,9 @@ fn controller_resilience_expected_red_canary() {
     reused.daemon.cgroup_inode += 1;
     reused.identity.boot_id = "boot-reused".to_owned();
     reused.identity.lease_deadline_unix_seconds = 1_000;
-    let weak_pid_only_policy = reused.harness.pid == current.harness.pid
-        && reused.daemon.pid == current.daemon.pid
-        && reused.checkpoint.sequence == current.checkpoint.sequence;
+    let weak_pid_only_policy = reused.harness.pid == current.harness.as_ref().unwrap().pid
+        && reused.daemon.pid == current.daemon.as_ref().unwrap().pid
+        && reused.checkpoint.sequence == current.checkpoint.as_ref().unwrap().sequence;
     assert!(
         weak_pid_only_policy,
         "the expected-red weak policy was not activated"

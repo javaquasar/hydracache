@@ -46,13 +46,13 @@ fn state(revision: u64) -> DurableCampaignState {
             lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
             lease_deadline_unix_seconds: 10_000,
         },
-        harness: process(100),
-        daemon: process(101),
-        checkpoint: CheckpointHead {
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
             sequence: 8,
             record_sha256: hash('5'),
             useful_progress_unix_seconds: 1_000,
-        },
+        }),
         controller_lease: None,
         recorded_failure: false,
         duplicate_executor: false,
@@ -73,7 +73,7 @@ fn initializes_and_compare_and_swaps_with_previous_snapshot() {
     let lock = CampaignLock::acquire(temporary.path(), &hash('a')).unwrap();
     lock.initialize(&state(0)).unwrap();
     let mut next = state(1);
-    next.checkpoint.sequence = 9;
+    next.checkpoint.as_mut().unwrap().sequence = 9;
     lock.compare_and_swap(0, &next).unwrap();
 
     assert_eq!(lock.read().unwrap(), next);
@@ -81,6 +81,23 @@ fn initializes_and_compare_and_swaps_with_previous_snapshot() {
         read_state(&campaign.join(PREVIOUS_STATE_NAME)).unwrap(),
         state(0)
     );
+}
+
+#[test]
+fn prepared_state_persists_without_placeholder_process_or_checkpoint_identity() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    fs::create_dir(&campaign_root).unwrap();
+    let campaign = campaign_root.join("a".repeat(64));
+    fs::create_dir(&campaign).unwrap();
+    let lock = CampaignLock::acquire(&campaign_root, &"a".repeat(64)).unwrap();
+    let mut prepared = state(0);
+    prepared.campaign_state = CampaignState::Prepared;
+    prepared.harness = None;
+    prepared.daemon = None;
+    prepared.checkpoint = None;
+    lock.initialize(&prepared).unwrap();
+    assert_eq!(lock.read().unwrap(), prepared);
 }
 
 #[test]

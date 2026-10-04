@@ -185,13 +185,13 @@ fn durable_state(identity: FrozenIdentity) -> DurableCampaignState {
         revision: 0,
         campaign_state: CampaignState::I74Running,
         identity,
-        harness: process(100),
-        daemon: process(101),
-        checkpoint: CheckpointHead {
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
             sequence: 1,
             record_sha256: "9".repeat(64),
             useful_progress_unix_seconds: 1_000,
-        },
+        }),
         controller_lease: None,
         recorded_failure: false,
         duplicate_executor: false,

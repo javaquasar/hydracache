@@ -60,13 +60,13 @@ fn state(revision: u64) -> DurableCampaignState {
             lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
             lease_deadline_unix_seconds: 2_000_000_000,
         },
-        harness: process(100),
-        daemon: process(101),
-        checkpoint: CheckpointHead {
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
             sequence: 8,
             record_sha256: hash('5'),
             useful_progress_unix_seconds: 1_000,
-        },
+        }),
         controller_lease: None,
         recorded_failure: false,
         duplicate_executor: false,

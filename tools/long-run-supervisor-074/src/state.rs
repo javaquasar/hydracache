@@ -151,9 +151,9 @@ pub struct DurableCampaignState {
     pub revision: u64,
     pub campaign_state: CampaignState,
     pub identity: FrozenIdentity,
-    pub harness: ProcessIdentity,
-    pub daemon: ProcessIdentity,
-    pub checkpoint: CheckpointHead,
+    pub harness: Option<ProcessIdentity>,
+    pub daemon: Option<ProcessIdentity>,
+    pub checkpoint: Option<CheckpointHead>,
     pub controller_lease: Option<ControllerLease>,
     pub recorded_failure: bool,
     pub duplicate_executor: bool,
@@ -227,21 +227,27 @@ pub fn evaluate_attach(
         }
         failures.push(AttachFailure::CampaignIdentityDrift);
     }
-    if request.harness != state.harness || request.daemon != state.daemon {
+    if state.harness.as_ref() != Some(&request.harness)
+        || state.daemon.as_ref() != Some(&request.daemon)
+    {
         failures.push(AttachFailure::ProcessIdentityDrift);
     }
-    if request.checkpoint != state.checkpoint
-        || state.checkpoint.useful_progress_unix_seconds > request.now_unix_seconds
-    {
-        failures.push(AttachFailure::CheckpointDrift);
-    }
-    if request.now_unix_seconds
-        > state
-            .checkpoint
-            .useful_progress_unix_seconds
-            .saturating_add(progress_rejection_gap_seconds)
-    {
-        failures.push(AttachFailure::CheckpointStale);
+    match &state.checkpoint {
+        Some(checkpoint) => {
+            if &request.checkpoint != checkpoint
+                || checkpoint.useful_progress_unix_seconds > request.now_unix_seconds
+            {
+                failures.push(AttachFailure::CheckpointDrift);
+            }
+            if request.now_unix_seconds
+                > checkpoint
+                    .useful_progress_unix_seconds
+                    .saturating_add(progress_rejection_gap_seconds)
+            {
+                failures.push(AttachFailure::CheckpointStale);
+            }
+        }
+        None => failures.push(AttachFailure::CheckpointDrift),
     }
     if request.now_unix_seconds > state.identity.lease_deadline_unix_seconds {
         failures.push(AttachFailure::ProductLeaseExpired);

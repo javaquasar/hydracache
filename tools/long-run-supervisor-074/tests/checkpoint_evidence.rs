@@ -70,13 +70,13 @@ fn state(head: String) -> DurableCampaignState {
             lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
             lease_deadline_unix_seconds: 2_000,
         },
-        harness: process(100),
-        daemon: process(101),
-        checkpoint: CheckpointHead {
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
             sequence: 2,
             record_sha256: head,
             useful_progress_unix_seconds: 1_000,
-        },
+        }),
         controller_lease: None,
         recorded_failure: false,
         duplicate_executor: false,
@@ -102,17 +102,17 @@ fn exact_chain_head_role_and_process_identity_are_required() {
     let (temporary, state) = fixture();
     let report = verify_checkpoint_evidence(temporary.path(), &state).unwrap();
     assert_eq!(report.records, 2);
-    assert_eq!(report.harness, state.harness);
-    assert_eq!(report.daemon, state.daemon);
+    assert_eq!(Some(report.harness), state.harness);
+    assert_eq!(Some(report.daemon), state.daemon);
 
     let mut drifted = state.clone();
-    drifted.checkpoint.sequence += 1;
+    drifted.checkpoint.as_mut().unwrap().sequence += 1;
     assert!(matches!(
         verify_checkpoint_evidence(temporary.path(), &drifted),
         Err(CheckpointEvidenceError::Binding)
     ));
     drifted = state.clone();
-    drifted.harness.start_ticks += 1;
+    drifted.harness.as_mut().unwrap().start_ticks += 1;
     assert!(matches!(
         verify_checkpoint_evidence(temporary.path(), &drifted),
         Err(CheckpointEvidenceError::Binding)

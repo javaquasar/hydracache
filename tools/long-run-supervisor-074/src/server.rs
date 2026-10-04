@@ -137,24 +137,34 @@ impl SupervisorServer {
                     None
                 }
             };
-        match inspect_unit(&state.harness.unit_name)
-            .and_then(|snapshot| verify_unit_identity(&state.harness, &state.daemon, &snapshot))
-        {
-            Ok(()) => {}
-            Err(error) => failures.push(format!("systemd-unit:{error}")),
-        }
-        if let Err(error) = verify_process_identity(&state.harness) {
-            failures.push(format!("harness-process:{error}"));
-        }
-        if let Err(error) = verify_process_identity(&state.daemon) {
-            failures.push(format!("daemon-process:{error}"));
-        }
-        if let Err(error) = verify_process_cpuset(&state.harness, &state.identity.isolated_cpuset) {
-            failures.push(format!("harness-cpuset:{error}"));
-        }
-        if let Err(error) = verify_process_cpuset(&state.daemon, &state.identity.isolated_cpuset) {
-            failures.push(format!("daemon-cpuset:{error}"));
-        }
+        let execution = match (state.harness.as_ref(), state.daemon.as_ref()) {
+            (Some(harness), Some(daemon)) => {
+                match inspect_unit(&harness.unit_name)
+                    .and_then(|snapshot| verify_unit_identity(harness, daemon, &snapshot))
+                {
+                    Ok(()) => {}
+                    Err(error) => failures.push(format!("systemd-unit:{error}")),
+                }
+                if let Err(error) = verify_process_identity(harness) {
+                    failures.push(format!("harness-process:{error}"));
+                }
+                if let Err(error) = verify_process_identity(daemon) {
+                    failures.push(format!("daemon-process:{error}"));
+                }
+                if let Err(error) = verify_process_cpuset(harness, &state.identity.isolated_cpuset)
+                {
+                    failures.push(format!("harness-cpuset:{error}"));
+                }
+                if let Err(error) = verify_process_cpuset(daemon, &state.identity.isolated_cpuset) {
+                    failures.push(format!("daemon-cpuset:{error}"));
+                }
+                Some((harness.clone(), daemon.clone()))
+            }
+            _ => {
+                failures.push("process:execution-identity-unavailable".to_owned());
+                None
+            }
+        };
         if let Err(error) = crate::checkpoint_evidence::verify_checkpoint_evidence(
             lock.campaign_directory(),
             &state,
@@ -175,34 +185,40 @@ impl SupervisorServer {
             .authorization
             .as_ref()
             .ok_or(MutationError::Operation)?;
-        let attach = AttachRequest {
-            request_id: request.request_id.clone(),
-            request_sha256: crate::event::request_sha256(request).map_err(MutationError::from)?,
-            expected_revision: request.expected_state_revision,
-            authorization_sha256: request.controller.authorization_sha256.clone(),
-            identity: state.identity.clone(),
-            harness: state.harness.clone(),
-            daemon: state.daemon.clone(),
-            checkpoint: state.checkpoint.clone(),
-            now_unix_seconds: now,
-            requested_controller_lease_seconds: authorization
-                .expires_at_unix_seconds
-                .saturating_sub(now),
-        };
         let progress_rejection_gap_seconds = manifest
             .as_ref()
             .map_or(180, |manifest| manifest.progress_rejection_gap_seconds);
-        let next = match apply_attach(&state, &attach, progress_rejection_gap_seconds) {
-            Ok(next) => Some(next),
-            Err(decision) => {
-                failures.extend(
-                    decision
-                        .failures
-                        .into_iter()
-                        .map(|failure| format!("state:{failure:?}")),
-                );
-                None
+        let next = match (execution, state.checkpoint.clone()) {
+            (Some((harness, daemon)), Some(checkpoint)) => {
+                let attach = AttachRequest {
+                    request_id: request.request_id.clone(),
+                    request_sha256: crate::event::request_sha256(request)
+                        .map_err(MutationError::from)?,
+                    expected_revision: request.expected_state_revision,
+                    authorization_sha256: request.controller.authorization_sha256.clone(),
+                    identity: state.identity.clone(),
+                    harness,
+                    daemon,
+                    checkpoint,
+                    now_unix_seconds: now,
+                    requested_controller_lease_seconds: authorization
+                        .expires_at_unix_seconds
+                        .saturating_sub(now),
+                };
+                match apply_attach(&state, &attach, progress_rejection_gap_seconds) {
+                    Ok(next) => Some(next),
+                    Err(decision) => {
+                        failures.extend(
+                            decision
+                                .failures
+                                .into_iter()
+                                .map(|failure| format!("state:{failure:?}")),
+                        );
+                        None
+                    }
+                }
             }
+            _ => None,
         };
         if !failures.is_empty() {
             return Ok(transaction

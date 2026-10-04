@@ -26,6 +26,18 @@ pub fn verify_checkpoint_evidence(
     campaign_directory: &Path,
     state: &DurableCampaignState,
 ) -> Result<VerificationReport, CheckpointEvidenceError> {
+    let checkpoint = state
+        .checkpoint
+        .as_ref()
+        .ok_or(CheckpointEvidenceError::Binding)?;
+    let harness = state
+        .harness
+        .as_ref()
+        .ok_or(CheckpointEvidenceError::Binding)?;
+    let daemon = state
+        .daemon
+        .as_ref()
+        .ok_or(CheckpointEvidenceError::Binding)?;
     let (directory, expected_role) = role_directory(campaign_directory, state.campaign_state)?;
     let journal = directory.join(CHECKPOINT_JOURNAL_NAME);
     let head = directory.join(CHECKPOINT_HEAD_NAME);
@@ -36,10 +48,10 @@ pub fn verify_checkpoint_evidence(
     verify_head(&head, &report.head_sha256)?;
     if report.campaign_id != state.identity.campaign_id
         || report.role != expected_role
-        || report.records != state.checkpoint.sequence
-        || report.head_sha256 != state.checkpoint.record_sha256
-        || report.harness != state.harness
-        || report.daemon != state.daemon
+        || report.records != checkpoint.sequence
+        || report.head_sha256 != checkpoint.record_sha256
+        || &report.harness != harness
+        || &report.daemon != daemon
     {
         return Err(CheckpointEvidenceError::Binding);
     }
