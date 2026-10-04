@@ -26,7 +26,7 @@ SPEC.loader.exec_module(MODULE)
 
 
 def inputs() -> dict:
-    return {
+    value = {
         "schema_version": 1,
         "repository_id": 123,
         "authorization_identity": "protected-performance-074",
@@ -77,6 +77,10 @@ def inputs() -> dict:
         "required_final_guards": ["semantic", "native-non-regression", "retention"],
         "secret_identifiers": ["github-environment-key-v1"],
     }
+    value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
+        MODULE.campaign_id(value)
+    )
+    return value
 
 
 class PerformanceLongRun074Tests(unittest.TestCase):
@@ -127,6 +131,19 @@ class PerformanceLongRun074Tests(unittest.TestCase):
         self.assertNotIn("command", round_trip)
         self.assertNotIn("environment", round_trip)
         self.assertEqual(round_trip["state"], "PREPARED")
+
+    def test_environment_digest_binds_only_the_fixed_role_environment(self) -> None:
+        value = inputs()
+        manifest = MODULE.build_manifest(value)
+        environments = MODULE.command_environments(manifest["campaign_id"])
+        self.assertEqual(set(environments), {"i74", "c74"})
+        for environment in environments.values():
+            self.assertTrue(all(not item.startswith("GITHUB_") for item in environment))
+            self.assertTrue(all(not item.startswith("RUNNER_") for item in environment))
+        drifted = copy.deepcopy(value)
+        drifted["command_environment_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "fixed role environments"):
+            MODULE.build_manifest(drifted)
 
     def test_nested_schema_argv_dirty_and_output_limits_fail_closed(self) -> None:
         value = inputs()

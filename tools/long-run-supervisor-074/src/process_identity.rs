@@ -76,6 +76,60 @@ pub fn inspect_process(pid: u32) -> Result<ProcessSnapshot, ProcessIdentityError
     })
 }
 
+pub fn inspect_cgroup_processes(
+    cgroup_path: &str,
+) -> Result<Vec<ProcessSnapshot>, ProcessIdentityError> {
+    let relative = safe_cgroup_relative_path(cgroup_path)?;
+    let document = read_bounded(
+        &Path::new("/sys/fs/cgroup")
+            .join(relative)
+            .join("cgroup.procs"),
+    )?;
+    let mut pids = document
+        .lines()
+        .map(|line| {
+            line.parse::<u32>()
+                .map_err(|_| ProcessIdentityError::Document)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    if pids.is_empty() || pids.len() > 64 || pids.contains(&0) {
+        return Err(ProcessIdentityError::Document);
+    }
+    pids.sort_unstable();
+    pids.dedup();
+    if pids.len() != document.lines().count() {
+        return Err(ProcessIdentityError::Document);
+    }
+    pids.into_iter().map(inspect_process).collect()
+}
+
+pub fn identity_from_snapshot(
+    snapshot: ProcessSnapshot,
+    unit_name: &str,
+) -> Result<ProcessIdentity, ProcessIdentityError> {
+    if unit_name.is_empty()
+        || Path::new(&snapshot.cgroup_path)
+            .components()
+            .next_back()
+            .and_then(|component| match component {
+                Component::Normal(value) => value.to_str(),
+                _ => None,
+            })
+            != Some(unit_name)
+    {
+        return Err(ProcessIdentityError::Document);
+    }
+    Ok(ProcessIdentity {
+        boot_id: snapshot.boot_id,
+        pid: snapshot.pid,
+        start_ticks: snapshot.start_ticks,
+        process_group: snapshot.process_group,
+        cgroup_path: snapshot.cgroup_path,
+        cgroup_inode: snapshot.cgroup_inode,
+        unit_name: unit_name.to_owned(),
+    })
+}
+
 pub fn verify_process_cpuset(
     expected: &ProcessIdentity,
     expected_cpuset: &str,
@@ -189,6 +243,22 @@ fn parse_unified_cgroup(value: &str) -> Result<String, ProcessIdentityError> {
     Ok(path.to_owned())
 }
 
+fn safe_cgroup_relative_path(value: &str) -> Result<&Path, ProcessIdentityError> {
+    let path = Path::new(value);
+    if !path.is_absolute()
+        || path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir | Component::CurDir))
+        || value.contains('\0')
+        || value.contains('\n')
+        || value.contains('\r')
+    {
+        return Err(ProcessIdentityError::Document);
+    }
+    path.strip_prefix(Path::new("/"))
+        .map_err(|_| ProcessIdentityError::Document)
+}
+
 fn parse_status_value(value: &str, key: &str) -> Result<String, ProcessIdentityError> {
     let prefix = format!("{key}:");
     let mut matches = value.lines().filter_map(|line| line.strip_prefix(&prefix));
@@ -205,7 +275,7 @@ fn parse_status_value(value: &str, key: &str) -> Result<String, ProcessIdentityE
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_stat, parse_status_value, parse_unified_cgroup};
+    use super::{parse_stat, parse_status_value, parse_unified_cgroup, safe_cgroup_relative_path};
 
     #[test]
     fn stat_parser_handles_spaces_and_closing_parentheses_in_comm() {
@@ -244,5 +314,16 @@ mod tests {
             "Cpus_allowed_list"
         )
         .is_err());
+    }
+
+    #[test]
+    fn cgroup_file_path_cannot_escape_the_unified_hierarchy() {
+        assert_eq!(
+            safe_cgroup_relative_path("/system.slice/example.service").unwrap(),
+            std::path::Path::new("system.slice/example.service")
+        );
+        for invalid in ["relative", "/../escape", "/a/./b", "/a\nb"] {
+            assert!(safe_cgroup_relative_path(invalid).is_err());
+        }
     }
 }

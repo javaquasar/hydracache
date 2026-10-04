@@ -14,6 +14,8 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 RELEASE = "0.74"
+CAMPAIGN_ROOT = pathlib.PurePosixPath("/var/lib/hydracache-performance/campaigns")
+SERVICE_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EXPECTED_FIELDS = {
     "schema_version",
     "repository_id",
@@ -298,15 +300,43 @@ def campaign_id(value: dict[str, Any]) -> str:
     return digest.hexdigest()
 
 
+def command_environments(campaign: str) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
+    for role in ["i74", "c74"]:
+        evidence = CAMPAIGN_ROOT / campaign / "roles" / role
+        result[role] = [
+            f"HYDRACACHE_CAMPAIGN_ID={campaign}",
+            f"HYDRACACHE_ROLE={role}",
+            f"HYDRACACHE_EVIDENCE_DIRECTORY={evidence}",
+            "LANG=C.UTF-8",
+            "LC_ALL=C.UTF-8",
+            f"PATH={SERVICE_PATH}",
+            "RUST_BACKTRACE=0",
+            "TZ=UTC",
+        ]
+    return result
+
+
+def expected_command_environment_sha256(campaign: str) -> str:
+    return digest_bytes(canonical_json(command_environments(campaign)))
+
+
 def build_manifest(value: dict[str, Any]) -> dict[str, Any]:
     problems = validate_inputs(value)
+    identity = campaign_id(value) if not problems else None
+    if (
+        identity is not None
+        and value.get("command_environment_sha256")
+        != expected_command_environment_sha256(identity)
+    ):
+        problems.append("command_environment_sha256 does not bind the fixed role environments")
     if problems:
         raise ValueError("invalid campaign inputs:\n- " + "\n- ".join(problems))
     result = {key: item for key, item in value.items() if key != "random_nonce_hex"}
     result.update(
         {
             "release": RELEASE,
-            "campaign_id": campaign_id(value),
+            "campaign_id": identity,
             "nonce_sha256": digest_bytes(bytes.fromhex(value["random_nonce_hex"])),
             "dirty": False,
             "controller_history": [],
