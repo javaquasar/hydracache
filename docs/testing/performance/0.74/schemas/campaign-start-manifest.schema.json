@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/campaign-start-manifest.schema.json",
+  "title": "HydraCache 0.74 campaign start manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "repository_id", "authorization_identity", "contract_sha256",
+    "tooling_sha", "i74_source_sha", "c74_source_sha", "i74_tree_sha", "c74_tree_sha",
+    "i74_cargo_lock_sha256", "c74_cargo_lock_sha256", "i74_dirty", "c74_dirty",
+    "scenario_sha256", "workload_sha256", "offered_load_sha256", "estimator_sha256",
+    "thresholds_sha256", "host_receipt_sha256", "lease_id", "machine_id", "boot_id",
+    "mount_identity", "isolated_cpuset", "housekeeping_cpuset", "seed",
+    "checkpoint_cadence_seconds", "progress_warning_gap_seconds",
+    "progress_rejection_gap_seconds", "diagnostic_grace_seconds",
+    "product_lease_deadline_unix_seconds", "maximum_campaign_bytes",
+    "maximum_campaign_files", "installed_binaries", "argv_templates",
+    "command_environment_sha256", "role_order", "phase_durations_seconds",
+    "output_limits", "expected_output_schema_sha256s", "required_final_guards",
+    "secret_identifiers", "release", "campaign_id", "nonce_sha256", "dirty",
+    "controller_history", "state"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "repository_id": { "$ref": "#/$defs/positive" },
+    "authorization_identity": { "$ref": "#/$defs/boundedString" },
+    "contract_sha256": { "$ref": "#/$defs/hash" },
+    "tooling_sha": { "$ref": "#/$defs/gitSha" },
+    "i74_source_sha": { "$ref": "#/$defs/gitSha" },
+    "c74_source_sha": { "$ref": "#/$defs/gitSha" },
+    "i74_tree_sha": { "$ref": "#/$defs/gitSha" },
+    "c74_tree_sha": { "$ref": "#/$defs/gitSha" },
+    "i74_cargo_lock_sha256": { "$ref": "#/$defs/hash" },
+    "c74_cargo_lock_sha256": { "$ref": "#/$defs/hash" },
+    "i74_dirty": { "const": false },
+    "c74_dirty": { "const": false },
+    "scenario_sha256": { "$ref": "#/$defs/hash" },
+    "workload_sha256": { "$ref": "#/$defs/hash" },
+    "offered_load_sha256": { "$ref": "#/$defs/hash" },
+    "estimator_sha256": { "$ref": "#/$defs/hash" },
+    "thresholds_sha256": { "$ref": "#/$defs/hash" },
+    "host_receipt_sha256": { "$ref": "#/$defs/hash" },
+    "lease_id": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" },
+    "machine_id": { "$ref": "#/$defs/boundedString" },
+    "boot_id": { "$ref": "#/$defs/boundedString" },
+    "mount_identity": { "$ref": "#/$defs/boundedString" },
+    "isolated_cpuset": { "$ref": "#/$defs/boundedString" },
+    "housekeeping_cpuset": { "$ref": "#/$defs/boundedString" },
+    "seed": { "$ref": "#/$defs/positive" },
+    "checkpoint_cadence_seconds": { "const": 30 },
+    "progress_warning_gap_seconds": { "const": 90 },
+    "progress_rejection_gap_seconds": { "const": 180 },
+    "diagnostic_grace_seconds": { "const": 30 },
+    "product_lease_deadline_unix_seconds": { "$ref": "#/$defs/positive" },
+    "maximum_campaign_bytes": { "const": 21474836480 },
+    "maximum_campaign_files": { "const": 20000 },
+    "installed_binaries": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        { "$ref": "#/$defs/i74Binary" },
+        { "$ref": "#/$defs/c74Binary" }
+      ],
+      "items": false
+    },
+    "argv_templates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["i74", "c74"],
+      "properties": {
+        "i74": { "$ref": "#/$defs/argv" },
+        "c74": { "$ref": "#/$defs/argv" }
+      }
+    },
+    "command_environment_sha256": { "$ref": "#/$defs/hash" },
+    "role_order": { "const": ["i74", "c74"] },
+    "phase_durations_seconds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["warmup", "measured", "drain", "durable_companion", "post_work_idle", "reconciliation"],
+      "properties": {
+        "warmup": { "$ref": "#/$defs/positive" },
+        "measured": { "$ref": "#/$defs/positive" },
+        "drain": { "$ref": "#/$defs/positive" },
+        "durable_companion": { "$ref": "#/$defs/positive" },
+        "post_work_idle": { "$ref": "#/$defs/positive" },
+        "reconciliation": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "output_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stdout_bytes", "stderr_bytes", "diagnostic_bytes", "final_artifact_bytes", "files"],
+      "properties": {
+        "stdout_bytes": { "$ref": "#/$defs/positive" },
+        "stderr_bytes": { "$ref": "#/$defs/positive" },
+        "diagnostic_bytes": { "$ref": "#/$defs/positive" },
+        "final_artifact_bytes": { "$ref": "#/$defs/positive" },
+        "files": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "expected_output_schema_sha256s": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkpoint", "measurement", "reconciliation", "packet_manifest"],
+      "properties": {
+        "checkpoint": { "$ref": "#/$defs/hash" },
+        "measurement": { "$ref": "#/$defs/hash" },
+        "reconciliation": { "$ref": "#/$defs/hash" },
+        "packet_manifest": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "required_final_guards": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+    },
+    "secret_identifiers": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[^=\\r\\n]+$" }
+    },
+    "release": { "const": "0.74" },
+    "campaign_id": { "$ref": "#/$defs/hash" },
+    "nonce_sha256": { "$ref": "#/$defs/hash" },
+    "dirty": { "const": false },
+    "controller_history": { "type": "array", "maxItems": 0 },
+    "state": { "const": "PREPARED" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "positive": { "type": "integer", "minimum": 1 },
+    "boundedString": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "installedBinary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256", "size", "inode", "device", "uid", "gid", "mode"],
+      "properties": {
+        "role": { "enum": ["i74", "c74"] },
+        "path": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "^/opt/hydracache-performance/0\\.74/(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+        "sha256": { "$ref": "#/$defs/hash" },
+        "size": { "$ref": "#/$defs/positive" },
+        "inode": { "$ref": "#/$defs/positive" },
+        "device": { "$ref": "#/$defs/positive" },
+        "uid": { "type": "integer", "minimum": 0 },
+        "gid": { "type": "integer", "minimum": 0 },
+        "mode": { "type": "integer", "minimum": 0, "maximum": 4095 }
+      }
+    },
+    "i74Binary": {
+      "allOf": [
+        { "$ref": "#/$defs/installedBinary" },
+        { "properties": { "role": { "const": "i74" } } }
+      ]
+    },
+    "c74Binary": {
+      "allOf": [
+        { "$ref": "#/$defs/installedBinary" },
+        { "properties": { "role": { "const": "c74" } } }
+      ]
+    },
+    "argv": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1024, "pattern": "^[^\\u0000]+$" }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 use hydracache_long_run_supervisor_074::manifest::{
     parse_and_validate, ManifestError, MAX_MANIFEST_BYTES,
 };
@@ -18,7 +20,17 @@ fn manifest() -> Value {
         "tooling_sha": "b".repeat(40),
         "i74_source_sha": "c".repeat(40),
         "c74_source_sha": "d".repeat(40),
+        "i74_tree_sha": "1".repeat(40),
+        "c74_tree_sha": "2".repeat(40),
+        "i74_cargo_lock_sha256": "3".repeat(64),
+        "c74_cargo_lock_sha256": "4".repeat(64),
+        "i74_dirty": false,
+        "c74_dirty": false,
         "scenario_sha256": "e".repeat(64),
+        "workload_sha256": "5".repeat(64),
+        "offered_load_sha256": "6".repeat(64),
+        "estimator_sha256": "7".repeat(64),
+        "thresholds_sha256": "8".repeat(64),
         "host_receipt_sha256": "f".repeat(64),
         "lease_id": "123e4567-e89b-42d3-a456-426614174000",
         "machine_id": "machine-a",
@@ -34,6 +46,20 @@ fn manifest() -> Value {
         "product_lease_deadline_unix_seconds": 2_000,
         "maximum_campaign_bytes": 21_474_836_480_u64,
         "maximum_campaign_files": 20_000,
+        "installed_binaries": [
+            {"role": "i74", "path": "/opt/hydracache-performance/0.74/i74/hydracache", "sha256": "9".repeat(64), "size": 1, "inode": 2, "device": 3, "uid": 1001, "gid": 1001, "mode": 365},
+            {"role": "c74", "path": "/opt/hydracache-performance/0.74/c74/hydracache", "sha256": "a".repeat(64), "size": 1, "inode": 4, "device": 3, "uid": 1001, "gid": 1001, "mode": 365}
+        ],
+        "argv_templates": {
+            "i74": ["/opt/hydracache-performance/0.74/i74/hydracache", "--role", "i74"],
+            "c74": ["/opt/hydracache-performance/0.74/c74/hydracache", "--role", "c74"]
+        },
+        "command_environment_sha256": "b".repeat(64),
+        "role_order": ["i74", "c74"],
+        "phase_durations_seconds": {"warmup": 60, "measured": 300, "drain": 30, "durable_companion": 30, "post_work_idle": 60, "reconciliation": 30},
+        "output_limits": {"stdout_bytes": 1_048_576, "stderr_bytes": 1_048_576, "diagnostic_bytes": 1_048_576, "final_artifact_bytes": 1_073_741_824, "files": 2_000},
+        "expected_output_schema_sha256s": {"checkpoint": "c".repeat(64), "measurement": "d".repeat(64), "reconciliation": "e".repeat(64), "packet_manifest": "f".repeat(64)},
+        "required_final_guards": ["semantic", "native-non-regression", "retention"],
         "secret_identifiers": ["github-environment-key-v1"],
         "release": "0.74",
         "campaign_id": "1".repeat(64),
@@ -131,6 +157,33 @@ fn unknown_float_secret_value_and_oversize_fail_closed() {
     let request = fixture_request(&encoded(&manifest()));
     assert_eq!(
         parse_and_validate(&oversized, &request, 1_000),
+        Err(ManifestError::Document)
+    );
+}
+
+#[test]
+fn execution_identity_and_nested_unknown_fields_fail_closed() {
+    let mut dirty = manifest();
+    dirty["i74_dirty"] = json!(true);
+    let bytes = encoded(&dirty);
+    assert_eq!(
+        parse_and_validate(&bytes, &fixture_request(&bytes), 1_000),
+        Err(ManifestError::Invariant)
+    );
+
+    let mut argv = manifest();
+    argv["argv_templates"]["c74"][0] = json!("/tmp/unbound");
+    let bytes = encoded(&argv);
+    assert_eq!(
+        parse_and_validate(&bytes, &fixture_request(&bytes), 1_000),
+        Err(ManifestError::Invariant)
+    );
+
+    let mut nested_unknown = manifest();
+    nested_unknown["output_limits"]["unbounded"] = json!(true);
+    let bytes = encoded(&nested_unknown);
+    assert_eq!(
+        parse_and_validate(&bytes, &fixture_request(&bytes), 1_000),
         Err(ManifestError::Document)
     );
 }
