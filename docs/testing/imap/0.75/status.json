@@ -18,7 +18,12 @@
       "fairness_namespace_reference_models",
       "extended_java_semantic_harness",
       "provisional_backend_interfaces",
-      "hazelcast_source_provenance"
+      "hazelcast_source_provenance",
+      "distributed_value_plane_simulator",
+      "executable_security_guards",
+      "complete_foundation_receipt_generation",
+      "cross_language_reference_key_codec",
+      "local_distributed_correctness_gate"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

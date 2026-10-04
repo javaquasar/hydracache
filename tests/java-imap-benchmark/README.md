@@ -12,6 +12,8 @@ The module currently provides:
 - deterministic in-memory adapters used to prove equivalence and mismatch detection;
 - barrier-started conditional races, request-indexed partial bulk outcomes, logical TTL
   observation/mutation, and listener gap/repair cutover fencing;
+- an independent bounded canonical-key reference codec matching the Rust UTF-8 and empty-binary
+  golden vectors without allocating a production partition hash or wire identity;
 - fail-closed HydraCache and Hazelcast product adapter placeholders.
 
 ## Blocked by 0.74

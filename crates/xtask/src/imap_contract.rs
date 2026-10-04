@@ -305,6 +305,30 @@ struct Threat {
     test_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalKeyContract {
+    release: String,
+    contract_version: u32,
+    status: String,
+    codec_id: String,
+    production_wire_identity: String,
+    production_partition_hash: String,
+    vectors: Vec<CanonicalKeyVector>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CanonicalKeyVector {
+    id: String,
+    tenant: String,
+    namespace: String,
+    namespace_generation: u64,
+    key_hex: String,
+    encoded_hex: String,
+    test_ids: Vec<String>,
+}
+
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let release = parse_release(&args)?;
     let root = crate::doc_check::find_repo_root()?;
@@ -364,6 +388,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let failure: FailureContract = load(dir, "failure-consistency-matrix.json")?;
     let rpo_rto: RpoRtoContract = load(dir, "rpo-rto-contract.json")?;
     let security: SecurityContract = load(dir, "security-contract.json")?;
+    let canonical_key: CanonicalKeyContract = load(dir, "canonical-key-vectors.json")?;
 
     let mut problems = Vec::new();
     validate_headers(
@@ -422,6 +447,12 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
                 security.contract_version,
                 &security.status,
             ),
+            (
+                "canonical-key-vectors.json",
+                &canonical_key.release,
+                canonical_key.contract_version,
+                &canonical_key.status,
+            ),
         ],
         &mut problems,
     );
@@ -455,6 +486,11 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "extended_java_semantic_harness",
         "provisional_backend_interfaces",
         "hazelcast_source_provenance",
+        "distributed_value_plane_simulator",
+        "executable_security_guards",
+        "complete_foundation_receipt_generation",
+        "cross_language_reference_key_codec",
+        "local_distributed_correctness_gate",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -486,6 +522,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     validate_failure(&failure, &mut problems);
     validate_rpo_rto(&rpo_rto, &mut problems);
     validate_security(&security, &mut problems);
+    validate_canonical_key(&canonical_key, &mut problems);
     Ok(problems)
 }
 
@@ -857,6 +894,61 @@ fn validate_security(contract: &SecurityContract, problems: &mut Vec<String>) {
         require_test("security threat", &threat.id, &threat.test_id, problems);
     }
     require_exact_ids("security threats", &ids, REQUIRED_THREATS, problems);
+}
+
+fn validate_canonical_key(contract: &CanonicalKeyContract, problems: &mut Vec<String>) {
+    if contract.codec_id != "hydracache.imap.reference-canonical-key.075.v1" {
+        problems.push("canonical key contract has an unexpected reference codec id".into());
+    }
+    if contract.production_wire_identity != "unassigned"
+        || contract.production_partition_hash != "unassigned"
+    {
+        problems.push("canonical key reference must not allocate production identities".into());
+    }
+    let mut ids = BTreeSet::new();
+    for vector in &contract.vectors {
+        if !ids.insert(vector.id.clone()) {
+            problems.push(format!("duplicate canonical key vector {}", vector.id));
+        }
+        if vector.tenant.is_empty() || vector.namespace.is_empty() {
+            problems.push(format!(
+                "canonical key vector {} has empty identity",
+                vector.id
+            ));
+        }
+        if vector.namespace_generation == 0 {
+            problems.push(format!(
+                "canonical key vector {} has generation zero",
+                vector.id
+            ));
+        }
+        if vector.key_hex.len() % 2 != 0
+            || vector.encoded_hex.is_empty()
+            || vector.encoded_hex.len() % 2 != 0
+            || !vector
+                .key_hex
+                .bytes()
+                .chain(vector.encoded_hex.bytes())
+                .all(|byte| byte.is_ascii_hexdigit())
+        {
+            problems.push(format!(
+                "canonical key vector {} has invalid hex",
+                vector.id
+            ));
+        }
+        if vector.test_ids.is_empty() || vector.test_ids.iter().any(|id| id.trim().is_empty()) {
+            problems.push(format!(
+                "canonical key vector {} has no test ids",
+                vector.id
+            ));
+        }
+    }
+    require_exact_ids(
+        "canonical key vectors",
+        &ids,
+        ["ascii-empty-key", "unicode-composed", "unicode-decomposed"],
+        problems,
+    );
 }
 
 fn require_exact_ids<const N: usize>(

@@ -11,6 +11,26 @@ cargo xtask imap-value-plane-model --release 0.75 --seed 117 --output target/ima
 cargo xtask imap-foundation-evidence-check --release 0.75 --receipt target/imap-075/model-receipt.json
 ```
 
+Execute all locally available foundation probes, write the four canonical receipts into a new
+directory, and validate the set as one exact-source unit:
+
+```powershell
+cargo xtask imap-foundation-evidence-generate --release 0.75 --seed 117 --output target/imap-075/foundation
+cargo xtask imap-foundation-evidence-check --release 0.75 --receipts target/imap-075/foundation
+```
+
+The generator runs the bounded authority explorer, deterministic response-loss/replay probe,
+linearizability oracle, and acknowledged-owner-loss/RPO probe. The testkit also runs a three-node
+logical simulator for proxy routing, replication proof, promotion, repair, rebalance, partial bulk,
+and listener overflow, plus executable guards for every threat in `security-contract.json`.
+
+Run all locally available Rust distributed-foundation proofs and optionally retain their evidence
+with one command:
+
+```powershell
+cargo xtask imap-distributed-correctness --release 0.75 --evidence target/imap-075/local-proof
+```
+
 Validate the operation/security contracts and the pinned Hazelcast source provenance:
 
 ```powershell

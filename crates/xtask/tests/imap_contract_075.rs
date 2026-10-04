@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
 
-const FILES: [&str; 9] = [
+const FILES: [&str; 10] = [
     "status.json",
     "operation-contract.json",
     "resource-bounds.json",
@@ -14,6 +14,7 @@ const FILES: [&str; 9] = [
     "failure-consistency-matrix.json",
     "rpo-rto-contract.json",
     "security-contract.json",
+    "canonical-key-vectors.json",
 ];
 
 fn root() -> PathBuf {
@@ -156,4 +157,15 @@ fn canary_missing_security_threat_fails_closed() {
     assert!(problems(&temp)
         .iter()
         .any(|problem| problem.contains("security threats missing required id false_backup_ack")));
+}
+
+#[test]
+fn canary_assigning_production_key_identity_fails_closed() {
+    let temp = fixture();
+    edit(&temp.path().join("canonical-key-vectors.json"), |value| {
+        value["production_partition_hash"] = Value::String("fnv1a-final".into());
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("must not allocate production identities")));
 }

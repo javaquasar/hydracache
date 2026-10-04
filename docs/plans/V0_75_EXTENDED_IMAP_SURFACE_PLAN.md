@@ -222,6 +222,13 @@ independent of the unfinished 0.74 production shape:
   fault vocabulary for owner/backup loss, promotion, rebalance, reconnect and response loss;
 - an isolated common Java semantic harness with bounded manifests, an equivalence oracle and
   fail-closed HydraCache/Hazelcast adapter placeholders.
+- an executable three-node logical value-plane simulator covering bounded proxy routing,
+  synchronous backup proof, response-loss replay, promotion, repair, rebalance, partial bulk and
+  listener gap behavior without making the simulator reachable from production crates;
+- executable tenant/replay/replica-proof/redirect/generation/trust/audit/decode security guards and
+  an exact-source generator/validator for the complete model, fault, history and RPO receipt set.
+- a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
+  the production wire identity and partition hash deliberately remain unassigned.
 
 This is foundation evidence, not W0 closure or a 0.75 capability claim. The production distributed
 backend remains disabled and fail-closed. Backend extraction, partition ownership/routing,

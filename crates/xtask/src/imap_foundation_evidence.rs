@@ -48,21 +48,102 @@ struct SchemaEntry {
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let (release, receipt) = parse_args(&args)?;
+    let args = parse_args(&args)?;
     let root = repository_root()?;
-    let problems = check_at_root(&root, &release, receipt.as_deref())?;
+    let mut problems = check_at_root(&root, &args.release, args.receipt.as_deref())?;
+    if let Some(receipts) = args.receipts {
+        problems.extend(check_receipt_set_at_root(&root, &args.release, &receipts)?);
+    }
     if problems.is_empty() {
-        println!("imap-foundation-evidence-check {release}: OK (provisional)");
+        println!(
+            "imap-foundation-evidence-check {}: OK (provisional)",
+            args.release
+        );
         return Ok(());
     }
     for problem in &problems {
-        eprintln!("imap-foundation-evidence-check {release}: {problem}");
+        eprintln!("imap-foundation-evidence-check {}: {problem}", args.release);
     }
     Err(format!(
         "foundation evidence check found {} problem(s)",
         problems.len()
     )
     .into())
+}
+
+pub fn check_receipt_set_at_root(
+    root: &Path,
+    release: &str,
+    receipts: &Path,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    if !receipts.is_dir() {
+        return Ok(vec![format!(
+            "receipt set is not a directory: {}",
+            receipts.display()
+        )]);
+    }
+    let expected_files = [
+        "authority-model.json",
+        "fault-schedule.json",
+        "linearizability.json",
+        "rpo-rto.json",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual_files = fs::read_dir(receipts)?
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let path = entry.path();
+            (path.extension().and_then(|value| value.to_str()) == Some("json"))
+                .then(|| entry.file_name().to_string_lossy().into_owned())
+        })
+        .collect::<BTreeSet<_>>();
+    let actual_names = actual_files
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual_names != expected_files {
+        problems.push(format!(
+            "receipt set must contain exactly the four canonical JSON files; found {actual_names:?}"
+        ));
+    }
+    let mut schema_ids = BTreeSet::new();
+    let mut source_shas = BTreeSet::new();
+    let mut model_seed = None;
+    let mut fault_seed = None;
+    for name in &actual_files {
+        let path = receipts.join(name);
+        problems.extend(check_at_root(root, release, Some(&path))?);
+        let value: Value = serde_json::from_slice(&fs::read(path)?)?;
+        if let Some(schema) = value.get("schema").and_then(Value::as_str) {
+            schema_ids.insert(schema.to_owned());
+        }
+        if let Some(source_sha) = value.get("source_sha").and_then(Value::as_str) {
+            source_shas.insert(source_sha.to_owned());
+        }
+        match name.as_str() {
+            "authority-model.json" => model_seed = value.get("seed").and_then(Value::as_u64),
+            "fault-schedule.json" => fault_seed = value.get("seed").and_then(Value::as_u64),
+            _ => {}
+        }
+    }
+    let required_schemas = REQUIRED_SCHEMAS
+        .iter()
+        .map(|(_, schema)| (*schema).to_owned())
+        .collect::<BTreeSet<_>>();
+    if schema_ids != required_schemas {
+        problems.push(
+            "receipt set does not cover every registered evidence schema exactly once".into(),
+        );
+    }
+    if source_shas.len() != 1 {
+        problems.push("receipt set mixes source commits".into());
+    }
+    if model_seed.is_none() || model_seed != fault_seed {
+        problems.push("authority model and fault schedule receipts must use the same seed".into());
+    }
+    Ok(problems)
 }
 
 pub fn check_at_root(
@@ -226,9 +307,16 @@ fn validate_array_checksum(
     }
 }
 
-fn parse_args(args: &[String]) -> Result<(String, Option<PathBuf>), Box<dyn Error>> {
+struct EvidenceArgs {
+    release: String,
+    receipt: Option<PathBuf>,
+    receipts: Option<PathBuf>,
+}
+
+fn parse_args(args: &[String]) -> Result<EvidenceArgs, Box<dyn Error>> {
     let mut release = None;
     let mut receipt = None;
+    let mut receipts = None;
     let mut index = 0;
     while index < args.len() {
         let name = args[index].as_str();
@@ -239,12 +327,20 @@ fn parse_args(args: &[String]) -> Result<(String, Option<PathBuf>), Box<dyn Erro
         match name {
             "--release" => release = Some(value.clone()),
             "--receipt" => receipt = Some(PathBuf::from(value)),
+            "--receipts" => receipts = Some(PathBuf::from(value)),
             other => return Err(format!("unknown evidence-check argument: {other}").into()),
         }
         index += 1;
     }
+    if receipt.is_some() && receipts.is_some() {
+        return Err("use either --receipt or --receipts, not both".into());
+    }
     let release = release.ok_or("imap-foundation-evidence-check requires --release 0.75")?;
-    Ok((release, receipt))
+    Ok(EvidenceArgs {
+        release,
+        receipt,
+        receipts,
+    })
 }
 
 fn repository_root() -> Result<PathBuf, Box<dyn Error>> {
