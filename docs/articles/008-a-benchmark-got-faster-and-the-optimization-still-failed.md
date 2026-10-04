@@ -477,6 +477,14 @@ failure, duplicate-executor or durable-history drift all fail closed. Its typed 
 rejects unknown and duplicate fields, malformed packets and cross-operation fields, and exposes no
 arbitrary command or environment surface.
 
+Archive construction is now deterministic as well. The supervisor sorts normalized paths,
+normalizes tar uid/gid/mode/mtime, compresses through a fixed single-stream zstd configuration and
+writes an external digest over the exact archive bytes. Two trees created in different orders must
+produce byte-identical archives; tests open the result and inspect every header. File and byte
+limits are checked before output creation, and existing destinations, nested outputs, symlinks,
+hardlinks and non-regular files fail closed. This is still library-level sealing: the live service
+has not yet connected it to a terminal campaign state on the admitted Linux filesystem.
+
 The disposable GitHub-side monitor is also implemented as a strictly read-only observer. It
 validates the full durable-state shape plus campaign and manifest identities, reports controller
 loss separately from stale useful progress, measurement loss and evidence corruption, and writes
@@ -519,7 +527,7 @@ test. Later commits intentionally require a fresh exact-commit canary receipt.
 This is deliberately not described as a completed resilient qualification system. The live Unix
 `SOCK_SEQPACKET` service, OS peer-credential and supplemental-group checks, production verification
 key, systemd process ownership, installed-file verification, provisioning, bounded diagnostics,
-deterministic archive creation and real controller-loss rehearsals still require implementation or
+live sealing orchestration and real controller-loss rehearsals still require implementation or
 Linux-host evidence. No six-hour or 24-hour 0.74 run has started.
 
 Finally, W10 now has an explicit zero-candidate composition ledger. Because W2, W3, W6a, W7, W8a

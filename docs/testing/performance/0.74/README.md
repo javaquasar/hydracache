@@ -55,6 +55,14 @@ rejected:
 cargo xtask long-run-campaign-check --release 0.74 --manifest <packet-manifest.json>
 ```
 
+The supervisor library also creates the final archive without trusting directory iteration order or
+filesystem metadata. It sorts bytewise-normalized paths, emits fixed uid/gid/mode/mtime tar
+headers, uses deterministic single-stream zstd compression, writes an external SHA-256, enforces
+the frozen file/byte limits, and refuses create-overwrite, nested outputs, symlinks, hardlinks and
+non-regular files. Tests compare byte-identical archives built from differently ordered trees and
+inspect every tar header. The live sealing state transition and Linux filesystem rehearsal remain
+incomplete.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,
