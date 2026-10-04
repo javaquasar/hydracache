@@ -1,7 +1,8 @@
 #![cfg(target_os = "linux")]
 
 use hydracache_long_run_supervisor_074::process_identity::{
-    inspect_process, verify_process_identity, IdentityMismatch, ProcessIdentityError,
+    inspect_process, verify_process_cpuset, verify_process_identity, IdentityMismatch,
+    ProcessIdentityError,
 };
 use hydracache_long_run_supervisor_074::ProcessIdentity;
 
@@ -14,6 +15,32 @@ fn current_process_snapshot_has_stable_kernel_identity_fields() {
     assert!(snapshot.process_group > 0);
     assert!(snapshot.cgroup_path.starts_with('/'));
     assert!(snapshot.cgroup_inode > 0);
+    assert!(!snapshot.cpus_allowed_list.is_empty());
+}
+
+#[test]
+fn cpuset_is_bound_to_the_live_process_status() {
+    let snapshot = inspect_process(std::process::id()).unwrap();
+    let expected = ProcessIdentity {
+        boot_id: snapshot.boot_id.clone(),
+        pid: snapshot.pid,
+        start_ticks: snapshot.start_ticks,
+        process_group: snapshot.process_group,
+        cgroup_path: snapshot.cgroup_path.clone(),
+        cgroup_inode: snapshot.cgroup_inode,
+        unit_name: snapshot
+            .cgroup_path
+            .rsplit('/')
+            .next()
+            .unwrap_or_default()
+            .to_owned(),
+    };
+    assert!(verify_process_cpuset(&expected, &snapshot.cpus_allowed_list).is_ok());
+    assert!(matches!(
+        verify_process_cpuset(&expected, "999999"),
+        Err(ProcessIdentityError::Mismatch(mismatches))
+            if mismatches == vec![IdentityMismatch::CpuSet]
+    ));
 }
 
 #[test]

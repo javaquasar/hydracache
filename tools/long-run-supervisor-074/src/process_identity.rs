@@ -14,6 +14,7 @@ pub struct ProcessSnapshot {
     pub process_group: i64,
     pub cgroup_path: String,
     pub cgroup_inode: u64,
+    pub cpus_allowed_list: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,6 +25,7 @@ pub enum IdentityMismatch {
     CgroupPath,
     CgroupInode,
     UnitName,
+    CpuSet,
 }
 
 #[derive(Debug, Error)]
@@ -61,6 +63,8 @@ pub fn inspect_process(pid: u32) -> Result<ProcessSnapshot, ProcessIdentityError
     if boot_id.is_empty() || boot_id.len() > 128 {
         return Err(ProcessIdentityError::Document);
     }
+    let status = read_bounded(&PathBuf::from(format!("/proc/{pid}/status")))?;
+    let cpus_allowed_list = parse_status_value(&status, "Cpus_allowed_list")?;
     Ok(ProcessSnapshot {
         boot_id,
         pid,
@@ -68,7 +72,25 @@ pub fn inspect_process(pid: u32) -> Result<ProcessSnapshot, ProcessIdentityError
         process_group,
         cgroup_path,
         cgroup_inode: metadata.ino(),
+        cpus_allowed_list,
     })
+}
+
+pub fn verify_process_cpuset(
+    expected: &ProcessIdentity,
+    expected_cpuset: &str,
+) -> Result<(), ProcessIdentityError> {
+    if expected_cpuset.is_empty() || expected_cpuset.len() > 256 {
+        return Err(ProcessIdentityError::Document);
+    }
+    let current = inspect_process(expected.pid)?;
+    if current.cpus_allowed_list == expected_cpuset {
+        Ok(())
+    } else {
+        Err(ProcessIdentityError::Mismatch(vec![
+            IdentityMismatch::CpuSet,
+        ]))
+    }
 }
 
 pub fn verify_process_identity(expected: &ProcessIdentity) -> Result<(), ProcessIdentityError> {
@@ -167,9 +189,23 @@ fn parse_unified_cgroup(value: &str) -> Result<String, ProcessIdentityError> {
     Ok(path.to_owned())
 }
 
+fn parse_status_value(value: &str, key: &str) -> Result<String, ProcessIdentityError> {
+    let prefix = format!("{key}:");
+    let mut matches = value.lines().filter_map(|line| line.strip_prefix(&prefix));
+    let result = matches
+        .next()
+        .map(str::trim)
+        .filter(|value| !value.is_empty() && value.len() <= 256)
+        .ok_or(ProcessIdentityError::Document)?;
+    if matches.next().is_some() {
+        return Err(ProcessIdentityError::Document);
+    }
+    Ok(result.to_owned())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{parse_stat, parse_unified_cgroup};
+    use super::{parse_stat, parse_status_value, parse_unified_cgroup};
 
     #[test]
     fn stat_parser_handles_spaces_and_closing_parentheses_in_comm() {
@@ -190,5 +226,23 @@ mod tests {
         assert!(parse_unified_cgroup("1:name=/legacy\n").is_err());
         assert!(parse_unified_cgroup("0::/a\n0::/b\n").is_err());
         assert!(parse_unified_cgroup("0::/../escape\n").is_err());
+    }
+
+    #[test]
+    fn status_parser_requires_one_nonempty_bounded_value() {
+        assert_eq!(
+            parse_status_value(
+                "Name:\ttest\nCpus_allowed_list:\t2-7\n",
+                "Cpus_allowed_list"
+            )
+            .unwrap(),
+            "2-7"
+        );
+        assert!(parse_status_value("Name:\ttest\n", "Cpus_allowed_list").is_err());
+        assert!(parse_status_value(
+            "Cpus_allowed_list:\t2-7\nCpus_allowed_list:\t0-1\n",
+            "Cpus_allowed_list"
+        )
+        .is_err());
     }
 }

@@ -1,9 +1,14 @@
 use crate::config::ServerConfig;
+use crate::manifest_evidence::verify_manifest_evidence;
+use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
+use crate::process_identity::{verify_process_cpuset, verify_process_identity};
 use crate::protocol::{
     parse_wire_request, sign_response, Operation, Response, ResponseBody, WireRequest,
 };
-use crate::service::{authorize_wire, ServiceError, ServicePolicy};
+use crate::service::{authorize_wire, AuthorizedRequest, ServiceError, ServicePolicy};
+use crate::state::{apply_attach, AttachRequest};
 use crate::state_store::{CampaignLock, StateStoreError};
+use crate::systemd_unit::{inspect_unit, verify_unit_identity};
 use crate::unix_transport::{SeqpacketListener, TransportError};
 use serde_json::Value;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -17,6 +22,8 @@ pub enum ServerError {
     Json(#[from] serde_json::Error),
     #[error("systemd readiness notification failed: {0}")]
     Notify(#[from] std::io::Error),
+    #[error("durable supervisor mutation failed: {0}")]
+    Mutation(#[from] MutationError),
 }
 
 pub struct SupervisorServer {
@@ -57,7 +64,7 @@ impl SupervisorServer {
         let now = unix_seconds();
         let response = match connection.peer_credentials() {
             Ok(peer) => match authorize_wire(wire.clone(), &peer, now, &self.policy) {
-                Ok(authorized) => self.dispatch(&authorized.request, now),
+                Ok(authorized) => self.dispatch(&authorized, now),
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
             },
             Err(_) => error_response(&wire, now, 3),
@@ -66,16 +73,16 @@ impl SupervisorServer {
         Ok(())
     }
 
-    fn dispatch(
-        &self,
-        request: &crate::protocol::Request,
-        now: u64,
-    ) -> Result<Response, ServerError> {
+    fn dispatch(&self, authorized: &AuthorizedRequest, now: u64) -> Result<Response, ServerError> {
+        let request = &authorized.request;
+        if request.operation == Operation::Attach {
+            return self.dispatch_attach(authorized, now);
+        }
         if request.operation != Operation::Status {
             return Ok(error_response_from_request(request, now, 11)?);
         }
         let result = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
-            Ok(lock) => match lock.read() {
+            Ok(lock) => match reconcile_campaign(&lock) {
                 Ok(state)
                     if state.identity.manifest_sha256 == request.manifest_sha256
                         && state.revision == request.expected_state_revision =>
@@ -83,11 +90,124 @@ impl SupervisorServer {
                     success_response(request, now, state.revision, serde_json::to_value(state)?)
                 }
                 Ok(state) => error_response_with_revision(request, now, state.revision, 5),
-                Err(error) => error_response_from_request(request, now, state_error_code(&error)),
+                Err(error) => {
+                    error_response_from_request(request, now, mutation_error_code(&error))
+                }
             },
             Err(error) => error_response_from_request(request, now, state_error_code(&error)),
         }?;
         Ok(result)
+    }
+
+    fn dispatch_attach(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+    ) -> Result<Response, ServerError> {
+        let request = &authorized.request;
+        let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
+            Ok(lock) => lock,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    state_error_code(&error),
+                )?)
+            }
+        };
+        let transaction = match begin_attach(&lock, request, now) {
+            Ok(BeginAttach::Replayed(response)) => return Ok(response),
+            Ok(BeginAttach::New(transaction)) => transaction,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    mutation_error_code(&error),
+                )?)
+            }
+        };
+        let state = transaction.state().clone();
+        let mut failures = Vec::new();
+        let manifest =
+            match verify_manifest_evidence(lock.campaign_directory(), request, &state, now) {
+                Ok(manifest) => Some(manifest),
+                Err(error) => {
+                    failures.push(format!("manifest:{error}"));
+                    None
+                }
+            };
+        match inspect_unit(&state.harness.unit_name)
+            .and_then(|snapshot| verify_unit_identity(&state.harness, &state.daemon, &snapshot))
+        {
+            Ok(()) => {}
+            Err(error) => failures.push(format!("systemd-unit:{error}")),
+        }
+        if let Err(error) = verify_process_identity(&state.harness) {
+            failures.push(format!("harness-process:{error}"));
+        }
+        if let Err(error) = verify_process_identity(&state.daemon) {
+            failures.push(format!("daemon-process:{error}"));
+        }
+        if let Err(error) = verify_process_cpuset(&state.harness, &state.identity.isolated_cpuset) {
+            failures.push(format!("harness-cpuset:{error}"));
+        }
+        if let Err(error) = verify_process_cpuset(&state.daemon, &state.identity.isolated_cpuset) {
+            failures.push(format!("daemon-cpuset:{error}"));
+        }
+        if let Err(error) = crate::checkpoint_evidence::verify_checkpoint_evidence(
+            lock.campaign_directory(),
+            &state,
+        ) {
+            failures.push(format!("checkpoint:{error}"));
+        }
+        if read_host_identity("/etc/machine-id").as_deref()
+            != Some(state.identity.machine_id.as_str())
+        {
+            failures.push("host:machine-id-drift".to_owned());
+        }
+        // The admitted-host receipt also binds mount options, tuning and the housekeeping
+        // partition. Until the local collector can re-derive that complete receipt, attach must
+        // remain incapable of granting a controller lease even when every implemented guard is
+        // green.
+        failures.push("host:full-receipt-revalidation-unimplemented".to_owned());
+        let authorization = authorized
+            .authorization
+            .as_ref()
+            .ok_or(MutationError::Operation)?;
+        let attach = AttachRequest {
+            request_id: request.request_id.clone(),
+            request_sha256: crate::event::request_sha256(request).map_err(MutationError::from)?,
+            expected_revision: request.expected_state_revision,
+            authorization_sha256: request.controller.authorization_sha256.clone(),
+            identity: state.identity.clone(),
+            harness: state.harness.clone(),
+            daemon: state.daemon.clone(),
+            checkpoint: state.checkpoint.clone(),
+            now_unix_seconds: now,
+            requested_controller_lease_seconds: authorization
+                .expires_at_unix_seconds
+                .saturating_sub(now),
+        };
+        let progress_rejection_gap_seconds = manifest
+            .as_ref()
+            .map_or(180, |manifest| manifest.progress_rejection_gap_seconds);
+        let next = match apply_attach(&state, &attach, progress_rejection_gap_seconds) {
+            Ok(next) => Some(next),
+            Err(decision) => {
+                failures.extend(
+                    decision
+                        .failures
+                        .into_iter()
+                        .map(|failure| format!("state:{failure:?}")),
+                );
+                None
+            }
+        };
+        if !failures.is_empty() {
+            return Ok(transaction
+                .reject_with_result(6, Some(serde_json::json!({"failures": failures})))?);
+        }
+        Ok(transaction.accept(next.ok_or(MutationError::Diverged)?)?)
     }
 }
 
@@ -155,6 +275,23 @@ fn state_error_code(error: &StateStoreError) -> u32 {
         StateStoreError::Io(error) if error.kind() == std::io::ErrorKind::NotFound => 4,
         StateStoreError::Io(_) | StateStoreError::Json(_) => 11,
     }
+}
+
+fn mutation_error_code(error: &MutationError) -> u32 {
+    match error {
+        MutationError::Event(crate::event::EventError::ReplayConflict { .. }) => 3,
+        MutationError::Diverged
+        | MutationError::Event(_)
+        | MutationError::State(StateStoreError::Document) => 9,
+        MutationError::State(error) => state_error_code(error),
+        MutationError::Operation | MutationError::Json(_) | MutationError::Io(_) => 11,
+    }
+}
+
+fn read_host_identity(path: &str) -> Option<String> {
+    let value = std::fs::read_to_string(path).ok()?;
+    let value = value.trim();
+    (!value.is_empty() && value.len() <= 256).then(|| value.to_owned())
 }
 
 fn unix_seconds() -> u64 {

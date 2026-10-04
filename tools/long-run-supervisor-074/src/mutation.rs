@@ -79,6 +79,14 @@ impl AttachMutation<'_> {
     }
 
     pub fn reject(self, error_code: u32) -> Result<Response, MutationError> {
+        self.reject_with_result(error_code, None)
+    }
+
+    pub fn reject_with_result(
+        self,
+        error_code: u32,
+        result: Option<serde_json::Value>,
+    ) -> Result<Response, MutationError> {
         let response = sign_response(ResponseBody {
             schema_version: 1,
             request_id: self.request.request_id.clone(),
@@ -86,7 +94,7 @@ impl AttachMutation<'_> {
             ok: false,
             state_revision: self.state.revision,
             server_time_unix_seconds: self.now_unix_seconds,
-            result: None,
+            result,
             error_code: Some(error_code),
         })?;
         let (journal, head) = event_paths(self.lock);
@@ -113,20 +121,11 @@ pub fn begin_attach<'a>(
     if request.operation != Operation::Attach {
         return Err(MutationError::Operation);
     }
-    let mut state = lock.read()?;
-    let (journal, head) = event_paths(lock);
-    let report = match fs::symlink_metadata(&journal) {
-        Ok(_) => Some(verify_event_journal(&journal, &head)?),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-        Err(error) => return Err(error.into()),
-    };
+    let (state, report) = load_campaign(lock)?;
     if let Some(report) = &report {
-        if report.recovered_incomplete_trailing_bytes != 0
-            || report.campaign_id != request.campaign_id
-        {
+        if report.campaign_id != request.campaign_id {
             return Err(MutationError::Diverged);
         }
-        state = reconcile_snapshot(lock, state, report)?;
         if let Some(recorded) = report.replay_index.get(&request.request_id) {
             return if recorded.request_sha256 == request_sha256(request)? {
                 Ok(BeginAttach::Replayed(recorded.response.clone()))
@@ -144,6 +143,30 @@ pub fn begin_attach<'a>(
         now_unix_seconds,
         state,
     })))
+}
+
+pub fn reconcile_campaign(lock: &CampaignLock) -> Result<DurableCampaignState, MutationError> {
+    let (state, _) = load_campaign(lock)?;
+    Ok(state)
+}
+
+fn load_campaign(
+    lock: &CampaignLock,
+) -> Result<(DurableCampaignState, Option<EventVerificationReport>), MutationError> {
+    let mut state = lock.read()?;
+    let (journal, head) = event_paths(lock);
+    let report = match fs::symlink_metadata(&journal) {
+        Ok(_) => Some(verify_event_journal(&journal, &head)?),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(error.into()),
+    };
+    if let Some(report) = &report {
+        if report.recovered_incomplete_trailing_bytes != 0 {
+            return Err(MutationError::Diverged);
+        }
+        state = reconcile_snapshot(lock, state, report)?;
+    }
+    Ok((state, report))
 }
 
 fn reconcile_snapshot(

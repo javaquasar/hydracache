@@ -1,7 +1,9 @@
 use hydracache_long_run_supervisor_074::event::{
     append_or_replay, request_sha256, EventOutcome, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
 };
-use hydracache_long_run_supervisor_074::mutation::{begin_attach, BeginAttach, MutationError};
+use hydracache_long_run_supervisor_074::mutation::{
+    begin_attach, reconcile_campaign, BeginAttach, MutationError,
+};
 use hydracache_long_run_supervisor_074::protocol::{
     sign_response, ControllerIdentity, Operation, Request, ResponseBody,
 };
@@ -178,6 +180,8 @@ fn recovery_finishes_state_commit_after_event_sync_crash_window() {
     )
     .unwrap();
     assert_eq!(lock.read().unwrap().revision, 0);
+
+    assert_eq!(reconcile_campaign(&lock).unwrap(), next);
 
     assert!(matches!(
         begin_attach(&lock, &request, 1_011).unwrap(),
