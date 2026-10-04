@@ -351,6 +351,27 @@ This closes the local implementation flag, not the host qualification. No real `
 issued, no product process was started, and system-bus authorization, account ownership, actual
 one-second wake-up timing and diagnostic-grace behavior remain admitted-host rehearsal work.
 
+The controller boundary now has a production-form request builder and a staged protected workflow.
+`build-request` accepts only start/attach/seal/abort, an already strict unsigned request, a private
+single-link Ed25519 key file and a maximum ten-minute authorization window. It replaces only the
+required all-zero authorization placeholder, signs the exact request identity, re-parses and
+cryptographically verifies the completed packet, and publishes it create-new with mode `0600`.
+Existing output, an insecure or hardlinked key, a non-mutating operation and an oversized time
+window fail closed. The private key path and bytes never enter the packet or command output.
+
+`.github/workflows/performance-long-run-qualification-074.yml` is manual-only and serialized by
+the admitted host id with cancellation disabled. A GitHub-hosted protected job builds the signed
+packet; the self-hosted job receives only that immutable packet, sends one typed operation to the
+Unix socket, and always attempts a separate read-only status snapshot. The workflow has no retry
+loop and no `continue-on-error`. Its structural contract has 17/17 passing tests, and request
+builder tests pass on Windows and WSL. See
+`local-runs/w11-controller-workflow-local-20261005.json`.
+
+This workflow is staged, not authorized or executed. It deliberately does not resolve the release
+verification key, candidate SHA, admitted host, product build/staging, qualification runner or
+expensive phase commands in `qualification-manifest.toml`. Those remain red boundaries rather than
+placeholders that could accidentally start a campaign.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,

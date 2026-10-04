@@ -609,6 +609,16 @@ its digest, asks status, attaches, and resumes observation. If the role is alrea
 seal; it never starts it again. The always path requests a best-effort status snapshot but the
 supervisor remains authoritative when Actions cancellation prevents final steps.
 
+The checked-in workflow currently implements the protected authorization and one-operation host
+dispatch boundary. The GitHub-hosted job validates exact source/host/request identities, consumes
+the signing secret through a private temporary file, builds and self-verifies a create-new packet,
+then uploads only the packet and its digest. The self-hosted job receives no signing key, verifies
+the transport digest, invokes the typed Unix-socket client once, and captures a read-only status
+packet in `always()`. A structural test rejects non-manual triggers, missing host serialization,
+cancellation, key use in the self-hosted section and error suppression. Product build/staging,
+monitor/seal progression and expensive qualification remain disabled until their unresolved
+candidate, host, key and runner inputs are explicitly admitted.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 

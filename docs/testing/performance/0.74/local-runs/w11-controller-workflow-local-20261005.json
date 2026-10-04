@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-controller-workflow",
+  "status": "passed-local-staged-not-executed",
+  "source_sha": "6574380f",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo test -p hydracache-long-run-supervisor-074 --test request_builder --locked",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test request_builder --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "python -c 'import yaml, pathlib; yaml.safe_load(pathlib.Path(\".github/workflows/performance-long-run-qualification-074.yml\").read_text())'",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-w11-controller-20261005.json"
+  ],
+  "workflow_dispatched": false,
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "request_builder_windows_tests_passed": 2,
+  "request_builder_wsl_tests_passed": 2,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "the builder accepts only signed mutating operations and exact strict request fields",
+    "the authorization window cannot exceed the frozen ten-minute maximum",
+    "the signing key must be a private single-link regular file and is absent from packet output",
+    "the completed packet is parsed and cryptographically verified before create-new publication",
+    "the protected workflow is manual-only, serialized per host and never cancels an in-flight controller operation",
+    "the signing secret is referenced only in the GitHub-hosted authorization job",
+    "the self-hosted job receives one immutable packet and always attempts a read-only status snapshot",
+    "the workflow contains no automatic retry or continue-on-error path"
+  ],
+  "limitations": [
+    "the workflow was parsed and structurally tested but was not dispatched",
+    "the production verification key and protected signing secret are unresolved",
+    "candidate identity, admitted host, product build/staging and qualification runner remain unresolved",
+    "no expensive phase, product process or systemd mutation was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

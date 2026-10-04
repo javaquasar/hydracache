@@ -389,6 +389,15 @@ relax journal monotonicity; fixtures now continue from the durable event clock. 
 repetitions and the complete 147-test local WSL suite then passed. That is strong local recovery
 evidence, but still not proof of real system-bus authorization or stop latency on the admitted host.
 
+The same separation applies to controller authorization. The private signing key is consumed only
+by a protected GitHub-hosted job. A narrow Rust builder signs the exact operation, campaign,
+manifest, principals and five-minute window, verifies its own packet, and publishes it create-new.
+The self-hosted performance machine receives the signed packet, not the key, sends exactly one
+typed operation, and then takes a best-effort read-only status snapshot. The workflow is
+manual-only, host-serialized and has cancellation disabled. It has been structurally tested but
+not dispatched; candidate identity, admitted host and expensive qualification remain intentionally
+unresolved.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
