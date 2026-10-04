@@ -13,6 +13,7 @@ fn config(socket: &str, campaign_root: &str) -> String {
         r#"schema_version = 1
 socket_path = "{socket}"
 campaign_root = "{campaign_root}"
+staging_root = "/tmp/staging"
 socket_mode = 432
 expected_repository_id = 10
 allowed_actor_ids = [30]

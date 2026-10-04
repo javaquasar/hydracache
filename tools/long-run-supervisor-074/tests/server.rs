@@ -1,4 +1,5 @@
 #![cfg(target_os = "linux")]
+#![recursion_limit = "256"]
 
 use ed25519_dalek::{Signer, SigningKey};
 use hydracache_long_run_supervisor_074::auth::{
@@ -6,16 +7,22 @@ use hydracache_long_run_supervisor_074::auth::{
 };
 use hydracache_long_run_supervisor_074::client::exchange;
 use hydracache_long_run_supervisor_074::config::ServerConfig;
+use hydracache_long_run_supervisor_074::host_receipt::{
+    encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
+    HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
+};
 use hydracache_long_run_supervisor_074::protocol::{
     ControllerIdentity, Operation, Request, WireRequest,
 };
 use hydracache_long_run_supervisor_074::server::SupervisorServer;
+use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
 };
 use hydracache_long_run_supervisor_074::state_store::CampaignLock;
 use hydracache_long_run_supervisor_074::ProcessIdentity;
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 use std::fs;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
@@ -147,10 +154,12 @@ fn server_config(socket: &Path, campaign_root: &Path) -> ServerConfig {
     let key = SigningKey::from_bytes(&[7; 32]);
     let uid = unsafe { libc::geteuid() };
     let gid = unsafe { libc::getegid() };
+    let staging_root = campaign_root.parent().unwrap().join("staging");
     let document = format!(
-        "schema_version=1\nsocket_path={:?}\ncampaign_root={:?}\nsocket_mode=432\nexpected_repository_id=10\nallowed_actor_ids=[30]\nallowed_client_uids=[{uid}]\nrequired_client_gid={gid}\nverification_key_hex=\"{}\"\n",
+        "schema_version=1\nsocket_path={:?}\ncampaign_root={:?}\nstaging_root={:?}\nsocket_mode=432\nexpected_repository_id=10\nallowed_actor_ids=[30]\nallowed_client_uids=[{uid}]\nrequired_client_gid={gid}\nverification_key_hex=\"{}\"\n",
         socket.as_os_str().as_bytes().escape_ascii().to_string(),
         campaign_root.as_os_str().as_bytes().escape_ascii().to_string(),
+        staging_root.as_os_str().as_bytes().escape_ascii().to_string(),
         hex(key.verifying_key().as_bytes())
     );
     ServerConfig::parse(document.as_bytes(), false).unwrap()
@@ -167,6 +176,228 @@ fn exchange_once(
         handle.join().unwrap();
         response
     })
+}
+
+fn exchange_start_once<B: SpawnBackend + Send>(
+    server: &SupervisorServer,
+    socket: &Path,
+    packet: &[u8],
+    backend: &mut B,
+) -> hydracache_long_run_supervisor_074::protocol::Response {
+    std::thread::scope(|scope| {
+        let client = scope.spawn(|| exchange(socket, packet));
+        server.serve_one_with_start_backend(backend).unwrap();
+        client.join().unwrap().unwrap()
+    })
+}
+
+#[derive(Default)]
+struct FakeStartBackend {
+    starts: usize,
+}
+
+impl SpawnBackend for FakeStartBackend {
+    type Error = &'static str;
+
+    fn start_once(&mut self, intent: &SpawnIntent) -> Result<SpawnObservation, Self::Error> {
+        self.starts += 1;
+        Ok(SpawnObservation::Exact {
+            harness: transient_process(&intent.unit_name, 100),
+            daemon: transient_process(&intent.unit_name, 101),
+        })
+    }
+
+    fn observe(&mut self, _unit_name: &str) -> Result<SpawnObservation, Self::Error> {
+        Err("unexpected observation")
+    }
+}
+
+fn transient_process(unit_name: &str, pid: u32) -> ProcessIdentity {
+    ProcessIdentity {
+        boot_id: "boot-a".to_owned(),
+        pid,
+        start_ticks: u64::from(pid) * 100,
+        process_group: 100,
+        cgroup_path: format!("/system.slice/{unit_name}"),
+        cgroup_inode: u64::from(pid) * 10,
+        unit_name: unit_name.to_owned(),
+    }
+}
+
+fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
+    let campaign_id = "1".repeat(64);
+    let campaign = staging_root.join(&campaign_id);
+    fs::create_dir(&campaign).unwrap();
+    let mount = MountIdentity {
+        mount_id: 31,
+        device_major_minor: "8:2".to_owned(),
+        root: "/".to_owned(),
+        mount_point: "/var/lib/hydracache-performance".to_owned(),
+        mount_options: vec!["relatime".to_owned(), "rw".to_owned()],
+        filesystem_type: "ext4".to_owned(),
+        source: "/dev/nvme0n1p2".to_owned(),
+        super_options: vec!["errors=remount-ro".to_owned(), "rw".to_owned()],
+    };
+    let mount_identity = hex(&Sha256::digest(
+        serde_json::to_vec(&serde_json::to_value(&mount).unwrap()).unwrap(),
+    ));
+    let receipt = HostObservationReceipt {
+        schema_version: 1,
+        machine_id: "machine-a".to_owned(),
+        boot_id: "boot-a".to_owned(),
+        kernel_release: "6.8.0-90-generic".to_owned(),
+        kernel_command_line_sha256: "a".repeat(64),
+        campaign_mount: mount,
+        mount_identity: mount_identity.clone(),
+        online_cpuset: "0-3".to_owned(),
+        isolated_cpuset: "1-2".to_owned(),
+        housekeeping_cpuset: "0,3".to_owned(),
+        cpu_governors: (0..4)
+            .map(|cpu| (format!("cpu{cpu}"), "performance".to_owned()))
+            .collect(),
+        kernel_tunables: [
+            "kernel.numa_balancing",
+            "kernel.sched_autogroup_enabled",
+            "kernel.sched_migration_cost_ns",
+            "kernel.watchdog",
+            "vm.dirty_background_ratio",
+            "vm.dirty_ratio",
+            "vm.swappiness",
+        ]
+        .into_iter()
+        .map(|name| (name.to_owned(), "0".to_owned()))
+        .collect::<BTreeMap<_, _>>(),
+        supervisor_binary: BinaryIdentity {
+            path: SUPERVISOR_BINARY_PATH.to_owned(),
+            sha256: "b".repeat(64),
+            size: 1_024,
+            inode: 44,
+            device: 8,
+            uid: 0,
+            gid: 0,
+            mode: 0o755,
+        },
+        reference_host_freeze_sha256: "c".repeat(64),
+    };
+    let receipt_bytes = encode_host_receipt(&receipt).unwrap();
+    let receipt_sha256 = hex(&Sha256::digest(&receipt_bytes));
+    let manifest = serde_json::json!({
+        "schema_version": 1,
+        "repository_id": 10,
+        "authorization_identity": "protected-performance-074",
+        "contract_sha256": "a".repeat(64),
+        "tooling_sha": "b".repeat(40),
+        "i74_source_sha": "c".repeat(40),
+        "c74_source_sha": "d".repeat(40),
+        "i74_tree_sha": "1".repeat(40),
+        "c74_tree_sha": "2".repeat(40),
+        "i74_cargo_lock_sha256": "3".repeat(64),
+        "c74_cargo_lock_sha256": "4".repeat(64),
+        "i74_dirty": false,
+        "c74_dirty": false,
+        "scenario_sha256": "e".repeat(64),
+        "workload_sha256": "5".repeat(64),
+        "offered_load_sha256": "6".repeat(64),
+        "estimator_sha256": "7".repeat(64),
+        "thresholds_sha256": "8".repeat(64),
+        "host_receipt_sha256": receipt_sha256,
+        "lease_id": "123e4567-e89b-42d3-a456-426614174000",
+        "machine_id": "machine-a",
+        "boot_id": "boot-a",
+        "mount_identity": mount_identity,
+        "isolated_cpuset": "1-2",
+        "housekeeping_cpuset": "0,3",
+        "seed": 740074,
+        "checkpoint_cadence_seconds": 30,
+        "progress_warning_gap_seconds": 90,
+        "progress_rejection_gap_seconds": 180,
+        "diagnostic_grace_seconds": 30,
+        "product_lease_deadline_unix_seconds": now + 10_000,
+        "maximum_campaign_bytes": 21_474_836_480_u64,
+        "maximum_campaign_files": 20_000,
+        "installed_binaries": [
+            {"role": "i74", "path": "/opt/hydracache-performance/0.74/i74/hydracache", "sha256": "9".repeat(64), "size": 1, "inode": 2, "device": 3, "uid": 1001, "gid": 1001, "mode": 365},
+            {"role": "c74", "path": "/opt/hydracache-performance/0.74/c74/hydracache", "sha256": "a".repeat(64), "size": 1, "inode": 4, "device": 3, "uid": 1001, "gid": 1001, "mode": 365}
+        ],
+        "argv_templates": {
+            "i74": ["/opt/hydracache-performance/0.74/i74/hydracache", "--role", "i74"],
+            "c74": ["/opt/hydracache-performance/0.74/c74/hydracache", "--role", "c74"]
+        },
+        "command_environment_sha256": "b".repeat(64),
+        "role_order": ["i74", "c74"],
+        "phase_durations_seconds": {"warmup": 60, "measured": 300, "drain": 30, "durable_companion": 30, "post_work_idle": 60, "reconciliation": 30},
+        "output_limits": {"stdout_bytes": 1_048_576, "stderr_bytes": 1_048_576, "diagnostic_bytes": 1_048_576, "final_artifact_bytes": 1_073_741_824, "files": 2_000},
+        "expected_output_schema_sha256s": {"checkpoint": "c".repeat(64), "measurement": "d".repeat(64), "reconciliation": "e".repeat(64), "raw_manifest": "1".repeat(64), "packet_manifest": "f".repeat(64)},
+        "required_final_guards": ["semantic", "native-non-regression", "retention"],
+        "secret_identifiers": ["github-environment-key-v1"],
+        "release": "0.74",
+        "campaign_id": campaign_id,
+        "nonce_sha256": "2".repeat(64),
+        "dirty": false,
+        "controller_history": [],
+        "state": "PREPARED"
+    });
+    let manifest_bytes = serde_json::to_vec(&manifest).unwrap();
+    let manifest_sha256 = hex(&Sha256::digest(&manifest_bytes));
+    fs::write(campaign.join("campaign-start.json"), &manifest_bytes).unwrap();
+    fs::write(
+        campaign.join("campaign-start.sha256"),
+        format!("{manifest_sha256}\n"),
+    )
+    .unwrap();
+    fs::write(campaign.join(HOST_RECEIPT_NAME), &receipt_bytes).unwrap();
+    fs::write(
+        campaign.join(HOST_RECEIPT_HEAD_NAME),
+        format!("{}\n", hex(&Sha256::digest(&receipt_bytes))),
+    )
+    .unwrap();
+
+    let mut request = Request {
+        schema_version: 1,
+        request_id: "323e4567-e89b-42d3-a456-426614174000".to_owned(),
+        operation: Operation::Start,
+        campaign_id: "1".repeat(64),
+        expected_state_revision: 0,
+        manifest_path: Some(
+            campaign
+                .join("campaign-start.json")
+                .to_string_lossy()
+                .into_owned(),
+        ),
+        manifest_sha256,
+        controller: ControllerIdentity {
+            repository_id: 10,
+            run_id: 20,
+            run_attempt: 1,
+            actor_id: 30,
+            authorization_sha256: "0".repeat(64),
+        },
+        abort_reason: None,
+        approval_nonce_sha256: None,
+    };
+    let body = AuthorizationBody {
+        schema_version: 1,
+        request_id: request.request_id.clone(),
+        operation: request.operation,
+        campaign_id: request.campaign_id.clone(),
+        manifest_sha256: request.manifest_sha256.clone(),
+        repository_id: 10,
+        run_id: 20,
+        actor_id: 30,
+        issued_at_unix_seconds: now.saturating_sub(1),
+        expires_at_unix_seconds: now + 300,
+    };
+    let authorization = SignedAuthorization {
+        signature_hex: hex(&key.sign(&canonical_message(&body).unwrap()).to_bytes()),
+        body,
+    };
+    request.controller.authorization_sha256 =
+        hex(&Sha256::digest(canonical_document(&authorization).unwrap()));
+    serde_json::to_vec(&WireRequest {
+        request,
+        authorization: Some(authorization),
+    })
+    .unwrap()
 }
 
 #[test]
@@ -233,4 +464,35 @@ fn attach_guard_rejection_is_durable_and_exactly_replayed() {
     let lock = CampaignLock::acquire(&campaign_root, &"a".repeat(64)).unwrap();
     assert_eq!(lock.read().unwrap(), state(0));
     assert!(lock.campaign_directory().join("events.jsonl").exists());
+}
+
+#[test]
+fn authorized_start_imports_evidence_executes_once_and_replays_exact_response() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    let socket = temporary.path().join("supervisor-start.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeStartBackend::default();
+
+    let first = exchange_start_once(&server, &socket, &packet, &mut backend);
+    assert!(first.body.ok);
+    assert_eq!(first.body.state_revision, 2);
+    assert_eq!(backend.starts, 1);
+    let campaign = campaign_root.join("1".repeat(64));
+    assert!(campaign.join("state.json").exists());
+    assert!(campaign.join("i74-spawn-intent.json").exists());
+    assert!(campaign.join("i74-spawn-result.json").exists());
+
+    let replay = exchange_start_once(&server, &socket, &packet, &mut backend);
+    assert_eq!(replay, first);
+    assert_eq!(backend.starts, 1);
 }

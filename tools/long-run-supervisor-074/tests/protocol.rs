@@ -123,6 +123,31 @@ fn rejects_path_traversal_and_cross_operation_fields() {
 }
 
 #[test]
+fn manifest_path_validation_is_structural_and_configuration_independent() {
+    let campaign = "a".repeat(64);
+    let mut local = request("start");
+    local["manifest_path"] = json!(format!(
+        "/tmp/local-supervisor/staging/{campaign}/campaign-start.json"
+    ));
+    assert!(parse_request(&serde_json::to_vec(&local).unwrap()).is_ok());
+
+    for invalid in [
+        format!("tmp/staging/{campaign}/campaign-start.json"),
+        format!("/tmp/staging//{campaign}/campaign-start.json"),
+        format!("/tmp/staging/./{campaign}/campaign-start.json"),
+        format!("/tmp/staging/{campaign}/different.json"),
+        format!("/tmp/staging/{}/campaign-start.json", "b".repeat(64)),
+    ] {
+        let mut request = request("start");
+        request["manifest_path"] = json!(invalid);
+        assert_eq!(
+            parse_request(&serde_json::to_vec(&request).unwrap()),
+            Err(ProtocolError::ManifestPath)
+        );
+    }
+}
+
+#[test]
 fn response_digest_excludes_only_its_own_field() {
     let body = ResponseBody {
         schema_version: 1,

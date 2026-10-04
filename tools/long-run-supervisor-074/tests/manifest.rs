@@ -12,7 +12,7 @@ use hydracache_long_run_supervisor_074::manifest_evidence::{
 };
 use hydracache_long_run_supervisor_074::protocol::{ControllerIdentity, Operation, Request};
 use hydracache_long_run_supervisor_074::start_evidence::{
-    prepare_campaign_evidence, StartEvidenceError,
+    load_campaign_evidence, prepare_campaign_evidence, StartEvidenceError,
 };
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
@@ -257,6 +257,9 @@ fn start_evidence_is_validated_then_atomically_imported_once() {
         fs::read(prepared.campaign_directory.join("campaign-start.json")).unwrap(),
         manifest_bytes
     );
+    let loaded = load_campaign_evidence(&campaign_root, &request, 1_000).unwrap();
+    assert_eq!(loaded.manifest, prepared.manifest);
+    assert_eq!(loaded.host_receipt, prepared.host_receipt);
     assert!(matches!(
         prepare_campaign_evidence(&campaign_root, &staging_root, &request, 1_000),
         Err(StartEvidenceError::Path)

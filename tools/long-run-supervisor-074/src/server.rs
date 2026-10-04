@@ -1,5 +1,7 @@
 use crate::config::ServerConfig;
+use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::verify_host_receipt_evidence;
+use crate::manifest::frozen_identity_from_manifest;
 use crate::manifest_evidence::verify_manifest_evidence;
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
@@ -7,6 +9,11 @@ use crate::protocol::{
     parse_wire_request, sign_response, Operation, Response, ResponseBody, WireRequest,
 };
 use crate::service::{authorize_wire, AuthorizedRequest, ServiceError, ServicePolicy};
+use crate::spawn::SpawnBackend;
+use crate::start_evidence::{
+    load_campaign_evidence, prepare_campaign_evidence, StartEvidenceError,
+};
+use crate::start_lifecycle::{drive_i74_start_request, StartLifecycleError};
 use crate::state::{apply_attach, AttachRequest};
 use crate::state_store::{CampaignLock, StateStoreError};
 use crate::systemd_unit::{inspect_unit, verify_unit_identity};
@@ -56,6 +63,20 @@ impl SupervisorServer {
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
+        self.serve_one_inner::<UnavailableStartBackend>(None)
+    }
+
+    pub fn serve_one_with_start_backend<B: SpawnBackend>(
+        &self,
+        backend: &mut B,
+    ) -> Result<(), ServerError> {
+        self.serve_one_inner(Some(backend))
+    }
+
+    fn serve_one_inner<B: SpawnBackend>(
+        &self,
+        start_backend: Option<&mut B>,
+    ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
         let packet = connection.receive_packet()?;
         let wire = match parse_wire_request(&packet) {
@@ -65,7 +86,7 @@ impl SupervisorServer {
         let now = unix_seconds();
         let response = match connection.peer_credentials() {
             Ok(peer) => match authorize_wire(wire.clone(), &peer, now, &self.policy) {
-                Ok(authorized) => self.dispatch(&authorized, now),
+                Ok(authorized) => self.dispatch(&authorized, now, start_backend),
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
             },
             Err(_) => error_response(&wire, now, 3),
@@ -74,8 +95,19 @@ impl SupervisorServer {
         Ok(())
     }
 
-    fn dispatch(&self, authorized: &AuthorizedRequest, now: u64) -> Result<Response, ServerError> {
+    fn dispatch<B: SpawnBackend>(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+        start_backend: Option<&mut B>,
+    ) -> Result<Response, ServerError> {
         let request = &authorized.request;
+        if request.operation == Operation::Start {
+            return match start_backend {
+                Some(backend) => self.dispatch_start(authorized, now, backend),
+                None => Ok(error_response_from_request(request, now, 11)?),
+            };
+        }
         if request.operation == Operation::Attach {
             return self.dispatch_attach(authorized, now);
         }
@@ -98,6 +130,78 @@ impl SupervisorServer {
             Err(error) => error_response_from_request(request, now, state_error_code(&error)),
         }?;
         Ok(result)
+    }
+
+    fn dispatch_start<B: SpawnBackend>(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+        backend: &mut B,
+    ) -> Result<Response, ServerError> {
+        let request = &authorized.request;
+        let campaign_directory = self.config.campaign_root.join(&request.campaign_id);
+        let evidence = if campaign_directory.exists() {
+            load_campaign_evidence(&self.config.campaign_root, request, now)
+        } else {
+            prepare_campaign_evidence(
+                &self.config.campaign_root,
+                &self.config.staging_root,
+                request,
+                now,
+            )
+        };
+        let evidence = match evidence {
+            Ok(evidence) => evidence,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    start_evidence_error_code(&error),
+                )?)
+            }
+        };
+        let host_claim =
+            match HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id) {
+                Ok(claim) => claim,
+                Err(error) => {
+                    return Ok(error_response_from_request(
+                        request,
+                        now,
+                        host_execution_error_code(&error),
+                    )?)
+                }
+            };
+        let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
+            Ok(lock) => lock,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    state_error_code(&error),
+                )?)
+            }
+        };
+        let identity =
+            match frozen_identity_from_manifest(&evidence.manifest, &request.manifest_sha256) {
+                Ok(identity) => identity,
+                Err(_) => return Ok(error_response_from_request(request, now, 9)?),
+            };
+        match drive_i74_start_request(
+            &host_claim,
+            &lock,
+            request,
+            identity,
+            evidence.manifest.nonce_sha256,
+            now,
+            backend,
+        ) {
+            Ok(response) => Ok(response),
+            Err(error) => Ok(error_response_from_request(
+                request,
+                now,
+                start_lifecycle_error_code(&error),
+            )?),
+        }
     }
 
     fn dispatch_attach(
@@ -302,6 +406,50 @@ fn mutation_error_code(error: &MutationError) -> u32 {
         | MutationError::State(StateStoreError::Document) => 9,
         MutationError::State(error) => state_error_code(error),
         MutationError::Operation | MutationError::Json(_) | MutationError::Io(_) => 11,
+    }
+}
+
+fn start_evidence_error_code(error: &StartEvidenceError) -> u32 {
+    match error {
+        StartEvidenceError::Path | StartEvidenceError::Input | StartEvidenceError::Head => 4,
+        StartEvidenceError::Manifest(_) | StartEvidenceError::Host(_) => 9,
+        StartEvidenceError::Io(_) => 11,
+    }
+}
+
+fn host_execution_error_code(error: &HostExecutionError) -> u32 {
+    match error {
+        HostExecutionError::Busy => 10,
+        HostExecutionError::Conflict { .. } => 5,
+        HostExecutionError::Path => 4,
+        HostExecutionError::Io(_) => 11,
+    }
+}
+
+fn start_lifecycle_error_code(error: &StartLifecycleError) -> u32 {
+    match error {
+        StartLifecycleError::Event(crate::event::EventError::ReplayConflict { .. }) => 3,
+        StartLifecycleError::Binding => 5,
+        StartLifecycleError::State(error) => state_error_code(error),
+        StartLifecycleError::Mutation(error) => mutation_error_code(error),
+        StartLifecycleError::Event(_) | StartLifecycleError::Spawn(_) => 11,
+    }
+}
+
+struct UnavailableStartBackend;
+
+impl SpawnBackend for UnavailableStartBackend {
+    type Error = &'static str;
+
+    fn start_once(
+        &mut self,
+        _intent: &crate::spawn::SpawnIntent,
+    ) -> Result<crate::spawn::SpawnObservation, Self::Error> {
+        Err("live start backend is unavailable")
+    }
+
+    fn observe(&mut self, _unit_name: &str) -> Result<crate::spawn::SpawnObservation, Self::Error> {
+        Err("live start backend is unavailable")
     }
 }
 

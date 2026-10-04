@@ -5,7 +5,6 @@ use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 pub const MAX_PACKET_BYTES: usize = 65_536;
-pub const STAGING_ROOT: &str = "/var/lib/hydracache-performance/staging";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -194,8 +193,17 @@ pub fn verify_response(response: &Response) -> Result<(), ProtocolError> {
 }
 
 fn validate_manifest_path(path: &str, campaign_id: &str) -> Result<(), ProtocolError> {
-    let expected = format!("{STAGING_ROOT}/{campaign_id}/campaign-start.json");
-    if path != expected || path.contains('\\') || path.contains("//") {
+    if !path.starts_with('/') || path.contains('\\') || path.contains("//") {
+        return Err(ProtocolError::ManifestPath);
+    }
+    let components = path[1..].split('/').collect::<Vec<_>>();
+    if components.len() < 3
+        || components
+            .iter()
+            .any(|component| component.is_empty() || matches!(*component, "." | ".."))
+        || components[components.len() - 2] != campaign_id
+        || components.last() != Some(&"campaign-start.json")
+    {
         return Err(ProtocolError::ManifestPath);
     }
     Ok(())

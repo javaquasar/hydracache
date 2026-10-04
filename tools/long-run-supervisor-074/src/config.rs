@@ -6,6 +6,7 @@ use thiserror::Error;
 
 pub const PRODUCTION_SOCKET: &str = "/run/hydracache-perf/supervisor-v1.sock";
 pub const PRODUCTION_CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
+pub const PRODUCTION_STAGING_ROOT: &str = "/var/lib/hydracache-performance/staging";
 pub const MAX_CONFIG_BYTES: usize = 16_384;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -14,6 +15,7 @@ pub struct ServerConfig {
     pub schema_version: u32,
     pub socket_path: PathBuf,
     pub campaign_root: PathBuf,
+    pub staging_root: PathBuf,
     pub socket_mode: u32,
     pub expected_repository_id: u64,
     pub allowed_actor_ids: Vec<u64>,
@@ -65,12 +67,14 @@ impl ServerConfig {
             || decode_key(&self.verification_key_hex).is_none()
             || !absolute_without_parent(&self.socket_path)
             || !absolute_without_parent(&self.campaign_root)
+            || !absolute_without_parent(&self.staging_root)
         {
             return Err(ConfigError::Invariant);
         }
         if production_paths
             && (self.socket_path != Path::new(PRODUCTION_SOCKET)
-                || self.campaign_root != Path::new(PRODUCTION_CAMPAIGN_ROOT))
+                || self.campaign_root != Path::new(PRODUCTION_CAMPAIGN_ROOT)
+                || self.staging_root != Path::new(PRODUCTION_STAGING_ROOT))
         {
             return Err(ConfigError::Invariant);
         }

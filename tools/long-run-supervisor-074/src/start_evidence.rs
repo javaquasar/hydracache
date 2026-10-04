@@ -115,6 +115,46 @@ pub fn prepare_campaign_evidence(
     })
 }
 
+pub fn load_campaign_evidence(
+    campaign_root: &Path,
+    request: &Request,
+    now_unix_seconds: u64,
+) -> Result<PreparedCampaignEvidence, StartEvidenceError> {
+    if request.operation != Operation::Start
+        || request.expected_state_revision != 0
+        || !is_hash(&request.campaign_id)
+    {
+        return Err(StartEvidenceError::Path);
+    }
+    let campaign_root = canonical_directory(campaign_root)?;
+    let campaign_directory = campaign_root.join(&request.campaign_id);
+    let campaign_directory = canonical_direct_child(&campaign_root, &campaign_directory)?;
+    let manifest_bytes = read_input(
+        &campaign_directory.join(CAMPAIGN_MANIFEST_NAME),
+        MAX_MANIFEST_BYTES as u64,
+    )?;
+    verify_head(
+        &campaign_directory.join(CAMPAIGN_MANIFEST_HEAD_NAME),
+        &request.manifest_sha256,
+    )?;
+    let manifest = parse_manifest(&manifest_bytes, request, now_unix_seconds)?;
+    let host_receipt_bytes = read_input(
+        &campaign_directory.join(HOST_RECEIPT_NAME),
+        MAX_HOST_RECEIPT_BYTES as u64,
+    )?;
+    verify_head(
+        &campaign_directory.join(HOST_RECEIPT_HEAD_NAME),
+        &manifest.host_receipt_sha256,
+    )?;
+    let host_receipt = parse_host_receipt(&host_receipt_bytes, &manifest.host_receipt_sha256)?;
+    verify_receipt_manifest_binding(&host_receipt, &manifest)?;
+    Ok(PreparedCampaignEvidence {
+        campaign_directory,
+        manifest,
+        host_receipt,
+    })
+}
+
 fn canonical_directory(path: &Path) -> Result<PathBuf, StartEvidenceError> {
     let metadata = fs::symlink_metadata(path)?;
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
