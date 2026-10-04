@@ -45,7 +45,7 @@ pub struct SeqpacketListener {
 }
 
 impl SeqpacketListener {
-    pub fn bind(path: &Path, mode: u32) -> Result<Self, TransportError> {
+    pub fn bind(path: &Path, mode: u32, group_gid: u32) -> Result<Self, TransportError> {
         if mode & !0o777 != 0 || path.exists() {
             return Err(TransportError::Path);
         }
@@ -61,6 +61,14 @@ impl SeqpacketListener {
         } != 0
         {
             return Err(io::Error::last_os_error().into());
+        }
+        // SAFETY: path is nul-terminated for the duration of chown; uid -1 preserves the owner.
+        let path_bytes = std::ffi::CString::new(path.as_os_str().as_bytes())
+            .map_err(|_| TransportError::Path)?;
+        if unsafe { libc::chown(path_bytes.as_ptr(), u32::MAX, group_gid) } != 0 {
+            let error = io::Error::last_os_error();
+            let _ = fs::remove_file(path);
+            return Err(error.into());
         }
         fs::set_permissions(path, fs::Permissions::from_mode(mode))?;
         // SAFETY: fd is a valid bound SOCK_SEQPACKET socket.

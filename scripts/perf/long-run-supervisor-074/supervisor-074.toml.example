@@ -1,0 +1,11 @@
+# This template is intentionally not startable. Host provisioning must replace all
+# angle-bracket values and then bind the resulting file digest into the host receipt.
+schema_version = 1
+socket_path = "/run/hydracache-perf/supervisor-v1.sock"
+campaign_root = "/var/lib/hydracache-performance/campaigns"
+socket_mode = 432
+expected_repository_id = 0 # <numeric GitHub repository id>
+allowed_actor_ids = [] # <protected-environment actor ids>
+allowed_client_uids = [] # <GitHub runner uid>
+required_client_gid = 0 # <hydracache-perf-client gid>
+verification_key_hex = "UNRESOLVED_PRODUCTION_ED25519_PUBLIC_KEY"

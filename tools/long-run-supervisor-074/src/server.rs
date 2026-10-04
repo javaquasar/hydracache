@@ -15,6 +15,8 @@ pub enum ServerError {
     Transport(#[from] TransportError),
     #[error("supervisor response serialization failed: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("systemd readiness notification failed: {0}")]
+    Notify(#[from] std::io::Error),
 }
 
 pub struct SupervisorServer {
@@ -26,7 +28,11 @@ pub struct SupervisorServer {
 impl SupervisorServer {
     pub fn bind(config: ServerConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let policy = config.policy()?;
-        let listener = SeqpacketListener::bind(&config.socket_path, config.socket_mode)?;
+        let listener = SeqpacketListener::bind(
+            &config.socket_path,
+            config.socket_mode,
+            config.required_client_gid,
+        )?;
         Ok(Self {
             listener,
             policy,
@@ -35,6 +41,7 @@ impl SupervisorServer {
     }
 
     pub fn serve(self) -> Result<(), ServerError> {
+        crate::systemd_notify::ready()?;
         loop {
             self.serve_one()?;
         }

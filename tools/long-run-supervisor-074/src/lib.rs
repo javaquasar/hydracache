@@ -20,6 +20,8 @@ pub mod server;
 pub mod service;
 pub mod state;
 pub mod state_store;
+#[cfg(target_os = "linux")]
+pub mod systemd_notify;
 pub mod watchdog;
 
 #[cfg(target_os = "linux")]

@@ -1,0 +1,38 @@
+[Unit]
+Description=HydraCache 0.74 performance campaign supervisor
+After=local-fs.target dbus.service
+RequiresMountsFor=/var/lib/hydracache-performance
+
+[Service]
+Type=notify
+ExecStart=/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 serve /etc/hydracache-perf/supervisor-074.toml
+User=root
+Group=root
+Restart=on-failure
+RestartSec=2s
+RuntimeDirectory=hydracache-perf
+RuntimeDirectoryMode=0750
+StateDirectory=hydracache-performance
+StateDirectoryMode=0750
+UMask=0027
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/hydracache-performance /run/hydracache-perf
+SystemCallArchitectures=native
+KillMode=process
+Environment=RUST_BACKTRACE=0
+
+[Install]
+WantedBy=multi-user.target
