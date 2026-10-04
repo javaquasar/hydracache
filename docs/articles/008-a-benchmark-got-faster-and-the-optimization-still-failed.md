@@ -485,6 +485,12 @@ limits are checked before output creation, and existing destinations, nested out
 hardlinks and non-regular files fail closed. This is still library-level sealing: the live service
 has not yet connected it to a terminal campaign state on the admitted Linux filesystem.
 
+To avoid treating Windows-only behavior as proof, the complete supervisor package was then run
+under local WSL2 Ubuntu at exact source `37566d71`. All 30 targeted tests passed, including Unix
+directory sync, hardlink rejection, archive determinism, authorization, checkpoint recovery,
+manifest parsing, protocol, state-machine and watchdog cases. The receipt is deliberately marked
+local and non-promotable: no service or product process ran, and WSL is not the admitted host.
+
 The disposable GitHub-side monitor is also implemented as a strictly read-only observer. It
 validates the full durable-state shape plus campaign and manifest identities, reports controller
 loss separately from stale useful progress, measurement loss and evidence corruption, and writes

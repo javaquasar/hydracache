@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-linux-supervisor",
+  "status": "passed-local-non-promotable",
+  "source_sha": "37566d71d893023c3f1dc9313533d4e9447026b1",
+  "platform": "WSL2 Ubuntu",
+  "rustc": "rustc 1.98.0-nightly (f46ec5218 2026-06-30)",
+  "command": "CARGO_TARGET_DIR=/tmp/hydracache-074-wsl-target cargo test -p hydracache-long-run-supervisor-074 --locked",
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "test_suites": {
+    "archive": 3,
+    "authorization": 3,
+    "chain": 5,
+    "manifest": 4,
+    "protocol": 4,
+    "state_machine": 6,
+    "watchdog": 5
+  },
+  "passed": 30,
+  "failed": 0,
+  "limitations": [
+    "WSL is not the admitted release host",
+    "no systemd supervisor service was installed or started",
+    "no controller-loss or product-process rehearsal was performed",
+    "this receipt cannot authorize release admission"
+  ]
+}

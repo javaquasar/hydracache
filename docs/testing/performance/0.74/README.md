@@ -63,6 +63,11 @@ non-regular files. Tests compare byte-identical archives built from differently 
 inspect every tar header. The live sealing state transition and Linux filesystem rehearsal remain
 incomplete.
 
+The complete supervisor package also passes all 30 targeted tests under local WSL2 Ubuntu at exact
+source `37566d71`, including the Unix directory-sync and link-count branches. The checked-in
+`local-runs/w11-supervisor-wsl-20261004.json` receipt is explicitly local and non-promotable: no
+service was installed, no product process was started and no admitted-host fault rehearsal ran.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,
