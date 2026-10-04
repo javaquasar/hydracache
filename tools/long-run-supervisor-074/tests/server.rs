@@ -2,6 +2,7 @@
 #![recursion_limit = "256"]
 
 use ed25519_dalek::{Signer, SigningKey};
+use hydracache_long_run_supervisor_074::abort_lifecycle::AbortBackend;
 use hydracache_long_run_supervisor_074::artifact::PacketResult;
 use hydracache_long_run_supervisor_074::auth::{
     canonical_document, canonical_message, AuthorizationBody, SignedAuthorization,
@@ -24,7 +25,9 @@ use hydracache_long_run_supervisor_074::protocol::{
 use hydracache_long_run_supervisor_074::seal_input::{
     InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
 };
-use hydracache_long_run_supervisor_074::server::{SealObservationBackend, SupervisorServer};
+use hydracache_long_run_supervisor_074::server::{
+    AbortObservationBackend, SealObservationBackend, SupervisorServer,
+};
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, ControllerLease, DurableCampaignState, FrozenIdentity,
@@ -222,6 +225,54 @@ fn exchange_seal_once(
         server.serve_one_with_seal_backend(backend).unwrap();
         client.join().unwrap().unwrap()
     })
+}
+
+fn exchange_abort_once(
+    server: &SupervisorServer,
+    socket: &Path,
+    packet: &[u8],
+    backend: &mut dyn AbortObservationBackend,
+) -> hydracache_long_run_supervisor_074::protocol::Response {
+    std::thread::scope(|scope| {
+        let client = scope.spawn(|| exchange(socket, packet));
+        server.serve_one_with_abort_backend(backend).unwrap();
+        client.join().unwrap().unwrap()
+    })
+}
+
+#[derive(Default)]
+struct FakeAbortBackend {
+    calls: usize,
+    fail_next: bool,
+}
+
+impl AbortBackend for FakeAbortBackend {
+    fn capture_and_stop(
+        &mut self,
+        _campaign_directory: &Path,
+        _request: &Request,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.calls += 1;
+        assert_eq!(state.campaign_state, CampaignState::AbortedIncomplete);
+        assert!(state.harness.is_some());
+        if self.fail_next {
+            self.fail_next = false;
+            return Err("injected abort interruption".to_owned());
+        }
+        Ok(())
+    }
+}
+
+impl AbortObservationBackend for FakeAbortBackend {
+    fn verify_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 struct FakeSealBackend {
@@ -467,6 +518,17 @@ fn seal_packet(start_packet: &[u8], key: &SigningKey, revision: u64, now: u64) -
     request.request.operation = Operation::Seal;
     request.request.expected_state_revision = revision;
     request.request.manifest_path = None;
+    signed_packet(request.request, key, now)
+}
+
+fn abort_packet(start_packet: &[u8], key: &SigningKey, revision: u64, now: u64) -> Vec<u8> {
+    let mut request: WireRequest = serde_json::from_slice(start_packet).unwrap();
+    request.request.request_id = "823e4567-e89b-42d3-a456-426614174000".to_owned();
+    request.request.operation = Operation::Abort;
+    request.request.expected_state_revision = revision;
+    request.request.manifest_path = None;
+    request.request.abort_reason = Some("operator-request".to_owned());
+    request.request.approval_nonce_sha256 = Some("8".repeat(64));
     signed_packet(request.request, key, now)
 }
 
@@ -843,6 +905,56 @@ fn seal_dispatch_composes_observation_inventory_and_durable_lifecycle() {
     assert_eq!(replay, sealed);
     assert_eq!(backend.host_checks, 3);
     assert_eq!(backend.unit_checks, 2);
+}
+
+#[test]
+fn abort_dispatch_reports_committed_intent_and_identical_retry_completes() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary.path().join("supervisor-abort.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let seal = seal_packet(&start_packet, &key, 3, now);
+    prepare_i74_terminal_evidence(&campaign_root, &seal, now);
+    let abort = abort_packet(&start_packet, &key, 3, now);
+    let mut backend = FakeAbortBackend {
+        calls: 0,
+        fail_next: true,
+    };
+    let interrupted = exchange_abort_once(&server, &socket, &abort, &mut backend);
+    assert!(!interrupted.body.ok);
+    assert_eq!(interrupted.body.error_code, Some(11));
+    assert_eq!(interrupted.body.state_revision, 4);
+    assert!(campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+
+    let completed = exchange_abort_once(&server, &socket, &abort, &mut backend);
+    assert!(completed.body.ok);
+    assert_eq!(completed.body.state_revision, 5);
+    assert_eq!(
+        completed.body.result.as_ref().unwrap()["campaign_state"],
+        "ABORTED_INCOMPLETE"
+    );
+    assert_eq!(backend.calls, 2);
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+
+    let replay = exchange_abort_once(&server, &socket, &abort, &mut backend);
+    assert_eq!(replay, completed);
+    assert_eq!(backend.calls, 2);
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
 }
 
 #[test]

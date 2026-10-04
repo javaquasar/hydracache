@@ -14,8 +14,6 @@ use std::path::Path;
 use thiserror::Error;
 
 pub trait AbortBackend {
-    type Error: std::error::Error + Send + Sync + 'static;
-
     /// Capture the bounded allowlisted diagnostics and stop the exact retained unit.
     /// Implementations must recover or replay an identical request without starting a process.
     fn capture_and_stop(
@@ -23,7 +21,7 @@ pub trait AbortBackend {
         campaign_directory: &Path,
         request: &Request,
         state: &DurableCampaignState,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), String>;
 }
 
 #[derive(Debug, Error)]
@@ -44,7 +42,7 @@ pub enum AbortLifecycleError {
     Json(#[from] serde_json::Error),
 }
 
-pub fn drive_abort_request<B: AbortBackend>(
+pub fn drive_abort_request<B: AbortBackend + ?Sized>(
     host_claim: &HostExecutionClaim,
     lock: &CampaignLock,
     request: &Request,
@@ -119,7 +117,7 @@ pub fn drive_abort_request<B: AbortBackend>(
         )?;
         backend
             .capture_and_stop(lock.campaign_directory(), request, &state)
-            .map_err(|error| AbortLifecycleError::Backend(error.to_string()))?;
+            .map_err(AbortLifecycleError::Backend)?;
         let mut completed = state.clone();
         completed.revision = completed
             .revision

@@ -12,7 +12,6 @@ use hydracache_long_run_supervisor_074::state::{
 };
 use hydracache_long_run_supervisor_074::state_store::CampaignLock;
 use hydracache_long_run_supervisor_074::ProcessIdentity;
-use std::io;
 use std::path::Path;
 
 fn hash(value: char) -> String {
@@ -104,14 +103,12 @@ struct FakeAbortBackend {
 }
 
 impl AbortBackend for FakeAbortBackend {
-    type Error = io::Error;
-
     fn capture_and_stop(
         &mut self,
         campaign_directory: &Path,
         request: &Request,
         state: &DurableCampaignState,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), String> {
         self.calls += 1;
         assert_eq!(
             campaign_directory
@@ -126,7 +123,7 @@ impl AbortBackend for FakeAbortBackend {
             && state.controller_lease.is_some();
         if self.fail_next {
             self.fail_next = false;
-            return Err(io::Error::other("injected abort interruption"));
+            return Err("injected abort interruption".to_owned());
         }
         Ok(())
     }

@@ -1,3 +1,4 @@
+use crate::abort_lifecycle::{drive_abort_request, AbortBackend, AbortLifecycleError};
 use crate::archive::ArchiveLimits;
 use crate::artifact::PacketLimits;
 use crate::config::ServerConfig;
@@ -64,6 +65,15 @@ pub trait SealObservationBackend {
     ) -> Result<UnitSnapshot, String>;
 }
 
+pub trait AbortObservationBackend: AbortBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String>;
+}
+
 impl SupervisorServer {
     pub fn bind(config: ServerConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let policy = config.policy()?;
@@ -87,27 +97,35 @@ impl SupervisorServer {
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None, None)
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None, None)
     }
 
     pub fn serve_one_with_start_backend<B: SpawnBackend>(
         &self,
         backend: &mut B,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner(Some(backend), None)
+        self.serve_one_inner(Some(backend), None, None)
     }
 
     pub fn serve_one_with_seal_backend(
         &self,
         backend: &mut dyn SealObservationBackend,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None, Some(backend))
+        self.serve_one_inner::<SystemdSpawnBackend>(None, Some(backend), None)
+    }
+
+    pub fn serve_one_with_abort_backend(
+        &self,
+        backend: &mut dyn AbortObservationBackend,
+    ) -> Result<(), ServerError> {
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None, Some(backend))
     }
 
     fn serve_one_inner<B: SpawnBackend>(
         &self,
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
+        abort_backend: Option<&mut dyn AbortObservationBackend>,
     ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
         let packet = connection.receive_packet()?;
@@ -118,7 +136,9 @@ impl SupervisorServer {
         let now = unix_seconds();
         let response = match connection.peer_credentials() {
             Ok(peer) => match authorize_wire(wire.clone(), &peer, now, &self.policy) {
-                Ok(authorized) => self.dispatch(&authorized, now, start_backend, seal_backend),
+                Ok(authorized) => {
+                    self.dispatch(&authorized, now, start_backend, seal_backend, abort_backend)
+                }
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
             },
             Err(_) => error_response(&wire, now, 3),
@@ -133,6 +153,7 @@ impl SupervisorServer {
         now: u64,
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
+        abort_backend: Option<&mut dyn AbortObservationBackend>,
     ) -> Result<Response, ServerError> {
         let request = &authorized.request;
         if request.operation == Operation::Start {
@@ -146,6 +167,12 @@ impl SupervisorServer {
         }
         if request.operation == Operation::Seal {
             return self.dispatch_seal(authorized, now, seal_backend);
+        }
+        if request.operation == Operation::Abort {
+            return match abort_backend {
+                Some(backend) => self.dispatch_abort(authorized, now, backend),
+                None => Ok(error_response_from_request(request, now, 11)?),
+            };
         }
         if request.operation != Operation::Status {
             return Ok(error_response_from_request(request, now, 11)?);
@@ -585,6 +612,93 @@ impl SupervisorServer {
             }
         }
     }
+
+    fn dispatch_abort(
+        &self,
+        authorized: &AuthorizedRequest,
+        now: u64,
+        backend: &mut dyn AbortObservationBackend,
+    ) -> Result<Response, ServerError> {
+        let request = &authorized.request;
+        let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
+            Ok(lock) => lock,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    state_error_code(&error),
+                )?)
+            }
+        };
+        let state = match reconcile_campaign(&lock) {
+            Ok(state) => state,
+            Err(error) => {
+                return Ok(error_response_from_request(
+                    request,
+                    now,
+                    mutation_error_code(&error),
+                )?)
+            }
+        };
+        let manifest =
+            match verify_manifest_evidence(lock.campaign_directory(), request, &state, now) {
+                Ok(manifest) => manifest,
+                Err(_) => {
+                    return Ok(error_response_with_revision(
+                        request,
+                        now,
+                        state.revision,
+                        5,
+                    )?)
+                }
+            };
+        if backend
+            .verify_host(lock.campaign_directory(), &manifest, &state)
+            .is_err()
+        {
+            return Ok(error_response_with_revision(
+                request,
+                now,
+                state.revision,
+                5,
+            )?);
+        }
+        let completed = state.campaign_state == CampaignState::AbortedIncomplete
+            && state.harness.is_none()
+            && state.daemon.is_none()
+            && state.checkpoint.is_none()
+            && state.controller_lease.is_none();
+        let host_claim = if completed {
+            HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id)
+        } else {
+            HostExecutionClaim::recover(&self.config.campaign_root, &request.campaign_id)
+        };
+        let host_claim = match host_claim {
+            Ok(claim) => claim,
+            Err(error) => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    host_execution_error_code(&error),
+                )?)
+            }
+        };
+        match drive_abort_request(&host_claim, &lock, request, now, backend) {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                let revision = reconcile_campaign(&lock)
+                    .map(|state| state.revision)
+                    .unwrap_or(state.revision);
+                Ok(error_response_with_revision(
+                    request,
+                    now,
+                    revision,
+                    abort_lifecycle_error_code(&error),
+                )?)
+            }
+        }
+    }
 }
 
 enum StartAdmission {
@@ -753,6 +867,19 @@ fn seal_lifecycle_error_code(error: &SealLifecycleError) -> u32 {
         | SealLifecycleError::Artifact(_)
         | SealLifecycleError::Host(_)
         | SealLifecycleError::Json(_) => 11,
+    }
+}
+
+fn abort_lifecycle_error_code(error: &AbortLifecycleError) -> u32 {
+    match error {
+        AbortLifecycleError::Event(crate::event::EventError::ReplayConflict { .. }) => 3,
+        AbortLifecycleError::Binding => 5,
+        AbortLifecycleError::State(error) => state_error_code(error),
+        AbortLifecycleError::Mutation(error) => mutation_error_code(error),
+        AbortLifecycleError::Event(_)
+        | AbortLifecycleError::Host(_)
+        | AbortLifecycleError::Backend(_)
+        | AbortLifecycleError::Json(_) => 11,
     }
 }
 
