@@ -1,4 +1,5 @@
 use crate::abort_lifecycle::AbortBackend;
+use crate::lease_expiry::{LeaseExpiryBackend, LeaseExpiryCause};
 use crate::manifest::CampaignManifest;
 use crate::protocol::Request;
 use crate::state::DurableCampaignState;
@@ -23,6 +24,20 @@ struct AbortDiagnostic {
     campaign_id: String,
     request_id: String,
     request_sha256: String,
+    role: Role,
+    state: DurableCampaignState,
+    unit: UnitSnapshot,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LeaseExpiryDiagnostic {
+    schema_version: u32,
+    release: String,
+    campaign_id: String,
+    lease_id: String,
+    lease_deadline_unix_seconds: u64,
+    cause_sha256: String,
     role: Role,
     state: DurableCampaignState,
     unit: UnitSnapshot,
@@ -69,6 +84,18 @@ impl AbortBackend for SystemdAbortBackend {
         state: &DurableCampaignState,
     ) -> Result<(), String> {
         self.capture_and_stop_inner(campaign_directory, request, state)
+            .map_err(|error| error.to_string())
+    }
+}
+
+impl LeaseExpiryBackend for SystemdAbortBackend {
+    fn capture_and_stop_expired(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &LeaseExpiryCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.capture_and_stop_expired_inner(campaign_directory, cause, state)
             .map_err(|error| error.to_string())
     }
 }
@@ -141,6 +168,79 @@ impl SystemdAbortBackend {
         }
         Ok(())
     }
+
+    fn capture_and_stop_expired_inner(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &LeaseExpiryCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), SystemdAbortError> {
+        let manifest = self.manifest.as_ref().ok_or(SystemdAbortError::Manifest)?;
+        if manifest.campaign_id != cause.campaign_id
+            || manifest.campaign_id != state.identity.campaign_id
+            || manifest.lease_id != cause.lease_id
+            || manifest.product_lease_deadline_unix_seconds != cause.lease_deadline_unix_seconds
+            || state.identity.lease_id != cause.lease_id
+            || state.identity.lease_deadline_unix_seconds != cause.lease_deadline_unix_seconds
+        {
+            return Err(SystemdAbortError::Binding);
+        }
+        let harness = state.harness.as_ref().ok_or(SystemdAbortError::Binding)?;
+        let daemon = state.daemon.as_ref().ok_or(SystemdAbortError::Binding)?;
+        let role = role_from_unit(&harness.unit_name, &cause.campaign_id)?;
+        let diagnostic_path =
+            lease_expiry_diagnostic_path(campaign_directory, &role, &cause.lease_id)?;
+        match inspect_unit_optional(&harness.unit_name)? {
+            Some(snapshot) => {
+                if snapshot.sub_state == "running" {
+                    verify_unit_identity(harness, daemon, &snapshot)?;
+                    publish_lease_expiry_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        role,
+                        snapshot,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                } else if snapshot.active_state == "active" && snapshot.sub_state == "exited" {
+                    verify_unit_terminal(harness, daemon, &snapshot)?;
+                    publish_lease_expiry_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        role,
+                        snapshot,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                } else {
+                    if snapshot.unit_name != harness.unit_name
+                        || snapshot.control_group != harness.cgroup_path
+                        || (snapshot.main_pid != 0 && snapshot.main_pid != harness.pid)
+                    {
+                        return Err(SystemdAbortError::Binding);
+                    }
+                    verify_existing_lease_expiry_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        &role,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                }
+                stop_unit_and_wait(&harness.unit_name, manifest.diagnostic_grace_seconds)?;
+            }
+            None => {
+                verify_existing_lease_expiry_diagnostic(
+                    &diagnostic_path,
+                    cause,
+                    state,
+                    &role,
+                    manifest.output_limits.diagnostic_bytes,
+                )?;
+            }
+        }
+        Ok(())
+    }
 }
 
 fn role_from_unit(unit: &str, campaign_id: &str) -> Result<Role, SystemdAbortError> {
@@ -158,10 +258,31 @@ fn diagnostic_path(
     role: &Role,
     request_id: &str,
 ) -> Result<PathBuf, SystemdAbortError> {
-    if request_id.len() != 36
-        || !request_id
+    diagnostic_path_with_prefix(campaign_directory, role, "abort", request_id)
+}
+
+fn lease_expiry_diagnostic_path(
+    campaign_directory: &Path,
+    role: &Role,
+    lease_id: &str,
+) -> Result<PathBuf, SystemdAbortError> {
+    diagnostic_path_with_prefix(campaign_directory, role, "lease-expiry", lease_id)
+}
+
+fn diagnostic_path_with_prefix(
+    campaign_directory: &Path,
+    role: &Role,
+    prefix: &str,
+    identity: &str,
+) -> Result<PathBuf, SystemdAbortError> {
+    if identity.len() != 36
+        || !identity
             .bytes()
-            .all(|byte| byte.is_ascii_hexdigit() || byte == b'-')
+            .enumerate()
+            .all(|(index, byte)| match index {
+                8 | 13 | 18 | 23 => byte == b'-',
+                _ => byte.is_ascii_hexdigit(),
+            })
     {
         return Err(SystemdAbortError::Binding);
     }
@@ -192,7 +313,7 @@ fn diagnostic_path(
         }
         Err(error) => return Err(error.into()),
     }
-    Ok(diagnostics.join(format!("abort-{request_id}.json")))
+    Ok(diagnostics.join(format!("{prefix}-{identity}.json")))
 }
 
 fn publish_diagnostic(
@@ -245,6 +366,66 @@ fn verify_existing_diagnostic(
         || document.campaign_id != request.campaign_id
         || document.request_id != request.request_id
         || document.request_sha256 != crate::event::request_sha256(request)?
+        || &document.role != role
+        || document.state != *state
+    {
+        return Err(SystemdAbortError::Binding);
+    }
+    Ok(())
+}
+
+fn publish_lease_expiry_diagnostic(
+    path: &Path,
+    cause: &LeaseExpiryCause,
+    state: &DurableCampaignState,
+    role: Role,
+    unit: UnitSnapshot,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let document = LeaseExpiryDiagnostic {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: cause.campaign_id.clone(),
+        lease_id: cause.lease_id.clone(),
+        lease_deadline_unix_seconds: cause.lease_deadline_unix_seconds,
+        cause_sha256: cause.sha256()?,
+        role,
+        state: state.clone(),
+        unit,
+    };
+    let bytes = canonical_json(&document)?;
+    enforce_limit(bytes.len() as u64, limit)?;
+    publish_exact(path, &bytes)
+}
+
+fn verify_existing_lease_expiry_diagnostic(
+    path: &Path,
+    cause: &LeaseExpiryCause,
+    state: &DurableCampaignState,
+    role: &Role,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let pending = path.with_extension("json.pending");
+    if pending.exists() {
+        let final_bytes = read_regular_allow_links(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+        if read_regular_allow_links(&pending, limit.min(MAX_DIAGNOSTIC_BYTES))? != final_bytes {
+            return Err(SystemdAbortError::Binding);
+        }
+        fs::remove_file(&pending)?;
+        sync_directory(path.parent().ok_or(SystemdAbortError::Binding)?)?;
+    }
+    let bytes = read_regular(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    if serde_json::to_vec(&value)? != bytes {
+        return Err(SystemdAbortError::Binding);
+    }
+    let document: LeaseExpiryDiagnostic = serde_json::from_value(value)?;
+    if document.schema_version != 1
+        || document.release != "0.74"
+        || document.campaign_id != cause.campaign_id
+        || document.lease_id != cause.lease_id
+        || document.lease_deadline_unix_seconds != cause.lease_deadline_unix_seconds
+        || document.cause_sha256 != cause.sha256()?
         || &document.role != role
         || document.state != *state
     {
@@ -359,7 +540,12 @@ fn sync_directory(path: &Path) -> Result<(), SystemdAbortError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{diagnostic_path, publish_diagnostic, verify_existing_diagnostic};
+    use super::{
+        diagnostic_path, lease_expiry_diagnostic_path, publish_diagnostic,
+        publish_lease_expiry_diagnostic, verify_existing_diagnostic,
+        verify_existing_lease_expiry_diagnostic,
+    };
+    use crate::lease_expiry::LeaseExpiryCause;
     use crate::protocol::{ControllerIdentity, Operation, Request};
     use crate::state::{CampaignState, ControllerLease, DurableCampaignState, FrozenIdentity};
     use crate::systemd_unit::UnitSnapshot;
@@ -490,5 +676,37 @@ mod tests {
         assert!(
             verify_existing_diagnostic(&path, &request, &state, &Role::I74, 1_048_576).is_err()
         );
+    }
+
+    #[test]
+    fn lease_expiry_diagnostic_is_cause_bound_and_exactly_replayed() {
+        let (_temporary, campaign, _request, mut state, snapshot) = fixture();
+        state.campaign_state = CampaignState::LeaseExpiredIncomplete;
+        let cause = LeaseExpiryCause {
+            schema_version: 1,
+            campaign_id: state.identity.campaign_id.clone(),
+            lease_id: state.identity.lease_id.clone(),
+            lease_deadline_unix_seconds: state.identity.lease_deadline_unix_seconds,
+        };
+        let path = lease_expiry_diagnostic_path(&campaign, &Role::I74, &cause.lease_id).unwrap();
+        publish_lease_expiry_diagnostic(&path, &cause, &state, Role::I74, snapshot, 1_048_576)
+            .unwrap();
+        let first = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("json.pending")).unwrap();
+        std::fs::hard_link(path.with_extension("json.pending"), &path).unwrap();
+        verify_existing_lease_expiry_diagnostic(&path, &cause, &state, &Role::I74, 1_048_576)
+            .unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), first);
+
+        let mut drifted = cause;
+        drifted.lease_deadline_unix_seconds += 1;
+        assert!(verify_existing_lease_expiry_diagnostic(
+            &path,
+            &drifted,
+            &state,
+            &Role::I74,
+            1_048_576,
+        )
+        .is_err());
     }
 }

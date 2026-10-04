@@ -132,6 +132,34 @@ pub fn parse_and_validate(
     request: &Request,
     now_unix_seconds: u64,
 ) -> Result<CampaignManifest, ManifestError> {
+    let manifest = parse_document(bytes, &request.manifest_sha256)?;
+    validate(
+        &manifest,
+        &request.campaign_id,
+        request.controller.repository_id,
+        now_unix_seconds,
+    )?;
+    Ok(manifest)
+}
+
+pub fn parse_stored_and_validate(
+    bytes: &[u8],
+    expected_sha256: &str,
+    expected_campaign_id: &str,
+) -> Result<CampaignManifest, ManifestError> {
+    let manifest = parse_document(bytes, expected_sha256)?;
+    validate(
+        &manifest,
+        expected_campaign_id,
+        manifest.repository_id,
+        manifest
+            .product_lease_deadline_unix_seconds
+            .saturating_sub(1),
+    )?;
+    Ok(manifest)
+}
+
+fn parse_document(bytes: &[u8], expected_sha256: &str) -> Result<CampaignManifest, ManifestError> {
     if bytes.is_empty() || bytes.len() > MAX_MANIFEST_BYTES {
         return Err(ManifestError::Document);
     }
@@ -139,7 +167,7 @@ pub fn parse_and_validate(
     if encoded.is_empty() || encoded.contains(&b'\n') || encoded.contains(&b'\r') {
         return Err(ManifestError::Document);
     }
-    if hex(&Sha256::digest(encoded)) != request.manifest_sha256 {
+    if hex(&Sha256::digest(encoded)) != expected_sha256 {
         return Err(ManifestError::Digest);
     }
     let mut deserializer = serde_json::Deserializer::from_slice(encoded);
@@ -154,7 +182,6 @@ pub fn parse_and_validate(
     if canonical != encoded {
         return Err(ManifestError::Document);
     }
-    validate(&manifest, request, now_unix_seconds)?;
     Ok(manifest)
 }
 
@@ -215,11 +242,12 @@ fn hash_json<T: Serialize>(value: &T) -> Result<String, serde_json::Error> {
 
 fn validate(
     manifest: &CampaignManifest,
-    request: &Request,
+    expected_campaign_id: &str,
+    expected_repository_id: u64,
     now_unix_seconds: u64,
 ) -> Result<(), ManifestError> {
-    if manifest.campaign_id != request.campaign_id
-        || manifest.repository_id != request.controller.repository_id
+    if manifest.campaign_id != expected_campaign_id
+        || manifest.repository_id != expected_repository_id
     {
         return Err(ManifestError::Binding);
     }

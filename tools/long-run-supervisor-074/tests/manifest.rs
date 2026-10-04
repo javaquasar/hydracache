@@ -5,10 +5,11 @@ use hydracache_long_run_supervisor_074::host_receipt::{
     HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
 };
 use hydracache_long_run_supervisor_074::manifest::{
-    frozen_identity_from_manifest, parse_and_validate, ManifestError, MAX_MANIFEST_BYTES,
+    frozen_identity_from_manifest, parse_and_validate, parse_stored_and_validate, ManifestError,
+    MAX_MANIFEST_BYTES,
 };
 use hydracache_long_run_supervisor_074::manifest_evidence::{
-    verify_manifest_evidence, ManifestEvidenceError,
+    verify_manifest_evidence, verify_stored_manifest_evidence, ManifestEvidenceError,
 };
 use hydracache_long_run_supervisor_074::protocol::{ControllerIdentity, Operation, Request};
 use hydracache_long_run_supervisor_074::start_evidence::{
@@ -372,6 +373,16 @@ fn persistent_manifest_reconstructs_the_exact_frozen_identity() {
             .unwrap()
             .campaign_id,
         request.campaign_id
+    );
+    assert_eq!(
+        parse_stored_and_validate(&bytes, &request.manifest_sha256, &request.campaign_id).unwrap(),
+        parsed
+    );
+    assert_eq!(
+        verify_stored_manifest_evidence(temporary.path(), &state)
+            .unwrap()
+            .product_lease_deadline_unix_seconds,
+        2_000
     );
 
     let mut drifted = state;

@@ -1,6 +1,6 @@
 use crate::manifest::{
-    frozen_identity_from_manifest, parse_and_validate, CampaignManifest, ManifestError,
-    MAX_MANIFEST_BYTES,
+    frozen_identity_from_manifest, parse_and_validate, parse_stored_and_validate, CampaignManifest,
+    ManifestError, MAX_MANIFEST_BYTES,
 };
 use crate::protocol::Request;
 use crate::state::DurableCampaignState;
@@ -40,6 +40,26 @@ pub fn verify_manifest_evidence(
     verify_head(&head_path, &request.manifest_sha256)?;
     let manifest = parse_and_validate(&bytes, request, now_unix_seconds)?;
     let identity = frozen_identity_from_manifest(&manifest, &request.manifest_sha256)?;
+    if identity != state.identity {
+        return Err(ManifestEvidenceError::Binding);
+    }
+    Ok(manifest)
+}
+
+pub fn verify_stored_manifest_evidence(
+    campaign_directory: &Path,
+    state: &DurableCampaignState,
+) -> Result<CampaignManifest, ManifestEvidenceError> {
+    let manifest_path = campaign_directory.join(CAMPAIGN_MANIFEST_NAME);
+    let head_path = campaign_directory.join(CAMPAIGN_MANIFEST_HEAD_NAME);
+    let bytes = read_manifest(&manifest_path)?;
+    verify_head(&head_path, &state.identity.manifest_sha256)?;
+    let manifest = parse_stored_and_validate(
+        &bytes,
+        &state.identity.manifest_sha256,
+        &state.identity.campaign_id,
+    )?;
+    let identity = frozen_identity_from_manifest(&manifest, &state.identity.manifest_sha256)?;
     if identity != state.identity {
         return Err(ManifestEvidenceError::Binding);
     }
