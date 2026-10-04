@@ -4,6 +4,24 @@
   "status": "provisional",
   "w0_disposition": "open",
   "production_capability": "disabled_fail_closed",
+  "safe_foundation": {
+    "phase": "scaffolded_not_admitted",
+    "implemented": [
+      "provisional_w0_contracts",
+      "reference_mutation_model",
+      "linearizability_oracle",
+      "deterministic_fault_scenarios",
+      "java_semantic_harness"
+    ],
+    "deferred": [
+      "production_backend_and_partition_ownership",
+      "final_wire_and_durable_identities",
+      "hc1_hc2_generation_change",
+      "production_surface_routing",
+      "performance_baseline_and_hazelcast_comparison",
+      "release_candidate"
+    ]
+  },
   "blocked_by_074": [
     {
       "id": "published-074-commit",

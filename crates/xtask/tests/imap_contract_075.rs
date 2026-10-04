@@ -128,3 +128,17 @@ fn canary_finalized_w0_claim_fails_closed() {
         .iter()
         .any(|problem| problem.contains("w0_disposition=open")));
 }
+
+#[test]
+fn canary_missing_safe_foundation_slice_fails_closed() {
+    let temp = fixture();
+    edit(&temp.path().join("status.json"), |value| {
+        value["safe_foundation"]["implemented"]
+            .as_array_mut()
+            .unwrap()
+            .retain(|slice| slice != "linearizability_oracle");
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("missing implemented slice linearizability_oracle")));
+}

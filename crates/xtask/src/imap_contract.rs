@@ -73,7 +73,16 @@ struct StatusContract {
     status: String,
     w0_disposition: String,
     production_capability: String,
+    safe_foundation: SafeFoundationStatus,
     blocked_by_074: Vec<BlockedDependency>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SafeFoundationStatus {
+    phase: String,
+    implemented: Vec<String>,
+    deferred: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -384,6 +393,32 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     }
     if status.production_capability != "disabled_fail_closed" {
         problems.push("status.json must keep production_capability=disabled_fail_closed".into());
+    }
+    if status.safe_foundation.phase != "scaffolded_not_admitted" {
+        problems
+            .push("status.json safe_foundation.phase must remain scaffolded_not_admitted".into());
+    }
+    let implemented = status
+        .safe_foundation
+        .implemented
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    for required in [
+        "provisional_w0_contracts",
+        "reference_mutation_model",
+        "linearizability_oracle",
+        "deterministic_fault_scenarios",
+        "java_semantic_harness",
+    ] {
+        if !implemented.contains(required) {
+            problems.push(format!(
+                "status.json safe foundation is missing implemented slice {required}"
+            ));
+        }
+    }
+    if status.safe_foundation.deferred.is_empty() {
+        problems.push("status.json safe foundation must retain deferred work".into());
     }
     if status.blocked_by_074.is_empty() {
         problems.push("status.json must name blocked-by-0.74 dependencies".into());

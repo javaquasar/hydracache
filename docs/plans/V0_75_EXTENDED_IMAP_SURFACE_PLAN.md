@@ -211,6 +211,25 @@ security, fairness/lifecycle and cluster-loss/formal-chaos boundaries. W11-W12 p
 performance/resource qualification, migration guidance, supply-chain provenance and release
 evidence.
 
+### Provisional safe-foundation progress
+
+As of 2026-10-04, branch `feat/0.75-distributed-imap-foundation` contains only work that is
+independent of the unfinished 0.74 production shape:
+
+- a provisional, machine-checked W0 registry for operations, results, errors, TTL, bounds, surface
+  projections, mutation stages, retry/idempotency, failure consistency and RPO/RTO;
+- a test-only bounded reference mutation model, certainty-aware linearizability oracle and seeded
+  fault vocabulary for owner/backup loss, promotion, rebalance, reconnect and response loss;
+- an isolated common Java semantic harness with bounded manifests, an equivalence oracle and
+  fail-closed HydraCache/Hazelcast adapter placeholders.
+
+This is foundation evidence, not W0 closure or a 0.75 capability claim. The production distributed
+backend remains disabled and fail-closed. Backend extraction, partition ownership/routing,
+wire/durable identities, SDK generation, production surface routing, performance qualification and
+release-candidate work remain blocked on the published 0.74 artifact and its accepted native/batch
+baseline. Machine-readable status is maintained in `docs/testing/imap/0.75/status.json` and the
+provisional gate is `cargo xtask imap-contract-check --release 0.75`.
+
 ## W0. Freeze the compatibility and divergence ledger
 
 **Problem:** the current facade deliberately implements a narrow subset. Adding familiar method
