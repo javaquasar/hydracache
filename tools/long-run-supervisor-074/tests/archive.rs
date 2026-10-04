@@ -1,5 +1,6 @@
 use hydracache_long_run_supervisor_074::archive::{
-    create_deterministic_archive, ArchiveError, ArchiveLimits, ARCHIVE_NAME, OUTER_DIGEST_NAME,
+    create_deterministic_archive, verify_archive, ArchiveError, ArchiveLimits, ARCHIVE_NAME,
+    OUTER_DIGEST_NAME,
 };
 use sha2::{Digest, Sha256};
 use std::fs::{self, File};
@@ -56,6 +57,14 @@ fn archive_bytes_and_headers_are_deterministic() {
     );
     assert_eq!(first_receipt.input_files, 3);
     assert_eq!(first_receipt.input_bytes, 35);
+    let verified = verify_archive(
+        &first_output,
+        &first_receipt.archive_sha256,
+        first_receipt.archive_bytes,
+        limits().maximum_archive_bytes,
+    )
+    .unwrap();
+    assert_eq!(verified.archive_sha256, first_receipt.archive_sha256);
 
     let decoder = zstd::Decoder::new(File::open(first_receipt.archive_path).unwrap()).unwrap();
     let mut archive = tar::Archive::new(decoder);
@@ -74,6 +83,30 @@ fn archive_bytes_and_headers_are_deterministic() {
     );
     assert!(first_output.join(ARCHIVE_NAME).is_file());
     assert!(first_output.join(OUTER_DIGEST_NAME).is_file());
+}
+
+#[test]
+fn archive_replay_verification_rejects_digest_and_extra_file_drift() {
+    let temporary = tempfile::tempdir().unwrap();
+    let input = temporary.path().join("input");
+    fixture(&input, false);
+    let output = temporary.path().join("seal");
+    let receipt = create_deterministic_archive(&input, &output, limits()).unwrap();
+    assert!(verify_archive(
+        &output,
+        &"f".repeat(64),
+        receipt.archive_bytes,
+        limits().maximum_archive_bytes,
+    )
+    .is_err());
+    fs::write(output.join("unexpected"), b"drift").unwrap();
+    assert!(verify_archive(
+        &output,
+        &receipt.archive_sha256,
+        receipt.archive_bytes,
+        limits().maximum_archive_bytes,
+    )
+    .is_err());
 }
 
 #[test]
@@ -99,13 +132,15 @@ fn create_new_limits_and_output_placement_fail_closed() {
     };
     let bounded_output = temporary.path().join("bounded");
     assert!(create_deterministic_archive(&input, &bounded_output, compressed_limit).is_err());
+    assert!(!bounded_output.exists());
+    let bounded_staging = temporary.path().join(".bounded.building");
     assert!(
-        fs::metadata(bounded_output.join(ARCHIVE_NAME))
+        fs::metadata(bounded_staging.join(ARCHIVE_NAME))
             .unwrap()
             .len()
             <= 16
     );
-    assert!(!bounded_output.join(OUTER_DIGEST_NAME).exists());
+    assert!(!bounded_staging.join(OUTER_DIGEST_NAME).exists());
 
     let nested_output = input.join("seal");
     assert!(matches!(

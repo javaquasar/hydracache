@@ -25,6 +25,14 @@ pub struct ArchiveReceipt {
     pub input_bytes: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArchiveVerification {
+    pub archive_path: PathBuf,
+    pub outer_digest_path: PathBuf,
+    pub archive_sha256: String,
+    pub archive_bytes: u64,
+}
+
 #[derive(Debug, Error)]
 pub enum ArchiveError {
     #[error("archive input or output path violates the immutable seal contract")]
@@ -88,7 +96,15 @@ pub fn create_deterministic_archive(
     let output_parent = fs::canonicalize(output_directory.parent().ok_or(ArchiveError::Path)?)?;
     let output_name = output_directory.file_name().ok_or(ArchiveError::Path)?;
     let resolved_output = output_parent.join(output_name);
-    if resolved_output.starts_with(&input_root) {
+    let output_name = output_name.to_str().ok_or(ArchiveError::Path)?;
+    if output_name.is_empty()
+        || output_name.contains(['/', '\\', ':', '\0', '\n', '\r'])
+        || resolved_output.starts_with(&input_root)
+    {
+        return Err(ArchiveError::Path);
+    }
+    let staging_output = output_parent.join(format!(".{output_name}.building"));
+    if staging_output.exists() {
         return Err(ArchiveError::Path);
     }
 
@@ -96,10 +112,10 @@ pub fn create_deterministic_archive(
     let input_bytes = sources.iter().try_fold(0_u64, |total, source| {
         total.checked_add(source.size).ok_or(ArchiveError::Limit)
     })?;
-    fs::create_dir(&resolved_output)?;
+    fs::create_dir(&staging_output)?;
     sync_directory(&output_parent)?;
 
-    let archive_path = resolved_output.join(ARCHIVE_NAME);
+    let archive_path = staging_output.join(ARCHIVE_NAME);
     let output = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -125,7 +141,7 @@ pub fn create_deterministic_archive(
         return Err(ArchiveError::Limit);
     }
     let archive_sha256 = sha256_file(&archive_path)?;
-    let outer_digest_path = resolved_output.join(OUTER_DIGEST_NAME);
+    let outer_digest_path = staging_output.join(OUTER_DIGEST_NAME);
     let mut digest = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -133,15 +149,80 @@ pub fn create_deterministic_archive(
     digest.write_all(archive_sha256.as_bytes())?;
     digest.write_all(b"\n")?;
     digest.sync_all()?;
-    sync_directory(&resolved_output)?;
+    drop(digest);
+    sync_directory(&staging_output)?;
+    fs::rename(&staging_output, &resolved_output)?;
+    sync_directory(&output_parent)?;
 
     Ok(ArchiveReceipt {
-        archive_path,
-        outer_digest_path,
+        archive_path: resolved_output.join(ARCHIVE_NAME),
+        outer_digest_path: resolved_output.join(OUTER_DIGEST_NAME),
         archive_sha256,
         archive_bytes,
         input_files: sources.len(),
         input_bytes,
+    })
+}
+
+pub fn verify_archive(
+    output_directory: &Path,
+    expected_sha256: &str,
+    expected_bytes: u64,
+    maximum_archive_bytes: u64,
+) -> Result<ArchiveVerification, ArchiveError> {
+    if expected_sha256.len() != 64
+        || !expected_sha256
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        || expected_bytes == 0
+        || expected_bytes > maximum_archive_bytes
+    {
+        return Err(ArchiveError::Limit);
+    }
+    let metadata = fs::symlink_metadata(output_directory)?;
+    if !metadata.is_dir() || metadata.file_type().is_symlink() {
+        return Err(ArchiveError::Path);
+    }
+    let output_directory = fs::canonicalize(output_directory)?;
+    let entries = fs::read_dir(&output_directory)?
+        .map(|entry| entry.map(|entry| entry.file_name()))
+        .collect::<Result<std::collections::BTreeSet<_>, _>>()?;
+    if entries
+        != std::collections::BTreeSet::from([
+            std::ffi::OsString::from(ARCHIVE_NAME),
+            std::ffi::OsString::from(OUTER_DIGEST_NAME),
+        ])
+    {
+        return Err(ArchiveError::Path);
+    }
+    let archive_path = output_directory.join(ARCHIVE_NAME);
+    let archive_metadata = fs::symlink_metadata(&archive_path)?;
+    if !archive_metadata.is_file()
+        || archive_metadata.file_type().is_symlink()
+        || has_multiple_links(&archive_path, &archive_metadata)?
+        || archive_metadata.len() != expected_bytes
+    {
+        return Err(ArchiveError::Changed);
+    }
+    let archive_sha256 = sha256_file(&archive_path)?;
+    if archive_sha256 != expected_sha256 {
+        return Err(ArchiveError::Changed);
+    }
+    let outer_digest_path = output_directory.join(OUTER_DIGEST_NAME);
+    let outer_metadata = fs::symlink_metadata(&outer_digest_path)?;
+    if !outer_metadata.is_file()
+        || outer_metadata.file_type().is_symlink()
+        || has_multiple_links(&outer_digest_path, &outer_metadata)?
+        || outer_metadata.len() != 65
+        || fs::read(&outer_digest_path)? != format!("{expected_sha256}\n").as_bytes()
+    {
+        return Err(ArchiveError::Changed);
+    }
+    Ok(ArchiveVerification {
+        archive_path,
+        outer_digest_path,
+        archive_sha256,
+        archive_bytes: expected_bytes,
     })
 }
 
