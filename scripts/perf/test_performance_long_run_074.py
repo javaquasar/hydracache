@@ -2,6 +2,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 import pathlib
 import tempfile
 import tomllib
@@ -81,6 +82,51 @@ def inputs() -> dict:
         MODULE.campaign_id(value)
     )
     return value
+
+
+def write_host_receipt(directory: pathlib.Path, value: dict) -> str:
+    directory.mkdir()
+    receipt = {
+        "schema_version": 1,
+        "machine_id": value["machine_id"],
+        "boot_id": value["boot_id"],
+        "kernel_release": "test-kernel",
+        "kernel_command_line_sha256": "0" * 64,
+        "campaign_mount": {
+            "mount_id": 1,
+            "device_major_minor": "8:1",
+            "root": "/",
+            "mount_point": "/var/lib/hydracache-performance",
+            "mount_options": ["rw"],
+            "filesystem_type": "ext4",
+            "source": "/dev/test",
+            "super_options": ["rw"],
+        },
+        "mount_identity": value["mount_identity"],
+        "online_cpuset": "0-7",
+        "isolated_cpuset": value["isolated_cpuset"],
+        "housekeeping_cpuset": value["housekeeping_cpuset"],
+        "cpu_governors": {f"cpu{cpu}": "performance" for cpu in range(8)},
+        "kernel_tunables": {},
+        "supervisor_binary": {
+            "path": "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+            "sha256": "1" * 64,
+            "size": 1,
+            "inode": 1,
+            "device": 1,
+            "uid": 0,
+            "gid": 0,
+            "mode": 0o755,
+        },
+        "reference_host_freeze_sha256": "2" * 64,
+    }
+    encoded = MODULE.canonical_json(receipt)
+    digest = MODULE.digest_bytes(encoded)
+    (directory / MODULE.HOST_RECEIPT_NAME).write_bytes(encoded + b"\n")
+    (directory / MODULE.HOST_RECEIPT_HEAD_NAME).write_text(
+        digest + "\n", encoding="ascii", newline="\n"
+    )
+    return digest
 
 
 class PerformanceLongRun074Tests(unittest.TestCase):
@@ -176,6 +222,96 @@ class PerformanceLongRun074Tests(unittest.TestCase):
         problems = MODULE.validate_inputs(value)
         self.assertTrue(any("installed_binaries" in problem for problem in problems))
         self.assertTrue(any("required_final_guards" in problem for problem in problems))
+
+    def test_start_bundle_pairs_manifest_and_receipt_and_reverifies_transport(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            value = inputs()
+            receipt_digest = write_host_receipt(root / "receipt", value)
+            value["host_receipt_sha256"] = receipt_digest
+            value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
+                MODULE.campaign_id(value)
+            )
+            manifest = MODULE.build_manifest(value)
+            MODULE.write_manifest(root / "manifest", manifest)
+
+            bundle_path, bundle_digest = MODULE.assemble_start_bundle(
+                root / "manifest", root / "receipt", root / "bundle"
+            )
+            campaign, verified_digest = MODULE.verify_start_bundle(root / "bundle")
+            self.assertEqual(campaign, manifest["campaign_id"])
+            self.assertEqual(verified_digest, bundle_digest)
+            self.assertEqual(
+                bundle_path.read_bytes(),
+                MODULE.canonical_json(json.loads(bundle_path.read_bytes())) + b"\n",
+            )
+            self.assertEqual(
+                set(path.name for path in (root / "bundle").iterdir()),
+                {
+                    MODULE.MANIFEST_NAME,
+                    MODULE.MANIFEST_HEAD_NAME,
+                    MODULE.HOST_RECEIPT_NAME,
+                    MODULE.HOST_RECEIPT_HEAD_NAME,
+                    MODULE.START_BUNDLE_NAME,
+                    MODULE.START_BUNDLE_HEAD_NAME,
+                },
+            )
+
+    def test_start_bundle_rejects_host_drift_tamper_hardlinks_and_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            value = inputs()
+            receipt_digest = write_host_receipt(root / "receipt", value)
+            value["host_receipt_sha256"] = receipt_digest
+            value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
+                MODULE.campaign_id(value)
+            )
+            MODULE.write_manifest(root / "manifest", MODULE.build_manifest(value))
+            MODULE.assemble_start_bundle(root / "manifest", root / "receipt", root / "bundle")
+
+            with self.assertRaises(FileExistsError):
+                MODULE.assemble_start_bundle(
+                    root / "manifest", root / "receipt", root / "bundle"
+                )
+            manifest_path = root / "bundle" / MODULE.MANIFEST_NAME
+            manifest_path.chmod(0o600)
+            manifest_path.write_bytes(manifest_path.read_bytes() + b" ")
+            with self.assertRaisesRegex(ValueError, "digest does not match|file identity differs"):
+                MODULE.verify_start_bundle(root / "bundle")
+
+            drifted = json.loads(
+                (root / "receipt" / MODULE.HOST_RECEIPT_NAME).read_text(encoding="utf-8")
+            )
+            drifted["boot_id"] = "other-boot"
+            encoded = MODULE.canonical_json(drifted)
+            digest = MODULE.digest_bytes(encoded)
+            (root / "receipt" / MODULE.HOST_RECEIPT_NAME).write_bytes(encoded + b"\n")
+            (root / "receipt" / MODULE.HOST_RECEIPT_HEAD_NAME).write_text(
+                digest + "\n", encoding="ascii", newline="\n"
+            )
+            value["host_receipt_sha256"] = digest
+            value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
+                MODULE.campaign_id(value)
+            )
+            MODULE.write_manifest(root / "manifest-drift", MODULE.build_manifest(value))
+            with self.assertRaisesRegex(ValueError, "boot_id"):
+                MODULE.assemble_start_bundle(
+                    root / "manifest-drift", root / "receipt", root / "bundle-drift"
+                )
+
+            hardlinked_receipt = root / "receipt-hardlink"
+            hardlinked_receipt.mkdir()
+            os.link(
+                root / "receipt" / MODULE.HOST_RECEIPT_NAME,
+                hardlinked_receipt / MODULE.HOST_RECEIPT_NAME,
+            )
+            (hardlinked_receipt / MODULE.HOST_RECEIPT_HEAD_NAME).write_bytes(
+                (root / "receipt" / MODULE.HOST_RECEIPT_HEAD_NAME).read_bytes()
+            )
+            with self.assertRaisesRegex(ValueError, "unsafe"):
+                MODULE.assemble_start_bundle(
+                    root / "manifest-drift", hardlinked_receipt, root / "bundle-hardlink"
+                )
 
 
 if __name__ == "__main__":

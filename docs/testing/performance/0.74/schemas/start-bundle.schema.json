@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/performance/0.74/start-bundle.schema.json",
+  "title": "HydraCache 0.74 immutable campaign start bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release",
+    "campaign_id",
+    "manifest_sha256",
+    "host_receipt_sha256",
+    "files"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.74" },
+    "campaign_id": { "$ref": "#/$defs/sha256" },
+    "manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "host_receipt_sha256": { "$ref": "#/$defs/sha256" },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaign-start.json",
+        "campaign-start.sha256",
+        "host-observation.json",
+        "host-observation.sha256"
+      ],
+      "properties": {
+        "campaign-start.json": { "$ref": "#/$defs/file" },
+        "campaign-start.sha256": { "$ref": "#/$defs/file" },
+        "host-observation.json": { "$ref": "#/$defs/file" },
+        "host-observation.sha256": { "$ref": "#/$defs/file" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size"],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 1, "maximum": 65536 }
+      }
+    }
+  }
+}

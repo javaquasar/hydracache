@@ -135,6 +135,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         ("raw_manifest_schema", "raw_manifest_schema_sha256"),
         ("start_manifest_schema", "start_manifest_schema_sha256"),
         ("host_observation_schema", "host_observation_schema_sha256"),
+        ("start_bundle_schema", "start_bundle_schema_sha256"),
     ] {
         let path = root().join(implementation[path_field].as_str().unwrap());
         let digest = Sha256::digest(std::fs::read(path).unwrap())
@@ -156,11 +157,17 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "host_receipt_revalidation_complete",
         "start_evidence_import_complete",
         "live_attach_lease_admission_complete",
+        "start_bundle_builder_complete",
+        "start_bundle_transport_verifier_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
     assert_eq!(
         implementation["live_service_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["privileged_start_bundle_staging_complete"].as_bool(),
         Some(false)
     );
     assert_eq!(

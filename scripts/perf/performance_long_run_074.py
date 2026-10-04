@@ -9,6 +9,7 @@ import json
 import os
 import pathlib
 import re
+import stat
 from typing import Any
 
 
@@ -16,6 +17,13 @@ SCHEMA_VERSION = 1
 RELEASE = "0.74"
 CAMPAIGN_ROOT = pathlib.PurePosixPath("/var/lib/hydracache-performance/campaigns")
 SERVICE_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+MANIFEST_NAME = "campaign-start.json"
+MANIFEST_HEAD_NAME = "campaign-start.sha256"
+HOST_RECEIPT_NAME = "host-observation.json"
+HOST_RECEIPT_HEAD_NAME = "host-observation.sha256"
+START_BUNDLE_NAME = "start-bundle.json"
+START_BUNDLE_HEAD_NAME = "start-bundle.sha256"
+MAX_DOCUMENT_BYTES = 65_536
 EXPECTED_FIELDS = {
     "schema_version",
     "repository_id",
@@ -348,19 +356,212 @@ def build_manifest(value: dict[str, Any]) -> dict[str, Any]:
 
 def write_manifest(output: pathlib.Path, manifest: dict[str, Any]) -> tuple[pathlib.Path, str]:
     output.mkdir(parents=True, exist_ok=False)
-    path = output / "campaign-start.json"
+    path = output / MANIFEST_NAME
     encoded = canonical_json(manifest) + b"\n"
     with path.open("xb") as handle:
         handle.write(encoded)
         handle.flush()
         os.fsync(handle.fileno())
     digest = digest_bytes(encoded[:-1])
-    digest_path = output / "campaign-start.sha256"
+    digest_path = output / MANIFEST_HEAD_NAME
     with digest_path.open("x", encoding="ascii", newline="\n") as handle:
         handle.write(digest + "\n")
         handle.flush()
         os.fsync(handle.fileno())
     return path, digest
+
+
+def assemble_start_bundle(
+    manifest_directory: pathlib.Path,
+    host_receipt_directory: pathlib.Path,
+    output: pathlib.Path,
+) -> tuple[pathlib.Path, str]:
+    """Pair an immutable manifest and admitted host receipt without staging or execution."""
+
+    manifest_bytes, manifest_digest = _read_document_pair(
+        manifest_directory, MANIFEST_NAME, MANIFEST_HEAD_NAME
+    )
+    receipt_bytes, receipt_digest = _read_document_pair(
+        host_receipt_directory, HOST_RECEIPT_NAME, HOST_RECEIPT_HEAD_NAME
+    )
+    manifest = _strict_canonical_object(manifest_bytes, MANIFEST_NAME)
+    receipt = _strict_canonical_object(receipt_bytes, HOST_RECEIPT_NAME)
+    campaign = manifest.get("campaign_id")
+    if not isinstance(campaign, str) or not re.fullmatch(r"[0-9a-f]{64}", campaign):
+        raise ValueError("campaign manifest has an invalid campaign_id")
+    if manifest.get("host_receipt_sha256") != receipt_digest:
+        raise ValueError("host receipt digest is not bound by the campaign manifest")
+    for field in [
+        "machine_id",
+        "boot_id",
+        "mount_identity",
+        "isolated_cpuset",
+        "housekeeping_cpuset",
+    ]:
+        if manifest.get(field) != receipt.get(field):
+            raise ValueError(f"host receipt {field} is not bound by the campaign manifest")
+
+    files = {
+        MANIFEST_NAME: manifest_bytes,
+        MANIFEST_HEAD_NAME: (manifest_digest + "\n").encode("ascii"),
+        HOST_RECEIPT_NAME: receipt_bytes,
+        HOST_RECEIPT_HEAD_NAME: (receipt_digest + "\n").encode("ascii"),
+    }
+    bundle = {
+        "schema_version": 1,
+        "release": RELEASE,
+        "campaign_id": campaign,
+        "manifest_sha256": manifest_digest,
+        "host_receipt_sha256": receipt_digest,
+        "files": {
+            name: {"sha256": digest_bytes(content), "size": len(content)}
+            for name, content in sorted(files.items())
+        },
+    }
+    bundle_bytes = canonical_json(bundle) + b"\n"
+    bundle_digest = digest_bytes(bundle_bytes[:-1])
+    files[START_BUNDLE_NAME] = bundle_bytes
+    files[START_BUNDLE_HEAD_NAME] = (bundle_digest + "\n").encode("ascii")
+
+    output.mkdir(mode=0o700, parents=True, exist_ok=False)
+    try:
+        for name, content in files.items():
+            _write_new_synced(output / name, content)
+        _sync_directory(output)
+    except BaseException:
+        # Leave a partial create-new directory as visible failure evidence. A retry must use a
+        # different destination instead of silently repairing or overwriting it.
+        raise
+    return output / START_BUNDLE_NAME, bundle_digest
+
+
+def verify_start_bundle(directory: pathlib.Path) -> tuple[str, str]:
+    """Re-hash a transported bundle before any privileged staging boundary consumes it."""
+
+    bundle_bytes, bundle_digest = _read_document_pair(
+        directory, START_BUNDLE_NAME, START_BUNDLE_HEAD_NAME
+    )
+    bundle = _strict_canonical_object(bundle_bytes, START_BUNDLE_NAME)
+    if set(bundle) != {
+        "schema_version",
+        "release",
+        "campaign_id",
+        "manifest_sha256",
+        "host_receipt_sha256",
+        "files",
+    } or bundle.get("schema_version") != 1 or bundle.get("release") != RELEASE:
+        raise ValueError("start bundle identity or fields differ from schema version 1")
+    campaign = bundle.get("campaign_id")
+    if not isinstance(campaign, str) or not re.fullmatch(r"[0-9a-f]{64}", campaign):
+        raise ValueError("start bundle campaign_id is invalid")
+    expected_names = {
+        MANIFEST_NAME,
+        MANIFEST_HEAD_NAME,
+        HOST_RECEIPT_NAME,
+        HOST_RECEIPT_HEAD_NAME,
+    }
+    entries = bundle.get("files")
+    if not isinstance(entries, dict) or set(entries) != expected_names:
+        raise ValueError("start bundle file inventory differs from the fixed set")
+    for name in sorted(expected_names):
+        content = _read_safe_regular(directory / name, MAX_DOCUMENT_BYTES)
+        entry = entries[name]
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"sha256", "size"}
+            or entry.get("sha256") != digest_bytes(content)
+            or entry.get("size") != len(content)
+        ):
+            raise ValueError(f"start bundle file identity differs for {name}")
+    manifest_bytes, manifest_digest = _read_document_pair(
+        directory, MANIFEST_NAME, MANIFEST_HEAD_NAME
+    )
+    receipt_bytes, receipt_digest = _read_document_pair(
+        directory, HOST_RECEIPT_NAME, HOST_RECEIPT_HEAD_NAME
+    )
+    manifest = _strict_canonical_object(manifest_bytes, MANIFEST_NAME)
+    receipt = _strict_canonical_object(receipt_bytes, HOST_RECEIPT_NAME)
+    if (
+        bundle.get("manifest_sha256") != manifest_digest
+        or bundle.get("host_receipt_sha256") != receipt_digest
+        or manifest.get("campaign_id") != campaign
+        or manifest.get("host_receipt_sha256") != receipt_digest
+    ):
+        raise ValueError("start bundle nested identities do not compose")
+    for field in [
+        "machine_id",
+        "boot_id",
+        "mount_identity",
+        "isolated_cpuset",
+        "housekeeping_cpuset",
+    ]:
+        if manifest.get(field) != receipt.get(field):
+            raise ValueError(f"start bundle host binding differs for {field}")
+    return campaign, bundle_digest
+
+
+def _read_document_pair(
+    directory: pathlib.Path, document_name: str, head_name: str
+) -> tuple[bytes, str]:
+    document = _read_safe_regular(directory / document_name, MAX_DOCUMENT_BYTES)
+    head = _read_safe_regular(directory / head_name, 65)
+    if not re.fullmatch(rb"[0-9a-f]{64}\n", head):
+        raise ValueError(f"{head_name} is not one canonical SHA-256 line")
+    digest = head[:-1].decode("ascii")
+    encoded = document[:-1] if document.endswith(b"\n") else document
+    if digest_bytes(encoded) != digest:
+        raise ValueError(f"{document_name} digest does not match {head_name}")
+    return document, digest
+
+
+def _strict_canonical_object(document: bytes, label: str) -> dict[str, Any]:
+    encoded = document[:-1] if document.endswith(b"\n") else document
+    if not encoded or b"\n" in encoded or b"\r" in encoded:
+        raise ValueError(f"{label} is not one canonical JSON line")
+    try:
+        value = json.loads(encoded)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{label} is not valid JSON") from error
+    if not isinstance(value, dict) or canonical_json(value) != encoded:
+        raise ValueError(f"{label} is not one canonical JSON object")
+    return value
+
+
+def _read_safe_regular(path: pathlib.Path, maximum: int) -> bytes:
+    metadata = path.lstat()
+    if (
+        not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_nlink != 1
+        or metadata.st_size <= 0
+        or metadata.st_size > maximum
+    ):
+        raise ValueError(f"unsafe or oversized start bundle input: {path.name}")
+    with path.open("rb") as handle:
+        content = handle.read(maximum + 1)
+    if len(content) != metadata.st_size or len(content) > maximum:
+        raise ValueError(f"start bundle input changed while reading: {path.name}")
+    return content
+
+
+def _write_new_synced(path: pathlib.Path, content: bytes) -> None:
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o400)
+    try:
+        with os.fdopen(descriptor, "wb", closefd=False) as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        os.close(descriptor)
+
+
+def _sync_directory(path: pathlib.Path) -> None:
+    if os.name == "nt":
+        return
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 def _contains_float(value: Any) -> bool:
@@ -385,20 +586,50 @@ def _validate_exact_positive_map(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prepare", action="store_true")
-    parser.add_argument("--inputs", type=pathlib.Path, required=True)
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument("--prepare", action="store_true")
+    action.add_argument("--assemble-start-bundle", action="store_true")
+    action.add_argument("--verify-start-bundle", action="store_true")
+    parser.add_argument("--inputs", type=pathlib.Path)
+    parser.add_argument("--manifest-directory", type=pathlib.Path)
+    parser.add_argument("--host-receipt-directory", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     options = parser.parse_args()
-    if not options.prepare:
-        raise SystemExit("local tooling supports --prepare only; no process execution is implemented")
-    if options.output.exists():
-        raise SystemExit("output directory already exists")
-    value = json.loads(options.inputs.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise SystemExit("campaign inputs must be one JSON object")
-    manifest = build_manifest(value)
-    path, digest = write_manifest(options.output, manifest)
-    print(f"0.74 campaign manifest prepared: {path} sha256={digest}; no process started")
+    if options.prepare:
+        if options.inputs is None or options.manifest_directory or options.host_receipt_directory:
+            raise SystemExit("--prepare requires only --inputs and --output")
+        if options.output.exists():
+            raise SystemExit("output directory already exists")
+        value = json.loads(options.inputs.read_text(encoding="utf-8"))
+        if not isinstance(value, dict):
+            raise SystemExit("campaign inputs must be one JSON object")
+        manifest = build_manifest(value)
+        path, digest = write_manifest(options.output, manifest)
+        print(f"0.74 campaign manifest prepared: {path} sha256={digest}; no process started")
+    elif options.assemble_start_bundle:
+        if (
+            options.inputs
+            or options.manifest_directory is None
+            or options.host_receipt_directory is None
+        ):
+            raise SystemExit(
+                "--assemble-start-bundle requires --manifest-directory, "
+                "--host-receipt-directory and --output"
+            )
+        if options.output.exists():
+            raise SystemExit("output directory already exists")
+        path, digest = assemble_start_bundle(
+            options.manifest_directory, options.host_receipt_directory, options.output
+        )
+        print(f"0.74 start bundle assembled: {path} sha256={digest}; not staged or executed")
+    else:
+        if options.inputs or options.manifest_directory or options.host_receipt_directory:
+            raise SystemExit("--verify-start-bundle requires only --output")
+        campaign, digest = verify_start_bundle(options.output)
+        print(
+            f"0.74 start bundle verified: campaign={campaign} "
+            f"sha256={digest}; no mutation"
+        )
     return 0
 
 
