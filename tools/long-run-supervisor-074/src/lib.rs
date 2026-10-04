@@ -13,6 +13,8 @@ pub mod client;
 #[cfg(target_os = "linux")]
 pub mod config;
 pub mod manifest;
+#[cfg(target_os = "linux")]
+pub mod process_identity;
 pub mod protocol;
 #[cfg(target_os = "linux")]
 pub mod server;
