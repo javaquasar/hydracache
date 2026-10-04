@@ -6,6 +6,8 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+#[cfg(target_os = "linux")]
+pub mod abort_lifecycle;
 pub mod archive;
 pub mod artifact;
 pub mod auth;

@@ -105,8 +105,23 @@ impl HostExecutionClaim {
         &self,
         state: &DurableCampaignState,
     ) -> Result<(), HostExecutionError> {
-        if state.campaign_state != CampaignState::CompleteSealed
-            || state.identity.campaign_id != self.campaign_id
+        if state.campaign_state != CampaignState::CompleteSealed {
+            return Err(HostExecutionError::Path);
+        }
+        self.release_after_terminal(state)
+    }
+
+    pub fn release_after_terminal(
+        &self,
+        state: &DurableCampaignState,
+    ) -> Result<(), HostExecutionError> {
+        if !matches!(
+            state.campaign_state,
+            CampaignState::CompleteSealed
+                | CampaignState::FailedIncomplete
+                | CampaignState::AbortedIncomplete
+                | CampaignState::LeaseExpiredIncomplete
+        ) || state.identity.campaign_id != self.campaign_id
             || state.harness.is_some()
             || state.daemon.is_some()
             || state.checkpoint.is_some()

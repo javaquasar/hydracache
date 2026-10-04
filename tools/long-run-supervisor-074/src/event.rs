@@ -38,6 +38,8 @@ pub enum LifecycleEvent {
     C74SpawnMismatch,
     C74Terminal,
     CompleteSealed,
+    AbortRequested,
+    AbortCompleted,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -669,6 +671,18 @@ fn validate_request_event(
                             | crate::state::CampaignState::CompleteSealed
                     )
             }) => {}
+        (Operation::Abort, EventOutcome::Accepted, None)
+            if response_state(Operation::Abort, response).is_some_and(|state| {
+                state.identity.campaign_id == request.campaign_id
+                    && state.identity.manifest_sha256 == request.manifest_sha256
+                    && state.revision == response.body.state_revision
+                    && state.revision == request.expected_state_revision.saturating_add(2)
+                    && state.campaign_state == crate::state::CampaignState::AbortedIncomplete
+                    && state.harness.is_none()
+                    && state.daemon.is_none()
+                    && state.checkpoint.is_none()
+                    && state.controller_lease.is_none()
+            }) => {}
         (operation, EventOutcome::Rejected, None) if operation != Operation::Start => {}
         (Operation::Status, EventOutcome::Accepted, None) => {}
         _ => {
@@ -711,6 +725,9 @@ fn validate_lifecycle_event(
         }
         LifecycleEvent::C74Terminal => crate::state::CampaignState::C74Terminal,
         LifecycleEvent::CompleteSealed => crate::state::CampaignState::CompleteSealed,
+        LifecycleEvent::AbortRequested | LifecycleEvent::AbortCompleted => {
+            crate::state::CampaignState::AbortedIncomplete
+        }
     };
     if cause_request_id.is_empty()
         || cause_request_id.len() > 128
@@ -730,6 +747,7 @@ fn validate_lifecycle_event(
                 | LifecycleEvent::C74SpawnAbsent
                 | LifecycleEvent::I74SpawnMismatch
                 | LifecycleEvent::C74SpawnMismatch
+                | LifecycleEvent::AbortCompleted
         ) && (state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some()))
         || (matches!(
             transition,
@@ -738,6 +756,11 @@ fn validate_lifecycle_event(
                 | LifecycleEvent::C74Started
                 | LifecycleEvent::C74Adopted
         ) && (state.harness.is_none() || state.daemon.is_none() || state.checkpoint.is_some()))
+        || (transition == LifecycleEvent::AbortRequested
+            && (state.harness.is_none()
+                || state.daemon.is_none()
+                || state.controller_lease.is_none()))
+        || (transition == LifecycleEvent::AbortCompleted && state.controller_lease.is_some())
     {
         return Err(EventError::Binding {
             sequence: event.sequence,
@@ -765,6 +788,7 @@ fn response_state(operation: Operation, response: &Response) -> Option<DurableCa
                 .ok()
                 .map(|result| result.state)
         }
+        Operation::Abort => serde_json::from_value::<DurableCampaignState>(value).ok(),
         _ => None,
     }
 }
