@@ -312,10 +312,29 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
         if let SupervisorEventKind::Request {
             request_sha256,
             request,
+            outcome,
             response,
-            ..
         } = &event.payload.event
         {
+            if request.operation == Operation::Start {
+                let recorded: DurableCampaignState = response
+                    .body
+                    .result
+                    .clone()
+                    .and_then(|value| serde_json::from_value(value).ok())
+                    .ok_or(EventError::Binding {
+                        sequence: event.sequence,
+                    })?;
+                if latest_state_after.as_ref() != Some(&recorded)
+                    || recorded.revision != response.body.state_revision
+                    || (recorded.campaign_state == crate::state::CampaignState::I74Running)
+                        != (*outcome == EventOutcome::Accepted)
+                {
+                    return Err(EventError::Binding {
+                        sequence: event.sequence,
+                    });
+                }
+            }
             if replay_index.contains_key(&request.request_id) {
                 return Err(EventError::ReplayConflict {
                     request_id: request.request_id.clone(),
@@ -389,6 +408,22 @@ pub fn append_or_replay(
         None => None,
     };
     let sequence = existing.as_ref().map_or(1, |report| report.records + 1);
+    if request.operation == Operation::Start {
+        let recorded: DurableCampaignState = response
+            .body
+            .result
+            .clone()
+            .and_then(|value| serde_json::from_value(value).ok())
+            .ok_or(EventError::Binding { sequence })?;
+        if existing
+            .as_ref()
+            .and_then(|report| report.latest_state_after.as_ref())
+            != Some(&recorded)
+            || recorded.revision != response.body.state_revision
+        {
+            return Err(EventError::Binding { sequence });
+        }
+    }
     let previous = existing
         .as_ref()
         .map_or(GENESIS_HASH, |report| report.head_sha256.as_str());
@@ -563,7 +598,36 @@ fn validate_request_event(
                 sequence: event.sequence,
             });
         }
-        (_, EventOutcome::Rejected, None) | (Operation::Status, EventOutcome::Accepted, None) => {}
+        (Operation::Start, EventOutcome::Accepted, None)
+            if response
+                .body
+                .result
+                .clone()
+                .and_then(|value| serde_json::from_value::<DurableCampaignState>(value).ok())
+                .is_some_and(|state| {
+                    state.identity.campaign_id == request.campaign_id
+                        && state.identity.manifest_sha256 == request.manifest_sha256
+                        && state.revision == response.body.state_revision
+                        && state.campaign_state == crate::state::CampaignState::I74Running
+                }) => {}
+        (Operation::Start, EventOutcome::Rejected, None)
+            if response
+                .body
+                .result
+                .clone()
+                .and_then(|value| serde_json::from_value::<DurableCampaignState>(value).ok())
+                .is_some_and(|state| {
+                    state.identity.campaign_id == request.campaign_id
+                        && state.identity.manifest_sha256 == request.manifest_sha256
+                        && state.revision == response.body.state_revision
+                        && matches!(
+                            state.campaign_state,
+                            crate::state::CampaignState::FailedIncomplete
+                                | crate::state::CampaignState::CorruptQuarantined
+                        )
+                }) => {}
+        (operation, EventOutcome::Rejected, None) if operation != Operation::Start => {}
+        (Operation::Status, EventOutcome::Accepted, None) => {}
         _ => {
             return Err(EventError::Binding {
                 sequence: event.sequence,

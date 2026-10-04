@@ -1,10 +1,10 @@
 use crate::event::{
-    append_lifecycle_event, request_sha256, verify_event_journal, EventError, LifecycleEvent,
-    EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
+    append_lifecycle_event, append_or_replay, request_sha256, verify_event_journal, EventAppend,
+    EventError, EventOutcome, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
 };
 use crate::host_execution::HostExecutionClaim;
 use crate::mutation::{reconcile_campaign, MutationError};
-use crate::protocol::{Operation, Request};
+use crate::protocol::{sign_response, Operation, Request, Response, ResponseBody};
 use crate::spawn::{
     apply_spawn_result, read_spawn_result, start_or_recover, SpawnBackend, SpawnError, SpawnIntent,
     SpawnResolution,
@@ -101,6 +101,78 @@ pub fn drive_i74_start<B: SpawnBackend>(
     )?;
     lock.compare_and_swap(state.revision, &next)?;
     Ok(next)
+}
+
+pub fn drive_i74_start_request<B: SpawnBackend>(
+    host_claim: &HostExecutionClaim,
+    lock: &CampaignLock,
+    request: &Request,
+    identity: FrozenIdentity,
+    nonce_sha256: String,
+    now_unix_seconds: u64,
+    backend: &mut B,
+) -> Result<Response, StartLifecycleError> {
+    let digest = request_sha256(request)?;
+    let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
+    let head = lock.campaign_directory().join(EVENT_HEAD_NAME);
+    if let Ok(report) = verify_event_journal(&journal, &head) {
+        if let Some(recorded) = report.replay_index.get(&request.request_id) {
+            return if recorded.request_sha256 == digest {
+                Ok(recorded.response.clone())
+            } else {
+                Err(EventError::ReplayConflict {
+                    request_id: request.request_id.clone(),
+                }
+                .into())
+            };
+        }
+    }
+
+    let state = drive_i74_start(
+        host_claim,
+        lock,
+        request,
+        identity,
+        nonce_sha256,
+        now_unix_seconds,
+        backend,
+    )?;
+    let accepted = state.campaign_state == CampaignState::I74Running;
+    if !accepted
+        && !matches!(
+            state.campaign_state,
+            CampaignState::FailedIncomplete | CampaignState::CorruptQuarantined
+        )
+    {
+        return Err(StartLifecycleError::Binding);
+    }
+    let response = sign_response(ResponseBody {
+        schema_version: 1,
+        request_id: request.request_id.clone(),
+        campaign_id: request.campaign_id.clone(),
+        ok: accepted,
+        state_revision: state.revision,
+        server_time_unix_seconds: now_unix_seconds,
+        result: Some(serde_json::to_value(&state).map_err(EventError::from)?),
+        error_code: (!accepted).then_some(11),
+    })
+    .map_err(EventError::from)?;
+    match append_or_replay(
+        &journal,
+        &head,
+        now_unix_seconds,
+        request.clone(),
+        if accepted {
+            EventOutcome::Accepted
+        } else {
+            EventOutcome::Rejected
+        },
+        response.clone(),
+        None,
+    )? {
+        EventAppend::Appended(_) => Ok(response),
+        EventAppend::Replayed(recorded) => Ok(recorded),
+    }
 }
 
 fn load_or_prepare(

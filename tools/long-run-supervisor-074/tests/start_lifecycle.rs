@@ -7,7 +7,9 @@ use hydracache_long_run_supervisor_074::protocol::{ControllerIdentity, Operation
 use hydracache_long_run_supervisor_074::spawn::{
     prepare_spawn_intent, SpawnBackend, SpawnIntent, SpawnObservation,
 };
-use hydracache_long_run_supervisor_074::start_lifecycle::drive_i74_start;
+use hydracache_long_run_supervisor_074::start_lifecycle::{
+    drive_i74_start, drive_i74_start_request,
+};
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, DurableCampaignState, FrozenIdentity,
 };
@@ -20,6 +22,7 @@ struct FakeBackend {
     starts: usize,
     observations: usize,
     live: Option<SpawnObservation>,
+    lose_start_response: bool,
 }
 
 impl SpawnBackend for FakeBackend {
@@ -32,7 +35,11 @@ impl SpawnBackend for FakeBackend {
             daemon: process(&intent.unit_name, 101),
         };
         self.live = Some(exact.clone());
-        Ok(exact)
+        if self.lose_start_response {
+            Err("response lost after side effect")
+        } else {
+            Ok(exact)
+        }
     }
 
     fn observe(&mut self, _unit_name: &str) -> Result<SpawnObservation, Self::Error> {
@@ -282,4 +289,89 @@ fn durable_intent_without_side_effect_fails_incomplete_and_never_starts_on_recov
     assert!(failed.recorded_failure);
     assert_eq!(backend.starts, 0);
     assert_eq!(backend.observations, 1);
+}
+
+#[test]
+fn accepted_start_response_is_durable_and_replayed_without_touching_backend() {
+    let (_temporary, claim, lock) = fixture();
+    let request = request();
+    let mut backend = FakeBackend::default();
+    let response = drive_i74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .unwrap();
+    assert!(response.body.ok);
+    assert_eq!(response.body.state_revision, 2);
+    let report = verify_event_journal(
+        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+    )
+    .unwrap();
+    assert_eq!(report.records, 4);
+    assert_eq!(report.replay_index.len(), 1);
+
+    let mut replay_backend = FakeBackend::default();
+    let replay = drive_i74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_001,
+        &mut replay_backend,
+    )
+    .unwrap();
+    assert_eq!(replay, response);
+    assert_eq!(replay_backend.starts, 0);
+    assert_eq!(replay_backend.observations, 0);
+}
+
+#[test]
+fn lost_backend_response_is_adopted_before_recording_success_response() {
+    let (_temporary, claim, lock) = fixture();
+    let request = request();
+    let mut backend = FakeBackend {
+        lose_start_response: true,
+        ..FakeBackend::default()
+    };
+    assert!(drive_i74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .is_err());
+    assert_eq!(backend.starts, 1);
+    assert_eq!(
+        lock.read().unwrap().campaign_state,
+        CampaignState::I74Starting
+    );
+
+    backend.lose_start_response = false;
+    let recovered = drive_i74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_001,
+        &mut backend,
+    )
+    .unwrap();
+    assert!(recovered.body.ok);
+    assert_eq!(backend.starts, 1);
+    assert_eq!(backend.observations, 1);
+    assert_eq!(
+        lock.read().unwrap().campaign_state,
+        CampaignState::I74Running
+    );
 }
