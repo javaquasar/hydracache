@@ -625,9 +625,19 @@ receipt, verifies their digest and machine/boot/mount/cpuset bindings, and write
 six-file bundle: the four input files plus an inventory and its digest. A second mode re-hashes the
 complete inventory after transport. Inputs and outputs are bounded, create-new, single-link regular
 files and the directory is synced on Unix. This does not grant the workflow write access to the
-root-owned `0750` production staging tree. The privileged supervisor-owned delivery adapter remains
-an explicit incomplete boundary rather than adding `sudo`, DBus or group-write authority to the
-runner.
+root-owned `0750` production staging tree.
+
+The supervisor-owned delivery adapter now carries those bytes across that boundary without adding
+`sudo`, DBus or group-write authority to the runner. A revision-zero client sends the already
+signed request followed by the manifest and host receipt as separate bounded seqpackets. The root
+service authenticates the peer and authorization before reading evidence, enforces a five-second
+timeout for each evidence packet, independently validates the manifest/receipt composition, and
+publishes root-owned `0400` inputs through a synced `0750` temporary-directory rename. An exact
+interrupted upload can complete; a different owner, mode, link, byte sequence or digest cannot be
+adopted. The protected workflow downloads only a caller-identified same-repository artifact,
+revalidates the fixed six-file inventory and dispatch identities, then invokes this typed path.
+Production uid/gid, socket and filesystem behavior remain a separate admitted-host rehearsal, not
+a local completion claim.
 
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.

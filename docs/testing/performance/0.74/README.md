@@ -418,10 +418,25 @@ non-regular, symlink/hardlink, oversized, non-canonical, changed or pre-existing
 all files create-new and syncs the directory on Unix. Re-verification re-hashes both the outer
 inventory and all four nested files after transport. Windows and WSL2 each pass 10/10 builder tests,
 including host drift, tamper, hardlink and overwrite failures. This closes the unprivileged
-controller artifact boundary only: delivery into the root-owned `0750` production staging tree
-remains deliberately false in the contract until a supervisor-owned privileged staging adapter is
-implemented and rehearsed on the admitted host. See
+controller artifact boundary. See
 `local-runs/w11-start-bundle-local-20261005.json`.
+
+The supervisor-owned delivery adapter is now implemented without granting the runner filesystem,
+`sudo` or DBus authority. For a revision-zero start, the client revalidates the transported bundle
+and sends the signed request, manifest and host receipt as separate bounded `SOCK_SEQPACKET`
+messages. Only after peer and signature admission does the root supervisor accept the two evidence
+messages under a five-second-per-message timeout, re-parse their canonical schemas and nested
+bindings, write root-owned `0400` files in a `0750` create-new temporary directory, sync and rename
+it, and then enter the existing immutable import/start transaction. Exact completed or interrupted
+uploads are recoverable; conflicting bytes, modes, owners, links, paths or digests fail before
+spawn. The protected workflow now requires an exact same-repository artifact/run identity for
+revision zero, verifies the six-file bundle after download, and invokes the typed `request-start`
+path. Attach/seal/abort still receive no bundle and cannot use this path.
+
+The complete WSL supervisor suite passes 153 ordinary tests with one manual system-bus test
+ignored; the final upload-focused server and transport suites pass 9/9 and 8/8. The workflow was
+not dispatched and the service was not installed, so the distinct admitted-host ownership/socket
+rehearsal flag remains false. See `local-runs/w11-start-upload-local-20261005.json`.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

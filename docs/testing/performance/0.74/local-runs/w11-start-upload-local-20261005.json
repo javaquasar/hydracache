@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-supervisor-start-upload",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "e1882dfb",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "python -m unittest scripts/perf/test_performance_long_run_074.py",
+    "wsl.exe -d Ubuntu -- bash -lc 'python3 -m unittest scripts/perf/test_performance_long_run_074.py'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test server --test unix_transport --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python -c 'import yaml, pathlib; yaml.safe_load(pathlib.Path(\".github/workflows/performance-long-run-qualification-074.yml\").read_text())'",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-start-upload-2.json"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "production_staging_mutated": false,
+  "supervisor_tests_passed": 153,
+  "manual_system_bus_tests_ignored": 1,
+  "focused_server_tests_passed": 9,
+  "focused_transport_tests_passed": 8,
+  "windows_bundle_tests_passed": 10,
+  "wsl_bundle_tests_passed": 10,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "peer and signed-request authorization precede receipt of start evidence",
+    "manifest and host receipt use separate bounded seqpackets with a five-second receive timeout",
+    "the supervisor independently revalidates canonical bytes, digest and host identity bindings before publication",
+    "the supervisor publishes same-owner 0400 inputs through a synced 0750 create-new staging directory",
+    "tampered receipt bytes fail before staging publication and before the spawn backend is called",
+    "the workflow requires exact start-bundle run and artifact identities only for revision-zero start",
+    "the workflow re-verifies the fixed six-file bundle and dispatch campaign/manifest before request-start",
+    "the qualification dry-run accepted the updated contract and executed zero commands"
+  ],
+  "limitations": [
+    "the workflow was parsed and structurally tested but was not dispatched",
+    "the service was not installed and no production staging directory was mutated",
+    "production uid/gid, socket, filesystem mount and systemd behavior require admitted-host rehearsal",
+    "Linux-only modules were compiled and tested in WSL; strict clippy ran on Windows because clippy is absent from the pinned WSL toolchain",
+    "the production verification key, candidate, admitted host and start-bundle producer run remain unresolved",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

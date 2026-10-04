@@ -414,6 +414,22 @@ and admitted-host ownership rehearsal; it does not justify broadening the GitHub
 permissions. This is another instance of the release's main theme: completing the safe artifact is
 useful progress, but it is not evidence that the live campaign path has run.
 
+The typed delivery path came next. A revision-zero client now sends the signed request and the two
+bounded evidence documents as separate seqpackets; the service authenticates the peer and signature
+before accepting either document. The root supervisor repeats the canonical manifest/receipt checks,
+writes `0400` files into a `0750` create-new directory, syncs it and publishes it by rename before
+the existing start transaction can reach spawn. Each receive is bounded to five seconds, an exact
+interrupted upload is recoverable, and tampered bytes fail before either staging or backend start.
+The workflow can download only an explicitly named same-repository run artifact, checks its fixed
+six-file inventory against the dispatch campaign and manifest, and uses the narrow `request-start`
+command. It still gets no signing key, filesystem write access, `sudo`, shell injection field or
+DBus capability.
+
+At source `e1882dfb`, 153 ordinary supervisor tests pass under WSL with one manual system-bus test
+ignored; the final focused server and transport suites pass 9/9 and 8/8. This closes the local code
+path, not the host proof. The workflow was not dispatched, no service was installed, and the
+admitted-host uid/gid, socket and mount behavior remains a release-blocking rehearsal.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These
