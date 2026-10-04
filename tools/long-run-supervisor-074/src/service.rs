@@ -41,6 +41,16 @@ pub fn authorize_packet(
     now_unix_seconds: u64,
     policy: &ServicePolicy,
 ) -> Result<AuthorizedRequest, ServiceError> {
+    let wire = parse_wire_request(packet)?;
+    authorize_wire(wire, peer, now_unix_seconds, policy)
+}
+
+pub fn authorize_wire(
+    wire: WireRequest,
+    peer: &PeerCredentials,
+    now_unix_seconds: u64,
+    policy: &ServicePolicy,
+) -> Result<AuthorizedRequest, ServiceError> {
     if !policy.allowed_client_uids.contains(&peer.uid)
         || !peer.belongs_to_group(policy.required_client_gid)
     {
@@ -49,7 +59,7 @@ pub fn authorize_packet(
     let WireRequest {
         request,
         authorization,
-    } = parse_wire_request(packet)?;
+    } = wire;
     if request.controller.repository_id != policy.expected_repository_id
         || !policy
             .allowed_actor_ids

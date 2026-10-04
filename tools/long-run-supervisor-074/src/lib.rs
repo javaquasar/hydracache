@@ -8,8 +8,14 @@ use thiserror::Error;
 
 pub mod archive;
 pub mod auth;
+#[cfg(target_os = "linux")]
+pub mod client;
+#[cfg(target_os = "linux")]
+pub mod config;
 pub mod manifest;
 pub mod protocol;
+#[cfg(target_os = "linux")]
+pub mod server;
 #[cfg(target_os = "linux")]
 pub mod service;
 pub mod state;
