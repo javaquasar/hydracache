@@ -29,11 +29,15 @@ pub enum LifecycleEvent {
     I74Adopted,
     I74SpawnAbsent,
     I74SpawnMismatch,
+    I74Terminal,
+    I74Sealed,
     C74Starting,
     C74Started,
     C74Adopted,
     C74SpawnAbsent,
     C74SpawnMismatch,
+    C74Terminal,
+    CompleteSealed,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -325,10 +329,18 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
                     .ok_or(EventError::Binding {
                         sequence: event.sequence,
                     })?;
+                let accepted_state = expected_start_running_state(request);
+                let outcome_matches = match outcome {
+                    EventOutcome::Accepted => Some(recorded.campaign_state) == accepted_state,
+                    EventOutcome::Rejected => matches!(
+                        recorded.campaign_state,
+                        crate::state::CampaignState::FailedIncomplete
+                            | crate::state::CampaignState::CorruptQuarantined
+                    ),
+                };
                 if latest_state_after.as_ref() != Some(&recorded)
                     || recorded.revision != response.body.state_revision
-                    || (recorded.campaign_state == crate::state::CampaignState::I74Running)
-                        != (*outcome == EventOutcome::Accepted)
+                    || !outcome_matches
                 {
                     return Err(EventError::Binding {
                         sequence: event.sequence,
@@ -608,7 +620,7 @@ fn validate_request_event(
                     state.identity.campaign_id == request.campaign_id
                         && state.identity.manifest_sha256 == request.manifest_sha256
                         && state.revision == response.body.state_revision
-                        && state.campaign_state == crate::state::CampaignState::I74Running
+                        && Some(state.campaign_state) == expected_start_running_state(request)
                 }) => {}
         (Operation::Start, EventOutcome::Rejected, None)
             if response
@@ -660,10 +672,14 @@ fn validate_lifecycle_event(
         LifecycleEvent::I74SpawnMismatch | LifecycleEvent::C74SpawnMismatch => {
             crate::state::CampaignState::CorruptQuarantined
         }
+        LifecycleEvent::I74Terminal => crate::state::CampaignState::I74Terminal,
+        LifecycleEvent::I74Sealed => crate::state::CampaignState::I74Sealed,
         LifecycleEvent::C74Starting => crate::state::CampaignState::C74Starting,
         LifecycleEvent::C74Started | LifecycleEvent::C74Adopted => {
             crate::state::CampaignState::C74Running
         }
+        LifecycleEvent::C74Terminal => crate::state::CampaignState::C74Terminal,
+        LifecycleEvent::CompleteSealed => crate::state::CampaignState::CompleteSealed,
     };
     if cause_request_id.is_empty()
         || cause_request_id.len() > 128
@@ -677,6 +693,8 @@ fn validate_lifecycle_event(
             LifecycleEvent::Prepared
                 | LifecycleEvent::I74Starting
                 | LifecycleEvent::C74Starting
+                | LifecycleEvent::I74Sealed
+                | LifecycleEvent::CompleteSealed
                 | LifecycleEvent::I74SpawnAbsent
                 | LifecycleEvent::C74SpawnAbsent
                 | LifecycleEvent::I74SpawnMismatch
@@ -695,6 +713,16 @@ fn validate_lifecycle_event(
         });
     }
     Ok(())
+}
+
+fn expected_start_running_state(request: &Request) -> Option<crate::state::CampaignState> {
+    if request.operation != Operation::Start {
+        None
+    } else if request.expected_state_revision == 0 {
+        Some(crate::state::CampaignState::I74Running)
+    } else {
+        Some(crate::state::CampaignState::C74Running)
+    }
 }
 
 fn event_record_hash(

@@ -8,7 +8,7 @@ use hydracache_long_run_supervisor_074::spawn::{
     prepare_spawn_intent, SpawnBackend, SpawnIntent, SpawnObservation,
 };
 use hydracache_long_run_supervisor_074::start_lifecycle::{
-    drive_i74_start, drive_i74_start_request,
+    drive_c74_start, drive_c74_start_request, drive_i74_start, drive_i74_start_request,
 };
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, DurableCampaignState, FrozenIdentity,
@@ -107,6 +107,14 @@ fn request() -> Request {
     }
 }
 
+fn c74_request(expected_state_revision: u64) -> Request {
+    let mut request = request();
+    request.request_id = "223e4567-e89b-42d3-a456-426614174000".to_owned();
+    request.expected_state_revision = expected_state_revision;
+    request.manifest_path = None;
+    request
+}
+
 fn fixture() -> (tempfile::TempDir, HostExecutionClaim, CampaignLock) {
     let temporary = tempfile::tempdir().unwrap();
     let root = temporary.path().join("campaigns");
@@ -130,6 +138,91 @@ fn prepared() -> DurableCampaignState {
         duplicate_executor: false,
         durable_history_corrupt: false,
     }
+}
+
+fn seed_i74_state(lock: &CampaignLock, sealed: bool) -> DurableCampaignState {
+    let request = request();
+    let digest = request_sha256(&request).unwrap();
+    let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
+    let head = lock.campaign_directory().join(EVENT_HEAD_NAME);
+    let mut state = prepared();
+    append_lifecycle_event(
+        &journal,
+        &head,
+        900,
+        request.request_id.clone(),
+        digest.clone(),
+        LifecycleEvent::Prepared,
+        state.clone(),
+    )
+    .unwrap();
+    lock.initialize(&state).unwrap();
+    state.revision = 1;
+    state.campaign_state = CampaignState::I74Starting;
+    append_lifecycle_event(
+        &journal,
+        &head,
+        901,
+        request.request_id.clone(),
+        digest.clone(),
+        LifecycleEvent::I74Starting,
+        state.clone(),
+    )
+    .unwrap();
+    lock.compare_and_swap(0, &state).unwrap();
+    state.revision = 2;
+    state.campaign_state = CampaignState::I74Running;
+    state.harness = Some(process(
+        &format!("hydracache-performance-074-i74-{}.service", hash('a')),
+        100,
+    ));
+    state.daemon = Some(process(
+        &format!("hydracache-performance-074-i74-{}.service", hash('a')),
+        101,
+    ));
+    append_lifecycle_event(
+        &journal,
+        &head,
+        902,
+        request.request_id.clone(),
+        digest.clone(),
+        LifecycleEvent::I74Started,
+        state.clone(),
+    )
+    .unwrap();
+    lock.compare_and_swap(1, &state).unwrap();
+    state.revision = 3;
+    state.campaign_state = CampaignState::I74Terminal;
+    append_lifecycle_event(
+        &journal,
+        &head,
+        903,
+        request.request_id.clone(),
+        digest.clone(),
+        LifecycleEvent::I74Terminal,
+        state.clone(),
+    )
+    .unwrap();
+    lock.compare_and_swap(2, &state).unwrap();
+    if sealed {
+        state.revision = 4;
+        state.campaign_state = CampaignState::I74Sealed;
+        state.harness = None;
+        state.daemon = None;
+        state.checkpoint = None;
+        append_lifecycle_event(
+            &journal,
+            &head,
+            904,
+            request.request_id,
+            digest,
+            LifecycleEvent::I74Sealed,
+            state.clone(),
+        )
+        .unwrap();
+        lock.compare_and_swap(3, &state).unwrap();
+    }
+    state
 }
 
 #[test]
@@ -374,4 +467,141 @@ fn lost_backend_response_is_adopted_before_recording_success_response() {
         lock.read().unwrap().campaign_state,
         CampaignState::I74Running
     );
+}
+
+#[test]
+fn c74_starts_only_from_exact_i74_seal_and_has_independent_spawn_evidence() {
+    let (_temporary, claim, lock) = fixture();
+    let sealed = seed_i74_state(&lock, true);
+    let request = c74_request(sealed.revision);
+    let mut backend = FakeBackend::default();
+    let running = drive_c74_start(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .unwrap();
+    assert_eq!(running.revision, 6);
+    assert_eq!(running.campaign_state, CampaignState::C74Running);
+    assert_eq!(backend.starts, 1);
+    assert!(lock
+        .campaign_directory()
+        .join("c74-spawn-intent.json")
+        .exists());
+    assert!(lock
+        .campaign_directory()
+        .join("c74-spawn-result.json")
+        .exists());
+    assert!(!lock
+        .campaign_directory()
+        .join("i74-spawn-intent.json")
+        .exists());
+
+    let mut replay_backend = FakeBackend::default();
+    let replay = drive_c74_start(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_001,
+        &mut replay_backend,
+    )
+    .unwrap();
+    assert_eq!(replay, running);
+    assert_eq!(replay_backend.starts, 0);
+    assert_eq!(replay_backend.observations, 0);
+}
+
+#[test]
+fn c74_rejects_unsealed_or_stale_predecessor_without_backend_effect() {
+    let (_temporary, claim, lock) = fixture();
+    let terminal = seed_i74_state(&lock, false);
+    let mut backend = FakeBackend::default();
+    assert!(drive_c74_start(
+        &claim,
+        &lock,
+        &c74_request(terminal.revision),
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .is_err());
+    assert_eq!(backend.starts, 0);
+
+    let (_temporary, claim, lock) = fixture();
+    let sealed = seed_i74_state(&lock, true);
+    assert!(drive_c74_start(
+        &claim,
+        &lock,
+        &c74_request(sealed.revision - 1),
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .is_err());
+    assert_eq!(backend.starts, 0);
+}
+
+#[test]
+fn c74_accepted_response_is_durable_and_lost_side_effect_response_is_adopted() {
+    let (_temporary, claim, lock) = fixture();
+    let sealed = seed_i74_state(&lock, true);
+    let request = c74_request(sealed.revision);
+    let mut backend = FakeBackend {
+        lose_start_response: true,
+        ..FakeBackend::default()
+    };
+    assert!(drive_c74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_000,
+        &mut backend,
+    )
+    .is_err());
+    assert_eq!(backend.starts, 1);
+    assert_eq!(
+        lock.read().unwrap().campaign_state,
+        CampaignState::C74Starting
+    );
+
+    backend.lose_start_response = false;
+    let response = drive_c74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_001,
+        &mut backend,
+    )
+    .unwrap();
+    assert!(response.body.ok);
+    assert_eq!(response.body.state_revision, 6);
+    assert_eq!(backend.starts, 1);
+    assert_eq!(backend.observations, 1);
+
+    let mut replay_backend = FakeBackend::default();
+    let replay = drive_c74_start_request(
+        &claim,
+        &lock,
+        &request,
+        identity(),
+        hash('6'),
+        1_002,
+        &mut replay_backend,
+    )
+    .unwrap();
+    assert_eq!(replay, response);
+    assert_eq!(replay_backend.starts, 0);
+    assert_eq!(replay_backend.observations, 0);
 }

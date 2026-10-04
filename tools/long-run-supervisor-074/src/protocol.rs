@@ -134,14 +134,17 @@ pub fn validate_request(request: &Request) -> Result<(), ProtocolError> {
     }
     match request.operation {
         Operation::Start => {
-            let path = request
-                .manifest_path
-                .as_deref()
-                .ok_or(ProtocolError::OperationFields)?;
             if request.abort_reason.is_some() || request.approval_nonce_sha256.is_some() {
                 return Err(ProtocolError::OperationFields);
             }
-            validate_manifest_path(path, &request.campaign_id)?;
+            match (
+                request.expected_state_revision,
+                request.manifest_path.as_deref(),
+            ) {
+                (0, Some(path)) => validate_manifest_path(path, &request.campaign_id)?,
+                (1.., None) => {}
+                _ => return Err(ProtocolError::OperationFields),
+            }
         }
         Operation::Abort => {
             if request.manifest_path.is_some()

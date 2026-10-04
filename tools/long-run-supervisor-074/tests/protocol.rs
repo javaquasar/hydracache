@@ -11,7 +11,7 @@ fn request(operation: &str) -> serde_json::Value {
         "request_id": "123e4567-e89b-42d3-a456-426614174000",
         "operation": operation,
         "campaign_id": campaign,
-        "expected_state_revision": 7,
+        "expected_state_revision": if operation == "start" { 0 } else { 7 },
         "manifest_path": if operation == "start" {
             Some(format!("/var/lib/hydracache-performance/staging/{}/campaign-start.json", "a".repeat(64)))
         } else { None },
@@ -145,6 +145,30 @@ fn manifest_path_validation_is_structural_and_configuration_independent() {
             Err(ProtocolError::ManifestPath)
         );
     }
+}
+
+#[test]
+fn subsequent_role_start_is_revision_bound_and_has_no_staging_path() {
+    let mut c74 = request("start");
+    c74["expected_state_revision"] = json!(4);
+    c74["manifest_path"] = serde_json::Value::Null;
+    assert!(parse_request(&serde_json::to_vec(&c74).unwrap()).is_ok());
+
+    c74["manifest_path"] = json!(format!(
+        "/var/lib/hydracache-performance/staging/{}/campaign-start.json",
+        "a".repeat(64)
+    ));
+    assert_eq!(
+        parse_request(&serde_json::to_vec(&c74).unwrap()),
+        Err(ProtocolError::OperationFields)
+    );
+
+    let mut initial_without_manifest = request("start");
+    initial_without_manifest["manifest_path"] = serde_json::Value::Null;
+    assert_eq!(
+        parse_request(&serde_json::to_vec(&initial_without_manifest).unwrap()),
+        Err(ProtocolError::OperationFields)
+    );
 }
 
 #[test]

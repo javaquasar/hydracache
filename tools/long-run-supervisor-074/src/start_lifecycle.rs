@@ -38,8 +38,54 @@ pub fn drive_i74_start<B: SpawnBackend>(
     now_unix_seconds: u64,
     backend: &mut B,
 ) -> Result<DurableCampaignState, StartLifecycleError> {
+    drive_role_start(
+        host_claim,
+        lock,
+        request,
+        identity,
+        nonce_sha256,
+        now_unix_seconds,
+        Role::I74,
+        backend,
+    )
+}
+
+pub fn drive_c74_start<B: SpawnBackend>(
+    host_claim: &HostExecutionClaim,
+    lock: &CampaignLock,
+    request: &Request,
+    identity: FrozenIdentity,
+    nonce_sha256: String,
+    now_unix_seconds: u64,
+    backend: &mut B,
+) -> Result<DurableCampaignState, StartLifecycleError> {
+    drive_role_start(
+        host_claim,
+        lock,
+        request,
+        identity,
+        nonce_sha256,
+        now_unix_seconds,
+        Role::C74,
+        backend,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn drive_role_start<B: SpawnBackend>(
+    host_claim: &HostExecutionClaim,
+    lock: &CampaignLock,
+    request: &Request,
+    identity: FrozenIdentity,
+    nonce_sha256: String,
+    now_unix_seconds: u64,
+    role: Role,
+    backend: &mut B,
+) -> Result<DurableCampaignState, StartLifecycleError> {
+    let is_i74 = role == Role::I74;
     if request.operation != Operation::Start
-        || request.expected_state_revision != 0
+        || is_i74 != (request.expected_state_revision == 0)
+        || is_i74 != request.manifest_path.is_some()
         || request.campaign_id != identity.campaign_id
         || request.manifest_sha256 != identity.manifest_sha256
         || host_claim.campaign_id() != request.campaign_id
@@ -48,22 +94,46 @@ pub fn drive_i74_start<B: SpawnBackend>(
         return Err(StartLifecycleError::Binding);
     }
     let digest = request_sha256(request)?;
-    let mut state = load_or_prepare(lock, request, identity, now_unix_seconds, &digest)?;
+    let mut state = match role {
+        Role::I74 => load_or_prepare(lock, request, identity, now_unix_seconds, &digest)?,
+        Role::C74 => load_existing(lock, identity)?,
+    };
 
-    if state.campaign_state == CampaignState::Prepared {
+    let (ready, starting, start_transition, starting_event) = match role {
+        Role::I74 => (
+            CampaignState::Prepared,
+            CampaignState::I74Starting,
+            Transition::StartI74,
+            LifecycleEvent::I74Starting,
+        ),
+        Role::C74 => (
+            CampaignState::I74Sealed,
+            CampaignState::C74Starting,
+            Transition::StartC74,
+            LifecycleEvent::C74Starting,
+        ),
+    };
+    if state.campaign_state == ready {
+        if state.revision != request.expected_state_revision
+            || state.harness.is_some()
+            || state.daemon.is_some()
+            || state.checkpoint.is_some()
+        {
+            return Err(StartLifecycleError::Binding);
+        }
         let mut starting = state.clone();
         starting.revision = starting
             .revision
             .checked_add(1)
             .ok_or(StartLifecycleError::Binding)?;
-        starting.campaign_state = transition(state.campaign_state, Transition::StartI74)
+        starting.campaign_state = transition(state.campaign_state, start_transition)
             .map_err(|_| StartLifecycleError::Binding)?;
         append_transition(
             lock,
             request,
             &digest,
             now_unix_seconds,
-            LifecycleEvent::I74Starting,
+            starting_event,
             &starting,
         )?;
         lock.compare_and_swap(state.revision, &starting)?;
@@ -76,20 +146,24 @@ pub fn drive_i74_start<B: SpawnBackend>(
         digest,
         request.manifest_sha256.clone(),
         nonce_sha256,
-        Role::I74,
+        role.clone(),
     )?;
-    if state.campaign_state != CampaignState::I74Starting {
-        verify_completed_spawn(lock, &state, &intent)?;
+    if state.campaign_state != starting {
+        verify_completed_spawn(lock, &state, &intent, &role)?;
         return Ok(state);
     }
 
     let result = start_or_recover(lock.campaign_directory(), &intent, backend)?;
-    let next = apply_spawn_result(&state, &Role::I74, &result)?;
-    let lifecycle = match result.resolution {
-        SpawnResolution::Started => LifecycleEvent::I74Started,
-        SpawnResolution::Adopted => LifecycleEvent::I74Adopted,
-        SpawnResolution::Absent => LifecycleEvent::I74SpawnAbsent,
-        SpawnResolution::Mismatch => LifecycleEvent::I74SpawnMismatch,
+    let next = apply_spawn_result(&state, &role, &result)?;
+    let lifecycle = match (&role, result.resolution) {
+        (Role::I74, SpawnResolution::Started) => LifecycleEvent::I74Started,
+        (Role::I74, SpawnResolution::Adopted) => LifecycleEvent::I74Adopted,
+        (Role::I74, SpawnResolution::Absent) => LifecycleEvent::I74SpawnAbsent,
+        (Role::I74, SpawnResolution::Mismatch) => LifecycleEvent::I74SpawnMismatch,
+        (Role::C74, SpawnResolution::Started) => LifecycleEvent::C74Started,
+        (Role::C74, SpawnResolution::Adopted) => LifecycleEvent::C74Adopted,
+        (Role::C74, SpawnResolution::Absent) => LifecycleEvent::C74SpawnAbsent,
+        (Role::C74, SpawnResolution::Mismatch) => LifecycleEvent::C74SpawnMismatch,
     };
     append_transition(
         lock,
@@ -112,6 +186,50 @@ pub fn drive_i74_start_request<B: SpawnBackend>(
     now_unix_seconds: u64,
     backend: &mut B,
 ) -> Result<Response, StartLifecycleError> {
+    drive_role_start_request(
+        host_claim,
+        lock,
+        request,
+        identity,
+        nonce_sha256,
+        now_unix_seconds,
+        Role::I74,
+        backend,
+    )
+}
+
+pub fn drive_c74_start_request<B: SpawnBackend>(
+    host_claim: &HostExecutionClaim,
+    lock: &CampaignLock,
+    request: &Request,
+    identity: FrozenIdentity,
+    nonce_sha256: String,
+    now_unix_seconds: u64,
+    backend: &mut B,
+) -> Result<Response, StartLifecycleError> {
+    drive_role_start_request(
+        host_claim,
+        lock,
+        request,
+        identity,
+        nonce_sha256,
+        now_unix_seconds,
+        Role::C74,
+        backend,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn drive_role_start_request<B: SpawnBackend>(
+    host_claim: &HostExecutionClaim,
+    lock: &CampaignLock,
+    request: &Request,
+    identity: FrozenIdentity,
+    nonce_sha256: String,
+    now_unix_seconds: u64,
+    role: Role,
+    backend: &mut B,
+) -> Result<Response, StartLifecycleError> {
     let digest = request_sha256(request)?;
     let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
     let head = lock.campaign_directory().join(EVENT_HEAD_NAME);
@@ -128,16 +246,21 @@ pub fn drive_i74_start_request<B: SpawnBackend>(
         }
     }
 
-    let state = drive_i74_start(
+    let state = drive_role_start(
         host_claim,
         lock,
         request,
         identity,
         nonce_sha256,
         now_unix_seconds,
+        role.clone(),
         backend,
     )?;
-    let accepted = state.campaign_state == CampaignState::I74Running;
+    let accepted = state.campaign_state
+        == match role {
+            Role::I74 => CampaignState::I74Running,
+            Role::C74 => CampaignState::C74Running,
+        };
     if !accepted
         && !matches!(
             state.campaign_state,
@@ -236,14 +359,30 @@ fn load_or_prepare(
     }
 }
 
+fn load_existing(
+    lock: &CampaignLock,
+    identity: FrozenIdentity,
+) -> Result<DurableCampaignState, StartLifecycleError> {
+    let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
+    if fs::symlink_metadata(journal).is_err() {
+        return Err(StartLifecycleError::Binding);
+    }
+    let state = reconcile_campaign(lock)?;
+    if state.identity != identity {
+        return Err(StartLifecycleError::Binding);
+    }
+    Ok(state)
+}
+
 fn verify_completed_spawn(
     lock: &CampaignLock,
     state: &DurableCampaignState,
     intent: &SpawnIntent,
+    role: &Role,
 ) -> Result<(), StartLifecycleError> {
     let result = read_spawn_result(lock.campaign_directory(), intent)?;
-    match state.campaign_state {
-        CampaignState::I74Running => {
+    match (role, state.campaign_state) {
+        (Role::I74, CampaignState::I74Running) | (Role::C74, CampaignState::C74Running) => {
             let (harness, daemon) = result
                 .exact_identities()
                 .ok_or(StartLifecycleError::Binding)?;
@@ -251,8 +390,9 @@ fn verify_completed_spawn(
                 return Err(StartLifecycleError::Binding);
             }
         }
-        CampaignState::FailedIncomplete if result.resolution == SpawnResolution::Absent => {}
-        CampaignState::CorruptQuarantined if result.resolution == SpawnResolution::Mismatch => {}
+        (_, CampaignState::FailedIncomplete) if result.resolution == SpawnResolution::Absent => {}
+        (_, CampaignState::CorruptQuarantined)
+            if result.resolution == SpawnResolution::Mismatch => {}
         _ => return Err(StartLifecycleError::Binding),
     }
     Ok(())

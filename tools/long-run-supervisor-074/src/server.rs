@@ -13,7 +13,9 @@ use crate::spawn::SpawnBackend;
 use crate::start_evidence::{
     load_campaign_evidence, prepare_campaign_evidence, PreparedCampaignEvidence, StartEvidenceError,
 };
-use crate::start_lifecycle::{drive_i74_start_request, StartLifecycleError};
+use crate::start_lifecycle::{
+    drive_c74_start_request, drive_i74_start_request, StartLifecycleError,
+};
 use crate::state::{apply_attach, AttachRequest, FrozenIdentity};
 use crate::state_store::{CampaignLock, StateStoreError};
 use crate::systemd_spawn::SystemdSpawnBackend;
@@ -374,15 +376,28 @@ fn finish_start<B: SpawnBackend>(
     backend: &mut B,
 ) -> Result<Response, ServerError> {
     let request = &authorized.request;
-    match drive_i74_start_request(
-        &admission.host_claim,
-        &admission.lock,
-        request,
-        admission.identity,
-        admission.evidence.manifest.nonce_sha256,
-        now,
-        backend,
-    ) {
+    let result = if request.expected_state_revision == 0 {
+        drive_i74_start_request(
+            &admission.host_claim,
+            &admission.lock,
+            request,
+            admission.identity,
+            admission.evidence.manifest.nonce_sha256,
+            now,
+            backend,
+        )
+    } else {
+        drive_c74_start_request(
+            &admission.host_claim,
+            &admission.lock,
+            request,
+            admission.identity,
+            admission.evidence.manifest.nonce_sha256,
+            now,
+            backend,
+        )
+    };
+    match result {
         Ok(response) => Ok(response),
         Err(error) => Ok(error_response_from_request(
             request,

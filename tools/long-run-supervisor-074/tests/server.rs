@@ -7,6 +7,9 @@ use hydracache_long_run_supervisor_074::auth::{
 };
 use hydracache_long_run_supervisor_074::client::exchange;
 use hydracache_long_run_supervisor_074::config::ServerConfig;
+use hydracache_long_run_supervisor_074::event::{
+    append_lifecycle_event, request_sha256, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME,
+};
 use hydracache_long_run_supervisor_074::host_receipt::{
     encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
     HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
@@ -352,7 +355,7 @@ fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
     )
     .unwrap();
 
-    let mut request = Request {
+    let request = Request {
         schema_version: 1,
         request_id: "323e4567-e89b-42d3-a456-426614174000".to_owned(),
         operation: Operation::Start,
@@ -375,15 +378,20 @@ fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
         abort_reason: None,
         approval_nonce_sha256: None,
     };
+    signed_packet(request, key, now)
+}
+
+fn signed_packet(mut request: Request, key: &SigningKey, now: u64) -> Vec<u8> {
+    request.controller.authorization_sha256 = "0".repeat(64);
     let body = AuthorizationBody {
         schema_version: 1,
         request_id: request.request_id.clone(),
         operation: request.operation,
         campaign_id: request.campaign_id.clone(),
         manifest_sha256: request.manifest_sha256.clone(),
-        repository_id: 10,
-        run_id: 20,
-        actor_id: 30,
+        repository_id: request.controller.repository_id,
+        run_id: request.controller.run_id,
+        actor_id: request.controller.actor_id,
         issued_at_unix_seconds: now.saturating_sub(1),
         expires_at_unix_seconds: now + 300,
     };
@@ -398,6 +406,53 @@ fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
         authorization: Some(authorization),
     })
     .unwrap()
+}
+
+fn c74_start_packet(i74_packet: &[u8], key: &SigningKey, revision: u64, now: u64) -> Vec<u8> {
+    let mut request: WireRequest = serde_json::from_slice(i74_packet).unwrap();
+    request.request.request_id = "423e4567-e89b-42d3-a456-426614174000".to_owned();
+    request.request.expected_state_revision = revision;
+    request.request.manifest_path = None;
+    signed_packet(request.request, key, now)
+}
+
+fn seal_i74_for_c74(campaign_root: &Path, i74_packet: &[u8], now: u64) {
+    let request: WireRequest = serde_json::from_slice(i74_packet).unwrap();
+    let digest = request_sha256(&request.request).unwrap();
+    let lock = CampaignLock::acquire(campaign_root, &request.request.campaign_id).unwrap();
+    let mut terminal = lock.read().unwrap();
+    assert_eq!(terminal.revision, 2);
+    terminal.revision = 3;
+    terminal.campaign_state = CampaignState::I74Terminal;
+    append_lifecycle_event(
+        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+        now,
+        request.request.request_id.clone(),
+        digest.clone(),
+        LifecycleEvent::I74Terminal,
+        terminal.clone(),
+    )
+    .unwrap();
+    lock.compare_and_swap(2, &terminal).unwrap();
+
+    let mut sealed = terminal;
+    sealed.revision = 4;
+    sealed.campaign_state = CampaignState::I74Sealed;
+    sealed.harness = None;
+    sealed.daemon = None;
+    sealed.checkpoint = None;
+    append_lifecycle_event(
+        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+        now,
+        request.request.request_id,
+        digest,
+        LifecycleEvent::I74Sealed,
+        sealed.clone(),
+    )
+    .unwrap();
+    lock.compare_and_swap(3, &sealed).unwrap();
 }
 
 #[test]
@@ -467,7 +522,7 @@ fn attach_guard_rejection_is_durable_and_exactly_replayed() {
 }
 
 #[test]
-fn authorized_start_imports_evidence_executes_once_and_replays_exact_response() {
+fn authorized_role_starts_import_evidence_execute_once_and_replay_exact_responses() {
     let temporary = tempfile::tempdir().unwrap();
     let campaign_root = temporary.path().join("campaigns");
     let staging_root = temporary.path().join("staging");
@@ -495,4 +550,17 @@ fn authorized_start_imports_evidence_executes_once_and_replays_exact_response() 
     let replay = exchange_start_once(&server, &socket, &packet, &mut backend);
     assert_eq!(replay, first);
     assert_eq!(backend.starts, 1);
+
+    seal_i74_for_c74(&campaign_root, &packet, now);
+    let c74_packet = c74_start_packet(&packet, &key, 4, now);
+    let c74 = exchange_start_once(&server, &socket, &c74_packet, &mut backend);
+    assert!(c74.body.ok);
+    assert_eq!(c74.body.state_revision, 6);
+    assert_eq!(backend.starts, 2);
+    assert!(campaign.join("c74-spawn-intent.json").exists());
+    assert!(campaign.join("c74-spawn-result.json").exists());
+
+    let c74_replay = exchange_start_once(&server, &socket, &c74_packet, &mut backend);
+    assert_eq!(c74_replay, c74);
+    assert_eq!(backend.starts, 2);
 }

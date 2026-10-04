@@ -120,10 +120,7 @@ pub fn load_campaign_evidence(
     request: &Request,
     now_unix_seconds: u64,
 ) -> Result<PreparedCampaignEvidence, StartEvidenceError> {
-    if request.operation != Operation::Start
-        || request.expected_state_revision != 0
-        || !is_hash(&request.campaign_id)
-    {
+    if request.operation != Operation::Start || !is_hash(&request.campaign_id) {
         return Err(StartEvidenceError::Path);
     }
     let campaign_root = canonical_directory(campaign_root)?;
