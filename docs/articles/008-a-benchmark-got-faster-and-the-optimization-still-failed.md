@@ -497,6 +497,15 @@ This narrows a future host failure to provisioning or execution rather than ambi
 manifest format. The production public key remains explicitly `UNRESOLVED`; the test key can prove
 verification behavior but cannot authorize a campaign.
 
+The local supervisor model now also distinguishes activity from useful progress. Merely receiving
+another checkpoint does not keep a run alive. Measured work must advance completed operations,
+surface accounting and process CPU time together; drain must reduce outstanding work; intentional
+post-work idle must advance telemetry while operation counts remain fixed; and reconciliation must
+change its milestone, epoch or owner state. Tests retain decreasing RSS as a valid gauge rather
+than misclassifying it as counter corruption, while identity drift, phase skips and true cumulative
+counter regression remain failures. This proves the watchdog decision logic locally, not its
+future integration with systemd or `/proc` on the admitted host.
+
 W12 now has a fail-closed evidence skeleton listing all 29 plan items in exact release order. It
 does not promote incomplete rows: the first local report contained 23 planned items, five locally
 implemented items, zero fast-green items and zero ship-ready items. A release-scoped W11 canary

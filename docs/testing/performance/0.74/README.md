@@ -57,6 +57,14 @@ predicate evaluator. Deterministic tests prove that attach changes only controll
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,
 revision, duplicate-executor, recorded-failure and durable-history drift.
 
+The phase-aware watchdog is also implemented as a deterministic supervisor component. A new
+checkpoint sequence or live PID alone does not reset its deadline: measured work must advance
+completed operations, per-surface accounting and process CPU time together; drain must reduce the
+backlog; post-work idle must advance telemetry without changing operation counts; and
+reconciliation must advance its milestone, epoch or owner state. Identity drift, skipped phases,
+counter regression and the frozen 90/180-second warning/rejection boundaries fail closed. Wiring
+this evaluator to a live systemd-owned process still remains host work.
+
 The versioned request/response protocol is also locally implemented with the frozen 65,536-byte
 limit, strict unknown/duplicate-field rejection, UUIDv4 and lowercase-digest validation,
 operation-specific fields, the single exact staging path for `start`, and canonical response
