@@ -211,6 +211,22 @@ pub fn start_or_recover<B: SpawnBackend>(
     Ok(result)
 }
 
+pub fn read_spawn_result(
+    campaign_directory: &Path,
+    intent: &SpawnIntent,
+) -> Result<SpawnResult, SpawnError> {
+    let directory = canonical_directory(campaign_directory)?;
+    validate_intent(intent)?;
+    let paths = evidence_paths(&directory, &intent.role);
+    let existing: SpawnIntent = read_document_pair(&paths.intent, &paths.intent_head)?;
+    if existing != *intent {
+        return Err(SpawnError::IntentConflict);
+    }
+    let result: SpawnResult = read_document_pair(&paths.result, &paths.result_head)?;
+    validate_result(&result, intent, &document_digest(intent)?)?;
+    Ok(result)
+}
+
 pub fn apply_spawn_result(
     state: &DurableCampaignState,
     role: &Role,

@@ -28,6 +28,7 @@ pub mod server;
 pub mod service;
 pub mod spawn;
 pub mod start_evidence;
+pub mod start_lifecycle;
 pub mod state;
 pub mod state_store;
 #[cfg(target_os = "linux")]
