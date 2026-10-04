@@ -56,12 +56,24 @@ fn verifies_complete_chain_and_recovers_only_incomplete_tail() {
     let report = verify_journal_bytes(&bytes).unwrap();
     assert_eq!(report.records, 2);
     assert_eq!(report.recovered_incomplete_trailing_bytes, 0);
+    assert_eq!(report.harness, identity(100));
+    assert_eq!(report.daemon, identity(101));
 
     let mut torn = bytes;
     torn.extend(br#"{"schema_version":1"#);
     let report = verify_journal_bytes(&torn).unwrap();
     assert_eq!(report.records, 2);
     assert!(report.recovered_incomplete_trailing_bytes > 0);
+}
+
+#[test]
+fn complete_json_without_terminal_newline_is_still_a_torn_record() {
+    let first = build_record(1, GENESIS_HASH, payload(1_000, Phase::Warmup)).unwrap();
+    let bytes = serde_json::to_vec(&first).unwrap();
+    assert!(matches!(
+        verify_journal_bytes(&bytes),
+        Err(ChainError::TornTailRequiresRecovery { bytes: count }) if count == bytes.len()
+    ));
 }
 
 #[test]

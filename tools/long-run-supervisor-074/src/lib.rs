@@ -8,6 +8,7 @@ use thiserror::Error;
 
 pub mod archive;
 pub mod auth;
+pub mod checkpoint_evidence;
 #[cfg(target_os = "linux")]
 pub mod client;
 #[cfg(target_os = "linux")]
@@ -33,6 +34,7 @@ pub mod unix_transport;
 
 pub const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 pub const GENESIS_HASH: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+pub const MAX_JOURNAL_BYTES: u64 = 64 * 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -109,12 +111,16 @@ pub struct VerificationReport {
     pub last_phase: Phase,
     pub last_monotonic_elapsed_ns: u64,
     pub recovered_incomplete_trailing_bytes: usize,
+    pub harness: ProcessIdentity,
+    pub daemon: ProcessIdentity,
 }
 
 #[derive(Debug, Error)]
 pub enum ChainError {
     #[error("journal is empty")]
     Empty,
+    #[error("journal is not a bounded regular file")]
+    UnsafeJournal,
     #[error("invalid UTF-8 or JSON at record {record}: {message}")]
     Parse { record: usize, message: String },
     #[error("schema version at sequence {sequence} must be 1")]
@@ -167,14 +173,29 @@ pub fn build_record(
 }
 
 pub fn verify_journal(path: &Path) -> Result<VerificationReport, ChainError> {
-    let mut bytes = Vec::new();
-    File::open(path)?.read_to_end(&mut bytes)?;
+    let metadata = fs::symlink_metadata(path)?;
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.len() > MAX_JOURNAL_BYTES
+    {
+        return Err(ChainError::UnsafeJournal);
+    }
+    let mut bytes = Vec::with_capacity(metadata.len() as usize);
+    File::open(path)?
+        .take(MAX_JOURNAL_BYTES + 1)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > MAX_JOURNAL_BYTES {
+        return Err(ChainError::UnsafeJournal);
+    }
     verify_journal_bytes(&bytes)
 }
 
 pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainError> {
     if bytes.is_empty() {
         return Err(ChainError::Empty);
+    }
+    if bytes.len() as u64 > MAX_JOURNAL_BYTES {
+        return Err(ChainError::UnsafeJournal);
     }
     let has_terminal_newline = bytes.last() == Some(&b'\n');
     let mut parts = bytes.split(|byte| *byte == b'\n').collect::<Vec<_>>();
@@ -184,13 +205,15 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
     let mut recovered = 0;
     if !has_terminal_newline {
         let last = parts.last().copied().unwrap_or_default();
-        if serde_json::from_slice::<RecordEnvelope>(last).is_err() {
-            recovered = last.len();
-            parts.pop();
-        }
+        recovered = last.len();
+        parts.pop();
     }
     if parts.is_empty() {
-        return Err(ChainError::Empty);
+        return if recovered == 0 {
+            Err(ChainError::Empty)
+        } else {
+            Err(ChainError::TornTailRequiresRecovery { bytes: recovered })
+        };
     }
 
     let mut previous = GENESIS_HASH.to_owned();
@@ -246,6 +269,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
         last_phase: last.payload.phase,
         last_monotonic_elapsed_ns: last_elapsed,
         recovered_incomplete_trailing_bytes: recovered,
+        harness: first.harness,
+        daemon: first.daemon,
     })
 }
 
@@ -254,16 +279,18 @@ pub fn append_record(
     head: &Path,
     record: &RecordEnvelope,
 ) -> Result<(), ChainError> {
-    let existing = if journal.exists() {
-        let report = verify_journal(journal)?;
-        if report.recovered_incomplete_trailing_bytes != 0 {
-            return Err(ChainError::TornTailRequiresRecovery {
-                bytes: report.recovered_incomplete_trailing_bytes,
-            });
+    let existing = match fs::symlink_metadata(journal) {
+        Ok(_) => {
+            let report = verify_journal(journal)?;
+            if report.recovered_incomplete_trailing_bytes != 0 {
+                return Err(ChainError::TornTailRequiresRecovery {
+                    bytes: report.recovered_incomplete_trailing_bytes,
+                });
+            }
+            Some(report)
         }
-        Some(report)
-    } else {
-        None
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(error.into()),
     };
     let expected_sequence = existing.as_ref().map_or(1, |report| report.records + 1);
     let expected_previous = existing
