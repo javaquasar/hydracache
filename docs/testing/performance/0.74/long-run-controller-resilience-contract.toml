@@ -145,6 +145,7 @@ durable_state_store = "tools/long-run-supervisor-074/src/state_store.rs"
 durable_state_store_complete = true
 linux_seqpacket_transport = "tools/long-run-supervisor-074/src/unix_transport.rs"
 linux_seqpacket_transport_complete = true
+connection_transport_failure_survival_complete = true
 peer_and_signed_request_admission = "tools/long-run-supervisor-074/src/service.rs"
 peer_and_signed_request_admission_complete = true
 integrated_checkpoint_writer = "tools/performance-integrated-074"

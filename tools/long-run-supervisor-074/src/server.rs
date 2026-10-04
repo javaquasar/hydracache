@@ -140,7 +140,7 @@ impl SupervisorServer {
         loop {
             self.maintain_lease_expiry_with_backend(unix_seconds(), &mut lease_backend)?;
             if let Some(connection) = self.listener.accept_timeout(MAINTENANCE_INTERVAL)? {
-                self.serve_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
+                self.handle_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
             }
         }
     }
@@ -204,7 +204,20 @@ impl SupervisorServer {
         abort_backend: Option<&mut dyn AbortObservationBackend>,
     ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
-        self.serve_connection_inner(connection, start_backend, seal_backend, abort_backend)
+        self.handle_connection_inner(connection, start_backend, seal_backend, abort_backend)
+    }
+
+    fn handle_connection_inner<B: SpawnBackend>(
+        &self,
+        connection: SeqpacketConnection,
+        start_backend: Option<&mut B>,
+        seal_backend: Option<&mut dyn SealObservationBackend>,
+        abort_backend: Option<&mut dyn AbortObservationBackend>,
+    ) -> Result<(), ServerError> {
+        match self.serve_connection_inner(connection, start_backend, seal_backend, abort_backend) {
+            Err(ServerError::Transport(_)) => Ok(()),
+            result => result,
+        }
     }
 
     fn serve_connection_inner<B: SpawnBackend>(

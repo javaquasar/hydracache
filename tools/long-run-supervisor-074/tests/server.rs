@@ -38,6 +38,7 @@ use hydracache_long_run_supervisor_074::state::{
 };
 use hydracache_long_run_supervisor_074::state_store::CampaignLock;
 use hydracache_long_run_supervisor_074::systemd_unit::UnitSnapshot;
+use hydracache_long_run_supervisor_074::unix_transport::SeqpacketConnection;
 use hydracache_long_run_supervisor_074::{
     append_record, build_record, CheckpointPayload, Phase, ProcessIdentity, Role, GENESIS_HASH,
 };
@@ -1176,6 +1177,47 @@ fn revision_zero_upload_rejects_tampered_receipt_before_staging_or_spawn() {
     assert_eq!(backend.starts, 0);
     assert!(!staged.exists());
     assert!(!campaign_root.join("1".repeat(64)).exists());
+}
+
+#[test]
+fn disconnected_partial_upload_does_not_kill_the_next_start_request() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    let socket = temporary.path().join("supervisor-upload-disconnect.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = stage_start(&staging_root, &key, now);
+    let staged = staging_root.join("1".repeat(64));
+    let manifest = fs::read(staged.join("campaign-start.json")).unwrap();
+    let host_receipt = fs::read(staged.join(HOST_RECEIPT_NAME)).unwrap();
+    fs::remove_dir_all(&staged).unwrap();
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeStartBackend::default();
+
+    let abandoned = SeqpacketConnection::connect(&socket).unwrap();
+    abandoned.send_packet(&packet).unwrap();
+    abandoned.send_packet(&manifest).unwrap();
+    drop(abandoned);
+    server.serve_one_with_start_backend(&mut backend).unwrap();
+    assert_eq!(backend.starts, 0);
+    assert!(!staged.exists());
+
+    let response = exchange_uploaded_start_once(
+        &server,
+        &socket,
+        &packet,
+        &manifest,
+        &host_receipt,
+        &mut backend,
+    );
+    assert!(response.body.ok);
+    assert_eq!(backend.starts, 1);
 }
 
 #[test]

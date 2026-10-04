@@ -161,6 +161,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "start_bundle_transport_verifier_complete",
         "supervisor_owned_start_upload_complete",
         "privileged_start_bundle_staging_complete",
+        "connection_transport_failure_survival_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
