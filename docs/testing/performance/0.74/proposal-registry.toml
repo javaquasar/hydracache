@@ -29,10 +29,10 @@ evidence = "w1-local-attribution.md and local-runs/w2-*.json"
 [[work_items]]
 id = "W3"
 title = "bounded output coalescing"
-decision = "rejected-local-shallow-tail-guards-after-real-tcp-retry"
+decision = "authorized-local-adaptive-retry-preregistered"
 primary_metric = "write-and-flush-calls-per-reply"
 rollback = "remove only the connection-local response batch"
-evidence = "w1-local-attribution.md and local-runs/w3-*.json including v3 TCP A/B pairs"
+evidence = "w3-adaptive-coalescing-contract.toml plus retained rejected v3 TCP A/B pairs"
 
 [[work_items]]
 id = "W4"

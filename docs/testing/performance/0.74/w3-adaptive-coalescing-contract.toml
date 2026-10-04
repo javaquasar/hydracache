@@ -1,0 +1,67 @@
+schema_version = 1
+release = "0.74"
+contract_id = "w3-adaptive-coalescing-074-v1"
+state = "preregistered-before-candidate"
+promotable = false
+hypothesis = "coalesce only when a second complete RESP frame is already buffered; preserve the exact pipeline-1 response path"
+baseline_source_sha = "461c6c298419251dd208bc2949ae92fc594a9cf1"
+candidate_source_sha = "UNRESOLVED"
+transport = "loopback-tcp"
+operations = ["get", "set"]
+pipeline_depths = [1, 10, 50]
+concurrency = [1, 8, 32]
+payload_bytes = 64
+key_space = 262144
+seed = 740074
+operations_per_sample = 160000
+warmup_operations_per_sample = 16000
+pairs = 5
+pair_order = "abba-counterbalanced-v1"
+instrumentation_enabled = true
+numeric_claims_allowed = false
+
+[activation]
+minimum_complete_frames_in_current_read = 2
+timer_allowed = false
+cross_read_delay_allowed = false
+pipeline_one_uses_existing_write_response = true
+maximum_replies_per_batch = 256
+maximum_encoded_bytes_per_batch = 1048576
+yield_after_boundary_flush = true
+
+[deep_pipeline_acceptance]
+depths = [10, 50]
+maximum_write_calls_per_reply = 0.20
+maximum_flush_calls_per_reply = 0.20
+minimum_goodput_ratio = 1.20
+maximum_cpu_per_operation_ratio = 1.02
+maximum_p99_ratio = 1.03
+minimum_favorable_pairs = 4
+
+[pipeline_one_non_regression]
+write_calls_per_reply = 1.0
+flush_calls_per_reply = 1.0
+minimum_goodput_ratio = 0.98
+maximum_cpu_per_operation_ratio = 1.03
+maximum_p99_ratio = 1.03
+minimum_passing_pairs = 5
+
+[semantic_guards]
+exact_response_bytes = true
+response_order = true
+fragmented_frames = true
+partial_writes = true
+pending_writes_and_flushes = true
+disconnect_during_reply = true
+slow_reader_backpressure = true
+cross_connection_fairness = true
+oversized_reply_progress = true
+subscription_barrier = true
+hello_dialect_transition = true
+quit_flushes_before_close = true
+native_surfaces_unchanged = true
+
+[disposition]
+on_any_shallow_failure = "reject-and-revert-only-w3-adaptive-candidate"
+on_deep_effect_below_floor = "reject-and-revert-only-w3-adaptive-candidate"
+on_semantic_failure = "reject-and-revert-only-w3-adaptive-candidate"

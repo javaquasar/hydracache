@@ -224,6 +224,41 @@ fn proposal_admission_requires_w1_attribution_and_evidence() {
 }
 
 #[test]
+fn w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds() {
+    let value = contract("w3-adaptive-coalescing-contract.toml");
+    assert_eq!(
+        value["state"].as_str(),
+        Some("preregistered-before-candidate")
+    );
+    assert_eq!(value["pairs"].as_integer(), Some(5));
+    assert_eq!(
+        value["activation"]["minimum_complete_frames_in_current_read"].as_integer(),
+        Some(2)
+    );
+    assert_eq!(
+        value["activation"]["pipeline_one_uses_existing_write_response"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(value["activation"]["timer_allowed"].as_bool(), Some(false));
+    assert_eq!(
+        value["deep_pipeline_acceptance"]["minimum_goodput_ratio"].as_float(),
+        Some(1.20)
+    );
+    assert_eq!(
+        value["pipeline_one_non_regression"]["minimum_goodput_ratio"].as_float(),
+        Some(0.98)
+    );
+    assert_eq!(
+        value["pipeline_one_non_regression"]["minimum_passing_pairs"].as_integer(),
+        Some(5)
+    );
+    assert_eq!(
+        value["semantic_guards"]["native_surfaces_unchanged"].as_bool(),
+        Some(true)
+    );
+}
+
+#[test]
 fn socket_boundary_attribution_keeps_local_product_work_admitted() {
     let value = contract("proposal-registry.toml");
     assert!(
