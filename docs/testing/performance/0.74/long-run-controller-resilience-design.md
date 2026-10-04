@@ -62,7 +62,7 @@ Implementation adds these repository paths:
 | tools/long-run-supervisor-074/src/state.rs and state_store.rs | phase-aware state model, campaign locks and atomic snapshots |
 | tools/long-run-supervisor-074/src/host_execution.rs | host-wide active-campaign claim retained across supervisor restart |
 | tools/long-run-supervisor-074/src/event.rs and mutation.rs | request/lifecycle event chain and event-ahead snapshot recovery |
-| tools/long-run-supervisor-074/src/spawn.rs and start_lifecycle.rs | durable spawn intent/result and crash-safe I74 start coordinator |
+| tools/long-run-supervisor-074/src/spawn.rs and start_lifecycle.rs | durable spawn intent/result and crash-safe I74/C74 start coordinator |
 | tools/long-run-supervisor-074/src/systemd_unit.rs and process_identity.rs | fixed-namespace unit and process identity inspection |
 | tools/long-run-supervisor-074/src/checkpoint_evidence.rs and watchdog.rs | chain verification and phase-aware progress |
 | tools/long-run-supervisor-074/src/diagnostics.rs | bounded allowlisted diagnostic capture |
@@ -182,10 +182,12 @@ The common request envelope is:
 }
 ~~~
 
-Only start includes manifest_path. Attach, status, seal and abort address an existing campaign and
-include its immutable manifest digest. Abort also requires a frozen reason enum and an approval
-nonce created by the protected environment. Status is read-only and does not require a controller
-lease. Unknown operations fail closed.
+The initial revision-zero I74 start includes `manifest_path`. The later C74 start addresses the
+existing campaign with the same immutable manifest digest, omits the path and must name the exact
+`I74_SEALED` revision. Attach, status, seal and abort also address an existing campaign without a
+manifest path. Abort additionally requires a frozen reason enum and an approval nonce created by
+the protected environment. Status is read-only and does not require a controller lease. Unknown
+operations fail closed.
 
 The server authenticates SO_PEERCRED uid/gid and then checks supplemental group membership from the
 OS, not request JSON. Start, attach, seal and abort also require a short-lived signed authorization
@@ -327,6 +329,7 @@ Allowed commands are:
 | Current state | Operation | Preconditions | Durable effect |
 | --- | --- | --- | --- |
 | absent | start | valid new manifest, host lock free, active product lease | PREPARED then I74_STARTING; exactly one systemd call |
+| I74_SEALED | start | exact revision and unchanged imported evidence | C74_STARTING; exactly one independent systemd call |
 | live/terminal | status | authenticated peer and exact manifest digest | append observation event only when requested by contract |
 | any non-corrupt | attach | every attach guard exact, no competing mutable controller | append controller event and grant/renew controller lease |
 | I74_TERMINAL | seal | process exited successfully, checkpoints/final guards valid | deterministic I74 seal then I74_SEALED |
@@ -341,12 +344,14 @@ FAILED_INCOMPLETE; recovery never calls StartTransientUnit. If one unit exists a
 match, it is adopted. More than one matching process quarantines the campaign.
 
 The local coordinator implements these ordering rules behind a typed spawn backend. It appends
-PREPARED and I74_STARTING lifecycle events before their state snapshots, writes the intent before
-the backend side effect, and writes the result before the final lifecycle transition. Recovery can
-repair a missing or one-revision-stale snapshot from the authoritative event chain. Once an intent
-exists, the coordinator calls only `observe`; it never calls `start_once` again. An absent unit is
-retained as FAILED_INCOMPLETE, an exact unit is adopted, and identity mismatch or multiple
-executors is quarantined. Local fake-backend tests exercise every window. The production-form
+PREPARED, I74_STARTING and C74_STARTING lifecycle events before their state snapshots, writes each
+role's independent intent before the backend side effect, and writes the result before the final
+lifecycle transition. C74 is admitted only from the exact sealed I74 revision with no retained
+process/checkpoint identity. Recovery can repair a missing or one-revision-stale snapshot from the
+authoritative event chain. Once an intent exists, the coordinator calls only `observe`; it never
+calls `start_once` again. An absent unit is retained as FAILED_INCOMPLETE, an exact unit is adopted,
+and identity mismatch or multiple executors is quarantined. Local fake-backend and Unix-socket
+tests exercise normal start, replay, stale/unsealed refusal and lost-response adoption for C74. The production-form
 backend now constructs the complete transient-unit property set from the immutable manifest,
 verifies the digest of a fixed role environment, calls systemd `StartTransientUnit` with mode
 `fail`, and observes the exact MainPID plus one daemon through the unit cgroup. It rejects boot,

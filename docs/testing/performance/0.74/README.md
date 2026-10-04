@@ -52,9 +52,12 @@ status remains read-only but still checks the admitted peer, repository and acto
 verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
 round-trip the exact durable state and reject stale revisions.
 
-This is still not the complete release supervisor. `start` now authenticates, imports immutable
-evidence, obtains the host-wide claim, advances the durable lifecycle and dispatches through the
-production-form systemd backend. `seal` and `abort` still fail with stable internal error 11.
+This is still not the complete release supervisor. The initial revision-zero `start` now
+authenticates, imports immutable evidence, obtains the host-wide claim, advances I74 and dispatches
+through the production-form systemd backend. After an exact `I74_SEALED` revision, a second
+pathless `start` reuses that immutable evidence and advances C74 with independent spawn evidence;
+it cannot skip the seal or use a stale revision. `seal` and `abort` still fail with stable internal
+error 11.
 `attach` executes the
 implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint, admitted-host and lease guards
 and durably records an exact response. There is no unconditional rejection left in the attach path:
@@ -189,14 +192,16 @@ transient-unit policy contains an exact argv array with no shell, a digest-bound
 environment, unprivileged user/group, CPU affinity, runtime and resource limits, output paths and
 hardening properties. The real backend issues `StartTransientUnit` in `fail` mode and observes the
 original MainPID plus exactly one daemon in the unit cgroup; boot, group, cgroup, cpuset and
-cardinality drift fail closed. At source `0e9d4c6a`, the full local WSL suite passes 110 ordinary
-supervisor tests with only the explicitly manual real-system-bus inspection ignored. Windows
-`clippy -D warnings`, eight manifest-builder tests and all 16 0.74 contract tests are green.
+cardinality drift fail closed. The C74 coordinator now accepts only the exact `I74_SEALED`
+revision, writes separate `c74-spawn-*` evidence, applies the same no-respawn recovery rule and
+journals a byte-exact accepted response before reply. At source `286863e4`, the full local WSL
+suite passes 114 ordinary supervisor tests with only the explicitly manual real-system-bus
+inspection ignored. Windows `clippy -D warnings` is green.
 
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
-supervisor restart, controller loss, bounded overhead, C74 orchestration, terminal marker release,
-sealing, abort and diagnostics still require the admitted Linux host or further implementation.
+supervisor restart, controller loss, bounded overhead, terminal marker release, sealing, abort and
+diagnostics still require the admitted Linux host or further implementation.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

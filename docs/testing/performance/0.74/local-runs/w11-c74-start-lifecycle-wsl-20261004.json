@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-c74-start-lifecycle",
+  "status": "passed-local-non-promotable",
+  "source_sha": "286863e4",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo fmt --manifest-path tools/long-run-supervisor-074/Cargo.toml -- --check"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 114,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "the initial I74 start alone accepts a staging manifest path at revision zero",
+    "the C74 start omits the staging path and is admitted only from the exact I74_SEALED revision",
+    "I74 and C74 use independent durable spawn intent and result documents",
+    "unsealed and stale C74 requests have no backend side effect",
+    "a lost C74 backend response is recovered by exact unit observation without a second start",
+    "an accepted C74 response is journalled and replayed byte-exactly without touching the backend",
+    "the authenticated Unix-socket path executes I74 and C74 once each through the injected backend"
+  ],
+  "limitations": [
+    "the production-form StartTransientUnit call for either role was not executed",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "I74 terminalization and sealing were test fixtures because live seal is not implemented yet",
+    "seal, abort, diagnostics, lease-expiry termination and terminal host-claim release remain incomplete",
+    "controller-loss, supervisor-restart and overhead-budget qualification remain unexecuted",
+    "WSL clippy was unavailable in the pinned nightly; strict clippy passed on Windows",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

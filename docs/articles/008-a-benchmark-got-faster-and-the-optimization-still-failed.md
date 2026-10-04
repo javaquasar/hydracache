@@ -675,12 +675,15 @@ not supplied by the request: it derives exact argv, a digest-bound minimal envir
 runtime and memory/FD/task limits, output paths and hardening properties from the admitted manifest
 and compiled policy, then uses `StartTransientUnit` with mode `fail`. Observation requires one
 MainPID and exactly one daemon with the original boot id, process group, cgroup path/inode and
-cpuset. At source `0e9d4c6a`, 110 ordinary supervisor tests pass locally under WSL2; Windows strict
-clippy, eight builder tests and 16 contract tests also pass.
+cpuset. A second signed start is now accepted only at the exact `I74_SEALED` revision, reuses the
+immutable manifest evidence without accepting a new staging path, and records independent C74
+intent/result files. Its replay and lost-response paths cannot issue a second backend start. At
+source `286863e4`, 114 ordinary supervisor tests pass locally under WSL2; Windows strict clippy
+also passes.
 
 No real transient unit or HydraCache process was launched for that result. The admitted-host
 account/directory permissions, controller and supervisor restart, controller-loss reattachment,
-overhead budget, C74 role, seal/abort/diagnostics and lease-expiry termination remain unproved or
+overhead budget, seal/abort/diagnostics and lease-expiry termination remain unproved or
 unfinished. The point is the same as for the performance candidates: implemented mechanics and
 release evidence are different claims.
 

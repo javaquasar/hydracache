@@ -2454,10 +2454,16 @@ shell, a digest-bound minimal environment, the frozen CPU mask, runtime/memory/F
 unprivileged ownership. It admits only the original MainPID and one daemon when boot id, process
 group, cgroup path/inode and cpuset all remain exact; a third process is a duplicate executor.
 
-That distinction is still essential. At source `0e9d4c6a`, 110 ordinary supervisor tests pass
+The same durable coordinator now starts C74 only from the exact sealed I74 revision. The second
+signed `start` request has no staging path, reuses the already imported immutable evidence, writes
+independent `c74-spawn-*` intent/result files and follows the same observe-only recovery rule after
+the intent boundary. Unsealed and stale requests have no backend effect; a lost backend response is
+adopted without a second start; an accepted response is replayed byte-for-byte from the journal.
+
+That distinction is still essential. At source `286863e4`, 114 ordinary supervisor tests pass
 under WSL, while the only real-system-bus inspection remains explicitly ignored. This is confirmed
-local implementation evidence, not confirmation that a provisioned Linux host preserves the
-process through controller and supervisor loss. Installing the service, creating a measured unit,
+local implementation evidence, not confirmation that a provisioned Linux host preserves either
+role through controller and supervisor loss. Installing the service, creating measured units,
 restarting the controller/supervisor, measuring overhead and exercising lease/abort/seal behavior
 must still pass before this mechanism can support a release claim.
 
