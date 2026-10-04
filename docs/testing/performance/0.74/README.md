@@ -141,8 +141,18 @@ filesystem metadata. It sorts bytewise-normalized paths, emits fixed uid/gid/mod
 headers, uses deterministic single-stream zstd compression, writes an external SHA-256, enforces
 the frozen file/byte limits, and refuses create-overwrite, nested outputs, symlinks, hardlinks and
 non-regular files. Tests compare byte-identical archives built from differently ordered trees and
-inspect every tar header. The live sealing state transition and Linux filesystem rehearsal remain
-incomplete.
+inspect every tar header.
+
+Packet assembly now precedes that archive step. The supervisor copies an explicit bounded raw file
+set through a create-new staging directory, derives every file size and digest, computes the
+canonical raw-set hash, derives role record counts/first/head hashes and process identities from
+the copied checkpoint journals, binds guard evidence by its copied digest, writes canonical
+`raw-manifest.json` and `packet-manifest.json`, fsyncs the tree and atomically renames it. Complete
+packets cannot contain an incomplete role or failed required guard, and promotable packets require
+both I74 and C74. The independent `xtask` verifier accepts both a generated I74 continuation and a
+generated two-role promotable packet. Two builds from separate roots produce identical manifests
+and archive SHA-256. The live sealing state transition, interrupted-build recovery policy and Linux
+filesystem rehearsal remain incomplete.
 
 The initial supervisor package passed all 30 targeted tests under local WSL2 Ubuntu at exact source
 `37566d71`. The live-status slice at `1a29aef1` passed 43 supervisor tests plus three durable
@@ -212,8 +222,9 @@ manual and ignored.
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and
 supervisor restart, controller loss and bounded overhead still require the admitted Linux host.
-Packet construction, the live seal/abort routes, diagnostics and lease-expiry termination remain
-implementation work; the terminal predicates and final host-marker release alone are not a seal.
+The live seal/abort routes, diagnostics and lease-expiry termination remain implementation work;
+deterministic packet construction is complete, but it is not yet joined to the terminal predicates,
+durable response and final host-marker release as one seal transaction.
 
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,

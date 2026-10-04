@@ -66,7 +66,7 @@ Implementation adds these repository paths:
 | tools/long-run-supervisor-074/src/systemd_unit.rs and process_identity.rs | fixed-namespace unit and process identity inspection |
 | tools/long-run-supervisor-074/src/checkpoint_evidence.rs and watchdog.rs | chain verification and phase-aware progress |
 | tools/long-run-supervisor-074/src/diagnostics.rs | bounded allowlisted diagnostic capture |
-| tools/long-run-supervisor-074/src/artifact.rs | deterministic sealing and artifact limits |
+| tools/long-run-supervisor-074/src/artifact.rs and archive.rs | canonical packet assembly, deterministic archive and artifact limits |
 | tools/long-run-supervisor-074/tests/ | protocol, state, crash, fault and security fixtures |
 | scripts/perf/long-run-supervisor-074/ | provisioning, systemd, sysusers, tmpfiles and admission scripts |
 | scripts/perf/performance_long_run_074.py | frozen manifest builder and workflow adapter |
@@ -493,6 +493,15 @@ the C74 packet. An incomplete seal has the same structural integrity but result=
 enumerated terminal reason. Artifact byte/file limits are checked before copy, during copy and
 before rename. Sealed directories are read-only and never modified; a repeated seal returns the
 existing digest.
+
+The local packet builder now implements the content boundary before the live transaction. Raw
+sources are explicit safe relative paths under the campaign directory; every component is checked
+before a create-new copy. The builder derives journal metadata from the copied bytes, not from a
+mutable source read, and atomically publishes canonical raw and packet manifests only after all
+files and directories are synced. The independently implemented xtask verifier accepts generated
+one-role continuation and two-role promotable fixtures, and separately built archives are
+byte-identical. Publishing read-only permissions, durable seal intent/result recovery and returning
+the existing digest on replay remain responsibilities of the live seal transaction.
 
 The workflow uploads:
 

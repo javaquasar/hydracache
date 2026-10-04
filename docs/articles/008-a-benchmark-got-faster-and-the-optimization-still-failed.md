@@ -697,6 +697,17 @@ an earlier attach request. Finally, the host claim can be released only from a c
 assembly and the live seal route remain unfinished, so these predicates do not yet authorize an
 artifact or release claim.
 
+Packet assembly is now implemented as another separate boundary. It copies only explicit safe
+relative sources into a create-new staging tree, derives the raw file set and guard digests from the
+copied bytes, derives role chain metadata from the copied journals, writes canonical manifests,
+syncs the tree and publishes it with one rename. A complete packet cannot hide a failed guard or an
+incomplete role; a promotable packet must contain I74 and C74. Independent `xtask` verification
+accepts generated continuation and final fixtures, while two clean builds produce the same packet
+and compressed archive digests. At source `daf738cf`, the 117-test supervisor suite and six packet
+verifier tests pass under WSL. The remaining distinction is deliberate: deterministic bytes exist,
+but live `seal` still must make terminal observation, packet publication, response replay and host
+claim release one recoverable transaction.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

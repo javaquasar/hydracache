@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-deterministic-packet-builder",
+  "status": "passed-local-non-promotable",
+  "source_sha": "daf738cf",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "wsl.exe bash -lc 'cargo test -p xtask --test long_run_campaign_074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 117,
+  "packet_verifier_tests_passed": 6,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "raw files are copied from explicit safe campaign-relative paths through a create-new staging tree",
+    "file sizes and digests are derived from copied bytes under frozen count and byte limits",
+    "role record count, first/head digest and process identities are derived from copied checkpoint journals",
+    "complete packets reject incomplete roles and failed required guards",
+    "promotable packets require complete I74 and C74 roles",
+    "independent xtask verification accepts generated continuation and final packet manifests",
+    "separate clean builds produce identical packet manifests, raw manifests and compressed archive SHA-256"
+  ],
+  "limitations": [
+    "the packet builder is not yet wired into the live seal operation",
+    "interrupted-build recovery, read-only publication and exact response replay remain live-seal work",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "abort, diagnostics, lease-expiry termination and incomplete sealing remain incomplete",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
