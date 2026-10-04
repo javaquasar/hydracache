@@ -229,12 +229,16 @@ independent of the unfinished 0.74 production shape:
 - a reproducible seeded stateful chaos campaign with continuous owner/backup/epoch invariants,
   partition-scoped transfer regression coverage and a trace fingerprint retained in fault evidence;
 - executable tenant/replay/replica-proof/redirect/generation/trust/audit/decode security guards and
-  an exact-source generator/validator for eight model, fault, history, RPO, transfer, listener,
-  bulk and lifecycle receipts, including same-seed replay and tamper rejection;
+  an exact-source generator/validator for thirteen model, fault, history, RPO, transfer, listener,
+  bulk, lifecycle, ACK, security, surface, explorer and Java receipts, including same-seed replay
+  and tamper rejection;
 - bounded ACK accounting, resumable checksum-fenced transfer, listener watermark, stable partial
   bulk and complete namespace drain/reclamation models, each with executable negative paths;
 - a composite transfer/expiry/failover/lifecycle explorer with deterministic schedule shrinking and
   a test-only RESP/HC1/HC2 Rust/HC2 Java projection into one dedup/event/accounting owner;
+- an abstract durable-recovery and dedup lifecycle, multi-subscriber filtering, bounded bulk
+  deadline/cancellation, transfer crash recovery, exact resource cleanup and test-only loopback
+  fault transport, plus an executable contract-to-test registry and Java coverage ratchet;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

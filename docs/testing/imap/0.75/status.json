@@ -33,7 +33,19 @@
       "composite_authority_explorer_and_shrinker",
       "cross_surface_reference_projection",
       "component_proof_receipts",
-      "stateful_java_semantic_foundation"
+      "stateful_java_semantic_foundation",
+      "contract_test_traceability",
+      "abstract_durable_recovery_model",
+      "dedup_lifecycle_model",
+      "multi_subscriber_listener_model",
+      "bulk_deadline_cancellation_model",
+      "transfer_crash_matrix",
+      "expanded_composite_interleavings",
+      "seeded_java_property_harness",
+      "new_code_coverage_ratchet",
+      "extended_component_receipts",
+      "exact_resource_cleanup_ledger",
+      "test_only_loopback_fault_transport"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

@@ -18,7 +18,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const RELEASE: &str = "0.75";
-const REQUIRED_SCHEMAS: [(&str, &str); 8] = [
+const REQUIRED_SCHEMAS: [(&str, &str); 13] = [
     ("authority_model", "hydracache.imap.model-receipt.v1"),
     (
         "fault_schedule",
@@ -33,6 +33,11 @@ const REQUIRED_SCHEMAS: [(&str, &str); 8] = [
     ("listener", "hydracache.imap.listener-receipt.v1"),
     ("bulk", "hydracache.imap.bulk-receipt.v1"),
     ("lifecycle", "hydracache.imap.lifecycle-receipt.v1"),
+    ("ack", "hydracache.imap.ack-receipt.v1"),
+    ("security", "hydracache.imap.security-receipt.v1"),
+    ("surface", "hydracache.imap.surface-receipt.v1"),
+    ("explorer", "hydracache.imap.explorer-receipt.v1"),
+    ("java_semantic", "hydracache.imap.java-semantic-receipt.v1"),
 ];
 
 #[derive(Debug, Deserialize)]
@@ -100,6 +105,11 @@ pub fn check_receipt_set_at_root(
         "listener.json",
         "bulk.json",
         "lifecycle.json",
+        "ack.json",
+        "security.json",
+        "surface.json",
+        "explorer.json",
+        "java-semantic.json",
     ]
     .into_iter()
     .collect::<BTreeSet<_>>();
@@ -117,7 +127,7 @@ pub fn check_receipt_set_at_root(
         .collect::<BTreeSet<_>>();
     if actual_names != expected_files {
         problems.push(format!(
-            "receipt set must contain exactly the eight canonical JSON files; found {actual_names:?}"
+            "receipt set must contain exactly the thirteen canonical JSON files; found {actual_names:?}"
         ));
     }
     let mut schema_ids = BTreeSet::new();
@@ -199,7 +209,7 @@ pub fn check_at_root(
     let required = REQUIRED_SCHEMAS.into_iter().collect::<BTreeSet<_>>();
     if actual != required {
         problems.push(
-            "foundation evidence registry must contain exactly eight required schemas".into(),
+            "foundation evidence registry must contain exactly thirteen required schemas".into(),
         );
     }
     for entry in &contract.schemas {

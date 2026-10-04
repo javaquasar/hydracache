@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
 
-const FILES: [&str; 10] = [
+const FILES: [&str; 11] = [
     "status.json",
     "operation-contract.json",
     "resource-bounds.json",
@@ -15,6 +15,7 @@ const FILES: [&str; 10] = [
     "rpo-rto-contract.json",
     "security-contract.json",
     "canonical-key-vectors.json",
+    "test-registry.json",
 ];
 
 fn root() -> PathBuf {
@@ -69,6 +70,62 @@ fn canary_missing_test_id_fails_closed() {
     assert!(problems(&temp)
         .iter()
         .any(|problem| problem.contains("missing test id")));
+}
+
+#[test]
+fn canary_unmapped_and_ambiguous_test_claims_fail_closed() {
+    let temp = fixture();
+    edit(&temp.path().join("test-registry.json"), |value| {
+        value["mappings"][0]["id_prefix"] = Value::String("unmatched::".into());
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("exactly one executable mapping")));
+
+    let temp = fixture();
+    edit(&temp.path().join("test-registry.json"), |value| {
+        let duplicate = value["mappings"][0].clone();
+        value["mappings"].as_array_mut().unwrap().push(duplicate);
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("duplicate test registry prefix")));
+}
+
+#[test]
+fn registry_targets_must_name_real_test_functions() {
+    let temp = tempfile::tempdir().unwrap();
+    let contract_dir = temp.path().join("docs/testing/imap/0.75");
+    fs::create_dir_all(&contract_dir).unwrap();
+    let source = root().join("docs/testing/imap/0.75");
+    for file in FILES {
+        fs::copy(source.join(file), contract_dir.join(file)).unwrap();
+    }
+    let registry: Value =
+        serde_json::from_slice(&fs::read(contract_dir.join("test-registry.json")).unwrap())
+            .unwrap();
+    let mut by_path = std::collections::BTreeMap::<String, String>::new();
+    for mapping in registry["mappings"].as_array().unwrap() {
+        by_path
+            .entry(mapping["path"].as_str().unwrap().to_owned())
+            .or_default()
+            .push_str(&format!("fn {}() {{}}\n", mapping["test"].as_str().unwrap()));
+    }
+    for (path, contents) in by_path {
+        let path = temp.path().join(path);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, contents).unwrap();
+    }
+    assert!(xtask::imap_contract::check_at_root(temp.path(), "0.75")
+        .unwrap()
+        .is_empty());
+    edit(&contract_dir.join("test-registry.json"), |value| {
+        value["mappings"][0]["test"] = Value::String("missing_test_function".into());
+    });
+    assert!(xtask::imap_contract::check_at_root(temp.path(), "0.75")
+        .unwrap()
+        .iter()
+        .any(|problem| problem.contains("does not contain test")));
 }
 
 #[test]

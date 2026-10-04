@@ -47,6 +47,14 @@ pub enum SecurityError {
     AuditCapacityExhausted,
 }
 
+impl std::fmt::Display for SecurityError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for SecurityError {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RouteClaims<'a> {
     pub authenticated: bool,

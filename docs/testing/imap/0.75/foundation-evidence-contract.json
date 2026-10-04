@@ -10,7 +10,12 @@
     {"kind": "transfer", "id": "hydracache.imap.transfer-receipt.v1", "path": "schemas/transfer-receipt.schema.json", "required_test_id": "HC-IMAP-075-TRANSFER-RECEIPT"},
     {"kind": "listener", "id": "hydracache.imap.listener-receipt.v1", "path": "schemas/listener-receipt.schema.json", "required_test_id": "HC-IMAP-075-LISTENER-RECEIPT"},
     {"kind": "bulk", "id": "hydracache.imap.bulk-receipt.v1", "path": "schemas/bulk-receipt.schema.json", "required_test_id": "HC-IMAP-075-BULK-RECEIPT"},
-    {"kind": "lifecycle", "id": "hydracache.imap.lifecycle-receipt.v1", "path": "schemas/lifecycle-receipt.schema.json", "required_test_id": "HC-IMAP-075-LIFECYCLE-RECEIPT"}
+    {"kind": "lifecycle", "id": "hydracache.imap.lifecycle-receipt.v1", "path": "schemas/lifecycle-receipt.schema.json", "required_test_id": "HC-IMAP-075-LIFECYCLE-RECEIPT"},
+    {"kind": "ack", "id": "hydracache.imap.ack-receipt.v1", "path": "schemas/ack-receipt.schema.json", "required_test_id": "HC-IMAP-075-ACK-RECEIPT"},
+    {"kind": "security", "id": "hydracache.imap.security-receipt.v1", "path": "schemas/security-receipt.schema.json", "required_test_id": "HC-IMAP-075-SECURITY-RECEIPT"},
+    {"kind": "surface", "id": "hydracache.imap.surface-receipt.v1", "path": "schemas/surface-receipt.schema.json", "required_test_id": "HC-IMAP-075-SURFACE-RECEIPT"},
+    {"kind": "explorer", "id": "hydracache.imap.explorer-receipt.v1", "path": "schemas/explorer-receipt.schema.json", "required_test_id": "HC-IMAP-075-EXPLORER-RECEIPT"},
+    {"kind": "java_semantic", "id": "hydracache.imap.java-semantic-receipt.v1", "path": "schemas/java-semantic-receipt.schema.json", "required_test_id": "HC-IMAP-075-JAVA-SEMANTIC-RECEIPT"}
   ],
   "admission": "structural_only_until_0_74_published",
   "production_capability": "disabled_fail_closed"

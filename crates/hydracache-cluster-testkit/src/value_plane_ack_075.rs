@@ -67,6 +67,14 @@ pub enum AckTrackerError {
     NotSatisfied,
 }
 
+impl std::fmt::Display for AckTrackerError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for AckTrackerError {}
+
 #[derive(Debug, Clone)]
 struct AckState {
     contract: AckContract,

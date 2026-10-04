@@ -144,6 +144,14 @@ pub enum CompositeExplorerError {
     InvalidBound(&'static str),
 }
 
+impl std::fmt::Display for CompositeExplorerError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for CompositeExplorerError {}
+
 pub struct CompositeExplorer {
     bounds: CompositeBounds,
 }

@@ -11,7 +11,7 @@ cargo xtask imap-value-plane-model --release 0.75 --seed 117 --output target/ima
 cargo xtask imap-foundation-evidence-check --release 0.75 --receipt target/imap-075/model-receipt.json
 ```
 
-Execute all locally available foundation probes, write the eight canonical receipts into a new
+Execute all locally available foundation probes, write the thirteen canonical receipts into a new
 directory, and validate the set as one exact-source unit:
 
 ```powershell
@@ -21,7 +21,8 @@ cargo xtask imap-foundation-evidence-check --release 0.75 --receipts target/imap
 
 The generator runs the bounded authority explorer, deterministic response-loss/replay probe,
 128-step seeded stateful chaos campaign, linearizability oracle, acknowledged-owner-loss/RPO probe,
-and replayable transfer/listener/bulk/lifecycle proofs. The testkit also sweeps deterministic
+and replayable transfer/listener/bulk/lifecycle/ACK/security/surface/explorer/Java proofs. The
+testkit also sweeps deterministic
 three-node schedules for proxy routing, replication
 proof, promotion, partition-scoped repair/rebalance, epoch catch-up, partial bulk and listener
 overflow, plus executable guards for every threat in `security-contract.json`.

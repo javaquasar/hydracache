@@ -329,6 +329,23 @@ struct CanonicalKeyVector {
     test_ids: Vec<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TestRegistry {
+    release: String,
+    contract_version: u32,
+    status: String,
+    mappings: Vec<TestMapping>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TestMapping {
+    id_prefix: String,
+    path: String,
+    test: String,
+}
+
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let release = parse_release(&args)?;
     let root = crate::doc_check::find_repo_root()?;
@@ -375,7 +392,11 @@ pub fn check_at_root(root: &Path, release: &str) -> Result<Vec<String>, Box<dyn 
             "unsupported release {release}; expected {RELEASE}"
         )]);
     }
-    check_contract_dir(&root.join("docs/testing/imap/0.75"))
+    let dir = root.join("docs/testing/imap/0.75");
+    let mut problems = check_contract_dir(&dir)?;
+    let registry: TestRegistry = load(&dir, "test-registry.json")?;
+    validate_registry_sources(root, &registry, &mut problems);
+    Ok(problems)
 }
 
 pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
@@ -389,6 +410,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let rpo_rto: RpoRtoContract = load(dir, "rpo-rto-contract.json")?;
     let security: SecurityContract = load(dir, "security-contract.json")?;
     let canonical_key: CanonicalKeyContract = load(dir, "canonical-key-vectors.json")?;
+    let test_registry: TestRegistry = load(dir, "test-registry.json")?;
 
     let mut problems = Vec::new();
     validate_headers(
@@ -453,6 +475,12 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
                 canonical_key.contract_version,
                 &canonical_key.status,
             ),
+            (
+                "test-registry.json",
+                &test_registry.release,
+                test_registry.contract_version,
+                &test_registry.status,
+            ),
         ],
         &mut problems,
     );
@@ -500,6 +528,19 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "composite_authority_explorer_and_shrinker",
         "cross_surface_reference_projection",
         "component_proof_receipts",
+        "stateful_java_semantic_foundation",
+        "contract_test_traceability",
+        "abstract_durable_recovery_model",
+        "dedup_lifecycle_model",
+        "multi_subscriber_listener_model",
+        "bulk_deadline_cancellation_model",
+        "transfer_crash_matrix",
+        "expanded_composite_interleavings",
+        "seeded_java_property_harness",
+        "new_code_coverage_ratchet",
+        "extended_component_receipts",
+        "exact_resource_cleanup_ledger",
+        "test_only_loopback_fault_transport",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -532,7 +573,141 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     validate_rpo_rto(&rpo_rto, &mut problems);
     validate_security(&security, &mut problems);
     validate_canonical_key(&canonical_key, &mut problems);
+    validate_test_registry(
+        &test_registry,
+        &operations,
+        &bounds,
+        &surfaces,
+        &mutation,
+        &retry,
+        &failure,
+        &rpo_rto,
+        &security,
+        &canonical_key,
+        &mut problems,
+    );
     Ok(problems)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn validate_test_registry(
+    registry: &TestRegistry,
+    operations: &OperationContract,
+    bounds: &BoundsContract,
+    surfaces: &SurfaceContract,
+    mutation: &MutationContract,
+    retry: &RetryContract,
+    failure: &FailureContract,
+    rpo_rto: &RpoRtoContract,
+    security: &SecurityContract,
+    canonical_key: &CanonicalKeyContract,
+    problems: &mut Vec<String>,
+) {
+    let mut claimed = Vec::<&str>::new();
+    claimed.extend(operations.errors.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(
+        operations
+            .ttl_directives
+            .iter()
+            .map(|item| item.test_id.as_str()),
+    );
+    claimed.extend(
+        operations
+            .operations
+            .iter()
+            .flat_map(|item| item.test_ids.iter().map(String::as_str)),
+    );
+    claimed.extend(bounds.bounds.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(
+        surfaces
+            .surfaces
+            .iter()
+            .flat_map(|surface| surface.cells.iter().map(|item| item.test_id.as_str())),
+    );
+    claimed.extend(mutation.stages.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(retry.rules.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(failure.cells.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(rpo_rto.cells.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(security.threats.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(
+        canonical_key
+            .vectors
+            .iter()
+            .flat_map(|item| item.test_ids.iter().map(String::as_str)),
+    );
+
+    let mut prefixes = BTreeSet::new();
+    for mapping in &registry.mappings {
+        if mapping.id_prefix.trim().is_empty()
+            || mapping.path.trim().is_empty()
+            || mapping.test.trim().is_empty()
+        {
+            problems.push("test registry mappings must have prefix, path and test".into());
+        }
+        if !prefixes.insert(mapping.id_prefix.as_str()) {
+            problems.push(format!(
+                "duplicate test registry prefix {}",
+                mapping.id_prefix
+            ));
+        }
+    }
+    let mut used = BTreeSet::new();
+    for test_id in claimed {
+        let matches = registry
+            .mappings
+            .iter()
+            .enumerate()
+            .filter(|(_, mapping)| test_id.starts_with(&mapping.id_prefix))
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!(
+                "contract test id {test_id} must resolve to exactly one executable mapping"
+            ));
+        } else {
+            used.insert(matches[0].0);
+        }
+    }
+    for (index, mapping) in registry.mappings.iter().enumerate() {
+        if !used.contains(&index) {
+            problems.push(format!(
+                "test registry prefix {} is not used by a contract claim",
+                mapping.id_prefix
+            ));
+        }
+    }
+}
+
+fn validate_registry_sources(root: &Path, registry: &TestRegistry, problems: &mut Vec<String>) {
+    for mapping in &registry.mappings {
+        let relative = Path::new(&mapping.path);
+        if relative.is_absolute()
+            || relative
+                .components()
+                .any(|component| matches!(component, std::path::Component::ParentDir))
+        {
+            problems.push(format!(
+                "test registry path must stay repository-relative: {}",
+                mapping.path
+            ));
+            continue;
+        }
+        let path = root.join(relative);
+        let Ok(source) = fs::read_to_string(&path) else {
+            problems.push(format!(
+                "test registry source does not exist: {}",
+                mapping.path
+            ));
+            continue;
+        };
+        let rust_signature = format!("fn {}", mapping.test);
+        let java_signature = format!("void {}(", mapping.test);
+        if !source.contains(&rust_signature) && !source.contains(&java_signature) {
+            problems.push(format!(
+                "test registry target {} does not contain test {}",
+                mapping.path, mapping.test
+            ));
+        }
+    }
 }
 
 fn load<T: DeserializeOwned>(dir: &Path, name: &str) -> Result<T, Box<dyn Error>> {

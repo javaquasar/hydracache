@@ -1,18 +1,30 @@
+use hydracache_cluster_testkit::value_plane_ack_075::{
+    AckContract, AckTrackerBounds, ReplicaAckTracker, ReplicaApplyAck, ReplicaGeneration,
+};
 use hydracache_cluster_testkit::value_plane_admission_075::{
     NamespaceLifecycle, ReclamationOwners, ReclamationWatermarks,
 };
 use hydracache_cluster_testkit::value_plane_bulk_075::{
     BulkBounds, BulkInput, BulkOutcome, PartitionedBulkExecution,
 };
+use hydracache_cluster_testkit::value_plane_explorer_075::{CompositeBounds, CompositeExplorer};
 use hydracache_cluster_testkit::value_plane_listener_075::{
     ClusterListenerModel, ListenerBounds, ListenerEvent, ListenerEventKind,
 };
-use hydracache_cluster_testkit::value_plane_model_075::{CanonicalMapKey, MutationIdentity};
+use hydracache_cluster_testkit::value_plane_model_075::{
+    CanonicalMapKey, MutationIdentity, MutationOperation, TtlDirective, ValuePlaneBounds,
+};
+use hydracache_cluster_testkit::value_plane_security_075::{
+    ReplayGuard, ReplayIdentity, SecurityBounds, TrustEpochWindow,
+};
+use hydracache_cluster_testkit::value_plane_surface_075::{
+    CrossSurfaceReferenceMap, IngressPrincipal, SurfaceId, SurfaceOperation, VerifiedMapCommand,
+};
 use hydracache_cluster_testkit::value_plane_transfer_075::{
     digest_chunks, PartitionTransfer, TransferBounds, TransferManifest,
 };
 use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,10 +33,25 @@ pub enum ComponentProofKind {
     Listener,
     Bulk,
     Lifecycle,
+    Ack,
+    Security,
+    Surface,
+    Explorer,
+    JavaSemantic,
 }
 
 impl ComponentProofKind {
-    pub const ALL: [Self; 4] = [Self::Transfer, Self::Listener, Self::Bulk, Self::Lifecycle];
+    pub const ALL: [Self; 9] = [
+        Self::Transfer,
+        Self::Listener,
+        Self::Bulk,
+        Self::Lifecycle,
+        Self::Ack,
+        Self::Security,
+        Self::Surface,
+        Self::Explorer,
+        Self::JavaSemantic,
+    ];
 
     pub const fn kind(self) -> &'static str {
         match self {
@@ -32,6 +59,11 @@ impl ComponentProofKind {
             Self::Listener => "listener",
             Self::Bulk => "bulk",
             Self::Lifecycle => "lifecycle",
+            Self::Ack => "ack",
+            Self::Security => "security",
+            Self::Surface => "surface",
+            Self::Explorer => "explorer",
+            Self::JavaSemantic => "java_semantic",
         }
     }
 
@@ -41,6 +73,11 @@ impl ComponentProofKind {
             Self::Listener => "hydracache.imap.listener-receipt.v1",
             Self::Bulk => "hydracache.imap.bulk-receipt.v1",
             Self::Lifecycle => "hydracache.imap.lifecycle-receipt.v1",
+            Self::Ack => "hydracache.imap.ack-receipt.v1",
+            Self::Security => "hydracache.imap.security-receipt.v1",
+            Self::Surface => "hydracache.imap.surface-receipt.v1",
+            Self::Explorer => "hydracache.imap.explorer-receipt.v1",
+            Self::JavaSemantic => "hydracache.imap.java-semantic-receipt.v1",
         }
     }
 
@@ -50,6 +87,11 @@ impl ComponentProofKind {
             Self::Listener => "listener.json",
             Self::Bulk => "bulk.json",
             Self::Lifecycle => "lifecycle.json",
+            Self::Ack => "ack.json",
+            Self::Security => "security.json",
+            Self::Surface => "surface.json",
+            Self::Explorer => "explorer.json",
+            Self::JavaSemantic => "java-semantic.json",
         }
     }
 
@@ -74,12 +116,183 @@ pub fn execute_component_proof(
         ComponentProofKind::Listener => listener_trace(seed)?,
         ComponentProofKind::Bulk => bulk_trace(seed)?,
         ComponentProofKind::Lifecycle => lifecycle_trace(seed)?,
+        ComponentProofKind::Ack => ack_trace(seed)?,
+        ComponentProofKind::Security => security_trace(seed)?,
+        ComponentProofKind::Surface => surface_trace(seed)?,
+        ComponentProofKind::Explorer => explorer_trace()?,
+        ComponentProofKind::JavaSemantic => vec![java_seeded_scenario_fingerprint(seed, 90)?],
     };
     Ok(ComponentProof {
         seed,
         steps: trace.len(),
         proof_sha256: trace_digest(seed, &trace),
     })
+}
+
+fn ack_trace(seed: u64) -> Result<Vec<String>, Box<dyn Error>> {
+    let identity = MutationIdentity::new("receipt-ack", seed.max(1));
+    let replicas = BTreeSet::from([
+        ReplicaGeneration::new("backup-a", 2),
+        ReplicaGeneration::new("backup-b", 3),
+    ]);
+    let contract = AckContract {
+        partition: 1,
+        epoch: 4,
+        version: 7,
+        checksum: seed,
+        mutation: identity.clone(),
+        expected_replicas: replicas,
+        required: 2,
+        retained_bytes: 8,
+    };
+    let mut tracker = ReplicaAckTracker::new(AckTrackerBounds {
+        max_in_flight: 1,
+        max_in_flight_bytes: 8,
+        max_expected_replicas: 2,
+    })?;
+    tracker.register(contract)?;
+    for (node, generation) in [("backup-a", 2), ("backup-b", 3)] {
+        tracker.record_ack(ReplicaApplyAck {
+            partition: 1,
+            epoch: 4,
+            version: 7,
+            checksum: seed,
+            mutation: identity.clone(),
+            replica: ReplicaGeneration::new(node, generation),
+        })?;
+    }
+    tracker.finish(&identity)?;
+    if !tracker.is_empty() {
+        return Err("ack tracker retained terminal ownership".into());
+    }
+    Ok(vec![
+        "registered".into(),
+        "ack:backup-a:g2".into(),
+        "ack:backup-b:g3".into(),
+        "finished:clean".into(),
+    ])
+}
+
+fn security_trace(seed: u64) -> Result<Vec<String>, Box<dyn Error>> {
+    let _bounds = SecurityBounds::default();
+    let window = TrustEpochWindow::new(4, 5)?;
+    if !window.accepts(4, seed) {
+        return Err("current trust epoch was rejected".into());
+    }
+    let identity = ReplayIdentity {
+        tenant: "tenant-a".into(),
+        client: "receipt-security".into(),
+        request: seed.max(1),
+    };
+    let mut guard = ReplayGuard::new(1)?;
+    let payload = seed.to_be_bytes();
+    let first = guard.admit(identity.clone(), &payload)?;
+    let replay = guard.admit(identity, &payload)?;
+    Ok(vec![
+        "trust:accepted".into(),
+        format!("replay:{first:?}"),
+        format!("replay:{replay:?}"),
+        "bounded:1".into(),
+    ])
+}
+
+fn surface_trace(seed: u64) -> Result<Vec<String>, Box<dyn Error>> {
+    let principal = IngressPrincipal {
+        tenant: "tenant-a".into(),
+    };
+    let mut map = CrossSurfaceReferenceMap::new(7, ValuePlaneBounds::default())?;
+    let surfaces = [
+        SurfaceId::Resp,
+        SurfaceId::Hc1,
+        SurfaceId::Hc2Rust,
+        SurfaceId::Hc2Java,
+    ];
+    let mut trace = Vec::new();
+    for (index, surface) in surfaces.into_iter().enumerate() {
+        let command = VerifiedMapCommand::new(
+            surface,
+            &principal,
+            "tenant-a",
+            "orders",
+            1,
+            b"key".to_vec(),
+            SurfaceOperation::Mutation {
+                identity: MutationIdentity::new("receipt-surface", seed + index as u64 + 1),
+                operation: MutationOperation::Put {
+                    value: vec![index as u8],
+                    ttl: TtlDirective::Eternal,
+                },
+            },
+        )?;
+        map.execute(command)?;
+        trace.push(format!("{surface:?}:event{}", map.event_count()));
+    }
+    Ok(trace)
+}
+
+fn explorer_trace() -> Result<Vec<String>, Box<dyn Error>> {
+    let report = CompositeExplorer::new(CompositeBounds {
+        max_depth: 9,
+        max_states: 50_000,
+    })?
+    .explore();
+    if !report.passed() || report.action_coverage.len() != 19 {
+        return Err("composite explorer proof failed".into());
+    }
+    Ok(vec![
+        format!("states:{}", report.explored_states),
+        format!("transitions:{}", report.explored_transitions),
+        format!("depth:{}", report.max_depth_reached),
+        format!("actions:{}", report.action_coverage.len()),
+    ])
+}
+
+pub fn java_seeded_scenario_fingerprint(
+    seed: u64,
+    step_count: usize,
+) -> Result<String, Box<dyn Error>> {
+    if step_count == 0 || step_count > 10_000 {
+        return Err("Java semantic step count is out of bounds".into());
+    }
+    let mut digest = Sha256::new();
+    digest.update(seed.to_be_bytes());
+    let mut state = seed;
+    for index in 0..step_count {
+        state = java_xorshift(state);
+        let key = (state & 3) as u8;
+        let value = (((state >> 8) & 7) as u8).saturating_add(16);
+        let expected = (((state >> 16) & 7) as u8).saturating_add(16);
+        digest.update(format!("seed-{index}").as_bytes());
+        let operation_ordinal = [2_u8, 3, 4, 8, 6, 12, 15, 9, 14][index % 9];
+        digest.update([operation_ordinal]);
+        match index % 9 {
+            0 | 1 | 4 => digest.update([key, value]),
+            2 => digest.update([key, value, expected]),
+            3 => digest.update([key, expected]),
+            5 | 8 => digest.update([key]),
+            6 => {}
+            7 => digest.update([key, (((state >> 24) & 3) as u8).saturating_add(4)]),
+            _ => unreachable!(),
+        }
+        digest.update(if index % 9 == 6 { 1_u64 } else { 0 }.to_be_bytes());
+    }
+    Ok(digest
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
+}
+
+fn java_xorshift(state: u64) -> u64 {
+    let mut value = if state == 0 {
+        0x9e37_79b9_7f4a_7c15
+    } else {
+        state
+    };
+    value ^= value << 13;
+    value ^= value >> 7;
+    value ^= value << 17;
+    value
 }
 
 fn transfer_trace(seed: u64) -> Result<Vec<String>, Box<dyn Error>> {

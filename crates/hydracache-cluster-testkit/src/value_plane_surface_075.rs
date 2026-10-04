@@ -59,6 +59,14 @@ pub enum SurfaceError {
     Model(ValuePlaneError),
 }
 
+impl std::fmt::Display for SurfaceError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{self:?}")
+    }
+}
+
+impl std::error::Error for SurfaceError {}
+
 impl From<ValuePlaneError> for SurfaceError {
     fn from(value: ValuePlaneError) -> Self {
         Self::Model(value)
