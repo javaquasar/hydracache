@@ -283,6 +283,25 @@ is made until that rehearsal exists.
 At source `8d673777`, the full WSL suite passes 132 ordinary tests with one manual system-bus test
 ignored. See `local-runs/w11-live-seal-dispatch-wsl-20261005.json`.
 
+The measured-process side now closes the remaining local producer gap. After verifying the
+terminal checkpoint chain, `tools/performance-integrated-074` binds the on-disk campaign manifest,
+role and campaign directory; requires exactly the guards frozen before the run; and writes one
+canonical guard-result document for each guard. Every guard result names at least one already
+durable role-owned evidence file. The writer constructs the exact sorted raw set, applies the
+frozen file/byte limits and publishes `seal-input-inventory.json` last. Publication uses a synced
+create-new pending file plus an atomic same-filesystem link, so recovery can finish either the
+pre-link or post-link/pre-cleanup crash window but can never replace divergent bytes. Cross-role,
+traversal, symlink and hardlink evidence, a failed guard in a complete result and manifest drift
+all fail before an inventory becomes visible. The positive integration feeds the published bytes
+directly into the independent strict resolver. At source `44f9270b`, nine Windows tests, the same
+nine WSL tests and strict Windows clippy pass. See
+`local-runs/w11-terminal-inventory-writer-wsl-20261005.json`.
+
+This completes the local producer-to-seal evidence path, not the admitted-host claim. The actual
+qualification harness still has to call this library with its real semantic, native
+non-regression and retention evidence, and production ownership/system-bus behavior remains a
+host rehearsal item.
+
 The same local crate now contains the pure campaign state machine, request replay map and attach
 predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
 cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,

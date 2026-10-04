@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-terminal-inventory-writer",
+  "status": "passed-local-non-promotable",
+  "source_sha": "44f9270b",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo test -p hydracache-performance-integrated-074 --locked",
+    "cargo clippy -p hydracache-performance-integrated-074 --all-targets --locked -- -D warnings",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-performance-integrated-074 --locked'"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "windows_tests_passed": 9,
+  "wsl_tests_passed": 9,
+  "failed": 0,
+  "confirmed": [
+    "terminal checkpoint verification precedes all guard-result and inventory publication",
+    "the producer binds campaign manifest bytes and digest, campaign directory, role and the exact frozen guard identifiers",
+    "every guard result names durable role-owned source evidence and both layers enter the explicit raw set",
+    "complete publication rejects failed guards and cross-role evidence before exposing an inventory",
+    "the inventory is canonical, bounded and published last through a recoverable create-new/link protocol",
+    "pre-link and linked-before-cleanup crash windows reconcile only byte-identical content",
+    "divergent existing publications are not overwritten",
+    "the published producer output is accepted by the independent strict seal-input resolver"
+  ],
+  "limitations": [
+    "the production qualification harness has not yet supplied real semantic, native non-regression and retention evidence to this API",
+    "production uid/gid ownership, mount behavior and supervisor/systemd integration require admitted-host rehearsal",
+    "abort dispatch, diagnostic capture and lease-expiry termination remain separate implementation work",
+    "no measured HydraCache process, service or expensive qualification run was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

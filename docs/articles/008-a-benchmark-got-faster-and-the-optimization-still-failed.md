@@ -346,6 +346,18 @@ inside is evidence. Unknown fields, unlisted files, cross-role paths, traversal,
 hardlinks and limit overflow fail closed. Before C74 can reuse I74, the resolver reopens the
 read-only sealed packet and compares the original input bytes with the sealed copies.
 
+That boundary now has a producer as well as a consumer. The measured process cannot announce an
+inventory until its checkpoint chain is terminal. It must provide exactly the guard IDs frozen in
+the campaign manifest, and each guard must point to durable role-owned source evidence. The writer
+emits a canonical guard-result document, includes the document and its sources in the exact raw
+set, checks the frozen limits, and makes the inventory visible last. Its create-new/link protocol
+can recover the two local crash windows without overwriting conflicting bytes; the published file
+is accepted only after the temporary link is removed and the final inode has a single link. A
+complete result containing a failed guard and any cross-role evidence are rejected before the
+inventory appears. The positive test then sends those exact producer bytes through the independent
+supervisor resolver, closing a subtle gap where a strict consumer existed but no equally strict
+way to generate its input did.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

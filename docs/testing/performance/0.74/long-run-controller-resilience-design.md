@@ -514,6 +514,19 @@ digest only from the durable I74 seal result, re-verifies the published read-onl
 compares every original I74 input with its sealed copy before final assembly. Thus mutable source
 drift is rejected before a final artifact is created, not deferred to release review.
 
+The corresponding producer is part of the measured-process library rather than the controller.
+Only after the checkpoint journal verifies as terminal does it accept the frozen campaign manifest
+and exact guard outcomes. Each outcome points to at least one pre-existing role-owned evidence file;
+the producer writes a canonical result document under `roles/<role>/guards/`, includes both the
+result and its source evidence in the raw set, checks the frozen file/byte limits and publishes the
+inventory last. Guard-result and inventory names are deterministic. Publication uses a synced
+create-new pending file followed by an atomic hard link into the final name and pending-link
+cleanup. On replay, identical pre-link and linked-but-not-cleaned windows are completed, while any
+different existing byte string fails closed. The final surviving file must have one link. The
+positive integration passes the resulting inventory through the supervisor resolver; negative
+coverage rejects a complete result with a failed guard and cross-role evidence without publishing
+an inventory.
+
 The durable artifact subtransaction now persists a canonical request/role/plan/limit-bound intent
 before building. On retry it verifies and adopts exact final packet/archive directories, recovers a
 fully verified `.building` directory through the missing rename, and repairs only the narrow synced
