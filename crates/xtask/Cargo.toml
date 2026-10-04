@@ -30,6 +30,7 @@ toml.workspace = true
 workspace = true
 
 [dev-dependencies]
+hydracache-long-run-supervisor-074 = { path = "../../tools/long-run-supervisor-074" }
 tempfile = "3"
 
 [target.'cfg(windows)'.dependencies]

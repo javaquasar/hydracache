@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 pub mod archive;
+pub mod artifact;
 pub mod auth;
 pub mod checkpoint_evidence;
 #[cfg(target_os = "linux")]
@@ -115,6 +116,7 @@ pub struct RecordEnvelope {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct VerificationReport {
     pub records: u64,
+    pub first_record_sha256: String,
     pub head_sha256: String,
     pub campaign_id: String,
     pub role: Role,
@@ -228,6 +230,7 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
 
     let mut previous = GENESIS_HASH.to_owned();
     let mut first: Option<CheckpointPayload> = None;
+    let mut first_record_sha256 = None;
     let mut last_elapsed = 0;
     let mut last_wall = String::new();
     let mut last: Option<RecordEnvelope> = None;
@@ -263,6 +266,7 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
             }
         } else {
             first = Some(envelope.payload.clone());
+            first_record_sha256 = Some(envelope.record_sha256.clone());
         }
         last_elapsed = envelope.payload.monotonic_elapsed_ns;
         last_wall.clone_from(&envelope.payload.wall_clock_utc);
@@ -273,6 +277,7 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
     let last = last.ok_or(ChainError::Empty)?;
     Ok(VerificationReport {
         records: last.sequence,
+        first_record_sha256: first_record_sha256.ok_or(ChainError::Empty)?,
         head_sha256: last.record_sha256,
         campaign_id: first.campaign_id,
         role: first.role,

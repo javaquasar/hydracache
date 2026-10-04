@@ -2,7 +2,14 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
-use xtask::long_run_campaign::{raw_file_set_sha256, RawFile};
+use xtask::long_run_campaign::{raw_file_set_sha256, verify_manifest, RawFile};
+
+use hydracache_long_run_supervisor_074::archive::{create_deterministic_archive, ArchiveLimits};
+use hydracache_long_run_supervisor_074::artifact::{
+    build_packet, ArtifactError, GuardEvidenceInput, PacketLimits, PacketPlan, PacketResult,
+    RoleEvidenceInput,
+};
+use hydracache_long_run_supervisor_074::Role;
 
 const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -141,6 +148,67 @@ fn schema(name: &str) -> Value {
     serde_json::from_slice(&fs::read(path).unwrap()).unwrap()
 }
 
+fn built_packet_fixture(
+    root: &Path,
+    output_name: &str,
+) -> hydracache_long_run_supervisor_074::artifact::PacketReceipt {
+    let campaign_id = "a".repeat(64);
+    let campaign = root.join(&campaign_id);
+    fs::create_dir_all(campaign.join("roles/i74/guards")).unwrap();
+    let campaign_bytes = canonical(&json!({
+        "campaign_id": campaign_id,
+        "release": "0.74"
+    }));
+    fs::write(campaign.join("campaign-start.json"), &campaign_bytes).unwrap();
+    let guard_bytes = canonical(&json!({"guard": "semantic", "passed": true}));
+    fs::write(campaign.join("roles/i74/guards/semantic.json"), guard_bytes).unwrap();
+    let first = record(1, GENESIS, "i74");
+    let second = record(2, first["record_sha256"].as_str().unwrap(), "i74");
+    fs::write(
+        campaign.join("roles/i74/checkpoints.jsonl"),
+        format!(
+            "{}\n{}\n",
+            serde_json::to_string(&first).unwrap(),
+            serde_json::to_string(&second).unwrap()
+        ),
+    )
+    .unwrap();
+    let outputs = root.join("outputs");
+    fs::create_dir_all(&outputs).unwrap();
+    build_packet(
+        &campaign,
+        &outputs.join(output_name),
+        &PacketPlan {
+            campaign_id: "a".repeat(64),
+            campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+            result: PacketResult::Complete,
+            promotable: false,
+            terminal_reason: None,
+            required_final_guards: vec!["semantic".to_owned()],
+            guard_evidence: vec![GuardEvidenceInput {
+                id: "semantic".to_owned(),
+                passed: true,
+                source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
+            }],
+            roles: vec![RoleEvidenceInput {
+                role: Role::I74,
+                result: PacketResult::Complete,
+                journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
+            }],
+            raw_files: vec![
+                PathBuf::from("roles/i74/checkpoints.jsonl"),
+                PathBuf::from("campaign-start.json"),
+                PathBuf::from("roles/i74/guards/semantic.json"),
+            ],
+        },
+        PacketLimits {
+            maximum_files: 2_000,
+            maximum_bytes: 1_073_741_824,
+        },
+    )
+    .unwrap()
+}
+
 #[test]
 fn independent_verifier_accepts_exact_packet_and_rejects_manifest_drift() {
     let directory = tempfile::tempdir().unwrap();
@@ -168,6 +236,173 @@ fn independent_verifier_accepts_exact_packet_and_rejects_manifest_drift() {
     changed["roles"][0]["expected_records"] = json!(3);
     fs::write(&manifest, canonical(&changed)).unwrap();
     assert!(xtask::long_run_campaign::verify_manifest(&manifest).is_err());
+}
+
+#[test]
+fn supervisor_builder_produces_a_deterministic_independently_verified_packet() {
+    let first_root = tempfile::tempdir().unwrap();
+    let second_root = tempfile::tempdir().unwrap();
+    let first = built_packet_fixture(first_root.path(), "packet");
+    let second = built_packet_fixture(second_root.path(), "packet");
+
+    assert_eq!(first.packet_manifest_sha256, second.packet_manifest_sha256);
+    assert_eq!(first.raw_manifest_sha256, second.raw_manifest_sha256);
+    assert_eq!(
+        first.raw_manifest_set_sha256,
+        second.raw_manifest_set_sha256
+    );
+    assert_eq!(first.raw_file_count, 3);
+    assert_eq!(
+        verify_manifest(&first.packet_manifest_path).unwrap().len(),
+        1
+    );
+    assert_eq!(
+        verify_manifest(&second.packet_manifest_path).unwrap().len(),
+        1
+    );
+
+    let archive_limits = ArchiveLimits {
+        maximum_files: 10,
+        maximum_uncompressed_bytes: 1_073_741_824,
+        maximum_archive_bytes: 1_073_741_824,
+    };
+    let first_archive = create_deterministic_archive(
+        &first.packet_directory,
+        &first_root.path().join("archive"),
+        archive_limits,
+    )
+    .unwrap();
+    let second_archive = create_deterministic_archive(
+        &second.packet_directory,
+        &second_root.path().join("archive"),
+        archive_limits,
+    )
+    .unwrap();
+    assert_eq!(first_archive.archive_sha256, second_archive.archive_sha256);
+}
+
+#[test]
+fn supervisor_builder_produces_a_promotable_two_role_packet() {
+    let root = tempfile::tempdir().unwrap();
+    let continuation = built_packet_fixture(root.path(), "continuation");
+    assert_eq!(
+        verify_manifest(&continuation.packet_manifest_path)
+            .unwrap()
+            .len(),
+        1
+    );
+
+    let campaign = root.path().join("a".repeat(64));
+    fs::create_dir_all(campaign.join("roles/c74")).unwrap();
+    let first = record(1, GENESIS, "c74");
+    let second = record(2, first["record_sha256"].as_str().unwrap(), "c74");
+    fs::write(
+        campaign.join("roles/c74/checkpoints.jsonl"),
+        format!(
+            "{}\n{}\n",
+            serde_json::to_string(&first).unwrap(),
+            serde_json::to_string(&second).unwrap()
+        ),
+    )
+    .unwrap();
+    let campaign_bytes = fs::read(campaign.join("campaign-start.json")).unwrap();
+    let final_packet = build_packet(
+        &campaign,
+        &root.path().join("outputs/final"),
+        &PacketPlan {
+            campaign_id: "a".repeat(64),
+            campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+            result: PacketResult::Complete,
+            promotable: true,
+            terminal_reason: None,
+            required_final_guards: vec!["semantic".to_owned()],
+            guard_evidence: vec![GuardEvidenceInput {
+                id: "semantic".to_owned(),
+                passed: true,
+                source_relative_path: PathBuf::from("roles/i74/guards/semantic.json"),
+            }],
+            roles: vec![
+                RoleEvidenceInput {
+                    role: Role::C74,
+                    result: PacketResult::Complete,
+                    journal_relative_path: PathBuf::from("roles/c74/checkpoints.jsonl"),
+                },
+                RoleEvidenceInput {
+                    role: Role::I74,
+                    result: PacketResult::Complete,
+                    journal_relative_path: PathBuf::from("roles/i74/checkpoints.jsonl"),
+                },
+            ],
+            raw_files: vec![
+                PathBuf::from("campaign-start.json"),
+                PathBuf::from("roles/i74/guards/semantic.json"),
+                PathBuf::from("roles/i74/checkpoints.jsonl"),
+                PathBuf::from("roles/c74/checkpoints.jsonl"),
+            ],
+        },
+        PacketLimits {
+            maximum_files: 2_000,
+            maximum_bytes: 1_073_741_824,
+        },
+    )
+    .unwrap();
+    let reports = verify_manifest(&final_packet.packet_manifest_path).unwrap();
+    assert_eq!(reports.len(), 2);
+    assert_eq!(
+        reports
+            .iter()
+            .map(|report| report.role.as_str())
+            .collect::<Vec<_>>(),
+        ["c74", "i74"]
+    );
+}
+
+#[test]
+fn supervisor_builder_rejects_unsafe_sources_before_publishing_a_packet() {
+    let root = tempfile::tempdir().unwrap();
+    let campaign_id = "a".repeat(64);
+    let campaign = root.path().join(&campaign_id);
+    fs::create_dir(&campaign).unwrap();
+    let campaign_bytes = canonical(&json!({
+        "campaign_id": campaign_id,
+        "release": "0.74"
+    }));
+    fs::write(campaign.join("campaign-start.json"), &campaign_bytes).unwrap();
+    let plan = PacketPlan {
+        campaign_id: "a".repeat(64),
+        campaign_manifest_sha256: hex(&Sha256::digest(&campaign_bytes)),
+        result: PacketResult::Complete,
+        promotable: false,
+        terminal_reason: None,
+        required_final_guards: vec!["semantic".to_owned()],
+        guard_evidence: vec![GuardEvidenceInput {
+            id: "semantic".to_owned(),
+            passed: true,
+            source_relative_path: PathBuf::from("campaign-start.json"),
+        }],
+        roles: vec![RoleEvidenceInput {
+            role: Role::I74,
+            result: PacketResult::Complete,
+            journal_relative_path: PathBuf::from("../escape.jsonl"),
+        }],
+        raw_files: vec![
+            PathBuf::from("campaign-start.json"),
+            PathBuf::from("../escape.jsonl"),
+        ],
+    };
+    assert!(matches!(
+        build_packet(
+            &campaign,
+            &root.path().join("packet"),
+            &plan,
+            PacketLimits {
+                maximum_files: 10,
+                maximum_bytes: 1_024,
+            },
+        ),
+        Err(ArtifactError::Path)
+    ));
+    assert!(!root.path().join("packet").exists());
 }
 
 #[test]
