@@ -263,6 +263,10 @@ that every still-present I74 source byte equals the sealed copy before it can co
 inventories. Unlisted campaign files are never swept into an artifact. The independent final-packet
 verifier also compares the complete I74 role manifest with the supplied continuation rather than
 accepting a matching top-level digest alone.
+At source `3e39644d`, 129 ordinary WSL supervisor tests, seven packet/inventory verifier tests and
+16 performance-contract tests pass; the real-system-bus test remains manual and ignored. The
+machine-readable local receipt is
+`local-runs/w11-seal-input-resolver-wsl-20261005.json`.
 
 This remains local non-promotable evidence. No supervisor service, transient measured unit or
 HydraCache process was started. Production account/directory ownership, real controller and

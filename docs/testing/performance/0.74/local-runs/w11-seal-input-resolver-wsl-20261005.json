@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-seal-input-resolver",
+  "status": "passed-local-non-promotable",
+  "source_sha": "3e39644d",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "cargo test -p hydracache-long-run-supervisor-074 --test seal_input --locked",
+    "cargo test -p xtask --test long_run_campaign_074 --test performance_contract_074 --locked",
+    "cargo clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --locked -- -D warnings",
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "wsl.exe bash -lc 'cargo test -p xtask --test long_run_campaign_074 --test performance_contract_074 --locked'",
+    "cargo xtask performance-contract-check --release 0.74"
+  ],
+  "external_host_used": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "systemd_unit_created_or_restarted": false,
+  "supervisor_tests_passed": 129,
+  "packet_verifier_tests_passed": 7,
+  "performance_contract_tests_passed": 16,
+  "ignored_manual_system_bus_tests": 1,
+  "failed": 0,
+  "confirmed": [
+    "one-role I74 packets carry no continuation digest and final two-role packets require one lowercase SHA-256",
+    "offline final verification recomputes the exact continuation manifest digest and compares the complete I74 role manifest",
+    "each role inventory is canonical, schema-strict, bounded and exactly covers the frozen final guard set",
+    "the resolver uses explicit inventory paths and never discovers raw evidence by scanning the campaign directory",
+    "cross-role, traversal, symlink, hardlink, duplicate, missing and unlisted inputs fail closed",
+    "C74 resolution re-verifies the published read-only I74 packet and byte-compares every original I74 input with its sealed copy",
+    "the local performance contract remains valid and explicitly non-promotable"
+  ],
+  "limitations": [
+    "the live Unix socket server does not yet dispatch seal through the resolver and lifecycle coordinator",
+    "the inventory writer still has to be integrated into the measured harness terminal path",
+    "production uid/gid ownership, real D-Bus observation and controller-loss recovery require admitted-host rehearsal",
+    "no service, measured unit or HydraCache process was installed, created, stopped or restarted",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
