@@ -19,7 +19,7 @@ const MUTATION_STAGES: [&str; 10] = [
     "responded",
     "outcome_unknown",
 ];
-const REQUIRED_OPERATIONS: [&str; 16] = [
+const REQUIRED_OPERATIONS: [&str; 26] = [
     "get",
     "put",
     "delete",
@@ -36,6 +36,16 @@ const REQUIRED_OPERATIONS: [&str; 16] = [
     "set_ttl",
     "remaining_ttl",
     "entry_listener",
+    "size",
+    "is_empty",
+    "contains_value_bounded",
+    "clear_detailed",
+    "destroy",
+    "evict",
+    "evict_all_detailed",
+    "key_set_page",
+    "values_page",
+    "entry_set_page",
 ];
 const FAILURE_SCENARIOS: [&str; 9] = [
     "ready_owner",
@@ -54,7 +64,7 @@ const RPO_FAULTS: [&str; 3] = [
     "owner_plus_backup_loss",
     "whole_cluster_restart",
 ];
-const REQUIRED_BOUNDS: [&str; 8] = [
+const REQUIRED_BOUNDS: [&str; 11] = [
     "request_entries",
     "request_bytes",
     "response_bytes",
@@ -63,6 +73,9 @@ const REQUIRED_BOUNDS: [&str; 8] = [
     "listener_queue_events",
     "history_events",
     "dedup_entries_per_tenant",
+    "scan_page_items",
+    "scan_entries_per_request",
+    "bulk_mutation_entries",
 ];
 const REQUIRED_THREATS: [&str; 8] = [
     "tenant_substitution",
@@ -541,6 +554,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "extended_component_receipts",
         "exact_resource_cleanup_ledger",
         "test_only_loopback_fault_transport",
+        "bounded_collection_and_lifecycle_api",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -768,6 +782,14 @@ fn validate_operations(
         "absent",
         "mismatch",
         "expired_before_operation",
+        "counted",
+        "empty",
+        "non_empty",
+        "partial",
+        "page",
+        "cleared",
+        "evicted",
+        "destroyed",
     ];
     let outcomes: BTreeSet<_> = contract.result_outcomes.iter().cloned().collect();
     require_exact_ids("result outcomes", &outcomes, required_outcomes, problems);

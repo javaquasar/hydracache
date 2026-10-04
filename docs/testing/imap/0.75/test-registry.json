@@ -4,6 +4,10 @@
   "status": "provisional",
   "mappings": [
     {"id_prefix":"imap075::operation::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"history_oracle_accepts_atomic_conditionals_and_ambiguous_response_loss"},
+    {"id_prefix":"imap075::collection_operation::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"bounded_collection_api_covers_lifecycle_and_views"},
+    {"id_prefix":"imap075::collection_error::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"collection_bounds_fail_closed_before_visible_mutation"},
+    {"id_prefix":"imap075::collection_bound::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"collection_bounds_fail_closed_before_visible_mutation"},
+    {"id_prefix":"imap075::collection_surface::","path":"crates/xtask/tests/imap_contract_075.rs","test":"collection_surface_matrix_is_explicit_and_fail_closed"},
     {"id_prefix":"imap075::errors::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"request_history_dedup_and_bulk_bounds_fail_closed_negative_canary"},
     {"id_prefix":"imap075::ttl::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"logical_ttl_never_depends_on_wall_clock"},
     {"id_prefix":"imap075::bounds::","path":"crates/hydracache-cluster-testkit/tests/value_plane_admission_075.rs","test":"all_admission_dimensions_are_finite_and_enforced"},

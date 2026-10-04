@@ -239,6 +239,9 @@ independent of the unfinished 0.74 production shape:
 - an abstract durable-recovery and dedup lifecycle, multi-subscriber filtering, bounded bulk
   deadline/cancellation, transfer crash recovery, exact resource cleanup and test-only loopback
   fault transport, plus an executable contract-to-test registry and Java coverage ratchet;
+- a bounded collection/lifecycle API model for size/empty checks, resumable contains-value scans,
+  clear/destroy/eviction and revision-fenced paged key/value/entry views, mirrored by a covered Java
+  reference without allocating production cursor or protocol identity;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

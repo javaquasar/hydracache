@@ -10,6 +10,9 @@
     {"id":"value_bytes","unit":"encoded_bytes","minimum":0,"maximum":4194304,"enforcement":"pre_dispatch","error":"value_too_large","test_id":"imap075::bounds::value_bytes"},
     {"id":"listener_queue_events","unit":"events_per_subscription","minimum":1,"maximum":1024,"enforcement":"subscription_admission_and_enqueue","error":"listener_gap","test_id":"imap075::bounds::listener_queue_events"},
     {"id":"history_events","unit":"events_per_partition","minimum":1,"maximum":4096,"enforcement":"history_append","error":"repair_required","test_id":"imap075::bounds::history_events"},
-    {"id":"dedup_entries_per_tenant","unit":"retained_outcomes","minimum":1,"maximum":4096,"enforcement":"mutation_admission","error":"idempotency_capacity_exhausted","test_id":"imap075::bounds::dedup_entries_per_tenant"}
+    {"id":"dedup_entries_per_tenant","unit":"retained_outcomes","minimum":1,"maximum":4096,"enforcement":"mutation_admission","error":"idempotency_capacity_exhausted","test_id":"imap075::bounds::dedup_entries_per_tenant"},
+    {"id":"scan_page_items","unit":"items_per_page","minimum":1,"maximum":256,"enforcement":"pre_scan","error":"request_too_large","test_id":"imap075::collection_bound::scan_page_items"},
+    {"id":"scan_entries_per_request","unit":"entries_examined","minimum":1,"maximum":4096,"enforcement":"snapshot_scan_budget","error":"request_too_large","test_id":"imap075::collection_bound::scan_entries"},
+    {"id":"bulk_mutation_entries","unit":"entries_selected","minimum":1,"maximum":4096,"enforcement":"before_collection_mutation","error":"request_too_large","test_id":"imap075::collection_bound::bulk_mutation_entries"}
   ]
 }

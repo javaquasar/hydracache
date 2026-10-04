@@ -18,6 +18,9 @@ The module currently provides:
 - fail-closed HydraCache and Hazelcast product adapter placeholders.
 - reproducible seeded scenario generation, deterministic shrinking, and a JaCoCo coverage ratchet
   for the new distributed-semantic helpers.
+- a covered `BoundedIMapApi` reference for exact local `size`/`isEmpty`, bounded resumable value
+  lookup, revision-fenced paged collection views, clear-versus-evict receipts, and terminal destroy
+  behavior.
 
 ## Blocked by 0.74
 

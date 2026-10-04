@@ -109,7 +109,10 @@ fn registry_targets_must_name_real_test_functions() {
         by_path
             .entry(mapping["path"].as_str().unwrap().to_owned())
             .or_default()
-            .push_str(&format!("fn {}() {{}}\n", mapping["test"].as_str().unwrap()));
+            .push_str(&format!(
+                "fn {}() {{}}\n",
+                mapping["test"].as_str().unwrap()
+            ));
     }
     for (path, contents) in by_path {
         let path = temp.path().join(path);
@@ -137,6 +140,50 @@ fn canary_missing_surface_cell_fails_closed() {
     assert!(problems(&temp)
         .iter()
         .any(|problem| problem.contains("missing operation cell")));
+}
+
+#[test]
+fn collection_surface_matrix_is_explicit_and_fail_closed() {
+    let contract: Value = serde_json::from_slice(
+        &fs::read(root().join("docs/testing/imap/0.75/surface-equivalence.json")).unwrap(),
+    )
+    .unwrap();
+    let operations = [
+        "size",
+        "is_empty",
+        "contains_value_bounded",
+        "clear_detailed",
+        "destroy",
+        "evict",
+        "evict_all_detailed",
+        "key_set_page",
+        "values_page",
+        "entry_set_page",
+    ];
+    for surface in contract["surfaces"].as_array().unwrap() {
+        let id = surface["id"].as_str().unwrap();
+        let cells = surface["cells"].as_array().unwrap();
+        for operation in operations {
+            let matches = cells
+                .iter()
+                .filter(|cell| cell["operation"] == operation)
+                .collect::<Vec<_>>();
+            assert_eq!(matches.len(), 1, "{id}:{operation}");
+            let cell = matches[0];
+            if matches!(id, "hc2-rust" | "hc2-java" | "hazelcast-facade") {
+                assert_eq!(cell["disposition"], "enabled", "{id}:{operation}");
+                assert!(cell["unsupported_error"].is_null(), "{id}:{operation}");
+            } else {
+                assert_eq!(cell["disposition"], "unsupported", "{id}:{operation}");
+                assert!(
+                    cell["unsupported_error"]
+                        .as_str()
+                        .is_some_and(|error| !error.is_empty()),
+                    "{id}:{operation}"
+                );
+            }
+        }
+    }
 }
 
 #[test]

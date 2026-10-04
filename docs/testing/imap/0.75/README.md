@@ -27,6 +27,13 @@ three-node schedules for proxy routing, replication
 proof, promotion, partition-scoped repair/rebalance, epoch catch-up, partial bulk and listener
 overflow, plus executable guards for every threat in `security-contract.json`.
 
+The provisional API also includes a test-only bounded collection/lifecycle tranche: `size`,
+`is_empty`, resumable `contains_value_bounded`, `clear_detailed`, `destroy`, `evict`,
+`evict_all_detailed`, and paged `key_set`, `values`, and `entry_set` views. Pages carry a snapshot
+revision and reject stale cursors; bounded searches return `partial` instead of inventing absence;
+collection-wide mutations preflight their item budget before changing visible state. These names
+and semantics allocate no production wire or durable identity.
+
 Run all locally available Rust distributed-foundation proofs and optionally retain their evidence
 with one command:
 

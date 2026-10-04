@@ -27,6 +27,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "value_plane_bulk_control_075",
             "--test",
+            "value_plane_collection_075",
+            "--test",
             "value_plane_dedup_075",
             "--test",
             "value_plane_durable_075",
