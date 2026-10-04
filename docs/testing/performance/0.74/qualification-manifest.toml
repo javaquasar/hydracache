@@ -31,7 +31,7 @@ sha256 = "6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"
-sha256 = "20efb2d9512a1585c885c41083a30c80d7c4ae5688cfac8b116e41697385484e"
+sha256 = "818ee7f71ef367575d06924491eec3a46dad47333d74bf408b52a9eb6c26f97c"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/composition-ledger.toml"

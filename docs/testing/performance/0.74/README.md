@@ -62,6 +62,11 @@ limit, strict unknown/duplicate-field rejection, UUIDv4 and lowercase-digest val
 operation-specific fields, the single exact staging path for `start`, and canonical response
 digests. It intentionally exposes no argv, environment, shell, DBus or arbitrary-path field.
 
+The Ed25519 authorization verifier binds the signed document and its raw SHA-256 to request,
+operation, campaign, manifest, repository, run and actor identities and enforces a ten-minute
+maximum lifetime with bounded clock skew. The production verification key remains explicitly
+`UNRESOLVED`; local test keys cannot authorize a campaign and release admission stays closed.
+
 `scripts/perf/performance_long_run_074.py --prepare` builds only a create-new start manifest. It
 uses the frozen campaign-id component order, removes the raw nonce after deriving its digest,
 rejects unknown, floating-point and secret-bearing fields, fsyncs both files, and has no process

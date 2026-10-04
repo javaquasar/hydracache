@@ -6,6 +6,7 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+pub mod auth;
 pub mod protocol;
 pub mod state;
 
