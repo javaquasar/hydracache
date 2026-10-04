@@ -100,11 +100,17 @@ impl HostExecutionClaim {
             return Err(HostExecutionError::Path);
         }
         let marker = self.root.join(ACTIVE_CAMPAIGN_NAME);
-        if read_marker(&marker)? != self.campaign_id {
-            return Err(HostExecutionError::Path);
+        match fs::symlink_metadata(&marker) {
+            Ok(_) => {
+                if read_marker(&marker)? != self.campaign_id {
+                    return Err(HostExecutionError::Path);
+                }
+                fs::remove_file(marker)?;
+                sync_directory(&self.root)?;
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
         }
-        fs::remove_file(marker)?;
-        sync_directory(&self.root)?;
         Ok(())
     }
 }

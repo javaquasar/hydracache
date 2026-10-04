@@ -5,6 +5,7 @@ use crate::archive::{
 use crate::artifact::{
     build_packet, verify_packet, ArtifactError, PacketLimits, PacketPlan, PacketReceipt,
 };
+use crate::state::DurableCampaignState;
 use crate::{canonical_json, is_hash, sha256_hex, Role};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File, OpenOptions};
@@ -43,6 +44,13 @@ pub struct SealArtifactResult {
     pub archive_bytes: u64,
     pub archive_input_files: usize,
     pub archive_input_bytes: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SealResponseResult {
+    pub state: DurableCampaignState,
+    pub artifact: SealArtifactResult,
 }
 
 #[derive(Debug, Error)]

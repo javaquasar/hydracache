@@ -25,6 +25,8 @@ pub mod process_identity;
 pub mod protocol;
 pub mod seal_artifact;
 #[cfg(target_os = "linux")]
+pub mod seal_lifecycle;
+#[cfg(target_os = "linux")]
 pub mod server;
 #[cfg(target_os = "linux")]
 pub mod service;

@@ -83,6 +83,13 @@ pub struct ReplayEntry {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LifecycleReplayEntry {
+    pub cause_request_id: String,
+    pub cause_request_sha256: String,
+    pub transition: LifecycleEvent,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EventVerificationReport {
     pub records: u64,
     pub head_sha256: String,
@@ -91,6 +98,7 @@ pub struct EventVerificationReport {
     pub recovered_incomplete_trailing_bytes: usize,
     pub replay_index: BTreeMap<String, ReplayEntry>,
     pub latest_state_after: Option<DurableCampaignState>,
+    pub latest_lifecycle: Option<LifecycleReplayEntry>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -281,6 +289,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
     let mut last = None;
     let mut replay_index = BTreeMap::new();
     let mut latest_state_after = None;
+    let mut latest_lifecycle = None;
     for (index, line) in parts.iter().enumerate() {
         if line.is_empty() {
             return Err(EventError::Parse {
@@ -320,23 +329,26 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
             response,
         } = &event.payload.event
         {
-            if request.operation == Operation::Start {
-                let recorded: DurableCampaignState = response
-                    .body
-                    .result
-                    .clone()
-                    .and_then(|value| serde_json::from_value(value).ok())
-                    .ok_or(EventError::Binding {
+            if matches!(request.operation, Operation::Start | Operation::Seal) {
+                let recorded =
+                    response_state(request.operation, response).ok_or(EventError::Binding {
                         sequence: event.sequence,
                     })?;
-                let accepted_state = expected_start_running_state(request);
-                let outcome_matches = match outcome {
-                    EventOutcome::Accepted => Some(recorded.campaign_state) == accepted_state,
-                    EventOutcome::Rejected => matches!(
+                let outcome_matches = match (request.operation, outcome) {
+                    (Operation::Start, EventOutcome::Accepted) => {
+                        Some(recorded.campaign_state) == expected_start_running_state(request)
+                    }
+                    (Operation::Start, EventOutcome::Rejected) => matches!(
                         recorded.campaign_state,
                         crate::state::CampaignState::FailedIncomplete
                             | crate::state::CampaignState::CorruptQuarantined
                     ),
+                    (Operation::Seal, EventOutcome::Accepted) => matches!(
+                        recorded.campaign_state,
+                        crate::state::CampaignState::I74Sealed
+                            | crate::state::CampaignState::CompleteSealed
+                    ),
+                    _ => false,
                 };
                 if latest_state_after.as_ref() != Some(&recorded)
                     || recorded.revision != response.body.state_revision
@@ -359,6 +371,17 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
                     response: response.as_ref().clone(),
                 },
             );
+        } else if let SupervisorEventKind::Lifecycle {
+            cause_request_id,
+            cause_request_sha256,
+            transition,
+        } = &event.payload.event
+        {
+            latest_lifecycle = Some(LifecycleReplayEntry {
+                cause_request_id: cause_request_id.clone(),
+                cause_request_sha256: cause_request_sha256.clone(),
+                transition: *transition,
+            });
         }
         if let Some(state) = event.payload.state_after.as_deref() {
             if let Some(previous_state) = &latest_state_after {
@@ -386,6 +409,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
         recovered_incomplete_trailing_bytes: recovered,
         replay_index,
         latest_state_after,
+        latest_lifecycle,
     })
 }
 
@@ -420,13 +444,9 @@ pub fn append_or_replay(
         None => None,
     };
     let sequence = existing.as_ref().map_or(1, |report| report.records + 1);
-    if request.operation == Operation::Start {
-        let recorded: DurableCampaignState = response
-            .body
-            .result
-            .clone()
-            .and_then(|value| serde_json::from_value(value).ok())
-            .ok_or(EventError::Binding { sequence })?;
+    if matches!(request.operation, Operation::Start | Operation::Seal) {
+        let recorded =
+            response_state(request.operation, &response).ok_or(EventError::Binding { sequence })?;
         if existing
             .as_ref()
             .and_then(|report| report.latest_state_after.as_ref())
@@ -638,6 +658,17 @@ fn validate_request_event(
                                 | crate::state::CampaignState::CorruptQuarantined
                         )
                 }) => {}
+        (Operation::Seal, EventOutcome::Accepted, None)
+            if response_state(Operation::Seal, response).is_some_and(|state| {
+                state.identity.campaign_id == request.campaign_id
+                    && state.identity.manifest_sha256 == request.manifest_sha256
+                    && state.revision == response.body.state_revision
+                    && matches!(
+                        state.campaign_state,
+                        crate::state::CampaignState::I74Sealed
+                            | crate::state::CampaignState::CompleteSealed
+                    )
+            }) => {}
         (operation, EventOutcome::Rejected, None) if operation != Operation::Start => {}
         (Operation::Status, EventOutcome::Accepted, None) => {}
         _ => {
@@ -722,6 +753,19 @@ fn expected_start_running_state(request: &Request) -> Option<crate::state::Campa
         Some(crate::state::CampaignState::I74Running)
     } else {
         Some(crate::state::CampaignState::C74Running)
+    }
+}
+
+fn response_state(operation: Operation, response: &Response) -> Option<DurableCampaignState> {
+    let value = response.body.result.clone()?;
+    match operation {
+        Operation::Start => serde_json::from_value(value).ok(),
+        Operation::Seal => {
+            serde_json::from_value::<crate::seal_artifact::SealResponseResult>(value)
+                .ok()
+                .map(|result| result.state)
+        }
+        _ => None,
     }
 }
 
