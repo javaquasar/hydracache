@@ -142,6 +142,9 @@ pub struct CheckpointHead {
 pub struct ControllerLease {
     pub holder_request_id: String,
     pub authorization_sha256: String,
+    pub repository_id: u64,
+    pub run_id: u64,
+    pub actor_id: u64,
     pub expires_unix_seconds: u64,
 }
 
@@ -167,6 +170,9 @@ pub struct AttachRequest {
     pub request_sha256: String,
     pub expected_revision: u64,
     pub authorization_sha256: String,
+    pub repository_id: u64,
+    pub run_id: u64,
+    pub actor_id: u64,
     pub identity: FrozenIdentity,
     pub harness: ProcessIdentity,
     pub daemon: ProcessIdentity,
@@ -208,6 +214,9 @@ pub fn evaluate_attach(
     if request.request_id.is_empty()
         || !is_hash(&request.request_sha256)
         || !is_hash(&request.authorization_sha256)
+        || request.repository_id == 0
+        || request.run_id == 0
+        || request.actor_id == 0
         || request.requested_controller_lease_seconds == 0
     {
         failures.push(AttachFailure::InvalidRequestIdentity);
@@ -292,12 +301,31 @@ pub fn apply_attach(
     next.controller_lease = Some(ControllerLease {
         holder_request_id: request.request_id.clone(),
         authorization_sha256: request.authorization_sha256.clone(),
+        repository_id: request.repository_id,
+        run_id: request.run_id,
+        actor_id: request.actor_id,
         expires_unix_seconds: request
             .now_unix_seconds
             .saturating_add(request.requested_controller_lease_seconds)
             .min(state.identity.lease_deadline_unix_seconds),
     });
     Ok(next)
+}
+
+pub fn controller_lease_authorizes(
+    state: &DurableCampaignState,
+    repository_id: u64,
+    run_id: u64,
+    actor_id: u64,
+    now_unix_seconds: u64,
+) -> bool {
+    now_unix_seconds <= state.identity.lease_deadline_unix_seconds
+        && state.controller_lease.as_ref().is_some_and(|lease| {
+            now_unix_seconds <= lease.expires_unix_seconds
+                && repository_id == lease.repository_id
+                && run_id == lease.run_id
+                && actor_id == lease.actor_id
+        })
 }
 
 #[derive(Debug, Default)]

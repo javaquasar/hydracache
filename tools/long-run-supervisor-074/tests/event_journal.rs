@@ -96,6 +96,9 @@ fn state_after(request: &Request, revision: u64) -> DurableCampaignState {
         controller_lease: Some(ControllerLease {
             holder_request_id: request.request_id.clone(),
             authorization_sha256: request.controller.authorization_sha256.clone(),
+            repository_id: request.controller.repository_id,
+            run_id: request.controller.run_id,
+            actor_id: request.controller.actor_id,
             expires_unix_seconds: 1_300,
         }),
         recorded_failure: false,

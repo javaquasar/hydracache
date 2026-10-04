@@ -1,6 +1,7 @@
 use hydracache_long_run_supervisor_074::state::{
-    apply_attach, evaluate_attach, transition, AttachFailure, AttachRequest, CampaignState,
-    CheckpointHead, DurableCampaignState, FrozenIdentity, ReplayDecision, ReplayMap, Transition,
+    apply_attach, controller_lease_authorizes, evaluate_attach, transition, AttachFailure,
+    AttachRequest, CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
+    ReplayDecision, ReplayMap, Transition,
 };
 use hydracache_long_run_supervisor_074::ProcessIdentity;
 
@@ -67,6 +68,9 @@ fn request(state: &DurableCampaignState) -> AttachRequest {
         request_sha256: hash('6'),
         expected_revision: state.revision,
         authorization_sha256: hash('7'),
+        repository_id: 10,
+        run_id: 20,
+        actor_id: 30,
         identity: state.identity.clone(),
         harness: state.harness.clone().unwrap(),
         daemon: state.daemon.clone().unwrap(),
@@ -87,9 +91,30 @@ fn exact_attach_only_changes_controller_revision_and_lease() {
     assert_eq!(next.daemon, state.daemon);
     assert_eq!(next.checkpoint, state.checkpoint);
     assert_eq!(
-        next.controller_lease.unwrap().holder_request_id,
+        next.controller_lease.as_ref().unwrap().holder_request_id,
         request.request_id
     );
+    assert!(controller_lease_authorizes(
+        &next,
+        10,
+        20,
+        30,
+        request.now_unix_seconds
+    ));
+    assert!(!controller_lease_authorizes(
+        &next,
+        10,
+        21,
+        30,
+        request.now_unix_seconds
+    ));
+    assert!(!controller_lease_authorizes(
+        &next,
+        10,
+        20,
+        30,
+        next.controller_lease.as_ref().unwrap().expires_unix_seconds + 1
+    ));
 }
 
 #[test]
