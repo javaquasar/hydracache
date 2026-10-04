@@ -7095,6 +7095,7 @@ dependencies = [
  "flate2",
  "hydracache",
  "hydracache-client-plane-spike",
+ "hydracache-cluster-testkit",
  "hydracache-loadgen",
  "hydracache-long-run-supervisor-074",
  "jsonschema",

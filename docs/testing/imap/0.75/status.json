@@ -11,7 +11,14 @@
       "reference_mutation_model",
       "linearizability_oracle",
       "deterministic_fault_scenarios",
-      "java_semantic_harness"
+      "java_semantic_harness",
+      "executable_authority_model_receipts",
+      "evidence_schema_validation",
+      "value_plane_threat_model",
+      "fairness_namespace_reference_models",
+      "extended_java_semantic_harness",
+      "provisional_backend_interfaces",
+      "hazelcast_source_provenance"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

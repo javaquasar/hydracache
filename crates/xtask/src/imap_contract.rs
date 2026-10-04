@@ -64,6 +64,16 @@ const REQUIRED_BOUNDS: [&str; 8] = [
     "history_events",
     "dedup_entries_per_tenant",
 ];
+const REQUIRED_THREATS: [&str; 8] = [
+    "tenant_substitution",
+    "replay",
+    "false_backup_ack",
+    "redirect_loop",
+    "stale_generation",
+    "trust_rotation",
+    "audit_redaction",
+    "hostile_bounded_decode",
+];
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -274,6 +284,27 @@ struct RpoRtoCell {
     test_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SecurityContract {
+    release: String,
+    contract_version: u32,
+    status: String,
+    threats: Vec<Threat>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Threat {
+    id: String,
+    asset: String,
+    boundary: String,
+    mitigation: String,
+    failure: String,
+    bound_or_proof: String,
+    test_id: String,
+}
+
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let release = parse_release(&args)?;
     let root = crate::doc_check::find_repo_root()?;
@@ -332,6 +363,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let retry: RetryContract = load(dir, "retry-idempotency.json")?;
     let failure: FailureContract = load(dir, "failure-consistency-matrix.json")?;
     let rpo_rto: RpoRtoContract = load(dir, "rpo-rto-contract.json")?;
+    let security: SecurityContract = load(dir, "security-contract.json")?;
 
     let mut problems = Vec::new();
     validate_headers(
@@ -384,6 +416,12 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
                 rpo_rto.contract_version,
                 &rpo_rto.status,
             ),
+            (
+                "security-contract.json",
+                &security.release,
+                security.contract_version,
+                &security.status,
+            ),
         ],
         &mut problems,
     );
@@ -410,6 +448,13 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "linearizability_oracle",
         "deterministic_fault_scenarios",
         "java_semantic_harness",
+        "executable_authority_model_receipts",
+        "evidence_schema_validation",
+        "value_plane_threat_model",
+        "fairness_namespace_reference_models",
+        "extended_java_semantic_harness",
+        "provisional_backend_interfaces",
+        "hazelcast_source_provenance",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -440,6 +485,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     validate_retry(&retry, &bound_ids, &mut problems);
     validate_failure(&failure, &mut problems);
     validate_rpo_rto(&rpo_rto, &mut problems);
+    validate_security(&security, &mut problems);
     Ok(problems)
 }
 
@@ -787,6 +833,30 @@ fn validate_rpo_rto(contract: &RpoRtoContract, problems: &mut Vec<String>) {
             }
         }
     }
+}
+
+fn validate_security(contract: &SecurityContract, problems: &mut Vec<String>) {
+    let mut ids = BTreeSet::new();
+    for threat in &contract.threats {
+        if !ids.insert(threat.id.clone()) {
+            problems.push(format!("duplicate security threat {}", threat.id));
+        }
+        for (label, value) in [
+            ("asset", &threat.asset),
+            ("boundary", &threat.boundary),
+            ("mitigation", &threat.mitigation),
+            ("failure", &threat.failure),
+            ("bound_or_proof", &threat.bound_or_proof),
+        ] {
+            require_text(
+                &format!("security threat {} {label}", threat.id),
+                value,
+                problems,
+            );
+        }
+        require_test("security threat", &threat.id, &threat.test_id, problems);
+    }
+    require_exact_ids("security threats", &ids, REQUIRED_THREATS, problems);
 }
 
 fn require_exact_ids<const N: usize>(

@@ -10,6 +10,8 @@ The module currently provides:
 - a strict, bounded `imap-semantic-v1` line-manifest loader with no floating dependencies;
 - a common `MapSemanticAdapter` SPI;
 - deterministic in-memory adapters used to prove equivalence and mismatch detection;
+- barrier-started conditional races, request-indexed partial bulk outcomes, logical TTL
+  observation/mutation, and listener gap/repair cutover fencing;
 - fail-closed HydraCache and Hazelcast product adapter placeholders.
 
 ## Blocked by 0.74
@@ -36,6 +38,10 @@ step=s2 get key=6b31
 step=s3 put_all entries=6b32:7632,6b33:7633 ttl=expire_after:5
 step=s4 advance ticks=5
 step=s5 get_all keys=6b31,6b32,6b33
+step=s6 contains_key key=6b31
+step=s7 set_ttl key=6b31 ttl=expire_after:2
+step=s8 remaining_ttl key=6b31
+step=s9 listener_gap key=6b31
 ```
 
 Unknown versions, operations, fields, duplicates, malformed hex, oversized lines/manifests,

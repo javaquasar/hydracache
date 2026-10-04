@@ -1,0 +1,13 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "schemas": [
+    {"kind": "authority_model", "id": "hydracache.imap.model-receipt.v1", "path": "schemas/model-receipt.schema.json", "required_test_id": "HC-IMAP-075-MODEL-RECEIPT"},
+    {"kind": "fault_schedule", "id": "hydracache.imap.fault-schedule-receipt.v1", "path": "schemas/fault-schedule-receipt.schema.json", "required_test_id": "HC-IMAP-075-FAULT-RECEIPT"},
+    {"kind": "linearizability", "id": "hydracache.imap.linearizability-receipt.v1", "path": "schemas/linearizability-receipt.schema.json", "required_test_id": "HC-IMAP-075-HISTORY-RECEIPT"},
+    {"kind": "rpo_rto", "id": "hydracache.imap.rpo-rto-receipt.v1", "path": "schemas/rpo-rto-receipt.schema.json", "required_test_id": "HC-IMAP-075-RPO-RTO-RECEIPT"}
+  ],
+  "admission": "structural_only_until_0_74_published",
+  "production_capability": "disabled_fail_closed"
+}

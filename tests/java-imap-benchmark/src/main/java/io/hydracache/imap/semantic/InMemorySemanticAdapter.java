@@ -46,34 +46,39 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
   @Override public Set<Operation> capabilities() { return capabilities; }
 
   @Override
-  public OperationOutcome execute(ScenarioStep step) {
+  public synchronized OperationOutcome execute(ScenarioStep step) {
     if (!capabilities.contains(step.operation())) {
       return OperationOutcome.error(ErrorClass.UNSUPPORTED, "operation not declared by adapter");
     }
     return switch (step.operation()) {
       case GET -> get(step.key());
+      case CONTAINS_KEY -> containsKey(step.key());
       case PUT -> put(step.key(), step.value(), step.ttl(), false, false);
       case PUT_IF_ABSENT -> putIfAbsent(step);
       case REPLACE -> replace(step);
+      case REPLACE_IF_PRESENT -> replaceIfPresent(step);
       case GET_AND_PUT -> put(step.key(), step.value(), step.ttl(), true,
           defect == Defect.DROP_GET_AND_PUT);
       case GET_AND_REMOVE -> remove(step.key());
       case GET_ALL -> getAll(step.keys());
       case PUT_ALL -> putAll(step);
       case REMOVE_ALL -> removeAll(step.keys());
+      case SET_TTL -> setTtl(step);
+      case REMAINING_TTL -> remainingTtl(step.key());
+      case LISTENER_GAP -> listenerGap(step.key());
       case ADVANCE -> advance(step.advanceTicks());
     };
   }
 
   @Override
-  public List<MapEvent> drainEvents() {
+  public synchronized List<MapEvent> drainEvents() {
     List<MapEvent> copy = List.copyOf(events);
     events.clear();
     return copy;
   }
 
   @Override
-  public StateSnapshot snapshot() {
+  public synchronized StateSnapshot snapshot() {
     purgeAllExpired();
     MessageDigest digest = sha256();
     for (Map.Entry<BytesValue, StoredValue> entry : values.entrySet()) {
@@ -93,6 +98,12 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
         OutcomeKind.PRESENT, Optional.of(stored.value()), ttlState(stored));
   }
 
+  private OperationOutcome containsKey(BytesValue key) {
+    StoredValue stored = live(key);
+    return OperationOutcome.point(stored == null ? OutcomeKind.ABSENT : OutcomeKind.PRESENT,
+        Optional.empty(), stored == null ? TtlState.absent() : ttlState(stored));
+  }
+
   private OperationOutcome putIfAbsent(ScenarioStep step) {
     StoredValue current = live(step.key());
     if (current != null) {
@@ -110,6 +121,33 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
           OutcomeKind.MISMATCH, Optional.of(current.value()), ttlState(current));
     }
     return put(step.key(), step.value(), step.ttl(), true, false);
+  }
+
+  private OperationOutcome replaceIfPresent(ScenarioStep step) {
+    StoredValue current = live(step.key());
+    if (current == null) return absent();
+    return put(step.key(), step.value(), step.ttl(), true, false);
+  }
+
+  private OperationOutcome setTtl(ScenarioStep step) {
+    StoredValue current = live(step.key());
+    if (current == null) return absent();
+    StoredValue updated = new StoredValue(current.value(), expiryFor(step.ttl(), current));
+    values.put(step.key(), updated);
+    events.add(new MapEvent(MapEvent.Kind.UPDATED, step.key(), Optional.of(current.value()),
+        logicalTick));
+    return OperationOutcome.point(OutcomeKind.PRESENT, Optional.empty(), ttlState(updated));
+  }
+
+  private OperationOutcome remainingTtl(BytesValue key) {
+    StoredValue current = live(key);
+    if (current == null) return absent();
+    return OperationOutcome.point(OutcomeKind.PRESENT, Optional.empty(), ttlState(current));
+  }
+
+  private OperationOutcome listenerGap(BytesValue key) {
+    events.add(new MapEvent(MapEvent.Kind.GAP, key, Optional.empty(), logicalTick));
+    return OperationOutcome.advanced();
   }
 
   private OperationOutcome put(

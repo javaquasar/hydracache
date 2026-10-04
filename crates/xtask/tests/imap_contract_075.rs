@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
 
-const FILES: [&str; 8] = [
+const FILES: [&str; 9] = [
     "status.json",
     "operation-contract.json",
     "resource-bounds.json",
@@ -13,6 +13,7 @@ const FILES: [&str; 8] = [
     "retry-idempotency.json",
     "failure-consistency-matrix.json",
     "rpo-rto-contract.json",
+    "security-contract.json",
 ];
 
 fn root() -> PathBuf {
@@ -141,4 +142,18 @@ fn canary_missing_safe_foundation_slice_fails_closed() {
     assert!(problems(&temp)
         .iter()
         .any(|problem| problem.contains("missing implemented slice linearizability_oracle")));
+}
+
+#[test]
+fn canary_missing_security_threat_fails_closed() {
+    let temp = fixture();
+    edit(&temp.path().join("security-contract.json"), |value| {
+        value["threats"]
+            .as_array_mut()
+            .unwrap()
+            .retain(|threat| threat["id"] != "false_backup_ack");
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("security threats missing required id false_backup_ack")));
 }

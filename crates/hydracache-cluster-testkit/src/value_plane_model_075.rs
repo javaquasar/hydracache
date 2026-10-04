@@ -875,3 +875,318 @@ impl DeterministicFaultSchedule {
         hash
     }
 }
+
+/// Stable identity of the bounded authority model used by receipts and gates.
+pub const AUTHORITY_MODEL_ID: &str = "hydracache.imap.value-plane.authority.v1";
+
+/// Invariants checked after every explored transition.
+pub const AUTHORITY_INVARIANT_IDS: &[&str] = &[
+    "HC-IMAP-INV-ACK-REQUIRES-REPLICA-PROOF",
+    "HC-IMAP-INV-REPLICA-PROOF-DOES-NOT-EXCEED-OWNER-APPLY",
+    "HC-IMAP-INV-SERVING-OWNER-IS-LIVE",
+    "HC-IMAP-INV-PROMOTED-OWNER-COVERS-ACKNOWLEDGED-PREFIX",
+    "HC-IMAP-INV-RESPONSE-REQUIRES-ACKNOWLEDGEMENT",
+    "HC-IMAP-INV-TOMBSTONE-DOMINATES-OLDER-LIVE-VALUE",
+];
+
+/// Hard exploration bounds. Zero values are rejected rather than interpreted as unlimited.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AuthorityModelBounds {
+    pub max_depth: usize,
+    pub max_states: usize,
+}
+
+impl Default for AuthorityModelBounds {
+    fn default() -> Self {
+        Self {
+            max_depth: 8,
+            max_states: 20_000,
+        }
+    }
+}
+
+/// Pure authority state. It contains no process handles, transports, or wall-clock values.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct AuthorityModelSnapshot {
+    pub epoch: u64,
+    pub applied_version: u64,
+    pub replica_proved_version: u64,
+    pub acknowledged_version: u64,
+    pub responded_version: u64,
+    pub served_version: u64,
+    pub live_version: u64,
+    pub tombstone_version: u64,
+    pub owner_alive: bool,
+    pub backup_alive: bool,
+    pub serving_owner: bool,
+    pub outcome_unknown: bool,
+}
+
+impl Default for AuthorityModelSnapshot {
+    fn default() -> Self {
+        Self {
+            epoch: 1,
+            applied_version: 0,
+            replica_proved_version: 0,
+            acknowledged_version: 0,
+            responded_version: 0,
+            served_version: 0,
+            live_version: 0,
+            tombstone_version: 0,
+            owner_alive: true,
+            backup_alive: true,
+            serving_owner: true,
+            outcome_unknown: false,
+        }
+    }
+}
+
+/// Closed transition vocabulary explored by [`AuthorityModelExplorer`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum AuthorityModelAction {
+    ApplyValue,
+    ApplyTombstone,
+    ProveReplica,
+    Acknowledge,
+    Respond,
+    LoseResponse,
+    LoseOwner,
+    LoseBackup,
+    RestoreBackup,
+    PromoteBackup,
+    Rebalance,
+}
+
+/// One invariant violation with the shortest explored action prefix that exposed it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuthorityModelViolation {
+    pub invariant_id: &'static str,
+    pub detail: String,
+    pub trace: Vec<AuthorityModelAction>,
+}
+
+/// Deterministic bounded exploration result.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuthorityModelReport {
+    pub model_id: &'static str,
+    pub explored_states: usize,
+    pub explored_transitions: usize,
+    pub max_depth_reached: usize,
+    pub truncated: bool,
+    pub violations: Vec<AuthorityModelViolation>,
+}
+
+impl AuthorityModelReport {
+    pub fn passed(&self) -> bool {
+        self.violations.is_empty() && !self.truncated
+    }
+}
+
+/// Exhaustive bounded checker for ACK, response-loss, promotion, rebalance and tombstone safety.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AuthorityModelExplorer {
+    bounds: AuthorityModelBounds,
+}
+
+impl AuthorityModelExplorer {
+    pub fn new(bounds: AuthorityModelBounds) -> Result<Self, ValuePlaneError> {
+        if bounds.max_depth == 0 {
+            return Err(ValuePlaneError::InvalidBound("authority_model_depth"));
+        }
+        if bounds.max_states == 0 {
+            return Err(ValuePlaneError::InvalidBound("authority_model_states"));
+        }
+        Ok(Self { bounds })
+    }
+
+    pub fn explore(&self) -> AuthorityModelReport {
+        use std::collections::{BTreeSet, VecDeque};
+
+        let initial = AuthorityModelSnapshot::default();
+        let mut seen = BTreeSet::from([initial.clone()]);
+        let mut queue = VecDeque::from([(initial, Vec::new())]);
+        let mut transitions = 0_usize;
+        let mut max_depth = 0_usize;
+        let mut truncated = false;
+        let mut violations = Vec::new();
+
+        while let Some((state, trace)) = queue.pop_front() {
+            max_depth = max_depth.max(trace.len());
+            for (invariant_id, detail) in authority_invariant_violations(&state) {
+                violations.push(AuthorityModelViolation {
+                    invariant_id,
+                    detail,
+                    trace: trace.clone(),
+                });
+            }
+            if trace.len() >= self.bounds.max_depth {
+                continue;
+            }
+            for action in AuthorityModelAction::all() {
+                let Some(next) = apply_authority_action(&state, action) else {
+                    continue;
+                };
+                transitions = transitions.saturating_add(1);
+                if seen.contains(&next) {
+                    continue;
+                }
+                if seen.len() >= self.bounds.max_states {
+                    truncated = true;
+                    continue;
+                }
+                let mut next_trace = trace.clone();
+                next_trace.push(action);
+                seen.insert(next.clone());
+                queue.push_back((next, next_trace));
+            }
+        }
+
+        AuthorityModelReport {
+            model_id: AUTHORITY_MODEL_ID,
+            explored_states: seen.len(),
+            explored_transitions: transitions,
+            max_depth_reached: max_depth,
+            truncated,
+            violations,
+        }
+    }
+}
+
+impl AuthorityModelAction {
+    fn all() -> [Self; 11] {
+        [
+            Self::ApplyValue,
+            Self::ApplyTombstone,
+            Self::ProveReplica,
+            Self::Acknowledge,
+            Self::Respond,
+            Self::LoseResponse,
+            Self::LoseOwner,
+            Self::LoseBackup,
+            Self::RestoreBackup,
+            Self::PromoteBackup,
+            Self::Rebalance,
+        ]
+    }
+}
+
+/// Return every authority invariant violation without panicking, for gates and canaries.
+pub fn authority_invariant_violations(
+    state: &AuthorityModelSnapshot,
+) -> Vec<(&'static str, String)> {
+    let mut violations = Vec::new();
+    if state.acknowledged_version > state.replica_proved_version {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[0],
+            "acknowledged version exceeds replica proof".to_owned(),
+        ));
+    }
+    if state.replica_proved_version > state.applied_version {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[1],
+            "replica proof exceeds owner-applied version".to_owned(),
+        ));
+    }
+    if state.serving_owner && !state.owner_alive {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[2],
+            "a dead owner remains serving".to_owned(),
+        ));
+    }
+    if state.serving_owner && state.served_version < state.acknowledged_version {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[3],
+            "serving owner is behind the acknowledged prefix".to_owned(),
+        ));
+    }
+    if state.responded_version > state.acknowledged_version {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[4],
+            "response version exceeds acknowledgement".to_owned(),
+        ));
+    }
+    if state.live_version != 0
+        && state.tombstone_version != 0
+        && state.live_version <= state.tombstone_version
+    {
+        violations.push((
+            AUTHORITY_INVARIANT_IDS[5],
+            "an older live value is visible behind a tombstone".to_owned(),
+        ));
+    }
+    violations
+}
+
+fn apply_authority_action(
+    state: &AuthorityModelSnapshot,
+    action: AuthorityModelAction,
+) -> Option<AuthorityModelSnapshot> {
+    let mut next = state.clone();
+    match action {
+        AuthorityModelAction::ApplyValue if state.owner_alive && state.serving_owner => {
+            next.applied_version = state.applied_version.saturating_add(1);
+            next.live_version = next.applied_version;
+            next.served_version = next.applied_version;
+            next.outcome_unknown = false;
+        }
+        AuthorityModelAction::ApplyTombstone if state.owner_alive && state.serving_owner => {
+            next.applied_version = state.applied_version.saturating_add(1);
+            next.tombstone_version = next.applied_version;
+            next.live_version = 0;
+            next.served_version = next.applied_version;
+            next.outcome_unknown = false;
+        }
+        AuthorityModelAction::ProveReplica
+            if state.backup_alive && state.replica_proved_version < state.applied_version =>
+        {
+            next.replica_proved_version = state.applied_version;
+        }
+        AuthorityModelAction::Acknowledge
+            if state.applied_version > state.acknowledged_version
+                && state.replica_proved_version >= state.applied_version =>
+        {
+            next.acknowledged_version = state.applied_version;
+        }
+        AuthorityModelAction::Respond if state.acknowledged_version > state.responded_version => {
+            next.responded_version = state.acknowledged_version;
+            next.outcome_unknown = false;
+        }
+        AuthorityModelAction::LoseResponse if state.acknowledged_version > 0 => {
+            next.outcome_unknown = true;
+        }
+        AuthorityModelAction::LoseOwner if state.owner_alive => {
+            next.owner_alive = false;
+            next.serving_owner = false;
+        }
+        AuthorityModelAction::LoseBackup if state.backup_alive => {
+            next.backup_alive = false;
+        }
+        AuthorityModelAction::RestoreBackup if !state.backup_alive => {
+            next.backup_alive = true;
+        }
+        AuthorityModelAction::PromoteBackup
+            if !state.owner_alive
+                && state.backup_alive
+                && state.replica_proved_version == state.applied_version
+                && state.replica_proved_version >= state.acknowledged_version =>
+        {
+            next.epoch = state.epoch.saturating_add(1);
+            next.owner_alive = true;
+            next.serving_owner = true;
+            next.applied_version = state.replica_proved_version;
+            next.served_version = state.replica_proved_version;
+            next.backup_alive = false;
+        }
+        AuthorityModelAction::Rebalance
+            if state.owner_alive
+                && state.backup_alive
+                && state.replica_proved_version == state.applied_version =>
+        {
+            next.epoch = state.epoch.saturating_add(1);
+            next.applied_version = state.replica_proved_version;
+            next.served_version = state.replica_proved_version;
+        }
+        _ => return None,
+    }
+    Some(next)
+}

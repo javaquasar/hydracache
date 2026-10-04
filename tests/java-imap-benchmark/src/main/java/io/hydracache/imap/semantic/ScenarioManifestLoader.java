@@ -112,12 +112,14 @@ public final class ScenarioManifestLoader {
 
     try {
       return switch (operation) {
-        case GET, GET_AND_REMOVE -> pointRead(id, operation, fields, limits, lineNumber);
-        case PUT, PUT_IF_ABSENT, GET_AND_PUT ->
+        case GET, CONTAINS_KEY, GET_AND_REMOVE, REMAINING_TTL, LISTENER_GAP ->
+            pointRead(id, operation, fields, limits, lineNumber);
+        case PUT, PUT_IF_ABSENT, REPLACE_IF_PRESENT, GET_AND_PUT ->
             pointWrite(id, operation, fields, false, limits, lineNumber);
         case REPLACE -> pointWrite(id, operation, fields, true, limits, lineNumber);
         case GET_ALL, REMOVE_ALL -> bulkKeys(id, operation, fields, limits, lineNumber);
         case PUT_ALL -> bulkEntries(id, fields, limits, lineNumber);
+        case SET_TTL -> ttlUpdate(id, fields, limits, lineNumber);
         case ADVANCE -> advance(id, fields, lineNumber);
       };
     } catch (IllegalArgumentException error) {
@@ -203,6 +205,15 @@ public final class ScenarioManifestLoader {
     if (ticks <= 0) throw error(line, "advance ticks must be positive");
     return new ParsedStep(new ScenarioStep(id, Operation.ADVANCE, List.of(), List.of(),
         Optional.empty(), TtlDirective.preserve(), ticks), 0);
+  }
+
+  private static ParsedStep ttlUpdate(
+      String id, Map<String, String> fields, ManifestLimits limits, int line)
+      throws ManifestException {
+    requireFields(fields, Set.of("key", "ttl"), line);
+    BytesValue key = decode(fields.get("key"), limits.maxKeyBytes(), "key", line);
+    return new ParsedStep(new ScenarioStep(id, Operation.SET_TTL, List.of(key), List.of(),
+        Optional.empty(), parseTtl(fields.get("ttl"), line), 0), key.size());
   }
 
   private static TtlDirective parseTtl(String encoded, int line) throws ManifestException {

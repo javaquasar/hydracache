@@ -3,9 +3,11 @@ use hydracache_cluster_testkit::value_plane_history_075::{
     ValuePlaneHistoryOracle,
 };
 use hydracache_cluster_testkit::value_plane_model_075::{
-    CanonicalMapKey, DeterministicFaultSchedule, FaultCheckpoint, FaultKind, LogicalTime,
-    MutationDigest, MutationIdentity, MutationOperation, MutationPlan, MutationStage,
-    OutcomeCertainty, ReferenceValuePlane, TtlDirective, ValuePlaneBounds, ValuePlaneError,
+    authority_invariant_violations, AuthorityModelBounds, AuthorityModelExplorer,
+    AuthorityModelSnapshot, CanonicalMapKey, DeterministicFaultSchedule, FaultCheckpoint,
+    FaultKind, LogicalTime, MutationDigest, MutationIdentity, MutationOperation, MutationPlan,
+    MutationStage, OutcomeCertainty, ReferenceValuePlane, TtlDirective, ValuePlaneBounds,
+    ValuePlaneError, AUTHORITY_INVARIANT_IDS,
 };
 
 fn key(name: &[u8]) -> CanonicalMapKey {
@@ -317,4 +319,62 @@ fn unlinearizable_history_is_rejected_negative_canary() {
     let report = ValuePlaneHistoryOracle::new(128).check(&history);
     assert!(!report.is_linearizable());
     assert!(report.violation.unwrap().contains("no legal linearization"));
+}
+
+#[test]
+fn bounded_authority_model_explores_without_invariant_failure() {
+    let report = AuthorityModelExplorer::new(AuthorityModelBounds {
+        max_depth: 8,
+        max_states: 20_000,
+    })
+    .unwrap()
+    .explore();
+
+    assert!(report.passed(), "{report:#?}");
+    assert!(report.explored_states > 100);
+    assert!(report.explored_transitions >= report.explored_states);
+    assert_eq!(report.max_depth_reached, 8);
+}
+
+#[test]
+fn authority_model_canaries_detect_false_ack_and_early_promotion() {
+    let false_ack = AuthorityModelSnapshot {
+        applied_version: 4,
+        replica_proved_version: 3,
+        acknowledged_version: 4,
+        served_version: 4,
+        live_version: 4,
+        ..AuthorityModelSnapshot::default()
+    };
+    let violations = authority_invariant_violations(&false_ack);
+    assert!(violations
+        .iter()
+        .any(|(id, _)| *id == AUTHORITY_INVARIANT_IDS[0]));
+
+    let early_promotion = AuthorityModelSnapshot {
+        epoch: 2,
+        applied_version: 7,
+        replica_proved_version: 6,
+        acknowledged_version: 7,
+        served_version: 6,
+        live_version: 6,
+        owner_alive: true,
+        serving_owner: true,
+        ..AuthorityModelSnapshot::default()
+    };
+    let violations = authority_invariant_violations(&early_promotion);
+    assert!(violations
+        .iter()
+        .any(|(id, _)| *id == AUTHORITY_INVARIANT_IDS[3]));
+}
+
+#[test]
+fn authority_model_rejects_unbounded_exploration() {
+    assert!(matches!(
+        AuthorityModelExplorer::new(AuthorityModelBounds {
+            max_depth: 0,
+            max_states: 1,
+        }),
+        Err(ValuePlaneError::InvalidBound("authority_model_depth"))
+    ));
 }

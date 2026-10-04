@@ -6,7 +6,9 @@
 
 pub mod client_surface_conformance;
 pub mod invariants;
+pub mod provisional_backend_075;
 pub mod reference_model;
+pub mod value_plane_admission_075;
 pub mod value_plane_history_075;
 pub mod value_plane_model_075;
 

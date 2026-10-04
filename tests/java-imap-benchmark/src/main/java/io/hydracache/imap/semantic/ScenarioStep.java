@@ -48,15 +48,19 @@ public record ScenarioStep(
       Optional<BytesValue> expected,
       long advanceTicks) {
     switch (operation) {
-      case GET, GET_AND_REMOVE -> require(keys.size() == 1 && entries.isEmpty()
+      case GET, CONTAINS_KEY, GET_AND_REMOVE, REMAINING_TTL, LISTENER_GAP ->
+          require(keys.size() == 1 && entries.isEmpty()
           && expected.isEmpty() && advanceTicks == 0, operation);
-      case PUT, PUT_IF_ABSENT, GET_AND_PUT -> require(entries.size() == 1 && keys.isEmpty()
+      case PUT, PUT_IF_ABSENT, REPLACE_IF_PRESENT, GET_AND_PUT ->
+          require(entries.size() == 1 && keys.isEmpty()
           && expected.isEmpty() && advanceTicks == 0, operation);
       case REPLACE -> require(entries.size() == 1 && keys.isEmpty()
           && expected.isPresent() && advanceTicks == 0, operation);
       case GET_ALL, REMOVE_ALL -> require(!keys.isEmpty() && entries.isEmpty()
           && expected.isEmpty() && advanceTicks == 0, operation);
       case PUT_ALL -> require(!entries.isEmpty() && keys.isEmpty()
+          && expected.isEmpty() && advanceTicks == 0, operation);
+      case SET_TTL -> require(keys.size() == 1 && entries.isEmpty()
           && expected.isEmpty() && advanceTicks == 0, operation);
       case ADVANCE -> require(keys.isEmpty() && entries.isEmpty()
           && expected.isEmpty() && advanceTicks > 0, operation);
