@@ -601,6 +601,29 @@ the signed socket request and campaign manifest, and creates no durable campaign
 checkpoint chain. The next slice must supply a bounded two-process non-promotable campaign fixture
 and drive it through the real upload, start lifecycle, systemd spawn backend and replay path.
 
+That campaign-shaped slice is now complete at source `d2e3e3ad`. Run `37352537768` used a strict
+non-product manifest and the production `drive_i74_start_request` and `SystemdSpawnBackend` to
+start a harness/daemon pair in the exact deterministic unit. The first controller recorded revision
+2 and checkpoint sequence 1, then exited. A new controller recovered the exact PIDs 1509228 and
+1509229, replayed the accepted start response with zero backend spawn calls, attached the observed
+checkpoint at revision 3, and drove the real abort backend to `ABORTED_INCOMPLETE` revision 5. The
+unit stopped, all execution fields and the root-owned handoff context were cleared, and the active
+host claim was released. After cleanup the supervisor was `active/running` with zero restarts. See
+`local-runs/w11-campaign-lifecycle-smoke-d2e3e3ad.json`.
+
+The failed rehearsals are retained as attribution rather than discarded. They separately exposed
+an accidental dependency on the production host-freeze path, incorrect D-Bus append-output
+properties, a `StateDirectory` ownership conflict that caused `200/CHDIR`, and a handoff context
+placed below a runtime directory intentionally removed with the stopped supervisor. Each retry
+changed only its identified boundary; no product candidate or qualification workload ran.
+
+This closes the real systemd spawn-backend and campaign-shaped controller-loss rehearsal, not all
+of W11. The fixed root command invoked the coordinator directly, so signed Unix-socket upload/start
+admission and loss/restart of the supervisor service itself remain unproven. Admitted-host
+progress-loss, measurement-loss, lease-expiry, reboot, live seal, product I74/C74 execution,
+overhead budgets, six-hour qualification and 24-hour confirmation also remain open. Consequently
+`host_rehearsal_complete` and `release_admission_allowed` stay false.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

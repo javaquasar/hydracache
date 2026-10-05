@@ -1030,6 +1030,33 @@ not exercise the signed Unix-socket request, two-process harness/daemon identity
 journal, replay response, supervisor restart or checkpoint continuity. Those remain the next
 campaign-shaped fixture, and all production host-rehearsal flags remain false until then.
 
+The next fixture deliberately kept product code out while making the control path campaign-shaped.
+It constructed the strict manifest and host receipt, entered the production durable I74 start
+lifecycle, and launched a harness plus daemon through the real systemd backend. The harness wrote
+the same hash-chained checkpoint format that a long run uses. Its initiating controller then
+exited; a different process had to recover the exact unit and both `/proc` identities, replay the
+accepted start without another spawn, attach the checkpoint, and abort through the production
+backend.
+
+The negative runs were more informative than a synthetic green mock. First the fixture accidentally
+required the qualification-only host-freeze file. Then direct D-Bus rejected output paths encoded
+with command-line `append:` syntax. Once the process reached `ExecStart`, systemd returned
+`200/CHDIR`: `StateDirectory` had reassigned the campaign root to `root:root`, undoing the explicit
+tmpfiles group needed by the unprivileged fixture. Removing that ownership conflict let the
+harness, daemon and checkpoint start correctly, but the handoff still failed because its context
+lived under the supervisor's runtime directory, which had intentionally disappeared when the
+supervisor was stopped to isolate the fixture. Each failed campaign was stopped by exact unit
+identity and preserved as negative evidence; no threshold, workload or product binary changed.
+
+Run `37352537768` finally completed the full bounded sequence. Revision 2 retained the original
+harness and daemon, checkpoint sequence 1 survived controller loss, the new controller replayed
+start with zero spawn calls, attach committed revision 3, and abort committed revision 5 before
+clearing the process, checkpoint and lease fields and releasing the host claim. The service was
+then restored to `active/running` with no restart loop. This is real evidence for the production
+systemd spawn adapter and durable controller-loss transaction, but still not release qualification:
+the fixed root entrypoint bypassed signed socket admission, the supervisor itself was not restarted
+mid-campaign, and no I74/C74 product or expensive workload ran.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

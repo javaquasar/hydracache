@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-campaign-lifecycle-controller-loss-smoke",
+  "source_commit": "d2e3e3ad8b2837a862fa788aab629ba6393424cf",
+  "github_run": {
+    "id": 37352537768,
+    "conclusion": "success",
+    "duration_seconds": 37,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37352537768"
+  },
+  "artifact": {
+    "id": 11363356220,
+    "name": "performance-long-run-campaign-lifecycle-smoke-074-d2e3e3ad8b2837a862fa788aab629ba6393424cf-37352537768-1",
+    "digest": "sha256:44674b1e8316503f46444680d102fc0448d207dfcfd0078a944119fecdcd65b3",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37352537768/artifacts/11363356220"
+  },
+  "provisioning": {
+    "github_run_id": 37352134561,
+    "github_run_attempt": 1,
+    "conclusion": "success",
+    "receipt_artifact_id": 11362733576,
+    "receipt_artifact_digest": "sha256:79a5a42f5a6de887fc41851a40db79ae959632106e2923de5df09c4be868ab28",
+    "signed_bundle_artifact_id": 11362578450,
+    "signed_bundle_artifact_digest": "sha256:68e2efa3589b274cf602bab647df5372e2927a163e562db055352a17c1bebde1",
+    "campaign_root_mode_and_owner": "0750 root:hydracache-perf"
+  },
+  "receipts": {
+    "provisioning_sha256": "a459beb212885d49532a91382ccae819dc90c3e1b81324f8101ae159965b9bf8",
+    "start_sha256": "74e261be38a3d0173e07675c29326d77b16284832155176a456fb78608bdf87e",
+    "resume_sha256": "5f76019e6d54914a01c168fcd66dd222b3d54339bebe7f4d81eafdbb1d136078"
+  },
+  "observation": {
+    "campaign_id": "e88369bb1628416d19aa90f666e2938fd0e7b333abafe616c2e0f4fa779ec59f",
+    "manifest_sha256": "c53223af5284c7b79807adaac770c3a6ebd44d720c2cdd175d2c4c769e1fa354",
+    "unit_name": "hydracache-performance-074-i74-e88369bb1628416d19aa90f666e2938fd0e7b333abafe616c2e0f4fa779ec59f.service",
+    "product_candidate_started": false,
+    "starting_controller_pid": 1509220,
+    "harness_pid": 1509228,
+    "daemon_pid": 1509229,
+    "start_revision": 2,
+    "checkpoint_sequence": 1,
+    "original_controller_exited": true,
+    "exact_process_pair_recovered": true,
+    "start_response_replayed": true,
+    "replay_spawn_calls": 0,
+    "attached_revision": 3,
+    "aborted_revision": 5,
+    "terminal_state": "ABORTED_INCOMPLETE",
+    "terminal_execution_fields_cleared": true,
+    "active_campaign_released": true,
+    "handoff_context_removed": true,
+    "fixture_unit_inactive_after_abort": true,
+    "supervisor_service_active_after_cleanup": true,
+    "supervisor_restart_count_after_cleanup": 0
+  },
+  "negative_attribution": [
+    {
+      "github_run_id": 37344668747,
+      "source_commit": "a498b4cbac4ca47657cabb7ad00ad4200dc26095",
+      "artifact_id": 11360231074,
+      "artifact_digest": "sha256:5ffd8ba5cda9f57f511f4971d1622076906f2c7a58a175eebb2f0435c2f699f9",
+      "finding": "fixture incorrectly depended on the production qualification host-freeze path; no unit was spawned"
+    },
+    {
+      "github_run_id": 37346071972,
+      "source_commit": "e39a2b49518cea2321337797b9c2dab71daa7f8f",
+      "artifact_id": 11360721785,
+      "artifact_digest": "sha256:fe24ca993b84fee1d62cd380d56e888b4fc700748f8563dbc205cf95a9842fb1",
+      "finding": "direct StartTransientUnit rejected append-prefixed output strings; D-Bus-specific append properties were required"
+    },
+    {
+      "github_run_id": 37347594646,
+      "source_commit": "4fbd46eaea0836a898f513aa2b53a21c81533209",
+      "artifact_id": 11360748491,
+      "artifact_digest": "sha256:6522e62e26bc6ae33ebca64a5cb2ee7fb3b4d5b75b53161ad65a49f1cb84bbad",
+      "finding": "the unprivileged fixture reached ExecStart but failed with status 200/CHDIR because the campaign root was not traversable"
+    },
+    {
+      "github_run_id": 37350765373,
+      "source_commit": "edf931ab7e8f6ef9b89cc1070e1bbf278e2052a1",
+      "artifact_id": 11362835832,
+      "artifact_digest": "sha256:195cf1b91e7b945c7a57f0cca855ea05d162c972666e286d646b465f88f4222f",
+      "finding": "the exact two-process unit and checkpoint succeeded, but handoff publication used a removed systemd RuntimeDirectory"
+    }
+  ],
+  "decision": {
+    "campaign_lifecycle_controller_loss_rehearsal_complete": true,
+    "real_systemd_spawn_backend_host_rehearsal_complete": true,
+    "production_start_lifecycle_exercised": true,
+    "durable_start_replay_exercised": true,
+    "checkpoint_attach_exercised": true,
+    "abort_and_host_release_exercised": true,
+    "signed_socket_request_exercised": false,
+    "supervisor_restart_during_live_campaign_exercised": false,
+    "product_candidate_started": false,
+    "qualification_started": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "exercise the signed Unix-socket upload/start path and restart the supervisor while an exact non-product campaign remains live, then rehearse progress-loss, measurement-loss and lease-expiry on the admitted host",
+    "reason": "A bounded two-process fixture traversed the production manifest, durable start, SystemdSpawnBackend, checkpoint, replay, attach and abort coordinators across controller-process loss. It deliberately excluded product binaries, expensive workloads, signed socket admission and supervisor restart."
+  }
+}
