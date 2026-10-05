@@ -3,7 +3,7 @@ use crate::abort_lifecycle::drive_abort_request;
 use crate::checkpoint_evidence::observe_live_checkpoint_evidence;
 use crate::event::request_sha256;
 use crate::host_execution::HostExecutionClaim;
-use crate::host_receipt::{collect_host_observation, write_receipt_for_admission};
+use crate::host_receipt::{collect_fixture_host_observation, write_receipt_for_admission};
 use crate::manifest::{
     frozen_identity_from_manifest, CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary,
     OutputLimits, PhaseDurationsSeconds, RoleArgvTemplates,
@@ -106,7 +106,14 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
     fs::create_dir(&campaign_directory).map_err(display)?;
     fs::set_permissions(&campaign_directory, fs::Permissions::from_mode(0o750)).map_err(display)?;
 
-    let host = collect_host_observation(&campaign_directory).map_err(display)?;
+    let fixture_freeze = campaign_directory.join("fixture-host-freeze.json");
+    write_new_file(
+        &fixture_freeze,
+        br#"{"schema_version":"hydracache-w11-fixture-host-freeze-v1","product_candidate_started":false,"promotable":false}"#,
+        0o400,
+    )?;
+    let host =
+        collect_fixture_host_observation(&campaign_directory, &fixture_freeze).map_err(display)?;
     let host_receipt_sha256 =
         write_receipt_for_admission(&host, &campaign_directory).map_err(display)?;
     let mut manifest = build_manifest(

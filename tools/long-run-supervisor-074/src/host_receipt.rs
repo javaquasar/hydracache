@@ -208,6 +208,38 @@ pub fn verify_host_receipt_evidence(
 pub fn collect_host_observation(
     campaign_directory: &Path,
 ) -> Result<HostObservationReceipt, HostReceiptError> {
+    collect_host_observation_with_freeze(campaign_directory, Path::new(REFERENCE_HOST_FREEZE_PATH))
+}
+
+#[cfg(target_os = "linux")]
+pub fn collect_fixture_host_observation(
+    campaign_directory: &Path,
+    fixture_freeze: &Path,
+) -> Result<HostObservationReceipt, HostReceiptError> {
+    use std::os::unix::fs::MetadataExt;
+
+    let campaign = fs::canonicalize(campaign_directory)?;
+    let freeze = fs::canonicalize(fixture_freeze)?;
+    let metadata = fs::symlink_metadata(&freeze)?;
+    if freeze.parent() != Some(campaign.as_path())
+        || freeze.file_name().and_then(|value| value.to_str()) != Some("fixture-host-freeze.json")
+        || !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.nlink() != 1
+        || metadata.uid() != 0
+        || metadata.gid() != 0
+        || metadata.mode() & 0o7777 != 0o400
+    {
+        return Err(HostReceiptError::Path);
+    }
+    collect_host_observation_with_freeze(&campaign, &freeze)
+}
+
+#[cfg(target_os = "linux")]
+fn collect_host_observation_with_freeze(
+    campaign_directory: &Path,
+    freeze_path: &Path,
+) -> Result<HostObservationReceipt, HostReceiptError> {
     use std::os::unix::fs::MetadataExt;
 
     if unsafe { libc::geteuid() } != 0 {
@@ -286,10 +318,7 @@ pub fn collect_host_observation(
         gid: u64::from(metadata.gid()),
         mode: metadata.mode() & 0o7777,
     };
-    let reference_host_freeze_sha256 = sha256_file(
-        Path::new(REFERENCE_HOST_FREEZE_PATH),
-        MAX_HOST_RECEIPT_BYTES as u64,
-    )?;
+    let reference_host_freeze_sha256 = sha256_file(freeze_path, MAX_HOST_RECEIPT_BYTES as u64)?;
 
     let receipt = HostObservationReceipt {
         schema_version: 1,
