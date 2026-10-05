@@ -158,6 +158,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",
         "supervisor_progress_loss_maintenance_complete",
+        "supervisor_measurement_loss_maintenance_complete",
         "full_design_manifest_fields_complete",
         "host_receipt_revalidation_complete",
         "live_start_host_receipt_revalidation_complete",

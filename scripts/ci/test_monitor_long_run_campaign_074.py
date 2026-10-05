@@ -121,6 +121,20 @@ class MonitorLongRunCampaign074Tests(unittest.TestCase):
         terminal["campaign_state"] = "I74_SEALED"
         self.assertEqual(inspect(terminal)["classification"], "terminal")
 
+    def test_completed_measurement_loss_accepts_cleared_execution_identity(self) -> None:
+        failed = state()
+        failed["campaign_state"] = "FAILED_INCOMPLETE"
+        failed["recorded_failure"] = True
+        failed["harness"] = None
+        failed["daemon"] = None
+        failed["checkpoint"] = None
+        receipt = inspect(failed)
+        self.assertEqual(receipt["classification"], "measurement-loss")
+        self.assertEqual(receipt["problems"], [])
+        self.assertIsNone(receipt["useful_progress_age_seconds"])
+        self.assertIsNone(receipt["harness_pid"])
+        self.assertIsNone(receipt["daemon_pid"])
+
 
 if __name__ == "__main__":
     unittest.main()

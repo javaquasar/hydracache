@@ -24,6 +24,13 @@ TERMINAL_STATES = {
     "LEASE_EXPIRED_INCOMPLETE",
     "CORRUPT_QUARANTINED",
 }
+CLEARED_EXECUTION_STATES = {
+    "I74_SEALED",
+    "COMPLETE_SEALED",
+    "FAILED_INCOMPLETE",
+    "ABORTED_INCOMPLETE",
+    "LEASE_EXPIRED_INCOMPLETE",
+}
 REQUIRED_TOP_LEVEL = {
     "revision",
     "campaign_state",
@@ -107,18 +114,29 @@ def inspect_state(
     problems: list[str] = []
     if set(state) != REQUIRED_TOP_LEVEL:
         problems.append("state fields differ from the frozen schema")
+    state_name = state.get("campaign_state")
     identity = require_exact_object(
         state.get("identity"), REQUIRED_IDENTITY, "identity", problems
     )
-    checkpoint = require_exact_object(
-        state.get("checkpoint"), REQUIRED_CHECKPOINT, "checkpoint", problems
+    execution_cleared = all(
+        state.get(field) is None for field in ("checkpoint", "harness", "daemon")
     )
-    harness = require_exact_object(
-        state.get("harness"), REQUIRED_PROCESS, "harness", problems
-    )
-    daemon = require_exact_object(
-        state.get("daemon"), REQUIRED_PROCESS, "daemon", problems
-    )
+    if execution_cleared:
+        checkpoint: dict[str, Any] = {}
+        harness: dict[str, Any] = {}
+        daemon: dict[str, Any] = {}
+        if state_name not in CLEARED_EXECUTION_STATES:
+            problems.append("execution identity is cleared outside a completed terminal state")
+    else:
+        checkpoint = require_exact_object(
+            state.get("checkpoint"), REQUIRED_CHECKPOINT, "checkpoint", problems
+        )
+        harness = require_exact_object(
+            state.get("harness"), REQUIRED_PROCESS, "harness", problems
+        )
+        daemon = require_exact_object(
+            state.get("daemon"), REQUIRED_PROCESS, "daemon", problems
+        )
     lease_value = state.get("controller_lease")
     lease = (
         {}
@@ -145,25 +163,26 @@ def inspect_state(
             problems.append(f"identity {field} is invalid")
     if not is_integer(state.get("revision")) or state.get("revision", -1) < 0:
         problems.append("state revision is invalid")
-    for label, process in [("harness", harness), ("daemon", daemon)]:
-        for field in ["pid", "start_ticks", "cgroup_inode"]:
-            if not is_integer(process.get(field)) or process.get(field, 0) <= 0:
-                problems.append(f"{label} {field} is invalid")
-        if not is_integer(process.get("process_group")):
-            problems.append(f"{label} process_group is invalid")
-        if process.get("boot_id") != identity.get("boot_id"):
-            problems.append(f"{label} boot id drift")
-    for field in ["sequence", "useful_progress_unix_seconds"]:
-        if not is_integer(checkpoint.get(field)) or checkpoint.get(field, -1) < 0:
-            problems.append(f"checkpoint {field} is invalid")
-    for field in ["record_sha256"]:
-        if not HASH_RE.fullmatch(str(checkpoint.get(field, ""))):
-            problems.append(f"checkpoint {field} is invalid")
-    state_name = state.get("campaign_state")
+    if not execution_cleared:
+        for label, process in [("harness", harness), ("daemon", daemon)]:
+            for field in ["pid", "start_ticks", "cgroup_inode"]:
+                if not is_integer(process.get(field)) or process.get(field, 0) <= 0:
+                    problems.append(f"{label} {field} is invalid")
+            if not is_integer(process.get("process_group")):
+                problems.append(f"{label} process_group is invalid")
+            if process.get("boot_id") != identity.get("boot_id"):
+                problems.append(f"{label} boot id drift")
+        for field in ["sequence", "useful_progress_unix_seconds"]:
+            if not is_integer(checkpoint.get(field)) or checkpoint.get(field, -1) < 0:
+                problems.append(f"checkpoint {field} is invalid")
+        if not HASH_RE.fullmatch(str(checkpoint.get("record_sha256", ""))):
+            problems.append("checkpoint record_sha256 is invalid")
     if state_name not in LIVE_STATES | TERMINAL_STATES | {"PREPARED"}:
         problems.append("unknown campaign state")
     useful_progress = checkpoint.get("useful_progress_unix_seconds")
-    if isinstance(useful_progress, bool) or not isinstance(useful_progress, int):
+    if execution_cleared:
+        progress_age = None
+    elif isinstance(useful_progress, bool) or not isinstance(useful_progress, int):
         problems.append("useful progress time is invalid")
         progress_age = None
     else:

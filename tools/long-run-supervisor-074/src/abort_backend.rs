@@ -1,6 +1,7 @@
 use crate::abort_lifecycle::AbortBackend;
 use crate::lease_expiry::{LeaseExpiryBackend, LeaseExpiryCause};
 use crate::manifest::CampaignManifest;
+use crate::measurement_loss::{MeasurementLossBackend, MeasurementLossCause};
 use crate::progress_loss::{ProgressLossBackend, ProgressLossCause};
 use crate::protocol::Request;
 use crate::state::DurableCampaignState;
@@ -54,6 +55,18 @@ struct ProgressLossDiagnostic {
     role: Role,
     state: DurableCampaignState,
     unit: UnitSnapshot,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MeasurementLossDiagnostic {
+    schema_version: u32,
+    release: String,
+    campaign_id: String,
+    cause: MeasurementLossCause,
+    role: Role,
+    state: DurableCampaignState,
+    unit: Option<UnitSnapshot>,
 }
 
 #[derive(Debug, Error)]
@@ -121,6 +134,18 @@ impl ProgressLossBackend for SystemdAbortBackend {
         state: &DurableCampaignState,
     ) -> Result<(), String> {
         self.capture_and_stop_stalled_inner(campaign_directory, cause, state)
+            .map_err(|error| error.to_string())
+    }
+}
+
+impl MeasurementLossBackend for SystemdAbortBackend {
+    fn capture_and_stop_lost(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &MeasurementLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.capture_and_stop_lost_inner(campaign_directory, cause, state)
             .map_err(|error| error.to_string())
     }
 }
@@ -337,6 +362,62 @@ impl SystemdAbortBackend {
         }
         Ok(())
     }
+
+    fn capture_and_stop_lost_inner(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &MeasurementLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), SystemdAbortError> {
+        let manifest = self.manifest.as_ref().ok_or(SystemdAbortError::Manifest)?;
+        if manifest.campaign_id != cause.campaign_id
+            || manifest.campaign_id != state.identity.campaign_id
+            || state.campaign_state != crate::state::CampaignState::FailedIncomplete
+            || !state.recorded_failure
+            || state.harness.as_ref() != Some(&cause.harness)
+            || state.daemon.as_ref() != Some(&cause.daemon)
+            || state.checkpoint != cause.checkpoint
+        {
+            return Err(SystemdAbortError::Binding);
+        }
+        let role = role_from_unit(&cause.harness.unit_name, &cause.campaign_id)?;
+        let diagnostic_path =
+            measurement_loss_diagnostic_path(campaign_directory, &role, &cause.sha256()?)?;
+        let unit = inspect_unit_optional(&cause.harness.unit_name)?;
+        if diagnostic_path.exists() {
+            verify_existing_measurement_loss_diagnostic(
+                &diagnostic_path,
+                cause,
+                state,
+                &role,
+                manifest.output_limits.diagnostic_bytes,
+            )?;
+        } else {
+            publish_measurement_loss_diagnostic(
+                &diagnostic_path,
+                cause,
+                state,
+                role,
+                unit.clone(),
+                manifest.output_limits.diagnostic_bytes,
+            )?;
+        }
+        if let Some(snapshot) = unit {
+            if !measurement_unit_is_owned(cause, &snapshot) {
+                return Err(SystemdAbortError::Binding);
+            }
+            stop_unit_and_wait(&cause.harness.unit_name, manifest.diagnostic_grace_seconds)?;
+        }
+        Ok(())
+    }
+}
+
+fn measurement_unit_is_owned(cause: &MeasurementLossCause, unit: &UnitSnapshot) -> bool {
+    cause.reason == crate::measurement_loss::MeasurementLossReason::ProcessIdentityDrift
+        && unit.unit_name == cause.harness.unit_name
+        && unit.control_group == cause.harness.cgroup_path
+        && unit.main_pid == cause.harness.pid
+        && cause.harness.cgroup_path == cause.daemon.cgroup_path
 }
 
 fn role_from_unit(unit: &str, campaign_id: &str) -> Result<Role, SystemdAbortError> {
@@ -378,6 +459,22 @@ fn progress_loss_diagnostic_path(
         role,
         "progress-loss",
         checkpoint_sha256,
+    )
+}
+
+fn measurement_loss_diagnostic_path(
+    campaign_directory: &Path,
+    role: &Role,
+    cause_sha256: &str,
+) -> Result<PathBuf, SystemdAbortError> {
+    if !crate::is_hash(cause_sha256) {
+        return Err(SystemdAbortError::Binding);
+    }
+    diagnostic_path_with_validated_identity(
+        campaign_directory,
+        role,
+        "measurement-loss",
+        cause_sha256,
     )
 }
 
@@ -611,6 +708,62 @@ fn verify_existing_progress_loss_diagnostic(
     Ok(())
 }
 
+fn publish_measurement_loss_diagnostic(
+    path: &Path,
+    cause: &MeasurementLossCause,
+    state: &DurableCampaignState,
+    role: Role,
+    unit: Option<UnitSnapshot>,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let document = MeasurementLossDiagnostic {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: cause.campaign_id.clone(),
+        cause: cause.clone(),
+        role,
+        state: state.clone(),
+        unit,
+    };
+    let bytes = canonical_json(&document)?;
+    enforce_limit(bytes.len() as u64, limit)?;
+    publish_exact(path, &bytes)
+}
+
+fn verify_existing_measurement_loss_diagnostic(
+    path: &Path,
+    cause: &MeasurementLossCause,
+    state: &DurableCampaignState,
+    role: &Role,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let pending = path.with_extension("json.pending");
+    if pending.exists() {
+        let final_bytes = read_regular_allow_links(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+        if read_regular_allow_links(&pending, limit.min(MAX_DIAGNOSTIC_BYTES))? != final_bytes {
+            return Err(SystemdAbortError::Binding);
+        }
+        fs::remove_file(&pending)?;
+        sync_directory(path.parent().ok_or(SystemdAbortError::Binding)?)?;
+    }
+    let bytes = read_regular(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    if serde_json::to_vec(&value)? != bytes {
+        return Err(SystemdAbortError::Binding);
+    }
+    let document: MeasurementLossDiagnostic = serde_json::from_value(value)?;
+    if document.schema_version != 1
+        || document.release != "0.74"
+        || document.campaign_id != cause.campaign_id
+        || document.cause != *cause
+        || &document.role != role
+        || document.state != *state
+    {
+        return Err(SystemdAbortError::Binding);
+    }
+    Ok(())
+}
+
 fn enforce_limit(size: u64, limit: u64) -> Result<(), SystemdAbortError> {
     if size == 0 || limit == 0 || limit > MAX_DIAGNOSTIC_BYTES || size > limit {
         return Err(SystemdAbortError::Limit);
@@ -718,12 +871,15 @@ fn sync_directory(path: &Path) -> Result<(), SystemdAbortError> {
 #[cfg(test)]
 mod tests {
     use super::{
-        diagnostic_path, lease_expiry_diagnostic_path, progress_loss_diagnostic_path,
-        publish_diagnostic, publish_lease_expiry_diagnostic, publish_progress_loss_diagnostic,
-        verify_existing_diagnostic, verify_existing_lease_expiry_diagnostic,
+        diagnostic_path, lease_expiry_diagnostic_path, measurement_loss_diagnostic_path,
+        measurement_unit_is_owned, progress_loss_diagnostic_path, publish_diagnostic,
+        publish_lease_expiry_diagnostic, publish_measurement_loss_diagnostic,
+        publish_progress_loss_diagnostic, verify_existing_diagnostic,
+        verify_existing_lease_expiry_diagnostic, verify_existing_measurement_loss_diagnostic,
         verify_existing_progress_loss_diagnostic,
     };
     use crate::lease_expiry::LeaseExpiryCause;
+    use crate::measurement_loss::{MeasurementLossCause, MeasurementLossReason};
     use crate::progress_loss::ProgressLossCause;
     use crate::protocol::{ControllerIdentity, Operation, Request};
     use crate::state::{
@@ -966,5 +1122,70 @@ mod tests {
             1_048_576,
         )
         .unwrap();
+    }
+
+    #[test]
+    fn measurement_loss_diagnostic_and_stop_ownership_are_cause_bound() {
+        let (_temporary, campaign, _request, mut state, snapshot) = fixture();
+        state.campaign_state = CampaignState::FailedIncomplete;
+        state.recorded_failure = true;
+        let cause = MeasurementLossCause {
+            schema_version: 1,
+            campaign_id: state.identity.campaign_id.clone(),
+            reason: MeasurementLossReason::ProcessIdentityDrift,
+            observed_unix_seconds: 1_000,
+            harness: state.harness.clone().unwrap(),
+            daemon: state.daemon.clone().unwrap(),
+            checkpoint: state.checkpoint.clone(),
+        };
+        let path =
+            measurement_loss_diagnostic_path(&campaign, &Role::I74, &cause.sha256().unwrap())
+                .unwrap();
+        publish_measurement_loss_diagnostic(
+            &path,
+            &cause,
+            &state,
+            Role::I74,
+            Some(snapshot.clone()),
+            1_048_576,
+        )
+        .unwrap();
+        let first = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("json.pending")).unwrap();
+        publish_measurement_loss_diagnostic(
+            &path,
+            &cause,
+            &state,
+            Role::I74,
+            Some(snapshot.clone()),
+            1_048_576,
+        )
+        .unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), first);
+        verify_existing_measurement_loss_diagnostic(&path, &cause, &state, &Role::I74, 1_048_576)
+            .unwrap();
+        assert!(measurement_unit_is_owned(&cause, &snapshot));
+
+        let mut foreign = snapshot;
+        foreign.control_group.push_str("-reused");
+        assert!(!measurement_unit_is_owned(&cause, &foreign));
+        let mut reused_pid = foreign.clone();
+        reused_pid.control_group = cause.harness.cgroup_path.clone();
+        reused_pid.main_pid += 1;
+        assert!(!measurement_unit_is_owned(&cause, &reused_pid));
+        let mut unit_drift = cause.clone();
+        unit_drift.reason = MeasurementLossReason::UnitIdentityDrift;
+        reused_pid.main_pid = unit_drift.harness.pid;
+        assert!(!measurement_unit_is_owned(&unit_drift, &reused_pid));
+        let mut drifted = cause;
+        drifted.observed_unix_seconds += 1;
+        assert!(verify_existing_measurement_loss_diagnostic(
+            &path,
+            &drifted,
+            &state,
+            &Role::I74,
+            1_048_576,
+        )
+        .is_err());
     }
 }

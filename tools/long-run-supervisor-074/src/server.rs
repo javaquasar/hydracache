@@ -13,6 +13,9 @@ use crate::host_receipt::{
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryBackend, LeaseExpiryOutcome};
 use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
 use crate::manifest_evidence::{verify_manifest_evidence, verify_stored_manifest_evidence};
+use crate::measurement_loss::{
+    drive_measurement_loss, MeasurementLossBackend, MeasurementLossOutcome, MeasurementObservation,
+};
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
 use crate::progress_loss::{drive_progress_loss, ProgressLossBackend, ProgressLossOutcome};
@@ -59,6 +62,8 @@ pub enum ServerError {
     LeaseExpiry(String),
     #[error("supervisor progress-loss maintenance failed: {0}")]
     ProgressLoss(String),
+    #[error("supervisor measurement-loss maintenance failed: {0}")]
+    MeasurementLoss(String),
 }
 
 pub struct SupervisorServer {
@@ -106,6 +111,21 @@ pub trait ProgressLossObservationBackend: ProgressLossBackend {
         manifest: &CampaignManifest,
         state: &DurableCampaignState,
     ) -> Result<(), String>;
+}
+
+pub trait MeasurementLossObservationBackend: MeasurementLossBackend {
+    fn prepare_measurement(
+        &mut self,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String>;
+
+    fn observe_measurement(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<MeasurementObservation, String>;
 }
 
 pub trait StartObservationBackend {
@@ -187,6 +207,66 @@ impl ProgressLossObservationBackend for SystemdAbortBackend {
     }
 }
 
+impl MeasurementLossObservationBackend for SystemdAbortBackend {
+    fn prepare_measurement(
+        &mut self,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        if manifest.campaign_id != state.identity.campaign_id {
+            return Err("measurement manifest identity differs".to_owned());
+        }
+        self.bind_manifest(manifest.clone());
+        Ok(())
+    }
+
+    fn observe_measurement(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<MeasurementObservation, String> {
+        if verify_host_receipt_evidence(campaign_directory, manifest, state).is_err() {
+            return Ok(MeasurementObservation::Lost(
+                crate::measurement_loss::MeasurementLossReason::HostIdentityDrift,
+            ));
+        }
+        let harness = state
+            .harness
+            .as_ref()
+            .ok_or_else(|| "measurement harness identity is missing".to_owned())?;
+        let daemon = state
+            .daemon
+            .as_ref()
+            .ok_or_else(|| "measurement daemon identity is missing".to_owned())?;
+        let Some(snapshot) = crate::systemd_unit::inspect_unit_optional(&harness.unit_name)
+            .map_err(|error| error.to_string())?
+        else {
+            return Ok(MeasurementObservation::Lost(
+                crate::measurement_loss::MeasurementLossReason::UnitAbsent,
+            ));
+        };
+        if crate::systemd_unit::verify_unit_terminal(harness, daemon, &snapshot).is_ok() {
+            return Ok(MeasurementObservation::Terminal);
+        }
+        if verify_unit_identity(harness, daemon, &snapshot).is_err() {
+            return Ok(MeasurementObservation::Lost(
+                crate::measurement_loss::MeasurementLossReason::UnitIdentityDrift,
+            ));
+        }
+        if verify_process_identity(harness).is_err()
+            || verify_process_identity(daemon).is_err()
+            || verify_process_cpuset(harness, &state.identity.isolated_cpuset).is_err()
+            || verify_process_cpuset(daemon, &state.identity.isolated_cpuset).is_err()
+        {
+            return Ok(MeasurementObservation::Lost(
+                crate::measurement_loss::MeasurementLossReason::ProcessIdentityDrift,
+            ));
+        }
+        Ok(MeasurementObservation::Healthy)
+    }
+}
+
 impl SupervisorServer {
     pub fn bind(config: ServerConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let policy = config.policy()?;
@@ -207,6 +287,7 @@ impl SupervisorServer {
         let mut lease_backend = SystemdAbortBackend::new();
         loop {
             self.maintain_lease_expiry_with_backend(unix_seconds(), &mut lease_backend)?;
+            self.maintain_measurement_loss_with_backend(unix_seconds(), &mut lease_backend)?;
             self.maintain_progress_loss_with_backend(unix_seconds(), &mut lease_backend)?;
             if let Some(connection) = self.listener.accept_timeout(MAINTENANCE_INTERVAL)? {
                 self.handle_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
@@ -228,6 +309,11 @@ impl SupervisorServer {
             .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
         let state = reconcile_campaign(&lock)
             .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        // A committed failure intent owns recovery for this terminal state. Do not let an
+        // expired controller lease relabel or interrupt progress- or measurement-loss recovery.
+        if state.campaign_state == CampaignState::FailedIncomplete {
+            return Ok(Some(LeaseExpiryOutcome::NotDue));
+        }
         if now <= state.identity.lease_deadline_unix_seconds {
             return Ok(Some(LeaseExpiryOutcome::NotDue));
         }
@@ -238,6 +324,67 @@ impl SupervisorServer {
             .map_err(ServerError::LeaseExpiry)?;
         let outcome = drive_lease_expiry(&host_claim, &lock, now, backend)
             .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        Ok(Some(outcome))
+    }
+
+    pub fn maintain_measurement_loss_with_backend(
+        &self,
+        now: u64,
+        backend: &mut dyn MeasurementLossObservationBackend,
+    ) -> Result<Option<MeasurementLossOutcome>, ServerError> {
+        let Some(host_claim) = HostExecutionClaim::recover_active(&self.config.campaign_root)
+            .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?
+        else {
+            return Ok(None);
+        };
+        let lock = CampaignLock::acquire(&self.config.campaign_root, host_claim.campaign_id())
+            .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?;
+        let state = reconcile_campaign(&lock)
+            .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?;
+        let recovery_pending =
+            if state.campaign_state == CampaignState::FailedIncomplete && state.recorded_failure {
+                let report = verify_event_journal(
+                    &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+                    &lock.campaign_directory().join(EVENT_HEAD_NAME),
+                )
+                .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?;
+                report.latest_lifecycle.as_ref().is_some_and(|latest| {
+                    matches!(
+                        latest.transition,
+                        LifecycleEvent::MeasurementLossRequested
+                            | LifecycleEvent::MeasurementLossCompleted
+                    )
+                })
+            } else {
+                false
+            };
+        if !matches!(
+            state.campaign_state,
+            CampaignState::I74Running | CampaignState::C74Running
+        ) && !recovery_pending
+        {
+            return Ok(None);
+        }
+        let manifest = verify_stored_manifest_evidence(lock.campaign_directory(), &state)
+            .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?;
+        backend
+            .prepare_measurement(&manifest, &state)
+            .map_err(ServerError::MeasurementLoss)?;
+        let (reason, observed_at) = if recovery_pending {
+            (None, None)
+        } else {
+            match backend
+                .observe_measurement(lock.campaign_directory(), &manifest, &state)
+                .map_err(ServerError::MeasurementLoss)?
+            {
+                MeasurementObservation::Healthy | MeasurementObservation::Terminal => {
+                    return Ok(None);
+                }
+                MeasurementObservation::Lost(reason) => (Some(reason), Some(now)),
+            }
+        };
+        let outcome = drive_measurement_loss(&host_claim, &lock, now, reason, observed_at, backend)
+            .map_err(|error| ServerError::MeasurementLoss(error.to_string()))?;
         Ok(Some(outcome))
     }
 

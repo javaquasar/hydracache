@@ -22,6 +22,10 @@ use hydracache_long_run_supervisor_074::lease_expiry::{
     LeaseExpiryBackend, LeaseExpiryCause, LeaseExpiryOutcome,
 };
 use hydracache_long_run_supervisor_074::manifest::CampaignManifest;
+use hydracache_long_run_supervisor_074::measurement_loss::{
+    MeasurementLossBackend, MeasurementLossCause, MeasurementLossOutcome, MeasurementLossReason,
+    MeasurementObservation,
+};
 use hydracache_long_run_supervisor_074::progress_loss::{
     ProgressLossBackend, ProgressLossCause, ProgressLossOutcome,
 };
@@ -32,8 +36,9 @@ use hydracache_long_run_supervisor_074::seal_input::{
     InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
 };
 use hydracache_long_run_supervisor_074::server::{
-    AbortObservationBackend, LeaseExpiryObservationBackend, ProgressLossObservationBackend,
-    SealObservationBackend, StartObservationBackend, SupervisorServer,
+    AbortObservationBackend, LeaseExpiryObservationBackend, MeasurementLossObservationBackend,
+    ProgressLossObservationBackend, SealObservationBackend, StartObservationBackend,
+    SupervisorServer,
 };
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
@@ -371,6 +376,69 @@ impl ProgressLossObservationBackend for FakeProgressLossBackend {
     ) -> Result<(), String> {
         self.host_checks += 1;
         Ok(())
+    }
+}
+
+struct FakeMeasurementLossBackend {
+    observation: MeasurementObservation,
+    prepare_calls: usize,
+    observe_calls: usize,
+    stop_calls: usize,
+    fail_next: bool,
+}
+
+impl FakeMeasurementLossBackend {
+    fn new(observation: MeasurementObservation) -> Self {
+        Self {
+            observation,
+            prepare_calls: 0,
+            observe_calls: 0,
+            stop_calls: 0,
+            fail_next: false,
+        }
+    }
+}
+
+impl MeasurementLossBackend for FakeMeasurementLossBackend {
+    fn capture_and_stop_lost(
+        &mut self,
+        _campaign_directory: &Path,
+        cause: &MeasurementLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.stop_calls += 1;
+        assert_eq!(state.campaign_state, CampaignState::FailedIncomplete);
+        assert!(state.recorded_failure);
+        assert_eq!(cause.campaign_id, state.identity.campaign_id);
+        assert_eq!(cause.harness, state.harness.clone().unwrap());
+        assert_eq!(cause.daemon, state.daemon.clone().unwrap());
+        if self.fail_next {
+            self.fail_next = false;
+            return Err("injected measurement-loss interruption".to_owned());
+        }
+        Ok(())
+    }
+}
+
+impl MeasurementLossObservationBackend for FakeMeasurementLossBackend {
+    fn prepare_measurement(
+        &mut self,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.prepare_calls += 1;
+        assert_eq!(manifest.campaign_id, state.identity.campaign_id);
+        Ok(())
+    }
+
+    fn observe_measurement(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<MeasurementObservation, String> {
+        self.observe_calls += 1;
+        Ok(self.observation)
     }
 }
 
@@ -1143,6 +1211,131 @@ fn maintenance_expires_the_active_campaign_without_a_controller_request() {
         None
     );
     assert_eq!(backend.stop_calls, 1);
+}
+
+#[test]
+fn measurement_maintenance_distinguishes_healthy_terminal_and_lost_processes() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary.path().join("supervisor-measurement-loss.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let mut backend = FakeMeasurementLossBackend::new(MeasurementObservation::Healthy);
+    assert_eq!(
+        server
+            .maintain_measurement_loss_with_backend(now + 1, &mut backend)
+            .unwrap(),
+        None
+    );
+    backend.observation = MeasurementObservation::Terminal;
+    assert_eq!(
+        server
+            .maintain_measurement_loss_with_backend(now + 2, &mut backend)
+            .unwrap(),
+        None
+    );
+    assert_eq!(backend.prepare_calls, 2);
+    assert_eq!(backend.observe_calls, 2);
+    assert_eq!(backend.stop_calls, 0);
+    assert!(campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+
+    backend.observation = MeasurementObservation::Lost(MeasurementLossReason::ProcessIdentityDrift);
+    assert_eq!(
+        server
+            .maintain_measurement_loss_with_backend(now + 3, &mut backend)
+            .unwrap(),
+        Some(MeasurementLossOutcome::Completed { state_revision: 4 })
+    );
+    assert_eq!(backend.prepare_calls, 3);
+    assert_eq!(backend.observe_calls, 3);
+    assert_eq!(backend.stop_calls, 1);
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let failed = lock.read().unwrap();
+    assert_eq!(failed.campaign_state, CampaignState::FailedIncomplete);
+    assert!(failed.recorded_failure);
+    assert!(failed.harness.is_none());
+    assert!(failed.daemon.is_none());
+    assert!(failed.checkpoint.is_none());
+    assert!(failed.controller_lease.is_none());
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn measurement_maintenance_recovers_committed_intent_before_lease_expiry() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary
+        .path()
+        .join("supervisor-measurement-loss-recovery.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let mut backend = FakeMeasurementLossBackend::new(MeasurementObservation::Lost(
+        MeasurementLossReason::UnitAbsent,
+    ));
+    backend.fail_next = true;
+    assert!(server
+        .maintain_measurement_loss_with_backend(now + 1, &mut backend)
+        .is_err());
+    assert_eq!(backend.prepare_calls, 1);
+    assert_eq!(backend.observe_calls, 1);
+    assert_eq!(backend.stop_calls, 1);
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let requested = lock.read().unwrap();
+    assert_eq!(requested.revision, 3);
+    assert_eq!(requested.campaign_state, CampaignState::FailedIncomplete);
+    assert!(requested.recorded_failure);
+    assert!(requested.harness.is_some());
+    drop(lock);
+
+    let mut lease_backend = FakeLeaseExpiryBackend::default();
+    assert_eq!(
+        server
+            .maintain_lease_expiry_with_backend(now + 10_001, &mut lease_backend)
+            .unwrap(),
+        Some(LeaseExpiryOutcome::NotDue)
+    );
+    assert_eq!(lease_backend.host_checks, 0);
+    assert_eq!(lease_backend.stop_calls, 0);
+
+    backend.observation = MeasurementObservation::Healthy;
+    assert_eq!(
+        server
+            .maintain_measurement_loss_with_backend(now + 10_001, &mut backend)
+            .unwrap(),
+        Some(MeasurementLossOutcome::Completed { state_revision: 4 })
+    );
+    assert_eq!(backend.prepare_calls, 2);
+    assert_eq!(backend.observe_calls, 1);
+    assert_eq!(backend.stop_calls, 2);
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
 }
 
 #[test]

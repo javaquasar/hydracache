@@ -121,6 +121,7 @@ phase_progress_watchdog = "tools/long-run-supervisor-074/src/watchdog.rs"
 phase_progress_watchdog_complete = true
 supervisor_progress_loss_maintenance_complete = true
 startup_checkpoint_absence_maintenance_complete = true
+supervisor_measurement_loss_maintenance_complete = true
 progress_loss_host_rehearsal_complete = false
 strict_protocol_schema_complete = true
 signed_authorization_verifier_complete = true

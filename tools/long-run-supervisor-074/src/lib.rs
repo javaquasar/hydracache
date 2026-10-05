@@ -25,6 +25,8 @@ pub mod host_receipt;
 pub mod lease_expiry;
 pub mod manifest;
 pub mod manifest_evidence;
+#[cfg(target_os = "linux")]
+pub mod measurement_loss;
 pub mod mutation;
 #[cfg(target_os = "linux")]
 pub mod process_identity;

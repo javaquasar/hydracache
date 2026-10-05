@@ -44,6 +44,8 @@ pub enum LifecycleEvent {
     LeaseExpiryCompleted,
     ProgressLossRequested,
     ProgressLossCompleted,
+    MeasurementLossRequested,
+    MeasurementLossCompleted,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -737,9 +739,10 @@ fn validate_lifecycle_event(
         LifecycleEvent::LeaseExpiryRequested | LifecycleEvent::LeaseExpiryCompleted => {
             crate::state::CampaignState::LeaseExpiredIncomplete
         }
-        LifecycleEvent::ProgressLossRequested | LifecycleEvent::ProgressLossCompleted => {
-            crate::state::CampaignState::FailedIncomplete
-        }
+        LifecycleEvent::ProgressLossRequested
+        | LifecycleEvent::ProgressLossCompleted
+        | LifecycleEvent::MeasurementLossRequested
+        | LifecycleEvent::MeasurementLossCompleted => crate::state::CampaignState::FailedIncomplete,
     };
     if cause_request_id.is_empty()
         || cause_request_id.len() > 128
@@ -762,6 +765,7 @@ fn validate_lifecycle_event(
                 | LifecycleEvent::AbortCompleted
                 | LifecycleEvent::LeaseExpiryCompleted
                 | LifecycleEvent::ProgressLossCompleted
+                | LifecycleEvent::MeasurementLossCompleted
         ) && (state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some()))
         || (matches!(
             transition,
@@ -781,6 +785,10 @@ fn validate_lifecycle_event(
         || (transition == LifecycleEvent::ProgressLossRequested
             && (state.harness.is_none() || state.daemon.is_none()))
         || (transition == LifecycleEvent::ProgressLossCompleted && state.controller_lease.is_some())
+        || (transition == LifecycleEvent::MeasurementLossRequested
+            && (state.harness.is_none() || state.daemon.is_none() || !state.recorded_failure))
+        || (transition == LifecycleEvent::MeasurementLossCompleted
+            && (state.controller_lease.is_some() || !state.recorded_failure))
     {
         return Err(EventError::Binding {
             sequence: event.sequence,
