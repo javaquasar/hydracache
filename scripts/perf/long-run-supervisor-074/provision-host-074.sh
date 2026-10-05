@@ -11,6 +11,7 @@ INSTALL_SERVICE=/etc/systemd/system/$SERVICE
 INSTALL_SYSUSERS=/etc/sysusers.d/hydracache-performance-074.conf
 INSTALL_TMPFILES=/etc/tmpfiles.d/hydracache-performance-074.conf
 RECEIPT=/var/lib/hydracache-performance/provisioning-receipt-074.json
+ENTRYPOINT=/usr/local/sbin/hydracache-provision-host-074
 
 die() {
   printf 'provision-host-074: %s\n' "$*" >&2
@@ -20,6 +21,14 @@ die() {
 usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
+
+if [[ "${1-}" = --preflight && $# -eq 1 ]]; then
+  (( EUID == 0 )) || die "root is required"
+  [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "preflight requires the fixed root-owned entrypoint"
+  [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
+  printf 'ready\n'
+  exit 0
+fi
 
 bundle_dir=
 source_commit=
@@ -53,6 +62,7 @@ bundle_dir=$(realpath -e -- "$bundle_dir")
 
 required=(
   bundle.sha256
+  bundle.signature.hex
   hydracache-long-run-supervisor-074
   hydracache-performance-074.sysusers.conf
   hydracache-performance-074.tmpfiles.conf
@@ -86,6 +96,18 @@ mapfile -t expected_digest_members < <(printf '%s\n' "${digest_members[@]}" | LC
 [[ "$(tr -d '\r\n' < "$bundle_dir/source-commit.txt")" = "$source_commit" ]] || die "bundle source commit differs"
 verification_key=$(tr -d '\r\n' < "$bundle_dir/verification-key.hex")
 [[ "$verification_key" =~ ^[0-9a-f]{64}$ ]] || die "invalid public verification key"
+self_path=$(realpath -e -- "$0")
+cmp -s "$bundle_dir/provision-host-074.sh" "$self_path" || die "bundle installer differs from the root-owned entrypoint"
+trusted_verifier="$bundle_dir/hydracache-long-run-supervisor-074"
+if [[ -e "$INSTALL_CONFIG" || -e "$INSTALL_BINARY" ]]; then
+  [[ -f "$INSTALL_CONFIG" && ! -L "$INSTALL_CONFIG" ]] || die "installed config is unsafe"
+  [[ -x "$INSTALL_BINARY" && ! -L "$INSTALL_BINARY" ]] || die "installed verifier is unsafe"
+  installed_key=$(sed -nE 's/^verification_key_hex = "([0-9a-f]{64})"$/\1/p' "$INSTALL_CONFIG")
+  [[ "$installed_key" = "$verification_key" ]] || die "bundle verification key differs from the installed trust root"
+  trusted_verifier=$INSTALL_BINARY
+fi
+manifest_sha=$(sha256sum "$bundle_dir/bundle.sha256" | cut -d' ' -f1)
+[[ "$("$trusted_verifier" verify-provisioning-manifest "$bundle_dir/bundle.sha256" "$bundle_dir/verification-key.hex" "$bundle_dir/bundle.signature.hex")" = "$manifest_sha" ]] || die "bundle signature verification failed"
 
 command -v systemctl >/dev/null || die "systemctl is unavailable"
 command -v systemd-sysusers >/dev/null || die "systemd-sysusers is unavailable"

@@ -58,3 +58,22 @@ fn accounts_directories_and_unresolved_key_fail_closed() {
     assert!(template.contains("UNRESOLVED_PRODUCTION_ED25519_PUBLIC_KEY"));
     assert!(template.contains("expected_repository_id = 0"));
 }
+
+#[test]
+fn sudo_boundary_exposes_only_the_fixed_signed_bundle_installer() {
+    let sudoers = fs::read_to_string(repository_path(
+        "scripts/perf/long-run-supervisor-074/hydracache-performance-074.sudoers",
+    ))
+    .unwrap();
+    assert!(sudoers.contains(
+        "github-runner ALL=(root) NOPASSWD: /usr/local/sbin/hydracache-provision-host-074"
+    ));
+    for forbidden in [
+        "/bin/sh",
+        "/bin/bash",
+        "systemctl",
+        "ALL=(ALL) NOPASSWD: ALL",
+    ] {
+        assert!(!sudoers.contains(forbidden), "forbidden {forbidden}");
+    }
+}

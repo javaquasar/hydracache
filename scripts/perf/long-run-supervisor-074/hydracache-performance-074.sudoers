@@ -1,0 +1,3 @@
+# Bootstrap-only root boundary. The fixed root-owned command verifies the protected
+# Ed25519 bundle signature and has no arbitrary command or shell operation.
+github-runner ALL=(root) NOPASSWD: /usr/local/sbin/hydracache-provision-host-074

@@ -4,13 +4,16 @@ use crate::auth::{
 };
 use crate::protocol::{parse_request, parse_wire_request, Operation, ProtocolError, WireRequest};
 use crate::sha256_hex;
-use ed25519_dalek::{Signer, SigningKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
 use thiserror::Error;
 
 const MAX_SIGNING_KEY_BYTES: u64 = 65;
+const MAX_PROVISIONING_MANIFEST_BYTES: u64 = 4_096;
+const MAX_SIGNATURE_BYTES: u64 = 129;
+const PROVISIONING_DOMAIN: &[u8] = b"hydracache-w11-provisioning-bundle-v1\0";
 
 #[derive(Debug, Error)]
 pub enum RequestBuilderError {
@@ -28,6 +31,8 @@ pub enum RequestBuilderError {
     Io(#[from] std::io::Error),
     #[error("request builder JSON failed: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("provisioning bundle signature is invalid")]
+    Signature,
 }
 
 pub fn build_signed_request(
@@ -99,10 +104,53 @@ pub fn derive_verification_key(signing_key_path: &Path) -> Result<String, Reques
     Ok(hex(&signing_key.verifying_key().to_bytes()))
 }
 
+pub fn sign_provisioning_manifest(
+    manifest_path: &Path,
+    signing_key_path: &Path,
+    output_path: &Path,
+) -> Result<String, RequestBuilderError> {
+    let manifest = read_bounded_regular(manifest_path, MAX_PROVISIONING_MANIFEST_BYTES, false)?;
+    let signing_key = read_signing_key(signing_key_path)?;
+    let signature = signing_key.sign(&provisioning_message(&manifest));
+    let encoded = format!("{}\n", hex(&signature.to_bytes()));
+    write_new_private(output_path, encoded.as_bytes())?;
+    Ok(sha256_hex(&manifest))
+}
+
+pub fn verify_provisioning_manifest(
+    manifest_path: &Path,
+    verification_key_path: &Path,
+    signature_path: &Path,
+) -> Result<String, RequestBuilderError> {
+    let manifest = read_bounded_regular(manifest_path, MAX_PROVISIONING_MANIFEST_BYTES, false)?;
+    let key_bytes = read_bounded_regular(verification_key_path, MAX_SIGNING_KEY_BYTES, false)?;
+    let key_hex = key_bytes.strip_suffix(b"\n").unwrap_or(&key_bytes);
+    let key = decode_hex_32(key_hex).ok_or(RequestBuilderError::Signature)?;
+    let verifying_key =
+        VerifyingKey::from_bytes(&key).map_err(|_| RequestBuilderError::Signature)?;
+    let signature_bytes = read_bounded_regular(signature_path, MAX_SIGNATURE_BYTES, false)?;
+    let signature_hex = signature_bytes
+        .strip_suffix(b"\n")
+        .unwrap_or(&signature_bytes);
+    let signature =
+        Signature::from_bytes(&decode_hex_64(signature_hex).ok_or(RequestBuilderError::Signature)?);
+    verifying_key
+        .verify_strict(&provisioning_message(&manifest), &signature)
+        .map_err(|_| RequestBuilderError::Signature)?;
+    Ok(sha256_hex(&manifest))
+}
+
+fn provisioning_message(manifest: &[u8]) -> Vec<u8> {
+    let mut message = Vec::with_capacity(PROVISIONING_DOMAIN.len() + manifest.len());
+    message.extend_from_slice(PROVISIONING_DOMAIN);
+    message.extend_from_slice(manifest);
+    message
+}
+
 fn read_signing_key(path: &Path) -> Result<SigningKey, RequestBuilderError> {
     let key_bytes = read_bounded_regular(path, MAX_SIGNING_KEY_BYTES, true)?;
     let key_hex = key_bytes.strip_suffix(b"\n").unwrap_or(&key_bytes);
-    let key = decode_signing_key(key_hex).ok_or(RequestBuilderError::Path)?;
+    let key = decode_hex_32(key_hex).ok_or(RequestBuilderError::Path)?;
     Ok(SigningKey::from_bytes(&key))
 }
 
@@ -131,11 +179,22 @@ fn read_bounded_regular(
     Ok(bytes)
 }
 
-fn decode_signing_key(value: &[u8]) -> Option<[u8; 32]> {
+fn decode_hex_32(value: &[u8]) -> Option<[u8; 32]> {
     if value.len() != 64 {
         return None;
     }
     let mut output = [0_u8; 32];
+    for (index, pair) in value.chunks_exact(2).enumerate() {
+        output[index] = (nibble(pair[0])? << 4) | nibble(pair[1])?;
+    }
+    Some(output)
+}
+
+fn decode_hex_64(value: &[u8]) -> Option<[u8; 64]> {
+    if value.len() != 128 {
+        return None;
+    }
+    let mut output = [0_u8; 64];
     for (index, pair) in value.chunks_exact(2).enumerate() {
         output[index] = (nibble(pair[0])? << 4) | nibble(pair[1])?;
     }

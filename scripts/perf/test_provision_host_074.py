@@ -6,6 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/perf/long-run-supervisor-074/provision-host-074.sh"
 WORKFLOW = ROOT / ".github/workflows/performance-long-run-host-provision-074.yml"
 CAPABILITY_WORKFLOW = ROOT / ".github/workflows/performance-long-run-host-capability-074.yml"
+SUDOERS = ROOT / "scripts/perf/long-run-supervisor-074/hydracache-performance-074.sudoers"
 
 
 class ProvisionHostContractTests(unittest.TestCase):
@@ -14,6 +15,7 @@ class ProvisionHostContractTests(unittest.TestCase):
         cls.source = SCRIPT.read_text(encoding="utf-8")
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
         cls.capability_workflow = CAPABILITY_WORKFLOW.read_text(encoding="utf-8")
+        cls.sudoers = SUDOERS.read_text(encoding="utf-8")
 
     def test_private_signing_key_never_enters_the_host_installer(self) -> None:
         self.assertNotIn("SIGNING_KEY", self.source)
@@ -26,6 +28,8 @@ class ProvisionHostContractTests(unittest.TestCase):
             "set -euo pipefail",
             "(( EUID == 0 ))",
             "sha256sum --strict --check bundle.sha256",
+            "verify-provisioning-manifest",
+            "bundle installer differs from the root-owned entrypoint",
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
@@ -51,9 +55,12 @@ class ProvisionHostContractTests(unittest.TestCase):
         prepare, provision = self.workflow.split("\n  provision:\n", maxsplit=1)
         self.assertIn("SIGNING_KEY_HEX", prepare)
         self.assertIn("derive-verification-key", prepare)
+        self.assertIn("sign-provisioning-manifest", prepare)
         self.assertNotIn("SIGNING_KEY_HEX", provision)
         self.assertNotIn("HYDRACACHE_074_AUTH_SIGNING_KEY_HEX", provision)
         self.assertIn("sudo -n", provision)
+        self.assertIn("/usr/local/sbin/hydracache-provision-host-074", provision)
+        self.assertNotIn("sudo -n true", provision)
 
     def test_workflow_is_manual_and_does_not_run_qualification(self) -> None:
         self.assertIn("workflow_dispatch:", self.workflow)
@@ -68,6 +75,11 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertIn("github.event_name == 'workflow_dispatch'", self.capability_workflow)
         self.assertIn("source_sha: ${{ github.sha }}", self.capability_workflow)
         self.assertIn("secrets: inherit", self.capability_workflow)
+
+    def test_sudo_boundary_is_only_the_root_owned_installer(self) -> None:
+        self.assertIn("NOPASSWD: /usr/local/sbin/hydracache-provision-host-074", self.sudoers)
+        self.assertNotIn("NOPASSWD: ALL", self.sudoers)
+        self.assertNotIn("/bin/sh", self.sudoers)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,8 @@ use hydracache_long_run_supervisor_074::protocol::{
     parse_wire_request, ControllerIdentity, Operation, Request,
 };
 use hydracache_long_run_supervisor_074::request_builder::{
-    build_signed_request, derive_verification_key, RequestBuilderError,
+    build_signed_request, derive_verification_key, sign_provisioning_manifest,
+    verify_provisioning_manifest, RequestBuilderError,
 };
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -49,6 +50,33 @@ fn derives_only_the_public_verification_key_from_a_private_seed() {
     assert!(matches!(
         derive_verification_key(&key),
         Err(RequestBuilderError::Path)
+    ));
+}
+
+#[test]
+fn provisioning_manifest_signature_binds_every_digest_byte() {
+    let temporary = tempfile::tempdir().unwrap();
+    let key = temporary.path().join("signing-key");
+    let public = temporary.path().join("verification-key");
+    let manifest = temporary.path().join("bundle.sha256");
+    let signature = temporary.path().join("bundle.signature.hex");
+    write_key(&key, 7);
+    fs::write(
+        &public,
+        format!("{}\n", derive_verification_key(&key).unwrap()),
+    )
+    .unwrap();
+    fs::write(&manifest, format!("{}  binary\n", "a".repeat(64))).unwrap();
+
+    let digest = sign_provisioning_manifest(&manifest, &key, &signature).unwrap();
+    assert_eq!(
+        verify_provisioning_manifest(&manifest, &public, &signature).unwrap(),
+        digest
+    );
+    fs::write(&manifest, format!("{}  binary\n", "b".repeat(64))).unwrap();
+    assert!(matches!(
+        verify_provisioning_manifest(&manifest, &public, &signature),
+        Err(RequestBuilderError::Signature)
     ));
 }
 

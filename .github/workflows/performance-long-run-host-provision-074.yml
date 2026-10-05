@@ -68,8 +68,6 @@ jobs:
           mkdir -p "$bundle"
           target/release/hydracache-long-run-supervisor-074 \
             derive-verification-key "$key_file" > "$bundle/verification-key.hex"
-          rm -f "$key_file"
-          trap - EXIT
           install -m 0755 target/release/hydracache-long-run-supervisor-074 \
             "$bundle/hydracache-long-run-supervisor-074"
           install -m 0755 scripts/perf/long-run-supervisor-074/provision-host-074.sh \
@@ -93,6 +91,13 @@ jobs:
               verification-key.hex > bundle.sha256
             sha256sum --strict --check bundle.sha256
           )
+          target/release/hydracache-long-run-supervisor-074 \
+            sign-provisioning-manifest "$bundle/bundle.sha256" "$key_file" \
+            "$bundle/bundle.signature.hex" > "$bundle/bundle-manifest.sha256"
+          test "$(sha256sum "$bundle/bundle.sha256" | cut -d' ' -f1)" = \
+            "$(tr -d '\r\n' < "$bundle/bundle-manifest.sha256")"
+          rm -f "$bundle/bundle-manifest.sha256" "$key_file"
+          trap - EXIT
 
       - name: Publish immutable public provisioning bundle
         uses: actions/upload-artifact@v6
@@ -135,7 +140,7 @@ jobs:
           test "$(tr -d '\r\n' < "$bundle/source-commit.txt")" = "$INPUT_SOURCE_SHA"
           (cd "$bundle" && sha256sum --strict --check bundle.sha256)
           chmod 0755 "$bundle/hydracache-long-run-supervisor-074" "$bundle/provision-host-074.sh"
-          sudo -n true
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --preflight
 
       - name: Provision reviewed files, identities, and service
         shell: bash
@@ -146,7 +151,7 @@ jobs:
         run: |
           set -euo pipefail
           bundle=$(realpath target/host-provisioning-074)
-          sudo -n "$bundle/provision-host-074.sh" \
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 \
             --bundle-dir "$bundle" \
             --source-commit "$INPUT_SOURCE_SHA" \
             --repository-id "$REPOSITORY_ID" \

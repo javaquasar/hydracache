@@ -53,15 +53,71 @@ fn run() -> u8 {
         [command, key] if command == "derive-verification-key" => {
             derive_verification_key(&PathBuf::from(key))
         }
+        [command, manifest, key, output] if command == "sign-provisioning-manifest" => {
+            sign_provisioning_manifest(
+                &PathBuf::from(manifest),
+                &PathBuf::from(key),
+                &PathBuf::from(output),
+            )
+        }
+        [command, manifest, key, signature] if command == "verify-provisioning-manifest" => {
+            verify_provisioning_manifest(
+                &PathBuf::from(manifest),
+                &PathBuf::from(key),
+                &PathBuf::from(signature),
+            )
+        }
         #[cfg(target_os = "linux")]
         [command, config] if command == "validate-production-config" => {
             validate_production_config(&PathBuf::from(config))
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
+        }
+    }
+}
+
+fn sign_provisioning_manifest(
+    manifest: &std::path::Path,
+    signing_key: &std::path::Path,
+    output: &std::path::Path,
+) -> u8 {
+    match hydracache_long_run_supervisor_074::request_builder::sign_provisioning_manifest(
+        manifest,
+        signing_key,
+        output,
+    ) {
+        Ok(digest) => {
+            println!("{digest}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            2
+        }
+    }
+}
+
+fn verify_provisioning_manifest(
+    manifest: &std::path::Path,
+    verification_key: &std::path::Path,
+    signature: &std::path::Path,
+) -> u8 {
+    match hydracache_long_run_supervisor_074::request_builder::verify_provisioning_manifest(
+        manifest,
+        verification_key,
+        signature,
+    ) {
+        Ok(digest) => {
+            println!("{digest}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            9
         }
     }
 }
