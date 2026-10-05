@@ -451,6 +451,23 @@ server suite is 11/11 and the complete WSL suite is 155 ordinary passes plus the
 ignored real-system-bus test. This validates local composition, not the still-missing privileged
 host rehearsal.
 
+A controller-resilient run also needs a negative answer to a harder question: who notices a hang
+when the controller is gone? The phase-aware watchdog already distinguished useful work from a
+heartbeat, but that distinction previously lived only inside the writer. The checkpoint envelope
+now hashes the observation time and the last useful-progress time into every record. The detached
+supervisor reads and verifies that chain itself, so a new useful checkpoint during controller loss
+extends the deadline while a measured telemetry-only checkpoint does not. Attach also refreshes its
+checkpoint snapshot from this evidence instead of depending on an older controller snapshot.
+
+After the frozen 180-second nonterminal gap, the supervisor first records a checkpoint-bound
+failure intent, then captures bounded diagnostics and stops the exact retained unit, and only then
+records completion and releases the host claim. An interrupted backend call retries the same cause;
+it cannot launch a replacement. A terminal checkpoint is deliberately exempt because controller
+loss after successful work must allow later sealing. At source `8141a90f`, 160 ordinary supervisor
+tests pass in WSL plus one ignored real-system-bus test; the focused server/progress suites are
+12/12 and 3/3, the integrated writer is 10/10 and the offline verifier is 7/7. The first-checkpoint
+startup deadline and real root/systemd rehearsal remain open, so this is not yet a host-proof claim.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

@@ -457,6 +457,23 @@ passes plus one ignored manual system-bus test; the focused server suite is 11/1
 composition evidence, not the outstanding root/systemd admitted-host rehearsal. See
 `local-runs/w11-start-live-host-revalidation-local-20261005.json`.
 
+The detached maintenance loop now consumes the harness-owned checkpoint chain directly, so loss of
+the GitHub monitor does not freeze the supervisor's view at the last attach. Each checkpoint hashes
+both its observation time and the last phase-qualified useful-progress time; telemetry-only
+measured records cannot manufacture progress. The supervisor verifies the journal, head, campaign,
+role and original process identities on every due check, refreshes attach state from that same
+evidence, and ignores a valid terminal checkpoint so a later controller can seal it. A nonterminal
+gap greater than the frozen 180 seconds commits `ProgressLossRequested` before bounded diagnostic
+capture/stop, commits `ProgressLossCompleted`, clears retained process identity and then releases
+the host claim. Backend interruption retains the exact cause for retry without restart.
+
+The complete WSL supervisor suite now passes 160 ordinary tests plus one ignored manual system-bus
+test; the focused server and progress-loss suites pass 12/12 and 3/3. The integrated writer passes
+10 tests and the offline long-run verifier passes 7. The remaining local gap is explicit: absence
+of the first startup checkpoint is not yet timed from the start event, and real root/systemd
+diagnostic-stop behavior is still an admitted-host rehearsal. See
+`local-runs/w11-progress-loss-maintenance-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

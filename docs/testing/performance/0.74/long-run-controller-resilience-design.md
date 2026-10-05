@@ -655,6 +655,23 @@ depending on current host state and without observing or spawning again. Local i
 drift, convergence and replay ordering; collection as root against the installed supervisor binary,
 real mount and systemd unit remains part of the admitted-host rehearsal.
 
+The maintenance loop also owns progress-loss classification after the first checkpoint exists.
+Checkpoint records carry hash-bound `observed_unix_seconds` and
+`useful_progress_unix_seconds`; the integrated writer, not the controller, derives the latter from
+the phase-aware watchdog. The supervisor independently verifies the chain/head and original process
+identities, reads the latest useful timestamp, and lets advancing useful records extend the window
+even with no attached controller. A valid terminal record is preserved for later sealing. Once a
+nonterminal record exceeds the frozen rejection gap, the supervisor revalidates host evidence,
+durably records a checkpoint-bound failure cause, captures the bounded diagnostic and stops the
+exact unit, then records completion and releases the host claim. Restart recovery repeats only the
+unfinished diagnostic/stop effect. Attach admission now refreshes its checkpoint snapshot from the
+same verified chain instead of requiring a previous controller snapshot.
+
+This implementation intentionally does not yet claim the startup-with-no-checkpoint case: until a
+first chain record exists the maintenance pass returns not-due. That case needs a start-event-bound
+deadline and its own diagnostic cause before `startup_checkpoint_absence_maintenance_complete` can
+become true. Production D-Bus stop timing and diagnostic ownership also remain host-rehearsal work.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-progress-loss-maintenance",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "8141a90f",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo test -p hydracache-performance-integrated-074 --locked",
+    "cargo test -p xtask --test long_run_campaign_074 --locked",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo clippy -p hydracache-performance-integrated-074 --all-targets --locked -- -D warnings",
+    "cargo clippy -p xtask --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-progress-loss-final.json"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 160,
+  "manual_system_bus_tests_ignored": 1,
+  "focused_server_tests_passed": 12,
+  "progress_loss_tests_passed": 3,
+  "integrated_writer_tests_passed": 10,
+  "offline_verifier_tests_passed": 7,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "checkpoint observation time and phase-qualified useful-progress time are part of the hashed checkpoint payload",
+    "the detached supervisor reads the latest valid chain rather than relying on the last controller attach",
+    "useful checkpoint advancement during controller loss extends the rejection window",
+    "a nonterminal stall commits failure intent before diagnostic-stop and releases the host claim only after durable completion",
+    "backend interruption retains process identity and the exact checkpoint-bound cause for one-effect retry",
+    "terminal checkpoint evidence remains available for a later seal",
+    "attach admission refreshes its checkpoint snapshot from the verified live chain",
+    "the qualification dry-run accepted the updated schema and contract and executed zero commands"
+  ],
+  "limitations": [
+    "a role that never creates its first startup checkpoint is not yet failed from the start-event deadline",
+    "diagnostic capture and stop used fake backends; the production D-Bus path was not exercised against an installed root service",
+    "the workflow was not dispatched and no product or systemd process was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
