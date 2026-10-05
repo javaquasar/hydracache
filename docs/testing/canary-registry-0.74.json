@@ -31,7 +31,7 @@
       "timeout_seconds": 300,
       "tier": "fast",
       "artifacts": ["target/release-evidence/canaries/0.74-W11.json"],
-      "red_evidence": "Controller reattachment must reject PID-only liveness, restarted roles, expired leases, identity drift, corrupt progress and duplicate executors."
+      "red_evidence": "Controller reattachment must reject PID-only liveness, restart-from-checkpoint, PID reuse, broken checkpoint hashes, mixed-attempt identity, expired leases and duplicate executors."
     }
   ]
 }

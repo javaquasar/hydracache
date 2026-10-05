@@ -208,29 +208,79 @@ fn controller_resilience_expected_red_canary() {
         return;
     }
 
-    // Model the forbidden weak policy as one that trusts a reused PID and a
-    // checkpoint sequence alone. The real attach predicate above binds the
-    // complete process, host, lease, campaign and hash-chain identities.
+    // Model each forbidden weak policy from the W11 contract. The real attach
+    // predicate binds complete process, host, lease, campaign and checkpoint
+    // identities; every weak predicate below would admit evidence it rejects.
     let current = state();
-    let mut reused = request(&current);
-    reused.harness.start_ticks += 1;
-    reused.daemon.cgroup_inode += 1;
-    reused.identity.boot_id = "boot-reused".to_owned();
-    reused.identity.lease_deadline_unix_seconds = 1_000;
-    let weak_pid_only_policy = reused.harness.pid == current.harness.as_ref().unwrap().pid
-        && reused.daemon.pid == current.daemon.as_ref().unwrap().pid
-        && reused.checkpoint.sequence == current.checkpoint.as_ref().unwrap().sequence;
+    let current_checkpoint = current.checkpoint.as_ref().unwrap();
+
+    let mut pid_reuse = request(&current);
+    pid_reuse.harness.start_ticks += 1;
+    pid_reuse.daemon.start_ticks += 1;
+    pid_reuse.daemon.cgroup_inode += 1;
+    let weak_pid_only_policy = pid_reuse.harness.pid == current.harness.as_ref().unwrap().pid
+        && pid_reuse.daemon.pid == current.daemon.as_ref().unwrap().pid;
     assert!(
         weak_pid_only_policy,
-        "the expected-red weak policy was not activated"
+        "PID-only liveness mutant was not activated"
     );
-    assert!(!evaluate_attach(&current, &reused, 180).admitted);
+    assert!(!evaluate_attach(&current, &pid_reuse, 180).admitted);
+
+    let mut restarted = request(&current);
+    restarted.harness = process(200);
+    restarted.daemon = process(201);
+    let weak_restart_from_checkpoint = &restarted.checkpoint == current_checkpoint;
+    assert!(
+        weak_restart_from_checkpoint,
+        "restart-from-checkpoint mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &restarted, 180).admitted);
+
+    let mut broken_hash_chain = request(&current);
+    broken_hash_chain.checkpoint.record_sha256 = hash('9');
+    let weak_sequence_only_checkpoint =
+        broken_hash_chain.checkpoint.sequence == current_checkpoint.sequence;
+    assert!(
+        weak_sequence_only_checkpoint,
+        "sequence-only checkpoint mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &broken_hash_chain, 180).admitted);
+
+    let mut mixed_attempt = request(&current);
+    mixed_attempt.identity.manifest_sha256 = hash('8');
+    mixed_attempt.identity.tooling_sha256 = hash('9');
+    let weak_process_only_attempt = &mixed_attempt.harness == current.harness.as_ref().unwrap()
+        && &mixed_attempt.daemon == current.daemon.as_ref().unwrap()
+        && &mixed_attempt.checkpoint == current_checkpoint;
+    assert!(
+        weak_process_only_attempt,
+        "mixed-attempt identity mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &mixed_attempt, 180).admitted);
+
+    let mut expired_lease = request(&current);
+    expired_lease.now_unix_seconds = current.identity.lease_deadline_unix_seconds + 1;
+    let weak_liveness_ignores_lease = expired_lease.harness.pid
+        == current.harness.as_ref().unwrap().pid
+        && &expired_lease.checkpoint == current_checkpoint;
+    assert!(
+        weak_liveness_ignores_lease,
+        "lease-expiry mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &expired_lease, 180).admitted);
 
     let mut duplicate = current.clone();
     duplicate.duplicate_executor = true;
+    let weak_duplicate_blind_policy = &request(&duplicate).checkpoint == current_checkpoint;
+    assert!(
+        weak_duplicate_blind_policy,
+        "duplicate-executor mutant was not activated"
+    );
     assert!(!evaluate_attach(&duplicate, &request(&duplicate), 180).admitted);
     assert!(transition(CampaignState::I74Terminal, Transition::StartI74).is_err());
     assert!(transition(CampaignState::LeaseExpiredIncomplete, Transition::StartC74).is_err());
 
-    panic!("HC-CANARY-RED:PERF74-W11: PID-only/restart/lease/duplicate acceptance must stay red");
+    panic!(
+        "HC-CANARY-RED:PERF74-W11: PID-only/restart/PID-reuse/hash/mixed-attempt/lease/duplicate acceptance must stay red"
+    );
 }
