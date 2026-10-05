@@ -36,6 +36,7 @@ const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycl
 const CONTEXT_PATH: &str = "/run/hydracache-perf/campaign-lifecycle-smoke-v1.json";
 const FIXTURE_SECONDS: u64 = 75;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
+const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
 const HASH_A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const HASH_B: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const GIT_SHA: &str = "0000000000000000000000000000000000000000";
@@ -188,7 +189,10 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
         .as_ref()
         .zip(state.daemon.as_ref())
         .ok_or_else(|| "started fixture has no exact process pair".to_owned())?;
-    let (_, checkpoint) = wait_for_checkpoint(&campaign_directory, &state)?;
+    let (_, checkpoint) = wait_for_checkpoint(&campaign_directory, &state).map_err(|error| {
+        let diagnostic = fixture_diagnostic(&campaign_directory);
+        format!("{error}; fixture diagnostic: {diagnostic}")
+    })?;
     let context = CampaignSmokeContext {
         schema_version: 1,
         product_candidate_started: false,
@@ -589,6 +593,38 @@ fn wait_for_checkpoint(
     }
 }
 
+fn fixture_diagnostic(campaign_directory: &Path) -> String {
+    let path = campaign_directory
+        .join("roles")
+        .join("i74")
+        .join("stderr.log");
+    let metadata = match fs::symlink_metadata(&path) {
+        Ok(metadata) => metadata,
+        Err(error) => return format!("stderr metadata unavailable: {error}"),
+    };
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.len() > MAX_FIXTURE_DIAGNOSTIC_BYTES
+    {
+        return "stderr is unsafe or oversized".to_owned();
+    }
+    let mut bytes = Vec::with_capacity(metadata.len() as usize);
+    if let Err(error) = File::open(&path).and_then(|mut file| {
+        file.take(MAX_FIXTURE_DIAGNOSTIC_BYTES + 1)
+            .read_to_end(&mut bytes)
+    }) {
+        return format!("stderr read failed: {error}");
+    }
+    if bytes.len() as u64 > MAX_FIXTURE_DIAGNOSTIC_BYTES {
+        return "stderr is oversized".to_owned();
+    }
+    match String::from_utf8(bytes) {
+        Ok(value) if value.trim().is_empty() => "stderr is empty".to_owned(),
+        Ok(value) => value.trim().to_owned(),
+        Err(_) => "stderr is not UTF-8".to_owned(),
+    }
+}
+
 fn original_controller_still_running(context: &CampaignSmokeContext) -> Result<bool, String> {
     match inspect_process(context.controller_pid) {
         Ok(process) => Ok(process.start_ticks == context.controller_start_ticks
@@ -709,7 +745,8 @@ fn display(error: impl std::fmt::Display) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{uuid_from_hash, HASH_A};
+    use super::{fixture_diagnostic, uuid_from_hash, HASH_A};
+    use std::fs;
 
     #[test]
     fn derived_request_id_is_a_lowercase_v4_uuid() {
@@ -717,5 +754,20 @@ mod tests {
         assert_eq!(value.len(), 36);
         assert_eq!(&value[14..15], "4");
         assert_eq!(&value[19..20], "8");
+    }
+
+    #[test]
+    fn fixture_diagnostic_reads_only_the_bounded_role_stderr() {
+        let root = tempfile::tempdir().unwrap();
+        let role = root.path().join("roles").join("i74");
+        fs::create_dir_all(&role).unwrap();
+        fs::write(role.join("stderr.log"), b"fixture failed\n").unwrap();
+        assert_eq!(fixture_diagnostic(root.path()), "fixture failed");
+
+        fs::write(role.join("stderr.log"), vec![b'x'; 4097]).unwrap();
+        assert_eq!(
+            fixture_diagnostic(root.path()),
+            "stderr is unsafe or oversized"
+        );
     }
 }
