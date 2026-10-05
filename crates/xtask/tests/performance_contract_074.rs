@@ -476,3 +476,56 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
     assert!(workflow.contains("Capture a best-effort read-only status snapshot"));
     assert!(!workflow.contains("continue-on-error: true"));
 }
+
+#[test]
+fn w9e_allocator_attribution_is_linux_only_complete_and_non_promotable() {
+    let allocator = contract("w9e-linux-allocator-profile-contract.toml");
+    assert_eq!(
+        allocator["state"].as_str(),
+        Some("preregistered-before-dedicated-linux-execution")
+    );
+    assert_eq!(allocator["operating_system"].as_str(), Some("linux"));
+    assert_eq!(allocator["architecture"].as_str(), Some("x86_64"));
+    assert_eq!(allocator["minimum_attempts"].as_integer(), Some(20));
+    assert_eq!(
+        allocator["counterbalanced_allocator_order_required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(allocator["product_mutation_allowed"].as_bool(), Some(false));
+    assert_eq!(
+        allocator["allocator_default_change_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        allocator["acceptance_decision_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(allocator["promotable"].as_bool(), Some(false));
+    assert_eq!(
+        allocator["owner_materiality_floor_percent"].as_float(),
+        Some(5.0)
+    );
+
+    let allocators = allocator["allocators"].as_array().unwrap();
+    assert_eq!(allocators.len(), 3);
+    for expected in ["system", "mimalloc", "jemalloc"] {
+        assert!(allocators
+            .iter()
+            .any(|value| value.as_str() == Some(expected)));
+    }
+
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-allocator-attribution-074.yml"),
+    )
+    .unwrap();
+    assert!(workflow.contains("workflow_dispatch:"));
+    assert!(workflow.contains("feat/0.74-resp-native-throughput"));
+    assert!(workflow.contains("group: performance-reference-074-host"));
+    assert!(workflow.contains("cancel-in-progress: false"));
+    assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
+    assert!(workflow.contains("--features \"allocator-$allocator\""));
+    assert!(workflow.contains("--repeats 5"));
+    assert!(workflow.contains("acceptance_decision_allowed"));
+    assert!(workflow.contains("promotable"));
+    assert!(!workflow.contains("performance-long-run-qualification-074"));
+}

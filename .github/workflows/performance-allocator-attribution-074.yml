@@ -1,0 +1,236 @@
+name: Performance Allocator Attribution 0.74
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact lowercase 40-character attribution source commit
+        required: true
+        type: string
+      lease_owner:
+        description: Operator holding the serialized performance-host lease
+        required: true
+        type: string
+      lease_end:
+        description: Approved lease end in RFC3339 form
+        required: true
+        type: string
+  push:
+    branches:
+      - feat/0.74-resp-native-throughput
+    paths:
+      - .github/workflows/performance-allocator-attribution-074.yml
+      - scripts/perf/performance_allocator_profile_074.py
+      - tools/allocator-profile-074/**
+      - docs/testing/performance/0.74/w9e-linux-allocator-profile-contract.toml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-074-host
+  cancel-in-progress: false
+
+jobs:
+  attribute:
+    name: Non-promotable Linux allocator owner attribution
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 75
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w9e-allocator
+
+    steps:
+      - name: Check out exact attribution source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha || github.sha }}
+
+      - name: Resolve immutable source and lease
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+        run: |
+          set -euo pipefail
+          source_sha="${INPUT_SOURCE_SHA:-$GITHUB_SHA}"
+          lease_owner="${INPUT_LEASE_OWNER:-$GITHUB_ACTOR}"
+          lease_end="${INPUT_LEASE_END:-$(date --utc --date='+75 minutes' --iso-8601=seconds)}"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          test -n "$lease_owner"
+          lease_epoch="$(date --date="$lease_end" +%s)"
+          now_epoch="$(date +%s)"
+          test "$lease_epoch" -gt "$now_epoch"
+          test "$lease_epoch" -le "$((now_epoch + 7200))"
+          {
+            echo "EXPECTED_SOURCE_SHA=$source_sha"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$lease_owner"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_END=$lease_end"
+          } >> "$GITHUB_ENV"
+
+      - name: Verify Linux toolchain and allocator prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "$(uname -m)" = x86_64
+          test -r /proc/self/smaps_rollup
+          test -r /etc/machine-id
+          command -v cargo
+          command -v rustc
+          command -v python3
+          cargo --version
+          rustc --version
+          ldd --version | head -n 1
+
+      - name: Capture pre-attribution host identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          python3 - "$EVIDENCE_DIR/preflight.json" <<'PY'
+          import hashlib, json, os, pathlib, platform, subprocess
+          def command(*args):
+              return subprocess.check_output(args, text=True).strip()
+          machine = pathlib.Path('/etc/machine-id').read_bytes().strip()
+          value = {
+              'schema_version': 1,
+              'source_sha': os.environ['EXPECTED_SOURCE_SHA'],
+              'lease': {
+                  'owner': os.environ['HYDRACACHE_PERFORMANCE_LEASE_OWNER'],
+                  'end': os.environ['HYDRACACHE_PERFORMANCE_LEASE_END'],
+              },
+              'host': {
+                  'machine_id_sha256': hashlib.sha256(machine).hexdigest(),
+                  'node': platform.node(),
+                  'machine': platform.machine(),
+                  'kernel': platform.release(),
+                  'cpu_count': os.cpu_count(),
+                  'cpu_model': next(
+                      line.split(':', 1)[1].strip()
+                      for line in pathlib.Path('/proc/cpuinfo').read_text().splitlines()
+                      if line.startswith('model name')
+                  ),
+              },
+              'toolchain': {'rustc': command('rustc', '--version'), 'cargo': command('cargo', '--version')},
+          }
+          pathlib.Path(os.sys.argv[1]).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Build three exact allocator variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          for allocator in system mimalloc jemalloc; do
+            CARGO_TARGET_DIR="target/w9e-$allocator" cargo build \
+              --manifest-path tools/allocator-profile-074/Cargo.toml \
+              --release --locked --no-default-features --features "allocator-$allocator"
+          done
+
+      - name: Run counterbalanced owner attribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_allocator_profile_074.py \
+            --system-binary target/w9e-system/release/allocator-profile-074 \
+            --mimalloc-binary target/w9e-mimalloc/release/allocator-profile-074 \
+            --jemalloc-binary target/w9e-jemalloc/release/allocator-profile-074 \
+            --output-dir "$EVIDENCE_DIR/campaign" \
+            --source-commit "$EXPECTED_SOURCE_SHA" \
+            --tool-source tools/allocator-profile-074/src/main.rs \
+            --tool-lock tools/allocator-profile-074/Cargo.lock \
+            --contract docs/testing/performance/0.74/w9e-linux-allocator-profile-contract.toml \
+            --repeats 5
+
+      - name: Capture post-attribution host identity
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$EVIDENCE_DIR/postflight.json" <<'PY'
+          import hashlib, json, os, pathlib, platform, subprocess
+          def command(*args):
+              return subprocess.check_output(args, text=True).strip()
+          machine = pathlib.Path('/etc/machine-id').read_bytes().strip()
+          value = {
+              'schema_version': 1,
+              'source_sha': os.environ['EXPECTED_SOURCE_SHA'],
+              'lease': {
+                  'owner': os.environ['HYDRACACHE_PERFORMANCE_LEASE_OWNER'],
+                  'end': os.environ['HYDRACACHE_PERFORMANCE_LEASE_END'],
+              },
+              'host': {
+                  'machine_id_sha256': hashlib.sha256(machine).hexdigest(),
+                  'node': platform.node(),
+                  'machine': platform.machine(),
+                  'kernel': platform.release(),
+                  'cpu_count': os.cpu_count(),
+                  'cpu_model': next(
+                      line.split(':', 1)[1].strip()
+                      for line in pathlib.Path('/proc/cpuinfo').read_text().splitlines()
+                      if line.startswith('model name')
+                  ),
+              },
+              'toolchain': {'rustc': command('rustc', '--version'), 'cargo': command('cargo', '--version')},
+          }
+          pathlib.Path(os.sys.argv[1]).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Seal non-promotable attribution packet
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$EVIDENCE_DIR" <<'PY'
+          import hashlib, json, os, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          before = json.loads((root / 'preflight.json').read_text())
+          after = json.loads((root / 'postflight.json').read_text())
+          manifest_path = root / 'campaign' / 'manifest.json'
+          summary_path = root / 'campaign' / 'summary.json'
+          manifest = json.loads(manifest_path.read_text())
+          summary = json.loads(summary_path.read_text())
+          if before != after:
+              raise SystemExit('host, toolchain, lease, or source identity drifted')
+          if manifest['source_commit'] != os.environ['EXPECTED_SOURCE_SHA']:
+              raise SystemExit('matrix source identity drifted')
+          if manifest['failed_attempts'] or manifest['candidate_data_present']:
+              raise SystemExit('matrix is incomplete or contains candidate data')
+          if manifest['acceptance_decision_allowed'] or manifest['promotable']:
+              raise SystemExit('attribution crossed its claim boundary')
+          digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          packet = {
+              'schema_version': 1,
+              'release': '0.74',
+              'profile_id': 'w9e-linux-allocator-profile-074-v1',
+              'source_sha': os.environ['EXPECTED_SOURCE_SHA'],
+              'result': 'complete-owner-attribution',
+              'host': before['host'],
+              'toolchain': before['toolchain'],
+              'lease': before['lease'],
+              'preflight_sha256': digest(root / 'preflight.json'),
+              'postflight_sha256': digest(root / 'postflight.json'),
+              'matrix_manifest_sha256': digest(manifest_path),
+              'summary_sha256': digest(summary_path),
+              'attempts': summary['attempts'],
+              'candidate_data_present': False,
+              'acceptance_decision_allowed': False,
+              'promotable': False,
+              'silent_retry_allowed': False,
+          }
+          (root / 'packet.json').write_text(json.dumps(packet, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Retain W9e attribution packet
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-allocator-attribution-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w9e-allocator/**
+          if-no-files-found: error
+          retention-days: 90

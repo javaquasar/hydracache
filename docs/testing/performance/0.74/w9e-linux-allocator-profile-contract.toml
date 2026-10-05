@@ -1,0 +1,84 @@
+schema_version = 1
+release = "0.74"
+contract_id = "w9e-linux-allocator-profile-074-v1"
+state = "preregistered-before-dedicated-linux-execution"
+scope = "Determine whether allocator behavior is a material owner of the current embedded HydraCache churn trace before authorizing any allocator product candidate."
+profile_tool = "tools/allocator-profile-074"
+matrix_runner = "scripts/perf/performance_allocator_profile_074.py"
+
+operating_system = "linux"
+architecture = "x86_64"
+allocators = ["system", "mimalloc", "jemalloc"]
+build_features = ["allocator-system", "allocator-mimalloc", "allocator-jemalloc"]
+mutually_exclusive_features_required = true
+locked_release_builds_required = true
+independent_processes_required = true
+identical_source_required = true
+identical_trace_required = true
+identical_payload_required = true
+identical_runtime_required = true
+binary_sha256_required = true
+binary_size_required = true
+tool_source_sha256_required = true
+lock_sha256_required = true
+contract_sha256_required = true
+attempt_manifest_required = true
+failed_attempt_retention_required = true
+silent_retry_allowed = false
+
+workload_seed = 74009
+phases = ["cold", "fill", "steady_read", "delete", "refill", "post_idle"]
+purge_phases = ["pre_purge", "post_purge", "second_refill"]
+cardinality = 16384
+payload_bytes = 4096
+steady_read_operations = 65536
+idle_milliseconds = 2000
+repeats_per_allocator = 5
+repeats_mimalloc_purge = 5
+minimum_attempts = 20
+counterbalanced_allocator_order_required = true
+
+required_process_fields = [
+  "working_set_bytes",
+  "peak_working_set_bytes",
+  "pss_bytes",
+  "private_clean_bytes",
+  "private_dirty_bytes",
+  "page_fault_count",
+  "voluntary_context_switches",
+  "involuntary_context_switches",
+  "thread_count",
+  "user_cpu_ns",
+  "system_cpu_ns",
+]
+required_native_concepts = ["allocated_or_live", "active_or_committed", "resident", "retained_or_reserved", "arenas", "thread_caches"]
+native_unavailable_requires_reason = true
+rss_or_pss_substitution_for_native_fields_allowed = false
+missing_native_field_imputation_allowed = false
+cross_allocator_native_name_equivalence_allowed = false
+raw_provider_payload_retained_when_available = true
+units_must_be_bytes = true
+counter_semantics_required = true
+purge_activation_proof_required = true
+purge_is_separate_policy = true
+second_refill_required_after_purge = true
+
+product_mutation_allowed = false
+allocator_default_change_allowed = false
+allocator_tuning_change_allowed = false
+candidate_data_allowed = false
+acceptance_decision_allowed = false
+release_numerical_claim_allowed = false
+promotable = false
+
+owner_materiality_floor_percent = 5.0
+owner_materiality_requires = [
+  "five valid repeats for every allocator",
+  "same direction in at least four of five repeats",
+  "at least five percent improvement in a named allocated, retained, reuse, or churn owner",
+  "no regression above five percent in CPU per operation, p99 in the later integrated matrix, peak RSS/PSS, virtual reservation, thread count, refill, startup, or binary size",
+]
+
+falsifier = "Reject the matrix if source, workload, key, payload, seed, phase order, target, allocator feature, binary identity, or host identity drifts; if any attempt is missing or silently retried; if RSS/PSS is presented as allocator-native data; or if provider-specific concepts are treated as interchangeable without their recorded semantics."
+decision_rule = "This run may identify a named allocator owner only. If no owner clears the preregistered floor, close W9e measured-no-win and retain the system default. If an owner clears the floor, preregister exactly one allocator candidate, then run unchanged embedded/native and RESP performance-contract guards before any release qualification."
+claim_boundary = "No allocator winner or product improvement is claimed by this profile. Purge is not allocator replacement. Windows and macOS retain the system fallback unless a later supported-target proposal and ADR pass."
