@@ -134,7 +134,7 @@ def read_supervisor_snapshot(
         involuntary_context_switches=int(status["nonvoluntary_ctxt_switches"]),
         threads=threads,
         pids_current=pids_current,
-        cpuset=(cgroup / "cpuset.cpus.effective").read_text(encoding="utf-8").strip(),
+        cpuset=status["Cpus_allowed_list"],
     )
 
 

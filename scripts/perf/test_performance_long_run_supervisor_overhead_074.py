@@ -54,7 +54,7 @@ class SupervisorOverheadTests(unittest.TestCase):
                 "42 (supervisor worker) " + " ".join(fields) + "\n", encoding="utf-8"
             )
             (process / "status").write_text(
-                "VmRSS:\t5 kB\nThreads:\t2\n"
+                "VmRSS:\t5 kB\nThreads:\t2\nCpus_allowed_list:\t0-1\n"
                 "voluntary_ctxt_switches:\t8\nnonvoluntary_ctxt_switches:\t2\n",
                 encoding="utf-8",
             )
@@ -74,8 +74,6 @@ class SupervisorOverheadTests(unittest.TestCase):
             (cgroup / "memory.current").write_text("8192\n", encoding="utf-8")
             (cgroup / "memory.peak").write_text("16384\n", encoding="utf-8")
             (cgroup / "pids.current").write_text("2\n", encoding="utf-8")
-            (cgroup / "cpuset.cpus.effective").write_text("0-1\n", encoding="utf-8")
-
             observed = overhead.read_supervisor_snapshot(
                 root / "proc", cgroup, 42, monotonic_ns=lambda: 99
             )
