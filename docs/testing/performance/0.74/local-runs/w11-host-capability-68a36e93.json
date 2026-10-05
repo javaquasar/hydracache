@@ -1,0 +1,65 @@
+{
+  "artifact": {
+    "id": 11344266593,
+    "name": "performance-long-run-host-capability-074-68a36e9383d8b2cb26324f3e174bf813d44bf374-37307408040-1",
+    "size_bytes": 1931,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37307408040/artifacts/11344266593"
+  },
+  "decision": {
+    "host_rehearsal_ready": false,
+    "mutation_performed": false,
+    "next_required_step": "protected provisioning with the production verification key, dedicated accounts/group, reviewed binary/config/service installation, state directories and runner client-group admission",
+    "qualification_started": false,
+    "reason": "The host has a usable systemd/cgroup-v2 substrate but none of the frozen HydraCache supervisor provisioning is installed."
+  },
+  "github_run": {
+    "conclusion": "success",
+    "id": 37307408040,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37307408040"
+  },
+  "host": {
+    "boot_id_sha256": "e55e72380bc648fe246beb428df31c45f0cc36f7a61ca3f229da2f4f87273a1d",
+    "cgroup_v2_controllers": [
+      "cpuset",
+      "cpu",
+      "io",
+      "memory",
+      "hugetlb",
+      "pids",
+      "rdma",
+      "misc"
+    ],
+    "cpu_count": 8,
+    "kernel": "6.8.0-138-generic",
+    "machine_id_sha256": "5e32780d0b9b493e27782f17f32b0de2dc757855e595ed8a111da407c4e9a225",
+    "pid1": "systemd",
+    "system_bus_available": true,
+    "system_state": "running",
+    "systemd_version": "255"
+  },
+  "missing": {
+    "accounts": [
+      "hydracache-perf",
+      "hydracache-perf-client"
+    ],
+    "paths": [
+      "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+      "/etc/hydracache-perf/supervisor-074.toml",
+      "/run/hydracache-perf/supervisor-v1.sock",
+      "/var/lib/hydracache-performance/campaigns",
+      "/var/lib/hydracache-performance/staging",
+      "/var/lib/hydracache-performance/seals"
+    ],
+    "service": "hydracache-performance-supervisor-074.service"
+  },
+  "receipt_sha256": "888309712a44ec2f24dcf08dbe1aaa67e10ff001cb76d569ceeac5c63a0401a1",
+  "runner": {
+    "gid": 1001,
+    "groups": [
+      1001
+    ],
+    "uid": 1001
+  },
+  "schema_version": 1,
+  "source_commit": "68a36e9383d8b2cb26324f3e174bf813d44bf374"
+}

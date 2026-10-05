@@ -540,6 +540,14 @@ commands. Production D-Bus observation/diagnostic/stop and root-owned filesystem
 admitted-host rehearsal work; this result contains no product throughput measurement. See
 `local-runs/w11-measurement-loss-maintenance-local-20261005.json`.
 
+A read-only probe of the serialized Linux runner at source `68a36e93` now narrows that external
+boundary. PID 1 is systemd, the system manager bus and cgroup v2 controllers are available, and the
+state path would reside on ext4. The host is not provisioned: the frozen service, binary, config,
+accounts/groups, state directories and Unix socket are all absent, and the runner is not a member
+of the required client group. No mutation or qualification command ran. Protected provisioning
+with the real verification key is required before the same-host controller-loss rehearsal; see
+`local-runs/w11-host-capability-68a36e93.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

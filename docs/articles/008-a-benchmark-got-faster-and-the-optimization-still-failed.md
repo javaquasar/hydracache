@@ -951,6 +951,23 @@ confirm fail-closed replay. At source `9b4d93a7`, all 125 ordinary WSL superviso
 independent packet-verifier tests pass. This proves the local mode/hash boundary, not production
 uid/gid or mount enforcement; those still belong to admitted-host rehearsal.
 
+## A capable host is not a provisioned measurement host
+
+The same distinction applies to infrastructure. A read-only probe found a healthy systemd PID 1,
+the system manager bus, unified cgroup v2 with CPU, cpuset, memory, I/O and PID controllers, and an
+ext4 filesystem for the planned persistent state. None of that made the runner ready for the W11
+controller-loss rehearsal.
+
+The dedicated supervisor user and client group did not exist. Neither did the reviewed service,
+binary, production config, state directories or Unix socket, and the Actions runner had no client
+group membership. The probe changed nothing and started no qualification process.
+
+This is not a generic “CI is unavailable” excuse. It identifies one exact operational transition:
+protected provisioning must install the reviewed artifacts, bind the real verification key, create
+the least-privilege identities and admit the runner to the socket group. Only then can a rehearsal
+test real D-Bus timing, root-owned modes, detached unit identity and reattachment after controller
+loss. A machine with systemd is capability evidence; it is not admission evidence.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.
