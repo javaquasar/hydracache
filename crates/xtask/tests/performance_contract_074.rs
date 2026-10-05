@@ -540,7 +540,12 @@ fn w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable() {
     assert_eq!(kernel["operating_system"].as_str(), Some("linux"));
     assert_eq!(kernel["architecture"].as_str(), Some("x86_64"));
     assert_eq!(kernel["minimum_attempts"].as_integer(), Some(30));
+    assert_eq!(kernel["minimum_processes"].as_integer(), Some(60));
     assert_eq!(kernel["repeats_per_cell"].as_integer(), Some(5));
+    assert_eq!(
+        kernel["paired_untraced_control_required"].as_bool(),
+        Some(true)
+    );
     assert_eq!(
         kernel["measurement_gate_after_warmup_required"].as_bool(),
         Some(true)

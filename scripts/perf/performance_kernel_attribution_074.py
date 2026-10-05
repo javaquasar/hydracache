@@ -219,6 +219,7 @@ def parse_ss_snapshot(output: str) -> list[dict[str, Any]]:
                     "local": parts[3],
                     "peer": parts[4],
                     "skmem": {},
+                    "pids": sorted({int(pid) for pid in re.findall(r"pid=(\d+)", stripped)}),
                 }
                 rows.append(current)
             else:
@@ -230,17 +231,31 @@ def parse_ss_snapshot(output: str) -> list[dict[str, Any]]:
                     item = re.fullmatch(r"([a-z]+)(\d+)", token.strip())
                     if item:
                         current["skmem"][item.group(1)] = int(item.group(2))
+            current["pids"] = sorted(
+                set(current["pids"]) | {int(pid) for pid in re.findall(r"pid=(\d+)", stripped)}
+            )
     return rows
 
 
-def socket_queue_summary(samples: list[dict[str, Any]], server_ports: list[int]) -> dict[str, Any]:
+def socket_queue_summary(
+    samples: list[dict[str, Any]],
+    server_ports: list[int] | None = None,
+    process_pid: int | None = None,
+) -> dict[str, Any]:
+    require((server_ports is None) != (process_pid is None), "exactly one socket owner selector is required")
     selected = []
-    suffixes = tuple(f":{port}" for port in server_ports)
+    suffixes = tuple(f":{port}" for port in (server_ports or []))
     for sample in samples:
         rows = [
             row
             for row in sample["rows"]
-            if row["local"].endswith(suffixes) or row["peer"].endswith(suffixes)
+            if (
+                (process_pid is not None and process_pid in row["pids"])
+                or (
+                    server_ports is not None
+                    and (row["local"].endswith(suffixes) or row["peer"].endswith(suffixes))
+                )
+            )
         ]
         selected.append({"elapsed_ns": sample["elapsed_ns"], "rows": rows})
     all_rows = [row for sample in selected for row in sample["rows"]]
@@ -259,7 +274,7 @@ def socket_queue_summary(samples: list[dict[str, Any]], server_ports: list[int])
 def sample_sockets(stop: threading.Event, started_ns: int, samples: list[dict[str, Any]]) -> None:
     while not stop.is_set():
         completed = subprocess.run(
-            ["ss", "-tinmH"], capture_output=True, text=True, check=False, timeout=3
+            ["ss", "-tinmpH"], capture_output=True, text=True, check=False, timeout=3
         )
         samples.append(
             {
@@ -272,38 +287,16 @@ def sample_sockets(stop: threading.Event, started_ns: int, samples: list[dict[st
         stop.wait(0.02)
 
 
-def compress_traces(paths: list[Path]) -> list[dict[str, Any]]:
-    compressed = []
-    for path in paths:
-        target = path.with_suffix(path.suffix + ".gz")
-        with path.open("rb") as source, gzip.open(target, "wb", compresslevel=9) as output:
-            shutil.copyfileobj(source, output)
-        path.unlink()
-        compressed.append({"file": target.name, "sha256": sha256(target), "bytes": target.stat().st_size})
-    return compressed
-
-
-def run_attempt(
+def profiler_arguments(
     binary: Path,
     source_commit: str,
     operation: str,
     pipeline: int,
     concurrency: int,
-    ordinal: int,
-    output: Path,
-) -> dict[str, Any]:
-    stem = f"{ordinal:02d}-{operation}-p{pipeline}-c{concurrency}"
-    ready = output / f"{stem}.ready"
-    go = output / f"{stem}.go"
-    receipt_path = output / f"{stem}.receipt.json"
-    rusage_path = output / f"{stem}.rusage.json"
-    stdout_path = output / f"{stem}.stdout.txt"
-    stderr_path = output / f"{stem}.stderr.txt"
-    ss_path = output / f"{stem}.ss.json"
-    trace_prefix = output / f"{stem}.strace"
-    command = [
-        "strace", "-ff", "-qq", "-ttt", "-yy", "-s", "256", "-e", f"trace={TRACE_SYSCALLS}",
-        "-o", str(trace_prefix), str(binary),
+    receipt_path: Path,
+) -> list[str]:
+    return [
+        str(binary),
         "--source-commit", source_commit,
         "--operation", operation,
         "--operations", str(OPERATIONS),
@@ -318,6 +311,170 @@ def run_attempt(
         "--transport", "tcp",
         "--output", str(receipt_path),
     ]
+
+
+def compress_traces(paths: list[Path]) -> list[dict[str, Any]]:
+    compressed = []
+    for path in paths:
+        target = path.with_suffix(path.suffix + ".gz")
+        with path.open("rb") as source, gzip.open(target, "wb", compresslevel=9) as output:
+            shutil.copyfileobj(source, output)
+        path.unlink()
+        compressed.append({"file": target.name, "sha256": sha256(target), "bytes": target.stat().st_size})
+    return compressed
+
+
+def run_untraced_control(
+    binary: Path,
+    source_commit: str,
+    operation: str,
+    pipeline: int,
+    concurrency: int,
+    stem: str,
+    output: Path,
+) -> dict[str, Any]:
+    prefix = f"{stem}.untraced"
+    ready = output / f"{prefix}.ready"
+    go = output / f"{prefix}.go"
+    receipt_path = output / f"{prefix}.receipt.json"
+    rusage_path = output / f"{prefix}.rusage.json"
+    stdout_path = output / f"{prefix}.stdout.txt"
+    stderr_path = output / f"{prefix}.stderr.txt"
+    ss_path = output / f"{prefix}.ss.json"
+    command = profiler_arguments(
+        binary, source_commit, operation, pipeline, concurrency, receipt_path
+    )
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HYDRACACHE_W9C_READY_FILE": str(ready),
+            "HYDRACACHE_W9C_GO_FILE": str(go),
+            "HYDRACACHE_W9C_RUSAGE_FILE": str(rusage_path),
+        }
+    )
+    record: dict[str, Any] = {"command": command, "valid": False}
+    samples: list[dict[str, Any]] = []
+    stop = threading.Event()
+    sampler: threading.Thread | None = None
+    process: subprocess.Popen[bytes] | None = None
+    try:
+        with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
+            process = subprocess.Popen(command, stdout=stdout, stderr=stderr, env=environment)
+            deadline = time.monotonic() + 45
+            while not ready.is_file() and process.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.01)
+            require(ready.is_file(), "untraced profiler did not reach the measurement gate")
+            started_ns = time.monotonic_ns()
+            sampler = threading.Thread(
+                target=sample_sockets, args=(stop, started_ns, samples), daemon=True
+            )
+            sampler.start()
+            go.touch(exist_ok=False)
+            exit_code = process.wait(timeout=120)
+            record["exit_code"] = exit_code
+            require(exit_code == 0, f"untraced profiler exited {exit_code}")
+        stop.set()
+        if sampler is not None:
+            sampler.join(timeout=5)
+        require(sampler is None or not sampler.is_alive(), "untraced ss sampler did not stop")
+        require(stderr_path.stat().st_size == 0, "untraced profiler stderr is non-empty")
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        stdout_receipt = json.loads(stdout_path.read_text(encoding="utf-8"))
+        rusage = json.loads(rusage_path.read_text(encoding="utf-8"))
+        require(stdout_receipt == receipt, "untraced stdout and durable receipts diverged")
+        validate_receipt(receipt, source_commit, operation, pipeline, concurrency)
+        validate_rusage(rusage)
+        require(receipt.get("binary_sha256") == f"sha256:{sha256(binary)}", "untraced binary identity changed")
+        socket_queues = socket_queue_summary(samples, process_pid=process.pid)
+        require(socket_queues["samples"] > 0, "untraced ss produced no samples")
+        require(
+            socket_queues["samples_with_connections"] > 0,
+            "untraced ss did not observe profiler-owned sockets",
+        )
+        require(all(sample["exit_code"] == 0 for sample in samples), "untraced ss sampling failed")
+        write_json(ss_path, {"summary": {key: value for key, value in socket_queues.items() if key != "selected"}, "samples": socket_queues["selected"]})
+        record.update(
+            {
+                "valid": True,
+                "pid": process.pid,
+                "receipt": receipt_path.name,
+                "receipt_sha256": sha256(receipt_path),
+                "rusage": rusage_path.name,
+                "rusage_sha256": sha256(rusage_path),
+                "stdout": stdout_path.name,
+                "stdout_sha256": sha256(stdout_path),
+                "stderr": stderr_path.name,
+                "stderr_sha256": sha256(stderr_path),
+                "ss": ss_path.name,
+                "ss_sha256": sha256(ss_path),
+                "socket_queues": {key: value for key, value in socket_queues.items() if key != "selected"},
+                "rusage_delta": rusage["delta"],
+                "goodput_operations_per_second": receipt["goodput_operations_per_second"],
+                "p99_us": receipt["latency"]["p99_us"],
+                "workload_sha256": receipt["workload_sha256"],
+                "app": {
+                    "input_bytes": receipt["resp"]["input_bytes"],
+                    "output_bytes": receipt["resp"]["output_bytes"],
+                    "write_calls": receipt["resp"]["write_calls"],
+                    "flush_calls": receipt["resp"]["flush_calls"],
+                    "poll_write_attempts": receipt["socket_io"]["poll_write_attempts"],
+                    "poll_write_pending": receipt["socket_io"]["poll_write_pending"],
+                    "short_writes": receipt["socket_io"]["short_writes"],
+                },
+            }
+        )
+    except (json.JSONDecodeError, OSError, subprocess.SubprocessError, ValueError) as error:
+        record["error"] = str(error)
+        if process is not None and process.poll() is None:
+            process.kill()
+            process.wait(timeout=5)
+    finally:
+        stop.set()
+        if sampler is not None:
+            sampler.join(timeout=5)
+        if samples and not ss_path.is_file():
+            write_json(ss_path, {"summary": None, "unvalidated_samples": samples})
+        for path, key in (
+            (stdout_path, "stdout"),
+            (stderr_path, "stderr"),
+            (receipt_path, "receipt"),
+            (rusage_path, "rusage"),
+            (ss_path, "ss"),
+        ):
+            if path.is_file() and key not in record:
+                record[key] = path.name
+                record[f"{key}_sha256"] = sha256(path)
+    return record
+
+
+def run_attempt(
+    binary: Path,
+    source_commit: str,
+    operation: str,
+    pipeline: int,
+    concurrency: int,
+    ordinal: int,
+    output: Path,
+) -> dict[str, Any]:
+    stem = f"{ordinal:02d}-{operation}-p{pipeline}-c{concurrency}"
+    control = run_untraced_control(
+        binary, source_commit, operation, pipeline, concurrency, stem, output
+    )
+    ready = output / f"{stem}.ready"
+    go = output / f"{stem}.go"
+    receipt_path = output / f"{stem}.receipt.json"
+    rusage_path = output / f"{stem}.rusage.json"
+    stdout_path = output / f"{stem}.stdout.txt"
+    stderr_path = output / f"{stem}.stderr.txt"
+    ss_path = output / f"{stem}.ss.json"
+    trace_prefix = output / f"{stem}.strace"
+    traced_arguments = profiler_arguments(
+        binary, source_commit, operation, pipeline, concurrency, receipt_path
+    )
+    command = [
+        "strace", "-ff", "-qq", "-ttt", "-yy", "-s", "256", "-e", f"trace={TRACE_SYSCALLS}",
+        "-o", str(trace_prefix), *traced_arguments,
+    ]
     environment = os.environ.copy()
     environment.update(
         {
@@ -330,6 +487,7 @@ def run_attempt(
         "ordinal": ordinal,
         "cell": {"operation": operation, "pipeline": pipeline, "concurrency": concurrency},
         "command": command,
+        "untraced_control": control,
         "valid": False,
         "silent_retry": False,
     }
@@ -351,7 +509,6 @@ def run_attempt(
             exit_code = process.wait(timeout=180)
             record["exit_code"] = exit_code
             require(exit_code == 0, f"profiler/strace exited {exit_code}")
-        require(stdout_path.stat().st_size == 0, "profiler stdout is non-empty")
         require(stderr_path.stat().st_size == 0, "profiler/strace stderr is non-empty")
         stop.set()
         if sampler is not None:
@@ -361,9 +518,13 @@ def run_attempt(
         require(trace_paths, "strace output missing")
         trace = parse_strace_files(trace_paths)
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        stdout_receipt = json.loads(stdout_path.read_text(encoding="utf-8"))
         rusage = json.loads(rusage_path.read_text(encoding="utf-8"))
+        require(stdout_receipt == receipt, "stdout and durable profiler receipts diverged")
         validate_receipt(receipt, source_commit, operation, pipeline, concurrency)
         validate_rusage(rusage)
+        require(control.get("valid") is True, f"untraced control failed: {control.get('error')}")
+        require(control["workload_sha256"] == receipt["workload_sha256"], "traced/untraced workload digest diverged")
         require(len(trace["server_ports"]) == concurrency, "measurement listener count changed")
         require(receipt.get("binary_sha256") == f"sha256:{sha256(binary)}", "binary identity changed")
         socket_queues = socket_queue_summary(samples, trace["server_ports"])
@@ -376,6 +537,16 @@ def run_attempt(
         require(trace["tcp"]["client"]["read_bytes"] == receipt["resp"]["output_bytes"], "kernel client reads do not reconcile to RESP output bytes")
         require(trace["tcp"]["client"]["write_bytes"] == receipt["resp"]["input_bytes"], "kernel client writes do not reconcile to RESP input bytes")
         require(trace["tcp"]["server"]["read_bytes"] == receipt["resp"]["input_bytes"], "kernel server reads do not reconcile to RESP input bytes")
+        traced_app = {
+            "input_bytes": receipt["resp"]["input_bytes"],
+            "output_bytes": receipt["resp"]["output_bytes"],
+            "write_calls": receipt["resp"]["write_calls"],
+            "flush_calls": receipt["resp"]["flush_calls"],
+            "poll_write_attempts": receipt["socket_io"]["poll_write_attempts"],
+            "poll_write_pending": receipt["socket_io"]["poll_write_pending"],
+            "short_writes": receipt["socket_io"]["short_writes"],
+        }
+        require(traced_app == control["app"], "traced/untraced application counters diverged")
 
         operations = receipt["operations"]
         trace["per_operation"] = {
@@ -387,12 +558,21 @@ def run_attempt(
             "epoll_calls": trace["epoll_calls"] / operations,
             "futex_calls": trace["futex_calls"] / operations,
         }
-        rusage_delta = rusage["delta"]
-        rusage_delta["context_switches_per_operation"] = (
-            rusage_delta["voluntary_context_switches"] + rusage_delta["involuntary_context_switches"]
+        traced_rusage_delta = dict(rusage["delta"])
+        traced_rusage_delta["context_switches_per_operation"] = (
+            traced_rusage_delta["voluntary_context_switches"]
+            + traced_rusage_delta["involuntary_context_switches"]
         ) / operations
-        rusage_delta["page_faults_per_operation"] = (
-            rusage_delta["minor_page_faults"] + rusage_delta["major_page_faults"]
+        traced_rusage_delta["page_faults_per_operation"] = (
+            traced_rusage_delta["minor_page_faults"] + traced_rusage_delta["major_page_faults"]
+        ) / operations
+        control_rusage_delta = dict(control["rusage_delta"])
+        control_rusage_delta["context_switches_per_operation"] = (
+            control_rusage_delta["voluntary_context_switches"]
+            + control_rusage_delta["involuntary_context_switches"]
+        ) / operations
+        control_rusage_delta["page_faults_per_operation"] = (
+            control_rusage_delta["minor_page_faults"] + control_rusage_delta["major_page_faults"]
         ) / operations
         record.update(
             {
@@ -406,21 +586,24 @@ def run_attempt(
                 "stderr": stderr_path.name,
                 "stderr_sha256": sha256(stderr_path),
                 "trace": trace,
-                "rusage_delta": rusage_delta,
-                "socket_queues": {key: value for key, value in socket_queues.items() if key != "selected"},
-                "app": {
-                    "write_calls": receipt["resp"]["write_calls"],
-                    "flush_calls": receipt["resp"]["flush_calls"],
-                    "poll_write_attempts": receipt["socket_io"]["poll_write_attempts"],
-                    "poll_write_pending": receipt["socket_io"]["poll_write_pending"],
-                    "short_writes": receipt["socket_io"]["short_writes"],
+                "rusage_delta": control_rusage_delta,
+                "traced_rusage_delta": traced_rusage_delta,
+                "socket_queues": control["socket_queues"],
+                "traced_socket_queues": {
+                    key: value for key, value in socket_queues.items() if key != "selected"
                 },
-                "goodput_operations_per_second": receipt["goodput_operations_per_second"],
-                "p99_us": receipt["latency"]["p99_us"],
+                "app": traced_app,
+                "traced_goodput_operations_per_second": receipt["goodput_operations_per_second"],
+                "traced_p99_us": receipt["latency"]["p99_us"],
+                "untraced_goodput_operations_per_second": control["goodput_operations_per_second"],
+                "untraced_p99_us": control["p99_us"],
                 "workload_sha256": receipt["workload_sha256"],
             }
         )
-        write_json(ss_path, {"summary": record["socket_queues"], "samples": socket_queues["selected"]})
+        write_json(
+            ss_path,
+            {"summary": record["traced_socket_queues"], "samples": socket_queues["selected"]},
+        )
         record["ss"] = ss_path.name
         record["ss_sha256"] = sha256(ss_path)
     except (json.JSONDecodeError, OSError, subprocess.SubprocessError, ValueError) as error:
@@ -432,6 +615,8 @@ def run_attempt(
         stop.set()
         if sampler is not None:
             sampler.join(timeout=5)
+        if samples and not ss_path.is_file():
+            write_json(ss_path, {"summary": None, "unvalidated_samples": samples})
         trace_paths = sorted(output.glob(f"{trace_prefix.name}.*"))
         record["raw_traces"] = compress_traces(trace_paths)
         for path, key in ((stdout_path, "stdout"), (stderr_path, "stderr"), (receipt_path, "receipt"), (rusage_path, "rusage"), (ss_path, "ss")):
@@ -474,8 +659,10 @@ def summarize(attempts: list[dict[str, Any]]) -> dict[str, Any]:
                 "app_short_writes": median([row["app"]["short_writes"] for row in rows]),
                 "max_send_q_bytes": median([row["socket_queues"]["max_send_q_bytes"] for row in rows]),
                 "max_recv_q_bytes": median([row["socket_queues"]["max_recv_q_bytes"] for row in rows]),
-                "traced_goodput_operations_per_second": median([row["goodput_operations_per_second"] for row in rows]),
-                "traced_p99_us": median([row["p99_us"] for row in rows]),
+                "traced_goodput_operations_per_second": median([row["traced_goodput_operations_per_second"] for row in rows]),
+                "traced_p99_us": median([row["traced_p99_us"] for row in rows]),
+                "untraced_goodput_operations_per_second": median([row["untraced_goodput_operations_per_second"] for row in rows]),
+                "untraced_p99_us": median([row["untraced_p99_us"] for row in rows]),
             },
         }
     return {
@@ -486,7 +673,9 @@ def summarize(attempts: list[dict[str, Any]]) -> dict[str, Any]:
         "failed_attempts": sum(not row["valid"] for row in attempts),
         "cells": cells,
         "claim_boundary": {
-            "performance_numbers_are_traced_attribution_only": True,
+            "performance_numbers_are_attribution_only": True,
+            "scheduler_and_socket_queue_metrics_are_untraced": True,
+            "syscall_metrics_are_ptrace_observed": True,
             "candidate_data_present": False,
             "acceptance_decision_allowed": False,
             "promotable": False,

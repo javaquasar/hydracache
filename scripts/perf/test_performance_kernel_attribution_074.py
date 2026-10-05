@@ -53,12 +53,17 @@ class KernelAttributionTests(unittest.TestCase):
 
     def test_ss_parser_retains_queues_and_skmem(self) -> None:
         rows = kernel.parse_ss_snapshot(
-            "ESTAB 12 34 127.0.0.1:43123 127.0.0.1:51000\n"
+            "ESTAB 12 34 127.0.0.1:43123 127.0.0.1:51000 users:((\"profile\",pid=42,fd=9))\n"
             "\t skmem:(r1,rb2,t3,tb4,f5,w6,o7,bl8,d9) cubic\n"
         )
         self.assertEqual(rows[0]["recv_q_bytes"], 12)
         self.assertEqual(rows[0]["send_q_bytes"], 34)
         self.assertEqual(rows[0]["skmem"]["bl"], 8)
+        self.assertEqual(rows[0]["pids"], [42])
+        summary = kernel.socket_queue_summary(
+            [{"elapsed_ns": 1, "rows": rows}], process_pid=42
+        )
+        self.assertEqual(summary["samples_with_connections"], 1)
 
     def test_receipt_rejects_workload_drift(self) -> None:
         receipt = {
