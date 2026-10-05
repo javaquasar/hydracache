@@ -1,0 +1,46 @@
+{
+  "schema_version": "hydracache-w11-host-observation-export-rejection-v1",
+  "evidence_family": "w11-negative-privilege-boundary-attribution",
+  "candidate_source_commit": "d7a69d9eeca515f41a087434c52b19e6124f07d7",
+  "revert_commit": "7be1a442fedfc889ffca29c90fce943123251d94",
+  "captured_at_utc": "2026-10-05T23:50:23Z",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "hypothesis": "A no-argument host-observation export could be added to the fixed root-owned provisioning entrypoint without weakening its existing privilege boundary.",
+  "workflow": {
+    "run_id": 37390392244,
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "prepare_job_id": 112033810541,
+    "prepare_job_conclusion": "success",
+    "install_job_id": 112034521646,
+    "install_job_conclusion": "failure",
+    "signed_bundle_artifact_id": 11380528255,
+    "signed_bundle_artifact_digest": "sha256:6d5031f3720de9e2e81d3cfc2d1e07de29e27514aa9b2569bc8a4c55939e5868"
+  },
+  "result": {
+    "rejection": "bundle installer differs from the root-owned entrypoint",
+    "rejected_before_installation": true,
+    "host_mutation_performed": false,
+    "receipt_artifact_created": false,
+    "candidate_reverted": true,
+    "privileged_surface_expanded": false
+  },
+  "recovery": {
+    "runner_enabled": false,
+    "runner_active": false,
+    "supervisor_active": true,
+    "supervisor_main_pid": 9595,
+    "supervisor_restarts": 0,
+    "installed_source_commit": "e756a41e54d7c4c99cebb92cba2424f248d0e5c7",
+    "canonical_freeze_check_passed": true,
+    "active_campaign_marker_absent": true,
+    "fixture_contexts_absent": true
+  },
+  "conclusion": {
+    "hypothesis_confirmed": false,
+    "finding": "The existing bootstrap deliberately cannot replace its own root-owned entrypoint. A signed bundle is necessary but not sufficient to expand the sudo surface, and the installer rejected before copying any file.",
+    "next_required_step": "Keep the root entrypoint and sudoers unchanged; export the read-only production host observation through the already-installed root supervisor socket under a typed, peer-authorized protocol operation."
+  }
+}

@@ -1159,6 +1159,19 @@ non-product pair, live seal and role-level overhead. The next privilege change i
 arbitrary sudo escape: it is a fixed root-owned host-observation export with no caller-selected
 path, followed by the existing protected signer and typed Unix-socket client.
 
+The first implementation made that boundary even clearer. Candidate `d7a69d9e` added a
+no-argument export verb to the root provisioning entrypoint. Its hosted tests and signed bundle
+passed, but the existing host command rejected the installer before mutation because the bundled
+entrypoint was not byte-identical to the installed one. The bootstrap cannot use its own signature
+to grant itself more authority. We restored the supervisor, returned the runner offline, verified
+the frozen host again and reverted only that candidate in `7be1a442`.
+
+The corrected route is the supervisor socket, not broader sudo. The root supervisor already has
+the exact read access needed by the host collector, while the socket already enforces peer identity,
+bounded messages and typed operations. A read-only observation response can supply the immutable
+start-bundle input without any caller-selected filesystem path and without allowing the
+provisioning bootstrap to rewrite itself.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

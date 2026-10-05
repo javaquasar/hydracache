@@ -866,6 +866,20 @@ canary remains separate. The next signed-start slice must expose the host observ
 fixed no-arbitrary-path root operation, assemble a non-product start bundle, and traverse the
 protected authorization job plus Unix socket before any supervisor-restart assertion is made.
 
+The attempted root-entrypoint export at `d7a69d9e` was rejected before installation. The signed
+bundle still had to match the already-installed root entrypoint byte for byte, so adding even a
+no-argument verb correctly failed with `bundle installer differs from the root-owned entrypoint`.
+This preserves the bootstrap trust root and disproves the assumption that signed provisioning can
+expand its own sudo surface. The candidate was reverted by `7be1a442` and the host returned to its
+frozen state.
+
+The corrected architecture does not require a new sudo verb. The root supervisor already owns the
+production socket, canonical freeze access and host collector. A typed read-only host-observation
+operation can return the same canonical receipt through that socket after peer admission, while
+remaining incapable of choosing an output path or mutating campaign state. Signed start continues
+to use the separate protected authorization workflow; observation export only supplies the
+immutable bundle input that start later revalidates live.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:

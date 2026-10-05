@@ -780,6 +780,20 @@ live seal, role-level overhead and product qualification remain open. The next i
 export the production host observation through the fixed root-owned entrypoint; a manual writable
 receipt or expanded arbitrary-path sudo rule is not an acceptable substitute.
 
+The first export candidate at `d7a69d9e` tested whether that fixed entrypoint could grow one
+no-argument read-only verb. Hosted preparation and all tests passed and produced a signed bundle,
+but run `37390392244` was rejected before installation with `bundle installer differs from the
+root-owned entrypoint`. That is intentional bootstrap immutability: the already-installed command
+cannot authorize a replacement for itself, even when the replacement is inside a newly signed
+bundle. No host file was copied. The runner was returned offline, the original supervisor was
+restored active with zero restarts, and `check-frozen` passed. The candidate was reverted by
+`7be1a442`; see `local-runs/w11-host-observation-export-rejected-d7a69d9e.json`.
+
+The next design therefore keeps sudoers and the root entrypoint byte-identical. Host-observation
+export must be a typed read-only request served by the already-root supervisor over its protected
+Unix socket, with peer admission and bounded canonical output. That uses the installed trust
+boundary instead of attempting to enlarge the bootstrap boundary.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future
