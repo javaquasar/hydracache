@@ -57,10 +57,7 @@ pub fn build_signed_request(
     {
         return Err(RequestBuilderError::Operation);
     }
-    let key_bytes = read_bounded_regular(signing_key_path, MAX_SIGNING_KEY_BYTES, true)?;
-    let key_hex = key_bytes.strip_suffix(b"\n").unwrap_or(&key_bytes);
-    let key = decode_signing_key(key_hex).ok_or(RequestBuilderError::Path)?;
-    let signing_key = SigningKey::from_bytes(&key);
+    let signing_key = read_signing_key(signing_key_path)?;
     let body = AuthorizationBody {
         schema_version: 1,
         request_id: request.request_id.clone(),
@@ -95,6 +92,18 @@ pub fn build_signed_request(
     )?;
     write_new_private(output_path, &packet)?;
     Ok(sha256_hex(&packet))
+}
+
+pub fn derive_verification_key(signing_key_path: &Path) -> Result<String, RequestBuilderError> {
+    let signing_key = read_signing_key(signing_key_path)?;
+    Ok(hex(&signing_key.verifying_key().to_bytes()))
+}
+
+fn read_signing_key(path: &Path) -> Result<SigningKey, RequestBuilderError> {
+    let key_bytes = read_bounded_regular(path, MAX_SIGNING_KEY_BYTES, true)?;
+    let key_hex = key_bytes.strip_suffix(b"\n").unwrap_or(&key_bytes);
+    let key = decode_signing_key(key_hex).ok_or(RequestBuilderError::Path)?;
+    Ok(SigningKey::from_bytes(&key))
 }
 
 fn read_bounded_regular(

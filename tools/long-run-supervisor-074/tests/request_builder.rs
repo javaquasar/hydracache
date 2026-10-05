@@ -4,7 +4,7 @@ use hydracache_long_run_supervisor_074::protocol::{
     parse_wire_request, ControllerIdentity, Operation, Request,
 };
 use hydracache_long_run_supervisor_074::request_builder::{
-    build_signed_request, RequestBuilderError,
+    build_signed_request, derive_verification_key, RequestBuilderError,
 };
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -28,6 +28,28 @@ fn request() -> Request {
         abort_reason: None,
         approval_nonce_sha256: None,
     }
+}
+
+#[test]
+fn derives_only_the_public_verification_key_from_a_private_seed() {
+    let temporary = tempfile::tempdir().unwrap();
+    let key = temporary.path().join("signing-key");
+    write_key(&key, 7);
+
+    let expected = SigningKey::from_bytes(&[7; 32])
+        .verifying_key()
+        .to_bytes()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert_eq!(derive_verification_key(&key).unwrap(), expected);
+    assert_ne!(expected, "07".repeat(32));
+
+    fs::write(&key, format!("{}\n", "A7".repeat(32))).unwrap();
+    assert!(matches!(
+        derive_verification_key(&key),
+        Err(RequestBuilderError::Path)
+    ));
 }
 
 fn write_key(path: &std::path::Path, byte: u8) {

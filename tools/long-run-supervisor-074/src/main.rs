@@ -50,11 +50,53 @@ fn run() -> u8 {
                 &PathBuf::from(output),
             )
         }
+        [command, key] if command == "derive-verification-key" => {
+            derive_verification_key(&PathBuf::from(key))
+        }
+        #[cfg(target_os = "linux")]
+        [command, config] if command == "validate-production-config" => {
+            validate_production_config(&PathBuf::from(config))
+        }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
+        }
+    }
+}
+
+fn derive_verification_key(signing_key: &std::path::Path) -> u8 {
+    match hydracache_long_run_supervisor_074::request_builder::derive_verification_key(signing_key)
+    {
+        Ok(key) => {
+            println!("{key}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            2
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn validate_production_config(config: &std::path::Path) -> u8 {
+    use hydracache_long_run_supervisor_074::config::ServerConfig;
+
+    match std::fs::read(config)
+        .map_err(|error| error.to_string())
+        .and_then(|bytes| ServerConfig::parse(&bytes, true).map_err(|error| error.to_string()))
+        .and_then(|parsed| {
+            parsed
+                .policy()
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        }) {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("{error}");
+            9
         }
     }
 }
