@@ -1,0 +1,175 @@
+name: Performance Long-Run Host Provisioning 0.74
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character provisioning/tooling commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-074-host-provisioning
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Build reviewed public-key provisioning bundle
+    runs-on: ubuntu-latest
+    environment: performance-reference-074
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact reviewed source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Validate immutable source and provisioning tests
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          bash -n scripts/perf/long-run-supervisor-074/provision-host-074.sh
+          python3 -m unittest scripts.perf.test_provision_host_074
+          cargo test -p hydracache-long-run-supervisor-074 --test request_builder --locked
+
+      - name: Build the exact supervisor binary
+        shell: bash
+        run: cargo build -p hydracache-long-run-supervisor-074 --release --locked
+
+      - name: Derive public verification key and freeze bundle digests
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          SIGNING_KEY_HEX: ${{ secrets.HYDRACACHE_074_AUTH_SIGNING_KEY_HEX }}
+        run: |
+          set -euo pipefail
+          test -n "$SIGNING_KEY_HEX"
+          umask 077
+          key_file="$RUNNER_TEMP/hydracache-074-signing-key"
+          trap 'rm -f "$key_file"' EXIT
+          printf '%s\n' "$SIGNING_KEY_HEX" > "$key_file"
+          bundle=target/host-provisioning-074
+          mkdir -p "$bundle"
+          target/release/hydracache-long-run-supervisor-074 \
+            derive-verification-key "$key_file" > "$bundle/verification-key.hex"
+          rm -f "$key_file"
+          trap - EXIT
+          install -m 0755 target/release/hydracache-long-run-supervisor-074 \
+            "$bundle/hydracache-long-run-supervisor-074"
+          install -m 0755 scripts/perf/long-run-supervisor-074/provision-host-074.sh \
+            "$bundle/provision-host-074.sh"
+          install -m 0644 scripts/perf/long-run-supervisor-074/hydracache-performance-supervisor-074.service \
+            "$bundle/hydracache-performance-supervisor-074.service"
+          install -m 0644 scripts/perf/long-run-supervisor-074/hydracache-performance-074.sysusers.conf \
+            "$bundle/hydracache-performance-074.sysusers.conf"
+          install -m 0644 scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf \
+            "$bundle/hydracache-performance-074.tmpfiles.conf"
+          printf '%s\n' "$INPUT_SOURCE_SHA" > "$bundle/source-commit.txt"
+          (
+            cd "$bundle"
+            sha256sum \
+              hydracache-long-run-supervisor-074 \
+              hydracache-performance-074.sysusers.conf \
+              hydracache-performance-074.tmpfiles.conf \
+              hydracache-performance-supervisor-074.service \
+              provision-host-074.sh \
+              source-commit.txt \
+              verification-key.hex > bundle.sha256
+            sha256sum --strict --check bundle.sha256
+          )
+
+      - name: Publish immutable public provisioning bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/host-provisioning-074/**
+          if-no-files-found: error
+          retention-days: 30
+
+  provision:
+    name: Install and start reviewed supervisor service
+    needs: prepare
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact reviewed probe source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Download immutable public provisioning bundle
+        uses: actions/download-artifact@v8
+        with:
+          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/host-provisioning-074
+
+      - name: Verify source, bundle, and non-interactive root boundary
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          bundle=target/host-provisioning-074
+          test "$(tr -d '\r\n' < "$bundle/source-commit.txt")" = "$INPUT_SOURCE_SHA"
+          (cd "$bundle" && sha256sum --strict --check bundle.sha256)
+          chmod 0755 "$bundle/hydracache-long-run-supervisor-074" "$bundle/provision-host-074.sh"
+          sudo -n true
+
+      - name: Provision reviewed files, identities, and service
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          bundle=$(realpath target/host-provisioning-074)
+          sudo -n "$bundle/provision-host-074.sh" \
+            --bundle-dir "$bundle" \
+            --source-commit "$INPUT_SOURCE_SHA" \
+            --repository-id "$REPOSITORY_ID" \
+            --actor-id "$ACTOR_ID" \
+            --runner-user "$(id -un)" \
+            --runner-uid "$(id -u)" \
+            --runner-gid "$(id -g)"
+
+      - name: Collect post-provisioning receipts without qualification
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          evidence=target/performance-evidence/0.74/reference/w11-host-provisioning
+          mkdir -p "$evidence"
+          install -m 0644 /var/lib/hydracache-performance/provisioning-receipt-074.json \
+            "$evidence/provisioning.json"
+          python3 scripts/perf/performance_long_run_host_capability_074.py \
+            --source-commit "$INPUT_SOURCE_SHA" \
+            --output "$evidence/capability-after.json"
+          python3 -m json.tool "$evidence/provisioning.json" >/dev/null
+          python3 -m json.tool "$evidence/capability-after.json" >/dev/null
+
+      - name: Retain provisioning and post-install capability receipts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-host-provisioning/**
+          if-no-files-found: warn
+          retention-days: 90
