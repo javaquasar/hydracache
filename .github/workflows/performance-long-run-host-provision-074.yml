@@ -102,9 +102,10 @@ jobs:
       - name: Publish immutable public provisioning bundle
         uses: actions/upload-artifact@v6
         with:
-          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}
           path: target/host-provisioning-074/**
           if-no-files-found: error
+          overwrite: true
           retention-days: 30
 
   provision:
@@ -124,7 +125,7 @@ jobs:
       - name: Download immutable public provisioning bundle
         uses: actions/download-artifact@v8
         with:
-          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}
           path: target/host-provisioning-074
 
       - name: Verify source, bundle, and non-interactive root boundary

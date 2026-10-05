@@ -68,6 +68,11 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertNotIn("\n  schedule:", self.workflow)
         self.assertNotIn("performance-integrated-074", self.workflow)
         self.assertNotIn("duration-hours", self.workflow)
+        self.assertNotIn(
+            "long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
+            self.workflow,
+        )
+        self.assertIn("overwrite: true", self.workflow)
 
     def test_registered_capability_workflow_requires_explicit_provision_mode(self) -> None:
         self.assertIn("default: probe", self.capability_workflow)
