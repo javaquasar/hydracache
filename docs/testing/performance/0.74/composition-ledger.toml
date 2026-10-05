@@ -75,7 +75,7 @@ rollback = "no product candidate"
 [[proposal]]
 id = "W9c"
 owner = "scheduler and socket behavior"
-disposition = "blocked-local-kernel-attribution"
+disposition = "measured-no-new-candidate-existing-w3-owner-confirmed"
 compatibility_class = "platform-sensitive"
 rollback = "platform defaults unchanged"
 

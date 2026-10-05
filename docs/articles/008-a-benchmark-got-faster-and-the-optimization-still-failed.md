@@ -996,6 +996,48 @@ RESP and native matrices. Neither allocator reached the second stage. The system
 the default, and no 6-hour or 24-hour qualification slot is spent on a candidate that already moved
 cost across a frozen guard.
 
+## The syscall boundary confirmed an owner without reopening its rejected fix
+
+The remaining response-path uncertainty was below Tokio. We knew that pipeline 10 accepted ten
+requests together while the server still issued one `AsyncWrite` and one flush per reply, but local
+Windows policy denied kernel network tracing. It was still possible that Tokio or the kernel merged
+those writes, or that short writes, EAGAIN and socket queues pointed at a different platform-level
+owner.
+
+The dedicated Linux host could not expose tracefs or even software `perf` counters, but it could
+trace a child with `strace` and inspect sockets with `ss`. We added a measurement gate after preload
+and warmup, then ran GET and SET at pipeline 1/concurrency 1, pipeline 10/concurrency 1, and pipeline
+10/concurrency 8. Five counterbalanced repeats yielded 30 attempts.
+
+The first campaign failed for a useful reason. The validator assumed that a profiler with a durable
+output path would keep stdout empty. The profiler deliberately writes the same JSON to both. All 30
+attempts were retained and classified invalid. The corrected validator parses both copies and
+requires exact equality instead of deleting the inconvenient campaign.
+
+That correction exposed a second measurement trap. A process stopped at every traced syscall has
+an observer-created scheduling pattern: the median traced/untraced context-switch ratio was about
+6,121. Treating traced `getrusage` as scheduler evidence would have produced a precise but false
+story. The final contract therefore uses two independent processes per attempt. The untraced
+companion supplies measurement-window context switches, page faults and PID-owned socket queues;
+the traced process supplies syscall and endpoint counts. Workload digests and deterministic
+application counters must match across them. All 60 processes and 30 pairs passed.
+
+The result closes the kernel question. Pipeline 10 reduced client writes and server reads from
+roughly 1.0 to 0.1 per operation, but server writes remained exactly 1.0 per operation in every
+cell. All request and response bytes reconciled. Across the entire matrix, server read/write EAGAIN,
+client write EAGAIN, application pending writes and short writes were zero. The largest median
+socket send/receive queue high-water was only 1,300 bytes.
+
+This confirms a real write-syscall owner, but it does not authorize a candidate. The earlier bounded
+batch already reduced response writes to 0.1 per operation and won strongly in deep pipelines; it
+was rejected by pipeline-1 CPU/tail guards. Its adaptive successor failed the frozen backpressure
+semantics before measurement. The syscall trace supplies no Nagle, buffer-size, scheduler or runtime
+knob that avoids those failures, and task-level wakeup timing remains unavailable.
+
+W9c therefore closes as measured-no-new-candidate. Platform defaults stay unchanged. Reopening W3
+requires a semantically different shallow-free batching design, not a reinterpretation of the same
+one-write-per-reply evidence.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

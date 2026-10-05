@@ -1,0 +1,124 @@
+{
+  "artifact": {
+    "id": 11342838188,
+    "name": "performance-kernel-attribution-074-c126283c939fc888b7f1f0a827cf1e5cce8a4b48-37304417778-1",
+    "size_bytes": 47968560,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37304417778/artifacts/11342838188"
+  },
+  "decision": {
+    "kernel_gate_closed": true,
+    "new_product_candidate_authorized": false,
+    "qualification_authorized": false,
+    "reason": "The kernel trace confirms the already-known W3 one-write-per-reply owner, but exposes no independent scheduler, queue-pressure, short-write, EAGAIN, or platform-tuning owner. The isolated W3 batching families remain rejected by their existing shallow and backpressure guards.",
+    "runtime_and_socket_defaults_unchanged": true
+  },
+  "github_run": {
+    "attempt": 1,
+    "conclusion": "success",
+    "id": 37304417778,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37304417778"
+  },
+  "guards": {
+    "application_short_writes_total": 0,
+    "application_write_pending_total": 0,
+    "failed_attempts": 0,
+    "kernel_client_write_eagain_total": 0,
+    "kernel_server_read_eagain_total": 0,
+    "kernel_server_write_eagain_total": 0,
+    "paired_untraced_controls_valid": 30,
+    "silent_retries": 0,
+    "ss_samples_total": 344,
+    "ss_samples_with_connections": 277,
+    "unknown_loopback_tcp_calls": 0,
+    "valid_attempts": 30
+  },
+  "identities": {
+    "binary_sha256": "3fc5cfab8d6bbd6e6cdb822784787375bb6acd1a5c4b1941a85bfe481c5915c5",
+    "contract_sha256": "a3473501acfb51cbeb3c092ac9abfd25c5403f71ccc324dfeae7d26d9d50f953",
+    "kernel": "6.8.0-138-generic",
+    "manifest_sha256": "c72752a1c4e2f61b0e041ef69b48eac7a7a7f1acb92449a6990b12cb2628e2b7",
+    "profile_id": "w9c-linux-kernel-attribution-074-v1",
+    "source_commit": "c126283c939fc888b7f1f0a827cf1e5cce8a4b48",
+    "strace": "6.8",
+    "summary_sha256": "9a260b69c59205173ff4fc8c1fe87c17fc70c89ad375f82a2575c8514de2431e",
+    "tool_lock_sha256": "870b2b4d1573b890d69e94ba68b0abd51b35d493c301309e481dd15c3439ea2a",
+    "tool_source_sha256": "ea6315419a46421ddc101f46beb3f3441c87e96413908b7fd224f2cfa979176f"
+  },
+  "invalid_precursor": {
+    "github_run_id": 37303375748,
+    "retained_attempts": 30,
+    "source_commit": "d021af790f0e31bba2c0f5fc7982b146d8b2a2d4",
+    "status": "invalid-harness-assumption",
+    "reason": "The first validator incorrectly required empty stdout even though the profiler intentionally writes the same JSON receipt to stdout and the durable output file. All raw attempts were retained; none was promoted or silently retried."
+  },
+  "measurements": {
+    "aggregate": {
+      "client_read_eagain_total_under_strace": 480781,
+      "median_straced_to_untraced_context_switch_ratio": 6121.388636363637,
+      "median_straced_to_untraced_goodput_ratio": 0.08261642740913316
+    },
+    "cells": {
+      "get-p1-c1": {
+        "epoll_calls_per_operation": 2.000125,
+        "kernel_client_read_calls_per_operation": 1.999975,
+        "kernel_client_write_calls_per_operation": 1.0,
+        "kernel_server_read_calls_per_operation": 1.000025,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 71.0,
+        "max_send_q_bytes": 71.0,
+        "untraced_context_switches_per_operation": 0.00035
+      },
+      "get-p10-c1": {
+        "epoll_calls_per_operation": 0.200275,
+        "kernel_client_read_calls_per_operation": 0.2001,
+        "kernel_client_write_calls_per_operation": 0.1,
+        "kernel_server_read_calls_per_operation": 0.100025,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 639.0,
+        "max_send_q_bytes": 590.0,
+        "untraced_context_switches_per_operation": 0.000575
+      },
+      "get-p10-c8": {
+        "epoll_calls_per_operation": 0.0325,
+        "kernel_client_read_calls_per_operation": 0.222475,
+        "kernel_client_write_calls_per_operation": 0.1,
+        "kernel_server_read_calls_per_operation": 0.1002,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 710.0,
+        "max_send_q_bytes": 710.0,
+        "untraced_context_switches_per_operation": 0.006675
+      },
+      "set-p1-c1": {
+        "epoll_calls_per_operation": 2.00015,
+        "kernel_client_read_calls_per_operation": 1.999975,
+        "kernel_client_write_calls_per_operation": 1.0,
+        "kernel_server_read_calls_per_operation": 1.000025,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 130.0,
+        "max_send_q_bytes": 130.0,
+        "untraced_context_switches_per_operation": 0.00035
+      },
+      "set-p10-c1": {
+        "epoll_calls_per_operation": 0.200225,
+        "kernel_client_read_calls_per_operation": 0.2001,
+        "kernel_client_write_calls_per_operation": 0.1,
+        "kernel_server_read_calls_per_operation": 0.100025,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 40.0,
+        "max_send_q_bytes": 1300.0,
+        "untraced_context_switches_per_operation": 0.0005
+      },
+      "set-p10-c8": {
+        "epoll_calls_per_operation": 0.0321,
+        "kernel_client_read_calls_per_operation": 0.2227,
+        "kernel_client_write_calls_per_operation": 0.1,
+        "kernel_server_read_calls_per_operation": 0.1002,
+        "kernel_server_write_calls_per_operation": 1.0,
+        "max_recv_q_bytes": 1300.0,
+        "max_send_q_bytes": 1300.0,
+        "untraced_context_switches_per_operation": 0.005525
+      }
+    }
+  },
+  "schema_version": 1
+}

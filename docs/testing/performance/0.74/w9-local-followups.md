@@ -28,8 +28,14 @@ end-to-end percentages are claimed. All product atomics remain unchanged.
 
 - **W9b:** connection-local reuse remains open only after a measured buffer owner survives the W3
   rejection; there is no cross-connection pool authorization.
-- **W9c:** syscall/socket tuning remains blocked locally because kernel syscall attribution is not
-  available on this Windows/WSL setup. Platform defaults remain unchanged.
+- **W9c:** dedicated Linux attribution is complete at source `c126283c`: 30/30 paired attempts and
+  60/60 processes were valid. Pipeline 10 reduces client writes and server reads to about 0.1 per
+  operation, but the server still performs exactly one Linux write per reply. Server EAGAIN,
+  application pending writes and short writes were zero, and median socket-queue highs did not
+  exceed 1,300 bytes. This confirms the already-known W3 owner without exposing an independent
+  scheduler/socket tuning mechanism; the rejected W3 batching families are not reopened and
+  platform defaults remain unchanged. See
+  [`w9c-linux-kernel-attribution.md`](w9c-linux-kernel-attribution.md).
 - **W9d:** durable group commit remains unauthorized pending a separate durability/COMPAT decision.
 - **W9e:** dedicated-Linux owner attribution is complete at source `707abde4`: 20/20 attempts were
   valid. Mimalloc reduced fill/delete/refill CPU, but total elapsed improved only 3.08% while

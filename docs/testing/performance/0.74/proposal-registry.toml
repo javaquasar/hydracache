@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.74"
 registry_id = "proposal-registry-074-v1"
-state = "w0-closed-w1-local-attributed"
+state = "w0-closed-w1-local-and-kernel-attributed"
 product_mutation_allowed = true
 
 [[work_items]]
@@ -14,9 +14,9 @@ evidence = "baseline-identities.toml plus 0.73 W10/W11 release evidence"
 [[work_items]]
 id = "W1"
 title = "stage attribution"
-decision = "attributed-through-tokio-socket-boundary-open-kernel-gate"
+decision = "complete"
 primary_metric = "owner-reconciliation"
-blocker = "kernel syscall tracing is denied by local Windows policy; network-native controls remain open"
+evidence = "w1-local-attribution.md and w9c-linux-kernel-attribution.md"
 
 [[work_items]]
 id = "W2"
@@ -75,9 +75,9 @@ evidence = "w1-local-attribution.md and local-runs/w8-*.json including w8a-v6 pa
 [[work_items]]
 id = "W9"
 title = "runtime syscall buffer and durability follow-ups"
-decision = "w9a-rejected-w9b-w9c-kernel-blocked-w9d-unauthorized-w9e-measured-no-admissible-candidate"
+decision = "w9a-rejected-w9b-not-authorized-w9c-measured-no-new-candidate-w9d-unauthorized-w9e-measured-no-admissible-candidate"
 primary_metric = "proposal-specific"
-evidence = "w9-local-followups.md, w9a-atomic-ordering-registry.toml, w9e-linux-allocator-attribution.md, and local-runs/w9*.json"
+evidence = "w9-local-followups.md, w9a-atomic-ordering-registry.toml, w9c-linux-kernel-attribution.md, w9e-linux-allocator-attribution.md, and local-runs/w9*.json"
 
 [[native_investigations]]
 id = "N1"

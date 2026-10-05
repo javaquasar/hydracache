@@ -33,6 +33,12 @@ alternative failed unchanged memory, binary-size or CPU guards; no allocator or 
 admitted and the system allocator remains default. See
 [`w9e-linux-allocator-attribution.md`](w9e-linux-allocator-attribution.md).
 
+The W9c kernel gate is also closed. A paired untraced/`strace` Linux matrix reconciled every RESP
+byte and confirmed one server write syscall per reply even at pipeline 10, while finding no server
+short-write, EAGAIN, queue-pressure or separately tunable scheduler owner. It admits no new product
+candidate and leaves platform defaults unchanged. See
+[`w9c-linux-kernel-attribution.md`](w9c-linux-kernel-attribution.md).
+
 The standalone `tools/resp-stage-profile-074` tool isolates decode, translation-context,
 command/translation and response/encode allocation owners. Its control stages permit only local
 incremental attribution; they are not interchangeable with end-to-end product receipts.
