@@ -41,6 +41,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             "NoNewPrivileges",
             "ProtectSystem",
             "ProtectControlGroups",
+            "RuntimeDirectoryMode",
             "hydracache-w11-host-provisioning-v1",
             "runner_process_group_refresh_may_be_required",
         ):

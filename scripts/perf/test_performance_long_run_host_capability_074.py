@@ -39,6 +39,40 @@ class HostCapabilityTests(unittest.TestCase):
         self.assertFalse(result["available"])
         self.assertIsNone(result["exit_code"])
 
+    def test_protected_state_may_remain_isolated_while_socket_is_reachable(self) -> None:
+        paths = {
+            path: {"status": "permission-denied"}
+            for path in capability.PATHS
+        }
+        for path in (
+            "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+            "/etc/hydracache-perf/supervisor-074.toml",
+        ):
+            paths[path] = {"status": "present", "kind": "regular"}
+        paths["/run/hydracache-perf/supervisor-v1.sock"] = {
+            "status": "present",
+            "kind": "socket",
+            "mode": 0o660,
+            "gid": 987,
+        }
+
+        verdict = capability.provisioning_readiness(
+            paths,
+            {"status": "present"},
+            {"status": "present", "gid": 987},
+            service_loaded=True,
+            service_active=True,
+            groups=[987, 1001],
+        )
+        self.assertEqual(
+            verdict,
+            {
+                "provisioned": True,
+                "service_active": True,
+                "runner_client_socket_access": True,
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

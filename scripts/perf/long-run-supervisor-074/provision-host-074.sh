@@ -182,6 +182,7 @@ systemctl is-active --quiet "$SERVICE" || die "supervisor service is not active"
 [[ "$(systemctl show "$SERVICE" --property=ProtectHome --value)" = yes ]] || die "ProtectHome is not active"
 [[ "$(systemctl show "$SERVICE" --property=ProtectControlGroups --value)" = yes ]] || die "ProtectControlGroups is not active"
 [[ "$(systemctl show "$SERVICE" --property=RestrictAddressFamilies --value)" = AF_UNIX ]] || die "address families differ"
+[[ "$(systemctl show "$SERVICE" --property=RuntimeDirectoryMode --value)" = 0711 ]] || die "runtime directory mode differs"
 
 socket=/run/hydracache-perf/supervisor-v1.sock
 [[ -S "$socket" && ! -L "$socket" ]] || die "supervisor socket is absent"
@@ -194,7 +195,7 @@ socket=/run/hydracache-perf/supervisor-v1.sock
 unit_properties=$(mktemp)
 trap 'rm -f -- "$candidate_config" "$unit_properties"' EXIT
 systemctl show "$SERVICE" \
-  --property=Type,User,Group,NoNewPrivileges,ProtectSystem,ProtectHome,ProtectControlGroups,RestrictAddressFamilies,KillMode,FragmentPath,ControlGroup \
+  --property=Type,User,Group,NoNewPrivileges,ProtectSystem,ProtectHome,ProtectControlGroups,RestrictAddressFamilies,RuntimeDirectoryMode,KillMode,FragmentPath,ControlGroup \
   --no-pager > "$unit_properties"
 
 binary_sha=$(sha256sum "$INSTALL_BINARY" | cut -d' ' -f1)

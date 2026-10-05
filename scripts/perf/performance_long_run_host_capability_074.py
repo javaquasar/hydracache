@@ -155,6 +155,53 @@ def runner_groups() -> list[int]:
     return sorted(set(os.getgroups()) | {os.getgid()})
 
 
+def provisioning_readiness(
+    paths: dict[str, dict[str, Any]],
+    supervisor_user: dict[str, Any],
+    client_group: dict[str, Any],
+    service_loaded: bool,
+    service_active: bool,
+    groups: list[int],
+) -> dict[str, bool]:
+    socket = paths["/run/hydracache-perf/supervisor-v1.sock"]
+    client_gid = client_group.get("gid")
+    installed_files_present = all(
+        paths[path]["status"] == "present"
+        for path in (
+            "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+            "/etc/hydracache-perf/supervisor-074.toml",
+        )
+    )
+    protected_state_present_or_isolated = all(
+        paths[path]["status"] in ("present", "permission-denied")
+        for path in (
+            "/var/lib/hydracache-performance/campaigns",
+            "/var/lib/hydracache-performance/staging",
+            "/var/lib/hydracache-performance/seals",
+        )
+    )
+    runner_can_reach_socket = (
+        socket.get("kind") == "socket"
+        and socket.get("mode") == 0o660
+        and isinstance(client_gid, int)
+        and socket.get("gid") == client_gid
+        and client_gid in groups
+    )
+    provisioned = (
+        supervisor_user.get("status") == "present"
+        and client_group.get("status") == "present"
+        and installed_files_present
+        and protected_state_present_or_isolated
+        and socket.get("status") == "present"
+        and service_loaded
+    )
+    return {
+        "provisioned": provisioned,
+        "service_active": service_active,
+        "runner_client_socket_access": runner_can_reach_socket,
+    }
+
+
 def collect(source_commit: str) -> dict[str, Any]:
     paths = {path: path_metadata(path) for path in PATHS}
     supervisor_user = account(SUPERVISOR_USER)
@@ -179,18 +226,8 @@ def collect(source_commit: str) -> dict[str, Any]:
     except OSError:
         pass
     groups = runner_groups()
-    socket = paths["/run/hydracache-perf/supervisor-v1.sock"]
-    client_gid = client_group.get("gid")
     service_loaded = "LoadState=loaded" in unit["stdout"]
     service_active = "ActiveState=active" in unit["stdout"]
-    expected_paths_present = all(value["status"] == "present" for value in paths.values())
-    runner_can_reach_socket = (
-        socket.get("kind") == "socket"
-        and socket.get("mode") == 0o660
-        and isinstance(client_gid, int)
-        and socket.get("gid") == client_gid
-        and client_gid in groups
-    )
     systemd_available = (
         pid1 == "systemd"
         and systemctl_state["available"]
@@ -198,11 +235,13 @@ def collect(source_commit: str) -> dict[str, Any]:
         and bus["exit_code"] == 0
         and bool(cgroup_controllers)
     )
-    provisioned = (
-        supervisor_user.get("status") == "present"
-        and client_group.get("status") == "present"
-        and expected_paths_present
-        and service_loaded
+    readiness = provisioning_readiness(
+        paths,
+        supervisor_user,
+        client_group,
+        service_loaded,
+        service_active,
+        groups,
     )
     return {
         "schema_version": SCHEMA_VERSION,
@@ -234,13 +273,11 @@ def collect(source_commit: str) -> dict[str, Any]:
         },
         "verdict": {
             "systemd_available": systemd_available,
-            "provisioned": provisioned,
-            "service_active": service_active,
-            "runner_client_socket_access": runner_can_reach_socket,
+            **readiness,
             "host_rehearsal_ready": systemd_available
-            and provisioned
-            and service_active
-            and runner_can_reach_socket,
+            and readiness["provisioned"]
+            and readiness["service_active"]
+            and readiness["runner_client_socket_access"],
         },
     }
 

@@ -23,6 +23,7 @@ fn service_is_detached_confined_and_exposes_no_workflow_shell() {
         "ProtectControlGroups=yes",
         "RestrictAddressFamilies=AF_UNIX",
         "KillMode=process",
+        "RuntimeDirectoryMode=0711",
         "ReadWritePaths=/var/lib/hydracache-performance /run/hydracache-perf",
     ] {
         assert!(service.contains(required), "missing {required}");
@@ -48,6 +49,7 @@ fn accounts_directories_and_unresolved_key_fail_closed() {
     .unwrap();
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/campaigns 0750"));
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/staging   0750"));
+    assert!(tmpfiles.contains("/run/hydracache-perf                       0711"));
 
     let template = fs::read_to_string(repository_path(
         "scripts/perf/long-run-supervisor-074/supervisor-074.toml.example",
