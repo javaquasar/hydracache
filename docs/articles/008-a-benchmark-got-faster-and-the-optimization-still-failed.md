@@ -486,6 +486,15 @@ tests pass in WSL plus one ignored real-system-bus test; the focused server/prog
 contract. This closes the local startup liveness hole, not the real root/systemd host rehearsal and
 not any product-throughput qualification claim.
 
+Fail-closed recovery also needs proof that the rejected shortcuts stay rejected. The W11 dynamic
+canary now activates all seven forbidden weak policies from the plan: PID-only liveness,
+restart-from-checkpoint, PID reuse, sequence-only checkpoint hashes, mixed-attempt identity,
+ignored lease expiry and ignored duplicate executors. For each case the test demonstrates that the
+weak predicate would accept the defect and that the production predicate rejects it; only then does
+the canary fail with its expected marker. On clean source `4b5f9812`, the ordinary state-machine
+suite is green and the canary sweep records one expected-red proof. That is useful local
+falsification, not a substitute for killing real processes and controllers on the admitted host.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

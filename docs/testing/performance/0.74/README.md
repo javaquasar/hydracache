@@ -492,6 +492,16 @@ accepted the new contract digest and executed zero commands. Real root-owned ser
 D-Bus diagnostic/stop timing and filesystem ownership are still admitted-host rehearsal work. See
 `local-runs/w11-startup-progress-loss-local-20261005.json`.
 
+The W11 expected-red proof now activates every forbidden weak admission family named by the frozen
+plan in one registry-owned mutant: PID-only liveness, restart from a checkpoint, PID reuse,
+sequence-only acceptance of a broken checkpoint hash, process-only mixing of attempt identities,
+ignored lease expiry and ignored duplicate executors. Each weak predicate is first shown to accept
+its constructed defect; the production predicate must reject it before the canary emits its
+expected failure marker. On clean source `4b5f9812`, the normal seven-test state-machine suite
+passes and the dynamic canary sweep records one expected-red proof with exit code 101. This is a
+local model proof, not the still-required same-host controller-loss and systemd fault rehearsal.
+See `local-runs/w11-controller-canaries-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

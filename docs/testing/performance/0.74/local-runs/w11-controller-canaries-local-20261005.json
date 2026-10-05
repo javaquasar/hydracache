@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-controller-resilience-expected-red",
+  "status": "passed-local-expected-red",
+  "source_sha": "4b5f981269a4c659fdcf837c7c29e4d754dae917",
+  "platform": "Windows",
+  "commands": [
+    "cargo test -p hydracache-long-run-supervisor-074 --test state_machine --locked",
+    "cargo xtask canary-check --release 0.74",
+    "cargo xtask canary-sweep --release 0.74 --tier fast",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --test state_machine --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "guard_tests_passed": 7,
+  "expected_red_proofs": 1,
+  "expected_red_exit_code": 101,
+  "expected_red_output_sha256": "d73e543a7867aecbe0dc43ffc11c4543e83c78dfbfc77e928a1a8f64d482eae0",
+  "failed": 0,
+  "confirmed": [
+    "PID-only liveness would admit PID reuse while the production attach predicate rejects changed start and cgroup identity",
+    "checkpoint-only continuation would admit replacement processes while the production state machine forbids restart-from-checkpoint",
+    "sequence-only checkpoint validation would admit a changed record hash while the production predicate rejects checkpoint drift",
+    "process-only admission would mix manifest and tooling identities across attempts while the production predicate rejects campaign drift",
+    "liveness-only admission would ignore the product lease while the production predicate rejects expiry",
+    "checkpoint-only admission would ignore a duplicate executor while the production predicate rejects it",
+    "terminal and lease-expired states cannot restart either role"
+  ],
+  "limitations": [
+    "this is a deterministic expected-red model proof, not the admitted-host fault rehearsal",
+    "no process, systemd service, workflow or qualification workload was started",
+    "the receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

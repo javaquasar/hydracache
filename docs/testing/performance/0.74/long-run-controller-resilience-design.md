@@ -757,6 +757,13 @@ All dangerous positive canaries are expected red: PID-only acceptance, replaceme
 same campaign, broken-chain acceptance, cross-boot attach, mixed-attempt identity, ignored lease
 expiry, duplicate executor, writable sealed packet and arbitrary command execution.
 
+The checked-in W11 dynamic mutant activates the seven controller-admission families in one bounded
+test. It proves each weak predicate would accept its constructed defect, then requires the
+production predicate or state transition to reject it before emitting the registry's expected-red
+marker. A clean-source `canary-sweep --release 0.74 --tier fast` must retain the nonzero canary exit
+and exact marker in its receipt. This deterministic model proof complements rather than replaces
+the same-host process, runner, network, reboot and systemd fault rehearsal.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:
