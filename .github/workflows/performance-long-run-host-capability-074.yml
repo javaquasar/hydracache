@@ -257,6 +257,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
           mkdir -p "$EVIDENCE_DIR"
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
             > "$EVIDENCE_DIR/provisioning.json"
@@ -283,6 +284,7 @@ jobs:
           assert resumed["schema_version"] == "hydracache-w11-campaign-lifecycle-resume-v1"
           assert started["campaign_id"] == resumed["campaign_id"]
           assert started["product_candidate_started"] is False
+          assert started["supervisor_service_inactive"] is True
           assert resumed["product_candidate_started"] is False
           assert resumed["original_controller_exited"] is True
           assert resumed["exact_process_pair_recovered"] is True
@@ -333,6 +335,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
           mkdir -p "$EVIDENCE_DIR"
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
             > "$EVIDENCE_DIR/provisioning.json"
@@ -364,6 +367,7 @@ jobs:
           assert resumed["schema_version"] == "hydracache-w11-campaign-progress-loss-resume-v1"
           assert started["campaign_id"] == resumed["campaign_id"]
           assert started["product_candidate_started"] is False
+          assert started["supervisor_service_inactive"] is True
           assert resumed["product_candidate_started"] is False
           assert resumed["original_controller_exited"] is True
           assert resumed["exact_process_pair_observed"] is True

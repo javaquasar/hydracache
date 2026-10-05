@@ -38,6 +38,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 const CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
 const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
 const CONTEXT_PATH: &str = "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json";
+const SUPERVISOR_SERVICE: &str = "hydracache-performance-supervisor-074.service";
 const FIXTURE_SECONDS: u64 = 240;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
@@ -70,6 +71,7 @@ pub struct CampaignSmokeStartReceipt {
     pub harness_pid: u32,
     pub daemon_pid: u32,
     pub checkpoint_sequence: u64,
+    pub supervisor_service_inactive: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -118,6 +120,7 @@ pub enum CampaignSmokeResumeOutcome {
 
 pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, String> {
     require_root()?;
+    require_supervisor_inactive()?;
     ensure_absent(Path::new(CONTEXT_PATH))?;
     let campaign_root = Path::new(CAMPAIGN_ROOT);
     let root = fs::canonicalize(campaign_root).map_err(display)?;
@@ -248,6 +251,7 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
         harness_pid: harness.pid,
         daemon_pid: daemon.pid,
         checkpoint_sequence: checkpoint.sequence,
+        supervisor_service_inactive: true,
     })
 }
 
@@ -945,6 +949,21 @@ fn require_root() -> Result<(), String> {
         Ok(())
     } else {
         Err("root is required".to_owned())
+    }
+}
+
+fn require_supervisor_inactive() -> Result<(), String> {
+    let output = Command::new("/usr/bin/systemctl")
+        .args(["is-active", SUPERVISOR_SERVICE])
+        .output()
+        .map_err(display)?;
+    let state = std::str::from_utf8(&output.stdout).map_err(display)?.trim();
+    if state == "inactive" {
+        Ok(())
+    } else {
+        Err(format!(
+            "campaign fixture requires the production supervisor to be inactive, observed {state:?}"
+        ))
     }
 }
 
