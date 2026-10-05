@@ -51,6 +51,8 @@ pub mod state_store;
 #[cfg(target_os = "linux")]
 pub mod systemd_notify;
 #[cfg(target_os = "linux")]
+pub mod systemd_smoke;
+#[cfg(target_os = "linux")]
 pub mod systemd_spawn;
 #[cfg(target_os = "linux")]
 pub mod systemd_unit;

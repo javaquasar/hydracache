@@ -71,11 +71,30 @@ fn run() -> u8 {
         [command, config] if command == "validate-production-config" => {
             validate_production_config(&PathBuf::from(config))
         }
+        #[cfg(target_os = "linux")]
+        [command] if command == "systemd-smoke" => systemd_smoke(),
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn systemd_smoke() -> u8 {
+    match hydracache_long_run_supervisor_074::systemd_smoke::run_systemd_smoke()
+        .map_err(|error| error.to_string())
+        .and_then(|receipt| serde_json::to_string(&receipt).map_err(|error| error.to_string()))
+    {
+        Ok(receipt) => {
+            println!("{receipt}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            9
         }
     }
 }

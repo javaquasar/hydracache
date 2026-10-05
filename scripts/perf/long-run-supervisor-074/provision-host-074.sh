@@ -22,9 +22,9 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt) && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
-  [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "preflight requires the fixed root-owned entrypoint"
+  [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "operation requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
   if [[ "$1" = --emit-receipt ]]; then
     [[ -f "$RECEIPT" && ! -L "$RECEIPT" ]] || die "provisioning receipt is absent or unsafe"
@@ -33,6 +33,9 @@ if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt) && $# -eq 1 ]]; then
       printf '%s\n' "$line"
     done < "$RECEIPT"
     exit 0
+  fi
+  if [[ "$1" = --systemd-smoke ]]; then
+    exec "$INSTALL_BINARY" systemd-smoke
   fi
   printf 'ready\n'
   exit 0

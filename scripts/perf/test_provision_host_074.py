@@ -31,6 +31,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             "verify-provisioning-manifest",
             "bundle installer differs from the root-owned entrypoint",
             "--emit-receipt",
+            "--systemd-smoke",
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
@@ -79,6 +80,8 @@ class ProvisionHostContractTests(unittest.TestCase):
     def test_registered_capability_workflow_requires_explicit_provision_mode(self) -> None:
         self.assertIn("default: probe", self.capability_workflow)
         self.assertIn("inputs.mode == 'provision'", self.capability_workflow)
+        self.assertIn("inputs.mode == 'systemd-smoke'", self.capability_workflow)
+        self.assertIn("product_candidate_started", self.capability_workflow)
         self.assertIn("github.event_name == 'workflow_dispatch'", self.capability_workflow)
         self.assertIn("source_sha: ${{ github.sha }}", self.capability_workflow)
         self.assertIn("secrets: inherit", self.capability_workflow)

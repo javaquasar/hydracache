@@ -11,6 +11,7 @@ on:
         options:
           - probe
           - provision
+          - systemd-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -78,3 +79,71 @@ jobs:
     with:
       source_sha: ${{ github.sha }}
     secrets: inherit
+
+  systemd-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'systemd-smoke'
+    name: Bounded non-product systemd smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-systemd-smoke
+    steps:
+      - name: Check out exact smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and read-only system bus access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 \
+            systemd_unit::tests::reads_a_real_loaded_service_over_dbus \
+            --locked -- --ignored --exact
+
+      - name: Run bounded fixture-only transient unit smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --systemd-smoke \
+            > "$EVIDENCE_DIR/systemd-smoke.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          receipt = json.loads(
+              (pathlib.Path(os.environ["EVIDENCE_DIR"]) / "systemd-smoke.json").read_text()
+          )
+          assert receipt["schema_version"] == "hydracache-w11-systemd-smoke-v1"
+          assert receipt["fixture_command"] == "/usr/bin/sleep 1"
+          assert receipt["product_candidate_started"] is False
+          assert receipt["saw_running"] is True
+          assert receipt["running_main_pid"] > 0
+          assert receipt["terminal"]["active_state"] == "active"
+          assert receipt["terminal"]["sub_state"] == "exited"
+          assert receipt["terminal"]["result"] == "success"
+          after_stop = receipt["after_stop"]
+          assert after_stop is None or (
+              after_stop["active_state"] == "inactive"
+              and after_stop["sub_state"] == "dead"
+              and after_stop["main_pid"] == 0
+          )
+          PY
+
+      - name: Retain bounded systemd smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-systemd-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-systemd-smoke/**
+          if-no-files-found: error
+          retention-days: 90
