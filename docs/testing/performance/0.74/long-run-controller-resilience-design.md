@@ -741,7 +741,16 @@ bounded diagnostic/stop backend, commits `LEASE_EXPIRY_COMPLETED`, and only then
 identity and removes the active marker. An interrupted backend call resumes from the durable intent;
 an already absent unit requires the exact existing lease-expiry diagnostic. Local fake-backend and
 socket-loop tests cover these recovery boundaries. Real system-bus permissions, uid/gid ownership,
-stop timing and diagnostic grace still require the privileged admitted-host rehearsal.
+stop timing and diagnostic grace were exercised by bounded admitted-host run `37380414415` at
+source `187b63fb`. The replacement controller observed the exact retained process pair after the
+configured transient cpuset-drift window, crossed the frozen lease by three seconds, published a
+2,853-byte cause-bound diagnostic, stopped the exact unit, committed revision 4
+`LEASE_EXPIRED_INCOMPLETE`, cleared execution identity and released the host claim. The supervisor
+was restored active with zero restarts. The retained receipt does not independently sample the
+temporary mismatch during the drift interval, so it proves post-window identity revalidation and
+lease ownership, not a host-observed drift interval. This closes
+`lease_expiry_host_rehearsal_complete`; signed socket admission, supervisor restart, reboot, live
+seal and full host rehearsal remain open.
 
 The operator runbook is:
 

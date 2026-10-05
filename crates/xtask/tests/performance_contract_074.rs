@@ -174,6 +174,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "campaign_lifecycle_controller_loss_rehearsal_complete",
         "progress_loss_host_rehearsal_complete",
         "measurement_loss_host_rehearsal_complete",
+        "lease_expiry_host_rehearsal_complete",
         "real_systemd_spawn_backend_host_rehearsal_complete",
         "systemd_confinement_complete",
     ] {
@@ -189,6 +190,55 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     );
     assert_eq!(
         implementation["release_admission_allowed"].as_bool(),
+        Some(false)
+    );
+}
+
+#[test]
+fn w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable() {
+    let controller = contract("long-run-controller-resilience-contract.toml");
+    let implementation = controller["local_implementation"].as_table().unwrap();
+    let relative = implementation["campaign_lease_expiry_rehearsal"]
+        .as_str()
+        .unwrap();
+    let evidence: Value =
+        serde_json::from_slice(&std::fs::read(root().join(relative)).unwrap()).unwrap();
+
+    assert_eq!(
+        evidence["source_commit"].as_str(),
+        Some("187b63fb20555743f8b220ac60273e0e8e8663cc")
+    );
+    assert_eq!(evidence["github_run"]["id"].as_u64(), Some(37380414415));
+    assert_eq!(
+        evidence["observation"]["terminal_state"].as_str(),
+        Some("LEASE_EXPIRED_INCOMPLETE")
+    );
+    assert_eq!(
+        evidence["observation"]["product_candidate_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["observation"]["terminal_execution_fields_cleared"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["fixture_unit_stopped"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["active_campaign_released"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["decision"]["scheduled_drift_window_independently_sampled"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["decision"]["qualification_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["decision"]["release_admission_allowed"].as_bool(),
         Some(false)
     );
 }

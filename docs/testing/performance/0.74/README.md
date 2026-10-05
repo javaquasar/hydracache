@@ -676,8 +676,34 @@ test now distinguishes observation of a live unattached head from attached-head 
 This closes `measurement_loss_host_rehearsal_complete` for process identity drift and its real
 diagnostic/stop/release effects. It does not generalize one proven fault into all faults: host drift,
 unit absence and unit identity drift remain fail-closed classifications that intentionally refuse
-to stop ambiguous units. Signed socket start, supervisor restart, lease-expiry, reboot, live seal,
-product execution and expensive qualification remain open.
+to stop ambiguous units. Signed socket start, supervisor restart, reboot, live seal, product
+execution and expensive qualification remain open.
+
+The admitted-host lease-expiry slice is complete at source `187b63fb`. Signed provisioning run
+`37364363138` installed the exact source after GitHub-hosted runner recovery, and bounded run
+`37380414415` started only the non-product two-process fixture with the production supervisor
+explicitly inactive. After the configured transient cpuset-drift window had ended, the replacement
+controller observed the exact original pair and checkpoint sequence 1. It resumed maintenance at
+Unix second `1791238330`, three seconds after frozen lease deadline `1791238327`, published the
+2,853-byte cause-bound diagnostic with SHA-256
+`5d7f3cee490d9ec358d218dfc9b8390e0c57ef27ea036ab7e71c3d833ef2be53`, stopped the exact unit,
+committed revision 4 `LEASE_EXPIRED_INCOMPLETE`, cleared execution fields and released the host
+claim. The production supervisor was restored `active/running` with zero restarts. See
+`local-runs/w11-campaign-lease-expiry-smoke-187b63fb.json`.
+
+The two cancelled provisioning attempts are retained as external negative attribution. Both waited
+fifteen minutes for `ubuntu-latest` during GitHub's hosted-runner incident and executed zero steps;
+neither touched the host. Once Actions reported normal operation, only failed jobs of the original
+run were retried. No duplicate provisioning workflow and no unsigned/manual installation bypass
+were used. The final receipt proves exact identity after the configured drift window; it does not
+independently sample the temporary cpuset mismatch itself, so that narrower observation remains a
+test-backed schedule property rather than a host-measured claim.
+
+This closes `lease_expiry_host_rehearsal_complete` and the real diagnostic/systemd-stop/durable
+release effects. It does not close full host or release admission. Signed socket start, supervisor
+restart during a live campaign, reboot, live seal, product I74/C74 execution, overhead budgets,
+six-hour qualification and 24-hour confirmation remain open. No product candidate or expensive
+workload ran.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

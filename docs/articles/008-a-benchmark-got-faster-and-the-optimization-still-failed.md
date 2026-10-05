@@ -1101,6 +1101,36 @@ Run `37362383128` then completed the real path. At 212 seconds after the checkpo
 claim. No product candidate ran. This closes the process-identity-drift host rehearsal, not host
 drift, unit reuse, lease expiry, signed socket admission, live seal or release qualification.
 
+Lease expiry was tested as a separate owner rather than inferred from progress or measurement
+loss. The fixture scheduled a temporary daemon cpuset mismatch before the deadline, restored the
+expected identity, and kept the original pair alive past the frozen lease. The replacement
+controller ran only after that window: it had to observe the exact original pair and checkpoint
+before the lease path could own termination. That ordering protects the opposite cases too: a live
+measurement mismatch belongs to measurement-loss maintenance, while an already committed failure
+cannot later be relabeled as lease expiry.
+
+The infrastructure supplied its own negative result before the hypothesis ran. Provisioning run
+`37364363138` attempts 1 and 2 each waited fifteen minutes for an `ubuntu-latest` runner during a
+GitHub Actions incident, executed zero steps and were cancelled. We did not turn an availability
+failure into an excuse to weaken provenance: no duplicate workflow, unsigned bundle or manual
+installation was used. After Actions returned to normal, only the failed jobs of the same run were
+retried. Attempt 3 produced the signed bundle and installed source
+`187b63fb20555743f8b220ac60273e0e8e8663cc`; its receipt bound the binary and host identities before
+the fixture started.
+
+Run `37380414415` then crossed the real deadline. Maintenance observed the pair at Unix second
+`1791238330`, three seconds after deadline `1791238327`, published a 2,853-byte diagnostic with
+SHA-256 `5d7f3cee490d9ec358d218dfc9b8390e0c57ef27ea036ab7e71c3d833ef2be53`, stopped the exact systemd
+unit and committed revision 4 `LEASE_EXPIRED_INCOMPLETE`. Execution fields were cleared, the active
+campaign marker was released, and the production supervisor returned active with zero restarts.
+The receipt proves exact post-window identity, deadline ownership and durable cleanup. It does not
+independently sample the temporary cpuset mismatch inside the earlier window, so that narrower fact
+remains a deterministic fixture/test property rather than a host-measured claim.
+
+This closes the admitted-host lease-expiry row without starting a product candidate or performance
+qualification. Signed socket start admission, supervisor restart during a live campaign, reboot,
+live seal, resource-overhead evidence and the six-hour/24-hour product runs remain separate gates.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

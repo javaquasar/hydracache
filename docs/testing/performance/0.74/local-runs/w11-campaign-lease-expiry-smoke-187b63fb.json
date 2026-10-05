@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-campaign-lease-expiry-smoke",
+  "source_commit": "187b63fb20555743f8b220ac60273e0e8e8663cc",
+  "github_run": {
+    "id": 37380414415,
+    "conclusion": "success",
+    "duration_seconds": 285,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37380414415"
+  },
+  "artifact": {
+    "id": 11373029463,
+    "name": "performance-long-run-campaign-lease-expiry-smoke-074-187b63fb20555743f8b220ac60273e0e8e8663cc-37380414415-1",
+    "digest": "sha256:e992715ad570e3f8fde3141aec844157cd5d3cbb295eaf929d3971f0adb1f610",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37380414415/artifacts/11373029463"
+  },
+  "provisioning": {
+    "github_run_id": 37364363138,
+    "successful_attempt": 3,
+    "conclusion": "success",
+    "receipt_artifact_id": 11373083068,
+    "receipt_artifact_digest": "sha256:b9ba81540468bc1dd9423c21d27f8c3b80dc48e499c135e38401f16cc84d5cc2",
+    "signed_bundle_artifact_id": 11373970426,
+    "signed_bundle_artifact_digest": "sha256:751f27e83f77a97184972ba1db38a4c21a7ab3897691db7b3881c75bb6cc6cbb"
+  },
+  "receipts": {
+    "provisioning_sha256": "2673a1fb18c51d6a87f5d4521aff1a57fade02f92f4ecbaa44bcc3a9ad2aed98",
+    "start_sha256": "4835fbaf28ae7ca0f2429fc1f358d117c153f36f53ba069bb55079e25694d811",
+    "resume_sha256": "8e6dba85afff72833c3c8de0d452a2f99ac054e616d66cd31ebddc8999359c5e"
+  },
+  "observation": {
+    "campaign_id": "2e5538e5d22c7c9919a796973c1d414b5df9ca732e94322c8f61f97a5c1c7196",
+    "manifest_sha256": "4f4b2c25bce96cd172cc66ec5bcdf2c402c3461f57552a49f34a1e9d760ed8e5",
+    "unit_name": "hydracache-performance-074-i74-2e5538e5d22c7c9919a796973c1d414b5df9ca732e94322c8f61f97a5c1c7196.service",
+    "product_candidate_started": false,
+    "starting_controller_pid": 1534083,
+    "harness_pid": 1534092,
+    "daemon_pid": 1534093,
+    "start_revision": 2,
+    "checkpoint_sequence": 1,
+    "supervisor_service_inactive_during_fixture": true,
+    "original_controller_exited": true,
+    "exact_process_pair_observed_after_scheduled_drift_window": true,
+    "lease_id": "00000000-0000-4000-8000-000000000074",
+    "lease_deadline_unix_seconds": 1791238327,
+    "observed_unix_seconds": 1791238330,
+    "deadline_overshoot_seconds": 3,
+    "completed_revision": 4,
+    "terminal_state": "LEASE_EXPIRED_INCOMPLETE",
+    "recorded_failure": false,
+    "terminal_execution_fields_cleared": true,
+    "diagnostic_sha256": "5d7f3cee490d9ec358d218dfc9b8390e0c57ef27ea036ab7e71c3d833ef2be53",
+    "diagnostic_bytes": 2853,
+    "fixture_unit_stopped": true,
+    "active_campaign_released": true,
+    "supervisor_service_active_after_cleanup": true,
+    "supervisor_main_pid_after_cleanup": 1534339,
+    "supervisor_restart_count_after_cleanup": 0
+  },
+  "negative_attribution": [
+    {
+      "github_run_id": 37364363138,
+      "attempts": [1, 2],
+      "source_commit": "187b63fb20555743f8b220ac60273e0e8e8663cc",
+      "finding": "both signed provisioning attempts were cancelled after fifteen minutes while queued for ubuntu-latest during the GitHub-hosted runner assignment incident; each executed zero steps and caused no host mutation",
+      "resulting_action": "waited for Actions to return operational, then reran only the failed jobs of the same workflow run once; no duplicate provisioning run or unsigned installation was created"
+    }
+  ],
+  "decision": {
+    "lease_expiry_host_rehearsal_complete": true,
+    "real_systemd_lease_diagnostic_and_stop_path_complete": true,
+    "exact_frozen_lease_deadline_exercised": true,
+    "post_drift_exact_identity_revalidation_complete": true,
+    "scheduled_drift_window_independently_sampled": false,
+    "signed_socket_request_exercised": false,
+    "supervisor_restart_during_live_campaign_exercised": false,
+    "product_candidate_started": false,
+    "qualification_started": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "exercise signed socket start admission, supervisor restart, reboot and live seal before product qualification",
+    "reason": "A bounded non-product exact-identity campaign outlived the frozen lease, revalidated the retained process pair after the configured transient drift window, published a cause-bound diagnostic, stopped the exact systemd unit, committed revision 4 LEASE_EXPIRED_INCOMPLETE and durably released the host claim. The receipt does not independently sample the transient drift interval, and no product candidate or expensive qualification ran."
+  }
+}
