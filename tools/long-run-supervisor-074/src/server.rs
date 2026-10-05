@@ -4,7 +4,10 @@ use crate::archive::ArchiveLimits;
 use crate::artifact::PacketLimits;
 use crate::config::ServerConfig;
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
-use crate::host_receipt::verify_host_receipt_evidence;
+use crate::host_receipt::{
+    collect_host_observation, verify_host_receipt_evidence, verify_live_observation,
+    verify_receipt_manifest_binding, HostObservationReceipt,
+};
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryBackend, LeaseExpiryOutcome};
 use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
 use crate::manifest_evidence::{verify_manifest_evidence, verify_stored_manifest_evidence};
@@ -22,7 +25,7 @@ use crate::start_evidence::{
     PreparedCampaignEvidence, StartEvidenceError,
 };
 use crate::start_lifecycle::{
-    drive_c74_start_request, drive_i74_start_request, StartLifecycleError,
+    drive_c74_start_request, drive_i74_start_request, replay_start_response, StartLifecycleError,
 };
 use crate::state::{
     apply_attach, AttachRequest, CampaignState, DurableCampaignState, FrozenIdentity,
@@ -89,6 +92,43 @@ pub trait LeaseExpiryObservationBackend: LeaseExpiryBackend {
         manifest: &CampaignManifest,
         state: &DurableCampaignState,
     ) -> Result<(), String>;
+}
+
+pub trait StartObservationBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        admitted: &HostObservationReceipt,
+    ) -> Result<(), String>;
+}
+
+struct LiveStartObservationBackend;
+
+impl StartObservationBackend for LiveStartObservationBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        admitted: &HostObservationReceipt,
+    ) -> Result<(), String> {
+        verify_receipt_manifest_binding(admitted, manifest).map_err(|error| error.to_string())?;
+        let observed =
+            collect_host_observation(campaign_directory).map_err(|error| error.to_string())?;
+        verify_live_observation(admitted, &observed).map_err(|error| error.to_string())
+    }
+}
+
+impl StartObservationBackend for SystemdSpawnBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        admitted: &HostObservationReceipt,
+    ) -> Result<(), String> {
+        let mut observer = LiveStartObservationBackend;
+        observer.verify_host(campaign_directory, manifest, admitted)
+    }
 }
 
 impl AbortObservationBackend for SystemdAbortBackend {
@@ -176,7 +216,7 @@ impl SupervisorServer {
         self.serve_one_inner::<SystemdSpawnBackend>(None, None, None)
     }
 
-    pub fn serve_one_with_start_backend<B: SpawnBackend>(
+    pub fn serve_one_with_start_backend<B: SpawnBackend + StartObservationBackend>(
         &self,
         backend: &mut B,
     ) -> Result<(), ServerError> {
@@ -197,7 +237,7 @@ impl SupervisorServer {
         self.serve_one_inner::<SystemdSpawnBackend>(None, None, Some(backend))
     }
 
-    fn serve_one_inner<B: SpawnBackend>(
+    fn serve_one_inner<B: SpawnBackend + StartObservationBackend>(
         &self,
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
@@ -207,7 +247,7 @@ impl SupervisorServer {
         self.handle_connection_inner(connection, start_backend, seal_backend, abort_backend)
     }
 
-    fn handle_connection_inner<B: SpawnBackend>(
+    fn handle_connection_inner<B: SpawnBackend + StartObservationBackend>(
         &self,
         connection: SeqpacketConnection,
         start_backend: Option<&mut B>,
@@ -220,7 +260,7 @@ impl SupervisorServer {
         }
     }
 
-    fn serve_connection_inner<B: SpawnBackend>(
+    fn serve_connection_inner<B: SpawnBackend + StartObservationBackend>(
         &self,
         connection: SeqpacketConnection,
         start_backend: Option<&mut B>,
@@ -288,7 +328,7 @@ impl SupervisorServer {
         Ok(())
     }
 
-    fn dispatch<B: SpawnBackend>(
+    fn dispatch<B: SpawnBackend + StartObservationBackend>(
         &self,
         authorized: &AuthorizedRequest,
         now: u64,
@@ -339,13 +379,13 @@ impl SupervisorServer {
         Ok(result)
     }
 
-    fn dispatch_start<B: SpawnBackend>(
+    fn dispatch_start<B: SpawnBackend + StartObservationBackend>(
         &self,
         authorized: &AuthorizedRequest,
         now: u64,
         backend: &mut B,
     ) -> Result<Response, ServerError> {
-        match self.admit_start(authorized, now)? {
+        match self.admit_start(authorized, now, backend)? {
             StartAdmission::Rejected(response) => Ok(response),
             StartAdmission::Ready(admission) => finish_start(authorized, now, admission, backend),
         }
@@ -356,7 +396,8 @@ impl SupervisorServer {
         authorized: &AuthorizedRequest,
         now: u64,
     ) -> Result<Response, ServerError> {
-        match self.admit_start(authorized, now)? {
+        let mut observer = LiveStartObservationBackend;
+        match self.admit_start(authorized, now, &mut observer)? {
             StartAdmission::Rejected(response) => Ok(response),
             StartAdmission::Ready(admission) => {
                 let mut backend = SystemdSpawnBackend::new(
@@ -372,6 +413,7 @@ impl SupervisorServer {
         &self,
         authorized: &AuthorizedRequest,
         now: u64,
+        observer: &mut dyn StartObservationBackend,
     ) -> Result<StartAdmission, ServerError> {
         let request = &authorized.request;
         let campaign_directory = self.config.campaign_root.join(&request.campaign_id);
@@ -395,14 +437,12 @@ impl SupervisorServer {
                 )?))
             }
         };
-        let host_claim =
-            match HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id) {
-                Ok(claim) => claim,
-                Err(error) => {
+        let identity =
+            match frozen_identity_from_manifest(&evidence.manifest, &request.manifest_sha256) {
+                Ok(identity) => identity,
+                Err(_) => {
                     return Ok(StartAdmission::Rejected(error_response_from_request(
-                        request,
-                        now,
-                        host_execution_error_code(&error),
+                        request, now, 9,
                     )?))
                 }
             };
@@ -416,12 +456,37 @@ impl SupervisorServer {
                 )?))
             }
         };
-        let identity =
-            match frozen_identity_from_manifest(&evidence.manifest, &request.manifest_sha256) {
-                Ok(identity) => identity,
-                Err(_) => {
+        match replay_start_response(&lock, request) {
+            Ok(Some(response)) => return Ok(StartAdmission::Rejected(response)),
+            Ok(None) => {}
+            Err(error) => {
+                return Ok(StartAdmission::Rejected(error_response_from_request(
+                    request,
+                    now,
+                    start_lifecycle_error_code(&error),
+                )?))
+            }
+        }
+        if observer
+            .verify_host(
+                &evidence.campaign_directory,
+                &evidence.manifest,
+                &evidence.host_receipt,
+            )
+            .is_err()
+        {
+            return Ok(StartAdmission::Rejected(error_response_from_request(
+                request, now, 6,
+            )?));
+        }
+        let host_claim =
+            match HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id) {
+                Ok(claim) => claim,
+                Err(error) => {
                     return Ok(StartAdmission::Rejected(error_response_from_request(
-                        request, now, 9,
+                        request,
+                        now,
+                        host_execution_error_code(&error),
                     )?))
                 }
             };

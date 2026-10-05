@@ -30,7 +30,7 @@ use hydracache_long_run_supervisor_074::seal_input::{
 };
 use hydracache_long_run_supervisor_074::server::{
     AbortObservationBackend, LeaseExpiryObservationBackend, SealObservationBackend,
-    SupervisorServer,
+    StartObservationBackend, SupervisorServer,
 };
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
@@ -207,7 +207,7 @@ fn exchange_once(
     })
 }
 
-fn exchange_start_once<B: SpawnBackend + Send>(
+fn exchange_start_once<B: SpawnBackend + StartObservationBackend + Send>(
     server: &SupervisorServer,
     socket: &Path,
     packet: &[u8],
@@ -220,7 +220,7 @@ fn exchange_start_once<B: SpawnBackend + Send>(
     })
 }
 
-fn exchange_uploaded_start_once<B: SpawnBackend + Send>(
+fn exchange_uploaded_start_once<B: SpawnBackend + StartObservationBackend + Send>(
     server: &SupervisorServer,
     socket: &Path,
     packet: &[u8],
@@ -358,6 +358,24 @@ impl SealObservationBackend for FakeSealBackend {
 #[derive(Default)]
 struct FakeStartBackend {
     starts: usize,
+    host_checks: usize,
+    fail_host: bool,
+}
+
+impl StartObservationBackend for FakeStartBackend {
+    fn verify_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _admitted: &HostObservationReceipt,
+    ) -> Result<(), String> {
+        self.host_checks += 1;
+        if self.fail_host {
+            Err("host observation drifted".to_owned())
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl SpawnBackend for FakeStartBackend {
@@ -1217,6 +1235,52 @@ fn disconnected_partial_upload_does_not_kill_the_next_start_request() {
         &mut backend,
     );
     assert!(response.body.ok);
+    assert_eq!(backend.starts, 1);
+}
+
+#[test]
+fn new_start_revalidates_host_before_claim_while_exact_replay_skips_live_observation() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    let socket = temporary
+        .path()
+        .join("supervisor-start-host-observation.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeStartBackend {
+        fail_host: true,
+        ..FakeStartBackend::default()
+    };
+
+    let rejected = exchange_start_once(&server, &socket, &packet, &mut backend);
+    assert!(!rejected.body.ok);
+    assert_eq!(rejected.body.error_code, Some(6));
+    assert_eq!(backend.host_checks, 1);
+    assert_eq!(backend.starts, 0);
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+    assert!(!campaign_root
+        .join("1".repeat(64))
+        .join("state.json")
+        .exists());
+
+    backend.fail_host = false;
+    let accepted = exchange_start_once(&server, &socket, &packet, &mut backend);
+    assert!(accepted.body.ok);
+    assert_eq!(backend.host_checks, 2);
+    assert_eq!(backend.starts, 1);
+
+    backend.fail_host = true;
+    let replay = exchange_start_once(&server, &socket, &packet, &mut backend);
+    assert_eq!(replay, accepted);
+    assert_eq!(backend.host_checks, 2);
     assert_eq!(backend.starts, 1);
 }
 

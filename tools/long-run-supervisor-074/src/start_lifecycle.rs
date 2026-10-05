@@ -29,6 +29,32 @@ pub enum StartLifecycleError {
     Spawn(#[from] SpawnError),
 }
 
+pub fn replay_start_response(
+    lock: &CampaignLock,
+    request: &Request,
+) -> Result<Option<Response>, StartLifecycleError> {
+    let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
+    let head = lock.campaign_directory().join(EVENT_HEAD_NAME);
+    match fs::symlink_metadata(&journal) {
+        Ok(_) => {
+            let digest = request_sha256(request)?;
+            let report = verify_event_journal(&journal, &head)?;
+            match report.replay_index.get(&request.request_id) {
+                Some(recorded) if recorded.request_sha256 == digest => {
+                    Ok(Some(recorded.response.clone()))
+                }
+                Some(_) => Err(EventError::ReplayConflict {
+                    request_id: request.request_id.clone(),
+                }
+                .into()),
+                None => Ok(None),
+            }
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(StateStoreError::Io(error).into()),
+    }
+}
+
 pub fn drive_i74_start<B: SpawnBackend>(
     host_claim: &HostExecutionClaim,
     lock: &CampaignLock,
@@ -230,21 +256,11 @@ fn drive_role_start_request<B: SpawnBackend>(
     role: Role,
     backend: &mut B,
 ) -> Result<Response, StartLifecycleError> {
-    let digest = request_sha256(request)?;
+    if let Some(recorded) = replay_start_response(lock, request)? {
+        return Ok(recorded);
+    }
     let journal = lock.campaign_directory().join(EVENT_JOURNAL_NAME);
     let head = lock.campaign_directory().join(EVENT_HEAD_NAME);
-    if let Ok(report) = verify_event_journal(&journal, &head) {
-        if let Some(recorded) = report.replay_index.get(&request.request_id) {
-            return if recorded.request_sha256 == digest {
-                Ok(recorded.response.clone())
-            } else {
-                Err(EventError::ReplayConflict {
-                    request_id: request.request_id.clone(),
-                }
-                .into())
-            };
-        }
-    }
 
     let state = drive_role_start(
         host_claim,
