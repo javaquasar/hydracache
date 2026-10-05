@@ -169,8 +169,9 @@ jobs:
           set -euo pipefail
           evidence=target/performance-evidence/0.74/reference/w11-host-provisioning
           mkdir -p "$evidence"
-          install -m 0644 /var/lib/hydracache-performance/provisioning-receipt-074.json \
-            "$evidence/provisioning.json"
+          umask 077
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$evidence/provisioning.json"
           python3 scripts/perf/performance_long_run_host_capability_074.py \
             --source-commit "$INPUT_SOURCE_SHA" \
             --output "$evidence/capability-after.json"

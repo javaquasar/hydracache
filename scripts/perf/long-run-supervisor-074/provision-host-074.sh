@@ -22,10 +22,18 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ "${1-}" = --preflight && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
   [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "preflight requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
+  if [[ "$1" = --emit-receipt ]]; then
+    [[ -f "$RECEIPT" && ! -L "$RECEIPT" ]] || die "provisioning receipt is absent or unsafe"
+    [[ "$(stat -c '%a:%u:%g' "$RECEIPT")" = 444:0:0 ]] || die "provisioning receipt metadata differs"
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      printf '%s\n' "$line"
+    done < "$RECEIPT"
+    exit 0
+  fi
   printf 'ready\n'
   exit 0
 fi

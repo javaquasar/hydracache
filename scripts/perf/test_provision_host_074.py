@@ -30,6 +30,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             "sha256sum --strict --check bundle.sha256",
             "verify-provisioning-manifest",
             "bundle installer differs from the root-owned entrypoint",
+            "--emit-receipt",
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
@@ -61,6 +62,7 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertIn("sudo -n", provision)
         self.assertIn("/usr/local/sbin/hydracache-provision-host-074", provision)
         self.assertNotIn("sudo -n true", provision)
+        self.assertIn("--emit-receipt", provision)
 
     def test_workflow_is_manual_and_does_not_run_qualification(self) -> None:
         self.assertIn("workflow_dispatch:", self.workflow)
