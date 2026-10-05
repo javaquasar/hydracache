@@ -6,6 +6,7 @@ SERVICE=hydracache-performance-supervisor-074.service
 SUPERVISOR_USER=hydracache-perf
 CLIENT_GROUP=hydracache-perf-client
 INSTALL_BINARY=/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+FIXTURE_BINARY=/opt/hydracache-performance/0.74/campaign-lifecycle-fixture
 INSTALL_CONFIG=/etc/hydracache-perf/supervisor-074.toml
 INSTALL_SERVICE=/etc/systemd/system/$SERVICE
 INSTALL_SYSUSERS=/etc/sysusers.d/hydracache-performance-074.conf
@@ -22,7 +23,7 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume) && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume || "${1-}" = --campaign-lifecycle-smoke-start || "${1-}" = --campaign-lifecycle-smoke-resume) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
   [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "operation requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
@@ -42,6 +43,12 @@ if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-
   fi
   if [[ "$1" = --controller-loss-smoke-resume ]]; then
     exec "$INSTALL_BINARY" controller-loss-smoke-resume
+  fi
+  if [[ "$1" = --campaign-lifecycle-smoke-start ]]; then
+    exec "$INSTALL_BINARY" campaign-lifecycle-smoke-start
+  fi
+  if [[ "$1" = --campaign-lifecycle-smoke-resume ]]; then
+    exec "$INSTALL_BINARY" campaign-lifecycle-smoke-resume
   fi
   printf 'ready\n'
   exit 0
@@ -171,6 +178,7 @@ make_config() {
 files_match_active_install() {
   local candidate_config=$1
   cmp -s "$bundle_dir/hydracache-long-run-supervisor-074" "$INSTALL_BINARY" &&
+    cmp -s "$bundle_dir/hydracache-long-run-supervisor-074" "$FIXTURE_BINARY" &&
     cmp -s "$bundle_dir/hydracache-performance-supervisor-074.service" "$INSTALL_SERVICE" &&
     cmp -s "$bundle_dir/hydracache-performance-074.sysusers.conf" "$INSTALL_SYSUSERS" &&
     cmp -s "$bundle_dir/hydracache-performance-074.tmpfiles.conf" "$INSTALL_TMPFILES" &&
@@ -201,6 +209,7 @@ if [[ "$already_active" = false ]]; then
   "$bundle_dir/hydracache-long-run-supervisor-074" validate-production-config "$candidate_config"
 
   atomic_install "$bundle_dir/hydracache-long-run-supervisor-074" "$INSTALL_BINARY" 0755 root root
+  atomic_install "$bundle_dir/hydracache-long-run-supervisor-074" "$FIXTURE_BINARY" 0755 root root
   atomic_install "$bundle_dir/hydracache-performance-supervisor-074.service" "$INSTALL_SERVICE" 0644 root root
   atomic_install "$bundle_dir/hydracache-performance-074.sysusers.conf" "$INSTALL_SYSUSERS" 0644 root root
   atomic_install "$bundle_dir/hydracache-performance-074.tmpfiles.conf" "$INSTALL_TMPFILES" 0644 root root
@@ -229,6 +238,7 @@ socket=/run/hydracache-perf/supervisor-v1.sock
 [[ "$(stat -c '%u' "$socket")" = 0 ]] || die "supervisor socket owner differs"
 [[ "$(stat -c '%g' "$socket")" = "$client_gid" ]] || die "supervisor socket group differs"
 [[ "$(stat -c '%a:%u:%g' "$INSTALL_BINARY")" = 755:0:0 ]] || die "installed binary metadata differs"
+[[ "$(stat -c '%a:%u:%g' "$FIXTURE_BINARY")" = 755:0:0 ]] || die "fixture binary metadata differs"
 [[ "$(stat -c '%a:%u:%g' "$INSTALL_CONFIG")" = 600:0:0 ]] || die "installed config metadata differs"
 
 unit_properties=$(mktemp)
@@ -238,6 +248,7 @@ systemctl show "$SERVICE" \
   --no-pager > "$unit_properties"
 
 binary_sha=$(sha256sum "$INSTALL_BINARY" | cut -d' ' -f1)
+fixture_binary_sha=$(sha256sum "$FIXTURE_BINARY" | cut -d' ' -f1)
 config_sha=$(sha256sum "$INSTALL_CONFIG" | cut -d' ' -f1)
 service_sha=$(sha256sum "$INSTALL_SERVICE" | cut -d' ' -f1)
 sysusers_sha=$(sha256sum "$INSTALL_SYSUSERS" | cut -d' ' -f1)
@@ -268,6 +279,7 @@ printf '%s\n' \
   '  "service_active": true,' \
   '  "socket_mode": 432,' \
   "  \"binary_sha256\": \"$binary_sha\"," \
+  "  \"fixture_binary_sha256\": \"$fixture_binary_sha\"," \
   "  \"config_sha256\": \"$config_sha\"," \
   "  \"service_sha256\": \"$service_sha\"," \
   "  \"sysusers_sha256\": \"$sysusers_sha\"," \

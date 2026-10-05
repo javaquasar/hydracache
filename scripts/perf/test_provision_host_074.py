@@ -34,6 +34,9 @@ class ProvisionHostContractTests(unittest.TestCase):
             "--systemd-smoke",
             "--controller-loss-smoke-start",
             "--controller-loss-smoke-resume",
+            "--campaign-lifecycle-smoke-start",
+            "--campaign-lifecycle-smoke-resume",
+            "campaign-lifecycle-fixture",
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
@@ -52,6 +55,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             "RuntimeDirectoryMode",
             "hydracache-w11-host-provisioning-v1",
             "runner_process_group_refresh_may_be_required",
+            "fixture_binary_sha256",
         ):
             self.assertIn(required, self.source)
 
@@ -84,9 +88,13 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertIn("inputs.mode == 'provision'", self.capability_workflow)
         self.assertIn("inputs.mode == 'systemd-smoke'", self.capability_workflow)
         self.assertIn("inputs.mode == 'controller-loss-smoke'", self.capability_workflow)
+        self.assertIn("inputs.mode == 'campaign-lifecycle-smoke'", self.capability_workflow)
         self.assertIn("product_candidate_started", self.capability_workflow)
         self.assertIn("original_controller_exited", self.capability_workflow)
         self.assertIn("fixture_identity_unchanged", self.capability_workflow)
+        self.assertIn("start_response_replayed", self.capability_workflow)
+        self.assertIn("replay_spawn_calls", self.capability_workflow)
+        self.assertIn("active_campaign_released", self.capability_workflow)
         self.assertIn("github.event_name == 'workflow_dispatch'", self.capability_workflow)
         self.assertIn("source_sha: ${{ github.sha }}", self.capability_workflow)
         self.assertIn("secrets: inherit", self.capability_workflow)

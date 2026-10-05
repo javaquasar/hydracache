@@ -13,6 +13,7 @@ on:
           - provision
           - systemd-smoke
           - controller-loss-smoke
+          - campaign-lifecycle-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -30,7 +31,7 @@ concurrency:
 
 jobs:
   probe:
-    if: github.event_name == 'push' || inputs.mode != 'provision'
+    if: github.event_name == 'push' || inputs.mode == 'probe'
     name: Read-only systemd and supervisor capability probe
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-074
@@ -223,5 +224,80 @@ jobs:
         with:
           name: performance-long-run-controller-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-controller-loss-smoke/**
+          if-no-files-found: error
+          retention-days: 90
+
+  campaign-lifecycle-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'campaign-lifecycle-smoke'
+    name: Campaign-shaped controller-loss lifecycle smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-campaign-lifecycle-smoke
+    steps:
+      - name: Check out exact campaign lifecycle smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and campaign lifecycle fixture tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 \
+            campaign_smoke::tests::derived_request_id_is_a_lowercase_v4_uuid \
+            --locked -- --exact
+
+      - name: Start campaign-shaped fixture and let the controller exit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-start \
+            > "$EVIDENCE_DIR/start.json"
+
+      - name: Replay start, attach and abort from a new controller process
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 2
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
+            > "$EVIDENCE_DIR/resume.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          started = json.loads((root / "start.json").read_text())
+          resumed = json.loads((root / "resume.json").read_text())
+          assert started["schema_version"] == "hydracache-w11-campaign-lifecycle-start-v1"
+          assert resumed["schema_version"] == "hydracache-w11-campaign-lifecycle-resume-v1"
+          assert started["campaign_id"] == resumed["campaign_id"]
+          assert started["product_candidate_started"] is False
+          assert resumed["product_candidate_started"] is False
+          assert resumed["original_controller_exited"] is True
+          assert resumed["exact_process_pair_recovered"] is True
+          assert resumed["start_response_replayed"] is True
+          assert resumed["replay_spawn_calls"] == 0
+          assert resumed["checkpoint_sequence"] == started["checkpoint_sequence"] == 1
+          assert resumed["attached_revision"] > started["state_revision"]
+          assert resumed["aborted_revision"] > resumed["attached_revision"]
+          assert resumed["active_campaign_released"] is True
+          PY
+
+      - name: Retain campaign lifecycle smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-campaign-lifecycle-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-campaign-lifecycle-smoke/**
           if-no-files-found: error
           retention-days: 90

@@ -13,6 +13,8 @@ pub mod abort_lifecycle;
 pub mod archive;
 pub mod artifact;
 pub mod auth;
+#[cfg(target_os = "linux")]
+pub mod campaign_smoke;
 pub mod checkpoint_evidence;
 #[cfg(target_os = "linux")]
 pub mod client;
