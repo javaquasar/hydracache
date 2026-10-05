@@ -529,3 +529,40 @@ fn w9e_allocator_attribution_is_linux_only_complete_and_non_promotable() {
     assert!(workflow.contains("promotable"));
     assert!(!workflow.contains("performance-long-run-qualification-074"));
 }
+
+#[test]
+fn w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable() {
+    let kernel = contract("w9c-linux-kernel-attribution-contract.toml");
+    assert_eq!(
+        kernel["state"].as_str(),
+        Some("preregistered-before-dedicated-linux-execution")
+    );
+    assert_eq!(kernel["operating_system"].as_str(), Some("linux"));
+    assert_eq!(kernel["architecture"].as_str(), Some("x86_64"));
+    assert_eq!(kernel["minimum_attempts"].as_integer(), Some(30));
+    assert_eq!(kernel["repeats_per_cell"].as_integer(), Some(5));
+    assert_eq!(
+        kernel["measurement_gate_after_warmup_required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(kernel["product_mutation_allowed"].as_bool(), Some(false));
+    assert_eq!(kernel["runtime_tuning_allowed"].as_bool(), Some(false));
+    assert_eq!(kernel["acceptance_decision_allowed"].as_bool(), Some(false));
+    assert_eq!(kernel["promotable"].as_bool(), Some(false));
+
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-kernel-attribution-074.yml"),
+    )
+    .unwrap();
+    assert!(workflow.contains("workflow_dispatch:"));
+    assert!(workflow.contains("feat/0.74-resp-native-throughput"));
+    assert!(workflow.contains("group: performance-reference-074-host"));
+    assert!(workflow.contains("cancel-in-progress: false"));
+    assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
+    assert!(workflow.contains("command -v strace"));
+    assert!(workflow.contains("command -v ss"));
+    assert!(workflow.contains("--repeats 5"));
+    assert!(workflow.contains("candidate_data_present"));
+    assert!(workflow.contains("promotable"));
+    assert!(!workflow.contains("performance-long-run-qualification-074"));
+}

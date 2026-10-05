@@ -1,0 +1,197 @@
+name: Performance Kernel Attribution 0.74
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact lowercase 40-character attribution source commit
+        required: true
+        type: string
+      lease_owner:
+        description: Operator holding the serialized performance-host lease
+        required: true
+        type: string
+      lease_end:
+        description: Approved lease end in RFC3339 form
+        required: true
+        type: string
+  push:
+    branches:
+      - feat/0.74-resp-native-throughput
+    paths:
+      - .github/workflows/performance-kernel-attribution-074.yml
+      - scripts/perf/performance_kernel_attribution_074.py
+      - scripts/perf/test_performance_kernel_attribution_074.py
+      - tools/resp-pipeline-profile-074/**
+      - docs/testing/performance/0.74/w9c-linux-kernel-attribution-contract.toml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-074-host
+  cancel-in-progress: false
+
+jobs:
+  attribute:
+    name: Non-promotable Linux scheduler/socket attribution
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 90
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w9c-kernel
+
+    steps:
+      - name: Check out exact attribution source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha || github.sha }}
+
+      - name: Resolve immutable source and lease
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+        run: |
+          set -euo pipefail
+          source_sha="${INPUT_SOURCE_SHA:-$GITHUB_SHA}"
+          lease_owner="${INPUT_LEASE_OWNER:-$GITHUB_ACTOR}"
+          lease_end="${INPUT_LEASE_END:-$(date --utc --date='+90 minutes' --iso-8601=seconds)}"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          test -n "$lease_owner"
+          lease_epoch="$(date --date="$lease_end" +%s)"
+          now_epoch="$(date +%s)"
+          test "$lease_epoch" -gt "$now_epoch"
+          test "$lease_epoch" -le "$((now_epoch + 7200))"
+          {
+            echo "EXPECTED_SOURCE_SHA=$source_sha"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$lease_owner"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_END=$lease_end"
+          } >> "$GITHUB_ENV"
+
+      - name: Verify available profiling boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "$(uname -m)" = x86_64
+          command -v cargo
+          command -v rustc
+          command -v python3
+          command -v strace
+          command -v ss
+          python3 -m unittest scripts.perf.test_performance_kernel_attribution_074
+
+      - name: Capture host and kernel capability receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          python3 - "$EVIDENCE_DIR/preflight.json" <<'PY'
+          import hashlib, json, os, pathlib, platform, subprocess, sys
+          def command(*args):
+              return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
+          def readable(path):
+              try:
+                  with open(path, 'rb') as stream:
+                      stream.read(1)
+                  return True
+              except OSError:
+                  return False
+          machine = pathlib.Path('/etc/machine-id').read_bytes().strip()
+          sysctls = {}
+          for name in ('kernel.perf_event_paranoid', 'kernel.unprivileged_bpf_disabled', 'kernel.kptr_restrict', 'kernel.yama.ptrace_scope'):
+              try:
+                  sysctls[name] = command('sysctl', '-n', name)
+              except subprocess.CalledProcessError as error:
+                  sysctls[name] = f'unavailable:{error.returncode}'
+          value = {
+              'schema_version': 1,
+              'source_sha': os.environ['EXPECTED_SOURCE_SHA'],
+              'lease': {'owner': os.environ['HYDRACACHE_PERFORMANCE_LEASE_OWNER'], 'end': os.environ['HYDRACACHE_PERFORMANCE_LEASE_END']},
+              'host': {
+                  'machine_id_sha256': hashlib.sha256(machine).hexdigest(),
+                  'node': platform.node(), 'machine': platform.machine(), 'kernel': platform.release(),
+                  'cpu_count': os.cpu_count(),
+              },
+              'toolchain': {
+                  'rustc': command('rustc', '--version'), 'cargo': command('cargo', '--version'),
+                  'strace': command('strace', '--version').splitlines()[0], 'ss': command('ss', '--version'),
+              },
+              'kernel_controls': sysctls,
+              'tracefs_syscall_events_readable': readable('/sys/kernel/tracing/events/syscalls'),
+              'debugfs_syscall_events_readable': readable('/sys/kernel/debug/tracing/events/syscalls'),
+          }
+          pathlib.Path(sys.argv[1]).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Build exact RESP attribution profiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          CARGO_TARGET_DIR=target/w9c-kernel-build cargo build \
+            --manifest-path tools/resp-pipeline-profile-074/Cargo.toml \
+            --release --locked
+
+      - name: Run counterbalanced syscall attribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_kernel_attribution_074.py \
+            --binary target/w9c-kernel-build/release/resp-pipeline-profile-074 \
+            --output-dir "$EVIDENCE_DIR/campaign" \
+            --source-commit "$EXPECTED_SOURCE_SHA" \
+            --tool-source tools/resp-pipeline-profile-074/src/main.rs \
+            --tool-lock tools/resp-pipeline-profile-074/Cargo.lock \
+            --contract docs/testing/performance/0.74/w9c-linux-kernel-attribution-contract.toml \
+            --repeats 5
+
+      - name: Seal non-promotable attribution packet
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$EVIDENCE_DIR" <<'PY'
+          import hashlib, json, os, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          packet = {
+              'schema_version': 1, 'release': '0.74',
+              'profile_id': 'w9c-linux-kernel-attribution-074-v1',
+              'source_sha': os.environ['EXPECTED_SOURCE_SHA'],
+              'result': 'incomplete-owner-attribution',
+              'candidate_data_present': False, 'acceptance_decision_allowed': False,
+              'promotable': False, 'silent_retry_allowed': False,
+          }
+          preflight = root / 'preflight.json'
+          if preflight.is_file():
+              packet['preflight_sha256'] = digest(preflight)
+              packet['host'] = json.loads(preflight.read_text())['host']
+          manifest_path = root / 'campaign' / 'manifest.json'
+          summary_path = root / 'campaign' / 'summary.json'
+          if manifest_path.is_file():
+              manifest = json.loads(manifest_path.read_text())
+              packet['manifest_sha256'] = digest(manifest_path)
+              packet['attempts'] = manifest['attempts']
+              packet['valid_attempts'] = manifest['valid_attempts']
+              packet['failed_attempts'] = manifest['failed_attempts']
+              if summary_path.is_file() and manifest['failed_attempts'] == 0:
+                  packet['summary_sha256'] = digest(summary_path)
+                  packet['result'] = 'complete-owner-attribution'
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'packet.json').write_text(json.dumps(packet, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Retain W9c attribution packet
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-kernel-attribution-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w9c-kernel/**
+          if-no-files-found: error
+          retention-days: 90

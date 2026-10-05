@@ -1,0 +1,76 @@
+schema_version = 1
+release = "0.74"
+contract_id = "w9c-linux-kernel-attribution-074-v1"
+state = "preregistered-before-dedicated-linux-execution"
+scope = "Attribute RESP loopback scheduler and socket costs at the syscall boundary before authorizing any additional W3 or runtime tuning candidate."
+profile_tool = "tools/resp-pipeline-profile-074"
+matrix_runner = "scripts/perf/performance_kernel_attribution_074.py"
+
+operating_system = "linux"
+architecture = "x86_64"
+transport = "loopback-tcp-plaintext"
+required_tools = ["strace", "ss"]
+perf_event_access_required = false
+tracefs_access_required = false
+known_host_limits_retained = ["perf_event_paranoid=4", "tracefs/debugfs denied", "unprivileged_bpf_disabled=2"]
+
+operations = ["get", "set"]
+pipelines = [1, 10]
+concurrency = [1, 8]
+cells = ["get-p1-c1", "get-p10-c1", "get-p10-c8", "set-p1-c1", "set-p10-c1", "set-p10-c8"]
+operations_per_attempt = 40000
+warmup_operations = 8000
+batch_size = 1
+payload_bytes = 64
+key_space = 4096
+seed = 7409
+instrumentation_enabled = true
+repeats_per_cell = 5
+minimum_attempts = 30
+counterbalanced_cell_order_required = true
+independent_processes_required = true
+
+measurement_gate_after_warmup_required = true
+measurement_gate_timeout_seconds = 30
+getrusage_measurement_window_required = true
+strace_absolute_timestamps_required = true
+strace_fd_endpoint_decoding_required = true
+strace_per_thread_files_required = true
+ss_sampling_required = true
+ss_sample_interval_milliseconds = 20
+raw_trace_retention_required = true
+raw_trace_compression_required = true
+attempt_manifest_required = true
+failed_attempt_retention_required = true
+silent_retry_allowed = false
+
+required_kernel_fields = [
+  "server TCP read/write calls and bytes",
+  "client TCP read/write calls and bytes",
+  "TCP EAGAIN counts",
+  "epoll calls and ready events",
+  "futex calls",
+  "voluntary and involuntary context switches",
+  "minor and major page faults",
+  "socket Recv-Q and Send-Q high water",
+  "socket skmem high water",
+]
+required_application_reconciliation = ["RESP output frames", "RESP write calls", "RESP flush calls", "socket poll-write attempts", "socket pending writes", "socket short writes"]
+workload_digest_required = true
+binary_sha256_required = true
+tool_source_sha256_required = true
+lock_sha256_required = true
+contract_sha256_required = true
+exact_response_validation_required = true
+
+product_mutation_allowed = false
+runtime_tuning_allowed = false
+candidate_data_allowed = false
+acceptance_decision_allowed = false
+release_numerical_claim_allowed = false
+promotable = false
+
+unavailable_metrics = ["Tokio task wakeup latency because tracefs and perf-event access are denied", "TLS record behavior because this matrix freezes plaintext loopback TCP"]
+decision_rule = "This matrix may name a scheduler or socket owner only. Authorize exactly one later candidate only when five valid repeats show a stable, tunable owner and the proposal freezes one factor. Otherwise close W9c measured-no-action. Every later candidate must rerun RESP correctness and unchanged native/API performance guards."
+falsifier = "Reject the matrix if source, binary, workload, operation, payload, key space, seed, instrumentation, transport, warmup, measurement marker, listener ownership, or response semantics drift; if a trace lacks exactly one measurement marker; if ss never observes a workload socket; or if an attempt is missing or silently retried."
+claim_boundary = "Traced goodput and latency are observer-loaded attribution values, not release performance claims. This profile neither selects a product candidate nor authorizes qualification."
