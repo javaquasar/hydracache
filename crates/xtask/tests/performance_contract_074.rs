@@ -244,6 +244,58 @@ fn w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable() {
 }
 
 #[test]
+fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
+    let controller = contract("long-run-controller-resilience-contract.toml");
+    let implementation = controller["local_implementation"].as_table().unwrap();
+    let relative = implementation["supervisor_idle_overhead_evidence"]
+        .as_str()
+        .unwrap();
+    let evidence: Value =
+        serde_json::from_slice(&std::fs::read(root().join(relative)).unwrap()).unwrap();
+
+    assert_eq!(
+        evidence["tooling_source_commit"].as_str(),
+        Some("404c46225469af4d6c47b37070a4009087a94072")
+    );
+    assert_eq!(evidence["github_run"]["id"].as_u64(), Some(37386694639));
+    assert_eq!(
+        evidence["observation"]["product_candidate_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["observation"]["cpu_budget_passed"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["rss_budget_passed"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["io_budget_evaluated"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["decision"]["idle_overhead_budget_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["decision"]["release_admission_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["supervisor_idle_cpu_rss_screen_complete"].as_bool(),
+        Some(true)
+    );
+    for field in [
+        "supervisor_idle_io_screen_complete",
+        "idle_overhead_budget_complete",
+        "role_overhead_qualification_complete",
+    ] {
+        assert_eq!(implementation[field].as_bool(), Some(false), "{field}");
+    }
+}
+
+#[test]
 fn w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal() {
     let mut value = contract("composition-ledger.toml");
     value["freeze_c74_allowed"] = toml::Value::Boolean(true);

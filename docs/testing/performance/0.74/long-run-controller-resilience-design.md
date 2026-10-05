@@ -812,6 +812,26 @@ marker. A clean-source `canary-sweep --release 0.74 --tier fast` must retain the
 and exact marker in its receipt. This deterministic model proof complements rather than replaces
 the same-host process, runner, network, reboot and systemd fault rehearsal.
 
+### Bounded idle-overhead attribution
+
+The read-only host screen binds the installed supervisor receipt separately from the measurement
+tooling source, then samples one stable MainPID/start-ticks/control-group/cpuset identity. CPU
+usage, user/system split, memory-current/peak, process RSS, cgroup pressure, task count, threads and
+process context switches are sampled without socket traffic or service mutation. A MainPID,
+start-ticks, cpuset, control-group or restart-count change invalidates the observation.
+
+Run `37386694639` passed the frozen idle CPU and RSS limits: 0.00754665% CPU versus 0.5%, and
+4,538,368 bytes maximum RSS versus 67,108,864. It did not complete the three-part overhead
+conjunction. This host has no `io.stat` in the service cgroup, while the unprivileged runner cannot
+read `/proc/<pid>/io`. The receipt represents all I/O fields as unavailable, keeps
+`idle_screen_passed=false`, and leaves both idle and role-level overhead completion false. Missing
+telemetry is not zero activity and cannot be converted into a pass.
+
+Before role-level A/B, the host contract must provide a reviewed exact byte counter for supervisor
+and checkpoint I/O. Enabling cgroup I/O accounting or installing a narrow root-owned observer would
+change host provisioning and requires its own review, signed installation, restart/reboot plan and
+rehearsal. The CPU/RSS observation remains useful attribution but cannot authorize qualification.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:

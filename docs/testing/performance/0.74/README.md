@@ -705,6 +705,29 @@ restart during a live campaign, reboot, live seal, product I74/C74 execution, ov
 six-hour qualification and 24-hour confirmation remain open. No product candidate or expensive
 workload ran.
 
+The first admitted-host overhead slice is retained at tooling source `404c4622`, against the exact
+installed supervisor source `187b63fb`. Run `37386694639` observed the already-active supervisor
+for 30.000073206 seconds without sending a socket request, starting a workload, restarting a unit
+or mutating host state. Across 61 samples the same PID/start ticks/cgroup/cpuset remained stable and
+`NRestarts` remained zero. Idle CPU was 0.00754665% against the frozen 0.5% ceiling; maximum RSS was
+4,538,368 bytes against 67,108,864 bytes. The service used one process/thread, accumulated 30
+voluntary and one involuntary context switches, and recorded zero cgroup CPU-pressure time. The
+cgroup memory-current maximum was 819,200 bytes; the lifetime cgroup peak was 1,343,488 bytes. See
+`local-runs/w11-supervisor-idle-overhead-404c4622.json`.
+
+This is a confirmed partial observation, not a completed overhead budget. The service cgroup does
+not expose `io.stat`, and the unprivileged `github-runner` correctly cannot read the root-owned
+supervisor's `/proc/<pid>/io`. The receipt therefore records the I/O metric and conjunction as
+unevaluated instead of substituting a proxy or treating a missing counter as zero. The three
+pre-success runs are retained as negative attribution: fail-closed discovery of the absent I/O
+counter, a diagnostic preflight receipt, and selection of `/proc/<pid>/status` as the exact cpuset
+source when the cgroup did not expose `cpuset.cpus.effective`. None mutated the service.
+
+Consequently `supervisor_idle_cpu_rss_screen_complete=true`, while
+`supervisor_idle_io_screen_complete`, `idle_overhead_budget_complete` and
+`role_overhead_qualification_complete` remain false. A reviewed exact I/O counter source and the
+role-level checkpoint/supervisor A/B are still required; the frozen ceilings were not changed.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

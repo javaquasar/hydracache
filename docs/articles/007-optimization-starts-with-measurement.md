@@ -2471,3 +2471,21 @@ The broader lesson is that reproducibility includes process continuity. A hash-i
 executed by a replacement process is not the same sample, just as a benchmark with a changed seed
 or duration is not the same sample. Long-run infrastructure must be able to retain an incomplete
 attempt instead of manufacturing continuity.
+
+The first real-host supervisor overhead screen added another useful rule: unavailable is not zero.
+For 30 seconds the stable installed process consumed 0.00755% CPU and peaked at about 4.54 MB RSS,
+comfortably below the already frozen idle ceilings. Its PID, start ticks, cgroup and CPU mask did
+not change; there were no restarts, product requests or host mutations. Those are confirmed
+observations, not estimates.
+
+But the service cgroup did not expose `io.stat`, and the unprivileged runner could not read the
+root process's `/proc/<pid>/io`. Treating that as zero bytes per second would have converted a
+telemetry gap into a green budget. The receipt instead marks I/O unevaluated, keeps the complete
+idle screen false, and leaves role-level overhead qualification open. The failed preflights were
+retained because they identified two host-interface facts—the missing I/O controller and the need
+to read affinity from `Cpus_allowed_list`—without changing the service.
+
+This is the same discipline applied to infrastructure rather than product code. A partial result
+can narrow the next experiment, but only the full frozen conjunction can close the gate. When the
+measurement channel is missing, the next task is to establish that channel under the same trust
+model, not to relax the claim.

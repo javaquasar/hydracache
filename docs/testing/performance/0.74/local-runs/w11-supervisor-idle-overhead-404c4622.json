@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-supervisor-idle-overhead",
+  "tooling_source_commit": "404c46225469af4d6c47b37070a4009087a94072",
+  "installed_supervisor_source_commit": "187b63fb20555743f8b220ac60273e0e8e8663cc",
+  "github_run": {
+    "id": 37386694639,
+    "job_id": 112021583405,
+    "conclusion": "success",
+    "duration_seconds": 38,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37386694639"
+  },
+  "artifact": {
+    "id": 11379501250,
+    "name": "performance-long-run-supervisor-idle-overhead-074-404c46225469af4d6c47b37070a4009087a94072-37386694639-1",
+    "digest": "sha256:5df7094480bc430a58d052e54a469c5e7c04c3557cb53449959716073d9ff9fe",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37386694639/artifacts/11379501250"
+  },
+  "receipts": {
+    "overhead_sha256": "077fd141eea5d27666bdd8dcc9074a0cb26243f84d4d1ea8d1443d4419e420db",
+    "preflight_sha256": "1edeace4014db44539edbd96a96ee43d377432a3e2628a5c294f78c69e349b66",
+    "provisioning_sha256": "2673a1fb18c51d6a87f5d4521aff1a57fade02f92f4ecbaa44bcc3a9ad2aed98"
+  },
+  "observation": {
+    "started_at_utc": "2026-10-05T23:07:56.241643Z",
+    "completed_at_utc": "2026-10-05T23:08:26.242036Z",
+    "requested_duration_seconds": 30,
+    "elapsed_seconds": 30.000073206,
+    "sample_interval_seconds": 0.5,
+    "sample_count": 61,
+    "read_only": true,
+    "mutation_performed": false,
+    "product_candidate_started": false,
+    "workload_started": false,
+    "supervisor_pid": 1534339,
+    "supervisor_start_ticks": 212354862,
+    "supervisor_control_group": "/system.slice/hydracache-performance-supervisor-074.service",
+    "supervisor_cpuset": "0,5-15",
+    "supervisor_restart_count_before_and_after": 0,
+    "cpu_percent": 0.0075466482513356,
+    "cpu_budget_percent": 0.5,
+    "cpu_budget_passed": true,
+    "cpu_pressure_some_ratio": 0.0,
+    "cpu_pressure_full_ratio": 0.0,
+    "rss_bytes_max": 4538368,
+    "rss_budget_bytes": 67108864,
+    "rss_budget_passed": true,
+    "cgroup_memory_current_bytes_max": 819200,
+    "cgroup_memory_peak_bytes_max": 1343488,
+    "voluntary_context_switches_delta": 30,
+    "involuntary_context_switches_delta": 1,
+    "threads_max": 1,
+    "cgroup_pids_max": 1,
+    "io_budget_bytes_per_second": 1048576,
+    "io_counter_available": false,
+    "io_budget_evaluated": false,
+    "io_budget_passed": null,
+    "io_blocker": "the service cgroup exposes no io.stat and github-runner cannot read the root supervisor /proc/<pid>/io file"
+  },
+  "negative_attribution": [
+    {
+      "github_run_id": 37386193848,
+      "tooling_source_commit": "72f5898b187a93b02e35924a5e173defdf43bd78",
+      "finding": "the initial fail-closed preflight required cgroup io.stat, stopped before collection and retained no artifact",
+      "host_effect": "none; the stable service was only observed"
+    },
+    {
+      "github_run_id": 37386347491,
+      "tooling_source_commit": "77576974624f448d746513ae69b2e6c2c20032a2",
+      "finding": "the retained preflight proved cgroup io.stat unavailable while service identity and the remaining required counters were stable",
+      "host_effect": "none; the stable service was only observed"
+    },
+    {
+      "github_run_id": 37386573600,
+      "tooling_source_commit": "d723a2510e424ec51f592751b74553351fe49805",
+      "finding": "collection found the service cgroup has no cpuset.cpus.effective; the equivalent process Cpus_allowed_list source was selected without weakening the stable-affinity guard",
+      "host_effect": "none; collection stopped before the observation window"
+    }
+  ],
+  "decision": {
+    "cpu_rss_idle_screen_complete": true,
+    "scheduler_and_context_switch_observation_complete": true,
+    "io_idle_screen_complete": false,
+    "idle_overhead_budget_complete": false,
+    "role_overhead_qualification_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "establish a reviewed read-only source for exact supervisor and checkpoint I/O counters, then run the frozen role-level overhead A/B without changing the budgets",
+    "reason": "The stable installed supervisor was far below the frozen CPU and RSS ceilings during a bounded idle observation, with zero CPU pressure and no restart or identity drift. The host does not expose an unprivileged exact I/O byte counter for this root service, so the full overhead conjunction is deliberately not claimed."
+  }
+}
