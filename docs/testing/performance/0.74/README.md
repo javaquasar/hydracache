@@ -446,6 +446,17 @@ the same server instance then accepts the complete request and starts exactly on
 now 154 passing ordinary tests plus the one ignored manual system-bus test, with the focused server
 suite at 10/10. See `local-runs/w11-controller-disconnect-local-20261005.json`.
 
+Start admission now also closes the gap between accepting an uploaded receipt and launching the
+role. For every new I74 or C74 start, the privileged path collects a fresh host observation and
+requires exact equality with the admitted receipt before creating the host claim, durable state or
+spawn intent. An exact completed-request replay is resolved from the verified event journal first,
+so later host drift cannot replace the original signed response or repeat the spawn. The injected
+regression proves drift rejection before all three side effects, successful retry after convergence
+and replay without another observation/backend call. The complete WSL suite is now 155 ordinary
+passes plus one ignored manual system-bus test; the focused server suite is 11/11. This is local
+composition evidence, not the outstanding root/systemd admitted-host rehearsal. See
+`local-runs/w11-start-live-host-revalidation-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

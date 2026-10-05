@@ -438,6 +438,19 @@ source `af0bff6d`, the focused server suite is 10/10 and the complete WSL count 
 passes plus the one intentionally ignored real-system-bus test. Internal mutation and lease
 maintenance failures remain fatal, so “survive the client” does not become “ignore corruption.”
 
+The next local slice closed a subtler time-of-check gap. A correctly transported receipt proves
+what the controller admitted, but it does not prove that CPU partitioning, kernel tuning, boot,
+mount or installed supervisor identity still match when the role is about to start. New I74 and
+C74 requests now recollect the host observation inside the privileged service and compare the full
+receipt before creating the host claim, durable state or spawn intent. The ordering matters:
+completed request IDs are replayed from the verified event journal first, so a later host change
+cannot turn a successful retry into a new decision or repeat the process launch. Injected drift
+fails closed with no claim, state or backend call; convergence permits one launch; a retry returns
+the byte-identical signed response without another observation. At source `c7cfbc9f`, the focused
+server suite is 11/11 and the complete WSL suite is 155 ordinary passes plus the intentionally
+ignored real-system-bus test. This validates local composition, not the still-missing privileged
+host rehearsal.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

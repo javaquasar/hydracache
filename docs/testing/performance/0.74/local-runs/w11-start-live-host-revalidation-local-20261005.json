@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-start-live-host-revalidation",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "c7cfbc9f",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --test server --locked'",
+    "wsl.exe -d Ubuntu -- bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-start-live-host.json"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 155,
+  "manual_system_bus_tests_ignored": 1,
+  "focused_server_tests_passed": 11,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "every genuinely new I74 or C74 start crosses the live host-observation boundary before host claim, durable state, spawn intent or backend execution",
+    "host drift rejects the request with the frozen-invariant error and leaves no active campaign marker or durable state",
+    "a converged retry starts exactly once",
+    "an exact completed-request replay returns the original signed response without repeating host observation or spawn",
+    "the production observation backend recollects and exactly compares the admitted host receipt",
+    "the qualification dry-run accepted the updated contract and executed zero commands"
+  ],
+  "limitations": [
+    "drift and replay ordering used an injected observation backend rather than the installed root service",
+    "the production collector was not exercised against an admitted host, real systemd unit or production mount",
+    "the workflow was not dispatched and no product or systemd process was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

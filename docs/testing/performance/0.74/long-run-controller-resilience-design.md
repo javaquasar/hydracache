@@ -646,6 +646,15 @@ listener failure and lease-expiry maintenance failure remain fatal. A local regr
 revision-zero upload after the manifest and proves that neither staging nor spawn occurs before a
 complete request succeeds on the same server instance.
 
+Evidence transport is not itself start authorization. After immutable evidence is loaded, a new
+start first checks the verified event journal for an exact completed replay. Only a genuinely new
+I74 or C74 request invokes the live start observation boundary: production recollects the complete
+host receipt and compares it exactly with the admitted receipt before host-claim creation, durable
+state, spawn intent or systemd dispatch. A replay returns the original signed response without
+depending on current host state and without observing or spawning again. Local injection covers
+drift, convergence and replay ordering; collection as root against the installed supervisor binary,
+real mount and systemd unit remains part of the admitted-host rehearsal.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 
