@@ -23,7 +23,7 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --emit-host-observation || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume || "${1-}" = --campaign-lifecycle-smoke-start || "${1-}" = --campaign-lifecycle-smoke-resume) && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume || "${1-}" = --campaign-lifecycle-smoke-start || "${1-}" = --campaign-lifecycle-smoke-resume) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
   [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "operation requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
@@ -33,29 +33,6 @@ if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --emit-hos
     while IFS= read -r line || [[ -n "$line" ]]; do
       printf '%s\n' "$line"
     done < "$RECEIPT"
-    exit 0
-  fi
-  if [[ "$1" = --emit-host-observation ]]; then
-    freeze=/var/lib/hydracache-perf/host-tuning-v1/freeze/host-freeze.json
-    [[ -f "$freeze" && ! -L "$freeze" ]] || die "canonical host freeze is absent or unsafe"
-    [[ "$(stat -c '%a:%u:%g' "$freeze")" = 444:0:0 ]] || die "canonical host freeze metadata differs"
-    temporary=$(mktemp -d /var/lib/hydracache-performance/.host-observation-export.XXXXXX)
-    chmod 0700 "$temporary"
-    chown root:root "$temporary"
-    cleanup_host_observation() {
-      rm -f -- "$temporary/host-observation.json" "$temporary/host-observation.sha256"
-      rmdir -- "$temporary"
-    }
-    trap cleanup_host_observation EXIT
-    digest=$("$INSTALL_BINARY" collect-host-receipt "$temporary")
-    [[ "$digest" =~ ^[0-9a-f]{64}$ ]] || die "host observation digest is invalid"
-    [[ "$(stat -c '%a:%u:%g' "$temporary/host-observation.json")" = 400:0:0 ]] || die "host observation metadata differs"
-    [[ "$(stat -c '%a:%u:%g' "$temporary/host-observation.sha256")" = 400:0:0 ]] || die "host observation digest metadata differs"
-    [[ "$(tr -d '\r\n' < "$temporary/host-observation.sha256")" = "$digest" ]] || die "host observation digest sidecar differs"
-    printf 'HOST_OBSERVATION_SHA256=%s\n' "$digest"
-    while IFS= read -r line || [[ -n "$line" ]]; do
-      printf '%s\n' "$line"
-    done < "$temporary/host-observation.json"
     exit 0
   fi
   if [[ "$1" = --systemd-smoke ]]; then
