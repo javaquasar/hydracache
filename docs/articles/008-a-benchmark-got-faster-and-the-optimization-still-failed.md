@@ -1012,6 +1012,24 @@ the signed campaign upload, durable exactly-once spawn transaction, controller r
 supervisor restart recovery, diagnostic-stop behavior or product process identity. Those require
 the next bounded non-promotable controller-loss fixture before any long performance campaign.
 
+We split that next proof again rather than combining controller loss with campaign admission. A
+two-command fixture starts a fixed `/usr/bin/sleep 30` transient unit, persists its PID, start ticks,
+process group and cgroup inode in a root-owned context, and lets the starting command exit. A new
+command accepts the unit only if the old controller identity is gone and every stored process and
+cgroup field still matches; it then stops that exact unit and removes the context. A 35-second
+systemd runtime ceiling bounds cleanup even if the workflow disappears between the commands.
+
+Run `37332481302` passed this narrower proof. The starter PID was gone, while the fixture retained
+PID 1476103, start tick 209902978 and the original cgroup identity until the second command stopped
+it. The unit unloaded, the root context disappeared and the detached supervisor stayed active. No
+HydraCache candidate, campaign or benchmark ran.
+
+This result is useful specifically because it is not overclaimed. It proves that a real transient
+unit outlives its initiating controller and can be re-identified without PID-only trust. It does
+not exercise the signed Unix-socket request, two-process harness/daemon identity, durable start
+journal, replay response, supervisor restart or checkpoint continuity. Those remain the next
+campaign-shaped fixture, and all production host-rehearsal flags remain false until then.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

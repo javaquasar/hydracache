@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-bounded-controller-loss-smoke",
+  "source_commit": "8d05954bd056eb62ba24d9032e95c9194c8734ba",
+  "github_run": {
+    "id": 37332481302,
+    "conclusion": "success",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37332481302"
+  },
+  "artifact": {
+    "id": 11354717663,
+    "name": "performance-long-run-controller-loss-smoke-074-8d05954bd056eb62ba24d9032e95c9194c8734ba-37332481302-1",
+    "size_bytes": 1649,
+    "digest": "sha256:8e178af882eb9d46a6584e7939ff8e060604a423e32b3ec4349ae21ebc06e8dc",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37332481302/artifacts/11354717663"
+  },
+  "receipts": {
+    "provisioning_sha256": "39d1a563ae716cf269327792a957730fb6be316a9c27b91091ac92252c949971",
+    "start_sha256": "dd64b3a7727e69a9906e7f0f6b7a90f9b024de79f0827f04400ddb7821fb58c2",
+    "resume_sha256": "1425706aa57650dec32d4abeb15921e8d91c889c1203719e5f4aca1beb00b744"
+  },
+  "observation": {
+    "unit_name": "hydracache-performance-074-controller-loss-smoke.service",
+    "fixture_command": "/usr/bin/sleep 30",
+    "product_candidate_started": false,
+    "starting_controller_pid": 1476095,
+    "fixture_pid": 1476103,
+    "fixture_start_ticks": 209902978,
+    "fixture_process_group": 1476103,
+    "fixture_cgroup_inode": 345860,
+    "fixture_cgroup": "/system.slice/hydracache-performance-074-controller-loss-smoke.service",
+    "original_controller_exited": true,
+    "fixture_identity_unchanged": true,
+    "observed_before_stop": {
+      "active_state": "active",
+      "sub_state": "running",
+      "main_pid": 1476103,
+      "result": "success"
+    },
+    "after_stop": null,
+    "context_removed": true,
+    "supervisor_service_active_after_cleanup": true
+  },
+  "decision": {
+    "bounded_controller_loss_fixture_complete": true,
+    "real_systemd_spawn_backend_host_rehearsal_complete": false,
+    "host_rehearsal_complete": false,
+    "qualification_started": false,
+    "next_required_step": "two-process non-promotable campaign fixture through the production manifest, start lifecycle, systemd spawn backend and signed socket request",
+    "reason": "A fixed non-product transient unit outlived the process that started it and a new process revalidated its exact PID/start-ticks/cgroup identity before stopping it. Campaign admission, durable start replay, supervisor restart and product execution were not exercised."
+  }
+}

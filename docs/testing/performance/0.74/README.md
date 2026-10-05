@@ -587,6 +587,20 @@ path or product workload was exercised. The next safe step is a bounded non-prom
 controller-loss rehearsal through the production start lifecycle with fixture binaries and
 identities.
 
+An isolated controller-loss primitive is now also proven at source `8d05954b`. Run `37332481302`
+used two separate root command processes. The first started only `/usr/bin/sleep 30`, recorded the
+fixture PID, start ticks, process group, cgroup inode and fixed unit name in a root-owned `0600`
+context, then exited. Two seconds later a new process proved the original controller identity was
+gone and the fixture still had the exact stored process and cgroup identity before issuing
+`StopUnit`. The context was removed, the transient unit unloaded and the supervisor remained
+active. See `local-runs/w11-controller-loss-smoke-8d05954b.json`.
+
+This closes only `bounded_controller_loss_fixture_complete`. It deliberately does not claim the
+production start backend or full controller-loss rehearsal: the fixture is one process, bypasses
+the signed socket request and campaign manifest, and creates no durable campaign state or
+checkpoint chain. The next slice must supply a bounded two-process non-promotable campaign fixture
+and drive it through the real upload, start lifecycle, systemd spawn backend and replay path.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future
