@@ -92,13 +92,17 @@ impl ProgressLossBackend for FakeBackend {
                 .and_then(|name| name.to_str()),
             Some(cause.campaign_id.as_str())
         );
-        assert_eq!(cause.checkpoint.sequence, 8);
+        if let Some(checkpoint) = &cause.checkpoint {
+            assert_eq!(checkpoint.sequence, 8);
+        } else {
+            assert_eq!(cause.last_useful_progress_unix_seconds, 990);
+        }
         assert_eq!(cause.rejection_gap_seconds, 180);
         assert_eq!(cause.rejection_deadline_unix_seconds, 1_170);
         self.observed_retained_identity = state.campaign_state == CampaignState::FailedIncomplete
             && state.harness.is_some()
             && state.daemon.is_some()
-            && state.checkpoint.is_some();
+            && state.checkpoint == cause.checkpoint;
         if self.fail_next {
             self.fail_next = false;
             return Err("injected progress-loss interruption".to_owned());
@@ -114,6 +118,10 @@ struct Fixture {
 }
 
 fn fixture() -> Fixture {
+    fixture_with_checkpoint(true)
+}
+
+fn fixture_with_checkpoint(has_checkpoint: bool) -> Fixture {
     let temporary = tempfile::tempdir().unwrap();
     let campaign_id = hash('a');
     let root = temporary.path().join("campaigns");
@@ -121,7 +129,10 @@ fn fixture() -> Fixture {
     let claim = HostExecutionClaim::acquire(&root, &campaign_id).unwrap();
     std::fs::create_dir(root.join(&campaign_id)).unwrap();
     let lock = CampaignLock::acquire(&root, &campaign_id).unwrap();
-    let final_state = state(&campaign_id);
+    let mut final_state = state(&campaign_id);
+    if !has_checkpoint {
+        final_state.checkpoint = None;
+    }
     let mut initial = final_state.clone();
     initial.revision = 0;
     lock.initialize(&initial).unwrap();
@@ -138,6 +149,47 @@ fn fixture() -> Fixture {
 }
 
 #[test]
+fn startup_deadline_recovers_durable_cause_without_a_first_checkpoint() {
+    let fixture = fixture_with_checkpoint(false);
+    let mut backend = FakeBackend {
+        fail_next: true,
+        ..FakeBackend::default()
+    };
+    assert!(matches!(
+        drive_progress_loss(
+            &fixture.claim,
+            &fixture.lock,
+            1_171,
+            None,
+            Some(990),
+            180,
+            &mut backend,
+        ),
+        Err(ProgressLossError::Backend(_))
+    ));
+    let requested = fixture.lock.read().unwrap();
+    assert_eq!(requested.revision, 6);
+    assert_eq!(requested.campaign_state, CampaignState::FailedIncomplete);
+    assert!(requested.checkpoint.is_none());
+
+    assert_eq!(
+        drive_progress_loss(
+            &fixture.claim,
+            &fixture.lock,
+            1_172,
+            None,
+            None,
+            180,
+            &mut backend,
+        )
+        .unwrap(),
+        ProgressLossOutcome::Completed { state_revision: 7 }
+    );
+    assert_eq!(backend.calls, 2);
+    assert!(backend.observed_retained_identity);
+}
+
+#[test]
 fn progress_deadline_commits_intent_stops_and_releases_only_after_completion() {
     let fixture = fixture();
     let mut backend = FakeBackend::default();
@@ -147,6 +199,7 @@ fn progress_deadline_commits_intent_stops_and_releases_only_after_completion() {
             &fixture.lock,
             1_170,
             fixture.lock.read().unwrap().checkpoint,
+            None,
             180,
             &mut backend,
         )
@@ -161,6 +214,7 @@ fn progress_deadline_commits_intent_stops_and_releases_only_after_completion() {
             &fixture.lock,
             1_171,
             fixture.lock.read().unwrap().checkpoint,
+            None,
             180,
             &mut backend,
         )
@@ -193,6 +247,7 @@ fn backend_failure_retains_progress_cause_and_retry_completes_once() {
             &fixture.lock,
             1_171,
             fixture.lock.read().unwrap().checkpoint,
+            None,
             180,
             &mut backend,
         ),
@@ -214,6 +269,7 @@ fn backend_failure_retains_progress_cause_and_retry_completes_once() {
             &fixture.lock,
             1_172,
             fixture.lock.read().unwrap().checkpoint,
+            None,
             180,
             &mut backend,
         )
@@ -232,6 +288,7 @@ fn completed_progress_failure_recovers_marker_release_without_repeating_effect()
         &fixture.lock,
         1_171,
         fixture.lock.read().unwrap().checkpoint,
+        None,
         180,
         &mut backend,
     )
@@ -243,7 +300,16 @@ fn completed_progress_failure_recovers_marker_release_without_repeating_effect()
     drop(fixture.claim);
     let recreated = HostExecutionClaim::acquire(&root, &campaign).unwrap();
     assert_eq!(
-        drive_progress_loss(&recreated, &fixture.lock, 1_172, None, 180, &mut backend).unwrap(),
+        drive_progress_loss(
+            &recreated,
+            &fixture.lock,
+            1_172,
+            None,
+            None,
+            180,
+            &mut backend,
+        )
+        .unwrap(),
         ProgressLossOutcome::Completed { state_revision: 7 }
     );
     assert_eq!(backend.calls, 1);

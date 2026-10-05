@@ -4,6 +4,7 @@ use crate::archive::ArchiveLimits;
 use crate::artifact::PacketLimits;
 use crate::checkpoint_evidence::{observe_live_checkpoint_evidence, CheckpointEvidenceError};
 use crate::config::ServerConfig;
+use crate::event::{verify_event_journal, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME};
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::{
     collect_host_observation, verify_host_receipt_evidence, verify_live_observation,
@@ -256,8 +257,10 @@ impl SupervisorServer {
             .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
         let manifest = verify_stored_manifest_evidence(lock.campaign_directory(), &state)
             .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
-        let observed_checkpoint = if state.campaign_state == CampaignState::FailedIncomplete {
-            state.checkpoint.clone()
+        let (observed_checkpoint, startup_progress_unix_seconds) = if state.campaign_state
+            == CampaignState::FailedIncomplete
+        {
+            (state.checkpoint.clone(), None)
         } else if state.campaign_state.is_live() {
             match observe_live_checkpoint_evidence(lock.campaign_directory(), &state) {
                 Ok((report, checkpoint)) => {
@@ -269,12 +272,46 @@ impl SupervisorServer {
                     if report.last_phase == crate::Phase::Terminal {
                         return Ok(Some(ProgressLossOutcome::NotDue));
                     }
-                    Some(checkpoint)
+                    (Some(checkpoint), None)
                 }
-                Err(CheckpointEvidenceError::Io(error))
-                    if error.kind() == std::io::ErrorKind::NotFound =>
+                Err(error)
+                    if state.checkpoint.is_none() && checkpoint_evidence_is_absent(&error) =>
                 {
-                    return Ok(Some(ProgressLossOutcome::NotDue));
+                    let report = verify_event_journal(
+                        &lock.campaign_directory().join(EVENT_JOURNAL_NAME),
+                        &lock.campaign_directory().join(EVENT_HEAD_NAME),
+                    )
+                    .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
+                    if report.latest_state_after.as_ref() != Some(&state) {
+                        return Err(ServerError::ProgressLoss(
+                            "startup progress state is not bound to the event journal".to_owned(),
+                        ));
+                    }
+                    let latest = report.latest_lifecycle.as_ref().ok_or_else(|| {
+                        ServerError::ProgressLoss(
+                            "startup progress lifecycle event is missing".to_owned(),
+                        )
+                    })?;
+                    let expected_start = match state.campaign_state {
+                        CampaignState::I74Running => matches!(
+                            latest.transition,
+                            LifecycleEvent::I74Started | LifecycleEvent::I74Adopted
+                        ),
+                        CampaignState::C74Running => matches!(
+                            latest.transition,
+                            LifecycleEvent::C74Started | LifecycleEvent::C74Adopted
+                        ),
+                        _ => false,
+                    };
+                    if !expected_start
+                        || latest.occurred_at_unix_seconds == 0
+                        || latest.occurred_at_unix_seconds > now
+                    {
+                        return Err(ServerError::ProgressLoss(
+                            "startup progress lifecycle event is invalid".to_owned(),
+                        ));
+                    }
+                    (None, Some(latest.occurred_at_unix_seconds))
                 }
                 Err(error) => return Err(ServerError::ProgressLoss(error.to_string())),
             }
@@ -282,10 +319,14 @@ impl SupervisorServer {
             return Ok(Some(ProgressLossOutcome::NotDue));
         };
         if state.campaign_state.is_live() {
-            let rejection_deadline = observed_checkpoint
+            let last_useful_progress_unix_seconds = observed_checkpoint
                 .as_ref()
-                .ok_or_else(|| ServerError::ProgressLoss("checkpoint is missing".to_owned()))?
-                .useful_progress_unix_seconds
+                .map(|checkpoint| checkpoint.useful_progress_unix_seconds)
+                .or(startup_progress_unix_seconds)
+                .ok_or_else(|| {
+                    ServerError::ProgressLoss("progress anchor is missing".to_owned())
+                })?;
+            let rejection_deadline = last_useful_progress_unix_seconds
                 .checked_add(manifest.progress_rejection_gap_seconds)
                 .ok_or_else(|| {
                     ServerError::ProgressLoss("progress deadline overflow".to_owned())
@@ -302,6 +343,7 @@ impl SupervisorServer {
             &lock,
             now,
             observed_checkpoint,
+            startup_progress_unix_seconds,
             manifest.progress_rejection_gap_seconds,
             backend,
         )
@@ -1014,6 +1056,15 @@ impl SupervisorServer {
                 )?)
             }
         }
+    }
+}
+
+fn checkpoint_evidence_is_absent(error: &CheckpointEvidenceError) -> bool {
+    match error {
+        CheckpointEvidenceError::Chain(crate::ChainError::Empty) => true,
+        CheckpointEvidenceError::Chain(crate::ChainError::Io(error))
+        | CheckpointEvidenceError::Io(error) => error.kind() == std::io::ErrorKind::NotFound,
+        _ => false,
     }
 }
 

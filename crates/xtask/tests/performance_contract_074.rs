@@ -169,6 +169,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "supervisor_owned_start_upload_complete",
         "privileged_start_bundle_staging_complete",
         "connection_transport_failure_survival_complete",
+        "startup_checkpoint_absence_maintenance_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
@@ -178,10 +179,6 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     );
     assert_eq!(
         implementation["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
-        Some(false)
-    );
-    assert_eq!(
-        implementation["startup_checkpoint_absence_maintenance_complete"].as_bool(),
         Some(false)
     );
     assert_eq!(

@@ -339,6 +339,7 @@ impl LeaseExpiryObservationBackend for FakeLeaseExpiryBackend {
 struct FakeProgressLossBackend {
     host_checks: usize,
     stop_calls: usize,
+    startup_causes: usize,
 }
 
 impl ProgressLossBackend for FakeProgressLossBackend {
@@ -351,9 +352,12 @@ impl ProgressLossBackend for FakeProgressLossBackend {
         self.stop_calls += 1;
         assert_eq!(cause.campaign_id, state.identity.campaign_id);
         assert_eq!(state.campaign_state, CampaignState::FailedIncomplete);
-        assert_eq!(state.checkpoint.as_ref(), Some(&cause.checkpoint));
+        assert_eq!(state.checkpoint, cause.checkpoint);
         assert!(state.harness.is_some());
         assert!(state.daemon.is_some());
+        if cause.checkpoint.is_none() {
+            self.startup_causes += 1;
+        }
         Ok(())
     }
 }
@@ -1139,6 +1143,71 @@ fn maintenance_expires_the_active_campaign_without_a_controller_request() {
         None
     );
     assert_eq!(backend.stop_calls, 1);
+}
+
+#[test]
+fn maintenance_fails_startup_that_never_publishes_a_first_checkpoint() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary
+        .path()
+        .join("supervisor-startup-progress-loss.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let campaign_directory = campaign_root.join("1".repeat(64));
+    let report = verify_event_journal(
+        &campaign_directory.join(EVENT_JOURNAL_NAME),
+        &campaign_directory.join(EVENT_HEAD_NAME),
+    )
+    .unwrap();
+    let startup_progress = report
+        .latest_lifecycle
+        .as_ref()
+        .unwrap()
+        .occurred_at_unix_seconds;
+    let mut backend = FakeProgressLossBackend::default();
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(startup_progress + 180, &mut backend)
+            .unwrap(),
+        Some(ProgressLossOutcome::NotDue)
+    );
+    assert_eq!(backend.host_checks, 0);
+    assert_eq!(backend.stop_calls, 0);
+    let role = campaign_directory.join("roles/i74");
+    fs::create_dir_all(&role).unwrap();
+    fs::File::create(role.join("checkpoints.jsonl")).unwrap();
+
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(startup_progress + 181, &mut backend)
+            .unwrap(),
+        Some(ProgressLossOutcome::Completed { state_revision: 4 })
+    );
+    assert_eq!(backend.host_checks, 1);
+    assert_eq!(backend.stop_calls, 1);
+    assert_eq!(backend.startup_causes, 1);
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let failed = lock.read().unwrap();
+    assert_eq!(failed.campaign_state, CampaignState::FailedIncomplete);
+    assert!(failed.harness.is_none());
+    assert!(failed.daemon.is_none());
+    assert!(failed.checkpoint.is_none());
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
 }
 
 #[test]

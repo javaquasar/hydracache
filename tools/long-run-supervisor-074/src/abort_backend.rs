@@ -277,18 +277,15 @@ impl SystemdAbortBackend {
         if manifest.campaign_id != cause.campaign_id
             || manifest.campaign_id != state.identity.campaign_id
             || manifest.progress_rejection_gap_seconds != cause.rejection_gap_seconds
-            || state.checkpoint.as_ref() != Some(&cause.checkpoint)
+            || state.checkpoint != cause.checkpoint
         {
             return Err(SystemdAbortError::Binding);
         }
         let harness = state.harness.as_ref().ok_or(SystemdAbortError::Binding)?;
         let daemon = state.daemon.as_ref().ok_or(SystemdAbortError::Binding)?;
         let role = role_from_unit(&harness.unit_name, &cause.campaign_id)?;
-        let diagnostic_path = progress_loss_diagnostic_path(
-            campaign_directory,
-            &role,
-            &cause.checkpoint.record_sha256,
-        )?;
+        let diagnostic_path =
+            progress_loss_diagnostic_path(campaign_directory, &role, &cause.sha256()?)?;
         match inspect_unit_optional(&harness.unit_name)? {
             Some(snapshot) => {
                 if snapshot.sub_state == "running" {
@@ -895,7 +892,7 @@ mod tests {
     }
 
     #[test]
-    fn progress_loss_diagnostic_is_checkpoint_bound_and_exactly_replayed() {
+    fn progress_loss_diagnostic_is_cause_bound_and_exactly_replayed() {
         let (_temporary, campaign, _request, mut state, snapshot) = fixture();
         state.campaign_state = CampaignState::FailedIncomplete;
         let checkpoint = CheckpointHead {
@@ -907,13 +904,13 @@ mod tests {
         let cause = ProgressLossCause {
             schema_version: 1,
             campaign_id: state.identity.campaign_id.clone(),
-            checkpoint,
+            checkpoint: Some(checkpoint),
+            last_useful_progress_unix_seconds: 990,
             rejection_gap_seconds: 180,
             rejection_deadline_unix_seconds: 1_170,
         };
         let path =
-            progress_loss_diagnostic_path(&campaign, &Role::I74, &cause.checkpoint.record_sha256)
-                .unwrap();
+            progress_loss_diagnostic_path(&campaign, &Role::I74, &cause.sha256().unwrap()).unwrap();
         publish_progress_loss_diagnostic(
             &path,
             &cause,
@@ -925,12 +922,49 @@ mod tests {
         .unwrap();
         let first = std::fs::read(&path).unwrap();
         std::fs::rename(&path, path.with_extension("json.pending")).unwrap();
-        publish_progress_loss_diagnostic(&path, &cause, &state, Role::I74, snapshot, 1_048_576)
-            .unwrap();
+        publish_progress_loss_diagnostic(
+            &path,
+            &cause,
+            &state,
+            Role::I74,
+            snapshot.clone(),
+            1_048_576,
+        )
+        .unwrap();
         assert_eq!(std::fs::read(&path).unwrap(), first);
         std::fs::hard_link(&path, path.with_extension("json.pending")).unwrap();
         verify_existing_progress_loss_diagnostic(&path, &cause, &state, &Role::I74, 1_048_576)
             .unwrap();
         assert!(!path.with_extension("json.pending").exists());
+
+        state.checkpoint = None;
+        let startup_cause = ProgressLossCause {
+            schema_version: 1,
+            campaign_id: state.identity.campaign_id.clone(),
+            checkpoint: None,
+            last_useful_progress_unix_seconds: 1_000,
+            rejection_gap_seconds: 180,
+            rejection_deadline_unix_seconds: 1_180,
+        };
+        let startup_path =
+            progress_loss_diagnostic_path(&campaign, &Role::I74, &startup_cause.sha256().unwrap())
+                .unwrap();
+        publish_progress_loss_diagnostic(
+            &startup_path,
+            &startup_cause,
+            &state,
+            Role::I74,
+            snapshot,
+            1_048_576,
+        )
+        .unwrap();
+        verify_existing_progress_loss_diagnostic(
+            &startup_path,
+            &startup_cause,
+            &state,
+            &Role::I74,
+            1_048_576,
+        )
+        .unwrap();
     }
 }

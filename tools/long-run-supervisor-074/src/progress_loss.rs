@@ -16,44 +16,105 @@ use thiserror::Error;
 pub struct ProgressLossCause {
     pub schema_version: u32,
     pub campaign_id: String,
-    pub checkpoint: CheckpointHead,
+    pub checkpoint: Option<CheckpointHead>,
+    pub last_useful_progress_unix_seconds: u64,
     pub rejection_gap_seconds: u64,
     pub rejection_deadline_unix_seconds: u64,
 }
 
 impl ProgressLossCause {
-    fn from_state(
+    fn from_live_state(
         state: &DurableCampaignState,
-        observed_checkpoint: CheckpointHead,
+        observed_checkpoint: Option<CheckpointHead>,
+        startup_progress_unix_seconds: Option<u64>,
         rejection_gap_seconds: u64,
     ) -> Result<Self, ProgressLossError> {
         if !matches!(
             state.campaign_state,
-            CampaignState::I74Running | CampaignState::C74Running | CampaignState::FailedIncomplete
+            CampaignState::I74Running | CampaignState::C74Running
         ) {
             return Err(ProgressLossError::Binding);
         }
-        if state.campaign_state == CampaignState::FailedIncomplete
-            && state.checkpoint.as_ref() != Some(&observed_checkpoint)
+        Self::from_parts(
+            state.identity.campaign_id.clone(),
+            observed_checkpoint,
+            startup_progress_unix_seconds,
+            rejection_gap_seconds,
+        )
+    }
+
+    fn recover(
+        state: &DurableCampaignState,
+        report: &EventVerificationReport,
+        rejection_gap_seconds: u64,
+    ) -> Result<Self, ProgressLossError> {
+        if state.campaign_state != CampaignState::FailedIncomplete {
+            return Err(ProgressLossError::Binding);
+        }
+        let latest = report
+            .latest_lifecycle
+            .as_ref()
+            .filter(|latest| latest.transition == LifecycleEvent::ProgressLossRequested)
+            .ok_or(ProgressLossError::Binding)?;
+        let startup_progress = state.checkpoint.as_ref().is_none().then(|| {
+            latest
+                .cause_request_id
+                .strip_prefix("progress-loss:startup:")
+                .and_then(|value| value.parse::<u64>().ok())
+                .filter(|value| *value != 0)
+                .ok_or(ProgressLossError::Binding)
+        });
+        let startup_progress = startup_progress.transpose()?;
+        let cause = Self::from_parts(
+            state.identity.campaign_id.clone(),
+            state.checkpoint.clone(),
+            startup_progress,
+            rejection_gap_seconds,
+        )?;
+        if cause.event_id() != latest.cause_request_id
+            || cause.sha256()? != latest.cause_request_sha256
         {
             return Err(ProgressLossError::Binding);
         }
-        let checkpoint = observed_checkpoint;
-        let rejection_deadline_unix_seconds = checkpoint
-            .useful_progress_unix_seconds
+        Ok(cause)
+    }
+
+    fn from_parts(
+        campaign_id: String,
+        checkpoint: Option<CheckpointHead>,
+        startup_progress_unix_seconds: Option<u64>,
+        rejection_gap_seconds: u64,
+    ) -> Result<Self, ProgressLossError> {
+        let last_useful_progress_unix_seconds = checkpoint.as_ref().map_or_else(
+            || startup_progress_unix_seconds.ok_or(ProgressLossError::Binding),
+            |checkpoint| Ok(checkpoint.useful_progress_unix_seconds),
+        )?;
+        if last_useful_progress_unix_seconds == 0 {
+            return Err(ProgressLossError::Binding);
+        }
+        let rejection_deadline_unix_seconds = last_useful_progress_unix_seconds
             .checked_add(rejection_gap_seconds)
             .ok_or(ProgressLossError::Binding)?;
         Ok(Self {
             schema_version: 1,
-            campaign_id: state.identity.campaign_id.clone(),
+            campaign_id,
             checkpoint,
+            last_useful_progress_unix_seconds,
             rejection_gap_seconds,
             rejection_deadline_unix_seconds,
         })
     }
 
     pub fn event_id(&self) -> String {
-        format!("progress-loss:{}", self.checkpoint.record_sha256)
+        self.checkpoint.as_ref().map_or_else(
+            || {
+                format!(
+                    "progress-loss:startup:{}",
+                    self.last_useful_progress_unix_seconds
+                )
+            },
+            |checkpoint| format!("progress-loss:{}", checkpoint.record_sha256),
+        )
     }
 
     pub fn sha256(&self) -> Result<String, serde_json::Error> {
@@ -101,6 +162,7 @@ pub fn drive_progress_loss<B: ProgressLossBackend + ?Sized>(
     lock: &CampaignLock,
     now_unix_seconds: u64,
     observed_checkpoint: Option<CheckpointHead>,
+    startup_progress_unix_seconds: Option<u64>,
     rejection_gap_seconds: u64,
     backend: &mut B,
 ) -> Result<ProgressLossOutcome, ProgressLossError> {
@@ -120,11 +182,7 @@ pub fn drive_progress_loss<B: ProgressLossBackend + ?Sized>(
             .latest_lifecycle
             .as_ref()
             .ok_or(ProgressLossError::Binding)?;
-        let cause_record = latest
-            .cause_request_id
-            .strip_prefix("progress-loss:")
-            .ok_or(ProgressLossError::Binding)?;
-        if !is_hash(cause_record)
+        if !valid_progress_event_id(&latest.cause_request_id)
             || latest.transition != LifecycleEvent::ProgressLossCompleted
             || !is_hash(&latest.cause_request_sha256)
         {
@@ -135,18 +193,26 @@ pub fn drive_progress_loss<B: ProgressLossBackend + ?Sized>(
             state_revision: state.revision,
         });
     }
-    let cause = ProgressLossCause::from_state(
-        &state,
-        observed_checkpoint.ok_or(ProgressLossError::Binding)?,
-        rejection_gap_seconds,
-    )?;
+    let mut report = event_report(lock).ok();
+    let cause = if state.campaign_state == CampaignState::FailedIncomplete {
+        ProgressLossCause::recover(
+            &state,
+            report.as_ref().ok_or(ProgressLossError::Binding)?,
+            rejection_gap_seconds,
+        )?
+    } else {
+        ProgressLossCause::from_live_state(
+            &state,
+            observed_checkpoint,
+            startup_progress_unix_seconds,
+            rejection_gap_seconds,
+        )?
+    };
     if now_unix_seconds <= cause.rejection_deadline_unix_seconds {
         return Ok(ProgressLossOutcome::NotDue);
     }
     let event_id = cause.event_id();
     let digest = cause.sha256()?;
-    let mut report = event_report(lock).ok();
-
     if state.campaign_state.is_live() {
         if state.harness.is_none() || state.daemon.is_none() {
             return Err(ProgressLossError::Binding);
@@ -158,7 +224,7 @@ pub fn drive_progress_loss<B: ProgressLossBackend + ?Sized>(
             .ok_or(ProgressLossError::Binding)?;
         requested.campaign_state = transition(state.campaign_state, Transition::Fail)
             .map_err(|_| ProgressLossError::Binding)?;
-        requested.checkpoint = Some(cause.checkpoint.clone());
+        requested.checkpoint.clone_from(&cause.checkpoint);
         append_transition(
             lock,
             &event_id,
@@ -175,8 +241,8 @@ pub fn drive_progress_loss<B: ProgressLossBackend + ?Sized>(
     if state.campaign_state != CampaignState::FailedIncomplete {
         return Err(ProgressLossError::Binding);
     }
-    if state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some() {
-        if state.harness.is_none() || state.daemon.is_none() || state.checkpoint.is_none() {
+    if state.harness.is_some() || state.daemon.is_some() {
+        if state.harness.is_none() || state.daemon.is_none() {
             return Err(ProgressLossError::Binding);
         }
         verify_lifecycle_cause(
@@ -244,6 +310,16 @@ fn validate_common(
         return Err(ProgressLossError::Binding);
     }
     Ok(())
+}
+
+fn valid_progress_event_id(value: &str) -> bool {
+    value.strip_prefix("progress-loss:").is_some_and(|suffix| {
+        is_hash(suffix)
+            || suffix
+                .strip_prefix("startup:")
+                .and_then(|timestamp| timestamp.parse::<u64>().ok())
+                .is_some_and(|timestamp| timestamp != 0)
+    })
 }
 
 fn event_report(lock: &CampaignLock) -> Result<EventVerificationReport, ProgressLossError> {

@@ -93,6 +93,7 @@ pub struct LifecycleReplayEntry {
     pub cause_request_id: String,
     pub cause_request_sha256: String,
     pub transition: LifecycleEvent,
+    pub occurred_at_unix_seconds: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -387,6 +388,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
                 cause_request_id: cause_request_id.clone(),
                 cause_request_sha256: cause_request_sha256.clone(),
                 transition: *transition,
+                occurred_at_unix_seconds: event.payload.occurred_at_unix_seconds,
             });
         }
         if let Some(state) = event.payload.state_after.as_deref() {
@@ -777,7 +779,7 @@ fn validate_lifecycle_event(
             && (state.harness.is_none() || state.daemon.is_none()))
         || (transition == LifecycleEvent::LeaseExpiryCompleted && state.controller_lease.is_some())
         || (transition == LifecycleEvent::ProgressLossRequested
-            && (state.harness.is_none() || state.daemon.is_none() || state.checkpoint.is_none()))
+            && (state.harness.is_none() || state.daemon.is_none()))
         || (transition == LifecycleEvent::ProgressLossCompleted && state.controller_lease.is_some())
     {
         return Err(EventError::Binding {
