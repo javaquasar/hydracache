@@ -605,10 +605,30 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$EVIDENCE_DIR"
-          test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
           main_pid="$(systemctl show "$SUPERVISOR_SERVICE" --property=MainPID --value)"
           restarts="$(systemctl show "$SUPERVISOR_SERVICE" --property=NRestarts --value)"
           control_group="$(systemctl show "$SUPERVISOR_SERVICE" --property=ControlGroup --value)"
+          {
+            printf 'active_state=%s\n' "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)"
+            printf 'main_pid=%s\n' "$main_pid"
+            printf 'restarts=%s\n' "$restarts"
+            printf 'control_group=%s\n' "$control_group"
+            for path in \
+              "/proc/$main_pid/stat" \
+              "/proc/$main_pid/status" \
+              "/sys/fs/cgroup${control_group}/cpu.stat" \
+              "/sys/fs/cgroup${control_group}/memory.current" \
+              "/sys/fs/cgroup${control_group}/io.stat" \
+              "/sys/fs/cgroup${control_group}/cpu.pressure"
+            do
+              if test -r "$path"; then
+                printf 'readable[%s]=true\n' "$path"
+              else
+                printf 'readable[%s]=false\n' "$path"
+              fi
+            done
+          } > "$EVIDENCE_DIR/preflight.txt"
+          test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
           [[ "$main_pid" =~ ^[1-9][0-9]*$ ]]
           test "$restarts" = 0
           [[ "$control_group" = /* ]]
