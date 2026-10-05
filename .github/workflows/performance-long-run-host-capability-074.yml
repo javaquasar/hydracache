@@ -616,6 +616,7 @@ jobs:
             for path in \
               "/proc/$main_pid/stat" \
               "/proc/$main_pid/status" \
+              "/proc/$main_pid/io" \
               "/sys/fs/cgroup${control_group}/cpu.stat" \
               "/sys/fs/cgroup${control_group}/memory.current" \
               "/sys/fs/cgroup${control_group}/io.stat" \
@@ -636,7 +637,6 @@ jobs:
           test -r "/proc/$main_pid/status"
           test -r "/sys/fs/cgroup${control_group}/cpu.stat"
           test -r "/sys/fs/cgroup${control_group}/memory.current"
-          test -r "/sys/fs/cgroup${control_group}/io.stat"
           test -r "/sys/fs/cgroup${control_group}/cpu.pressure"
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
             > "$EVIDENCE_DIR/provisioning.json"
@@ -689,7 +689,11 @@ jobs:
           assert receipt["mutation_performed"] is False
           assert receipt["product_candidate_started"] is False
           assert receipt["workload_started"] is False
-          assert receipt["summary"]["idle_screen_passed"] is True
+          summary = receipt["summary"]
+          assert summary["cpu_budget_passed"] is True
+          assert summary["rss_budget_passed"] is True
+          assert summary["cpu_rss_partial_screen_passed"] is True
+          assert summary["idle_screen_passed"] is (summary["io_budget_passed"] is True)
           assert receipt["decision"]["idle_screen_only"] is True
           assert receipt["decision"]["role_overhead_qualification_complete"] is False
           assert receipt["decision"]["release_admission_allowed"] is False

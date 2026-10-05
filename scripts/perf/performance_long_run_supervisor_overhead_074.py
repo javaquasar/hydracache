@@ -32,8 +32,8 @@ class SupervisorSnapshot:
     rss_bytes: int
     memory_current_bytes: int
     memory_peak_bytes: int
-    read_bytes: int
-    write_bytes: int
+    read_bytes: int | None
+    write_bytes: int | None
     cpu_pressure_some_usec: int
     cpu_pressure_full_usec: int
     voluntary_context_switches: int
@@ -110,7 +110,8 @@ def read_supervisor_snapshot(
         raise ValueError("process stat is truncated")
     status = _fields(process / "status")
     cpu = _fields(cgroup / "cpu.stat", separator=" ")
-    read_bytes, write_bytes = _cgroup_io(cgroup / "io.stat")
+    io_stat = cgroup / "io.stat"
+    read_bytes, write_bytes = _cgroup_io(io_stat) if io_stat.is_file() else (None, None)
     pressure_some, pressure_full = _pressure(cgroup / "cpu.pressure")
     threads = int(status["Threads"])
     pids_current = _single_integer(cgroup / "pids.current")
@@ -144,6 +145,19 @@ def _delta(first: SupervisorSnapshot, last: SupervisorSnapshot, field: str) -> i
     return value
 
 
+def _optional_delta(
+    first: SupervisorSnapshot, last: SupervisorSnapshot, field: str
+) -> int | None:
+    first_value = getattr(first, field)
+    last_value = getattr(last, field)
+    if first_value is None or last_value is None:
+        return None
+    value = last_value - first_value
+    if value < 0:
+        raise ValueError(f"supervisor counter decreased: {field}")
+    return value
+
+
 def summarize(
     samples: list[SupervisorSnapshot],
     maximum_cpu_percent: float,
@@ -161,17 +175,26 @@ def summarize(
     if elapsed_seconds <= 0:
         raise ValueError("observation clock did not advance")
     cpu_seconds = _delta(first, last, "cpu_usage_usec") / 1_000_000
-    io_bytes = _delta(first, last, "read_bytes") + _delta(first, last, "write_bytes")
+    read_bytes = _optional_delta(first, last, "read_bytes")
+    write_bytes = _optional_delta(first, last, "write_bytes")
+    io_bytes = (
+        read_bytes + write_bytes
+        if read_bytes is not None and write_bytes is not None
+        else None
+    )
     cpu_pressure_some = _delta(first, last, "cpu_pressure_some_usec")
     cpu_pressure_full = _delta(first, last, "cpu_pressure_full_usec")
     cpu_percent = cpu_seconds * 100.0 / elapsed_seconds
-    io_bytes_per_second = io_bytes / elapsed_seconds
+    io_bytes_per_second = io_bytes / elapsed_seconds if io_bytes is not None else None
     maximum_observed_rss = max(sample.rss_bytes for sample in samples)
-    within_screen = (
-        cpu_percent <= maximum_cpu_percent
-        and maximum_observed_rss <= maximum_rss_bytes
-        and io_bytes_per_second <= maximum_io_bytes_per_second
+    cpu_budget_passed = cpu_percent <= maximum_cpu_percent
+    rss_budget_passed = maximum_observed_rss <= maximum_rss_bytes
+    io_budget_passed = (
+        io_bytes_per_second <= maximum_io_bytes_per_second
+        if io_bytes_per_second is not None
+        else None
     )
+    within_screen = cpu_budget_passed and rss_budget_passed and io_budget_passed is True
     return {
         "sample_count": len(samples),
         "elapsed_seconds": elapsed_seconds,
@@ -186,9 +209,10 @@ def summarize(
             sample.memory_current_bytes for sample in samples
         ),
         "cgroup_memory_peak_bytes_max": max(sample.memory_peak_bytes for sample in samples),
-        "read_bytes_delta": _delta(first, last, "read_bytes"),
-        "write_bytes_delta": _delta(first, last, "write_bytes"),
+        "read_bytes_delta": read_bytes,
+        "write_bytes_delta": write_bytes,
         "io_bytes_per_second": io_bytes_per_second,
+        "io_counter_source": "cgroup-v2-io.stat" if io_bytes is not None else None,
         "cpu_pressure_some_usec_delta": cpu_pressure_some,
         "cpu_pressure_full_usec_delta": cpu_pressure_full,
         "cpu_pressure_some_ratio": cpu_pressure_some / (elapsed_seconds * 1_000_000),
@@ -201,6 +225,11 @@ def summarize(
         ),
         "threads_max": max(sample.threads for sample in samples),
         "cgroup_pids_max": max(sample.pids_current for sample in samples),
+        "cpu_budget_passed": cpu_budget_passed,
+        "rss_budget_passed": rss_budget_passed,
+        "io_budget_evaluated": io_budget_passed is not None,
+        "io_budget_passed": io_budget_passed,
+        "cpu_rss_partial_screen_passed": cpu_budget_passed and rss_budget_passed,
         "idle_screen_passed": within_screen,
     }
 
@@ -319,7 +348,7 @@ def main() -> int:
             os.close(descriptor)
         except OSError:
             pass
-    if not summary["idle_screen_passed"]:
+    if not summary["cpu_rss_partial_screen_passed"] or summary["io_budget_passed"] is False:
         raise SystemExit("supervisor idle overhead exceeded the frozen screen budget")
     return 0
 

@@ -139,6 +139,27 @@ class SupervisorOverheadTests(unittest.TestCase):
         )
         self.assertFalse(result["idle_screen_passed"])
 
+    def test_missing_cgroup_io_is_explicit_and_cannot_pass_full_screen(self) -> None:
+        result = overhead.summarize(
+            [
+                snapshot(read_bytes=None, write_bytes=None),
+                snapshot(
+                    monotonic_ns=2_000_000_000,
+                    cpu_usage_usec=11_000,
+                    read_bytes=None,
+                    write_bytes=None,
+                ),
+            ],
+            0.5,
+            64 * 1024 * 1024,
+            1024 * 1024,
+        )
+        self.assertTrue(result["cpu_rss_partial_screen_passed"])
+        self.assertFalse(result["io_budget_evaluated"])
+        self.assertIsNone(result["io_budget_passed"])
+        self.assertIsNone(result["io_bytes_per_second"])
+        self.assertFalse(result["idle_screen_passed"])
+
     def test_control_group_cannot_escape_the_cgroup_root(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
