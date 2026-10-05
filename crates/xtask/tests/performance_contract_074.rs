@@ -609,6 +609,7 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
         "systemd-smoke",
         "controller-loss-smoke",
         "campaign-lifecycle-smoke",
+        "campaign-progress-loss-smoke",
     ] {
         assert!(
             workflow.contains(&format!("inputs.mode == '{mode}'")),

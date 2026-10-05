@@ -14,6 +14,7 @@ on:
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
+          - campaign-progress-loss-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -299,5 +300,90 @@ jobs:
         with:
           name: performance-long-run-campaign-lifecycle-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-campaign-lifecycle-smoke/**
+          if-no-files-found: error
+          retention-days: 90
+
+  campaign-progress-loss-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'campaign-progress-loss-smoke'
+    name: Campaign-shaped progress-loss lifecycle smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-campaign-progress-loss-smoke
+    steps:
+      - name: Check out exact campaign progress-loss smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and progress-loss lifecycle tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 --test progress_loss --locked
+          cargo test -p hydracache-long-run-supervisor-074 --test server \
+            maintenance_fails_stalled_progress_from_the_live_checkpoint_chain \
+            --locked -- --exact
+
+      - name: Start the bounded non-product stalled campaign
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-progress-loss-smoke-start \
+            > "$EVIDENCE_DIR/start.json"
+
+      - name: Preserve the exact pair beyond the frozen progress deadline
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 182
+
+      - name: Diagnose and stop the stalled pair from a new controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-progress-loss-smoke-resume \
+            > "$EVIDENCE_DIR/resume.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          started = json.loads((root / "start.json").read_text())
+          resumed = json.loads((root / "resume.json").read_text())
+          assert started["schema_version"] == "hydracache-w11-campaign-progress-loss-start-v1"
+          assert resumed["schema_version"] == "hydracache-w11-campaign-progress-loss-resume-v1"
+          assert started["campaign_id"] == resumed["campaign_id"]
+          assert started["product_candidate_started"] is False
+          assert resumed["product_candidate_started"] is False
+          assert resumed["original_controller_exited"] is True
+          assert resumed["exact_process_pair_observed"] is True
+          assert resumed["checkpoint_sequence"] == started["checkpoint_sequence"] == 1
+          assert resumed["rejection_gap_seconds"] == 180
+          assert resumed["observed_unix_seconds"] > resumed["rejection_deadline_unix_seconds"]
+          assert resumed["failed_incomplete"] is True
+          assert resumed["recorded_failure"] is False
+          assert resumed["execution_fields_cleared"] is True
+          assert len(resumed["diagnostic_sha256"]) == 64
+          assert 0 < resumed["diagnostic_bytes"] <= 1048576
+          assert resumed["unit_stopped"] is True
+          assert resumed["active_campaign_released"] is True
+          PY
+
+      - name: Retain campaign progress-loss smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-campaign-progress-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-campaign-progress-loss-smoke/**
           if-no-files-found: error
           retention-days: 90

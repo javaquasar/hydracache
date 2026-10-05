@@ -204,6 +204,27 @@ pub fn verify_host_receipt_evidence(
     Ok(receipt)
 }
 
+/// Verify the deliberately non-promotable campaign-smoke receipt against its
+/// campaign-local freeze. Production callers must use [`verify_host_receipt_evidence`],
+/// which always recollects against [`REFERENCE_HOST_FREEZE_PATH`].
+#[cfg(target_os = "linux")]
+pub fn verify_fixture_host_receipt_evidence(
+    campaign_directory: &Path,
+    fixture_freeze: &Path,
+    manifest: &CampaignManifest,
+    state: &DurableCampaignState,
+) -> Result<HostObservationReceipt, HostReceiptError> {
+    let receipt_path = campaign_directory.join(HOST_RECEIPT_NAME);
+    let head_path = campaign_directory.join(HOST_RECEIPT_HEAD_NAME);
+    let bytes = read_regular_bounded(&receipt_path, MAX_HOST_RECEIPT_BYTES as u64)?;
+    verify_head(&head_path, &manifest.host_receipt_sha256)?;
+    let receipt = parse_and_validate(&bytes, &manifest.host_receipt_sha256)?;
+    verify_receipt_binding(&receipt, manifest, state)?;
+    let observed = collect_fixture_host_observation(campaign_directory, fixture_freeze)?;
+    verify_live_observation(&receipt, &observed)?;
+    Ok(receipt)
+}
+
 #[cfg(target_os = "linux")]
 pub fn collect_host_observation(
     campaign_directory: &Path,
