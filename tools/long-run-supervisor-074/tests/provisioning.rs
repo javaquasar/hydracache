@@ -47,6 +47,8 @@ fn accounts_directories_and_unresolved_key_fail_closed() {
         "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf",
     ))
     .unwrap();
+    assert!(tmpfiles
+        .contains("/var/lib/hydracache-performance           0750 root           hydracache-perf"));
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/campaigns 0750"));
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/staging   0750"));
     assert!(tmpfiles.contains("/run/hydracache-perf                       0711"));
