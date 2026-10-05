@@ -660,6 +660,7 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
         "campaign-progress-loss-smoke",
         "campaign-measurement-loss-smoke",
         "campaign-lease-expiry-smoke",
+        "supervisor-overhead-smoke",
     ] {
         assert!(
             workflow.contains(&format!("inputs.mode == '{mode}'")),
@@ -673,4 +674,32 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
     .unwrap();
     assert!(probe.contains("\"read_only\": True"));
     assert!(probe.contains("\"mutation_performed\": False"));
+
+    let overhead = std::fs::read_to_string(
+        root().join("scripts/perf/performance_long_run_supervisor_overhead_074.py"),
+    )
+    .unwrap();
+    assert!(overhead.contains("hydracache-w11-supervisor-idle-overhead-v1"));
+    assert!(overhead.contains("\"role_overhead_qualification_complete\": False"));
+    assert!(overhead.contains("\"release_admission_allowed\": False"));
+    assert!(workflow.contains("--duration-seconds 30"));
+    assert!(workflow.contains("--maximum-cpu-percent 0.5"));
+    assert!(workflow.contains("--maximum-rss-bytes 67108864"));
+    assert!(workflow.contains("--maximum-io-bytes-per-second 1048576"));
+    let overhead_job = workflow
+        .split("\n  supervisor-overhead-smoke:")
+        .nth(1)
+        .expect("isolated supervisor overhead job");
+    for forbidden in [
+        "systemctl start",
+        "systemctl stop",
+        "systemctl restart",
+        "--campaign-lifecycle-smoke-start",
+        "performance-long-run-qualification-074",
+    ] {
+        assert!(
+            !overhead_job.contains(forbidden),
+            "overhead screen must remain read-only: {forbidden}"
+        );
+    }
 }
