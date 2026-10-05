@@ -20,7 +20,8 @@ use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationErr
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
 use crate::progress_loss::{drive_progress_loss, ProgressLossBackend, ProgressLossOutcome};
 use crate::protocol::{
-    parse_wire_request, sign_response, Operation, Response, ResponseBody, WireRequest,
+    parse_wire_request, sign_response, HostObservationResult, Operation, Response, ResponseBody,
+    WireRequest,
 };
 use crate::seal_input::resolve_packet_plan;
 use crate::seal_lifecycle::{drive_seal_request, SealLifecycleError};
@@ -135,6 +136,18 @@ pub trait StartObservationBackend {
         manifest: &CampaignManifest,
         admitted: &HostObservationReceipt,
     ) -> Result<(), String>;
+}
+
+pub trait HostObservationBackend {
+    fn collect(&mut self, campaign_root: &Path) -> Result<HostObservationReceipt, String>;
+}
+
+struct LiveHostObservationBackend;
+
+impl HostObservationBackend for LiveHostObservationBackend {
+    fn collect(&mut self, campaign_root: &Path) -> Result<HostObservationReceipt, String> {
+        collect_host_observation(campaign_root).map_err(|error| error.to_string())
+    }
 }
 
 struct LiveStartObservationBackend;
@@ -290,7 +303,9 @@ impl SupervisorServer {
             self.maintain_measurement_loss_with_backend(unix_seconds(), &mut lease_backend)?;
             self.maintain_progress_loss_with_backend(unix_seconds(), &mut lease_backend)?;
             if let Some(connection) = self.listener.accept_timeout(MAINTENANCE_INTERVAL)? {
-                self.handle_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
+                self.handle_connection_inner::<SystemdSpawnBackend>(
+                    connection, None, None, None, None,
+                )?;
             }
         }
     }
@@ -499,28 +514,35 @@ impl SupervisorServer {
     }
 
     pub fn serve_one(&self) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None, None, None)
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None, None, None)
     }
 
     pub fn serve_one_with_start_backend<B: SpawnBackend + StartObservationBackend>(
         &self,
         backend: &mut B,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner(Some(backend), None, None)
+        self.serve_one_inner(Some(backend), None, None, None)
     }
 
     pub fn serve_one_with_seal_backend(
         &self,
         backend: &mut dyn SealObservationBackend,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None, Some(backend), None)
+        self.serve_one_inner::<SystemdSpawnBackend>(None, Some(backend), None, None)
     }
 
     pub fn serve_one_with_abort_backend(
         &self,
         backend: &mut dyn AbortObservationBackend,
     ) -> Result<(), ServerError> {
-        self.serve_one_inner::<SystemdSpawnBackend>(None, None, Some(backend))
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None, Some(backend), None)
+    }
+
+    pub fn serve_one_with_host_observation_backend(
+        &self,
+        backend: &mut dyn HostObservationBackend,
+    ) -> Result<(), ServerError> {
+        self.serve_one_inner::<SystemdSpawnBackend>(None, None, None, Some(backend))
     }
 
     fn serve_one_inner<B: SpawnBackend + StartObservationBackend>(
@@ -528,9 +550,16 @@ impl SupervisorServer {
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
         abort_backend: Option<&mut dyn AbortObservationBackend>,
+        host_observation_backend: Option<&mut dyn HostObservationBackend>,
     ) -> Result<(), ServerError> {
         let connection = self.listener.accept()?;
-        self.handle_connection_inner(connection, start_backend, seal_backend, abort_backend)
+        self.handle_connection_inner(
+            connection,
+            start_backend,
+            seal_backend,
+            abort_backend,
+            host_observation_backend,
+        )
     }
 
     fn handle_connection_inner<B: SpawnBackend + StartObservationBackend>(
@@ -539,8 +568,15 @@ impl SupervisorServer {
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
         abort_backend: Option<&mut dyn AbortObservationBackend>,
+        host_observation_backend: Option<&mut dyn HostObservationBackend>,
     ) -> Result<(), ServerError> {
-        match self.serve_connection_inner(connection, start_backend, seal_backend, abort_backend) {
+        match self.serve_connection_inner(
+            connection,
+            start_backend,
+            seal_backend,
+            abort_backend,
+            host_observation_backend,
+        ) {
             Err(ServerError::Transport(_)) => Ok(()),
             result => result,
         }
@@ -552,6 +588,7 @@ impl SupervisorServer {
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
         abort_backend: Option<&mut dyn AbortObservationBackend>,
+        host_observation_backend: Option<&mut dyn HostObservationBackend>,
     ) -> Result<(), ServerError> {
         let packet = connection.receive_packet()?;
         let wire = match parse_wire_request(&packet) {
@@ -569,7 +606,14 @@ impl SupervisorServer {
                     {
                         Ok(error_response_from_request(&authorized.request, now, 9)?)
                     } else {
-                        self.dispatch(&authorized, now, start_backend, seal_backend, abort_backend)
+                        self.dispatch(
+                            &authorized,
+                            now,
+                            start_backend,
+                            seal_backend,
+                            abort_backend,
+                            host_observation_backend,
+                        )
                     }
                 }
                 Err(error) => error_response(&wire, now, service_error_code(&error)),
@@ -621,6 +665,7 @@ impl SupervisorServer {
         start_backend: Option<&mut B>,
         seal_backend: Option<&mut dyn SealObservationBackend>,
         abort_backend: Option<&mut dyn AbortObservationBackend>,
+        host_observation_backend: Option<&mut dyn HostObservationBackend>,
     ) -> Result<Response, ServerError> {
         let request = &authorized.request;
         if request.operation == Operation::Start {
@@ -642,6 +687,29 @@ impl SupervisorServer {
                     let mut backend = SystemdAbortBackend::new();
                     self.dispatch_abort(authorized, now, &mut backend)
                 }
+            };
+        }
+        if request.operation == Operation::HostObservation {
+            let observed = match host_observation_backend {
+                Some(backend) => backend.collect(&self.config.campaign_root),
+                None => LiveHostObservationBackend.collect(&self.config.campaign_root),
+            };
+            return match observed {
+                Ok(receipt) => {
+                    let receipt_sha256 = crate::sha256_hex(&crate::canonical_json(&receipt)?);
+                    let result = HostObservationResult {
+                        schema_version: 1,
+                        receipt_sha256,
+                        receipt,
+                    };
+                    Ok(success_response(
+                        request,
+                        now,
+                        0,
+                        serde_json::to_value(result)?,
+                    )?)
+                }
+                Err(_) => Ok(error_response_from_request(request, now, 6)?),
             };
         }
         if request.operation != Operation::Status {

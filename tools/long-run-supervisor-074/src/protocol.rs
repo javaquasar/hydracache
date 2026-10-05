@@ -1,10 +1,15 @@
 use crate::auth::SignedAuthorization;
+use crate::host_receipt::HostObservationReceipt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 pub const MAX_PACKET_BYTES: usize = 65_536;
+pub const HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256: &str =
+    "2dd3f4aa960289c385aad3988d988533197269368f851e5834f535a753cd92ba";
+pub const HOST_OBSERVATION_MANIFEST_SCOPE_SHA256: &str =
+    "baa6e451a7248643e7a96fc5908ac07e0c97d38255e31b1bb1494ea5ac26c6ec";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -12,6 +17,7 @@ pub enum Operation {
     Start,
     Attach,
     Status,
+    HostObservation,
     Seal,
     Abort,
     Verify,
@@ -47,6 +53,14 @@ pub struct Request {
 pub struct WireRequest {
     pub request: Request,
     pub authorization: Option<SignedAuthorization>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostObservationResult {
+    pub schema_version: u32,
+    pub receipt_sha256: String,
+    pub receipt: HostObservationReceipt,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -156,6 +170,18 @@ pub fn validate_request(request: &Request) -> Result<(), ProtocolError> {
                     .approval_nonce_sha256
                     .as_deref()
                     .is_none_or(|value| !is_hash(value))
+            {
+                return Err(ProtocolError::OperationFields);
+            }
+        }
+        Operation::HostObservation => {
+            if request.expected_state_revision != 0
+                || request.campaign_id != HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256
+                || request.manifest_sha256 != HOST_OBSERVATION_MANIFEST_SCOPE_SHA256
+                || request.manifest_path.is_some()
+                || request.abort_reason.is_some()
+                || request.approval_nonce_sha256.is_some()
+                || request.controller.authorization_sha256 != "0".repeat(64)
             {
                 return Err(ProtocolError::OperationFields);
             }

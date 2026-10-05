@@ -5,7 +5,8 @@ use hydracache_long_run_supervisor_074::auth::{
     canonical_document, canonical_message, AuthorizationBody, SignedAuthorization,
 };
 use hydracache_long_run_supervisor_074::protocol::{
-    ControllerIdentity, Operation, Request, WireRequest,
+    ControllerIdentity, Operation, Request, WireRequest, HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256,
+    HOST_OBSERVATION_MANIFEST_SCOPE_SHA256,
 };
 use hydracache_long_run_supervisor_074::service::{authorize_packet, ServiceError, ServicePolicy};
 use hydracache_long_run_supervisor_074::unix_transport::PeerCredentials;
@@ -124,5 +125,30 @@ fn read_only_status_has_no_signed_document_but_still_checks_peer_and_principal()
     assert!(matches!(
         authorize_packet(&packet, &peer(), 1_100, &wrong_policy),
         Err(ServiceError::Principal)
+    ));
+}
+
+#[test]
+fn read_only_host_observation_has_no_signature_but_keeps_peer_admission() {
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let mut observation = request(Operation::HostObservation);
+    observation.campaign_id = HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256.to_owned();
+    observation.manifest_sha256 = HOST_OBSERVATION_MANIFEST_SCOPE_SHA256.to_owned();
+    observation.expected_state_revision = 0;
+    observation.controller.authorization_sha256 = "0".repeat(64);
+    let packet = serde_json::to_vec(&WireRequest {
+        request: observation,
+        authorization: None,
+    })
+    .unwrap();
+    let authorized = authorize_packet(&packet, &peer(), 1_100, &policy(&key)).unwrap();
+    assert_eq!(authorized.request.operation, Operation::HostObservation);
+    assert!(authorized.authorization.is_none());
+
+    let mut wrong_peer = peer();
+    wrong_peer.supplemental_gids.clear();
+    assert!(matches!(
+        authorize_packet(&packet, &wrong_peer, 1_100, &policy(&key)),
+        Err(ServiceError::Peer)
     ));
 }

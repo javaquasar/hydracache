@@ -1,5 +1,6 @@
 use hydracache_long_run_supervisor_074::protocol::{
     parse_request, parse_wire_request, sign_response, verify_response, ProtocolError, ResponseBody,
+    HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256, HOST_OBSERVATION_MANIFEST_SCOPE_SHA256,
     MAX_PACKET_BYTES,
 };
 use serde_json::json;
@@ -10,15 +11,15 @@ fn request(operation: &str) -> serde_json::Value {
         "schema_version": 1,
         "request_id": "123e4567-e89b-42d3-a456-426614174000",
         "operation": operation,
-        "campaign_id": campaign,
-        "expected_state_revision": if operation == "start" { 0 } else { 7 },
+        "campaign_id": if operation == "host_observation" { HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256.to_owned() } else { campaign },
+        "expected_state_revision": if matches!(operation, "start" | "host_observation") { 0 } else { 7 },
         "manifest_path": if operation == "start" {
             Some(format!("/var/lib/hydracache-performance/staging/{}/campaign-start.json", "a".repeat(64)))
         } else { None },
-        "manifest_sha256": "b".repeat(64),
+        "manifest_sha256": if operation == "host_observation" { HOST_OBSERVATION_MANIFEST_SCOPE_SHA256.to_owned() } else { "b".repeat(64) },
         "controller": {
             "repository_id": 1, "run_id": 2, "run_attempt": 1, "actor_id": 3,
-            "authorization_sha256": "c".repeat(64)
+            "authorization_sha256": if operation == "host_observation" { "0".repeat(64) } else { "c".repeat(64) }
         },
         "abort_reason": if operation == "abort" { Some("operator-request") } else { None },
         "approval_nonce_sha256": if operation == "abort" { Some("d".repeat(64)) } else { None }
@@ -62,9 +63,53 @@ fn wire_envelope_requires_authorization_only_for_mutating_operations() {
 
 #[test]
 fn strict_protocol_accepts_allowlisted_operations() {
-    for operation in ["start", "attach", "status", "seal", "abort", "verify"] {
+    for operation in [
+        "start",
+        "attach",
+        "status",
+        "host_observation",
+        "seal",
+        "abort",
+        "verify",
+    ] {
         let bytes = serde_json::to_vec(&request(operation)).unwrap();
         assert_eq!(parse_request(&bytes).unwrap().schema_version, 1);
+    }
+}
+
+#[test]
+fn host_observation_is_revision_zero_unsigned_and_pathless() {
+    let observation = request("host_observation");
+    let wire = json!({"request": observation, "authorization": null});
+    assert!(parse_wire_request(&serde_json::to_vec(&wire).unwrap()).is_ok());
+
+    for (field, value) in [
+        ("expected_state_revision", json!(1)),
+        ("manifest_path", json!("/tmp/receipt.json")),
+        ("authorization_sha256", json!("c".repeat(64))),
+    ] {
+        let mut invalid = request("host_observation");
+        if field == "authorization_sha256" {
+            invalid["controller"][field] = value;
+        } else {
+            invalid[field] = value;
+        }
+        assert_eq!(
+            parse_request(&serde_json::to_vec(&invalid).unwrap()),
+            Err(ProtocolError::OperationFields)
+        );
+    }
+
+    for (field, value) in [
+        ("campaign_id", json!("a".repeat(64))),
+        ("manifest_sha256", json!("b".repeat(64))),
+    ] {
+        let mut invalid = request("host_observation");
+        invalid[field] = value;
+        assert_eq!(
+            parse_request(&serde_json::to_vec(&invalid).unwrap()),
+            Err(ProtocolError::OperationFields)
+        );
     }
 }
 

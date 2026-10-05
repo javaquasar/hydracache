@@ -80,7 +80,7 @@ pub fn authorize_wire(
                 &policy.allowed_actor_ids,
             )?)
         }
-        Operation::Status | Operation::Verify => None,
+        Operation::Status | Operation::HostObservation | Operation::Verify => None,
     };
     Ok(AuthorizedRequest {
         request,

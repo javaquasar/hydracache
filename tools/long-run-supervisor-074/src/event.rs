@@ -608,7 +608,10 @@ fn validate_request_event(
         || event.payload.campaign_id != request.campaign_id
         || response.body.request_id != request.request_id
         || response.body.campaign_id != request.campaign_id
-        || request.operation == Operation::Verify
+        || matches!(
+            request.operation,
+            Operation::Verify | Operation::HostObservation
+        )
         || verify_response(response).is_err()
         || request_sha256(request)? != digest
     {

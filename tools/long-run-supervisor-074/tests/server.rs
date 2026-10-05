@@ -30,15 +30,17 @@ use hydracache_long_run_supervisor_074::progress_loss::{
     ProgressLossBackend, ProgressLossCause, ProgressLossOutcome,
 };
 use hydracache_long_run_supervisor_074::protocol::{
-    sign_response, ControllerIdentity, Operation, Request, ResponseBody, WireRequest,
+    sign_response, ControllerIdentity, HostObservationResult, Operation, Request, ResponseBody,
+    WireRequest, HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256, HOST_OBSERVATION_MANIFEST_SCOPE_SHA256,
+    MAX_PACKET_BYTES,
 };
 use hydracache_long_run_supervisor_074::seal_input::{
     InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
 };
 use hydracache_long_run_supervisor_074::server::{
-    AbortObservationBackend, LeaseExpiryObservationBackend, MeasurementLossObservationBackend,
-    ProgressLossObservationBackend, SealObservationBackend, StartObservationBackend,
-    SupervisorServer,
+    AbortObservationBackend, HostObservationBackend, LeaseExpiryObservationBackend,
+    MeasurementLossObservationBackend, ProgressLossObservationBackend, SealObservationBackend,
+    StartObservationBackend, SupervisorServer,
 };
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
@@ -141,6 +143,31 @@ fn request(revision: u64) -> Vec<u8> {
     .unwrap()
 }
 
+fn host_observation_request() -> Vec<u8> {
+    serde_json::to_vec(&WireRequest {
+        request: Request {
+            schema_version: 1,
+            request_id: "323e4567-e89b-42d3-a456-426614174000".to_owned(),
+            operation: Operation::HostObservation,
+            campaign_id: HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256.to_owned(),
+            expected_state_revision: 0,
+            manifest_path: None,
+            manifest_sha256: HOST_OBSERVATION_MANIFEST_SCOPE_SHA256.to_owned(),
+            controller: ControllerIdentity {
+                repository_id: 10,
+                run_id: 20,
+                run_attempt: 1,
+                actor_id: 30,
+                authorization_sha256: "0".repeat(64),
+            },
+            abort_reason: None,
+            approval_nonce_sha256: None,
+        },
+        authorization: None,
+    })
+    .unwrap()
+}
+
 fn attach_request(key: &SigningKey, revision: u64, now: u64) -> Vec<u8> {
     let mut request = Request {
         schema_version: 1,
@@ -224,6 +251,21 @@ fn exchange_start_once<B: SpawnBackend + StartObservationBackend + Send>(
     std::thread::scope(|scope| {
         let client = scope.spawn(|| exchange(socket, packet));
         server.serve_one_with_start_backend(backend).unwrap();
+        client.join().unwrap().unwrap()
+    })
+}
+
+fn exchange_host_observation_once<B: HostObservationBackend + Send>(
+    server: &SupervisorServer,
+    socket: &Path,
+    packet: &[u8],
+    backend: &mut B,
+) -> hydracache_long_run_supervisor_074::protocol::Response {
+    std::thread::scope(|scope| {
+        let client = scope.spawn(|| exchange(socket, packet));
+        server
+            .serve_one_with_host_observation_backend(backend)
+            .unwrap();
         client.join().unwrap().unwrap()
     })
 }
@@ -472,6 +514,23 @@ struct FakeStartBackend {
     fail_host: bool,
 }
 
+struct FakeHostObservationBackend {
+    receipt: HostObservationReceipt,
+    calls: usize,
+    fail: bool,
+}
+
+impl HostObservationBackend for FakeHostObservationBackend {
+    fn collect(&mut self, _campaign_root: &Path) -> Result<HostObservationReceipt, String> {
+        self.calls += 1;
+        if self.fail {
+            Err("host observation unavailable".to_owned())
+        } else {
+            Ok(self.receipt.clone())
+        }
+    }
+}
+
 impl StartObservationBackend for FakeStartBackend {
     fn verify_host(
         &mut self,
@@ -516,10 +575,7 @@ fn transient_process(unit_name: &str, pid: u32) -> ProcessIdentity {
     }
 }
 
-fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
-    let campaign_id = "1".repeat(64);
-    let campaign = staging_root.join(&campaign_id);
-    fs::create_dir(&campaign).unwrap();
+fn sample_host_receipt() -> HostObservationReceipt {
     let mount = MountIdentity {
         mount_id: 31,
         device_major_minor: "8:2".to_owned(),
@@ -533,7 +589,7 @@ fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
     let mount_identity = hex(&Sha256::digest(
         serde_json::to_vec(&serde_json::to_value(&mount).unwrap()).unwrap(),
     ));
-    let receipt = HostObservationReceipt {
+    HostObservationReceipt {
         schema_version: 1,
         machine_id: "machine-a".to_owned(),
         boot_id: "boot-a".to_owned(),
@@ -570,7 +626,15 @@ fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
             mode: 0o755,
         },
         reference_host_freeze_sha256: "c".repeat(64),
-    };
+    }
+}
+
+fn stage_start(staging_root: &Path, key: &SigningKey, now: u64) -> Vec<u8> {
+    let campaign_id = "1".repeat(64);
+    let campaign = staging_root.join(&campaign_id);
+    fs::create_dir(&campaign).unwrap();
+    let receipt = sample_host_receipt();
+    let mount_identity = receipt.mount_identity.clone();
     let receipt_bytes = encode_host_receipt(&receipt).unwrap();
     let receipt_sha256 = hex(&Sha256::digest(&receipt_bytes));
     let manifest = serde_json::json!({
@@ -922,6 +986,70 @@ fn durable_event_time(lock: &CampaignLock, proposed: u64) -> u64 {
     .map_or(proposed, |report| {
         proposed.max(report.last_occurred_at_unix_seconds)
     })
+}
+
+#[test]
+fn host_observation_returns_digest_bound_receipt_without_campaign_mutation() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    fs::create_dir(&campaign_root).unwrap();
+    let socket = temporary.path().join("supervisor-host-observation.sock");
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let receipt = sample_host_receipt();
+    let expected_digest = hex(&Sha256::digest(encode_host_receipt(&receipt).unwrap()));
+    let mut backend = FakeHostObservationBackend {
+        receipt: receipt.clone(),
+        calls: 0,
+        fail: false,
+    };
+
+    let response =
+        exchange_host_observation_once(&server, &socket, &host_observation_request(), &mut backend);
+    assert!(response.body.ok);
+    assert_eq!(response.body.state_revision, 0);
+    assert_eq!(backend.calls, 1);
+    let result: HostObservationResult =
+        serde_json::from_value(response.body.result.clone().unwrap()).unwrap();
+    assert_eq!(result.schema_version, 1);
+    assert_eq!(result.receipt_sha256, expected_digest);
+    assert_eq!(result.receipt, receipt);
+    assert!(serde_json::to_vec(&response).unwrap().len() <= MAX_PACKET_BYTES);
+    assert!(!campaign_root
+        .join(HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256)
+        .exists());
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn host_observation_failure_is_bounded_and_does_not_poison_the_next_request() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    fs::create_dir(&campaign_root).unwrap();
+    let socket = temporary
+        .path()
+        .join("supervisor-host-observation-retry.sock");
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeHostObservationBackend {
+        receipt: sample_host_receipt(),
+        calls: 0,
+        fail: true,
+    };
+
+    let rejected =
+        exchange_host_observation_once(&server, &socket, &host_observation_request(), &mut backend);
+    assert!(!rejected.body.ok);
+    assert_eq!(rejected.body.error_code, Some(6));
+    assert_eq!(rejected.body.state_revision, 0);
+    assert_eq!(backend.calls, 1);
+
+    backend.fail = false;
+    let accepted =
+        exchange_host_observation_once(&server, &socket, &host_observation_request(), &mut backend);
+    assert!(accepted.body.ok);
+    assert_eq!(backend.calls, 2);
+    assert!(!campaign_root
+        .join(HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256)
+        .exists());
 }
 
 #[test]
