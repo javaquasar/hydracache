@@ -31,11 +31,11 @@ sha256 = "6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"
-sha256 = "4e2a2fce55058f2d9fc8aee6f6f831d60ad2ce13d48b4bcc83174171cfa7cfc9"
+sha256 = "b18b8b5f2e507ed15e0c6aa4486afead58ed831e0c441af9474800608ae8a19e"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/composition-ledger.toml"
-sha256 = "91d00c915346bb2186e694dedc1fc1b29376f433244b2f3bbc1f189a5b57a934"
+sha256 = "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
 
 [[phases]]
 id = "Q0-identity-and-contract"

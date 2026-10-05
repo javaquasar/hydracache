@@ -968,6 +968,29 @@ the least-privilege identities and admit the runner to the socket group. Only th
 test real D-Bus timing, root-owned modes, detached unit identity and reattachment after controller
 loss. A machine with systemd is capability evidence; it is not admission evidence.
 
+Provisioning later made that transition concrete, and the failures on the way were part of the
+result. The first protected run stopped before bundle construction because the signing secret had
+not been configured. The next derived and transported only the public key but stopped because the
+runner had no general passwordless sudo. We did not solve that by granting a shell. A one-command,
+root-owned entrypoint now accepts only a closed provisioning bundle whose SHA-256 manifest is signed
+by the protected Ed25519 key. The installed supervisor binary verifies that signature and the
+already-installed public trust root before any replacement. The private seed never reaches the
+self-hosted machine.
+
+The first post-install probe then found a genuine permission bug. A `0660` group-owned Unix socket
+was still unreachable through a `0750 root:root` runtime directory. Changing only the directory to
+`0711` preserved non-listability while allowing group-authorized traversal. The same probe had also
+treated `permission-denied` on protected campaign directories as if those directories were missing;
+that was corrected without weakening their modes. A later rerun exposed an artifact identity race,
+and the final collection exposed that a world-readable receipt below a `0750` parent is not actually
+readable by the runner. Both were retained as negative results and fixed at their exact boundary.
+
+The final run `37322301775` is green. The service is active, the runner has the client GID, the socket
+is `0660 root:hydracache-perf-client`, the signed bundle is idempotent, and the capability verdict is
+`host_rehearsal_ready=true`. This still is not performance evidence: no product workload or measured
+transient unit ran. It authorizes the next bounded fixture rehearsal; it does not authorize a release
+claim or silently turn on six-hour and 24-hour qualification.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

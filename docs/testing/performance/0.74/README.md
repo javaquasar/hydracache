@@ -548,6 +548,26 @@ of the required client group. No mutation or qualification command ran. Protecte
 with the real verification key is required before the same-host controller-loss rehearsal; see
 `local-runs/w11-host-capability-68a36e93.json`.
 
+Protected provisioning is now complete at source `04de1615`. The successful manual workflow run
+`37322301775` derived only the Ed25519 public key in the hosted preparation job, signed the exact
+bundle manifest, and admitted that bundle through a fixed root-owned installer. The self-hosted
+runner receives neither the private key nor a general sudo/shell surface. Its only passwordless
+root command verifies the installed trust root, bundle signature, closed file set, source identity,
+configuration and active-install drift before mutation. A read-only receipt export is the only
+additional operation.
+
+The installed service is active. The supervisor account is UID 986, the client group is GID 987,
+the Actions runner has effective groups `[987, 1001]`, and the Unix socket is `0660 root:987`.
+Protected state directories remain intentionally unreadable to the runner. The post-install probe
+reports `provisioned=true`, `runner_client_socket_access=true` and
+`host_rehearsal_ready=true`; see `local-runs/w11-host-provisioning-04de1615.json`.
+
+This closes host provisioning, not W11. No measured transient unit, fixture campaign, controller
+loss, supervisor restart, hang, lease expiry, reboot, I74/C74 workload, six-hour qualification or
+24-hour confirmation ran. `systemd_confinement_complete`, the host-rehearsal flags and release
+admission therefore remain false. The next safe step is a bounded non-promotable systemd rehearsal
+using fixture identities.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

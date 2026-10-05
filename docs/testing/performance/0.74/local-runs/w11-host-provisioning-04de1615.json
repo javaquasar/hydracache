@@ -1,0 +1,65 @@
+{
+  "artifact": {
+    "id": 11349869588,
+    "name": "performance-long-run-host-provisioning-074-04de16159fd0aa9fa61361be6eb9e555bd2d15dd-37322301775-1",
+    "size_bytes": 3009,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37322301775/artifacts/11349869588"
+  },
+  "decision": {
+    "host_rehearsal_ready": true,
+    "host_rehearsal_complete": false,
+    "mutation_performed": true,
+    "next_required_step": "bounded non-promotable systemd spawn and controller-loss rehearsal with fixture identities",
+    "qualification_started": false,
+    "reason": "The protected supervisor service and trust root are installed and reachable, but no measured transient unit, fault injection, product candidate, six-hour qualification or confirmation run has started."
+  },
+  "digests": {
+    "binary_sha256": "033bced5fd75d557571f18d0a87ac09900512bd8c2a254352a2cd597d5858321",
+    "capability_receipt_sha256": "84558487c1059780242127c4cb0036481fc216432aed9e5741ce05c9e5d0e45a",
+    "config_sha256": "40f2140a4960eae4898fa63ab3766908a3f5979364daff0f41b4746b5b4a5652",
+    "provisioning_receipt_sha256": "2370387516ccf318248224ff140abe5cc671f2d6836c1f761737d3d1ef4ed4ee",
+    "service_sha256": "7202a725a331684fcaaef043f850d1cca032cb74aea9db8731035891d07ca741",
+    "verification_key_sha256": "53287c154fea0ac9617bd0ef8f7d8bce776653b629504d838946ee1e3613264e"
+  },
+  "github_run": {
+    "conclusion": "success",
+    "id": 37322301775,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37322301775"
+  },
+  "host": {
+    "boot_id_sha256": "e55e72380bc648fe246beb428df31c45f0cc36f7a61ca3f229da2f4f87273a1d",
+    "client_gid": 987,
+    "machine_id_sha256": "5e32780d0b9b493e27782f17f32b0de2dc757855e595ed8a111da407c4e9a225",
+    "runner_groups": [987, 1001],
+    "runner_uid": 1001,
+    "service_active": true,
+    "socket_gid": 987,
+    "socket_mode": 432,
+    "supervisor_uid": 986,
+    "systemd_available": true
+  },
+  "negative_rehearsals": [
+    {
+      "github_run_id": 37316594289,
+      "host_mutated": false,
+      "result": "protected signing secret absent"
+    },
+    {
+      "github_run_id": 37317155701,
+      "host_mutated": false,
+      "result": "runner had no general passwordless sudo"
+    },
+    {
+      "github_run_id": 37320384304,
+      "host_mutated": false,
+      "result": "installed bootstrap verifier did not yet support signed provisioning manifests"
+    },
+    {
+      "github_run_id": 37321672766,
+      "host_mutated": true,
+      "result": "signed idempotent install passed; receipt export was blocked by the intentionally protected state parent"
+    }
+  ],
+  "schema_version": 1,
+  "source_commit": "04de16159fd0aa9fa61361be6eb9e555bd2d15dd"
+}
