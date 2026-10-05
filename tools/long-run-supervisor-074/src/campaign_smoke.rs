@@ -33,7 +33,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
 const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
-const CONTEXT_PATH: &str = "/run/hydracache-perf/campaign-lifecycle-smoke-v1.json";
+const CONTEXT_PATH: &str =
+    "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json";
 const FIXTURE_SECONDS: u64 = 75;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
