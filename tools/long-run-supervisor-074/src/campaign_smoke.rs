@@ -135,6 +135,11 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
         &manifest_bytes,
         0o400,
     )?;
+    write_new_file(
+        &campaign_directory.join("campaign-start.sha256"),
+        format!("{manifest_sha256}\n").as_bytes(),
+        0o400,
+    )?;
 
     let controller_identity = ControllerIdentity {
         repository_id: 1,

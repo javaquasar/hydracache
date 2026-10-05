@@ -291,6 +291,22 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
         property(&spec, "ProtectHome"),
         &UnitProperty::Text("yes".to_owned())
     );
+    assert_eq!(
+        property(&spec, "StandardOutputFileToAppend"),
+        &UnitProperty::Text(
+            "/var/lib/hydracache-performance/campaigns/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/roles/i74/stdout.log"
+                .to_owned()
+        )
+    );
+    assert_eq!(
+        property(&spec, "StandardErrorFileToAppend"),
+        &UnitProperty::Text(
+            "/var/lib/hydracache-performance/campaigns/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/roles/i74/stderr.log"
+                .to_owned()
+        )
+    );
+    assert!(!names.contains("StandardOutput"));
+    assert!(!names.contains("StandardError"));
     let UnitProperty::Strings(environment) = property(&spec, "Environment") else {
         panic!("environment property must be a string array");
     };

@@ -178,12 +178,12 @@ pub fn build_transient_unit_spec(
         ("LockPersonality", UnitProperty::Boolean(true)),
         ("Environment", UnitProperty::Strings(environment)),
         (
-            "StandardOutput",
-            UnitProperty::Text(format!("append:{}/stdout.log", path_text(&role_directory)?)),
+            "StandardOutputFileToAppend",
+            UnitProperty::Text(format!("{}/stdout.log", path_text(&role_directory)?)),
         ),
         (
-            "StandardError",
-            UnitProperty::Text(format!("append:{}/stderr.log", path_text(&role_directory)?)),
+            "StandardErrorFileToAppend",
+            UnitProperty::Text(format!("{}/stderr.log", path_text(&role_directory)?)),
         ),
         (
             "ExecStart",
