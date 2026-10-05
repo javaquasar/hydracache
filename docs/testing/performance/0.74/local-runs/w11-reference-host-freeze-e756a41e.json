@@ -1,0 +1,79 @@
+{
+  "schema_version": "hydracache-w11-reference-host-freeze-rehearsal-v1",
+  "evidence_family": "w11-reference-host-freeze-and-controlled-reboot",
+  "source_commit": "e756a41e54d7c4c99cebb92cba2424f248d0e5c7",
+  "captured_at_utc": "2026-10-05T23:41:14Z",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "host": {
+    "profile_id": "ubuntu-24.04-reference-v1",
+    "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+    "kernel_release": "6.8.0-138-generic",
+    "boot_id_before": "c7a4350a-e834-4084-837e-602cc0e61ee2",
+    "boot_id_after": "24737c1d-08ce-4051-a440-c5724a5e36ee",
+    "kernel_command_line_sha256_after": "a3b7a48cbab13e5293d50975188430fd7e13988d307596c2bb56c634822d054b",
+    "online_cpus": "0-7",
+    "isolated_cpus": "1-4",
+    "nohz_full_cpus": "1-4",
+    "housekeeping_cpus": "0,5-7",
+    "smt": "off",
+    "pci_nomsi_absent": true,
+    "raid1_arrays_healthy_uu": 3,
+    "pending_reboot_absent": true
+  },
+  "lifecycle": {
+    "runner_busy_before": false,
+    "runner_enabled_after": false,
+    "runner_active_after": false,
+    "active_campaign_marker_absent": true,
+    "fixture_contexts_absent": true,
+    "controlled_reboot_completed": true,
+    "ordinary_ssh_reconnect_completed": true,
+    "provider_rescue_used": false,
+    "supervisor_active_after": true,
+    "supervisor_main_pid_after_signed_provisioning": 7606,
+    "supervisor_restarts_after_signed_provisioning": 0,
+    "supervisor_io_accounting": true
+  },
+  "irq_preflight": {
+    "passed": true,
+    "irq_files": 68,
+    "mutates_irq_affinity": false,
+    "receipt_sha256": "9eaa570bb18a5a87ef53d0a3ab2f4ebfb47c4af032513dddd2fdd49a884ac89c",
+    "inventory_sha256": "329b6b7f0fc28e4be039969494f28533b4d0007129b5c3b176a51b4708ab7f6a",
+    "interrupts_sha256": "6bad867635875fd401183e1e17bae4dd96f373b82372fdf8f3f24b395a8ba4e4",
+    "guard_log_sha256": "ab587421a659bdd5132cfe9ee1ffa16f82251570d08c01f310c3f7180f043562"
+  },
+  "canonical_freeze": {
+    "path": "/var/lib/hydracache-perf/host-tuning-v1/freeze/host-freeze.json",
+    "frozen_at_utc": "2026-10-05T23:35:16Z",
+    "receipt_sha256": "1e0e8e5ec784faf590617fcec379b834cc71174a5dd0c2b5a61656e7c6bf0628",
+    "plan_sha256": "b70af1beb4e73fe9c1e4e3928733b4a1e770f70fca169631775253fa3cb3ca12",
+    "applied_sha256": "c9c8acf3214c15325771c9e53acf000dd6b11dfa31912b03b424602589bd6994",
+    "runner_provisioning_receipt_sha256": "97b9ef0ce5eeb93fe3d83145ad9f3b2ac60f46212665d90ee0944a89a4687b70",
+    "check_frozen_after_creation": true,
+    "check_frozen_after_signed_provisioning": true
+  },
+  "signed_provisioning": {
+    "workflow_run_id": 37389564746,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "source_commit": "e756a41e54d7c4c99cebb92cba2424f248d0e5c7",
+    "bundle_artifact_id": 11380496810,
+    "bundle_artifact_digest": "sha256:20608f47f56d20fd4de0ad6b79519229bdaa6d22cfb95cb77e66acc7a0aa5aa2",
+    "receipt_artifact_id": 11380327212,
+    "receipt_artifact_digest": "sha256:d4a77e3b736966d16367dfc07483403bbe5e69ad33c1ddba61105945112cfa94",
+    "installed_binary_sha256": "8b00355d9c2f359841b3d44e3192738c04e3381d186d2382805415cfa9da3623",
+    "installed_provisioning_receipt_sha256": "1fb7e620957707131112e4051280a46865b0dd5756576a7594917253f7e8e8a8"
+  },
+  "completion": {
+    "reference_host_freeze_rehearsal_complete": true,
+    "controlled_pre_admission_reboot_complete": true,
+    "live_role_reboot_rehearsal_complete": false,
+    "privileged_start_bundle_host_rehearsal_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "export a production host observation through the fixed privilege boundary, assemble a bounded non-product start bundle, and exercise signed socket start plus supervisor restart without launching a product candidate"
+  }
+}

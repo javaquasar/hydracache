@@ -842,6 +842,30 @@ cgroup I/O, all below their frozen idle ceilings with stable identity. This clos
 supervisor idle screen. Checkpoint I/O and paired role overhead/asymmetry remain required, so the
 overall overhead and release flags remain false.
 
+### Reference-host freeze and reboot boundary
+
+The first exact-source W11 freeze rehearsal completed at `e756a41e` without a product role. The
+runner was disabled and inactive before mutation, all campaign markers were absent, Docker was
+offline, and the pre-reboot GRUB inspection excluded `pci=nomsi`. After the controlled reboot the
+boot id changed, the host returned over ordinary SSH, all three RAID1 arrays remained healthy, the
+reviewed `0-7` online / `1-4` isolated / `0,5-7` housekeeping topology was intact, and the runner
+remained offline. The early IRQ preflight inspected 68 IRQ files and passed without affinity
+mutation; full verification admitted only the reviewed eight dormant/unmapped zero-count NVMe
+queues.
+
+The canonical production freeze receipt has SHA-256
+`1e0e8e5ec784faf590617fcec379b834cc71174a5dd0c2b5a61656e7c6bf0628`. Signed provisioning run
+`37389564746` then bound the installed supervisor to the same exact source. The supervisor alone was
+stopped for installation, the runner was online only for the single self-hosted job, and the final
+state was runner offline plus supervisor active with zero restarts. `check-frozen` passed both
+before and after provisioning.
+
+This proves preparation for production host-observation collection, not reboot survival of a live
+role. A live role would carry the old boot id and must be rejected after reboot. That expected-red
+canary remains separate. The next signed-start slice must expose the host observation through a
+fixed no-arbitrary-path root operation, assemble a non-product start bundle, and traverse the
+protected authorization job plus Unix socket before any supervisor-restart assertion is made.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:

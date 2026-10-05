@@ -1131,6 +1131,34 @@ This closes the admitted-host lease-expiry row without starting a product candid
 qualification. Signed socket start admission, supervisor restart during a live campaign, reboot,
 live seal, resource-overhead evidence and the six-hour/24-hour product runs remain separate gates.
 
+### Freezing the host is a measured operation too
+
+The next W11 step prepared the production host receipt instead of jumping directly to a signed
+start. That distinction prevented a successful fixture from borrowing an unverified machine
+identity. The runner was first proven idle and taken offline, Docker was stopped, campaign markers
+were absent, and a fresh profile-driven state directory captured the allowlisted service plan.
+
+The reboot boundary reused the lesson from the earlier NVMe incident. We inspected the generated
+normal GRUB entries before reboot: every reviewed isolation argument appeared exactly once and
+`pci=nomsi` did not appear. After reboot, the machine returned with a new boot id, three healthy
+`[UU]` RAID1 arrays, CPUs `0-7` online, `1-4` isolated and nohz-full, and SMT off. The runner stayed
+disabled and inactive. The early IRQ probe then inspected 68 IRQ files without changing affinity;
+the full verifier admitted only eight dormant, unmapped NVMe queues whose counters remained zero.
+
+The canonical freeze receipt was written at the production collector's fixed path and hashed as
+`1e0e8e5ec784faf590617fcec379b834cc71174a5dd0c2b5a61656e7c6bf0628`. Signed provisioning run
+`37389564746` installed exact source `e756a41e54d7c4c99cebb92cba2424f248d0e5c7`; afterward the
+runner was offline, the supervisor was active with zero restarts, and a second drift check passed.
+No product binary or performance workload ran.
+
+This is a useful example of a result that must be named narrowly. It proves reproducible host
+preparation and a controlled reboot before admission. It does not prove that a live role survives a
+reboot—in fact the contract requires the opposite, because the boot id is part of process identity.
+That expected-red test remains open, as do signed socket start, supervisor restart with a live
+non-product pair, live seal and role-level overhead. The next privilege change is therefore not an
+arbitrary sudo escape: it is a fixed root-owned host-observation export with no caller-selected
+path, followed by the existing protected signer and typed Unix-socket client.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

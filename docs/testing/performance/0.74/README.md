@@ -753,6 +753,33 @@ role timing/asymmetry and role-level overhead remain unevaluated. Accordingly
 `idle_overhead_budget_complete`, `role_overhead_qualification_complete` and release admission stay
 false.
 
+The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
+idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and
+fixture contexts were absent; and the profile-driven quiet-service policy was applied into a fresh
+state directory. Before reboot, the generated normal GRUB entries contained the reviewed
+`nosmt`, `isolcpus`, `nohz_full`, `rcu_nocbs` and `irqaffinity` arguments exactly once and no active
+entry contained `pci=nomsi`. The host returned through ordinary SSH with a new boot id, all three
+RAID1 arrays still `[UU]`, CPUs `0-7` online, CPUs `1-4` isolated/nohz-full and SMT off. Rescue was
+not needed.
+
+The post-boot early IRQ layout preflight passed across 68 IRQ files without mutating affinity, and
+the full host verifier admitted eight dormant, unmapped, zero-count NVMe queues under the existing
+exception. A fresh canonical freeze was then written at the production collector's exact
+`/var/lib/hydracache-perf/host-tuning-v1` path. Its SHA-256 is
+`1e0e8e5ec784faf590617fcec379b834cc71174a5dd0c2b5a61656e7c6bf0628`; an immediate drift check
+passed. Signed provisioning run `37389564746` subsequently reinstalled the exact `e756a41e` source,
+after stopping only the supervisor and temporarily enabling the otherwise-disabled runner. The
+runner was returned offline, the supervisor was active as PID 7606 with zero restarts and
+`IOAccounting=yes`, and the same frozen-state check passed again. See
+`local-runs/w11-reference-host-freeze-e756a41e.json`.
+
+This closes reference-host freeze preparation and the controlled pre-admission reboot only. It is
+not the expected-red reboot test for a live role: no campaign process existed across this reboot.
+Signed socket start, supervisor restart with an exact live non-product pair, live-role reboot,
+live seal, role-level overhead and product qualification remain open. The next implementation must
+export the production host observation through the fixed root-owned entrypoint; a manual writable
+receipt or expanded arbitrary-path sudo rule is not an acceptable substitute.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future
