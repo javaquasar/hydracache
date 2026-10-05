@@ -223,6 +223,13 @@ usermod -a -G "$CLIENT_GROUP" "$runner_user"
 id -nG "$runner_user" | tr ' ' '\n' | grep -Fx "$CLIENT_GROUP" >/dev/null || die "runner group admission failed"
 "$INSTALL_BINARY" validate-production-config "$INSTALL_CONFIG"
 systemctl is-active --quiet "$SERVICE" || die "supervisor service is not active"
+supervisor_uid=$(getent passwd "$SUPERVISOR_USER" | cut -d: -f3)
+supervisor_gid=$(getent passwd "$SUPERVISOR_USER" | cut -d: -f4)
+[[ "$supervisor_uid" =~ ^[1-9][0-9]*$ && "$supervisor_gid" =~ ^[1-9][0-9]*$ ]] || die "invalid supervisor identity"
+[[ "$(stat -c '%a:%u:%g' /var/lib/hydracache-performance)" = "750:0:$supervisor_gid" ]] || die "campaign root metadata differs"
+[[ "$(stat -c '%a:%u:%g' /var/lib/hydracache-performance/campaigns)" = "750:$supervisor_uid:$supervisor_gid" ]] || die "campaign directory metadata differs"
+[[ "$(stat -c '%a:%u:%g' /var/lib/hydracache-performance/staging)" = "750:$supervisor_uid:$supervisor_gid" ]] || die "staging directory metadata differs"
+[[ "$(stat -c '%a:%u:%g' /var/lib/hydracache-performance/seals)" = "750:0:$supervisor_gid" ]] || die "seal directory metadata differs"
 [[ "$(systemctl show "$SERVICE" --property=Type --value)" = notify ]] || die "unexpected service type"
 [[ "$(systemctl show "$SERVICE" --property=User --value)" = root ]] || die "unexpected service user"
 [[ "$(systemctl show "$SERVICE" --property=NoNewPrivileges --value)" = yes ]] || die "NoNewPrivileges is not active"
@@ -257,7 +264,6 @@ key_sha=$(printf '%s' "$verification_key" | sha256sum | cut -d' ' -f1)
 unit_properties_sha=$(sha256sum "$unit_properties" | cut -d' ' -f1)
 machine_id_sha=$(tr -d '\r\n' < /etc/machine-id | sha256sum | cut -d' ' -f1)
 boot_id_sha=$(tr -d '\r\n' < /proc/sys/kernel/random/boot_id | sha256sum | cut -d' ' -f1)
-supervisor_uid=$(getent passwd "$SUPERVISOR_USER" | cut -d: -f3)
 created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 receipt_temp=$(mktemp /var/lib/hydracache-performance/.provisioning-receipt-074.XXXXXX)

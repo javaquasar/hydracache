@@ -28,6 +28,8 @@ fn service_is_detached_confined_and_exposes_no_workflow_shell() {
     ] {
         assert!(service.contains(required), "missing {required}");
     }
+    assert!(!service.contains("StateDirectory="));
+    assert!(!service.contains("StateDirectoryMode="));
     for forbidden in ["/bin/sh", "sudo", "systemd-run", "EnvironmentFile="] {
         assert!(!service.contains(forbidden), "forbidden {forbidden}");
     }
