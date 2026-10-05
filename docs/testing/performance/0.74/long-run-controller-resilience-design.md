@@ -682,8 +682,14 @@ backend call even though no checkpoint exists. The production diagnostic filenam
 cause digest rather than a checkpoint digest, so checkpoint and startup failures have the same
 create-new/replay protection. `startup_checkpoint_absence_maintenance_complete` is therefore true
 for the local implementation. Production D-Bus stop timing, root ownership and diagnostic capture
-against the installed service remain admitted-host rehearsal work and keep
-`progress_loss_host_rehearsal_complete` false.
+against the installed service were subsequently exercised by bounded admitted-host run
+`37358000444`. The two-process non-product fixture crossed the exact 180-second deadline, then the
+production diagnostic and stop backends committed terminal revision 4 and released the host claim.
+The fixture also exposed an isolation requirement: fixture-specific host receipts must never be
+observed by the live production maintenance loop. Both the coordinator and workflow therefore fail
+closed unless the production supervisor is exactly inactive. This closes
+`progress_loss_host_rehearsal_complete`; it does not close signed socket admission, supervisor
+restart, product execution or full host rehearsal.
 
 ### Detached measurement-loss maintenance
 

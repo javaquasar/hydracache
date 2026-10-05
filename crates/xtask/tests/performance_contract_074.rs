@@ -172,6 +172,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "connection_transport_failure_survival_complete",
         "startup_checkpoint_absence_maintenance_complete",
         "campaign_lifecycle_controller_loss_rehearsal_complete",
+        "progress_loss_host_rehearsal_complete",
         "real_systemd_spawn_backend_host_rehearsal_complete",
         "systemd_confinement_complete",
     ] {
@@ -183,10 +184,6 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     );
     assert_eq!(
         implementation["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
-        Some(false)
-    );
-    assert_eq!(
-        implementation["progress_loss_host_rehearsal_complete"].as_bool(),
         Some(false)
     );
     assert_eq!(

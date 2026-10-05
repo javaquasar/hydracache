@@ -1057,6 +1057,29 @@ systemd spawn adapter and durable controller-loss transaction, but still not rel
 the fixed root entrypoint bypassed signed socket admission, the supervisor itself was not restarted
 mid-campaign, and no I74/C74 product or expensive workload ran.
 
+The next admitted-host rehearsal tested progress loss instead of merely simulating its state
+machine. The bounded two-process fixture produced one valid useful-progress checkpoint and then
+remained alive without advancing it. A replacement controller waited for the unchanged 180-second
+rejection gap. At second 183 after the checkpoint timestamp, production maintenance captured a
+2,890-byte cause-bound diagnostic, stopped the exact systemd unit, committed revision 4
+`FAILED_INCOMPLETE`, cleared the execution identity and released the host claim. The product
+candidate remained false throughout; this was control-plane evidence, not a performance result.
+
+That green run depended on two fail-closed lessons from the rejected attempts. The immutable root
+entrypoint correctly refused a bundle that tried to add new privileged commands, so the fixture was
+reworked through already reviewed lifecycle verbs. More subtly, the first progress fixture ran
+while the production supervisor was active. Production receipt verification then did exactly what
+it should do: it rejected the fixture host identity as drift and began durable failure recovery.
+Weakening that verifier would have made the test pass for the wrong reason. Instead the fixture
+coordinator and workflow now independently require the production supervisor to be exactly
+inactive, while the production path retains its stricter frozen receipt.
+
+Run `37358000444` therefore closes only the admitted-host progress-loss row: real deadline,
+diagnostic publication, systemd stop and durable cleanup. It does not prove signed socket admission,
+supervisor restart during a live production campaign, measurement-loss, lease-expiry, live seal,
+overhead budgets or any six-hour/24-hour product claim. Those boundaries remain explicit so a
+successful resilience fixture cannot be mistaken for release qualification.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

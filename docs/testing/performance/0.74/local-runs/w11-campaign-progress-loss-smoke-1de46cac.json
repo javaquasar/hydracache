@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-campaign-progress-loss-smoke",
+  "source_commit": "1de46cac9bf26c0e1adcade97fd1f8f3d08afa8e",
+  "github_run": {
+    "id": 37358000444,
+    "conclusion": "success",
+    "duration_seconds": 212,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37358000444"
+  },
+  "artifact": {
+    "id": 11365661663,
+    "name": "performance-long-run-campaign-progress-loss-smoke-074-1de46cac9bf26c0e1adcade97fd1f8f3d08afa8e-37358000444-1",
+    "digest": "sha256:b7cfe8dd1ad7600da9c7744dbd54b1260100f78b2ad3149287cd9a2e8b7a35ff",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37358000444/artifacts/11365661663"
+  },
+  "provisioning": {
+    "github_run_id": 37357603826,
+    "conclusion": "success",
+    "receipt_artifact_id": 11365207323,
+    "receipt_artifact_digest": "sha256:4d540a223771d62433bf2a1dfc307b4a9f73427c7eb3fdcb9d9d24274912e1f5",
+    "signed_bundle_artifact_id": 11365561568,
+    "signed_bundle_artifact_digest": "sha256:2566d623ecc9bd9c2b0d1175e45a6af4e433b85fdd4fc2d0592494f4496f80c9"
+  },
+  "receipts": {
+    "provisioning_sha256": "56d29779c685f7bbe36c50d97ebb526a8119805a4ff7074d369a0b26d54dc794",
+    "start_sha256": "fbd24b416512401e09f26a53a1d07ec8921eb2a422c5f0dce783eb409e827368",
+    "resume_sha256": "b2d84bb2482cbb44ad8341fffc0bb3668a5351688ae9e4f192349b17d004ed0b"
+  },
+  "live_observation": {
+    "supervisor_service_state": "inactive",
+    "campaign_unit_active_state": "active",
+    "campaign_unit_sub_state": "running",
+    "campaign_unit_restart_count": 0,
+    "cgroup_pid_count": 2,
+    "harness_pid": 1519412,
+    "daemon_pid": 1519414
+  },
+  "observation": {
+    "campaign_id": "e190efc04ce26118420c85940aaf8c949b2f3a20b777a94a1ae064143768b83c",
+    "manifest_sha256": "8daf4f5369f0f2399095127c98140bc9c679686974e5e43dc77eade2ba58b5b2",
+    "unit_name": "hydracache-performance-074-i74-e190efc04ce26118420c85940aaf8c949b2f3a20b777a94a1ae064143768b83c.service",
+    "product_candidate_started": false,
+    "starting_controller_pid": 1519403,
+    "harness_pid": 1519412,
+    "daemon_pid": 1519414,
+    "start_revision": 2,
+    "checkpoint_sequence": 1,
+    "supervisor_service_inactive_during_fixture": true,
+    "original_controller_exited": true,
+    "exact_process_pair_observed": true,
+    "useful_progress_unix_seconds": 1791225792,
+    "rejection_gap_seconds": 180,
+    "rejection_deadline_unix_seconds": 1791225972,
+    "observed_unix_seconds": 1791225975,
+    "completed_revision": 4,
+    "terminal_state": "FAILED_INCOMPLETE",
+    "recorded_failure": false,
+    "terminal_execution_fields_cleared": true,
+    "diagnostic_sha256": "90ce2ce38790aa8663c2f46765a00dd4525396684e261b799026b35632c28eb9",
+    "diagnostic_bytes": 2890,
+    "fixture_unit_stopped": true,
+    "active_campaign_released": true,
+    "supervisor_service_active_after_cleanup": true,
+    "supervisor_restart_count_after_cleanup": 0
+  },
+  "negative_attribution": [
+    {
+      "github_run_id": 37354894020,
+      "source_commit": "0b842e4c",
+      "artifact_id": 11364695816,
+      "artifact_digest": "sha256:527120914fe9f711e89d5b20b19a03afbb304a2028c3d3afe0bf444bd4933fbf",
+      "finding": "the signed bundle tried to change the immutable root-owned entrypoint; provisioning refused before installation"
+    },
+    {
+      "github_run_id": 37356249211,
+      "source_commit": "d227c1b4",
+      "signed_bundle_artifact_id": 11364637949,
+      "signed_bundle_artifact_digest": "sha256:132ef73570689b225d455c0918a36668638e1acdc43e0dfb5af0d0985c1e0bfd",
+      "provisioning_receipt_artifact_id": 11364831708,
+      "provisioning_receipt_artifact_digest": "sha256:0cd8994dcff7511e1156ba0d4d2d3e70fff403a465afd3c05fcdcd4bdb1b8494",
+      "finding": "the first installation attempt refused to replace a differing active service; after an exact no-active-campaign check the same run was retried and installed successfully"
+    },
+    {
+      "github_run_id": 37356830482,
+      "source_commit": "d227c1b4",
+      "artifact_id": 11364797163,
+      "artifact_digest": "sha256:09ccdab3aeb8f7213560ce35005aaca53547e33b62d8746ef0156003f01a6bf0",
+      "campaign_id": "5d21b6c5d2ad8ad6f8699283d64449b90881815ccb75340ebdb3489ece56f0b4",
+      "finding": "the live production supervisor interpreted the fixture receipt through the production host-freeze verifier and committed host-identity-drift; cancellation plus exact unit cleanup and supervisor recovery produced durable revision 4 FAILED_INCOMPLETE with the host claim released",
+      "resulting_guard": "fixture start now fails closed unless the production supervisor service is exactly inactive, and the workflow checks the same precondition independently"
+    }
+  ],
+  "decision": {
+    "progress_loss_host_rehearsal_complete": true,
+    "real_systemd_diagnostic_and_stop_path_complete": true,
+    "exact_frozen_rejection_gap_exercised": true,
+    "fixture_maintenance_isolation_guard_complete": true,
+    "signed_socket_request_exercised": false,
+    "supervisor_restart_during_live_campaign_exercised": false,
+    "measurement_loss_host_rehearsal_complete": false,
+    "lease_expiry_host_rehearsal_complete": false,
+    "product_candidate_started": false,
+    "qualification_started": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "rehearse measurement-loss and lease-expiry with the same non-product exact-identity boundary, then exercise signed socket admission, supervisor restart and live seal before any product qualification",
+    "reason": "A bounded two-process non-product fixture crossed the exact 180-second useful-progress deadline and traversed the production progress-loss coordinator, immutable diagnostic publication, SystemdAbortBackend stop and durable host-claim release on the admitted host. Product binaries, expensive workloads and release qualification remained disabled."
+  }
+}

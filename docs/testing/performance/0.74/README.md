@@ -624,6 +624,37 @@ progress-loss, measurement-loss, lease-expiry, reboot, live seal, product I74/C7
 overhead budgets, six-hour qualification and 24-hour confirmation also remain open. Consequently
 `host_rehearsal_complete` and `release_admission_allowed` stay false.
 
+The admitted-host progress-loss slice is now complete at source `1de46cac`. Run `37358000444`
+started the same bounded harness/daemon fixture through the production start lifecycle while the
+production supervisor was explicitly inactive. An independent live snapshot observed exactly the
+two retained PIDs in the expected active systemd cgroup with zero restarts. The replacement
+controller waited for the frozen 180-second useful-progress gap: useful progress was timestamped
+at `1791225792`, the rejection deadline was `1791225972`, and maintenance classified the loss at
+`1791225975`. It then traversed the production diagnostic and stop backends, published the
+2,890-byte diagnostic with SHA-256
+`90ce2ce38790aa8663c2f46765a00dd4525396684e261b799026b35632c28eb9`, committed revision 4
+`FAILED_INCOMPLETE`, cleared every execution field, stopped the exact unit and released the host
+claim. The supervisor was restored `active/running` with zero restarts. See
+`local-runs/w11-campaign-progress-loss-smoke-1de46cac.json`.
+
+Three rejected paths remain evidence rather than being hidden by the successful retry. The first
+bundle attempted to extend the immutable root entrypoint and was refused before installation. The
+next provisioning attempt refused to replace a differing active installation until an exact
+no-active-campaign check allowed a controlled retry. Most importantly, the first live progress
+fixture overlapped the production supervisor: that supervisor correctly interpreted the fixture
+receipt as production host-identity drift and entered its recovery loop. Exact cancellation,
+identity-bound unit cleanup and restart recovered durable `FAILED_INCOMPLETE` state and released
+the host claim. The fix did not weaken production receipt verification; instead both coordinator
+and workflow now fail closed unless the production supervisor is exactly inactive for this
+fixture-only maintenance path.
+
+This closes `progress_loss_host_rehearsal_complete`, including the real 180-second deadline,
+create-new diagnostic, systemd stop and durable release effects. It does not close full host or
+release admission. Signed socket start, supervisor restart during a live production-shaped
+campaign, measurement-loss, lease-expiry, reboot, live seal, product I74/C74 execution, overhead
+budgets, six-hour qualification and 24-hour confirmation remain open. No product candidate or
+expensive workload ran.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future
