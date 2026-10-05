@@ -651,9 +651,33 @@ fixture-only maintenance path.
 This closes `progress_loss_host_rehearsal_complete`, including the real 180-second deadline,
 create-new diagnostic, systemd stop and durable release effects. It does not close full host or
 release admission. Signed socket start, supervisor restart during a live production-shaped
-campaign, measurement-loss, lease-expiry, reboot, live seal, product I74/C74 execution, overhead
+campaign, lease-expiry, reboot, live seal, product I74/C74 execution, overhead
 budgets, six-hour qualification and 24-hour confirmation remain open. No product candidate or
 expensive workload ran.
+
+The admitted-host measurement-loss slice is complete at source `8d786d8f`. Run `37362383128`
+started the same bounded non-product pair and retained the harness after the fixture daemon exited.
+At observation second `1791228108`, 212 seconds after checkpoint sequence 1, the original harness,
+unit and cgroup still matched while the daemon `/proc` identity was absent. The coordinator
+classified only `process-identity-drift`, published a 3,662-byte cause-bound diagnostic with
+SHA-256 `c4a752521d8c77f248fa4d5721fe9857959e25c68b9dcfa6923dda5d5ee55cce`, stopped the exact unit,
+committed revision 4 `FAILED_INCOMPLETE` with `recorded_failure=true`, cleared execution fields and
+released the host claim. The supervisor was restored `active/running` with zero restarts. See
+`local-runs/w11-campaign-measurement-loss-smoke-8d786d8f.json`.
+
+The first run, `37360782049`, is retained as negative attribution. It correctly reached the
+one-process fault shape but expected an attached checkpoint in durable state. A fresh start has a
+verified live checkpoint chain before any controller has attached its head, so the resume command
+failed before recording measurement intent. Recovery produced the same safe terminal revision and
+released marker. The fix preserved the optional checkpoint in the durable measurement cause and
+used `observe_live_checkpoint_evidence` only for the receipt's sequence assertion; a regression
+test now distinguishes observation of a live unattached head from attached-head verification.
+
+This closes `measurement_loss_host_rehearsal_complete` for process identity drift and its real
+diagnostic/stop/release effects. It does not generalize one proven fault into all faults: host drift,
+unit absence and unit identity drift remain fail-closed classifications that intentionally refuse
+to stop ambiguous units. Signed socket start, supervisor restart, lease-expiry, reboot, live seal,
+product execution and expensive qualification remain open.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

@@ -173,6 +173,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "startup_checkpoint_absence_maintenance_complete",
         "campaign_lifecycle_controller_loss_rehearsal_complete",
         "progress_loss_host_rehearsal_complete",
+        "measurement_loss_host_rehearsal_complete",
         "real_systemd_spawn_backend_host_rehearsal_complete",
         "systemd_confinement_complete",
     ] {

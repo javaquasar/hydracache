@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-campaign-measurement-loss-smoke",
+  "source_commit": "8d786d8f55c0b153dae8504e99710e45923373a8",
+  "github_run": {
+    "id": 37362383128,
+    "conclusion": "success",
+    "duration_seconds": 244,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37362383128"
+  },
+  "artifact": {
+    "id": 11367152365,
+    "name": "performance-long-run-campaign-measurement-loss-smoke-074-8d786d8f55c0b153dae8504e99710e45923373a8-37362383128-1",
+    "digest": "sha256:7654b003c13f4fb072d84369b3a14c1de08eb688ae3097184a941c3d0b0683bc",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37362383128/artifacts/11367152365"
+  },
+  "provisioning": {
+    "github_run_id": 37361984151,
+    "conclusion": "success",
+    "receipt_artifact_id": 11367645930,
+    "receipt_artifact_digest": "sha256:a73e1a6b4c3ca92fcfb085fd5da1391366d6cea6d4e2a703e8ac38dd8bc0d78d",
+    "signed_bundle_artifact_id": 11367301274,
+    "signed_bundle_artifact_digest": "sha256:d677d5668d974895fa731604d6c34c3ed438f1345dd0f4fb597e27909161480a"
+  },
+  "receipts": {
+    "provisioning_sha256": "7a91de6399d344a1f94fd7443a9acc7ec2491e62ba633cb8034def4438fcaddc",
+    "start_sha256": "524e96d40b8ce79b194a285b8136bc29738158c723080199e7587cb568a986ce",
+    "resume_sha256": "3866298602391aa01beb526a586d24775208c16997f89a91fb159fd90a0358ae"
+  },
+  "observation": {
+    "campaign_id": "a28f253f82eac37b20fa80e66709ef3b032a0f57160a04fe81f8c2482e7da512",
+    "manifest_sha256": "eee0cb629f2090f44d8deea1fcce724d6efdcc253f6bac33c2969dc243834c04",
+    "unit_name": "hydracache-performance-074-i74-a28f253f82eac37b20fa80e66709ef3b032a0f57160a04fe81f8c2482e7da512.service",
+    "product_candidate_started": false,
+    "starting_controller_pid": 1527893,
+    "harness_pid": 1527902,
+    "daemon_pid": 1527903,
+    "start_revision": 2,
+    "checkpoint_sequence": 1,
+    "checkpoint_useful_progress_unix_seconds": 1791227896,
+    "supervisor_service_inactive_during_fixture": true,
+    "original_controller_exited": true,
+    "retained_harness_observed": true,
+    "missing_daemon_observed": true,
+    "measurement_loss_reason": "process-identity-drift",
+    "observed_unix_seconds": 1791228108,
+    "fault_observation_offset_seconds": 212,
+    "completed_revision": 4,
+    "terminal_state": "FAILED_INCOMPLETE",
+    "recorded_failure": true,
+    "terminal_execution_fields_cleared": true,
+    "diagnostic_sha256": "c4a752521d8c77f248fa4d5721fe9857959e25c68b9dcfa6923dda5d5ee55cce",
+    "diagnostic_bytes": 3662,
+    "fixture_unit_stopped": true,
+    "active_campaign_released": true,
+    "supervisor_service_active_after_cleanup": true,
+    "supervisor_restart_count_after_cleanup": 0
+  },
+  "negative_attribution": [
+    {
+      "github_run_id": 37360782049,
+      "source_commit": "2967dbec731343fb20b9728bc6ace54fdf62192a",
+      "artifact_id": 11366354170,
+      "artifact_digest": "sha256:19b04a36fa908b5bdda0dd8b3a4ed38ca7f28e1be2b788d202ee976eaa156301",
+      "campaign_id": "856b2b8dc4d67866dce1c50b38c3d0eff9dad08e6d6e3f5221767b5e12972fc6",
+      "finding": "the fixture correctly observed a missing daemon but required DurableCampaignState.checkpoint even though the live chain head is intentionally unattached before controller attach; measurement intent was not recorded",
+      "resulting_change": "the receipt now obtains sequence 1 from observe_live_checkpoint_evidence while the measurement-loss cause preserves the durable state's optional checkpoint semantics",
+      "recovery": "the retained campaign recovered to revision 4 FAILED_INCOMPLETE with recorded_failure true, cleared execution fields and a released host marker; the failed context was preserved inside the campaign and the supervisor returned active/running with zero restarts"
+    }
+  ],
+  "decision": {
+    "measurement_loss_host_rehearsal_complete": true,
+    "process_identity_drift_classification_complete": true,
+    "real_systemd_measurement_diagnostic_and_stop_path_complete": true,
+    "unattached_live_checkpoint_observation_complete": true,
+    "signed_socket_request_exercised": false,
+    "supervisor_restart_during_live_campaign_exercised": false,
+    "lease_expiry_host_rehearsal_complete": false,
+    "product_candidate_started": false,
+    "qualification_started": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "rehearse lease expiry with a bounded non-product exact-identity campaign, then exercise signed socket admission, supervisor restart and live seal before product qualification",
+    "reason": "A bounded non-product campaign lost only its daemon while the original harness, unit, cgroup and live checkpoint chain remained exact. Production measurement-loss logic classified process identity drift, published a cause-bound diagnostic, stopped the retained unit and durably released the host claim without starting a product candidate."
+  }
+}

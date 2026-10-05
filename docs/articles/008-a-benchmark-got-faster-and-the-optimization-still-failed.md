@@ -1080,6 +1080,27 @@ supervisor restart during a live production campaign, measurement-loss, lease-ex
 overhead budgets or any six-hour/24-hour product claim. Those boundaries remain explicit so a
 successful resilience fixture cannot be mistaken for release qualification.
 
+Measurement loss was the next distinct hypothesis. The fixture daemon ended while its parent
+harness deliberately remained alive in the original systemd cgroup. The replacement controller
+had to prove the unit, MainPID, cgroup and harness identity were unchanged, prove the recorded
+daemon identity was gone, and reject any extra cgroup process before it could name the fault
+`process-identity-drift`. This ordering matters: at the same wall-clock time the checkpoint was
+also stale, but measurement ownership is evaluated first, so a dead process was not mislabeled as
+mere lack of progress.
+
+The first host run found a boundary between observation and durable attachment. Checkpoint sequence
+1 was already present and hash-verified on disk, but no controller had attached that head to
+durable campaign state. Requiring `state.checkpoint` made the fixture fail before failure intent.
+The correction did not synthesize an attachment: it retained the optional checkpoint in the
+measurement cause and used the independently verified live chain only to prove what the receipt
+had observed. A focused regression now covers that pre-attach state.
+
+Run `37362383128` then completed the real path. At 212 seconds after the checkpoint, it published a
+3,662-byte cause-bound diagnostic, stopped only the retained exact unit, committed revision 4
+`FAILED_INCOMPLETE` with `recorded_failure=true`, cleared the process fields and released the host
+claim. No product candidate ran. This closes the process-identity-drift host rehearsal, not host
+drift, unit reuse, lease expiry, signed socket admission, live seal or release qualification.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

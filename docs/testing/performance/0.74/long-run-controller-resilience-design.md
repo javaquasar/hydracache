@@ -715,7 +715,14 @@ campaign and both retained processes name that cgroup. Host drift, an absent/rea
 identity mismatch or any ambiguous reuse is preserved and fails closed instead of stopping a
 possibly foreign process. Local tests inject healthy, terminal, each lost reason, backend
 interruption, completed-marker recovery, lease-deadline overlap, cause drift and foreign-unit reuse.
-The production D-Bus/root-owned rehearsal remains mandatory.
+Bounded admitted-host run `37362383128` then removed only the fixture daemon while retaining the
+exact harness, active unit and cgroup. The replacement controller classified
+`process-identity-drift`, published the cause-bound diagnostic, stopped that exact unit and
+completed revision 4 with `recorded_failure = true` before releasing the host claim. A rejected
+first attempt showed why checkpoint is optional in the durable cause: the live chain exists before
+a controller attaches its head. The final fixture verifies that live chain for evidence without
+rewriting the durable state. This closes `measurement_loss_host_rehearsal_complete` for the safe
+stoppable process-drift case; ambiguous host/unit drift remains intentionally non-stoppable.
 
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
