@@ -1,0 +1,60 @@
+name: Performance Long-Run Host Capability 0.74
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/0.74-resp-native-throughput
+    paths:
+      - .github/workflows/performance-long-run-host-capability-074.yml
+      - scripts/perf/performance_long_run_host_capability_074.py
+      - scripts/perf/test_performance_long_run_host_capability_074.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-074-host
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Read-only systemd and supervisor capability probe
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-host-capability
+
+    steps:
+      - name: Check out exact probe source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify immutable source and probe tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          python3 -m unittest scripts.perf.test_performance_long_run_host_capability_074
+
+      - name: Collect read-only host capability receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          python3 scripts/perf/performance_long_run_host_capability_074.py \
+            --source-commit "$GITHUB_SHA" \
+            --output "$EVIDENCE_DIR/capability.json"
+
+      - name: Retain host capability receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-host-capability-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-host-capability/**
+          if-no-files-found: error
+          retention-days: 90

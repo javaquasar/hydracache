@@ -571,3 +571,36 @@ fn w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable() {
     assert!(workflow.contains("promotable"));
     assert!(!workflow.contains("performance-long-run-qualification-074"));
 }
+
+#[test]
+fn w11_host_capability_probe_is_read_only_and_serialized() {
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-capability-074.yml"),
+    )
+    .unwrap();
+    assert!(workflow.contains("workflow_dispatch:"));
+    assert!(workflow.contains("group: performance-reference-074-host"));
+    assert!(workflow.contains("cancel-in-progress: false"));
+    assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
+    assert!(workflow.contains("Collect read-only host capability receipt"));
+    for forbidden in [
+        "sudo ",
+        "systemctl start",
+        "systemctl stop",
+        "systemctl restart",
+        "systemd-run --unit",
+        "performance-long-run-qualification-074",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "forbidden mutation: {forbidden}"
+        );
+    }
+
+    let probe = std::fs::read_to_string(
+        root().join("scripts/perf/performance_long_run_host_capability_074.py"),
+    )
+    .unwrap();
+    assert!(probe.contains("\"read_only\": True"));
+    assert!(probe.contains("\"mutation_performed\": False"));
+}
