@@ -75,9 +75,9 @@ evidence = "w1-local-attribution.md and local-runs/w8-*.json including w8a-v6 pa
 [[work_items]]
 id = "W9"
 title = "runtime syscall buffer and durability follow-ups"
-decision = "w9a-rejected-w9b-w9c-kernel-blocked-w9d-unauthorized-w9e-deferred"
+decision = "w9a-rejected-w9b-w9c-kernel-blocked-w9d-unauthorized-w9e-measured-no-admissible-candidate"
 primary_metric = "proposal-specific"
-evidence = "w9-local-followups.md, w9a-atomic-ordering-registry.toml, and local-runs/w9a-*.json"
+evidence = "w9-local-followups.md, w9a-atomic-ordering-registry.toml, w9e-linux-allocator-attribution.md, and local-runs/w9*.json"
 
 [[native_investigations]]
 id = "N1"

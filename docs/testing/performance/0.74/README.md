@@ -27,6 +27,12 @@ The first non-promotable local attribution and the rejected W2/W3 results are do
 [`w1-local-attribution.md`](w1-local-attribution.md). Raw identity-bound receipts are retained under
 `local-runs/`.
 
+The W9e allocator deferral is now resolved by a dedicated-Linux owner profile. The counterbalanced
+20-attempt system/mimalloc/jemalloc matrix found real churn-phase CPU reductions, but every
+alternative failed unchanged memory, binary-size or CPU guards; no allocator or purge candidate was
+admitted and the system allocator remains default. See
+[`w9e-linux-allocator-attribution.md`](w9e-linux-allocator-attribution.md).
+
 The standalone `tools/resp-stage-profile-074` tool isolates decode, translation-context,
 command/translation and response/encode allocation owners. Its control stages permit only local
 incremental attribution; they are not interchangeable with end-to-end product receipts.

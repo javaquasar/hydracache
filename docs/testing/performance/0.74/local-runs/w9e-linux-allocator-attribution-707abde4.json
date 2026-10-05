@@ -1,0 +1,591 @@
+{
+  "artifact": {
+    "id": 11341977249,
+    "name": "performance-allocator-attribution-074-707abde46b23f24d03d1fe745e56576b964b99ad-37300775917-1",
+    "size_bytes": 75681,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37300775917/artifacts/11341977249"
+  },
+  "decision": {
+    "allocator_candidate_authorized": false,
+    "claim_boundary": "owner attribution only; not a RESP/native end-to-end product candidate and not release qualification",
+    "jemalloc": "rejected: delete CPU reduction did not translate into material total elapsed improvement, while refill CPU crossed the five-percent regression guard and binary size regressed materially",
+    "mimalloc": "rejected: material fill/delete/refill CPU reductions were paid for by post-idle PSS/RSS and binary-size regressions above the frozen five-percent guard; total elapsed improvement remained below five percent",
+    "mimalloc_purge": "rejected as a policy candidate: five of five runs released only 339968 process PSS/RSS bytes after three purge calls and 655360 provider-reported purged bytes",
+    "system_default_unchanged": true
+  },
+  "github_run": {
+    "attempt": 1,
+    "conclusion": "success",
+    "id": 37300775917,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37300775917"
+  },
+  "matrix": {
+    "attempts": 20,
+    "binary_sha256": {
+      "jemalloc": "df27e661e87ea7ac3243cea4871277f68d913b90ba572767dc4bf7e27c9e04ac",
+      "mimalloc": "826e6871f6fa14bcdbffbde272b9ca45a78298719e40e115ab0638fe8d1123bc",
+      "system": "2fe8dcc6e77fdd35585a8e45fbb6cbef9cdf92f1aa305a388917b8166313cf7c"
+    },
+    "contract_sha256": "741339e76c9e10d511cecc0d548953d4b3a4d7dba6044fa10bb3fc8c6873c92d",
+    "failed_attempts": 0,
+    "schedule": [
+      {
+        "allocator": "system",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "jemalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "system",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "jemalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "jemalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "system",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "jemalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "system",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "jemalloc",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "system",
+        "mode": "no-purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "purge"
+      },
+      {
+        "allocator": "mimalloc",
+        "mode": "purge"
+      }
+    ],
+    "tool_lock_sha256": "1b37d3d09b4398798514631d543190148d72070b4935ce0166c9cdb8a5a04ce7",
+    "tool_source_sha256": "a0d95ce6b9822db740226531b5a5ef29deffa29c0ec4db97f89655126b05c258"
+  },
+  "measurements": {
+    "comparisons_vs_system": {
+      "jemalloc": {
+        "binary_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 34.123077037053505,
+          "repeats": 5
+        },
+        "delete_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -29.309450672198512,
+          "repeats": 5
+        },
+        "elapsed_ns": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -0.22952338159389907,
+          "repeats": 5
+        },
+        "fill_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 3.334474748503058,
+          "repeats": 5
+        },
+        "peak_rss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 1.6565803051008077,
+          "repeats": 5
+        },
+        "post_idle_pss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 1.689220256495494,
+          "repeats": 5
+        },
+        "post_idle_rss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 1.6565803051008077,
+          "repeats": 5
+        },
+        "refill_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 5.103208891842992,
+          "repeats": 5
+        },
+        "steady_read_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -2.4588127718727093,
+          "repeats": 5
+        }
+      },
+      "mimalloc": {
+        "binary_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 9.915506313874968,
+          "repeats": 5
+        },
+        "delete_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -41.53668169306259,
+          "repeats": 5
+        },
+        "elapsed_ns": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -3.0827178436329206,
+          "repeats": 5
+        },
+        "fill_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -51.260029800190644,
+          "repeats": 5
+        },
+        "peak_rss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 14.039099757369545,
+          "repeats": 5
+        },
+        "post_idle_pss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 14.235995670842549,
+          "repeats": 5
+        },
+        "post_idle_rss_bytes": {
+          "lower_than_system_repeats": 0,
+          "median_percent_vs_system": 14.039099757369545,
+          "repeats": 5
+        },
+        "refill_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 5,
+          "median_percent_vs_system": -8.548428787710938,
+          "repeats": 5
+        },
+        "steady_read_cpu_ns_per_operation": {
+          "lower_than_system_repeats": 4,
+          "median_percent_vs_system": -0.5407062479849012,
+          "repeats": 5
+        }
+      }
+    },
+    "medians": {
+      "jemalloc": {
+        "binary_bytes": 2896640,
+        "delete_cpu_ns_per_operation": 1081.54296875,
+        "elapsed_ns": 2376194155,
+        "fill_cpu_ns_per_operation": 6814.94140625,
+        "peak_rss_bytes": 149303296,
+        "post_idle_pss_bytes": 147205120,
+        "post_idle_rss_bytes": 149303296,
+        "refill_cpu_ns_per_operation": 3474.4873046875,
+        "steady_read_cpu_ns_per_operation": 2815.9332275390625
+      },
+      "mimalloc": {
+        "binary_bytes": 2373832,
+        "delete_cpu_ns_per_operation": 894.47021484375,
+        "elapsed_ns": 2308240746,
+        "fill_cpu_ns_per_operation": 3214.41650390625,
+        "peak_rss_bytes": 167489536,
+        "post_idle_pss_bytes": 165367808,
+        "post_idle_rss_bytes": 167489536,
+        "refill_cpu_ns_per_operation": 3023.193359375,
+        "steady_read_cpu_ns_per_operation": 2871.307373046875
+      },
+      "system": {
+        "binary_bytes": 2159688,
+        "delete_cpu_ns_per_operation": 1529.96826171875,
+        "elapsed_ns": 2381660623,
+        "fill_cpu_ns_per_operation": 6595.03173828125,
+        "peak_rss_bytes": 146870272,
+        "post_idle_pss_bytes": 144759808,
+        "post_idle_rss_bytes": 146870272,
+        "refill_cpu_ns_per_operation": 3305.7861328125,
+        "steady_read_cpu_ns_per_operation": 2886.9171142578125
+      }
+    },
+    "mimalloc_purge_per_repeat": [
+      {
+        "pss_delta_bytes": -339968,
+        "purge_calls_delta": 3,
+        "purged_bytes_delta": 655360,
+        "rss_delta_bytes": -339968
+      },
+      {
+        "pss_delta_bytes": -339968,
+        "purge_calls_delta": 3,
+        "purged_bytes_delta": 655360,
+        "rss_delta_bytes": -339968
+      },
+      {
+        "pss_delta_bytes": -339968,
+        "purge_calls_delta": 3,
+        "purged_bytes_delta": 655360,
+        "rss_delta_bytes": -339968
+      },
+      {
+        "pss_delta_bytes": -339968,
+        "purge_calls_delta": 3,
+        "purged_bytes_delta": 655360,
+        "rss_delta_bytes": -339968
+      },
+      {
+        "pss_delta_bytes": -339968,
+        "purge_calls_delta": 3,
+        "purged_bytes_delta": 655360,
+        "rss_delta_bytes": -339968
+      }
+    ],
+    "per_repeat": {
+      "jemalloc": [
+        {
+          "binary_bytes": 2896640,
+          "delete_cpu_ns_per_operation": 1093.32275390625,
+          "elapsed_ns": 2376194155,
+          "fill_cpu_ns_per_operation": 6741.8212890625,
+          "native_active_or_committed_bytes": 141619200,
+          "native_allocated_or_live_bytes": 141336224,
+          "native_arenas": 17,
+          "native_resident_bytes": 149725184,
+          "native_retained_or_reserved_bytes": 9986048,
+          "peak_rss_bytes": 149274624,
+          "post_idle_pss_bytes": 147139584,
+          "post_idle_rss_bytes": 149274624,
+          "refill_cpu_ns_per_operation": 3565.12451171875,
+          "steady_read_cpu_ns_per_operation": 2815.9332275390625
+        },
+        {
+          "binary_bytes": 2896640,
+          "delete_cpu_ns_per_operation": 1099.91455078125,
+          "elapsed_ns": 2375387515,
+          "fill_cpu_ns_per_operation": 6792.17529296875,
+          "native_active_or_committed_bytes": 141602816,
+          "native_allocated_or_live_bytes": 141320000,
+          "native_arenas": 17,
+          "native_resident_bytes": 147664896,
+          "native_retained_or_reserved_bytes": 9949184,
+          "peak_rss_bytes": 149377024,
+          "post_idle_pss_bytes": 147238912,
+          "post_idle_rss_bytes": 149377024,
+          "refill_cpu_ns_per_operation": 3474.4873046875,
+          "steady_read_cpu_ns_per_operation": 2810.5621337890625
+        },
+        {
+          "binary_bytes": 2896640,
+          "delete_cpu_ns_per_operation": 1064.02587890625,
+          "elapsed_ns": 2377152881,
+          "fill_cpu_ns_per_operation": 6863.037109375,
+          "native_active_or_committed_bytes": 141590528,
+          "native_allocated_or_live_bytes": 141304816,
+          "native_arenas": 17,
+          "native_resident_bytes": 147611648,
+          "native_retained_or_reserved_bytes": 9998336,
+          "peak_rss_bytes": 149282816,
+          "post_idle_pss_bytes": 147173376,
+          "post_idle_rss_bytes": 149282816,
+          "refill_cpu_ns_per_operation": 3498.71826171875,
+          "steady_read_cpu_ns_per_operation": 2816.986083984375
+        },
+        {
+          "binary_bytes": 2896640,
+          "delete_cpu_ns_per_operation": 1081.54296875,
+          "elapsed_ns": 2378838763,
+          "fill_cpu_ns_per_operation": 6967.22412109375,
+          "native_active_or_committed_bytes": 141602816,
+          "native_allocated_or_live_bytes": 141319408,
+          "native_arenas": 17,
+          "native_resident_bytes": 147652608,
+          "native_retained_or_reserved_bytes": 9961472,
+          "peak_rss_bytes": 149372928,
+          "post_idle_pss_bytes": 147258368,
+          "post_idle_rss_bytes": 149372928,
+          "refill_cpu_ns_per_operation": 3430.17578125,
+          "steady_read_cpu_ns_per_operation": 2836.1358642578125
+        },
+        {
+          "binary_bytes": 2896640,
+          "delete_cpu_ns_per_operation": 1067.87109375,
+          "elapsed_ns": 2373715066,
+          "fill_cpu_ns_per_operation": 6814.94140625,
+          "native_active_or_committed_bytes": 141611008,
+          "native_allocated_or_live_bytes": 141325392,
+          "native_arenas": 17,
+          "native_resident_bytes": 147619840,
+          "native_retained_or_reserved_bytes": 9990144,
+          "peak_rss_bytes": 149303296,
+          "post_idle_pss_bytes": 147205120,
+          "post_idle_rss_bytes": 149303296,
+          "refill_cpu_ns_per_operation": 3435.302734375,
+          "steady_read_cpu_ns_per_operation": 2810.5621337890625
+        }
+      ],
+      "mimalloc": [
+        {
+          "binary_bytes": 2373832,
+          "delete_cpu_ns_per_operation": 890.0146484375,
+          "elapsed_ns": 2306346273,
+          "fill_cpu_ns_per_operation": 3214.41650390625,
+          "native_active_or_committed_bytes": 168034304,
+          "native_allocated_or_live_bytes": null,
+          "native_arenas": 1,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 1076166656,
+          "peak_rss_bytes": 167444480,
+          "post_idle_pss_bytes": 165361664,
+          "post_idle_rss_bytes": 167444480,
+          "refill_cpu_ns_per_operation": 3021.1181640625,
+          "steady_read_cpu_ns_per_operation": 2850.2960205078125
+        },
+        {
+          "binary_bytes": 2373832,
+          "delete_cpu_ns_per_operation": 887.20703125,
+          "elapsed_ns": 2307356711,
+          "fill_cpu_ns_per_operation": 3213.19580078125,
+          "native_active_or_committed_bytes": 168099840,
+          "native_allocated_or_live_bytes": null,
+          "native_arenas": 1,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 1076232192,
+          "peak_rss_bytes": 167477248,
+          "post_idle_pss_bytes": 165367808,
+          "post_idle_rss_bytes": 167477248,
+          "refill_cpu_ns_per_operation": 3023.193359375,
+          "steady_read_cpu_ns_per_operation": 2871.307373046875
+        },
+        {
+          "binary_bytes": 2373832,
+          "delete_cpu_ns_per_operation": 894.95849609375,
+          "elapsed_ns": 2308240746,
+          "fill_cpu_ns_per_operation": 3204.9560546875,
+          "native_active_or_committed_bytes": 168034304,
+          "native_allocated_or_live_bytes": null,
+          "native_arenas": 1,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 1076166656,
+          "peak_rss_bytes": 167522304,
+          "post_idle_pss_bytes": 165416960,
+          "post_idle_rss_bytes": 167522304,
+          "refill_cpu_ns_per_operation": 3013.97705078125,
+          "steady_read_cpu_ns_per_operation": 2884.307861328125
+        },
+        {
+          "binary_bytes": 2373832,
+          "delete_cpu_ns_per_operation": 908.99658203125,
+          "elapsed_ns": 2313648441,
+          "fill_cpu_ns_per_operation": 3359.80224609375,
+          "native_active_or_committed_bytes": 168099840,
+          "native_allocated_or_live_bytes": null,
+          "native_arenas": 1,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 1076232192,
+          "peak_rss_bytes": 167538688,
+          "post_idle_pss_bytes": 165392384,
+          "post_idle_rss_bytes": 167538688,
+          "refill_cpu_ns_per_operation": 3087.5244140625,
+          "steady_read_cpu_ns_per_operation": 2907.8216552734375
+        },
+        {
+          "binary_bytes": 2373832,
+          "delete_cpu_ns_per_operation": 894.47021484375,
+          "elapsed_ns": 2308361178,
+          "fill_cpu_ns_per_operation": 3255.92041015625,
+          "native_active_or_committed_bytes": 168034304,
+          "native_allocated_or_live_bytes": null,
+          "native_arenas": 1,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 1076166656,
+          "peak_rss_bytes": 167489536,
+          "post_idle_pss_bytes": 165342208,
+          "post_idle_rss_bytes": 167489536,
+          "refill_cpu_ns_per_operation": 3028.9306640625,
+          "steady_read_cpu_ns_per_operation": 2870.391845703125
+        }
+      ],
+      "system": [
+        {
+          "binary_bytes": 2159688,
+          "delete_cpu_ns_per_operation": 1631.53076171875,
+          "elapsed_ns": 2383199557,
+          "fill_cpu_ns_per_operation": 6488.83056640625,
+          "native_active_or_committed_bytes": 143859712,
+          "native_allocated_or_live_bytes": 142937888,
+          "native_arenas": null,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 647392,
+          "peak_rss_bytes": 146862080,
+          "post_idle_pss_bytes": 144759808,
+          "post_idle_rss_bytes": 146862080,
+          "refill_cpu_ns_per_operation": 3288.51318359375,
+          "steady_read_cpu_ns_per_operation": 2916.50390625
+        },
+        {
+          "binary_bytes": 2159688,
+          "delete_cpu_ns_per_operation": 1528.4423828125,
+          "elapsed_ns": 2380406706,
+          "fill_cpu_ns_per_operation": 6570.00732421875,
+          "native_active_or_committed_bytes": 143867904,
+          "native_allocated_or_live_bytes": 142938192,
+          "native_arenas": null,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 655280,
+          "peak_rss_bytes": 146907136,
+          "post_idle_pss_bytes": 144824320,
+          "post_idle_rss_bytes": 146907136,
+          "refill_cpu_ns_per_operation": 3305.7861328125,
+          "steady_read_cpu_ns_per_operation": 2884.82666015625
+        },
+        {
+          "binary_bytes": 2159688,
+          "delete_cpu_ns_per_operation": 1510.68115234375,
+          "elapsed_ns": 2379614023,
+          "fill_cpu_ns_per_operation": 6595.03173828125,
+          "native_active_or_committed_bytes": 143867904,
+          "native_allocated_or_live_bytes": 142936880,
+          "native_arenas": null,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 656592,
+          "peak_rss_bytes": 146845696,
+          "post_idle_pss_bytes": 144754688,
+          "post_idle_rss_bytes": 146845696,
+          "refill_cpu_ns_per_operation": 3275.390625,
+          "steady_read_cpu_ns_per_operation": 2886.9171142578125
+        },
+        {
+          "binary_bytes": 2159688,
+          "delete_cpu_ns_per_operation": 1558.65478515625,
+          "elapsed_ns": 2382637646,
+          "fill_cpu_ns_per_operation": 6618.5302734375,
+          "native_active_or_committed_bytes": 143867904,
+          "native_allocated_or_live_bytes": 142937136,
+          "native_arenas": null,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 656336,
+          "peak_rss_bytes": 146870272,
+          "post_idle_pss_bytes": 144755712,
+          "post_idle_rss_bytes": 146870272,
+          "refill_cpu_ns_per_operation": 3323.91357421875,
+          "steady_read_cpu_ns_per_operation": 2890.5487060546875
+        },
+        {
+          "binary_bytes": 2159688,
+          "delete_cpu_ns_per_operation": 1529.96826171875,
+          "elapsed_ns": 2381660623,
+          "fill_cpu_ns_per_operation": 6621.76513671875,
+          "native_active_or_committed_bytes": 143872000,
+          "native_allocated_or_live_bytes": 142938848,
+          "native_arenas": null,
+          "native_resident_bytes": null,
+          "native_retained_or_reserved_bytes": 658720,
+          "peak_rss_bytes": 146870272,
+          "post_idle_pss_bytes": 144761856,
+          "post_idle_rss_bytes": 146870272,
+          "refill_cpu_ns_per_operation": 3306.0302734375,
+          "steady_read_cpu_ns_per_operation": 2885.92529296875
+        }
+      ]
+    }
+  },
+  "packet": {
+    "acceptance_decision_allowed": false,
+    "attempts": 20,
+    "candidate_data_present": false,
+    "host": {
+      "cpu_count": 8,
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "kernel": "6.8.0-138-generic",
+      "machine": "x86_64",
+      "machine_id_sha256": "5e32780d0b9b493e27782f17f32b0de2dc757855e595ed8a111da407c4e9a225",
+      "node": "Ubuntu-noble-latest-amd64-base.zst"
+    },
+    "lease": {
+      "end": "2026-10-05T12:21:22+00:00",
+      "owner": "javaquasar"
+    },
+    "matrix_manifest_sha256": "d7bb4fc6fbb0bfcfeb451b605ce6b541ba8b9bff73743f2d5237951630b0f8bd",
+    "postflight_sha256": "e7db70c41450c83a7200d08ffb3501f88c36405b0d208f66b437d4d8a22a909e",
+    "preflight_sha256": "e7db70c41450c83a7200d08ffb3501f88c36405b0d208f66b437d4d8a22a909e",
+    "profile_id": "w9e-linux-allocator-profile-074-v1",
+    "promotable": false,
+    "release": "0.74",
+    "result": "complete-owner-attribution",
+    "schema_version": 1,
+    "silent_retry_allowed": false,
+    "source_sha": "707abde46b23f24d03d1fe745e56576b964b99ad",
+    "summary_sha256": "f878387c4c4a6068d6aa98d3abad17c4843528ab9ebbbbb207828944bdb7a703",
+    "toolchain": {
+      "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+      "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)"
+    }
+  },
+  "profile_id": "w9e-linux-allocator-profile-074-v1",
+  "provider_semantics": {
+    "jemalloc": {
+      "active_or_committed": "mallctl stats.active",
+      "allocated_or_live": "mallctl stats.allocated",
+      "arenas": "mallctl arenas.narenas",
+      "resident": "mallctl stats.resident",
+      "retained_or_reserved": "mallctl stats.retained",
+      "thread_caches": "unavailable with reason"
+    },
+    "mimalloc": {
+      "active_or_committed": "mi_stats_get_json committed.current",
+      "allocated_or_live": "unavailable; release JSON zero is rejected",
+      "arenas": "arena_count",
+      "resident": "unavailable; process RSS/PSS is not substituted",
+      "retained_or_reserved": "mi_stats_get_json reserved.current",
+      "thread_caches": "unavailable with reason"
+    },
+    "system": {
+      "active_or_committed": "glibc mallinfo2 arena plus hblkhd",
+      "allocated_or_live": "glibc mallinfo2 uordblks",
+      "arenas": "unavailable with reason",
+      "resident": "unavailable; process RSS/PSS is not substituted",
+      "retained_or_reserved": "glibc mallinfo2 fordblks",
+      "thread_caches": "unavailable with reason"
+    }
+  },
+  "release": "0.74",
+  "schema_version": "hydracache-w9e-linux-allocator-evidence-v1",
+  "source_sha": "707abde46b23f24d03d1fe745e56576b964b99ad"
+}

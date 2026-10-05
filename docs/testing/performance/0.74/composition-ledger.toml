@@ -89,6 +89,6 @@ rollback = "durability unchanged"
 [[proposal]]
 id = "W9e"
 owner = "Linux allocator"
-disposition = "deferred-missing-supported-linux-owner-telemetry"
+disposition = "measured-no-admissible-candidate"
 compatibility_class = "supported-target-sensitive"
 rollback = "system allocator remains default"

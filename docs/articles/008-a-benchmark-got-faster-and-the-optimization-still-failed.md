@@ -951,6 +951,51 @@ confirm fail-closed replay. At source `9b4d93a7`, all 125 ordinary WSL superviso
 independent packet-verifier tests pass. This proves the local mode/hash boundary, not production
 uid/gid or mount enforcement; those still belong to admitted-host rehearsal.
 
+## The allocator hypothesis: faster churn, larger memory footprint
+
+W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.
+The run did not reuse the 0.73 Windows receipts: it built new system, mimalloc and jemalloc binaries
+from source `707abde4`, differing only by the mutually exclusive allocator feature. A
+counterbalanced schedule produced five no-purge repeats for each allocator and five separate
+mimalloc purge repeats. All 20 attempts passed the exact seed, key, payload, phase, binary and host
+identity guards.
+
+Mimalloc found a real CPU owner. Relative to the system allocator, median fill CPU/op fell 51.26%,
+delete CPU/op 41.54% and refill CPU/op 8.55%; each direction held in all five repeats. That still did
+not make it an acceptable release change. Whole-trace elapsed time, including the fixed two-second
+idle phase, improved only 3.08%, while post-idle PSS rose 14.24%, RSS rose 14.04% and executable
+size rose 9.92%. The isolated CPU owners clear the owner floor, but the unchanged memory and binary
+guards still forbid admission. The hypothesis reduced allocator work by buying more resident
+memory and a larger binary. It moved cost rather than removing it.
+
+Jemalloc was a different version of the same lesson. Delete CPU/op fell 29.31% in every repeat, but
+total elapsed changed by only -0.23%; refill CPU/op regressed 5.10% and executable size grew 34.12%.
+Its post-idle PSS increase was smaller at 1.69%, but the unchanged guard evaluates the complete
+trade, not the most favorable row.
+
+Provider-native counters were retained without pretending their names were interchangeable.
+Glibc `mallinfo2`, mimalloc JSON and jemalloc `mallctl` expose different definitions of allocated,
+committed, resident and retained memory. Missing native resident or live counters remained missing;
+RSS/PSS was reported separately and was never inserted as a substitute. That distinction matters:
+a superficially comparable "retained" number can mean free heap bytes, virtual reservation or
+retained allocator mappings depending on the provider.
+
+The reviewed APIs also did not expose a comparable scalar thread-cache count. That missing field
+would block acceptance even if the other rows passed; it does not block rejection after independent
+memory, binary-size and CPU guards have already failed.
+
+Explicit mimalloc purge did not rescue the proposal. Five of five runs recorded three purge calls
+and 655,360 provider-reported purged bytes, but process PSS/RSS fell by only 339,968 bytes, roughly
+0.22% of pre-purge PSS. The second refill remained correct, yet the mechanical benefit was too small
+to justify a policy candidate.
+
+So the allocation hypotheses were tested when they had a dedicated Linux owner profiler, and they
+were tested in two stages: first provider-native ownership plus process memory/CPU, then—only if the
+frozen owner and regression floors passed—an isolated product candidate followed by the unchanged
+RESP and native matrices. Neither allocator reached the second stage. The system allocator remains
+the default, and no 6-hour or 24-hour qualification slot is spent on a candidate that already moved
+cost across a frozen guard.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

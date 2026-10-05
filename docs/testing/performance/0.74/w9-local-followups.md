@@ -1,7 +1,7 @@
 # 0.74 W9 local follow-ups
 
-Status: **non-promotable local evidence**. This file records terminal local decisions; it does not
-authorize release claims or expensive infrastructure.
+Status: **non-promotable attribution evidence**. This file records terminal local and dedicated-host
+decisions; it does not authorize release claims or release qualification.
 
 ## W9a atomic ordering audit
 
@@ -31,4 +31,10 @@ end-to-end percentages are claimed. All product atomics remain unchanged.
 - **W9c:** syscall/socket tuning remains blocked locally because kernel syscall attribution is not
   available on this Windows/WSL setup. Platform defaults remain unchanged.
 - **W9d:** durable group commit remains unauthorized pending a separate durability/COMPAT decision.
-- **W9e:** allocator work remains deferred until a supported dedicated-Linux owner profile exists.
+- **W9e:** dedicated-Linux owner attribution is complete at source `707abde4`: 20/20 attempts were
+  valid. Mimalloc reduced fill/delete/refill CPU, but total elapsed improved only 3.08% while
+  post-idle PSS/RSS and binary size regressed 14.24%/14.04%/9.92%. Jemalloc's delete reduction did
+  not produce a material total result, while refill CPU and binary size regressed 5.10% and 34.12%.
+  Explicit mimalloc purge released only 339,968 process bytes. Both replacement candidates and the
+  purge policy are rejected; the system allocator remains default. See
+  [`w9e-linux-allocator-attribution.md`](w9e-linux-allocator-attribution.md).

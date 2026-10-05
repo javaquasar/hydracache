@@ -230,12 +230,14 @@ ship_required = true
 
 [[work_item]]
 id = "W9e"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["tools/allocator-profile-074/src/main.rs", "scripts/perf/performance_allocator_profile_074.py", "docs/testing/performance/0.74/w9e-linux-allocator-profile-contract.toml", "docs/testing/performance/0.74/w9e-linux-allocator-attribution.md"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w9e-linux-allocator-attribution-707abde4.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w9e_allocator_attribution_is_linux_only_complete_and_non_promotable"
 
 [[work_item]]
 id = "W10"
