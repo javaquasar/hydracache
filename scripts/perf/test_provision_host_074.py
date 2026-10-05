@@ -31,6 +31,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             "verify-provisioning-manifest",
             "bundle installer differs from the root-owned entrypoint",
             "--emit-receipt",
+            "--emit-host-observation",
             "--systemd-smoke",
             "--controller-loss-smoke-start",
             "--controller-loss-smoke-resume",
@@ -40,8 +41,21 @@ class ProvisionHostContractTests(unittest.TestCase):
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
+            "/var/lib/hydracache-perf/host-tuning-v1/freeze/host-freeze.json",
+            "HOST_OBSERVATION_SHA256=",
         ):
             self.assertIn(required, self.source)
+
+    def test_host_observation_export_has_no_caller_selected_path(self) -> None:
+        self.assertIn('"${1-}" = --emit-host-observation', self.source)
+        self.assertIn("&& $# -eq 1", self.source)
+        self.assertIn(
+            "mktemp -d /var/lib/hydracache-performance/.host-observation-export.XXXXXX",
+            self.source,
+        )
+        self.assertIn('collect-host-receipt "$temporary"', self.source)
+        self.assertIn('rm -f -- "$temporary/host-observation.json"', self.source)
+        self.assertNotIn("--host-observation-output", self.source)
 
     def test_installer_binds_identity_hardening_and_receipt(self) -> None:
         for required in (
