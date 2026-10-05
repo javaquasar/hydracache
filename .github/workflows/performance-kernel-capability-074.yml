@@ -63,7 +63,20 @@ jobs:
 
           def read(path):
               value = pathlib.Path(path)
-              return value.read_text().strip() if value.is_file() else None
+              try:
+                  return value.read_text().strip() if value.is_file() else None
+              except OSError as error:
+                  return {"error": str(error)}
+
+          def accessible(path):
+              try:
+                  value = pathlib.Path(path)
+                  if not value.is_file():
+                      return {"exists": False, "readable": False}
+                  value.read_bytes()
+                  return {"exists": True, "readable": True}
+              except OSError as error:
+                  return {"exists": True, "readable": False, "error": str(error)}
 
           def command(argv):
               try:
@@ -110,8 +123,8 @@ jobs:
                   "kptr_restrict": read("/proc/sys/kernel/kptr_restrict"),
                   "unprivileged_bpf_disabled": read("/proc/sys/kernel/unprivileged_bpf_disabled"),
                   "yama_ptrace_scope": read("/proc/sys/kernel/yama/ptrace_scope"),
-                  "tracefs_sys_enter_write_readable": pathlib.Path("/sys/kernel/tracing/events/syscalls/sys_enter_write/id").is_file(),
-                  "debugfs_sys_enter_write_readable": pathlib.Path("/sys/kernel/debug/tracing/events/syscalls/sys_enter_write/id").is_file(),
+                  "tracefs_sys_enter_write": accessible("/sys/kernel/tracing/events/syscalls/sys_enter_write/id"),
+                  "debugfs_sys_enter_write": accessible("/sys/kernel/debug/tracing/events/syscalls/sys_enter_write/id"),
               },
               "tools": tools,
               "probes": {
