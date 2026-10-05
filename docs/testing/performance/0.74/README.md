@@ -726,7 +726,11 @@ source when the cgroup did not expose `cpuset.cpus.effective`. None mutated the 
 Consequently `supervisor_idle_cpu_rss_screen_complete=true`, while
 `supervisor_idle_io_screen_complete`, `idle_overhead_budget_complete` and
 `role_overhead_qualification_complete` remain false. A reviewed exact I/O counter source and the
-role-level checkpoint/supervisor A/B are still required; the frozen ceilings were not changed.
+role-level checkpoint/supervisor A/B are still required; the frozen ceilings were not changed. The
+next isolated instrumentation commit stages systemd `IOAccounting` for the supervisor and fixed
+transient units. The root cgroup-v2 capability receipt includes the `io` controller, but the new
+unit policy has not yet been signed, installed or restart-rehearsed, so it does not change those
+completion flags.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

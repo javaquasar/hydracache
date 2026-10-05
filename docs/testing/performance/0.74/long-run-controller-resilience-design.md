@@ -828,9 +828,12 @@ read `/proc/<pid>/io`. The receipt represents all I/O fields as unavailable, kee
 telemetry is not zero activity and cannot be converted into a pass.
 
 Before role-level A/B, the host contract must provide a reviewed exact byte counter for supervisor
-and checkpoint I/O. Enabling cgroup I/O accounting or installing a narrow root-owned observer would
-change host provisioning and requires its own review, signed installation, restart/reboot plan and
-rehearsal. The CPU/RSS observation remains useful attribution but cannot authorize qualification.
+and checkpoint I/O. The minimal implementation now stages `IOAccounting=yes` in the production
+supervisor unit and `IOAccounting=true` in every fixed measured and non-product transient-unit
+specification. It does not change the sudo surface or accept a caller-selected property. The
+admitted host reports the `io` controller in its root cgroup-v2 controller inventory, so a signed
+reinstallation plus controlled supervisor restart can test this exact path. Until that host
+rehearsal succeeds, I/O and complete overhead flags remain false.
 
 ## Rollout, gates and rollback
 

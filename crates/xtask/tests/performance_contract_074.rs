@@ -288,11 +288,16 @@ fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
     );
     for field in [
         "supervisor_idle_io_screen_complete",
+        "io_accounting_instrumentation_host_rehearsal_complete",
         "idle_overhead_budget_complete",
         "role_overhead_qualification_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(false), "{field}");
     }
+    assert_eq!(
+        implementation["io_accounting_instrumentation_staged"].as_bool(),
+        Some(true)
+    );
 }
 
 #[test]
