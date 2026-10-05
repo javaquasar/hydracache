@@ -655,7 +655,7 @@ depending on current host state and without observing or spawning again. Local i
 drift, convergence and replay ordering; collection as root against the installed supervisor binary,
 real mount and systemd unit remains part of the admitted-host rehearsal.
 
-The maintenance loop also owns progress-loss classification after the first checkpoint exists.
+The maintenance loop owns progress-loss classification both before and after the first checkpoint.
 Checkpoint records carry hash-bound `observed_unix_seconds` and
 `useful_progress_unix_seconds`; the integrated writer, not the controller, derives the latter from
 the phase-aware watchdog. The supervisor independently verifies the chain/head and original process
@@ -667,10 +667,23 @@ exact unit, then records completion and releases the host claim. Restart recover
 unfinished diagnostic/stop effect. Attach admission now refreshes its checkpoint snapshot from the
 same verified chain instead of requiring a previous controller snapshot.
 
-This implementation intentionally does not yet claim the startup-with-no-checkpoint case: until a
-first chain record exists the maintenance pass returns not-due. That case needs a start-event-bound
-deadline and its own diagnostic cause before `startup_checkpoint_absence_maintenance_complete` can
-become true. Production D-Bus stop timing and diagnostic ownership also remain host-rehearsal work.
+Before the first checkpoint, the only admitted progress anchor is the verified timestamp of the
+role-specific `I74Started`, `I74Adopted`, `C74Started` or `C74Adopted` lifecycle event. The event
+journal's latest state must match the locked durable state. Neither an attach, status request,
+controller heartbeat nor rejected request changes that lifecycle timestamp. A missing checkpoint
+journal and a present but empty journal are startup absence; other parse, hash, head or identity
+errors remain fatal, and a state that already binds a checkpoint can never return to startup
+classification.
+
+Once the same rejection gap expires, the supervisor hashes the campaign, startup timestamp, gap and
+deadline into a startup-specific progress-loss cause and commits it as
+`ProgressLossRequested`. That event is sufficient to recover the exact cause after an interrupted
+backend call even though no checkpoint exists. The production diagnostic filename is keyed by the
+cause digest rather than a checkpoint digest, so checkpoint and startup failures have the same
+create-new/replay protection. `startup_checkpoint_absence_maintenance_complete` is therefore true
+for the local implementation. Production D-Bus stop timing, root ownership and diagnostic capture
+against the installed service remain admitted-host rehearsal work and keep
+`progress_loss_host_rehearsal_complete` false.
 
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.

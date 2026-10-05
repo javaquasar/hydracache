@@ -468,6 +468,24 @@ tests pass in WSL plus one ignored real-system-bus test; the focused server/prog
 12/12 and 3/3, the integrated writer is 10/10 and the offline verifier is 7/7. The first-checkpoint
 startup deadline and real root/systemd rehearsal remain open, so this is not yet a host-proof claim.
 
+The first-checkpoint gap could not be closed with a controller heartbeat: that would make a dead
+product look healthy whenever its observer remained alive. The accepted anchor is instead the
+hash-verified `Started` or `Adopted` lifecycle timestamp already owned by the detached supervisor.
+If no first record appears within the same frozen 180-second gap, the supervisor commits a distinct
+startup progress-loss cause, captures diagnostics, stops the retained unit and releases the host
+claim only after durable completion. A missing journal and an empty journal are handled as the same
+pre-publication state; malformed evidence remains an error, and a state that once named a checkpoint
+cannot fall back to the startup path.
+
+The cause includes the campaign, lifecycle timestamp, gap and exact deadline. After a crash, the
+timestamp is recovered from the durable event identity and its digest is verified before the stop
+effect can resume. Diagnostic publication is keyed by that cause digest, so the no-checkpoint path
+does not weaken create-new or exact-replay rules. At source `8f15f3c2`, 162 ordinary supervisor
+tests pass in WSL plus one ignored real-system-bus test; the focused server/progress suites are
+13/13 and 4/4, strict clippy is clean, and the no-execution qualification dry-run accepts the updated
+contract. This closes the local startup liveness hole, not the real root/systemd host rehearsal and
+not any product-throughput qualification claim.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

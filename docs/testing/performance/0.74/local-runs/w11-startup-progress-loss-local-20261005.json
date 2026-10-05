@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-startup-progress-loss-maintenance",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "8f15f3c2",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "cargo test -p hydracache-performance-integrated-074 --locked",
+    "cargo test -p xtask --test long_run_campaign_074 --locked",
+    "cargo clippy -p hydracache-long-run-supervisor-074 -p hydracache-performance-integrated-074 -p xtask --all-targets --locked -- -D warnings",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-startup-progress-loss.json"
+  ],
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 162,
+  "manual_system_bus_tests_ignored": 1,
+  "focused_server_tests_passed": 13,
+  "progress_loss_tests_passed": 4,
+  "integrated_writer_tests_passed": 10,
+  "offline_verifier_tests_passed": 7,
+  "performance_contract_tests_passed": 17,
+  "failed": 0,
+  "confirmed": [
+    "a live role with no first checkpoint is timed from the hash-verified Started or Adopted lifecycle event rather than controller activity",
+    "both an absent checkpoint journal and an empty pre-publication journal use the same startup deadline",
+    "a previously durable checkpoint prevents missing checkpoint evidence from being reclassified as normal startup absence",
+    "the startup progress-loss cause is hash-bound to the campaign, lifecycle timestamp, rejection gap and deadline",
+    "backend interruption recovers the exact startup cause from the durable lifecycle journal and completes without spawning a replacement",
+    "the production diagnostic path is cause-digest-bound for both checkpoint and startup progress loss",
+    "the qualification dry-run accepted the updated contract digest and executed zero commands"
+  ],
+  "limitations": [
+    "diagnostic capture and stop used fake lifecycle backends; only diagnostic publication/replay used the production implementation locally",
+    "the production D-Bus path was not exercised against an installed root service on the admitted host",
+    "the workflow was not dispatched and no HydraCache or systemd campaign process was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}

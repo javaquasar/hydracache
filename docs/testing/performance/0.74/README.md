@@ -467,12 +467,30 @@ gap greater than the frozen 180 seconds commits `ProgressLossRequested` before b
 capture/stop, commits `ProgressLossCompleted`, clears retained process identity and then releases
 the host claim. Backend interruption retains the exact cause for retry without restart.
 
-The complete WSL supervisor suite now passes 160 ordinary tests plus one ignored manual system-bus
-test; the focused server and progress-loss suites pass 12/12 and 3/3. The integrated writer passes
-10 tests and the offline long-run verifier passes 7. The remaining local gap is explicit: absence
-of the first startup checkpoint is not yet timed from the start event, and real root/systemd
-diagnostic-stop behavior is still an admitted-host rehearsal. See
+At that source, the complete WSL supervisor suite passed 160 ordinary tests plus one ignored manual
+system-bus test; the focused server and progress-loss suites passed 12/12 and 3/3. The integrated
+writer passed 10 tests and the offline long-run verifier passed 7. Absence of the first startup
+checkpoint was still not timed from the start event, and real root/systemd diagnostic-stop behavior
+remained an admitted-host rehearsal. See
 `local-runs/w11-progress-loss-maintenance-local-20261005.json`.
+
+The startup gap is now closed locally without treating controller traffic as product progress. If
+the role has not published a first checkpoint, the supervisor verifies the durable event journal,
+requires the current running state and role-specific `Started` or `Adopted` lifecycle record, and
+uses that record's timestamp as the immutable progress anchor. A missing journal and an empty
+pre-publication journal share the same frozen 180-second deadline. Missing evidence is not accepted
+as startup absence once durable state already names a checkpoint. When the deadline expires, the
+supervisor records a startup-specific, hash-bound progress-loss cause before diagnostic/stop; a
+restart recovers the timestamp and digest from the lifecycle journal and cannot invent a later
+deadline or launch a replacement.
+
+At source `8f15f3c2`, the complete WSL supervisor suite passes 162 ordinary tests plus the one
+ignored manual system-bus test; the focused server and progress-loss suites pass 13/13 and 4/4.
+The integrated writer remains 10/10, the offline verifier 7/7, and the performance-contract suite
+17/17. Strict clippy passes for the supervisor, writer and `xtask`; the qualification dry-run
+accepted the new contract digest and executed zero commands. Real root-owned service installation,
+D-Bus diagnostic/stop timing and filesystem ownership are still admitted-host rehearsal work. See
+`local-runs/w11-startup-progress-loss-local-20261005.json`.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
