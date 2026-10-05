@@ -69,7 +69,7 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertNotIn("performance-integrated-074", self.workflow)
         self.assertNotIn("duration-hours", self.workflow)
         self.assertNotIn(
-            "long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
+            "name: long-run-host-provisioning-074-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
             self.workflow,
         )
         self.assertIn("overwrite: true", self.workflow)
