@@ -1,0 +1,136 @@
+name: Performance Kernel Capability Probe 0.74
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact lowercase 40-character profiling source commit
+        required: true
+        type: string
+  push:
+    branches:
+      - feat/0.74-resp-native-throughput
+    paths:
+      - .github/workflows/performance-kernel-capability-074.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-074-host
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Read-only kernel profiling capability probe
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact profiling source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha || github.sha }}
+
+      - name: Validate source identity
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          source_sha="${INPUT_SOURCE_SHA:-$GITHUB_SHA}"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          echo "EXPECTED_SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
+
+      - name: Probe available read-only kernel interfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="target/performance-evidence/0.74/reference/w9c-kernel-capability"
+          mkdir -p "$output"
+          python3 - "$output/capability.json" <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import shutil
+          import subprocess
+          import sys
+
+          def read(path):
+              value = pathlib.Path(path)
+              return value.read_text().strip() if value.is_file() else None
+
+          def command(argv):
+              try:
+                  completed = subprocess.run(argv, text=True, capture_output=True, timeout=20)
+                  return {
+                      "argv": argv,
+                      "exit_code": completed.returncode,
+                      "stdout": completed.stdout[-8192:],
+                      "stderr": completed.stderr[-8192:],
+                  }
+              except (OSError, subprocess.TimeoutExpired) as error:
+                  return {"argv": argv, "error": str(error)}
+
+          tools = {}
+          for name in ("strace", "perf", "pidstat", "ss", "bpftool", "bpftrace", "capsh"):
+              path = shutil.which(name)
+              tools[name] = {"path": path}
+              if path:
+                  version_args = {
+                      "strace": [path, "--version"],
+                      "perf": [path, "--version"],
+                      "pidstat": [path, "-V"],
+                      "ss": [path, "--version"],
+                      "bpftool": [path, "version"],
+                      "bpftrace": [path, "--version"],
+                      "capsh": [path, "--print"],
+                  }[name]
+                  tools[name]["version"] = command(version_args)
+
+          machine = pathlib.Path("/etc/machine-id").read_bytes().strip()
+          receipt = {
+              "schema_version": "hydracache-w9c-kernel-capability-v1",
+              "release": "0.74",
+              "source_sha": os.environ["EXPECTED_SOURCE_SHA"],
+              "host": {
+                  "machine_id_sha256": hashlib.sha256(machine).hexdigest(),
+                  "kernel_release": os.uname().release,
+                  "machine": os.uname().machine,
+                  "euid": os.geteuid(),
+                  "groups": os.getgroups(),
+              },
+              "policy": {
+                  "perf_event_paranoid": read("/proc/sys/kernel/perf_event_paranoid"),
+                  "kptr_restrict": read("/proc/sys/kernel/kptr_restrict"),
+                  "unprivileged_bpf_disabled": read("/proc/sys/kernel/unprivileged_bpf_disabled"),
+                  "yama_ptrace_scope": read("/proc/sys/kernel/yama/ptrace_scope"),
+                  "tracefs_sys_enter_write_readable": pathlib.Path("/sys/kernel/tracing/events/syscalls/sys_enter_write/id").is_file(),
+                  "debugfs_sys_enter_write_readable": pathlib.Path("/sys/kernel/debug/tracing/events/syscalls/sys_enter_write/id").is_file(),
+              },
+              "tools": tools,
+              "probes": {
+                  "strace_summary": command(["strace", "-f", "-qq", "-c", "-e", "trace=read,write,readv,writev,recvfrom,sendto,recvmsg,sendmsg", "true"]),
+                  "perf_software": command(["perf", "stat", "-x,", "-e", "task-clock,context-switches,cpu-migrations,page-faults", "--", "true"]),
+                  "perf_syscall_tracepoint": command(["perf", "stat", "-x,", "-e", "syscalls:sys_enter_write", "--", "true"]),
+                  "socket_inventory": command(["ss", "-tinm"]),
+              },
+              "product_mutation": False,
+              "promotable": False,
+          }
+          pathlib.Path(sys.argv[1]).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+          PY
+          python3 -m json.tool "$output/capability.json" >/dev/null
+
+      - name: Retain capability receipt
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-kernel-capability-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w9c-kernel-capability/capability.json
+          if-no-files-found: error
+          retention-days: 90
