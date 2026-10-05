@@ -43,6 +43,8 @@ fn payload(sequence: u64) -> CheckpointPayload {
         phase_epoch: 1,
         monotonic_elapsed_ns: sequence * 1_000,
         wall_clock_utc: format!("2026-10-04T00:00:{sequence:02}Z"),
+        observed_unix_seconds: 1_000 + sequence,
+        useful_progress_unix_seconds: 1_000 + sequence,
         completed: sequence,
         failed: 0,
         rejected: 0,

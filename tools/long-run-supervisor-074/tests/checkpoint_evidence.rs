@@ -31,6 +31,8 @@ fn payload(role: Role, sequence: u64) -> CheckpointPayload {
         phase_epoch: 1,
         monotonic_elapsed_ns: sequence * 1_000,
         wall_clock_utc: format!("2026-10-04T00:00:{sequence:02}Z"),
+        observed_unix_seconds: 1_000 + sequence,
+        useful_progress_unix_seconds: 1_000 + sequence,
         completed: sequence,
         failed: 0,
         rejected: 0,
@@ -82,7 +84,7 @@ fn state(head: String) -> DurableCampaignState {
         checkpoint: Some(CheckpointHead {
             sequence: 2,
             record_sha256: head,
-            useful_progress_unix_seconds: 1_000,
+            useful_progress_unix_seconds: 1_002,
         }),
         controller_lease: None,
         recorded_failure: false,
@@ -177,6 +179,11 @@ fn terminal_evidence_requires_the_final_phase_and_retains_role_identity() {
     append_record(&journal, &head, &third).unwrap();
     state.checkpoint.as_mut().unwrap().sequence = 3;
     state.checkpoint.as_mut().unwrap().record_sha256 = third.record_sha256;
+    state
+        .checkpoint
+        .as_mut()
+        .unwrap()
+        .useful_progress_unix_seconds = 1_003;
     assert!(verify_terminal_checkpoint_evidence(temporary.path(), &state).is_ok());
 
     state.campaign_state = CampaignState::I74Terminal;

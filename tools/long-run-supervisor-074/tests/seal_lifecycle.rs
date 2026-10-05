@@ -67,6 +67,8 @@ fn payload(
         phase_epoch: 1,
         monotonic_elapsed_ns: sequence * 1_000,
         wall_clock_utc: format!("2026-10-04T00:00:{sequence:02}Z"),
+        observed_unix_seconds: 1_000 + sequence,
+        useful_progress_unix_seconds: 1_000 + sequence,
         completed: sequence,
         failed: 0,
         rejected: 0,
@@ -237,7 +239,7 @@ fn fixture() -> Fixture {
     state.checkpoint = Some(CheckpointHead {
         sequence: 2,
         record_sha256: second.record_sha256,
-        useful_progress_unix_seconds: 999,
+        useful_progress_unix_seconds: 1_002,
     });
     state.controller_lease = Some(ControllerLease {
         holder_request_id: attach_request.request_id.clone(),
@@ -535,7 +537,7 @@ fn c74_complete_seal_releases_host_claim_and_replays_after_release() {
     state.checkpoint = Some(CheckpointHead {
         sequence: 2,
         record_sha256: second.record_sha256,
-        useful_progress_unix_seconds: 1_199,
+        useful_progress_unix_seconds: 1_002,
     });
     state.controller_lease = Some(ControllerLease {
         holder_request_id: attach_request.request_id.clone(),

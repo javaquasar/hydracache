@@ -1,4 +1,4 @@
-use crate::state::{CampaignState, DurableCampaignState};
+use crate::state::{CampaignState, CheckpointHead, DurableCampaignState};
 use crate::{verify_journal, ChainError, Phase, Role, VerificationReport};
 use std::fs::{self, File};
 use std::io::Read;
@@ -30,6 +30,20 @@ pub fn verify_checkpoint_evidence(
         .checkpoint
         .as_ref()
         .ok_or(CheckpointEvidenceError::Binding)?;
+    let (report, observed) = observe_live_checkpoint_evidence(campaign_directory, state)?;
+    if observed.sequence != checkpoint.sequence
+        || report.head_sha256 != checkpoint.record_sha256
+        || observed.useful_progress_unix_seconds != checkpoint.useful_progress_unix_seconds
+    {
+        return Err(CheckpointEvidenceError::Binding);
+    }
+    Ok(report)
+}
+
+pub fn observe_live_checkpoint_evidence(
+    campaign_directory: &Path,
+    state: &DurableCampaignState,
+) -> Result<(VerificationReport, CheckpointHead), CheckpointEvidenceError> {
     let harness = state
         .harness
         .as_ref()
@@ -48,14 +62,24 @@ pub fn verify_checkpoint_evidence(
     verify_head(&head, &report.head_sha256)?;
     if report.campaign_id != state.identity.campaign_id
         || report.role != expected_role
-        || report.records != checkpoint.sequence
-        || report.head_sha256 != checkpoint.record_sha256
         || &report.harness != harness
         || &report.daemon != daemon
     {
         return Err(CheckpointEvidenceError::Binding);
     }
-    Ok(report)
+    let observed = CheckpointHead {
+        sequence: report.records,
+        record_sha256: report.head_sha256.clone(),
+        useful_progress_unix_seconds: report.last_useful_progress_unix_seconds,
+    };
+    if state.checkpoint.as_ref().is_some_and(|previous| {
+        observed.sequence < previous.sequence
+            || (observed.sequence == previous.sequence && &observed != previous)
+            || observed.useful_progress_unix_seconds < previous.useful_progress_unix_seconds
+    }) {
+        return Err(CheckpointEvidenceError::Binding);
+    }
+    Ok((report, observed))
 }
 
 pub fn verify_terminal_checkpoint_evidence(

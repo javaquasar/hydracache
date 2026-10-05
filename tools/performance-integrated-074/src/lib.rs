@@ -95,7 +95,7 @@ pub struct DurableCheckpointWriter {
 impl DurableCheckpointWriter {
     pub fn start(
         role_directory: &Path,
-        initial: CheckpointPayload,
+        mut initial: CheckpointPayload,
         observed_unix_seconds: u64,
     ) -> Result<Self, CheckpointWriterError> {
         let metadata = fs::symlink_metadata(role_directory)?;
@@ -111,6 +111,8 @@ impl DurableCheckpointWriter {
         if journal.exists() || head.exists() {
             return Err(CheckpointWriterError::Initialization);
         }
+        initial.observed_unix_seconds = observed_unix_seconds;
+        initial.useful_progress_unix_seconds = observed_unix_seconds;
         let record = build_record(1, GENESIS_HASH, initial.clone())?;
         append_record(&journal, &head, &record)?;
         let watchdog = ProgressWatchdog::new(
@@ -132,13 +134,15 @@ impl DurableCheckpointWriter {
 
     pub fn append(
         &mut self,
-        payload: CheckpointPayload,
+        mut payload: CheckpointPayload,
         observed_unix_seconds: u64,
     ) -> Result<ProgressObservation, CheckpointWriterError> {
         let next_sequence = self.sequence.saturating_add(1);
         let mut next_watchdog = self.watchdog.clone();
+        payload.observed_unix_seconds = observed_unix_seconds;
         let observation =
             next_watchdog.observe(next_sequence, payload.clone(), observed_unix_seconds)?;
+        payload.useful_progress_unix_seconds = next_watchdog.last_useful_progress_unix_seconds();
         let record = build_record(next_sequence, &self.previous_record_sha256, payload)?;
         append_record(&self.journal, &self.head, &record)?;
         self.sequence = next_sequence;

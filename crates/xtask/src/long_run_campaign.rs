@@ -629,6 +629,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<JournalReport, Box<dyn Error
     let mut identities = None;
     let mut elapsed = 0;
     let mut wall_clock = String::new();
+    let mut observed_unix_seconds = 0;
+    let mut useful_progress_unix_seconds = 0;
     let mut head = String::new();
     let mut first_record_sha256 = None;
     for (index, line) in lines.iter().enumerate() {
@@ -678,6 +680,11 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<JournalReport, Box<dyn Error
         );
         let current_elapsed = required_u64(&envelope.payload, "monotonic_elapsed_ns")?;
         let current_wall = required_string(&envelope.payload, "wall_clock_utc")?;
+        let current_observed = required_u64(&envelope.payload, "observed_unix_seconds")?;
+        let current_useful = required_u64(&envelope.payload, "useful_progress_unix_seconds")?;
+        if current_observed == 0 || current_useful == 0 || current_useful > current_observed {
+            return Err(format!("checkpoint progress timestamp is invalid at {sequence}").into());
+        }
         if let Some(expected) = &campaign_id {
             if expected != current_campaign
                 || role.as_deref() != Some(current_role)
@@ -685,7 +692,11 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<JournalReport, Box<dyn Error
             {
                 return Err(format!("checkpoint identity drift at {sequence}").into());
             }
-            if current_elapsed < elapsed || current_wall < wall_clock.as_str() {
+            if current_elapsed < elapsed
+                || current_wall < wall_clock.as_str()
+                || current_observed < observed_unix_seconds
+                || current_useful < useful_progress_unix_seconds
+            {
                 return Err(format!("checkpoint timestamp reversal at {sequence}").into());
             }
         } else {
@@ -699,6 +710,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<JournalReport, Box<dyn Error
         }
         elapsed = current_elapsed;
         wall_clock = current_wall.to_owned();
+        observed_unix_seconds = current_observed;
+        useful_progress_unix_seconds = current_useful;
         previous.clone_from(&envelope.record_sha256);
         head = envelope.record_sha256;
     }

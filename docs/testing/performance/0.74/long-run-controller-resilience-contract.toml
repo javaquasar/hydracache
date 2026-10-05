@@ -76,6 +76,8 @@ state_replace = "same-directory-create-new-sync-rename-parent-sync"
 
 [local_implementation]
 checkpoint_chain_library = "tools/long-run-supervisor-074"
+checkpoint_envelope_schema = "docs/testing/performance/0.74/schemas/checkpoint-envelope.schema.json"
+checkpoint_envelope_schema_sha256 = "d6d5afe20ebb99fafc111e2b475d1e8b14139adab25bc69c5d36ac97d4a6d8f6"
 offline_xtask_verifier = "crates/xtask/src/long_run_campaign.rs"
 offline_verifier_complete = true
 packet_manifest_schema = "docs/testing/performance/0.74/schemas/campaign-packet-manifest.schema.json"
@@ -117,6 +119,9 @@ lease_expiry_termination_complete = true
 state_machine_and_attach_predicates_complete = true
 phase_progress_watchdog = "tools/long-run-supervisor-074/src/watchdog.rs"
 phase_progress_watchdog_complete = true
+supervisor_progress_loss_maintenance_complete = true
+startup_checkpoint_absence_maintenance_complete = false
+progress_loss_host_rehearsal_complete = false
 strict_protocol_schema_complete = true
 signed_authorization_verifier_complete = true
 signed_request_builder = "tools/long-run-supervisor-074/src/request_builder.rs"
@@ -164,6 +169,7 @@ mutation_recovery = "tools/long-run-supervisor-074/src/mutation.rs"
 mutation_recovery_complete = true
 attach_checkpoint_evidence = "tools/long-run-supervisor-074/src/checkpoint_evidence.rs"
 attach_checkpoint_evidence_complete = true
+live_attach_checkpoint_refresh_complete = true
 attach_manifest_evidence = "tools/long-run-supervisor-074/src/manifest_evidence.rs"
 attach_manifest_evidence_complete = true
 systemd_unit_inspector = "tools/long-run-supervisor-074/src/systemd_unit.rs"

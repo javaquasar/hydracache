@@ -110,6 +110,8 @@ fn write_inventory(campaign: &Path, campaign_id: &str, manifest_sha256: &str, ro
             phase_epoch: 1,
             monotonic_elapsed_ns: 1_000,
             wall_clock_utc: "2026-10-04T00:00:01Z".to_owned(),
+            observed_unix_seconds: 1_001,
+            useful_progress_unix_seconds: 1_001,
             completed: 1,
             failed: 0,
             rejected: 0,

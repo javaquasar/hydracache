@@ -25,6 +25,8 @@ fn payload(elapsed: u64, phase: Phase) -> CheckpointPayload {
         phase_epoch: 1,
         monotonic_elapsed_ns: elapsed,
         wall_clock_utc: format!("2026-10-04T00:00:{:02}Z", elapsed / 1_000),
+        observed_unix_seconds: elapsed,
+        useful_progress_unix_seconds: elapsed,
         completed: elapsed,
         failed: 0,
         rejected: 0,

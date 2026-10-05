@@ -38,6 +38,8 @@ fn record(sequence: u64, previous: &str, role: &str) -> Value {
         "campaign_id": "a".repeat(64), "role": role, "phase": "measured",
         "phase_epoch": 1, "monotonic_elapsed_ns": sequence * 1_000,
         "wall_clock_utc": format!("2026-10-04T00:00:0{sequence}Z"),
+        "observed_unix_seconds": 1_000 + sequence,
+        "useful_progress_unix_seconds": 1_000 + sequence,
         "completed": sequence, "failed": 0, "rejected": 0, "timed_out": 0,
         "outstanding": 0, "telemetry_sequence": sequence, "milestone": "progress",
         "surface_counters": {}, "resource_counters": {}, "owner_counters": {},

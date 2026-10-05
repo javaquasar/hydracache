@@ -22,6 +22,9 @@ use hydracache_long_run_supervisor_074::lease_expiry::{
     LeaseExpiryBackend, LeaseExpiryCause, LeaseExpiryOutcome,
 };
 use hydracache_long_run_supervisor_074::manifest::CampaignManifest;
+use hydracache_long_run_supervisor_074::progress_loss::{
+    ProgressLossBackend, ProgressLossCause, ProgressLossOutcome,
+};
 use hydracache_long_run_supervisor_074::protocol::{
     sign_response, ControllerIdentity, Operation, Request, ResponseBody, WireRequest,
 };
@@ -29,8 +32,8 @@ use hydracache_long_run_supervisor_074::seal_input::{
     InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
 };
 use hydracache_long_run_supervisor_074::server::{
-    AbortObservationBackend, LeaseExpiryObservationBackend, SealObservationBackend,
-    StartObservationBackend, SupervisorServer,
+    AbortObservationBackend, LeaseExpiryObservationBackend, ProgressLossObservationBackend,
+    SealObservationBackend, StartObservationBackend, SupervisorServer,
 };
 use hydracache_long_run_supervisor_074::spawn::{SpawnBackend, SpawnIntent, SpawnObservation};
 use hydracache_long_run_supervisor_074::state::{
@@ -321,6 +324,41 @@ impl LeaseExpiryBackend for FakeLeaseExpiryBackend {
 }
 
 impl LeaseExpiryObservationBackend for FakeLeaseExpiryBackend {
+    fn verify_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.host_checks += 1;
+        Ok(())
+    }
+}
+
+#[derive(Default)]
+struct FakeProgressLossBackend {
+    host_checks: usize,
+    stop_calls: usize,
+}
+
+impl ProgressLossBackend for FakeProgressLossBackend {
+    fn capture_and_stop_stalled(
+        &mut self,
+        _campaign_directory: &Path,
+        cause: &ProgressLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.stop_calls += 1;
+        assert_eq!(cause.campaign_id, state.identity.campaign_id);
+        assert_eq!(state.campaign_state, CampaignState::FailedIncomplete);
+        assert_eq!(state.checkpoint.as_ref(), Some(&cause.checkpoint));
+        assert!(state.harness.is_some());
+        assert!(state.daemon.is_some());
+        Ok(())
+    }
+}
+
+impl ProgressLossObservationBackend for FakeProgressLossBackend {
     fn verify_host(
         &mut self,
         _campaign_directory: &Path,
@@ -633,6 +671,8 @@ fn prepare_i74_terminal_evidence(
             phase_epoch: 1,
             monotonic_elapsed_ns: 1_000,
             wall_clock_utc: "2026-10-05T00:00:01Z".to_owned(),
+            observed_unix_seconds: now,
+            useful_progress_unix_seconds: now,
             completed: 1,
             failed: 0,
             rejected: 0,
@@ -1095,6 +1135,139 @@ fn maintenance_expires_the_active_campaign_without_a_controller_request() {
     assert_eq!(
         server
             .maintain_lease_expiry_with_backend(now + 10_002, &mut backend)
+            .unwrap(),
+        None
+    );
+    assert_eq!(backend.stop_calls, 1);
+}
+
+#[test]
+fn maintenance_fails_stalled_progress_from_the_live_checkpoint_chain() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    let staging_root = temporary.path().join("staging");
+    let seal_root = temporary.path().join("seals");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::create_dir(&staging_root).unwrap();
+    fs::create_dir(&seal_root).unwrap();
+    let socket = temporary.path().join("supervisor-progress-loss.sock");
+    let key = SigningKey::from_bytes(&[7; 32]);
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let start_packet = stage_start(&staging_root, &key, now);
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut start_backend = FakeStartBackend::default();
+    let started = exchange_start_once(&server, &socket, &start_packet, &mut start_backend);
+    assert!(started.body.ok);
+
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let running = lock.read().unwrap();
+    let role = lock.campaign_directory().join("roles/i74");
+    fs::create_dir_all(&role).unwrap();
+    let record = build_record(
+        1,
+        GENESIS_HASH,
+        CheckpointPayload {
+            campaign_id: running.identity.campaign_id.clone(),
+            role: Role::I74,
+            phase: Phase::Measured,
+            phase_epoch: 1,
+            monotonic_elapsed_ns: 1_000,
+            wall_clock_utc: "2026-10-05T00:00:01Z".to_owned(),
+            observed_unix_seconds: now,
+            useful_progress_unix_seconds: now,
+            completed: 1,
+            failed: 0,
+            rejected: 0,
+            timed_out: 0,
+            outstanding: 0,
+            telemetry_sequence: 1,
+            milestone: "measured".to_owned(),
+            surface_counters: BTreeMap::new(),
+            resource_counters: BTreeMap::new(),
+            owner_counters: BTreeMap::new(),
+            harness: running.harness.clone().unwrap(),
+            daemon: running.daemon.clone().unwrap(),
+        },
+    )
+    .unwrap();
+    append_record(
+        &role.join("checkpoints.jsonl"),
+        &role.join("checkpoints.head"),
+        &record,
+    )
+    .unwrap();
+    drop(lock);
+
+    let mut backend = FakeProgressLossBackend::default();
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(now + 180, &mut backend)
+            .unwrap(),
+        Some(ProgressLossOutcome::NotDue)
+    );
+    assert_eq!(backend.host_checks, 0);
+    assert_eq!(backend.stop_calls, 0);
+    let second = build_record(
+        2,
+        &record.record_sha256,
+        CheckpointPayload {
+            campaign_id: running.identity.campaign_id.clone(),
+            role: Role::I74,
+            phase: Phase::Measured,
+            phase_epoch: 1,
+            monotonic_elapsed_ns: 2_000,
+            wall_clock_utc: "2026-10-05T00:00:02Z".to_owned(),
+            observed_unix_seconds: now + 170,
+            useful_progress_unix_seconds: now + 170,
+            completed: 2,
+            failed: 0,
+            rejected: 0,
+            timed_out: 0,
+            outstanding: 0,
+            telemetry_sequence: 2,
+            milestone: "measured".to_owned(),
+            surface_counters: BTreeMap::new(),
+            resource_counters: BTreeMap::new(),
+            owner_counters: BTreeMap::new(),
+            harness: running.harness.clone().unwrap(),
+            daemon: running.daemon.clone().unwrap(),
+        },
+    )
+    .unwrap();
+    append_record(
+        &role.join("checkpoints.jsonl"),
+        &role.join("checkpoints.head"),
+        &second,
+    )
+    .unwrap();
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(now + 181, &mut backend)
+            .unwrap(),
+        Some(ProgressLossOutcome::NotDue)
+    );
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(now + 351, &mut backend)
+            .unwrap(),
+        Some(ProgressLossOutcome::Completed { state_revision: 4 })
+    );
+    assert_eq!(backend.host_checks, 1);
+    assert_eq!(backend.stop_calls, 1);
+    let lock = CampaignLock::acquire(&campaign_root, &"1".repeat(64)).unwrap();
+    let failed = lock.read().unwrap();
+    assert_eq!(failed.campaign_state, CampaignState::FailedIncomplete);
+    assert!(failed.harness.is_none());
+    assert!(failed.checkpoint.is_none());
+    assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+    drop(lock);
+
+    assert_eq!(
+        server
+            .maintain_progress_loss_with_backend(now + 352, &mut backend)
             .unwrap(),
         None
     );

@@ -1,6 +1,7 @@
 use crate::abort_lifecycle::AbortBackend;
 use crate::lease_expiry::{LeaseExpiryBackend, LeaseExpiryCause};
 use crate::manifest::CampaignManifest;
+use crate::progress_loss::{ProgressLossBackend, ProgressLossCause};
 use crate::protocol::Request;
 use crate::state::DurableCampaignState;
 use crate::systemd_unit::{
@@ -37,6 +38,18 @@ struct LeaseExpiryDiagnostic {
     campaign_id: String,
     lease_id: String,
     lease_deadline_unix_seconds: u64,
+    cause_sha256: String,
+    role: Role,
+    state: DurableCampaignState,
+    unit: UnitSnapshot,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ProgressLossDiagnostic {
+    schema_version: u32,
+    release: String,
+    campaign_id: String,
     cause_sha256: String,
     role: Role,
     state: DurableCampaignState,
@@ -96,6 +109,18 @@ impl LeaseExpiryBackend for SystemdAbortBackend {
         state: &DurableCampaignState,
     ) -> Result<(), String> {
         self.capture_and_stop_expired_inner(campaign_directory, cause, state)
+            .map_err(|error| error.to_string())
+    }
+}
+
+impl ProgressLossBackend for SystemdAbortBackend {
+    fn capture_and_stop_stalled(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &ProgressLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        self.capture_and_stop_stalled_inner(campaign_directory, cause, state)
             .map_err(|error| error.to_string())
     }
 }
@@ -241,6 +266,80 @@ impl SystemdAbortBackend {
         }
         Ok(())
     }
+
+    fn capture_and_stop_stalled_inner(
+        &mut self,
+        campaign_directory: &Path,
+        cause: &ProgressLossCause,
+        state: &DurableCampaignState,
+    ) -> Result<(), SystemdAbortError> {
+        let manifest = self.manifest.as_ref().ok_or(SystemdAbortError::Manifest)?;
+        if manifest.campaign_id != cause.campaign_id
+            || manifest.campaign_id != state.identity.campaign_id
+            || manifest.progress_rejection_gap_seconds != cause.rejection_gap_seconds
+            || state.checkpoint.as_ref() != Some(&cause.checkpoint)
+        {
+            return Err(SystemdAbortError::Binding);
+        }
+        let harness = state.harness.as_ref().ok_or(SystemdAbortError::Binding)?;
+        let daemon = state.daemon.as_ref().ok_or(SystemdAbortError::Binding)?;
+        let role = role_from_unit(&harness.unit_name, &cause.campaign_id)?;
+        let diagnostic_path = progress_loss_diagnostic_path(
+            campaign_directory,
+            &role,
+            &cause.checkpoint.record_sha256,
+        )?;
+        match inspect_unit_optional(&harness.unit_name)? {
+            Some(snapshot) => {
+                if snapshot.sub_state == "running" {
+                    verify_unit_identity(harness, daemon, &snapshot)?;
+                    publish_progress_loss_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        role,
+                        snapshot,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                } else if snapshot.active_state == "active" && snapshot.sub_state == "exited" {
+                    verify_unit_terminal(harness, daemon, &snapshot)?;
+                    publish_progress_loss_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        role,
+                        snapshot,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                } else {
+                    if snapshot.unit_name != harness.unit_name
+                        || snapshot.control_group != harness.cgroup_path
+                        || (snapshot.main_pid != 0 && snapshot.main_pid != harness.pid)
+                    {
+                        return Err(SystemdAbortError::Binding);
+                    }
+                    verify_existing_progress_loss_diagnostic(
+                        &diagnostic_path,
+                        cause,
+                        state,
+                        &role,
+                        manifest.output_limits.diagnostic_bytes,
+                    )?;
+                }
+                stop_unit_and_wait(&harness.unit_name, manifest.diagnostic_grace_seconds)?;
+            }
+            None => {
+                verify_existing_progress_loss_diagnostic(
+                    &diagnostic_path,
+                    cause,
+                    state,
+                    &role,
+                    manifest.output_limits.diagnostic_bytes,
+                )?;
+            }
+        }
+        Ok(())
+    }
 }
 
 fn role_from_unit(unit: &str, campaign_id: &str) -> Result<Role, SystemdAbortError> {
@@ -269,6 +368,22 @@ fn lease_expiry_diagnostic_path(
     diagnostic_path_with_prefix(campaign_directory, role, "lease-expiry", lease_id)
 }
 
+fn progress_loss_diagnostic_path(
+    campaign_directory: &Path,
+    role: &Role,
+    checkpoint_sha256: &str,
+) -> Result<PathBuf, SystemdAbortError> {
+    if !crate::is_hash(checkpoint_sha256) {
+        return Err(SystemdAbortError::Binding);
+    }
+    diagnostic_path_with_validated_identity(
+        campaign_directory,
+        role,
+        "progress-loss",
+        checkpoint_sha256,
+    )
+}
+
 fn diagnostic_path_with_prefix(
     campaign_directory: &Path,
     role: &Role,
@@ -286,6 +401,15 @@ fn diagnostic_path_with_prefix(
     {
         return Err(SystemdAbortError::Binding);
     }
+    diagnostic_path_with_validated_identity(campaign_directory, role, prefix, identity)
+}
+
+fn diagnostic_path_with_validated_identity(
+    campaign_directory: &Path,
+    role: &Role,
+    prefix: &str,
+    identity: &str,
+) -> Result<PathBuf, SystemdAbortError> {
     let role_name = match role {
         Role::I74 => "i74",
         Role::C74 => "c74",
@@ -434,6 +558,62 @@ fn verify_existing_lease_expiry_diagnostic(
     Ok(())
 }
 
+fn publish_progress_loss_diagnostic(
+    path: &Path,
+    cause: &ProgressLossCause,
+    state: &DurableCampaignState,
+    role: Role,
+    unit: UnitSnapshot,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let document = ProgressLossDiagnostic {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: cause.campaign_id.clone(),
+        cause_sha256: cause.sha256()?,
+        role,
+        state: state.clone(),
+        unit,
+    };
+    let bytes = canonical_json(&document)?;
+    enforce_limit(bytes.len() as u64, limit)?;
+    publish_exact(path, &bytes)
+}
+
+fn verify_existing_progress_loss_diagnostic(
+    path: &Path,
+    cause: &ProgressLossCause,
+    state: &DurableCampaignState,
+    role: &Role,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let pending = path.with_extension("json.pending");
+    if pending.exists() {
+        let final_bytes = read_regular_allow_links(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+        if read_regular_allow_links(&pending, limit.min(MAX_DIAGNOSTIC_BYTES))? != final_bytes {
+            return Err(SystemdAbortError::Binding);
+        }
+        fs::remove_file(&pending)?;
+        sync_directory(path.parent().ok_or(SystemdAbortError::Binding)?)?;
+    }
+    let bytes = read_regular(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    if serde_json::to_vec(&value)? != bytes {
+        return Err(SystemdAbortError::Binding);
+    }
+    let document: ProgressLossDiagnostic = serde_json::from_value(value)?;
+    if document.schema_version != 1
+        || document.release != "0.74"
+        || document.campaign_id != cause.campaign_id
+        || document.cause_sha256 != cause.sha256()?
+        || &document.role != role
+        || document.state != *state
+    {
+        return Err(SystemdAbortError::Binding);
+    }
+    Ok(())
+}
+
 fn enforce_limit(size: u64, limit: u64) -> Result<(), SystemdAbortError> {
     if size == 0 || limit == 0 || limit > MAX_DIAGNOSTIC_BYTES || size > limit {
         return Err(SystemdAbortError::Limit);
@@ -541,13 +721,17 @@ fn sync_directory(path: &Path) -> Result<(), SystemdAbortError> {
 #[cfg(test)]
 mod tests {
     use super::{
-        diagnostic_path, lease_expiry_diagnostic_path, publish_diagnostic,
-        publish_lease_expiry_diagnostic, verify_existing_diagnostic,
-        verify_existing_lease_expiry_diagnostic,
+        diagnostic_path, lease_expiry_diagnostic_path, progress_loss_diagnostic_path,
+        publish_diagnostic, publish_lease_expiry_diagnostic, publish_progress_loss_diagnostic,
+        verify_existing_diagnostic, verify_existing_lease_expiry_diagnostic,
+        verify_existing_progress_loss_diagnostic,
     };
     use crate::lease_expiry::LeaseExpiryCause;
+    use crate::progress_loss::ProgressLossCause;
     use crate::protocol::{ControllerIdentity, Operation, Request};
-    use crate::state::{CampaignState, ControllerLease, DurableCampaignState, FrozenIdentity};
+    use crate::state::{
+        CampaignState, CheckpointHead, ControllerLease, DurableCampaignState, FrozenIdentity,
+    };
     use crate::systemd_unit::UnitSnapshot;
     use crate::{ProcessIdentity, Role};
 
@@ -708,5 +892,45 @@ mod tests {
             1_048_576,
         )
         .is_err());
+    }
+
+    #[test]
+    fn progress_loss_diagnostic_is_checkpoint_bound_and_exactly_replayed() {
+        let (_temporary, campaign, _request, mut state, snapshot) = fixture();
+        state.campaign_state = CampaignState::FailedIncomplete;
+        let checkpoint = CheckpointHead {
+            sequence: 8,
+            record_sha256: hash('8'),
+            useful_progress_unix_seconds: 990,
+        };
+        state.checkpoint = Some(checkpoint.clone());
+        let cause = ProgressLossCause {
+            schema_version: 1,
+            campaign_id: state.identity.campaign_id.clone(),
+            checkpoint,
+            rejection_gap_seconds: 180,
+            rejection_deadline_unix_seconds: 1_170,
+        };
+        let path =
+            progress_loss_diagnostic_path(&campaign, &Role::I74, &cause.checkpoint.record_sha256)
+                .unwrap();
+        publish_progress_loss_diagnostic(
+            &path,
+            &cause,
+            &state,
+            Role::I74,
+            snapshot.clone(),
+            1_048_576,
+        )
+        .unwrap();
+        let first = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("json.pending")).unwrap();
+        publish_progress_loss_diagnostic(&path, &cause, &state, Role::I74, snapshot, 1_048_576)
+            .unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), first);
+        std::fs::hard_link(&path, path.with_extension("json.pending")).unwrap();
+        verify_existing_progress_loss_diagnostic(&path, &cause, &state, &Role::I74, 1_048_576)
+            .unwrap();
+        assert!(!path.with_extension("json.pending").exists());
     }
 }

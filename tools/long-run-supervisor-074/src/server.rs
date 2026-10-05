@@ -2,6 +2,7 @@ use crate::abort_backend::SystemdAbortBackend;
 use crate::abort_lifecycle::{drive_abort_request, AbortBackend, AbortLifecycleError};
 use crate::archive::ArchiveLimits;
 use crate::artifact::PacketLimits;
+use crate::checkpoint_evidence::{observe_live_checkpoint_evidence, CheckpointEvidenceError};
 use crate::config::ServerConfig;
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::{
@@ -13,6 +14,7 @@ use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
 use crate::manifest_evidence::{verify_manifest_evidence, verify_stored_manifest_evidence};
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach, MutationError};
 use crate::process_identity::{verify_process_cpuset, verify_process_identity};
+use crate::progress_loss::{drive_progress_loss, ProgressLossBackend, ProgressLossOutcome};
 use crate::protocol::{
     parse_wire_request, sign_response, Operation, Response, ResponseBody, WireRequest,
 };
@@ -54,6 +56,8 @@ pub enum ServerError {
     Mutation(#[from] MutationError),
     #[error("supervisor lease-expiry maintenance failed: {0}")]
     LeaseExpiry(String),
+    #[error("supervisor progress-loss maintenance failed: {0}")]
+    ProgressLoss(String),
 }
 
 pub struct SupervisorServer {
@@ -86,6 +90,15 @@ pub trait AbortObservationBackend: AbortBackend {
 }
 
 pub trait LeaseExpiryObservationBackend: LeaseExpiryBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String>;
+}
+
+pub trait ProgressLossObservationBackend: ProgressLossBackend {
     fn verify_host(
         &mut self,
         campaign_directory: &Path,
@@ -159,6 +172,20 @@ impl LeaseExpiryObservationBackend for SystemdAbortBackend {
     }
 }
 
+impl ProgressLossObservationBackend for SystemdAbortBackend {
+    fn verify_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        verify_host_receipt_evidence(campaign_directory, manifest, state)
+            .map_err(|error| error.to_string())?;
+        self.bind_manifest(manifest.clone());
+        Ok(())
+    }
+}
+
 impl SupervisorServer {
     pub fn bind(config: ServerConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let policy = config.policy()?;
@@ -179,6 +206,7 @@ impl SupervisorServer {
         let mut lease_backend = SystemdAbortBackend::new();
         loop {
             self.maintain_lease_expiry_with_backend(unix_seconds(), &mut lease_backend)?;
+            self.maintain_progress_loss_with_backend(unix_seconds(), &mut lease_backend)?;
             if let Some(connection) = self.listener.accept_timeout(MAINTENANCE_INTERVAL)? {
                 self.handle_connection_inner::<SystemdSpawnBackend>(connection, None, None, None)?;
             }
@@ -209,6 +237,75 @@ impl SupervisorServer {
             .map_err(ServerError::LeaseExpiry)?;
         let outcome = drive_lease_expiry(&host_claim, &lock, now, backend)
             .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
+        Ok(Some(outcome))
+    }
+
+    pub fn maintain_progress_loss_with_backend(
+        &self,
+        now: u64,
+        backend: &mut dyn ProgressLossObservationBackend,
+    ) -> Result<Option<ProgressLossOutcome>, ServerError> {
+        let Some(host_claim) = HostExecutionClaim::recover_active(&self.config.campaign_root)
+            .map_err(|error| ServerError::ProgressLoss(error.to_string()))?
+        else {
+            return Ok(None);
+        };
+        let lock = CampaignLock::acquire(&self.config.campaign_root, host_claim.campaign_id())
+            .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
+        let state = reconcile_campaign(&lock)
+            .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
+        let manifest = verify_stored_manifest_evidence(lock.campaign_directory(), &state)
+            .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
+        let observed_checkpoint = if state.campaign_state == CampaignState::FailedIncomplete {
+            state.checkpoint.clone()
+        } else if state.campaign_state.is_live() {
+            match observe_live_checkpoint_evidence(lock.campaign_directory(), &state) {
+                Ok((report, checkpoint)) => {
+                    if report.last_observed_unix_seconds > now {
+                        return Err(ServerError::ProgressLoss(
+                            "checkpoint observation is in the future".to_owned(),
+                        ));
+                    }
+                    if report.last_phase == crate::Phase::Terminal {
+                        return Ok(Some(ProgressLossOutcome::NotDue));
+                    }
+                    Some(checkpoint)
+                }
+                Err(CheckpointEvidenceError::Io(error))
+                    if error.kind() == std::io::ErrorKind::NotFound =>
+                {
+                    return Ok(Some(ProgressLossOutcome::NotDue));
+                }
+                Err(error) => return Err(ServerError::ProgressLoss(error.to_string())),
+            }
+        } else {
+            return Ok(Some(ProgressLossOutcome::NotDue));
+        };
+        if state.campaign_state.is_live() {
+            let rejection_deadline = observed_checkpoint
+                .as_ref()
+                .ok_or_else(|| ServerError::ProgressLoss("checkpoint is missing".to_owned()))?
+                .useful_progress_unix_seconds
+                .checked_add(manifest.progress_rejection_gap_seconds)
+                .ok_or_else(|| {
+                    ServerError::ProgressLoss("progress deadline overflow".to_owned())
+                })?;
+            if now <= rejection_deadline {
+                return Ok(Some(ProgressLossOutcome::NotDue));
+            }
+        }
+        backend
+            .verify_host(lock.campaign_directory(), &manifest, &state)
+            .map_err(ServerError::ProgressLoss)?;
+        let outcome = drive_progress_loss(
+            &host_claim,
+            &lock,
+            now,
+            observed_checkpoint,
+            manifest.progress_rejection_gap_seconds,
+            backend,
+        )
+        .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
         Ok(Some(outcome))
     }
 
@@ -563,12 +660,20 @@ impl SupervisorServer {
                 None
             }
         };
-        if let Err(error) = crate::checkpoint_evidence::verify_checkpoint_evidence(
-            lock.campaign_directory(),
-            &state,
-        ) {
-            failures.push(format!("checkpoint:{error}"));
-        }
+        let observed_checkpoint =
+            match observe_live_checkpoint_evidence(lock.campaign_directory(), &state) {
+                Ok((report, checkpoint)) if report.last_observed_unix_seconds <= now => {
+                    Some(checkpoint)
+                }
+                Ok(_) => {
+                    failures.push("checkpoint:observation-in-the-future".to_owned());
+                    None
+                }
+                Err(error) => {
+                    failures.push(format!("checkpoint:{error}"));
+                    None
+                }
+            };
         match manifest.as_ref() {
             Some(manifest) => {
                 if let Err(error) =
@@ -586,8 +691,10 @@ impl SupervisorServer {
         let progress_rejection_gap_seconds = manifest
             .as_ref()
             .map_or(180, |manifest| manifest.progress_rejection_gap_seconds);
-        let next = match (execution, state.checkpoint.clone()) {
+        let next = match (execution, observed_checkpoint) {
             (Some((harness, daemon)), Some(checkpoint)) => {
+                let mut observed_state = state.clone();
+                observed_state.checkpoint = Some(checkpoint.clone());
                 let attach = AttachRequest {
                     request_id: request.request_id.clone(),
                     request_sha256: crate::event::request_sha256(request)
@@ -606,7 +713,7 @@ impl SupervisorServer {
                         .expires_at_unix_seconds
                         .saturating_sub(now),
                 };
-                match apply_attach(&state, &attach, progress_rejection_gap_seconds) {
+                match apply_attach(&observed_state, &attach, progress_rejection_gap_seconds) {
                     Ok(next) => Some(next),
                     Err(decision) => {
                         failures.extend(

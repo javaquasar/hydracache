@@ -28,6 +28,8 @@ pub mod manifest_evidence;
 pub mod mutation;
 #[cfg(target_os = "linux")]
 pub mod process_identity;
+#[cfg(target_os = "linux")]
+pub mod progress_loss;
 pub mod protocol;
 pub mod request_builder;
 pub mod seal_artifact;
@@ -100,6 +102,8 @@ pub struct CheckpointPayload {
     pub phase_epoch: u64,
     pub monotonic_elapsed_ns: u64,
     pub wall_clock_utc: String,
+    pub observed_unix_seconds: u64,
+    pub useful_progress_unix_seconds: u64,
     pub completed: u64,
     pub failed: u64,
     pub rejected: u64,
@@ -134,6 +138,8 @@ pub struct VerificationReport {
     pub role: Role,
     pub last_phase: Phase,
     pub last_monotonic_elapsed_ns: u64,
+    pub last_observed_unix_seconds: u64,
+    pub last_useful_progress_unix_seconds: u64,
     pub recovered_incomplete_trailing_bytes: usize,
     pub harness: ProcessIdentity,
     pub daemon: ProcessIdentity,
@@ -245,6 +251,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
     let mut first_record_sha256 = None;
     let mut last_elapsed = 0;
     let mut last_wall = String::new();
+    let mut last_observed = 0;
+    let mut last_useful = 0;
     let mut last: Option<RecordEnvelope> = None;
     for (index, line) in parts.iter().enumerate() {
         if line.is_empty() {
@@ -271,6 +279,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
             }
             if envelope.payload.monotonic_elapsed_ns < last_elapsed
                 || envelope.payload.wall_clock_utc < last_wall
+                || envelope.payload.observed_unix_seconds < last_observed
+                || envelope.payload.useful_progress_unix_seconds < last_useful
             {
                 return Err(ChainError::TimestampReversal {
                     sequence: envelope.sequence,
@@ -282,6 +292,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
         }
         last_elapsed = envelope.payload.monotonic_elapsed_ns;
         last_wall.clone_from(&envelope.payload.wall_clock_utc);
+        last_observed = envelope.payload.observed_unix_seconds;
+        last_useful = envelope.payload.useful_progress_unix_seconds;
         previous.clone_from(&envelope.record_sha256);
         last = Some(envelope);
     }
@@ -295,6 +307,8 @@ pub fn verify_journal_bytes(bytes: &[u8]) -> Result<VerificationReport, ChainErr
         role: first.role,
         last_phase: last.payload.phase,
         last_monotonic_elapsed_ns: last_elapsed,
+        last_observed_unix_seconds: last_observed,
+        last_useful_progress_unix_seconds: last_useful,
         recovered_incomplete_trailing_bytes: recovered,
         harness: first.harness,
         daemon: first.daemon,
@@ -341,7 +355,11 @@ fn validate_record(
     expected_sequence: u64,
     expected_previous: &str,
 ) -> Result<(), ChainError> {
-    if envelope.schema_version != 1 {
+    if envelope.schema_version != 1
+        || envelope.payload.observed_unix_seconds == 0
+        || envelope.payload.useful_progress_unix_seconds == 0
+        || envelope.payload.useful_progress_unix_seconds > envelope.payload.observed_unix_seconds
+    {
         return Err(ChainError::Schema {
             sequence: envelope.sequence,
         });

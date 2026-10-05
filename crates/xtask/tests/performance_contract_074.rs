@@ -132,6 +132,10 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
             "seal_input_inventory_schema",
             "seal_input_inventory_schema_sha256",
         ),
+        (
+            "checkpoint_envelope_schema",
+            "checkpoint_envelope_schema_sha256",
+        ),
         ("raw_manifest_schema", "raw_manifest_schema_sha256"),
         ("start_manifest_schema", "start_manifest_schema_sha256"),
         ("host_observation_schema", "host_observation_schema_sha256"),
@@ -153,11 +157,13 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "guard_evidence_binding_complete",
         "deterministic_archive_creation_complete",
         "phase_progress_watchdog_complete",
+        "supervisor_progress_loss_maintenance_complete",
         "full_design_manifest_fields_complete",
         "host_receipt_revalidation_complete",
         "live_start_host_receipt_revalidation_complete",
         "start_evidence_import_complete",
         "live_attach_lease_admission_complete",
+        "live_attach_checkpoint_refresh_complete",
         "start_bundle_builder_complete",
         "start_bundle_transport_verifier_complete",
         "supervisor_owned_start_upload_complete",
@@ -172,6 +178,14 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
     );
     assert_eq!(
         implementation["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["startup_checkpoint_absence_maintenance_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["progress_loss_host_rehearsal_complete"].as_bool(),
         Some(false)
     );
     assert_eq!(

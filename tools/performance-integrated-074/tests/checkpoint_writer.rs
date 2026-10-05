@@ -38,6 +38,8 @@ fn payload(phase: Phase, elapsed: u64, completed: u64, outstanding: u64) -> Chec
         phase_epoch: elapsed,
         monotonic_elapsed_ns: elapsed * 1_000_000_000,
         wall_clock_utc: format!("2026-10-04T00:{elapsed:02}:00Z"),
+        observed_unix_seconds: elapsed,
+        useful_progress_unix_seconds: elapsed,
         completed,
         failed: 0,
         rejected: 0,
@@ -203,7 +205,30 @@ fn writes_complete_phase_aware_terminal_chain() {
     let report = writer.finish().unwrap();
     assert_eq!(report.records, 8);
     assert_eq!(report.last_phase, Phase::Terminal);
+    assert_eq!(report.last_observed_unix_seconds, 8);
+    assert_eq!(report.last_useful_progress_unix_seconds, 8);
     assert_eq!(report.recovered_incomplete_trailing_bytes, 0);
+}
+
+#[test]
+fn checkpoint_chain_persists_observation_without_forging_useful_progress() {
+    let temporary = tempfile::tempdir().unwrap();
+    let mut writer =
+        DurableCheckpointWriter::start(temporary.path(), payload(Phase::Startup, 1, 0, 10), 100)
+            .unwrap();
+    writer
+        .append(payload(Phase::Warmup, 2, 10, 10), 101)
+        .unwrap();
+    writer
+        .append(payload(Phase::Measured, 3, 20, 10), 102)
+        .unwrap();
+    let observation = writer
+        .append(payload(Phase::Measured, 4, 20, 10), 103)
+        .unwrap();
+    assert!(!observation.useful_progress);
+    let report = writer.report().unwrap();
+    assert_eq!(report.last_observed_unix_seconds, 103);
+    assert_eq!(report.last_useful_progress_unix_seconds, 102);
 }
 
 #[test]

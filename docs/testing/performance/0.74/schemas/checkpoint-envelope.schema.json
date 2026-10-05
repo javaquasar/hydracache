@@ -23,7 +23,8 @@
       "additionalProperties": false,
       "required": [
         "campaign_id", "role", "phase", "phase_epoch", "monotonic_elapsed_ns",
-        "wall_clock_utc", "completed", "failed", "rejected", "timed_out", "outstanding",
+        "wall_clock_utc", "observed_unix_seconds", "useful_progress_unix_seconds",
+        "completed", "failed", "rejected", "timed_out", "outstanding",
         "telemetry_sequence", "milestone", "surface_counters", "resource_counters",
         "owner_counters", "harness", "daemon"
       ],
@@ -34,6 +35,8 @@
         "phase_epoch": { "$ref": "#/$defs/count" },
         "monotonic_elapsed_ns": { "$ref": "#/$defs/count" },
         "wall_clock_utc": { "type": "string", "format": "date-time" },
+        "observed_unix_seconds": { "type": "integer", "minimum": 1 },
+        "useful_progress_unix_seconds": { "type": "integer", "minimum": 1 },
         "completed": { "$ref": "#/$defs/count" },
         "failed": { "$ref": "#/$defs/count" },
         "rejected": { "$ref": "#/$defs/count" },
