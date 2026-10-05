@@ -140,6 +140,7 @@ pub fn build_transient_unit_spec(
         ("KillMode", UnitProperty::Text("control-group".to_owned())),
         ("Delegate", UnitProperty::Boolean(false)),
         ("Slice", UnitProperty::Text("system.slice".to_owned())),
+        ("IOAccounting", UnitProperty::Boolean(true)),
         (
             "CPUAffinity",
             UnitProperty::Bytes(cpuset_mask(&manifest.isolated_cpuset)?),

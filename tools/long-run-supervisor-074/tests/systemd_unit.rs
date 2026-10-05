@@ -288,6 +288,10 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
         &UnitProperty::Boolean(true)
     );
     assert_eq!(
+        property(&spec, "IOAccounting"),
+        &UnitProperty::Boolean(true)
+    );
+    assert_eq!(
         property(&spec, "ProtectHome"),
         &UnitProperty::Text("yes".to_owned())
     );

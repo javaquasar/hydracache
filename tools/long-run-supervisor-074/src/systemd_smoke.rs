@@ -332,6 +332,7 @@ fn smoke_spec() -> TransientUnitSpec {
             ("Restart", UnitProperty::Text("no".to_owned())),
             ("KillMode", UnitProperty::Text("control-group".to_owned())),
             ("Slice", UnitProperty::Text("system.slice".to_owned())),
+            ("IOAccounting", UnitProperty::Boolean(true)),
             ("RuntimeMaxUSec", UnitProperty::Unsigned(5_000_000)),
             ("TimeoutStopUSec", UnitProperty::Unsigned(2_000_000)),
             ("MemoryMax", UnitProperty::Unsigned(67_108_864)),
@@ -383,6 +384,7 @@ fn controller_loss_spec() -> TransientUnitSpec {
             ("Restart", UnitProperty::Text("no".to_owned())),
             ("KillMode", UnitProperty::Text("control-group".to_owned())),
             ("Slice", UnitProperty::Text("system.slice".to_owned())),
+            ("IOAccounting", UnitProperty::Boolean(true)),
             ("RuntimeMaxUSec", UnitProperty::Unsigned(35_000_000)),
             ("TimeoutStopUSec", UnitProperty::Unsigned(2_000_000)),
             ("MemoryMax", UnitProperty::Unsigned(67_108_864)),
@@ -452,6 +454,9 @@ mod tests {
         assert!(spec.properties.iter().any(|(name, value)| {
             *name == "ProtectHome" && *value == UnitProperty::Text("yes".to_owned())
         }));
+        assert!(spec.properties.iter().any(|(name, value)| {
+            *name == "IOAccounting" && *value == UnitProperty::Boolean(true)
+        }));
     }
 
     #[test]
@@ -474,6 +479,9 @@ mod tests {
         }));
         assert!(spec.properties.iter().any(|(name, value)| {
             *name == "RemainAfterExit" && *value == UnitProperty::Boolean(false)
+        }));
+        assert!(spec.properties.iter().any(|(name, value)| {
+            *name == "IOAccounting" && *value == UnitProperty::Boolean(true)
         }));
     }
 }

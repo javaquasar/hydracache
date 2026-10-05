@@ -17,6 +17,7 @@ fn service_is_detached_confined_and_exposes_no_workflow_shell() {
         "Type=notify",
         "User=root",
         "Restart=on-failure",
+        "IOAccounting=yes",
         "NoNewPrivileges=yes",
         "ProtectSystem=strict",
         "ProtectHome=yes",

@@ -10,6 +10,7 @@ User=root
 Group=root
 Restart=on-failure
 RestartSec=2s
+IOAccounting=yes
 RuntimeDirectory=hydracache-perf
 RuntimeDirectoryMode=0711
 UMask=0027
