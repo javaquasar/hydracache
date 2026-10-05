@@ -11,8 +11,14 @@ use crate::manifest::{
     frozen_identity_from_manifest, CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary,
     OutputLimits, PhaseDurationsSeconds, RoleArgvTemplates,
 };
+use crate::measurement_loss::{
+    drive_measurement_loss, MeasurementLossOutcome, MeasurementLossReason,
+};
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach};
-use crate::process_identity::{identity_from_snapshot, inspect_process};
+use crate::process_identity::{
+    identity_from_snapshot, inspect_cgroup_processes, inspect_process, verify_process_cpuset,
+    verify_process_identity, ProcessIdentityError,
+};
 use crate::progress_loss::{drive_progress_loss, ProgressLossOutcome};
 use crate::protocol::{ControllerIdentity, Operation, Request};
 use crate::spawn::{SpawnBackend, SpawnObservation};
@@ -20,7 +26,9 @@ use crate::start_lifecycle::drive_i74_start_request;
 use crate::state::{apply_attach, AttachRequest, CampaignState};
 use crate::state_store::CampaignLock;
 use crate::systemd_spawn::SystemdSpawnBackend;
-use crate::systemd_unit::expected_command_environment_sha256;
+use crate::systemd_unit::{
+    expected_command_environment_sha256, inspect_unit_optional, verify_unit_identity,
+};
 use crate::{
     append_record, build_record, canonical_json, sha256_hex, CheckpointPayload, Phase, Role,
     GENESIS_HASH,
@@ -39,7 +47,8 @@ const CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
 const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
 const CONTEXT_PATH: &str = "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json";
 const SUPERVISOR_SERVICE: &str = "hydracache-performance-supervisor-074.service";
-const FIXTURE_SECONDS: u64 = 240;
+const FIXTURE_DAEMON_SECONDS: u64 = 210;
+const FIXTURE_POST_DAEMON_SECONDS: u64 = 45;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
 const HASH_A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -112,10 +121,32 @@ pub struct CampaignProgressLossResumeReceipt {
 }
 
 #[derive(Debug, Serialize)]
+pub struct CampaignMeasurementLossResumeReceipt {
+    pub schema_version: &'static str,
+    pub product_candidate_started: bool,
+    pub campaign_id: String,
+    pub original_controller_exited: bool,
+    pub retained_harness_observed: bool,
+    pub missing_daemon_observed: bool,
+    pub reason: MeasurementLossReason,
+    pub checkpoint_sequence: u64,
+    pub observed_unix_seconds: u64,
+    pub completed_revision: u64,
+    pub failed_incomplete: bool,
+    pub recorded_failure: bool,
+    pub execution_fields_cleared: bool,
+    pub diagnostic_sha256: String,
+    pub diagnostic_bytes: u64,
+    pub unit_stopped: bool,
+    pub active_campaign_released: bool,
+}
+
+#[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum CampaignSmokeResumeOutcome {
     ControllerLoss(CampaignSmokeResumeReceipt),
     ProgressLoss(CampaignProgressLossResumeReceipt),
+    MeasurementLoss(CampaignMeasurementLossResumeReceipt),
 }
 
 pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, String> {
@@ -256,11 +287,74 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
 }
 
 pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeOutcome, String> {
-    if campaign_progress_is_due()? {
+    require_root()?;
+    require_supervisor_inactive()?;
+    if campaign_measurement_is_lost()? {
+        resume_campaign_measurement_loss_smoke().map(CampaignSmokeResumeOutcome::MeasurementLoss)
+    } else if campaign_progress_is_due()? {
         resume_campaign_progress_loss_smoke().map(CampaignSmokeResumeOutcome::ProgressLoss)
     } else {
         resume_campaign_controller_loss_smoke().map(CampaignSmokeResumeOutcome::ControllerLoss)
     }
+}
+
+fn campaign_measurement_is_lost() -> Result<bool, String> {
+    let context = read_context(Path::new(CONTEXT_PATH))?;
+    if context.schema_version != 1 || context.product_candidate_started {
+        return Err("campaign lifecycle context differs".to_owned());
+    }
+    if original_controller_still_running(&context)? {
+        return Err("original controller is still running".to_owned());
+    }
+    let root = fs::canonicalize(CAMPAIGN_ROOT).map_err(display)?;
+    let campaign_directory = root.join(&context.campaign_id);
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let manifest = crate::manifest::parse_stored_and_validate(
+        &manifest_bytes,
+        &context.manifest_sha256,
+        &context.campaign_id,
+    )
+    .map_err(display)?;
+    let lock = CampaignLock::acquire(&root, &context.campaign_id).map_err(display)?;
+    let state = reconcile_campaign(&lock).map_err(display)?;
+    verify_fixture_host_receipt_evidence(
+        &campaign_directory,
+        &campaign_directory.join("fixture-host-freeze.json"),
+        &manifest,
+        &state,
+    )
+    .map_err(display)?;
+    let (harness, daemon) = state
+        .harness
+        .as_ref()
+        .zip(state.daemon.as_ref())
+        .ok_or_else(|| "started fixture has no exact process pair".to_owned())?;
+    let Some(unit) = inspect_unit_optional(&harness.unit_name).map_err(display)? else {
+        return Err("campaign fixture unit disappeared".to_owned());
+    };
+    verify_unit_identity(harness, daemon, &unit).map_err(display)?;
+    verify_process_identity(harness).map_err(display)?;
+    verify_process_cpuset(harness, &state.identity.isolated_cpuset).map_err(display)?;
+    match verify_process_identity(daemon) {
+        Ok(()) => {
+            verify_process_cpuset(daemon, &state.identity.isolated_cpuset).map_err(display)?;
+            Ok(false)
+        }
+        Err(ProcessIdentityError::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {
+            verify_only_retained_harness(harness)?;
+            Ok(true)
+        }
+        Err(error) => Err(format!("fixture daemon identity is ambiguous: {error}")),
+    }
+}
+
+fn verify_only_retained_harness(harness: &crate::ProcessIdentity) -> Result<(), String> {
+    let processes = inspect_cgroup_processes(&harness.cgroup_path).map_err(display)?;
+    if processes.len() != 1 || processes[0].pid != harness.pid {
+        return Err("fixture cgroup does not contain only the retained harness".to_owned());
+    }
+    verify_process_identity(harness).map_err(display)
 }
 
 fn campaign_progress_is_due() -> Result<bool, String> {
@@ -611,6 +705,155 @@ fn resume_campaign_progress_loss_smoke() -> Result<CampaignProgressLossResumeRec
     })
 }
 
+fn resume_campaign_measurement_loss_smoke() -> Result<CampaignMeasurementLossResumeReceipt, String>
+{
+    let context_path = Path::new(CONTEXT_PATH);
+    let context = read_context(context_path)?;
+    if context.schema_version != 1 || context.product_candidate_started {
+        return Err("campaign measurement-loss context differs".to_owned());
+    }
+    if original_controller_still_running(&context)? {
+        return Err("original controller is still running".to_owned());
+    }
+
+    let root = fs::canonicalize(CAMPAIGN_ROOT).map_err(display)?;
+    let campaign_directory = root.join(&context.campaign_id);
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let manifest = crate::manifest::parse_stored_and_validate(
+        &manifest_bytes,
+        &context.manifest_sha256,
+        &context.campaign_id,
+    )
+    .map_err(display)?;
+    let host_claim = HostExecutionClaim::recover(&root, &context.campaign_id).map_err(display)?;
+    let lock = CampaignLock::acquire(&root, &context.campaign_id).map_err(display)?;
+    let state = reconcile_campaign(&lock).map_err(display)?;
+    verify_fixture_host_receipt_evidence(
+        &campaign_directory,
+        &campaign_directory.join("fixture-host-freeze.json"),
+        &manifest,
+        &state,
+    )
+    .map_err(display)?;
+    let (harness, daemon) = state
+        .harness
+        .as_ref()
+        .zip(state.daemon.as_ref())
+        .ok_or_else(|| "started fixture has no exact process pair".to_owned())?;
+    let harness = harness.clone();
+    let daemon = daemon.clone();
+    let checkpoint_sequence = state
+        .checkpoint
+        .as_ref()
+        .ok_or_else(|| "measurement-loss fixture checkpoint is absent".to_owned())?
+        .sequence;
+    let Some(unit) = inspect_unit_optional(&harness.unit_name).map_err(display)? else {
+        return Err("measurement-loss fixture unit disappeared".to_owned());
+    };
+    verify_unit_identity(&harness, &daemon, &unit).map_err(display)?;
+    verify_process_identity(&harness).map_err(display)?;
+    verify_process_cpuset(&harness, &state.identity.isolated_cpuset).map_err(display)?;
+    match verify_process_identity(&daemon) {
+        Err(ProcessIdentityError::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Ok(()) => return Err("measurement-loss fixture daemon is still running".to_owned()),
+        Err(error) => return Err(format!("fixture daemon identity is ambiguous: {error}")),
+    }
+    verify_only_retained_harness(&harness)?;
+
+    let observed_unix_seconds = unix_seconds()?;
+    let reason = MeasurementLossReason::ProcessIdentityDrift;
+    let mut backend = SystemdAbortBackend::new();
+    backend.bind_manifest(manifest.clone());
+    let outcome = drive_measurement_loss(
+        &host_claim,
+        &lock,
+        observed_unix_seconds,
+        Some(reason),
+        Some(observed_unix_seconds),
+        &mut backend,
+    )
+    .map_err(display)?;
+    let MeasurementLossOutcome::Completed { state_revision } = outcome;
+    let completed = reconcile_campaign(&lock).map_err(display)?;
+    let execution_fields_cleared = completed.harness.is_none()
+        && completed.daemon.is_none()
+        && completed.checkpoint.is_none()
+        && completed.controller_lease.is_none();
+    if completed.revision != state_revision
+        || completed.campaign_state != CampaignState::FailedIncomplete
+        || !completed.recorded_failure
+        || !execution_fields_cleared
+    {
+        return Err("measurement-loss terminal state differs".to_owned());
+    }
+    let report = crate::event::verify_event_journal(
+        &campaign_directory.join(crate::event::EVENT_JOURNAL_NAME),
+        &campaign_directory.join(crate::event::EVENT_HEAD_NAME),
+    )
+    .map_err(display)?;
+    let lifecycle = report
+        .latest_lifecycle
+        .filter(|event| event.transition == crate::event::LifecycleEvent::MeasurementLossCompleted)
+        .ok_or_else(|| "measurement-loss completion event is missing".to_owned())?;
+    let diagnostic_path = campaign_directory
+        .join("roles")
+        .join("i74")
+        .join("diagnostics")
+        .join(format!(
+            "measurement-loss-{}.json",
+            lifecycle.cause_request_sha256
+        ));
+    let diagnostic_metadata = fs::symlink_metadata(&diagnostic_path).map_err(display)?;
+    if !diagnostic_metadata.is_file()
+        || diagnostic_metadata.file_type().is_symlink()
+        || diagnostic_metadata.nlink() != 1
+        || diagnostic_metadata.uid() != 0
+        || diagnostic_metadata.gid() != 0
+        || diagnostic_metadata.len() == 0
+        || diagnostic_metadata.len() > manifest.output_limits.diagnostic_bytes
+    {
+        return Err("measurement-loss diagnostic is unsafe".to_owned());
+    }
+    let diagnostic = fs::read(&diagnostic_path).map_err(display)?;
+    let diagnostic_sha256 = sha256_hex(&diagnostic);
+    let unit_stopped = inspect_unit_optional(&harness.unit_name)
+        .map_err(display)?
+        .is_none_or(|unit| unit.active_state != "active");
+    if !unit_stopped {
+        return Err("measurement-loss fixture unit is still active".to_owned());
+    }
+
+    drop(lock);
+    drop(host_claim);
+    let active_campaign_released = HostExecutionClaim::recover_active(&root)
+        .map_err(display)?
+        .is_none();
+    if !active_campaign_released {
+        return Err("measurement-loss completion did not release the host claim".to_owned());
+    }
+    remove_context(context_path)?;
+    Ok(CampaignMeasurementLossResumeReceipt {
+        schema_version: "hydracache-w11-campaign-measurement-loss-resume-v1",
+        product_candidate_started: false,
+        campaign_id: context.campaign_id,
+        original_controller_exited: true,
+        retained_harness_observed: true,
+        missing_daemon_observed: true,
+        reason,
+        checkpoint_sequence,
+        observed_unix_seconds,
+        completed_revision: state_revision,
+        failed_incomplete: true,
+        recorded_failure: completed.recorded_failure,
+        execution_fields_cleared,
+        diagnostic_sha256,
+        diagnostic_bytes: diagnostic_metadata.len(),
+        unit_stopped,
+        active_campaign_released,
+    })
+}
+
 pub fn run_fixture_harness() -> Result<(), String> {
     let campaign_id = std::env::var("HYDRACACHE_CAMPAIGN_ID").map_err(display)?;
     let role = std::env::var("HYDRACACHE_ROLE").map_err(display)?;
@@ -672,6 +915,7 @@ pub fn run_fixture_harness() -> Result<(), String> {
     .map_err(display)?;
     let status = child.wait().map_err(display)?;
     if status.success() {
+        thread::sleep(Duration::from_secs(FIXTURE_POST_DAEMON_SECONDS));
         Ok(())
     } else {
         Err("fixture daemon failed".to_owned())
@@ -679,7 +923,7 @@ pub fn run_fixture_harness() -> Result<(), String> {
 }
 
 pub fn run_fixture_daemon() {
-    thread::sleep(Duration::from_secs(FIXTURE_SECONDS));
+    thread::sleep(Duration::from_secs(FIXTURE_DAEMON_SECONDS));
 }
 
 #[derive(Default)]
@@ -995,7 +1239,10 @@ fn display(error: impl std::fmt::Display) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{fixture_diagnostic, progress_deadline_elapsed, uuid_from_hash, HASH_A};
+    use super::{
+        fixture_diagnostic, progress_deadline_elapsed, uuid_from_hash, FIXTURE_DAEMON_SECONDS,
+        FIXTURE_POST_DAEMON_SECONDS, HASH_A,
+    };
     use std::fs;
 
     #[test]
@@ -1026,5 +1273,14 @@ mod tests {
         assert!(!progress_deadline_elapsed(1_000, 999));
         assert!(!progress_deadline_elapsed(1_000, 1_000));
         assert!(progress_deadline_elapsed(1_000, 1_001));
+    }
+
+    #[test]
+    fn measurement_fault_window_follows_the_progress_rehearsal_and_is_bounded() {
+        const PROGRESS_REJECTION_GAP_SECONDS: u64 = 180;
+        const ROLE_RUNTIME_SECONDS: u64 = 270;
+        assert!(FIXTURE_DAEMON_SECONDS > PROGRESS_REJECTION_GAP_SECONDS + 2);
+        assert!(FIXTURE_POST_DAEMON_SECONDS >= 30);
+        assert!(FIXTURE_DAEMON_SECONDS + FIXTURE_POST_DAEMON_SECONDS < ROLE_RUNTIME_SECONDS);
     }
 }

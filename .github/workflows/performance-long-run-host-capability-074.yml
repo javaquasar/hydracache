@@ -15,6 +15,7 @@ on:
           - controller-loss-smoke
           - campaign-lifecycle-smoke
           - campaign-progress-loss-smoke
+          - campaign-measurement-loss-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -270,6 +271,7 @@ jobs:
         run: |
           set -euo pipefail
           sleep 2
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
             > "$EVIDENCE_DIR/resume.json"
           python3 - <<'PY'
@@ -353,6 +355,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
             > "$EVIDENCE_DIR/resume.json"
           python3 - <<'PY'
@@ -389,5 +392,93 @@ jobs:
         with:
           name: performance-long-run-campaign-progress-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-campaign-progress-loss-smoke/**
+          if-no-files-found: error
+          retention-days: 90
+
+  campaign-measurement-loss-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'campaign-measurement-loss-smoke'
+    name: Campaign-shaped measurement-loss lifecycle smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-campaign-measurement-loss-smoke
+    steps:
+      - name: Check out exact campaign measurement-loss smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and measurement-loss lifecycle tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 --test measurement_loss --locked
+          cargo test -p hydracache-long-run-supervisor-074 --test server \
+            measurement_maintenance_recovers_committed_intent_before_lease_expiry \
+            --locked -- --exact
+
+      - name: Start the bounded non-product campaign pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-start \
+            > "$EVIDENCE_DIR/start.json"
+
+      - name: Retain the harness after the fixture daemon exits
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 212
+
+      - name: Diagnose process identity drift and stop the retained unit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
+            > "$EVIDENCE_DIR/resume.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          started = json.loads((root / "start.json").read_text())
+          resumed = json.loads((root / "resume.json").read_text())
+          assert started["schema_version"] == "hydracache-w11-campaign-lifecycle-start-v1"
+          assert resumed["schema_version"] == "hydracache-w11-campaign-measurement-loss-resume-v1"
+          assert started["campaign_id"] == resumed["campaign_id"]
+          assert started["product_candidate_started"] is False
+          assert started["supervisor_service_inactive"] is True
+          assert resumed["product_candidate_started"] is False
+          assert resumed["original_controller_exited"] is True
+          assert resumed["retained_harness_observed"] is True
+          assert resumed["missing_daemon_observed"] is True
+          assert resumed["reason"] == "process-identity-drift"
+          assert resumed["checkpoint_sequence"] == started["checkpoint_sequence"] == 1
+          assert resumed["failed_incomplete"] is True
+          assert resumed["recorded_failure"] is True
+          assert resumed["execution_fields_cleared"] is True
+          assert len(resumed["diagnostic_sha256"]) == 64
+          assert 0 < resumed["diagnostic_bytes"] <= 1048576
+          assert resumed["unit_stopped"] is True
+          assert resumed["active_campaign_released"] is True
+          PY
+
+      - name: Retain campaign measurement-loss smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-campaign-measurement-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-campaign-measurement-loss-smoke/**
           if-no-files-found: error
           retention-days: 90
