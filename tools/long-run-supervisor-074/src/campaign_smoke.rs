@@ -45,19 +45,11 @@ const HASH_A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 const HASH_B: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const GIT_SHA: &str = "0000000000000000000000000000000000000000";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-enum CampaignSmokeKind {
-    ControllerLoss,
-    ProgressLoss,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CampaignSmokeContext {
     schema_version: u32,
     product_candidate_started: bool,
-    smoke_kind: CampaignSmokeKind,
     campaign_id: String,
     manifest_sha256: String,
     start_request: Request,
@@ -117,17 +109,14 @@ pub struct CampaignProgressLossResumeReceipt {
     pub active_campaign_released: bool,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub enum CampaignSmokeResumeOutcome {
+    ControllerLoss(CampaignSmokeResumeReceipt),
+    ProgressLoss(CampaignProgressLossResumeReceipt),
+}
+
 pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, String> {
-    start_campaign_smoke(CampaignSmokeKind::ControllerLoss)
-}
-
-pub fn start_campaign_progress_loss_smoke() -> Result<CampaignSmokeStartReceipt, String> {
-    start_campaign_smoke(CampaignSmokeKind::ProgressLoss)
-}
-
-fn start_campaign_smoke(
-    smoke_kind: CampaignSmokeKind,
-) -> Result<CampaignSmokeStartReceipt, String> {
     require_root()?;
     ensure_absent(Path::new(CONTEXT_PATH))?;
     let campaign_root = Path::new(CAMPAIGN_ROOT);
@@ -162,7 +151,6 @@ fn start_campaign_smoke(
     let host_receipt_sha256 =
         write_receipt_for_admission(&host, &campaign_directory).map_err(display)?;
     let mut manifest = build_manifest(
-        smoke_kind,
         &campaign_id,
         now,
         &host.machine_id,
@@ -239,9 +227,8 @@ fn start_campaign_smoke(
         format!("{error}; fixture diagnostic: {diagnostic}")
     })?;
     let context = CampaignSmokeContext {
-        schema_version: 2,
+        schema_version: 1,
         product_candidate_started: false,
-        smoke_kind,
         campaign_id: campaign_id.clone(),
         manifest_sha256: manifest_sha256.clone(),
         start_request,
@@ -251,10 +238,7 @@ fn start_campaign_smoke(
     };
     write_context(Path::new(CONTEXT_PATH), &context)?;
     Ok(CampaignSmokeStartReceipt {
-        schema_version: match smoke_kind {
-            CampaignSmokeKind::ControllerLoss => "hydracache-w11-campaign-lifecycle-start-v1",
-            CampaignSmokeKind::ProgressLoss => "hydracache-w11-campaign-progress-loss-start-v1",
-        },
+        schema_version: "hydracache-w11-campaign-lifecycle-start-v1",
         product_candidate_started: false,
         campaign_id,
         manifest_sha256,
@@ -267,14 +251,52 @@ fn start_campaign_smoke(
     })
 }
 
-pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeReceipt, String> {
+pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeOutcome, String> {
+    if campaign_progress_is_due()? {
+        resume_campaign_progress_loss_smoke().map(CampaignSmokeResumeOutcome::ProgressLoss)
+    } else {
+        resume_campaign_controller_loss_smoke().map(CampaignSmokeResumeOutcome::ControllerLoss)
+    }
+}
+
+fn campaign_progress_is_due() -> Result<bool, String> {
+    let context = read_context(Path::new(CONTEXT_PATH))?;
+    if context.schema_version != 1 || context.product_candidate_started {
+        return Err("campaign lifecycle context differs".to_owned());
+    }
+    if original_controller_still_running(&context)? {
+        return Err("original controller is still running".to_owned());
+    }
+    let root = fs::canonicalize(CAMPAIGN_ROOT).map_err(display)?;
+    let campaign_directory = root.join(&context.campaign_id);
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let manifest = crate::manifest::parse_stored_and_validate(
+        &manifest_bytes,
+        &context.manifest_sha256,
+        &context.campaign_id,
+    )
+    .map_err(display)?;
+    let lock = CampaignLock::acquire(&root, &context.campaign_id).map_err(display)?;
+    let state = reconcile_campaign(&lock).map_err(display)?;
+    let (_, checkpoint) =
+        observe_live_checkpoint_evidence(&campaign_directory, &state).map_err(display)?;
+    let deadline = checkpoint
+        .useful_progress_unix_seconds
+        .checked_add(manifest.progress_rejection_gap_seconds)
+        .ok_or_else(|| "progress deadline overflow".to_owned())?;
+    Ok(progress_deadline_elapsed(deadline, unix_seconds()?))
+}
+
+fn progress_deadline_elapsed(deadline_unix_seconds: u64, now_unix_seconds: u64) -> bool {
+    now_unix_seconds > deadline_unix_seconds
+}
+
+fn resume_campaign_controller_loss_smoke() -> Result<CampaignSmokeResumeReceipt, String> {
     require_root()?;
     let context_path = Path::new(CONTEXT_PATH);
     let context = read_context(context_path)?;
-    if context.schema_version != 2
-        || context.product_candidate_started
-        || context.smoke_kind != CampaignSmokeKind::ControllerLoss
-    {
+    if context.schema_version != 1 || context.product_candidate_started {
         return Err("campaign lifecycle context differs".to_owned());
     }
     if original_controller_still_running(&context)? {
@@ -428,14 +450,11 @@ pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeReceipt, S
     })
 }
 
-pub fn resume_campaign_progress_loss_smoke() -> Result<CampaignProgressLossResumeReceipt, String> {
+fn resume_campaign_progress_loss_smoke() -> Result<CampaignProgressLossResumeReceipt, String> {
     require_root()?;
     let context_path = Path::new(CONTEXT_PATH);
     let context = read_context(context_path)?;
-    if context.schema_version != 2
-        || context.product_candidate_started
-        || context.smoke_kind != CampaignSmokeKind::ProgressLoss
-    {
+    if context.schema_version != 1 || context.product_candidate_started {
         return Err("campaign progress-loss context differs".to_owned());
     }
     if original_controller_still_running(&context)? {
@@ -478,7 +497,7 @@ pub fn resume_campaign_progress_loss_smoke() -> Result<CampaignProgressLossResum
         .checked_add(manifest.progress_rejection_gap_seconds)
         .ok_or_else(|| "progress deadline overflow".to_owned())?;
     let observed_unix_seconds = unix_seconds()?;
-    if observed_unix_seconds <= rejection_deadline_unix_seconds {
+    if !progress_deadline_elapsed(rejection_deadline_unix_seconds, observed_unix_seconds) {
         return Err(format!(
             "progress deadline is not due: wait at least {} seconds",
             rejection_deadline_unix_seconds - observed_unix_seconds + 1
@@ -683,7 +702,6 @@ impl SpawnBackend for NoSpawnBackend {
 
 #[allow(clippy::too_many_arguments)]
 fn build_manifest(
-    smoke_kind: CampaignSmokeKind,
     campaign_id: &str,
     now: u64,
     machine_id: &str,
@@ -741,10 +759,7 @@ fn build_manifest(
         progress_warning_gap_seconds: 90,
         progress_rejection_gap_seconds: 180,
         diagnostic_grace_seconds: 30,
-        product_lease_deadline_unix_seconds: now.saturating_add(match smoke_kind {
-            CampaignSmokeKind::ControllerLoss => 300,
-            CampaignSmokeKind::ProgressLoss => 600,
-        }),
+        product_lease_deadline_unix_seconds: now.saturating_add(600),
         maximum_campaign_bytes: 21_474_836_480,
         maximum_campaign_files: 20_000,
         installed_binaries: vec![binary, companion],
@@ -760,23 +775,13 @@ fn build_manifest(
         },
         command_environment_sha256: HASH_A.to_owned(),
         role_order: vec!["i74".to_owned(), "c74".to_owned()],
-        phase_durations_seconds: match smoke_kind {
-            CampaignSmokeKind::ControllerLoss => PhaseDurationsSeconds {
-                warmup: 10,
-                measured: 10,
-                drain: 10,
-                durable_companion: 10,
-                post_work_idle: 10,
-                reconciliation: 10,
-            },
-            CampaignSmokeKind::ProgressLoss => PhaseDurationsSeconds {
-                warmup: 40,
-                measured: 40,
-                drain: 40,
-                durable_companion: 40,
-                post_work_idle: 40,
-                reconciliation: 40,
-            },
+        phase_durations_seconds: PhaseDurationsSeconds {
+            warmup: 40,
+            measured: 40,
+            drain: 40,
+            durable_companion: 40,
+            post_work_idle: 40,
+            reconciliation: 40,
         },
         output_limits: OutputLimits {
             stdout_bytes: 1_048_576,
@@ -971,7 +976,7 @@ fn display(error: impl std::fmt::Display) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{fixture_diagnostic, uuid_from_hash, HASH_A};
+    use super::{fixture_diagnostic, progress_deadline_elapsed, uuid_from_hash, HASH_A};
     use std::fs;
 
     #[test]
@@ -995,5 +1000,12 @@ mod tests {
             fixture_diagnostic(root.path()),
             "stderr is unsafe or oversized"
         );
+    }
+
+    #[test]
+    fn lifecycle_resume_switches_only_after_the_frozen_progress_deadline() {
+        assert!(!progress_deadline_elapsed(1_000, 999));
+        assert!(!progress_deadline_elapsed(1_000, 1_000));
+        assert!(progress_deadline_elapsed(1_000, 1_001));
     }
 }

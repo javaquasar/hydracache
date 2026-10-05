@@ -337,7 +337,7 @@ jobs:
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
             > "$EVIDENCE_DIR/provisioning.json"
           test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
-          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-progress-loss-smoke-start \
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-start \
             > "$EVIDENCE_DIR/start.json"
 
       - name: Preserve the exact pair beyond the frozen progress deadline
@@ -350,7 +350,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-progress-loss-smoke-resume \
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
             > "$EVIDENCE_DIR/resume.json"
           python3 - <<'PY'
           import json
@@ -360,7 +360,7 @@ jobs:
           root = pathlib.Path(os.environ["EVIDENCE_DIR"])
           started = json.loads((root / "start.json").read_text())
           resumed = json.loads((root / "resume.json").read_text())
-          assert started["schema_version"] == "hydracache-w11-campaign-progress-loss-start-v1"
+          assert started["schema_version"] == "hydracache-w11-campaign-lifecycle-start-v1"
           assert resumed["schema_version"] == "hydracache-w11-campaign-progress-loss-resume-v1"
           assert started["campaign_id"] == resumed["campaign_id"]
           assert started["product_candidate_started"] is False
