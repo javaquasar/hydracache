@@ -1,6 +1,12 @@
 name: Performance Long-Run Host Provisioning 0.74
 
 on:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character provisioning/tooling commit
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       source_sha:

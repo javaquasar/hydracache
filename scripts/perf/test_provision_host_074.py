@@ -5,6 +5,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/perf/long-run-supervisor-074/provision-host-074.sh"
 WORKFLOW = ROOT / ".github/workflows/performance-long-run-host-provision-074.yml"
+CAPABILITY_WORKFLOW = ROOT / ".github/workflows/performance-long-run-host-capability-074.yml"
 
 
 class ProvisionHostContractTests(unittest.TestCase):
@@ -12,6 +13,7 @@ class ProvisionHostContractTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.source = SCRIPT.read_text(encoding="utf-8")
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+        cls.capability_workflow = CAPABILITY_WORKFLOW.read_text(encoding="utf-8")
 
     def test_private_signing_key_never_enters_the_host_installer(self) -> None:
         self.assertNotIn("SIGNING_KEY", self.source)
@@ -58,6 +60,13 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertNotIn("\n  schedule:", self.workflow)
         self.assertNotIn("performance-integrated-074", self.workflow)
         self.assertNotIn("duration-hours", self.workflow)
+
+    def test_registered_capability_workflow_requires_explicit_provision_mode(self) -> None:
+        self.assertIn("default: probe", self.capability_workflow)
+        self.assertIn("inputs.mode == 'provision'", self.capability_workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch'", self.capability_workflow)
+        self.assertIn("source_sha: ${{ github.sha }}", self.capability_workflow)
+        self.assertIn("secrets: inherit", self.capability_workflow)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,15 @@ name: Performance Long-Run Host Capability 0.74
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Read-only probe, or explicitly bootstrap the protected provisioning workflow
+        required: true
+        default: probe
+        type: choice
+        options:
+          - probe
+          - provision
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -19,6 +28,7 @@ concurrency:
 
 jobs:
   probe:
+    if: github.event_name == 'push' || inputs.mode != 'provision'
     name: Read-only systemd and supervisor capability probe
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-074
@@ -58,3 +68,13 @@ jobs:
           path: target/performance-evidence/0.74/reference/w11-host-capability/**
           if-no-files-found: error
           retention-days: 90
+
+  provision:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'provision'
+    name: Explicit protected provisioning bootstrap
+    permissions:
+      contents: read
+    uses: ./.github/workflows/performance-long-run-host-provision-074.yml
+    with:
+      source_sha: ${{ github.sha }}
+    secrets: inherit
