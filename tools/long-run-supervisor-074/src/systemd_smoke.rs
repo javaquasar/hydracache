@@ -115,7 +115,7 @@ fn smoke_spec() -> TransientUnitSpec {
             ("PrivateTmp", UnitProperty::Boolean(true)),
             ("PrivateDevices", UnitProperty::Boolean(true)),
             ("ProtectSystem", UnitProperty::Text("strict".to_owned())),
-            ("ProtectHome", UnitProperty::Boolean(true)),
+            ("ProtectHome", UnitProperty::Text("yes".to_owned())),
             ("ProtectKernelTunables", UnitProperty::Boolean(true)),
             ("ProtectKernelModules", UnitProperty::Boolean(true)),
             ("ProtectControlGroups", UnitProperty::Boolean(true)),
@@ -169,5 +169,8 @@ mod tests {
             .properties
             .iter()
             .any(|(name, value)| { *name == "TasksMax" && *value == UnitProperty::Unsigned(16) }));
+        assert!(spec.properties.iter().any(|(name, value)| {
+            *name == "ProtectHome" && *value == UnitProperty::Text("yes".to_owned())
+        }));
     }
 }

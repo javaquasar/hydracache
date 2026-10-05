@@ -287,6 +287,10 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
         property(&spec, "RemainAfterExit"),
         &UnitProperty::Boolean(true)
     );
+    assert_eq!(
+        property(&spec, "ProtectHome"),
+        &UnitProperty::Text("yes".to_owned())
+    );
     let UnitProperty::Strings(environment) = property(&spec, "Environment") else {
         panic!("environment property must be a string array");
     };

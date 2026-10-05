@@ -170,7 +170,7 @@ pub fn build_transient_unit_spec(
         ("TasksMax", UnitProperty::Unsigned(UNIT_TASKS_MAX)),
         ("NoNewPrivileges", UnitProperty::Boolean(true)),
         ("PrivateTmp", UnitProperty::Boolean(true)),
-        ("ProtectHome", UnitProperty::Boolean(true)),
+        ("ProtectHome", UnitProperty::Text("yes".to_owned())),
         ("ProtectKernelTunables", UnitProperty::Boolean(true)),
         ("ProtectKernelModules", UnitProperty::Boolean(true)),
         ("ProtectControlGroups", UnitProperty::Boolean(true)),
