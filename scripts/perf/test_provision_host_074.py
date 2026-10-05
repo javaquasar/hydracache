@@ -32,6 +32,8 @@ class ProvisionHostContractTests(unittest.TestCase):
             "bundle installer differs from the root-owned entrypoint",
             "--emit-receipt",
             "--systemd-smoke",
+            "--controller-loss-smoke-start",
+            "--controller-loss-smoke-resume",
             "refusing to replace a differing active installation",
             "validate-production-config",
             "systemctl is-active --quiet",
@@ -81,7 +83,10 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertIn("default: probe", self.capability_workflow)
         self.assertIn("inputs.mode == 'provision'", self.capability_workflow)
         self.assertIn("inputs.mode == 'systemd-smoke'", self.capability_workflow)
+        self.assertIn("inputs.mode == 'controller-loss-smoke'", self.capability_workflow)
         self.assertIn("product_candidate_started", self.capability_workflow)
+        self.assertIn("original_controller_exited", self.capability_workflow)
+        self.assertIn("fixture_identity_unchanged", self.capability_workflow)
         self.assertIn("github.event_name == 'workflow_dispatch'", self.capability_workflow)
         self.assertIn("source_sha: ${{ github.sha }}", self.capability_workflow)
         self.assertIn("secrets: inherit", self.capability_workflow)

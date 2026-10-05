@@ -22,7 +22,7 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke) && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
   [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "operation requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
@@ -36,6 +36,12 @@ if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-
   fi
   if [[ "$1" = --systemd-smoke ]]; then
     exec "$INSTALL_BINARY" systemd-smoke
+  fi
+  if [[ "$1" = --controller-loss-smoke-start ]]; then
+    exec "$INSTALL_BINARY" controller-loss-smoke-start
+  fi
+  if [[ "$1" = --controller-loss-smoke-resume ]]; then
+    exec "$INSTALL_BINARY" controller-loss-smoke-resume
   fi
   printf 'ready\n'
   exit 0

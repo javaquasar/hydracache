@@ -12,6 +12,7 @@ on:
           - probe
           - provision
           - systemd-smoke
+          - controller-loss-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -145,5 +146,82 @@ jobs:
         with:
           name: performance-long-run-systemd-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-systemd-smoke/**
+          if-no-files-found: error
+          retention-days: 90
+
+  controller-loss-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-loss-smoke'
+    name: Bounded fixture controller-loss smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-controller-loss-smoke
+    steps:
+      - name: Check out exact controller-loss smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and controller-loss fixture tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 \
+            systemd_smoke::tests::controller_loss_spec_is_long_enough_to_outlive_its_caller_and_stays_non_product \
+            --locked -- --exact
+
+      - name: Start fixture and let the starting controller exit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --controller-loss-smoke-start \
+            > "$EVIDENCE_DIR/start.json"
+
+      - name: Reattach from a new controller process and stop the exact fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 2
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --controller-loss-smoke-resume \
+            > "$EVIDENCE_DIR/resume.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          started = json.loads((root / "start.json").read_text())
+          resumed = json.loads((root / "resume.json").read_text())
+          assert started["schema_version"] == "hydracache-w11-controller-loss-start-v1"
+          assert resumed["schema_version"] == "hydracache-w11-controller-loss-resume-v1"
+          assert started["unit_name"] == resumed["unit_name"]
+          assert started["fixture_command"] == resumed["fixture_command"] == "/usr/bin/sleep 30"
+          assert started["product_candidate_started"] is False
+          assert resumed["product_candidate_started"] is False
+          assert resumed["original_controller_exited"] is True
+          assert resumed["fixture_identity_unchanged"] is True
+          assert resumed["observed_before_stop"]["main_pid"] == started["fixture"]["pid"]
+          after_stop = resumed["after_stop"]
+          assert after_stop is None or (
+              after_stop["active_state"] == "inactive"
+              and after_stop["sub_state"] == "dead"
+              and after_stop["main_pid"] == 0
+          )
+          PY
+
+      - name: Retain bounded controller-loss smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-controller-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-controller-loss-smoke/**
           if-no-files-found: error
           retention-days: 90

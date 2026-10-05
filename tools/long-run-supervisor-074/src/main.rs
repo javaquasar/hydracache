@@ -73,9 +73,13 @@ fn run() -> u8 {
         }
         #[cfg(target_os = "linux")]
         [command] if command == "systemd-smoke" => systemd_smoke(),
+        #[cfg(target_os = "linux")]
+        [command] if command == "controller-loss-smoke-start" => controller_loss_smoke_start(),
+        #[cfg(target_os = "linux")]
+        [command] if command == "controller-loss-smoke-resume" => controller_loss_smoke_resume(),
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
         }
@@ -85,6 +89,37 @@ fn run() -> u8 {
 #[cfg(target_os = "linux")]
 fn systemd_smoke() -> u8 {
     match hydracache_long_run_supervisor_074::systemd_smoke::run_systemd_smoke()
+        .map_err(|error| error.to_string())
+        .and_then(|receipt| serde_json::to_string(&receipt).map_err(|error| error.to_string()))
+    {
+        Ok(receipt) => {
+            println!("{receipt}");
+            0
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            9
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn controller_loss_smoke_start() -> u8 {
+    print_json_result(
+        hydracache_long_run_supervisor_074::systemd_smoke::start_controller_loss_smoke(),
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn controller_loss_smoke_resume() -> u8 {
+    print_json_result(
+        hydracache_long_run_supervisor_074::systemd_smoke::resume_controller_loss_smoke(),
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn print_json_result<T: serde::Serialize, E: std::fmt::Display>(result: Result<T, E>) -> u8 {
+    match result
         .map_err(|error| error.to_string())
         .and_then(|receipt| serde_json::to_string(&receipt).map_err(|error| error.to_string()))
     {
