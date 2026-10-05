@@ -2489,3 +2489,15 @@ This is the same discipline applied to infrastructure rather than product code. 
 can narrow the next experiment, but only the full frozen conjunction can close the gate. When the
 measurement channel is missing, the next task is to establish that channel under the same trust
 model, not to relax the claim.
+
+The next isolated change established that channel instead of weakening the test. The host already
+advertised the cgroup-v2 `io` controller, so the signed service and fixed transient-unit policies
+enabled systemd I/O accounting without expanding the sudo command or accepting workflow-selected
+properties. After a controlled signed reinstall, the runner could read the service's `io.stat`.
+
+The repeated 30-second observation then passed the complete supervisor-idle conjunction: about
+0.00662% CPU, 4.42 MB maximum RSS and zero cgroup I/O bytes per second, with the same process and
+cpuset throughout. This does not turn one idle window into a role-overhead claim. Checkpoint I/O,
+I74/C74 timing and asymmetric paired controls are different measurements and remain open. What
+changed is narrower and important: a missing measurement channel was converted into an exact,
+least-privilege counter, and only the gate actually covered by that counter was closed.

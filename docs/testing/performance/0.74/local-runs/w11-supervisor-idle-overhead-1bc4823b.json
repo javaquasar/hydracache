@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-supervisor-idle-overhead",
+  "tooling_source_commit": "1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b",
+  "installed_supervisor_source_commit": "1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b",
+  "github_run": {
+    "id": 37388038717,
+    "job_id": 112026212013,
+    "conclusion": "success",
+    "duration_seconds": 38,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37388038717"
+  },
+  "artifact": {
+    "id": 11380197695,
+    "name": "performance-long-run-supervisor-idle-overhead-074-1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b-37388038717-1",
+    "digest": "sha256:473c6fbdd33f65095c8c5327bfdd6dddf3aa83b89c09e7d8824fded422ee423f",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37388038717/artifacts/11380197695"
+  },
+  "receipts": {
+    "overhead_sha256": "cdde78074b483fb251e1188ca11cff6634051bf4cc1095f10fc7b5ed1111c43a",
+    "preflight_sha256": "5ad3e64050f3cc832e63fb1e93d6faf25161381f42609da3fe578dddfcd03e7b",
+    "provisioning_sha256": "0f524b4a86baa4fe91e9fa7f201776db9a55a10514b4ed9d3b5e102f68a00981"
+  },
+  "observation": {
+    "started_at_utc": "2026-10-05T23:21:52.539202Z",
+    "completed_at_utc": "2026-10-05T23:22:22.539603Z",
+    "requested_duration_seconds": 30,
+    "elapsed_seconds": 30.000063773,
+    "sample_interval_seconds": 0.5,
+    "sample_count": 61,
+    "read_only": true,
+    "mutation_performed": false,
+    "product_candidate_started": false,
+    "workload_started": false,
+    "supervisor_pid": 1538885,
+    "supervisor_start_ticks": 212762334,
+    "supervisor_control_group": "/system.slice/hydracache-performance-supervisor-074.service",
+    "supervisor_cpuset": "0,5-15",
+    "supervisor_restart_count_before_and_after": 0,
+    "cpu_percent": 0.00662331925370204,
+    "cpu_budget_percent": 0.5,
+    "cpu_budget_passed": true,
+    "cpu_pressure_some_ratio": 0.0,
+    "cpu_pressure_full_ratio": 0.0,
+    "rss_bytes_max": 4415488,
+    "rss_budget_bytes": 67108864,
+    "rss_budget_passed": true,
+    "cgroup_memory_current_bytes_max": 819200,
+    "cgroup_memory_peak_bytes_max": 868352,
+    "voluntary_context_switches_delta": 30,
+    "involuntary_context_switches_delta": 1,
+    "threads_max": 1,
+    "cgroup_pids_max": 1,
+    "io_counter_source": "cgroup-v2-io.stat",
+    "io_budget_bytes_per_second": 1048576,
+    "read_bytes_delta": 0,
+    "write_bytes_delta": 0,
+    "io_bytes_per_second": 0.0,
+    "io_counter_available": true,
+    "io_budget_evaluated": true,
+    "io_budget_passed": true,
+    "idle_screen_passed": true
+  },
+  "prior_partial_observation": {
+    "evidence": "docs/testing/performance/0.74/local-runs/w11-supervisor-idle-overhead-404c4622.json",
+    "disposition": "retained as exact negative attribution for the missing cgroup I/O accounting channel"
+  },
+  "decision": {
+    "supervisor_idle_cpu_rss_screen_complete": true,
+    "supervisor_idle_io_screen_complete": true,
+    "supervisor_idle_overhead_screen_complete": true,
+    "checkpoint_io_budget_complete": false,
+    "idle_overhead_budget_complete": false,
+    "role_overhead_qualification_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "measure supervisor plus checkpoint overhead with paired inactive/control role executions before any expensive qualification",
+    "reason": "The exact signed installed supervisor stayed below all three frozen idle ceilings with stable process and cgroup identity. This single idle observation does not measure checkpoint traffic, role timing asymmetry or I74/C74 workload overhead, so it cannot close the role-level budget or release gate."
+  }
+}

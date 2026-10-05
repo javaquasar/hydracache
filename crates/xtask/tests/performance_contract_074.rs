@@ -244,7 +244,7 @@ fn w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable() {
 }
 
 #[test]
-fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
+fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
     let controller = contract("long-run-controller-resilience-contract.toml");
     let implementation = controller["local_implementation"].as_table().unwrap();
     let relative = implementation["supervisor_idle_overhead_evidence"]
@@ -255,9 +255,9 @@ fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
 
     assert_eq!(
         evidence["tooling_source_commit"].as_str(),
-        Some("404c46225469af4d6c47b37070a4009087a94072")
+        Some("1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b")
     );
-    assert_eq!(evidence["github_run"]["id"].as_u64(), Some(37386694639));
+    assert_eq!(evidence["github_run"]["id"].as_u64(), Some(37388038717));
     assert_eq!(
         evidence["observation"]["product_candidate_started"].as_bool(),
         Some(false)
@@ -272,7 +272,15 @@ fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
     );
     assert_eq!(
         evidence["observation"]["io_budget_evaluated"].as_bool(),
-        Some(false)
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["io_budget_passed"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["observation"]["idle_screen_passed"].as_bool(),
+        Some(true)
     );
     assert_eq!(
         evidence["decision"]["idle_overhead_budget_complete"].as_bool(),
@@ -288,15 +296,38 @@ fn w11_supervisor_idle_overhead_is_partial_and_fail_closed() {
     );
     for field in [
         "supervisor_idle_io_screen_complete",
+        "supervisor_idle_overhead_screen_complete",
+        "io_accounting_instrumentation_staged",
         "io_accounting_instrumentation_host_rehearsal_complete",
+    ] {
+        assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
         "idle_overhead_budget_complete",
         "role_overhead_qualification_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(false), "{field}");
     }
+
+    let provisioning: Value = serde_json::from_slice(
+        &std::fs::read(
+            root().join(
+                implementation["host_provisioning_receipt"]
+                    .as_str()
+                    .unwrap(),
+            ),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(provisioning["github_run"]["id"].as_u64(), Some(37387670191));
     assert_eq!(
-        implementation["io_accounting_instrumentation_staged"].as_bool(),
+        provisioning["host"]["service_io_accounting"].as_bool(),
         Some(true)
+    );
+    assert_eq!(
+        provisioning["decision"]["release_admission_allowed"].as_bool(),
+        Some(false)
     );
 }
 

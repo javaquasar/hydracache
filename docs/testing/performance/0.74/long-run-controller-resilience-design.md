@@ -832,8 +832,15 @@ and checkpoint I/O. The minimal implementation now stages `IOAccounting=yes` in 
 supervisor unit and `IOAccounting=true` in every fixed measured and non-product transient-unit
 specification. It does not change the sudo surface or accept a caller-selected property. The
 admitted host reports the `io` controller in its root cgroup-v2 controller inventory, so a signed
-reinstallation plus controlled supervisor restart can test this exact path. Until that host
-rehearsal succeeds, I/O and complete overhead flags remain false.
+reinstallation plus controlled supervisor restart can test this exact path.
+
+That test is complete at signed source `1bc4823b`. After exact marker/context absence checks, the
+old service alone was stopped, the signed bundle was installed, and the replacement came up with
+`IOAccounting=yes`, a runner-readable `io.stat`, a new exact MainPID and zero restarts. A subsequent
+30-second screen measured 0.00662332% CPU, 4,415,488 bytes maximum RSS and 0 bytes/second exact
+cgroup I/O, all below their frozen idle ceilings with stable identity. This closes only the
+supervisor idle screen. Checkpoint I/O and paired role overhead/asymmetry remain required, so the
+overall overhead and release flags remain false.
 
 ## Rollout, gates and rollback
 

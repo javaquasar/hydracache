@@ -727,10 +727,31 @@ Consequently `supervisor_idle_cpu_rss_screen_complete=true`, while
 `supervisor_idle_io_screen_complete`, `idle_overhead_budget_complete` and
 `role_overhead_qualification_complete` remain false. A reviewed exact I/O counter source and the
 role-level checkpoint/supervisor A/B are still required; the frozen ceilings were not changed. The
-next isolated instrumentation commit stages systemd `IOAccounting` for the supervisor and fixed
-transient units. The root cgroup-v2 capability receipt includes the `io` controller, but the new
-unit policy has not yet been signed, installed or restart-rehearsed, so it does not change those
-completion flags.
+next isolated instrumentation commit therefore staged systemd `IOAccounting` for the supervisor
+and fixed transient units. The root cgroup-v2 capability receipt included the `io` controller; at
+that point the new unit policy had not yet been signed, installed or restart-rehearsed, so the
+partial receipt correctly left its completion flags false.
+
+That instrumentation is now signed and host-rehearsed at exact source `1bc4823b`. Provisioning run
+`37387670191` installed the bundle after rechecking that no active campaign marker or fixture
+context existed and stopping only the previous supervisor. The replacement service came up as PID
+1538885 with zero restarts and `IOAccounting=yes`; its cgroup `io.stat` is readable by the
+unprivileged runner. The fixed sudo surface did not change. See
+`local-runs/w11-host-provisioning-io-accounting-1bc4823b.json`.
+
+Read-only run `37388038717` then sampled that exact installed source for 30.000063773 seconds. All
+61 samples retained the same PID, start ticks, control group and `0,5-15` cpuset. CPU was
+0.00662332%, maximum RSS was 4,415,488 bytes, and exact cgroup I/O was 0 bytes/second; each stayed
+below the frozen 0.5%, 67,108,864-byte and 1,048,576-byte/second idle ceilings. CPU pressure stayed
+zero, memory-current peaked at 819,200 bytes, lifetime cgroup memory at 868,352 bytes, and the
+single thread recorded 30 voluntary plus one involuntary context switches. See
+`local-runs/w11-supervisor-idle-overhead-1bc4823b.json`.
+
+This supersedes the telemetry blocker and closes `supervisor_idle_overhead_screen_complete`, but
+not the W11 overhead budget. No checkpoint writer or I74/C74 role ran, so checkpoint I/O, paired
+role timing/asymmetry and role-level overhead remain unevaluated. Accordingly
+`idle_overhead_budget_complete`, `role_overhead_qualification_complete` and release admission stay
+false.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

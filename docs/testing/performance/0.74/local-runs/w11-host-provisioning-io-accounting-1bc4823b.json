@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-signed-io-accounting-provisioning",
+  "source_commit": "1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b",
+  "github_run": {
+    "id": 37387670191,
+    "conclusion": "success",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37387670191"
+  },
+  "artifacts": {
+    "signed_bundle": {
+      "id": 11379712651,
+      "name": "long-run-host-provisioning-074-1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b-37387670191",
+      "digest": "sha256:662c0a9690ade7b01464fca38215e14f45cba0c5e653365eb141179845562b59"
+    },
+    "provisioning_receipt": {
+      "id": 11380128037,
+      "name": "performance-long-run-host-provisioning-074-1bc4823b9f0585cd7ad4f767d0fcf093a7f7576b-37387670191-1",
+      "digest": "sha256:59767a5a47d6ec6217b82c1592cc8f31dfda6c3e016ec99776ddae5f40ab7bc3"
+    }
+  },
+  "digests": {
+    "provisioning_receipt_sha256": "0f524b4a86baa4fe91e9fa7f201776db9a55a10514b4ed9d3b5e102f68a00981",
+    "capability_receipt_sha256": "7158dd50222423e952f907da8d4ec25cc0de54ca2d5f6c0190256a9c88c9e604",
+    "binary_sha256": "8b00355d9c2f359841b3d44e3192738c04e3381d186d2382805415cfa9da3623",
+    "fixture_binary_sha256": "8b00355d9c2f359841b3d44e3192738c04e3381d186d2382805415cfa9da3623",
+    "service_sha256": "ae34e60ca05fe8fbc3838edaeb04c94c3fdce564af031a6a2f5b0560d7a60b2d",
+    "config_sha256": "40f2140a4960eae4898fa63ab3766908a3f5979364daff0f41b4746b5b4a5652",
+    "verification_key_sha256": "53287c154fea0ac9617bd0ef8f7d8bce776653b629504d838946ee1e3613264e"
+  },
+  "host": {
+    "created_at_utc": "2026-10-05T23:21:08Z",
+    "machine_id_sha256": "5e32780d0b9b493e27782f17f32b0de2dc757855e595ed8a111da407c4e9a225",
+    "boot_id_sha256": "e55e72380bc648fe246beb428df31c45f0cc36f7a61ca3f229da2f4f87273a1d",
+    "service_active": true,
+    "service_main_pid": 1538885,
+    "service_restart_count": 0,
+    "service_io_accounting": true,
+    "service_io_stat_runner_readable": true,
+    "root_cgroup_v2_io_controller_available": true,
+    "active_campaign_marker_absent_before_install": true,
+    "fixture_contexts_absent_before_install": true,
+    "product_candidate_started": false,
+    "qualification_started": false
+  },
+  "decision": {
+    "signed_io_accounting_install_complete": true,
+    "io_accounting_instrumentation_host_rehearsal_complete": true,
+    "supervisor_idle_overhead_screen_complete": false,
+    "role_overhead_qualification_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "run the bounded read-only supervisor idle screen, then retain role-level checkpoint I/O A/B separately",
+    "reason": "The exact signed source installed IOAccounting for the production supervisor without changing the fixed sudo boundary. The service was stopped only after marker/context absence was revalidated, then returned active with a new exact PID and zero restarts. No product workload ran."
+  }
+}
