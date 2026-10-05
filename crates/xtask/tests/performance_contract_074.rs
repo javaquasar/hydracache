@@ -171,6 +171,9 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "privileged_start_bundle_staging_complete",
         "connection_transport_failure_survival_complete",
         "startup_checkpoint_absence_maintenance_complete",
+        "campaign_lifecycle_controller_loss_rehearsal_complete",
+        "real_systemd_spawn_backend_host_rehearsal_complete",
+        "systemd_confinement_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
@@ -583,6 +586,11 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
     assert!(workflow.contains("cancel-in-progress: false"));
     assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
     assert!(workflow.contains("Collect read-only host capability receipt"));
+    assert!(workflow.contains("if: github.event_name == 'push' || inputs.mode == 'probe'"));
+    let probe_job = workflow
+        .split("\n  provision:")
+        .next()
+        .expect("probe job precedes mutating dispatch jobs");
     for forbidden in [
         "sudo ",
         "systemctl start",
@@ -592,8 +600,19 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
         "performance-long-run-qualification-074",
     ] {
         assert!(
-            !workflow.contains(forbidden),
+            !probe_job.contains(forbidden),
             "forbidden mutation: {forbidden}"
+        );
+    }
+    for mode in [
+        "provision",
+        "systemd-smoke",
+        "controller-loss-smoke",
+        "campaign-lifecycle-smoke",
+    ] {
+        assert!(
+            workflow.contains(&format!("inputs.mode == '{mode}'")),
+            "missing isolated dispatch condition for {mode}"
         );
     }
 
