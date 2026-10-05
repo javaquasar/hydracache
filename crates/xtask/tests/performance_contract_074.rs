@@ -609,6 +609,7 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
         "campaign-lifecycle-smoke",
         "campaign-progress-loss-smoke",
         "campaign-measurement-loss-smoke",
+        "campaign-lease-expiry-smoke",
     ] {
         assert!(
             workflow.contains(&format!("inputs.mode == '{mode}'")),

@@ -7,6 +7,7 @@ use crate::host_receipt::{
     collect_fixture_host_observation, verify_fixture_host_receipt_evidence,
     write_receipt_for_admission,
 };
+use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryOutcome};
 use crate::manifest::{
     frozen_identity_from_manifest, CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary,
     OutputLimits, PhaseDurationsSeconds, RoleArgvTemplates,
@@ -17,7 +18,7 @@ use crate::measurement_loss::{
 use crate::mutation::{begin_attach, reconcile_campaign, BeginAttach};
 use crate::process_identity::{
     identity_from_snapshot, inspect_cgroup_processes, inspect_process, verify_process_cpuset,
-    verify_process_identity, ProcessIdentityError,
+    verify_process_identity, IdentityMismatch, ProcessIdentityError,
 };
 use crate::progress_loss::{drive_progress_loss, ProgressLossOutcome};
 use crate::protocol::{ControllerIdentity, Operation, Request};
@@ -47,8 +48,10 @@ const CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
 const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
 const CONTEXT_PATH: &str = "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json";
 const SUPERVISOR_SERVICE: &str = "hydracache-performance-supervisor-074.service";
-const FIXTURE_DAEMON_SECONDS: u64 = 210;
-const FIXTURE_POST_DAEMON_SECONDS: u64 = 45;
+const FIXTURE_DAEMON_DRIFT_AFTER_SECONDS: u64 = 210;
+const FIXTURE_DAEMON_DRIFT_SECONDS: u64 = 20;
+const FIXTURE_DAEMON_AFTER_DRIFT_SECONDS: u64 = 80;
+const FIXTURE_LEASE_SECONDS: u64 = 250;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
 const HASH_A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -128,6 +131,7 @@ pub struct CampaignMeasurementLossResumeReceipt {
     pub original_controller_exited: bool,
     pub retained_harness_observed: bool,
     pub missing_daemon_observed: bool,
+    pub daemon_cpuset_drift_observed: bool,
     pub reason: MeasurementLossReason,
     pub checkpoint_sequence: u64,
     pub observed_unix_seconds: u64,
@@ -142,11 +146,39 @@ pub struct CampaignMeasurementLossResumeReceipt {
 }
 
 #[derive(Debug, Serialize)]
+pub struct CampaignLeaseExpiryResumeReceipt {
+    pub schema_version: &'static str,
+    pub product_candidate_started: bool,
+    pub campaign_id: String,
+    pub original_controller_exited: bool,
+    pub exact_process_pair_observed: bool,
+    pub checkpoint_sequence: u64,
+    pub lease_id: String,
+    pub lease_deadline_unix_seconds: u64,
+    pub observed_unix_seconds: u64,
+    pub completed_revision: u64,
+    pub lease_expired_incomplete: bool,
+    pub recorded_failure: bool,
+    pub execution_fields_cleared: bool,
+    pub diagnostic_sha256: String,
+    pub diagnostic_bytes: u64,
+    pub unit_stopped: bool,
+    pub active_campaign_released: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CampaignMeasurementFault {
+    MissingDaemon,
+    DaemonCpuSetDrift,
+}
+
+#[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum CampaignSmokeResumeOutcome {
     ControllerLoss(CampaignSmokeResumeReceipt),
     ProgressLoss(CampaignProgressLossResumeReceipt),
     MeasurementLoss(CampaignMeasurementLossResumeReceipt),
+    LeaseExpiry(CampaignLeaseExpiryResumeReceipt),
 }
 
 pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, String> {
@@ -289,8 +321,11 @@ pub fn start_campaign_lifecycle_smoke() -> Result<CampaignSmokeStartReceipt, Str
 pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeOutcome, String> {
     require_root()?;
     require_supervisor_inactive()?;
-    if campaign_measurement_is_lost()? {
-        resume_campaign_measurement_loss_smoke().map(CampaignSmokeResumeOutcome::MeasurementLoss)
+    if let Some(fault) = campaign_measurement_fault()? {
+        resume_campaign_measurement_loss_smoke(fault)
+            .map(CampaignSmokeResumeOutcome::MeasurementLoss)
+    } else if campaign_lease_is_due()? {
+        resume_campaign_lease_expiry_smoke().map(CampaignSmokeResumeOutcome::LeaseExpiry)
     } else if campaign_progress_is_due()? {
         resume_campaign_progress_loss_smoke().map(CampaignSmokeResumeOutcome::ProgressLoss)
     } else {
@@ -298,7 +333,7 @@ pub fn resume_campaign_lifecycle_smoke() -> Result<CampaignSmokeResumeOutcome, S
     }
 }
 
-fn campaign_measurement_is_lost() -> Result<bool, String> {
+fn campaign_measurement_fault() -> Result<Option<CampaignMeasurementFault>, String> {
     let context = read_context(Path::new(CONTEXT_PATH))?;
     if context.schema_version != 1 || context.product_candidate_started {
         return Err("campaign lifecycle context differs".to_owned());
@@ -337,16 +372,74 @@ fn campaign_measurement_is_lost() -> Result<bool, String> {
     verify_process_identity(harness).map_err(display)?;
     verify_process_cpuset(harness, &state.identity.isolated_cpuset).map_err(display)?;
     match verify_process_identity(daemon) {
-        Ok(()) => {
-            verify_process_cpuset(daemon, &state.identity.isolated_cpuset).map_err(display)?;
-            Ok(false)
-        }
+        Ok(()) => match verify_process_cpuset(daemon, &state.identity.isolated_cpuset) {
+            Ok(()) => Ok(None),
+            Err(ProcessIdentityError::Mismatch(mismatches))
+                if mismatches == vec![IdentityMismatch::CpuSet] =>
+            {
+                verify_exact_retained_pair(harness, daemon)?;
+                Ok(Some(CampaignMeasurementFault::DaemonCpuSetDrift))
+            }
+            Err(error) => Err(format!("fixture daemon cpuset is ambiguous: {error}")),
+        },
         Err(ProcessIdentityError::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {
             verify_only_retained_harness(harness)?;
-            Ok(true)
+            Ok(Some(CampaignMeasurementFault::MissingDaemon))
         }
         Err(error) => Err(format!("fixture daemon identity is ambiguous: {error}")),
     }
+}
+
+fn verify_exact_retained_pair(
+    harness: &crate::ProcessIdentity,
+    daemon: &crate::ProcessIdentity,
+) -> Result<(), String> {
+    let processes = inspect_cgroup_processes(&harness.cgroup_path).map_err(display)?;
+    let mut observed_pids = processes
+        .iter()
+        .map(|process| process.pid)
+        .collect::<Vec<_>>();
+    observed_pids.sort_unstable();
+    let mut expected_pids = vec![harness.pid, daemon.pid];
+    expected_pids.sort_unstable();
+    if observed_pids != expected_pids {
+        return Err("fixture cgroup does not contain the exact retained pair".to_owned());
+    }
+    verify_process_identity(harness).map_err(display)?;
+    verify_process_identity(daemon).map_err(display)
+}
+
+fn campaign_lease_is_due() -> Result<bool, String> {
+    let context = read_context(Path::new(CONTEXT_PATH))?;
+    if context.schema_version != 1 || context.product_candidate_started {
+        return Err("campaign lifecycle context differs".to_owned());
+    }
+    if original_controller_still_running(&context)? {
+        return Err("original controller is still running".to_owned());
+    }
+    let root = fs::canonicalize(CAMPAIGN_ROOT).map_err(display)?;
+    let campaign_directory = root.join(&context.campaign_id);
+    let lock = CampaignLock::acquire(&root, &context.campaign_id).map_err(display)?;
+    let state = reconcile_campaign(&lock).map_err(display)?;
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let manifest = crate::manifest::parse_stored_and_validate(
+        &manifest_bytes,
+        &context.manifest_sha256,
+        &context.campaign_id,
+    )
+    .map_err(display)?;
+    if state.identity.lease_deadline_unix_seconds != manifest.product_lease_deadline_unix_seconds {
+        return Err("campaign lease deadline differs from the manifest".to_owned());
+    }
+    Ok(lease_deadline_elapsed(
+        state.identity.lease_deadline_unix_seconds,
+        unix_seconds()?,
+    ))
+}
+
+fn lease_deadline_elapsed(deadline_unix_seconds: u64, now_unix_seconds: u64) -> bool {
+    now_unix_seconds > deadline_unix_seconds
 }
 
 fn verify_only_retained_harness(harness: &crate::ProcessIdentity) -> Result<(), String> {
@@ -705,8 +798,9 @@ fn resume_campaign_progress_loss_smoke() -> Result<CampaignProgressLossResumeRec
     })
 }
 
-fn resume_campaign_measurement_loss_smoke() -> Result<CampaignMeasurementLossResumeReceipt, String>
-{
+fn resume_campaign_measurement_loss_smoke(
+    expected_fault: CampaignMeasurementFault,
+) -> Result<CampaignMeasurementLossResumeReceipt, String> {
     let context_path = Path::new(CONTEXT_PATH);
     let context = read_context(context_path)?;
     if context.schema_version != 1 || context.product_candidate_started {
@@ -752,12 +846,27 @@ fn resume_campaign_measurement_loss_smoke() -> Result<CampaignMeasurementLossRes
     verify_unit_identity(&harness, &daemon, &unit).map_err(display)?;
     verify_process_identity(&harness).map_err(display)?;
     verify_process_cpuset(&harness, &state.identity.isolated_cpuset).map_err(display)?;
-    match verify_process_identity(&daemon) {
-        Err(ProcessIdentityError::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
-        Ok(()) => return Err("measurement-loss fixture daemon is still running".to_owned()),
-        Err(error) => return Err(format!("fixture daemon identity is ambiguous: {error}")),
+    match expected_fault {
+        CampaignMeasurementFault::MissingDaemon => {
+            match verify_process_identity(&daemon) {
+                Err(ProcessIdentityError::Io(error))
+                    if error.kind() == std::io::ErrorKind::NotFound => {}
+                Ok(()) => return Err("measurement-loss fixture daemon is still running".to_owned()),
+                Err(error) => return Err(format!("fixture daemon identity is ambiguous: {error}")),
+            }
+            verify_only_retained_harness(&harness)?;
+        }
+        CampaignMeasurementFault::DaemonCpuSetDrift => {
+            verify_process_identity(&daemon).map_err(display)?;
+            match verify_process_cpuset(&daemon, &state.identity.isolated_cpuset) {
+                Err(ProcessIdentityError::Mismatch(mismatches))
+                    if mismatches == vec![IdentityMismatch::CpuSet] => {}
+                Ok(()) => return Err("measurement-loss fixture daemon cpuset recovered".to_owned()),
+                Err(error) => return Err(format!("fixture daemon cpuset is ambiguous: {error}")),
+            }
+            verify_exact_retained_pair(&harness, &daemon)?;
+        }
     }
-    verify_only_retained_harness(&harness)?;
 
     let observed_unix_seconds = unix_seconds()?;
     let reason = MeasurementLossReason::ProcessIdentityDrift;
@@ -837,12 +946,149 @@ fn resume_campaign_measurement_loss_smoke() -> Result<CampaignMeasurementLossRes
         campaign_id: context.campaign_id,
         original_controller_exited: true,
         retained_harness_observed: true,
-        missing_daemon_observed: true,
+        missing_daemon_observed: expected_fault == CampaignMeasurementFault::MissingDaemon,
+        daemon_cpuset_drift_observed: expected_fault == CampaignMeasurementFault::DaemonCpuSetDrift,
         reason,
         checkpoint_sequence,
         observed_unix_seconds,
         completed_revision: state_revision,
         failed_incomplete: true,
+        recorded_failure: completed.recorded_failure,
+        execution_fields_cleared,
+        diagnostic_sha256,
+        diagnostic_bytes: diagnostic_metadata.len(),
+        unit_stopped,
+        active_campaign_released,
+    })
+}
+
+fn resume_campaign_lease_expiry_smoke() -> Result<CampaignLeaseExpiryResumeReceipt, String> {
+    let context_path = Path::new(CONTEXT_PATH);
+    let context = read_context(context_path)?;
+    if context.schema_version != 1 || context.product_candidate_started {
+        return Err("campaign lease-expiry context differs".to_owned());
+    }
+    if original_controller_still_running(&context)? {
+        return Err("original controller is still running".to_owned());
+    }
+
+    let root = fs::canonicalize(CAMPAIGN_ROOT).map_err(display)?;
+    let campaign_directory = root.join(&context.campaign_id);
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let manifest = crate::manifest::parse_stored_and_validate(
+        &manifest_bytes,
+        &context.manifest_sha256,
+        &context.campaign_id,
+    )
+    .map_err(display)?;
+    let host_claim = HostExecutionClaim::recover(&root, &context.campaign_id).map_err(display)?;
+    let lock = CampaignLock::acquire(&root, &context.campaign_id).map_err(display)?;
+    let state = reconcile_campaign(&lock).map_err(display)?;
+    verify_fixture_host_receipt_evidence(
+        &campaign_directory,
+        &campaign_directory.join("fixture-host-freeze.json"),
+        &manifest,
+        &state,
+    )
+    .map_err(display)?;
+    let (harness, daemon) = state
+        .harness
+        .as_ref()
+        .zip(state.daemon.as_ref())
+        .ok_or_else(|| "started fixture has no exact process pair".to_owned())?;
+    let harness = harness.clone();
+    let daemon = daemon.clone();
+    let unit_name = harness.unit_name.clone();
+    let mut observer = SystemdSpawnBackend::new(manifest.clone(), campaign_directory.clone());
+    let observed = observer.observe(&unit_name).map_err(display)?;
+    if !matches!(
+        observed,
+        SpawnObservation::Exact { harness: ref observed_harness, daemon: ref observed_daemon }
+            if observed_harness == &harness && observed_daemon == &daemon
+    ) {
+        return Err("production spawn backend did not observe the exact leased pair".to_owned());
+    }
+    let (_, checkpoint) =
+        observe_live_checkpoint_evidence(&campaign_directory, &state).map_err(display)?;
+    let observed_unix_seconds = unix_seconds()?;
+    if !lease_deadline_elapsed(
+        state.identity.lease_deadline_unix_seconds,
+        observed_unix_seconds,
+    ) {
+        return Err(format!(
+            "lease deadline is not due: wait at least {} seconds",
+            state.identity.lease_deadline_unix_seconds - observed_unix_seconds + 1
+        ));
+    }
+
+    let lease_id = state.identity.lease_id.clone();
+    let lease_deadline_unix_seconds = state.identity.lease_deadline_unix_seconds;
+    let mut backend = SystemdAbortBackend::new();
+    backend.bind_manifest(manifest.clone());
+    let outcome = drive_lease_expiry(&host_claim, &lock, observed_unix_seconds, &mut backend)
+        .map_err(display)?;
+    let completed_revision = match outcome {
+        LeaseExpiryOutcome::Completed { state_revision } => state_revision,
+        LeaseExpiryOutcome::NotDue => return Err("lease expiry remained not due".to_owned()),
+    };
+    let completed = reconcile_campaign(&lock).map_err(display)?;
+    let execution_fields_cleared = completed.harness.is_none()
+        && completed.daemon.is_none()
+        && completed.checkpoint.is_none()
+        && completed.controller_lease.is_none();
+    if completed.revision != completed_revision
+        || completed.campaign_state != CampaignState::LeaseExpiredIncomplete
+        || completed.recorded_failure
+        || !execution_fields_cleared
+    {
+        return Err("lease-expiry terminal state differs".to_owned());
+    }
+    let diagnostic_path = campaign_directory
+        .join("roles")
+        .join("i74")
+        .join("diagnostics")
+        .join(format!("lease-expiry-{lease_id}.json"));
+    let diagnostic_metadata = fs::symlink_metadata(&diagnostic_path).map_err(display)?;
+    if !diagnostic_metadata.is_file()
+        || diagnostic_metadata.file_type().is_symlink()
+        || diagnostic_metadata.nlink() != 1
+        || diagnostic_metadata.uid() != 0
+        || diagnostic_metadata.gid() != 0
+        || diagnostic_metadata.len() == 0
+        || diagnostic_metadata.len() > manifest.output_limits.diagnostic_bytes
+    {
+        return Err("lease-expiry diagnostic is unsafe".to_owned());
+    }
+    let diagnostic_sha256 = sha256_hex(&fs::read(&diagnostic_path).map_err(display)?);
+    let unit_stopped = inspect_unit_optional(&unit_name)
+        .map_err(display)?
+        .is_none_or(|unit| unit.active_state != "active");
+    if !unit_stopped {
+        return Err("lease-expiry fixture unit is still active".to_owned());
+    }
+
+    drop(lock);
+    drop(host_claim);
+    let active_campaign_released = HostExecutionClaim::recover_active(&root)
+        .map_err(display)?
+        .is_none();
+    if !active_campaign_released {
+        return Err("lease-expiry completion did not release the host claim".to_owned());
+    }
+    remove_context(context_path)?;
+    Ok(CampaignLeaseExpiryResumeReceipt {
+        schema_version: "hydracache-w11-campaign-lease-expiry-resume-v1",
+        product_candidate_started: false,
+        campaign_id: context.campaign_id,
+        original_controller_exited: true,
+        exact_process_pair_observed: true,
+        checkpoint_sequence: checkpoint.sequence,
+        lease_id,
+        lease_deadline_unix_seconds,
+        observed_unix_seconds,
+        completed_revision,
+        lease_expired_incomplete: true,
         recorded_failure: completed.recorded_failure,
         execution_fields_cleared,
         diagnostic_sha256,
@@ -913,15 +1159,40 @@ pub fn run_fixture_harness() -> Result<(), String> {
     .map_err(display)?;
     let status = child.wait().map_err(display)?;
     if status.success() {
-        thread::sleep(Duration::from_secs(FIXTURE_POST_DAEMON_SECONDS));
         Ok(())
     } else {
         Err("fixture daemon failed".to_owned())
     }
 }
 
-pub fn run_fixture_daemon() {
-    thread::sleep(Duration::from_secs(FIXTURE_DAEMON_SECONDS));
+pub fn run_fixture_daemon() -> Result<(), String> {
+    let mut original = unsafe { std::mem::zeroed::<libc::cpu_set_t>() };
+    let cpu_set_bytes = std::mem::size_of::<libc::cpu_set_t>();
+    if unsafe { libc::sched_getaffinity(0, cpu_set_bytes, &mut original) } != 0 {
+        return Err(std::io::Error::last_os_error().to_string());
+    }
+    let available = (0..libc::CPU_SETSIZE as usize)
+        .filter(|cpu| unsafe { libc::CPU_ISSET(*cpu, &original) })
+        .collect::<Vec<_>>();
+    if available.len() < 2 {
+        return Err("fixture daemon requires at least two isolated CPUs".to_owned());
+    }
+    let mut narrowed = unsafe { std::mem::zeroed::<libc::cpu_set_t>() };
+    unsafe {
+        libc::CPU_ZERO(&mut narrowed);
+        libc::CPU_SET(available[0], &mut narrowed);
+    }
+
+    thread::sleep(Duration::from_secs(FIXTURE_DAEMON_DRIFT_AFTER_SECONDS));
+    if unsafe { libc::sched_setaffinity(0, cpu_set_bytes, &narrowed) } != 0 {
+        return Err(std::io::Error::last_os_error().to_string());
+    }
+    thread::sleep(Duration::from_secs(FIXTURE_DAEMON_DRIFT_SECONDS));
+    if unsafe { libc::sched_setaffinity(0, cpu_set_bytes, &original) } != 0 {
+        return Err(std::io::Error::last_os_error().to_string());
+    }
+    thread::sleep(Duration::from_secs(FIXTURE_DAEMON_AFTER_DRIFT_SECONDS));
+    Ok(())
 }
 
 #[derive(Default)]
@@ -1005,7 +1276,7 @@ fn build_manifest(
         progress_warning_gap_seconds: 90,
         progress_rejection_gap_seconds: 180,
         diagnostic_grace_seconds: 30,
-        product_lease_deadline_unix_seconds: now.saturating_add(600),
+        product_lease_deadline_unix_seconds: now.saturating_add(FIXTURE_LEASE_SECONDS),
         maximum_campaign_bytes: 21_474_836_480,
         maximum_campaign_files: 20_000,
         installed_binaries: vec![binary, companion],
@@ -1022,12 +1293,12 @@ fn build_manifest(
         command_environment_sha256: HASH_A.to_owned(),
         role_order: vec!["i74".to_owned(), "c74".to_owned()],
         phase_durations_seconds: PhaseDurationsSeconds {
-            warmup: 40,
-            measured: 40,
-            drain: 40,
-            durable_companion: 40,
-            post_work_idle: 40,
-            reconciliation: 40,
+            warmup: 55,
+            measured: 55,
+            drain: 55,
+            durable_companion: 55,
+            post_work_idle: 55,
+            reconciliation: 55,
         },
         output_limits: OutputLimits {
             stdout_bytes: 1_048_576,
@@ -1238,8 +1509,9 @@ fn display(error: impl std::fmt::Display) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        fixture_diagnostic, progress_deadline_elapsed, uuid_from_hash, FIXTURE_DAEMON_SECONDS,
-        FIXTURE_POST_DAEMON_SECONDS, HASH_A,
+        fixture_diagnostic, lease_deadline_elapsed, progress_deadline_elapsed, uuid_from_hash,
+        FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
+        FIXTURE_DAEMON_DRIFT_SECONDS, FIXTURE_LEASE_SECONDS, HASH_A,
     };
     use std::fs;
 
@@ -1274,11 +1546,27 @@ mod tests {
     }
 
     #[test]
+    fn lifecycle_resume_switches_only_after_the_frozen_lease_deadline() {
+        assert!(!lease_deadline_elapsed(1_000, 999));
+        assert!(!lease_deadline_elapsed(1_000, 1_000));
+        assert!(lease_deadline_elapsed(1_000, 1_001));
+    }
+
+    #[test]
     fn measurement_fault_window_follows_the_progress_rehearsal_and_is_bounded() {
         const PROGRESS_REJECTION_GAP_SECONDS: u64 = 180;
-        const ROLE_RUNTIME_SECONDS: u64 = 270;
-        assert!(FIXTURE_DAEMON_SECONDS > PROGRESS_REJECTION_GAP_SECONDS + 2);
-        assert!(FIXTURE_POST_DAEMON_SECONDS >= 30);
-        assert!(FIXTURE_DAEMON_SECONDS + FIXTURE_POST_DAEMON_SECONDS < ROLE_RUNTIME_SECONDS);
+        const ROLE_RUNTIME_SECONDS: u64 = 360;
+        const PROGRESS_RESUME_SECONDS: u64 = PROGRESS_REJECTION_GAP_SECONDS + 2;
+        const MEASUREMENT_RESUME_SECONDS: u64 = 212;
+        const LEASE_RESUME_SECONDS: u64 = 252;
+        let drift_end = FIXTURE_DAEMON_DRIFT_AFTER_SECONDS + FIXTURE_DAEMON_DRIFT_SECONDS;
+        let daemon_end = drift_end + FIXTURE_DAEMON_AFTER_DRIFT_SECONDS;
+        assert!(PROGRESS_RESUME_SECONDS < FIXTURE_DAEMON_DRIFT_AFTER_SECONDS);
+        assert!(MEASUREMENT_RESUME_SECONDS >= FIXTURE_DAEMON_DRIFT_AFTER_SECONDS);
+        assert!(MEASUREMENT_RESUME_SECONDS < drift_end);
+        assert!(drift_end < FIXTURE_LEASE_SECONDS);
+        assert!(LEASE_RESUME_SECONDS > FIXTURE_LEASE_SECONDS);
+        assert!(LEASE_RESUME_SECONDS < daemon_end);
+        assert!(daemon_end < ROLE_RUNTIME_SECONDS);
     }
 }

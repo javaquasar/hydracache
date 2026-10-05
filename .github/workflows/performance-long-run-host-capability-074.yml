@@ -16,6 +16,7 @@ on:
           - campaign-lifecycle-smoke
           - campaign-progress-loss-smoke
           - campaign-measurement-loss-smoke
+          - campaign-lease-expiry-smoke
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -433,7 +434,7 @@ jobs:
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-start \
             > "$EVIDENCE_DIR/start.json"
 
-      - name: Retain the harness after the fixture daemon exits
+      - name: Observe the bounded fixture daemon cpuset drift window
         shell: bash
         run: |
           set -euo pipefail
@@ -462,7 +463,8 @@ jobs:
           assert resumed["product_candidate_started"] is False
           assert resumed["original_controller_exited"] is True
           assert resumed["retained_harness_observed"] is True
-          assert resumed["missing_daemon_observed"] is True
+          assert resumed["missing_daemon_observed"] is False
+          assert resumed["daemon_cpuset_drift_observed"] is True
           assert resumed["reason"] == "process-identity-drift"
           assert resumed["checkpoint_sequence"] == started["checkpoint_sequence"] == 1
           assert resumed["failed_incomplete"] is True
@@ -480,5 +482,93 @@ jobs:
         with:
           name: performance-long-run-campaign-measurement-loss-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-campaign-measurement-loss-smoke/**
+          if-no-files-found: error
+          retention-days: 90
+
+  campaign-lease-expiry-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'campaign-lease-expiry-smoke'
+    name: Campaign-shaped lease-expiry lifecycle smoke
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 10
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-campaign-lease-expiry-smoke
+    steps:
+      - name: Check out exact campaign lease-expiry smoke source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify source and lease-expiry lifecycle tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          cargo test -p hydracache-long-run-supervisor-074 --test lease_expiry --locked
+          cargo test -p hydracache-long-run-supervisor-074 --test server \
+            maintenance_expires_the_active_campaign_without_a_controller_request \
+            --locked -- --exact
+
+      - name: Start the bounded non-product campaign pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
+          mkdir -p "$EVIDENCE_DIR"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          test "$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')" = "$GITHUB_SHA"
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-start \
+            > "$EVIDENCE_DIR/start.json"
+
+      - name: Wait past the frozen lease after the cpuset drift window recovers
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 252
+
+      - name: Expire the lease and stop the exact retained unit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service || true)" = inactive
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --campaign-lifecycle-smoke-resume \
+            > "$EVIDENCE_DIR/resume.json"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          started = json.loads((root / "start.json").read_text())
+          resumed = json.loads((root / "resume.json").read_text())
+          assert started["schema_version"] == "hydracache-w11-campaign-lifecycle-start-v1"
+          assert resumed["schema_version"] == "hydracache-w11-campaign-lease-expiry-resume-v1"
+          assert started["campaign_id"] == resumed["campaign_id"]
+          assert started["product_candidate_started"] is False
+          assert started["supervisor_service_inactive"] is True
+          assert resumed["product_candidate_started"] is False
+          assert resumed["original_controller_exited"] is True
+          assert resumed["exact_process_pair_observed"] is True
+          assert resumed["checkpoint_sequence"] == started["checkpoint_sequence"] == 1
+          assert resumed["observed_unix_seconds"] > resumed["lease_deadline_unix_seconds"]
+          assert resumed["lease_expired_incomplete"] is True
+          assert resumed["recorded_failure"] is False
+          assert resumed["execution_fields_cleared"] is True
+          assert len(resumed["lease_id"]) == 36
+          assert len(resumed["diagnostic_sha256"]) == 64
+          assert 0 < resumed["diagnostic_bytes"] <= 1048576
+          assert resumed["unit_stopped"] is True
+          assert resumed["active_campaign_released"] is True
+          PY
+
+      - name: Retain campaign lease-expiry smoke receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-campaign-lease-expiry-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-campaign-lease-expiry-smoke/**
           if-no-files-found: error
           retention-days: 90

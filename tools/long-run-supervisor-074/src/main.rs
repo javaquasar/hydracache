@@ -124,8 +124,13 @@ fn campaign_fixture_harness() -> u8 {
 
 #[cfg(target_os = "linux")]
 fn campaign_fixture_daemon() -> u8 {
-    hydracache_long_run_supervisor_074::campaign_smoke::run_fixture_daemon();
-    0
+    match hydracache_long_run_supervisor_074::campaign_smoke::run_fixture_daemon() {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("{error}");
+            9
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]
