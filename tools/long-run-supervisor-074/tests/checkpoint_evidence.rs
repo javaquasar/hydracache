@@ -1,5 +1,6 @@
 use hydracache_long_run_supervisor_074::checkpoint_evidence::{
-    verify_checkpoint_evidence, verify_terminal_checkpoint_evidence, CheckpointEvidenceError,
+    observe_live_checkpoint_evidence, verify_checkpoint_evidence,
+    verify_terminal_checkpoint_evidence, CheckpointEvidenceError,
 };
 use hydracache_long_run_supervisor_074::state::{
     CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
@@ -124,6 +125,21 @@ fn exact_chain_head_role_and_process_identity_are_required() {
     drifted.harness.as_mut().unwrap().start_ticks += 1;
     assert!(matches!(
         verify_checkpoint_evidence(temporary.path(), &drifted),
+        Err(CheckpointEvidenceError::Binding)
+    ));
+}
+
+#[test]
+fn live_chain_can_be_observed_before_a_controller_attaches_its_head() {
+    let (temporary, mut state) = fixture();
+    state.checkpoint = None;
+    let (report, observed) = observe_live_checkpoint_evidence(temporary.path(), &state).unwrap();
+    assert_eq!(report.records, 2);
+    assert_eq!(observed.sequence, 2);
+    assert_eq!(observed.record_sha256, report.head_sha256);
+    assert_eq!(observed.useful_progress_unix_seconds, 1_002);
+    assert!(matches!(
+        verify_checkpoint_evidence(temporary.path(), &state),
         Err(CheckpointEvidenceError::Binding)
     ));
 }

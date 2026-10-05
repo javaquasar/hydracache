@@ -743,11 +743,9 @@ fn resume_campaign_measurement_loss_smoke() -> Result<CampaignMeasurementLossRes
         .ok_or_else(|| "started fixture has no exact process pair".to_owned())?;
     let harness = harness.clone();
     let daemon = daemon.clone();
-    let checkpoint_sequence = state
-        .checkpoint
-        .as_ref()
-        .ok_or_else(|| "measurement-loss fixture checkpoint is absent".to_owned())?
-        .sequence;
+    let (_, observed_checkpoint) =
+        observe_live_checkpoint_evidence(&campaign_directory, &state).map_err(display)?;
+    let checkpoint_sequence = observed_checkpoint.sequence;
     let Some(unit) = inspect_unit_optional(&harness.unit_name).map_err(display)? else {
         return Err("measurement-loss fixture unit disappeared".to_owned());
     };
