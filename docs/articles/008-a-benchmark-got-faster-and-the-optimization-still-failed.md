@@ -495,6 +495,28 @@ the canary fail with its expected marker. On clean source `4b5f9812`, the ordina
 suite is green and the canary sweep records one expected-red proof. That is useful local
 falsification, not a substitute for killing real processes and controllers on the admitted host.
 
+That distinction exposed another false-positive class: a dead or replaced measured process can
+also stop producing checkpoints, but calling it a progress stall loses the owner of the failure.
+The detached supervisor now checks measurement identity first. It distinguishes frozen-host drift,
+an absent systemd unit, unit-identity drift and `/proc` or cpuset drift from an otherwise healthy
+role whose useful-work deadline expired. A retained successful terminal unit remains sealable; it
+is not converted into failure merely because no more checkpoints arrive.
+
+Measurement loss has its own canonical cause and two durable lifecycle records. The request record
+precedes diagnostic/stop, so a service restart recovers the exact reason, timestamp, processes and
+checkpoint rather than sampling a new story. Completion clears retained execution identity and
+releases the host claim. The lease-expiry loop will not steal a previously committed failure and
+relabel it. The stop rule is intentionally asymmetric: only a process-identity loss with the same
+unit, cgroup and MainPID may stop the unit. Missing, cross-boot, replaced or otherwise ambiguous
+identity stays failed closed for an operator instead of risking a foreign process.
+
+At source `9e7409d0`, 169 ordinary supervisor tests pass under WSL plus the intentionally ignored
+real-system-bus test. Four measurement-loss lifecycle tests cover normal completion, interruption,
+exact recovery and future-observation rejection; server tests cover healthy/terminal separation and
+lease-overlap recovery. The read-only monitor accepts cleared completed-failure state, and the local
+qualification dry-run executes nothing. This is resilience attribution, not performance evidence:
+real root/systemd timing and the admitted host still have to prove the production path.
+
 Finally, packet and archive publication use create-new staging directories, sync their contents,
 apply read-only Unix modes and atomically rename the completed trees. Recovery can adopt an exact
 completed artifact or finish a verified rename; it cannot overwrite a conflicting artifact. These

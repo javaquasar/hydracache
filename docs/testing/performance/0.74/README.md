@@ -502,6 +502,32 @@ passes and the dynamic canary sweep records one expected-red proof with exit cod
 local model proof, not the still-required same-host controller-loss and systemd fault rehearsal.
 See `local-runs/w11-controller-canaries-local-20261005.json`.
 
+Detached maintenance now classifies loss of the measured process separately from loss of useful
+progress. Before applying the progress deadline, the supervisor revalidates the frozen host
+receipt, retained systemd unit, harness/daemon `/proc` identities and isolated cpuset. It records
+one of four hash-bound causes: host identity drift, missing unit, unit identity drift or process
+identity drift. A retained successful `active/exited` unit is still terminal evidence for sealing,
+not a measurement failure. An actual loss commits `MeasurementLossRequested`, retains the exact
+process/checkpoint cause across restart, captures a bounded create-new diagnostic, commits
+`MeasurementLossCompleted`, clears execution identity and only then releases the host claim.
+
+The diagnostic backend will stop a still-present unit only for process-identity loss when its unit
+name, cgroup and MainPID still bind the retained campaign. Missing, replaced, cross-boot or otherwise
+ambiguous units are never stopped as if they were owned; an unsafe surviving unit keeps recovery
+failed closed for operator inspection. A committed failure intent also takes precedence over later
+lease expiry, so restart cannot relabel progress or measurement loss. The read-only monitor now
+accepts the intentionally cleared execution fields of completed terminal states and reports a
+completed recorded failure as `measurement-loss` rather than `invalid-state`.
+
+At source `9e7409d0`, the complete WSL supervisor suite passes 169 ordinary tests plus one ignored
+manual system-bus test; measurement-loss and focused server suites pass 4/4 and 15/15. The monitor
+passes 7/7, the integrated writer 10/10, the offline verifier 7/7 and the performance-contract suite
+17/17. The no-execution qualification dry-run accepted contract digest
+`4e2a2fce55058f2d9fc8aee6f6f831d60ad2ce13d48b4bcc83174171cfa7cfc9` and executed zero
+commands. Production D-Bus observation/diagnostic/stop and root-owned filesystem behavior remain
+admitted-host rehearsal work; this result contains no product throughput measurement. See
+`local-runs/w11-measurement-loss-maintenance-local-20261005.json`.
+
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
 controller loss separately from stale useful progress and measurement loss, rejects future

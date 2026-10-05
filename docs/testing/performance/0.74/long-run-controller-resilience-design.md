@@ -685,6 +685,32 @@ for the local implementation. Production D-Bus stop timing, root ownership and d
 against the installed service remain admitted-host rehearsal work and keep
 `progress_loss_host_rehearsal_complete` false.
 
+### Detached measurement-loss maintenance
+
+Useful-progress expiry is evaluated only after proving that the original measurement still exists.
+For each running I74 or C74 role, the privileged supervisor verifies the frozen host receipt, exact
+systemd unit, harness and daemon `/proc` identities, and both cpusets. A successful retained
+`active/exited` unit is classified as terminal and left for seal. Otherwise the observation is one
+of `host-identity-drift`, `unit-absent`, `unit-identity-drift` or `process-identity-drift`; those
+reasons are not rewritten as a stale checkpoint.
+
+The loss cause contains the campaign, observation time, reason, exact harness/daemon identities and
+optional checkpoint. Its canonical digest and reason-bearing event id are written with
+`MeasurementLossRequested` before diagnostic or stop side effects. The state becomes
+`FAILED_INCOMPLETE` with `recorded_failure = true`, which makes recovery distinguish this path from
+progress loss. Restart reconstructs and verifies the same cause from the lifecycle journal. After
+the backend succeeds, `MeasurementLossCompleted` clears harness, daemon, checkpoint and controller
+lease; only the completed durable state may release the host claim. A later lease deadline cannot
+take ownership of an already committed failed state.
+
+Diagnostic publication is create-new and keyed by the cause digest. A present unit can be stopped
+only for `process-identity-drift` when its unit name, cgroup and MainPID still match the retained
+campaign and both retained processes name that cgroup. Host drift, an absent/reappeared unit, a unit
+identity mismatch or any ambiguous reuse is preserved and fails closed instead of stopping a
+possibly foreign process. Local tests inject healthy, terminal, each lost reason, backend
+interruption, completed-marker recovery, lease-deadline overlap, cause drift and foreign-unit reuse.
+The production D-Bus/root-owned rehearsal remains mandatory.
+
 GitHub run id/attempt are controller provenance only. They are not campaign identity and cannot
 change frozen inputs. Workflow permissions do not include host sudo or arbitrary service control.
 

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "evidence_family": "w11-local-measurement-loss-maintenance",
+  "status": "passed-local-not-host-rehearsed",
+  "source_sha": "9e7409d0874df6441134803fb50f03195103e9e4",
+  "platform": "Windows plus WSL2 Ubuntu",
+  "commands": [
+    "wsl.exe -e bash -lc 'cargo test -p hydracache-long-run-supervisor-074 --locked'",
+    "python scripts/ci/test_monitor_long_run_campaign_074.py",
+    "cargo test -p hydracache-performance-integrated-074 --locked",
+    "cargo test -p xtask --test long_run_campaign_074 --locked",
+    "cargo test -p xtask --test performance_contract_074 --locked",
+    "cargo clippy -p hydracache-long-run-supervisor-074 --all-targets --locked -- -D warnings",
+    "cargo xtask performance-contract-check --release 0.74",
+    "python scripts/perf/test_performance_qualification_dry_run_074.py",
+    "python scripts/perf/performance_qualification_dry_run_074.py --dry-run --manifest docs/testing/performance/0.74/qualification-manifest.toml --output target/performance-evidence/0.74/qualification-dry-run-measurement-loss.json"
+  ],
+  "contract_sha256": "4e2a2fce55058f2d9fc8aee6f6f831d60ad2ce13d48b4bcc83174171cfa7cfc9",
+  "external_host_used": false,
+  "workflow_dispatched": false,
+  "qualification_started": false,
+  "product_process_started": false,
+  "supervisor_tests_passed": 169,
+  "manual_system_bus_tests_ignored": 1,
+  "measurement_loss_tests_passed": 4,
+  "focused_server_tests_passed": 15,
+  "monitor_tests_passed": 7,
+  "integrated_writer_tests_passed": 10,
+  "offline_verifier_tests_passed": 7,
+  "performance_contract_tests_passed": 17,
+  "qualification_dry_run_tests_passed": 3,
+  "failed": 0,
+  "confirmed": [
+    "detached maintenance distinguishes healthy, terminal, host drift, unit absence, unit drift and process identity drift before progress-loss evaluation",
+    "measurement-loss intent is durable before diagnostic-stop and exact cause recovery does not resample or restart work",
+    "a committed failure state cannot be relabelled by later lease expiry",
+    "only the retained unit name, cgroup and MainPID may be stopped for process-identity loss; ambiguous or foreign identity fails closed",
+    "completed recorded-failure state remains valid read-only monitor evidence after execution identity is intentionally cleared",
+    "the qualification dry-run accepted the updated contract digest and executed zero commands"
+  ],
+  "limitations": [
+    "production observation, diagnostic capture and stop were not exercised against an installed root-owned systemd service",
+    "Linux strict clippy with the newly installed 2026-07-01 component reports pre-existing workspace lints outside this candidate; Windows strict clippy passed and the full Linux package compiled and tested",
+    "the workflow was not dispatched and no product or systemd process was started",
+    "this receipt contains no product performance claim and cannot authorize release admission"
+  ]
+}
