@@ -991,6 +991,27 @@ is `0660 root:hydracache-perf-client`, the signed bundle is idempotent, and the 
 transient unit ran. It authorizes the next bounded fixture rehearsal; it does not authorize a release
 claim or silently turn on six-hour and 24-hour qualification.
 
+That fixture rehearsal then found a defect that local mocks could not. The first real
+`StartTransientUnit` call was rejected before process creation with `Unexpected message contents`.
+The same hardening set worked through `systemd-run`, and introspection of the admitted host showed
+the mismatch: `ProtectHome` is a string-valued D-Bus property, while the Rust adapter encoded
+`true`. The production policy and smoke had shared the bug. We changed only that value to the
+systemd string `yes`, added an exact regression assertion, rebuilt a signed bundle and repeated the
+install. Keeping the failed run matters: it demonstrates why a green serializer unit test is not a
+host-interface proof.
+
+Run `37328774683` then passed with a fixed `/usr/bin/sleep 1` fixture, not HydraCache. The transient
+unit ran as the dedicated performance account under a five-second runtime limit, 64 MiB memory
+limit, 16-task limit and the reviewed hardening properties. The receipt saw a nonzero MainPID in
+the exact system.slice cgroup, followed by `active/exited`, zero MainPID and `Result=success`; the
+unit was then stopped and unloaded. No candidate, benchmark or expensive qualification phase ran.
+
+The claim remains deliberately narrow. This proves that the admitted systemd version accepts the
+property types and that the minimal lifecycle can be observed and cleaned up. It does not yet prove
+the signed campaign upload, durable exactly-once spawn transaction, controller reattachment,
+supervisor restart recovery, diagnostic-stop behavior or product process identity. Those require
+the next bounded non-promotable controller-loss fixture before any long performance campaign.
+
 ## The allocator hypothesis: faster churn, larger memory footprint
 
 W9e finally moved the allocator discussion from a deferred idea to a dedicated-Linux measurement.

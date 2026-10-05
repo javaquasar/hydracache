@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-bounded-systemd-smoke",
+  "source_commit": "9e8e47ae015b44cff44cfbf74ffa018adef7f5cf",
+  "github_run": {
+    "id": 37328774683,
+    "conclusion": "success",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37328774683"
+  },
+  "artifact": {
+    "id": 11353531122,
+    "name": "performance-long-run-systemd-smoke-074-9e8e47ae015b44cff44cfbf74ffa018adef7f5cf-37328774683-1",
+    "size_bytes": 1277,
+    "digest": "sha256:7478d09f2aa0b8ed6060e19c0a8a7a75a2de5486d8da90bb4fcbd04089446905",
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37328774683/artifacts/11353531122"
+  },
+  "receipts": {
+    "provisioning_sha256": "29247c6dddde0bc1e135b8e1b3335cbba4841165dcbfbec002f37fa9d86b9cd7",
+    "systemd_smoke_sha256": "7845ceb6092bcbe3d52145addbb44e8cc0539cc305143a0ae4af140e205a3c3f"
+  },
+  "observation": {
+    "schema_version": "hydracache-w11-systemd-smoke-v1",
+    "unit_name": "hydracache-performance-074-systemd-smoke.service",
+    "fixture_command": "/usr/bin/sleep 1",
+    "product_candidate_started": false,
+    "saw_running": true,
+    "running_main_pid": 1469223,
+    "running_control_group": "/system.slice/hydracache-performance-074-systemd-smoke.service",
+    "terminal": {
+      "active_state": "active",
+      "sub_state": "exited",
+      "main_pid": 0,
+      "result": "success"
+    },
+    "after_stop": null,
+    "elapsed_milliseconds": 1027
+  },
+  "negative_rehearsal": {
+    "source_commit": "39f03a6eeb3a6a23553b0cfa79e27dbb47e14be5",
+    "github_run_id": 37327128699,
+    "result": "StartTransientUnit rejected the property array before unit creation because ProtectHome was encoded as a D-Bus boolean instead of the systemd string value yes",
+    "retained_artifact_id": 11351864663,
+    "product_candidate_started": false
+  },
+  "decision": {
+    "bounded_systemd_smoke_complete": true,
+    "real_systemd_spawn_backend_host_rehearsal_complete": false,
+    "host_rehearsal_complete": false,
+    "qualification_started": false,
+    "next_required_step": "bounded non-promotable controller-loss rehearsal through the production start lifecycle using fixture binaries and identities",
+    "reason": "The admitted host accepted the reviewed transient-unit D-Bus shape and proved running, cgroup, terminal-success and cleanup transitions for a fixed sleep fixture. It did not exercise campaign admission, controller loss, supervisor restart, diagnostics, product candidates or performance workloads."
+  }
+}

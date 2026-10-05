@@ -565,8 +565,27 @@ reports `provisioned=true`, `runner_client_socket_access=true` and
 This closes host provisioning, not W11. No measured transient unit, fixture campaign, controller
 loss, supervisor restart, hang, lease expiry, reboot, I74/C74 workload, six-hour qualification or
 24-hour confirmation ran. `systemd_confinement_complete`, the host-rehearsal flags and release
-admission therefore remain false. The next safe step is a bounded non-promotable systemd rehearsal
-using fixture identities.
+admission therefore remain false.
+
+The next bounded slice is now complete at source `9e8e47ae`. Run `37328774683` started only the
+fixed `/usr/bin/sleep 1` fixture in a five-second, 64 MiB, 16-task transient service owned by
+`hydracache-perf`; it did not execute a product candidate. The receipt observed a nonzero MainPID
+in `/system.slice/hydracache-performance-074-systemd-smoke.service`, then `active/exited`, zero
+MainPID and `Result=success`, followed by removal after `StopUnit`. The parallel read-only
+capability probe also passed. See `local-runs/w11-systemd-smoke-9e8e47ae.json`.
+
+The retained first attempt, run `37327128699`, was useful negative evidence. systemd rejected the
+transient property array because `ProtectHome` was serialized as a D-Bus boolean even though the
+manager interface requires the string value `yes`. Host introspection isolated that exact type;
+the regression test and both fixture and production unit policies were corrected without changing
+the command or granting new authority. The repeated signed install and smoke then passed.
+
+This proves the reviewed D-Bus property shape and basic real-unit lifecycle only. It does not close
+the production spawn-backend, systemd-confinement or complete host-rehearsal flags, because no
+campaign manifest, durable start transaction, controller loss, supervisor restart, diagnostic-stop
+path or product workload was exercised. The next safe step is a bounded non-promotable
+controller-loss rehearsal through the production start lifecycle with fixture binaries and
+identities.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports
