@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 use std::error::Error;
-use std::fs;
-use std::path::PathBuf;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -21,6 +22,10 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 use tokio::net::{TcpListener, TcpStream};
 
 const PROFILE_ID: &str = "w1-w3-resp-pipeline-profile-074-v3";
+const W9C_READY_FILE: &str = "HYDRACACHE_W9C_READY_FILE";
+const W9C_GO_FILE: &str = "HYDRACACHE_W9C_GO_FILE";
+const W9C_RUSAGE_FILE: &str = "HYDRACACHE_W9C_RUSAGE_FILE";
+const W9C_GATE_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Transport {
@@ -477,6 +482,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     state.reset_profile_metrics();
     server.set_pipeline_instrumentation_enabled(options.instrumentation);
     state.set_profile_instrumentation_enabled(options.instrumentation);
+    wait_for_w9c_trace_gate()?;
+    let w9c_before = optional_w9c_rusage()?;
     let resource_before = process_resources()?;
     let (workload_result, allocation) = measure_allocations(options.operations, async {
         let cpu_before = process_cpu_seconds()?;
@@ -486,9 +493,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     })
     .await;
     let (workload, workload_result) = workload_result?;
+    let w9c_after = optional_w9c_rusage()?;
     let resource_after = process_resources()?;
     server.set_pipeline_instrumentation_enabled(false);
     state.set_profile_instrumentation_enabled(false);
+    write_w9c_rusage(w9c_before, w9c_after)?;
 
     let receipt = build_receipt(
         &options,
@@ -512,6 +521,153 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     println!("{}", String::from_utf8(json)?);
     Ok(())
+}
+
+fn wait_for_w9c_trace_gate() -> Result<(), Box<dyn Error>> {
+    let ready = std::env::var_os(W9C_READY_FILE).map(PathBuf::from);
+    let go = std::env::var_os(W9C_GO_FILE).map(PathBuf::from);
+    let (ready, go) = match (ready, go) {
+        (None, None) => return Ok(()),
+        (Some(ready), Some(go)) => (ready, go),
+        _ => return Err("W9c trace gate requires both ready and go files".into()),
+    };
+    if go.exists() {
+        return Err("W9c go file must not pre-exist".into());
+    }
+    if let Some(parent) = ready.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut marker = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&ready)?;
+    writeln!(marker, "w9c-ready-v1 pid={}", std::process::id())?;
+    marker.sync_all()?;
+
+    let deadline = Instant::now() + W9C_GATE_TIMEOUT;
+    loop {
+        match fs::symlink_metadata(&go) {
+            Ok(metadata) if metadata.file_type().is_file() && metadata.len() <= 64 => return Ok(()),
+            Ok(_) => return Err("W9c go marker must be a bounded regular file".into()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+        if Instant::now() >= deadline {
+            return Err("timed out waiting for W9c trace go marker".into());
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize)]
+struct W9cRusageSnapshot {
+    user_cpu_microseconds: u64,
+    system_cpu_microseconds: u64,
+    minor_page_faults: u64,
+    major_page_faults: u64,
+    voluntary_context_switches: u64,
+    involuntary_context_switches: u64,
+}
+
+impl W9cRusageSnapshot {
+    fn delta(self, after: Self) -> Self {
+        Self {
+            user_cpu_microseconds: after
+                .user_cpu_microseconds
+                .saturating_sub(self.user_cpu_microseconds),
+            system_cpu_microseconds: after
+                .system_cpu_microseconds
+                .saturating_sub(self.system_cpu_microseconds),
+            minor_page_faults: after
+                .minor_page_faults
+                .saturating_sub(self.minor_page_faults),
+            major_page_faults: after
+                .major_page_faults
+                .saturating_sub(self.major_page_faults),
+            voluntary_context_switches: after
+                .voluntary_context_switches
+                .saturating_sub(self.voluntary_context_switches),
+            involuntary_context_switches: after
+                .involuntary_context_switches
+                .saturating_sub(self.involuntary_context_switches),
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct W9cRusageReceipt {
+    schema_version: &'static str,
+    source: &'static str,
+    measurement_only: bool,
+    delta: W9cRusageSnapshot,
+}
+
+fn optional_w9c_rusage() -> Result<Option<W9cRusageSnapshot>, Box<dyn Error>> {
+    if std::env::var_os(W9C_RUSAGE_FILE).is_none() {
+        return Ok(None);
+    }
+    process_rusage().map(Some)
+}
+
+fn write_w9c_rusage(
+    before: Option<W9cRusageSnapshot>,
+    after: Option<W9cRusageSnapshot>,
+) -> Result<(), Box<dyn Error>> {
+    let output = std::env::var_os(W9C_RUSAGE_FILE).map(PathBuf::from);
+    match (output, before, after) {
+        (None, None, None) => Ok(()),
+        (Some(output), Some(before), Some(after)) => write_create_new_json(
+            &output,
+            &W9cRusageReceipt {
+                schema_version: "hydracache-w9c-rusage-v1",
+                source: "getrusage-RUSAGE_SELF",
+                measurement_only: true,
+                delta: before.delta(after),
+            },
+        ),
+        _ => Err("W9c rusage capture was only partially configured".into()),
+    }
+}
+
+fn write_create_new_json(path: &Path, value: &impl Serialize) -> Result<(), Box<dyn Error>> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let bytes = serde_json::to_vec_pretty(value)?;
+    let mut output = OpenOptions::new().write(true).create_new(true).open(path)?;
+    output.write_all(&bytes)?;
+    output.write_all(b"\n")?;
+    output.sync_all()?;
+    Ok(())
+}
+
+#[cfg(unix)]
+fn process_rusage() -> Result<W9cRusageSnapshot, Box<dyn Error>> {
+    let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();
+    // SAFETY: getrusage initializes the supplied structure on success.
+    if unsafe { libc::getrusage(libc::RUSAGE_SELF, usage.as_mut_ptr()) } != 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    // SAFETY: the successful call above initialized `usage`.
+    let usage = unsafe { usage.assume_init() };
+    let micros = |time: libc::timeval| {
+        (time.tv_sec as u64)
+            .saturating_mul(1_000_000)
+            .saturating_add(time.tv_usec as u64)
+    };
+    Ok(W9cRusageSnapshot {
+        user_cpu_microseconds: micros(usage.ru_utime),
+        system_cpu_microseconds: micros(usage.ru_stime),
+        minor_page_faults: usage.ru_minflt as u64,
+        major_page_faults: usage.ru_majflt as u64,
+        voluntary_context_switches: usage.ru_nvcsw as u64,
+        involuntary_context_switches: usage.ru_nivcsw as u64,
+    })
+}
+
+#[cfg(not(unix))]
+fn process_rusage() -> Result<W9cRusageSnapshot, Box<dyn Error>> {
+    Err("W9c rusage capture is Linux/Unix-only".into())
 }
 
 struct Observations {
@@ -1059,6 +1215,33 @@ mod tests {
         del.validate().unwrap();
         del.key_space -= 1;
         assert!(del.validate().is_err());
+    }
+
+    #[test]
+    fn w9c_rusage_delta_is_measurement_local_and_saturating() {
+        let before = W9cRusageSnapshot {
+            user_cpu_microseconds: 10,
+            system_cpu_microseconds: 20,
+            minor_page_faults: 30,
+            major_page_faults: 40,
+            voluntary_context_switches: 50,
+            involuntary_context_switches: 60,
+        };
+        let after = W9cRusageSnapshot {
+            user_cpu_microseconds: 15,
+            system_cpu_microseconds: 18,
+            minor_page_faults: 37,
+            major_page_faults: 44,
+            voluntary_context_switches: 59,
+            involuntary_context_switches: 72,
+        };
+        let delta = before.delta(after);
+        assert_eq!(delta.user_cpu_microseconds, 5);
+        assert_eq!(delta.system_cpu_microseconds, 0);
+        assert_eq!(delta.minor_page_faults, 7);
+        assert_eq!(delta.major_page_faults, 4);
+        assert_eq!(delta.voluntary_context_switches, 9);
+        assert_eq!(delta.involuntary_context_switches, 12);
     }
 
     #[tokio::test]
