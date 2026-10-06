@@ -1,4 +1,6 @@
 use crate::manifest::CampaignManifest;
+#[cfg(any(target_os = "linux", test))]
+use crate::manifest::InstalledBinary;
 use crate::state::DurableCampaignState;
 use crate::{canonical_json, is_hash, sha256_hex};
 use serde::{Deserialize, Serialize};
@@ -26,6 +28,10 @@ pub const REFERENCE_HOST_FREEZE_PATH: &str =
     "/var/lib/hydracache-perf/host-tuning-v1/freeze/host-freeze.json";
 pub const PROVISIONING_RECEIPT_PATH: &str =
     "/var/lib/hydracache-performance/provisioning-receipt-074.json";
+pub const CAMPAIGN_FIXTURE_BINARY_PATH: &str =
+    "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
+#[cfg(target_os = "linux")]
+const INSTALLED_BINARY_ROOT: &str = "/opt/hydracache-performance/0.74/";
 
 const TUNABLES: [(&str, &str); 7] = [
     ("kernel.numa_balancing", "/proc/sys/kernel/numa_balancing"),
@@ -89,6 +95,12 @@ pub struct HostObservationReceipt {
     pub kernel_tunables: BTreeMap<String, String>,
     pub supervisor_binary: BinaryIdentity,
     pub reference_host_freeze_sha256: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InstalledProvisioningIdentity {
+    pub source_commit: String,
+    pub fixture_binary_sha256: String,
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -235,9 +247,9 @@ pub fn collect_host_observation(
 }
 
 #[cfg(target_os = "linux")]
-pub fn collect_installed_source_commit(
+pub fn collect_installed_provisioning_identity(
     supervisor_binary_sha256: &str,
-) -> Result<String, HostReceiptError> {
+) -> Result<InstalledProvisioningIdentity, HostReceiptError> {
     use std::os::unix::fs::MetadataExt;
 
     let path = Path::new(PROVISIONING_RECEIPT_PATH);
@@ -246,14 +258,14 @@ pub fn collect_installed_source_commit(
         return Err(HostReceiptError::Path);
     }
     let bytes = read_regular_bounded(path, MAX_HOST_RECEIPT_BYTES as u64)?;
-    parse_installed_source_commit(&bytes, supervisor_binary_sha256)
+    parse_installed_provisioning_identity(&bytes, supervisor_binary_sha256)
 }
 
 #[cfg(any(target_os = "linux", test))]
-fn parse_installed_source_commit(
+fn parse_installed_provisioning_identity(
     bytes: &[u8],
     supervisor_binary_sha256: &str,
-) -> Result<String, HostReceiptError> {
+) -> Result<InstalledProvisioningIdentity, HostReceiptError> {
     if bytes.is_empty()
         || bytes.len() > MAX_HOST_RECEIPT_BYTES
         || !is_hash(supervisor_binary_sha256)
@@ -316,7 +328,67 @@ fn parse_installed_source_commit(
     {
         return Err(HostReceiptError::Invariant);
     }
-    Ok(source_commit.to_owned())
+    let fixture_binary_sha256 = object
+        .get("fixture_binary_sha256")
+        .and_then(|item| item.as_str())
+        .ok_or(HostReceiptError::Invariant)?;
+    if !is_hash(fixture_binary_sha256) {
+        return Err(HostReceiptError::Invariant);
+    }
+    Ok(InstalledProvisioningIdentity {
+        source_commit: source_commit.to_owned(),
+        fixture_binary_sha256: fixture_binary_sha256.to_owned(),
+    })
+}
+
+#[cfg(target_os = "linux")]
+pub fn collect_campaign_fixture_binary(
+    expected_sha256: &str,
+) -> Result<BinaryIdentity, HostReceiptError> {
+    let identity = collect_binary_identity(Path::new(CAMPAIGN_FIXTURE_BINARY_PATH))?;
+    if identity.path != CAMPAIGN_FIXTURE_BINARY_PATH
+        || identity.sha256 != expected_sha256
+        || identity.uid != 0
+        || identity.gid != 0
+        || identity.mode != 0o755
+    {
+        return Err(HostReceiptError::Invariant);
+    }
+    Ok(identity)
+}
+
+#[cfg(target_os = "linux")]
+pub fn verify_installed_binaries(
+    installed_binaries: &[InstalledBinary],
+) -> Result<(), HostReceiptError> {
+    if installed_binaries.len() != 2 {
+        return Err(HostReceiptError::Invariant);
+    }
+    for expected in installed_binaries {
+        if !expected.path.starts_with(INSTALLED_BINARY_ROOT)
+            || expected.path.len() <= INSTALLED_BINARY_ROOT.len()
+            || expected.path.split('/').any(|component| component == "..")
+        {
+            return Err(HostReceiptError::Path);
+        }
+        let observed = collect_binary_identity(Path::new(&expected.path))?;
+        if !binary_identity_matches(&observed, expected) {
+            return Err(HostReceiptError::Drift);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn binary_identity_matches(observed: &BinaryIdentity, expected: &InstalledBinary) -> bool {
+    observed.path == expected.path
+        && observed.sha256 == expected.sha256
+        && observed.size == expected.size
+        && observed.inode == expected.inode
+        && observed.device == expected.device
+        && observed.uid == expected.uid
+        && observed.gid == expected.gid
+        && u64::from(observed.mode) == expected.mode
 }
 
 #[cfg(target_os = "linux")]
@@ -416,16 +488,12 @@ fn collect_host_observation_with_freeze(
     if metadata.dev() != current_metadata.dev() || metadata.ino() != current_metadata.ino() {
         return Err(HostReceiptError::Observation);
     }
-    let supervisor_binary = BinaryIdentity {
-        path: SUPERVISOR_BINARY_PATH.to_owned(),
-        sha256: sha256_file(binary_path, 512 * 1024 * 1024)?,
-        size: metadata.len(),
-        inode: metadata.ino(),
-        device: metadata.dev(),
-        uid: u64::from(metadata.uid()),
-        gid: u64::from(metadata.gid()),
-        mode: metadata.mode() & 0o7777,
-    };
+    let supervisor_binary = collect_binary_identity(binary_path)?;
+    if supervisor_binary.device != current_metadata.dev()
+        || supervisor_binary.inode != current_metadata.ino()
+    {
+        return Err(HostReceiptError::Observation);
+    }
     let reference_host_freeze_sha256 = sha256_file(freeze_path, MAX_HOST_RECEIPT_BYTES as u64)?;
 
     let receipt = HostObservationReceipt {
@@ -446,6 +514,35 @@ fn collect_host_observation_with_freeze(
     };
     validate_receipt(&receipt)?;
     Ok(receipt)
+}
+
+#[cfg(target_os = "linux")]
+fn collect_binary_identity(path: &Path) -> Result<BinaryIdentity, HostReceiptError> {
+    use std::os::unix::fs::MetadataExt;
+
+    let metadata = safe_regular_metadata(path, 512 * 1024 * 1024)?;
+    let sha256 = sha256_file(path, 512 * 1024 * 1024)?;
+    let current = safe_regular_metadata(path, 512 * 1024 * 1024)?;
+    if metadata.dev() != current.dev()
+        || metadata.ino() != current.ino()
+        || metadata.len() != current.len()
+        || metadata.uid() != current.uid()
+        || metadata.gid() != current.gid()
+        || metadata.mode() != current.mode()
+    {
+        return Err(HostReceiptError::Observation);
+    }
+    let path = path.to_str().ok_or(HostReceiptError::Path)?.to_owned();
+    Ok(BinaryIdentity {
+        path,
+        sha256,
+        size: metadata.len(),
+        inode: metadata.ino(),
+        device: metadata.dev(),
+        uid: u64::from(metadata.uid()),
+        gid: u64::from(metadata.gid()),
+        mode: metadata.mode() & 0o7777,
+    })
 }
 
 fn validate_receipt(receipt: &HostObservationReceipt) -> Result<(), HostReceiptError> {
@@ -957,20 +1054,75 @@ mod tests {
             "boot_id_sha256": "8".repeat(64),
         });
         let bytes = serde_json::to_vec(&value).unwrap();
-        assert_eq!(
-            parse_installed_source_commit(&bytes, &"e".repeat(64)).unwrap(),
-            "f".repeat(40)
-        );
+        let identity = parse_installed_provisioning_identity(&bytes, &"e".repeat(64)).unwrap();
+        assert_eq!(identity.source_commit, "f".repeat(40));
+        assert_eq!(identity.fixture_binary_sha256, "e".repeat(64));
 
         assert_eq!(
-            parse_installed_source_commit(&bytes, &"d".repeat(64)),
+            parse_installed_provisioning_identity(&bytes, &"d".repeat(64)),
             Err(HostReceiptError::Invariant)
         );
+        value["fixture_binary_sha256"] = serde_json::json!("invalid");
+        assert_eq!(
+            parse_installed_provisioning_identity(
+                &serde_json::to_vec(&value).unwrap(),
+                &"e".repeat(64)
+            ),
+            Err(HostReceiptError::Invariant)
+        );
+        value["fixture_binary_sha256"] = serde_json::json!("e".repeat(64));
         value["unexpected"] = serde_json::json!(true);
         assert_eq!(
-            parse_installed_source_commit(&serde_json::to_vec(&value).unwrap(), &"e".repeat(64)),
+            parse_installed_provisioning_identity(
+                &serde_json::to_vec(&value).unwrap(),
+                &"e".repeat(64)
+            ),
             Err(HostReceiptError::Invariant)
         );
+    }
+
+    #[test]
+    fn installed_binary_identity_requires_every_manifest_field() {
+        let observed = receipt().supervisor_binary;
+        let mut expected = InstalledBinary {
+            role: "i74".to_owned(),
+            path: observed.path.clone(),
+            sha256: observed.sha256.clone(),
+            size: observed.size,
+            inode: observed.inode,
+            device: observed.device,
+            uid: observed.uid,
+            gid: observed.gid,
+            mode: u64::from(observed.mode),
+        };
+        assert!(binary_identity_matches(&observed, &expected));
+        let mut drifted = Vec::new();
+        let mut value = expected.clone();
+        value.path.push_str("-other");
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.sha256 = "0".repeat(64);
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.size += 1;
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.inode += 1;
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.device += 1;
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.uid += 1;
+        drifted.push(value);
+        let mut value = expected.clone();
+        value.gid += 1;
+        drifted.push(value);
+        expected.mode += 1;
+        drifted.push(expected);
+        assert!(drifted
+            .iter()
+            .all(|value| !binary_identity_matches(&observed, value)));
     }
 
     #[test]

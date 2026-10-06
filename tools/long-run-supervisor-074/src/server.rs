@@ -7,8 +7,10 @@ use crate::config::ServerConfig;
 use crate::event::{verify_event_journal, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME};
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::{
-    collect_host_observation, collect_installed_source_commit, verify_host_receipt_evidence,
-    verify_live_observation, verify_receipt_manifest_binding, HostObservationReceipt,
+    collect_campaign_fixture_binary, collect_host_observation,
+    collect_installed_provisioning_identity, verify_host_receipt_evidence,
+    verify_installed_binaries, verify_live_observation, verify_receipt_manifest_binding,
+    BinaryIdentity, HostObservationReceipt,
 };
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryBackend, LeaseExpiryOutcome};
 use crate::manifest::{frozen_identity_from_manifest, CampaignManifest};
@@ -139,8 +141,10 @@ pub trait StartObservationBackend {
 }
 
 pub trait HostObservationBackend {
-    fn collect(&mut self, campaign_root: &Path)
-        -> Result<(HostObservationReceipt, String), String>;
+    fn collect(
+        &mut self,
+        campaign_root: &Path,
+    ) -> Result<(HostObservationReceipt, String, BinaryIdentity), String>;
 }
 
 struct LiveHostObservationBackend;
@@ -149,11 +153,13 @@ impl HostObservationBackend for LiveHostObservationBackend {
     fn collect(
         &mut self,
         campaign_root: &Path,
-    ) -> Result<(HostObservationReceipt, String), String> {
+    ) -> Result<(HostObservationReceipt, String, BinaryIdentity), String> {
         let receipt = collect_host_observation(campaign_root).map_err(|error| error.to_string())?;
-        let source_commit = collect_installed_source_commit(&receipt.supervisor_binary.sha256)
+        let installed = collect_installed_provisioning_identity(&receipt.supervisor_binary.sha256)
             .map_err(|error| error.to_string())?;
-        Ok((receipt, source_commit))
+        let fixture_binary = collect_campaign_fixture_binary(&installed.fixture_binary_sha256)
+            .map_err(|error| error.to_string())?;
+        Ok((receipt, installed.source_commit, fixture_binary))
     }
 }
 
@@ -167,6 +173,8 @@ impl StartObservationBackend for LiveStartObservationBackend {
         admitted: &HostObservationReceipt,
     ) -> Result<(), String> {
         verify_receipt_manifest_binding(admitted, manifest).map_err(|error| error.to_string())?;
+        verify_installed_binaries(&manifest.installed_binaries)
+            .map_err(|error| error.to_string())?;
         let observed =
             collect_host_observation(campaign_directory).map_err(|error| error.to_string())?;
         verify_live_observation(admitted, &observed).map_err(|error| error.to_string())
@@ -702,11 +710,12 @@ impl SupervisorServer {
                 None => LiveHostObservationBackend.collect(&self.config.campaign_root),
             };
             return match observed {
-                Ok((receipt, installed_source_commit)) => {
+                Ok((receipt, installed_source_commit, fixture_binary)) => {
                     let receipt_sha256 = crate::sha256_hex(&crate::canonical_json(&receipt)?);
                     let result = HostObservationResult {
                         schema_version: 1,
                         installed_source_commit,
+                        fixture_binary,
                         receipt_sha256,
                         receipt,
                     };

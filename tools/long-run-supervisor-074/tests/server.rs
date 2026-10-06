@@ -524,12 +524,14 @@ impl HostObservationBackend for FakeHostObservationBackend {
     fn collect(
         &mut self,
         _campaign_root: &Path,
-    ) -> Result<(HostObservationReceipt, String), String> {
+    ) -> Result<(HostObservationReceipt, String, BinaryIdentity), String> {
         self.calls += 1;
         if self.fail {
             Err("host observation unavailable".to_owned())
         } else {
-            Ok((self.receipt.clone(), "d".repeat(40)))
+            let mut fixture = self.receipt.supervisor_binary.clone();
+            fixture.path = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture".to_owned();
+            Ok((self.receipt.clone(), "d".repeat(40), fixture))
         }
     }
 }
@@ -1015,6 +1017,10 @@ fn host_observation_returns_digest_bound_receipt_without_campaign_mutation() {
         serde_json::from_value(response.body.result.clone().unwrap()).unwrap();
     assert_eq!(result.schema_version, 1);
     assert_eq!(result.installed_source_commit, "d".repeat(40));
+    assert_eq!(
+        result.fixture_binary.path,
+        "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture"
+    );
     assert_eq!(result.receipt_sha256, expected_digest);
     assert_eq!(result.receipt, receipt);
     assert!(serde_json::to_vec(&response).unwrap().len() <= MAX_PACKET_BYTES);

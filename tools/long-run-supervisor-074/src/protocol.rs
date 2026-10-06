@@ -1,5 +1,5 @@
 use crate::auth::SignedAuthorization;
-use crate::host_receipt::HostObservationReceipt;
+use crate::host_receipt::{BinaryIdentity, HostObservationReceipt};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -60,6 +60,7 @@ pub struct WireRequest {
 pub struct HostObservationResult {
     pub schema_version: u32,
     pub installed_source_commit: String,
+    pub fixture_binary: BinaryIdentity,
     pub receipt_sha256: String,
     pub receipt: HostObservationReceipt,
 }
