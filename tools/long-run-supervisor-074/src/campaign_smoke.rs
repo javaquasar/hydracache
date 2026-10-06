@@ -1265,12 +1265,14 @@ pub fn run_start_rehearsal_harness() -> Result<(), String> {
     let writer_evidence_directory = evidence_directory.clone();
     let writer = thread::spawn(move || {
         let result = run_start_rehearsal_checkpoint_writer(
-            writer_evidence_directory,
-            housekeeping_cpuset,
-            campaign_id,
-            role,
-            harness,
-            daemon,
+            StartRehearsalCheckpointContext {
+                evidence_directory: writer_evidence_directory,
+                housekeeping_cpuset,
+                campaign_id,
+                role,
+                harness,
+                daemon,
+            },
             finish_rx,
             &ready_tx,
         );
@@ -1408,16 +1410,28 @@ fn remove_start_rehearsal_marker(path: &Path) -> Result<(), String> {
         .map_err(display)
 }
 
-fn run_start_rehearsal_checkpoint_writer(
+struct StartRehearsalCheckpointContext {
     evidence_directory: PathBuf,
     housekeeping_cpuset: String,
     campaign_id: String,
     role: Role,
     harness: crate::ProcessIdentity,
     daemon: crate::ProcessIdentity,
+}
+
+fn run_start_rehearsal_checkpoint_writer(
+    context: StartRehearsalCheckpointContext,
     finish_rx: mpsc::Receiver<bool>,
     ready_tx: &mpsc::SyncSender<Result<(), String>>,
 ) -> Result<(), String> {
+    let StartRehearsalCheckpointContext {
+        evidence_directory,
+        housekeeping_cpuset,
+        campaign_id,
+        role,
+        harness,
+        daemon,
+    } = context;
     set_current_thread_affinity(&housekeeping_cpuset)?;
     let started = Instant::now();
     let mut sequence = 1_u64;
@@ -2373,11 +2387,13 @@ mod tests {
         const LEASE_RESUME_SECONDS: u64 = 252;
         let drift_end = FIXTURE_DAEMON_DRIFT_AFTER_SECONDS + FIXTURE_DAEMON_DRIFT_SECONDS;
         let daemon_end = drift_end + FIXTURE_DAEMON_AFTER_DRIFT_SECONDS;
-        assert!(PROGRESS_RESUME_SECONDS < FIXTURE_DAEMON_DRIFT_AFTER_SECONDS);
-        assert!(MEASUREMENT_RESUME_SECONDS >= FIXTURE_DAEMON_DRIFT_AFTER_SECONDS);
+        assert!(std::hint::black_box(PROGRESS_RESUME_SECONDS) < FIXTURE_DAEMON_DRIFT_AFTER_SECONDS);
+        assert!(
+            std::hint::black_box(MEASUREMENT_RESUME_SECONDS) >= FIXTURE_DAEMON_DRIFT_AFTER_SECONDS
+        );
         assert!(MEASUREMENT_RESUME_SECONDS < drift_end);
         assert!(drift_end < FIXTURE_LEASE_SECONDS);
-        assert!(LEASE_RESUME_SECONDS > FIXTURE_LEASE_SECONDS);
+        assert!(std::hint::black_box(LEASE_RESUME_SECONDS) > FIXTURE_LEASE_SECONDS);
         assert!(LEASE_RESUME_SECONDS < daemon_end);
         assert!(daemon_end < ROLE_RUNTIME_SECONDS);
     }

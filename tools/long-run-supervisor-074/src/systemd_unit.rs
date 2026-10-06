@@ -582,6 +582,56 @@ fn path_text(path: &Path) -> Result<String, UnitError> {
         .ok_or(UnitError::Policy)
 }
 
+pub fn verify_unit_identity(
+    harness: &ProcessIdentity,
+    daemon: &ProcessIdentity,
+    snapshot: &UnitSnapshot,
+) -> Result<(), UnitError> {
+    let mut mismatches = Vec::new();
+    if validate_unit_name(&snapshot.unit_name).is_err()
+        || harness.unit_name != snapshot.unit_name
+        || daemon.unit_name != snapshot.unit_name
+    {
+        mismatches.push(UnitMismatch::UnitName);
+    }
+    if snapshot.active_state != "active" {
+        mismatches.push(UnitMismatch::ActiveState);
+    }
+    if snapshot.sub_state != "running" {
+        mismatches.push(UnitMismatch::SubState);
+    }
+    if snapshot.main_pid != harness.pid {
+        mismatches.push(UnitMismatch::MainPid);
+    }
+    if snapshot.control_group != harness.cgroup_path || snapshot.control_group != daemon.cgroup_path
+    {
+        mismatches.push(UnitMismatch::ControlGroup);
+    }
+    if snapshot.result != "success" {
+        mismatches.push(UnitMismatch::Result);
+    }
+    if mismatches.is_empty() {
+        Ok(())
+    } else {
+        Err(UnitError::Mismatch(mismatches))
+    }
+}
+
+fn validate_unit_name(value: &str) -> Result<(), UnitError> {
+    if value.starts_with(UNIT_PREFIX)
+        && value.ends_with(".service")
+        && value.len() > UNIT_PREFIX.len() + ".service".len()
+        && value.len() <= 255
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'@'))
+    {
+        Ok(())
+    } else {
+        Err(UnitError::UnitName)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{inspect_loaded_unit, verify_attachable_unit, AttachableUnitState, UnitSnapshot};
@@ -658,55 +708,5 @@ mod tests {
         assert!(snapshot.main_pid > 0);
         assert_eq!(snapshot.control_group, "/system.slice/dbus.service");
         assert_eq!(snapshot.result, "success");
-    }
-}
-
-pub fn verify_unit_identity(
-    harness: &ProcessIdentity,
-    daemon: &ProcessIdentity,
-    snapshot: &UnitSnapshot,
-) -> Result<(), UnitError> {
-    let mut mismatches = Vec::new();
-    if validate_unit_name(&snapshot.unit_name).is_err()
-        || harness.unit_name != snapshot.unit_name
-        || daemon.unit_name != snapshot.unit_name
-    {
-        mismatches.push(UnitMismatch::UnitName);
-    }
-    if snapshot.active_state != "active" {
-        mismatches.push(UnitMismatch::ActiveState);
-    }
-    if snapshot.sub_state != "running" {
-        mismatches.push(UnitMismatch::SubState);
-    }
-    if snapshot.main_pid != harness.pid {
-        mismatches.push(UnitMismatch::MainPid);
-    }
-    if snapshot.control_group != harness.cgroup_path || snapshot.control_group != daemon.cgroup_path
-    {
-        mismatches.push(UnitMismatch::ControlGroup);
-    }
-    if snapshot.result != "success" {
-        mismatches.push(UnitMismatch::Result);
-    }
-    if mismatches.is_empty() {
-        Ok(())
-    } else {
-        Err(UnitError::Mismatch(mismatches))
-    }
-}
-
-fn validate_unit_name(value: &str) -> Result<(), UnitError> {
-    if value.starts_with(UNIT_PREFIX)
-        && value.ends_with(".service")
-        && value.len() > UNIT_PREFIX.len() + ".service".len()
-        && value.len() <= 255
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'@'))
-    {
-        Ok(())
-    } else {
-        Err(UnitError::UnitName)
     }
 }
