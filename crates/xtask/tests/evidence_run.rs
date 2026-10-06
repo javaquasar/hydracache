@@ -115,12 +115,17 @@ fn evidence_child_helper() {
         }
         Ok("fail") => panic!("intentional evidence failure"),
         Ok("timeout") => std::thread::sleep(Duration::from_secs(10)),
-        Ok("inherited-pipe-parent") => {
-            let descendant = Command::new(std::env::current_exe().unwrap())
+        Ok(mode @ ("inherited-pipe-parent" | "null-pipe-parent")) => {
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command
                 .args(["--exact", "evidence_child_helper", "--nocapture"])
-                .env(CHILD_ENV, "inherited-pipe-descendant")
-                .spawn()
-                .unwrap();
+                .env(CHILD_ENV, "inherited-pipe-descendant");
+            if mode == "null-pipe-parent" {
+                command
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null());
+            }
+            let descendant = command.spawn().unwrap();
             println!("parent leaving inherited pipes open");
             // Intentionally model a tool that exits while its child retains stdout/stderr.
             // Reaping happens outside this short-lived helper process.
@@ -129,6 +134,28 @@ fn evidence_child_helper() {
         Ok("inherited-pipe-descendant") => {
             println!("descendant holds inherited pipes");
             std::thread::sleep(Duration::from_secs(4));
+            fs::write("target/descendant-survived", b"must be terminated").unwrap();
+        }
+        Ok(mode @ ("tree-parent" | "tree-middle")) => {
+            let descendant = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "evidence_child_helper", "--nocapture"])
+                .env(
+                    CHILD_ENV,
+                    if mode == "tree-parent" {
+                        "tree-middle"
+                    } else {
+                        "inherited-pipe-descendant"
+                    },
+                )
+                .spawn()
+                .unwrap();
+            std::thread::sleep(Duration::from_secs(10));
+            drop(descendant);
+        }
+        Ok("large-output") => {
+            println!("large stdout {}", "x".repeat(128 * 1024));
+            eprintln!("large stderr {}", "y".repeat(128 * 1024));
+            println!("Unicode tail: Гидра α");
         }
         _ => {}
     }
@@ -373,6 +400,10 @@ fn evidence_executor_propagates_child_exit_and_captures_output() {
 #[test]
 fn evidence_executor_bounds_inherited_pipe_capture_after_parent_exit() {
     let (root, result) = execute("inherited-pipe-parent", 1);
+    println!(
+        "Windows inherited-pipe fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
     assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
     assert!(
         result.receipt.duration_ms < 3_000,
@@ -383,6 +414,58 @@ fn evidence_executor_bounds_inherited_pipe_capture_after_parent_exit() {
         .receipt
         .stdout
         .contains("parent leaving inherited pipes open"));
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_waits_for_descendants_without_inherited_pipes() {
+    let (root, result) = execute("null-pipe-parent", 1);
+    println!(
+        "Windows null-pipe fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(result.receipt.duration_ms < 3_000);
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_terminates_live_three_generation_tree() {
+    let (root, result) = execute("tree-parent", 1);
+    println!(
+        "Windows three-generation fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(result.receipt.duration_ms < 3_000);
+    assert!(result
+        .receipt
+        .stdout
+        .contains("descendant holds inherited pipes"));
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_drains_large_stdout_and_stderr_without_truncation() {
+    let (root, result) = execute("large-output", 5);
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result
+        .receipt
+        .stdout
+        .contains(&format!("large stdout {}", "x".repeat(128 * 1024))));
+    assert!(result
+        .receipt
+        .stderr
+        .contains(&format!("large stderr {}", "y".repeat(128 * 1024))));
+    assert!(result.receipt.stdout.contains("Unicode tail: Гидра α"));
     fs::remove_dir_all(root).unwrap();
 }
 

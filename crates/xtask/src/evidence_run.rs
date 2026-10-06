@@ -26,6 +26,9 @@ const EVIDENCE_PROVENANCE_ENV: [&str; 3] = [
 ];
 const MAX_DIAGNOSTIC_CHARS_PER_STREAM: usize = 32_000;
 
+#[cfg(windows)]
+mod windows_job;
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum EvidenceOutcome {
@@ -322,7 +325,9 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
     }
     configure_process_group(&mut command);
 
-    let mut child = match command.spawn() {
+    #[cfg(windows)]
+    let deadline = Instant::now() + StdDuration::from_secs(timeout_seconds.max(1));
+    let child = match command.spawn() {
         Ok(child) => child,
         Err(error) => {
             return ProcessResult {
@@ -333,6 +338,32 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
             };
         }
     };
+    #[cfg(windows)]
+    {
+        let mut child = child;
+        let tree = match windows_job::ProcessTree::attach_and_resume(&child) {
+            Ok(tree) => tree,
+            Err(error) => {
+                let _ = child.kill();
+                return ProcessResult {
+                    outcome: EvidenceOutcome::Fail,
+                    exit_code: None,
+                    stdout: String::new(),
+                    stderr: format!("failed to contain/resume registered Windows command: {error}"),
+                };
+            }
+        };
+        execute_windows_child(child, tree, deadline)
+    }
+    #[cfg(not(windows))]
+    execute_non_windows_child(child, timeout_seconds)
+}
+
+#[cfg(not(windows))]
+fn execute_non_windows_child(
+    mut child: std::process::Child,
+    timeout_seconds: u64,
+) -> ProcessResult {
     let stdout = child.stdout.take().map(read_pipe);
     let stderr = child.stderr.take().map(read_pipe);
     let deadline = Instant::now() + StdDuration::from_secs(timeout_seconds.max(1));
@@ -374,6 +405,111 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
     }
 }
 
+#[cfg(windows)]
+fn execute_windows_child(
+    mut child: std::process::Child,
+    tree: windows_job::ProcessTree,
+    deadline: Instant,
+) -> ProcessResult {
+    let stdout = child.stdout.take().map(read_pipe);
+    let stderr = child.stderr.take().map(read_pipe);
+    let mut status = None;
+    let mut diagnostic = String::new();
+    let mut outcome = loop {
+        if status.is_none() {
+            match child.try_wait() {
+                Ok(observed) => status = observed,
+                Err(error) => {
+                    diagnostic = format!("failed while waiting for child: {error}");
+                    break EvidenceOutcome::Fail;
+                }
+            }
+        }
+        match tree.is_empty() {
+            Ok(true) if status.is_some() && pipes_finished(&stdout, &stderr) => {
+                break if status.as_ref().unwrap().success() {
+                    EvidenceOutcome::Pass
+                } else {
+                    EvidenceOutcome::Fail
+                };
+            }
+            Err(error) => {
+                diagnostic = format!("failed to observe registered Windows process tree: {error}");
+                break EvidenceOutcome::Fail;
+            }
+            _ => {}
+        }
+        if Instant::now() >= deadline {
+            diagnostic =
+                "registered command, descendants or output capture exceeded deadline".to_owned();
+            break EvidenceOutcome::Timeout;
+        }
+        thread::sleep(StdDuration::from_millis(10));
+    };
+    if !matches!(outcome, EvidenceOutcome::Pass) {
+        if let Err(error) = tree.terminate() {
+            diagnostic.push_str(&format!("\nfailed to terminate Windows job: {error}"));
+        }
+    }
+    // Closing the non-inheritable job also kills its remaining processes, including
+    // descendants of a parent that has already exited. No external taskkill wait is needed.
+    drop(tree);
+    if status.is_none() {
+        let _ = child.kill();
+    }
+    let cleanup_deadline = Instant::now() + StdDuration::from_secs(2);
+    while !pipes_finished(&stdout, &stderr) || status.is_none() {
+        if status.is_none() {
+            status = child.try_wait().ok().flatten();
+        }
+        if Instant::now() >= cleanup_deadline {
+            diagnostic.push_str("\nprocess/output cleanup did not complete within two seconds");
+            break;
+        }
+        thread::sleep(StdDuration::from_millis(10));
+    }
+    let mut capture = |reader| match join_finished_pipe(reader) {
+        Ok(output) => output,
+        Err(error) => {
+            if outcome == EvidenceOutcome::Pass {
+                outcome = EvidenceOutcome::Fail;
+            }
+            diagnostic.push_str(&format!("\noutput capture failed: {error}"));
+            String::new()
+        }
+    };
+    let stdout = capture(stdout);
+    let mut stderr = capture(stderr);
+    if !diagnostic.is_empty() {
+        stderr.push('\n');
+        stderr.push_str(&diagnostic);
+    }
+    ProcessResult {
+        outcome,
+        exit_code: status.and_then(exit_status_code),
+        stdout,
+        stderr,
+    }
+}
+
+#[cfg(windows)]
+fn pipes_finished(stdout: &Option<PipeReader>, stderr: &Option<PipeReader>) -> bool {
+    stdout.as_ref().is_none_or(|reader| reader.is_finished())
+        && stderr.as_ref().is_none_or(|reader| reader.is_finished())
+}
+
+#[cfg(windows)]
+fn join_finished_pipe(handle: Option<PipeReader>) -> Result<String, String> {
+    match handle {
+        Some(reader) if reader.is_finished() => reader
+            .join()
+            .map_err(|_| "pipe reader panicked".to_owned())?
+            .map_err(|error| error.to_string()),
+        Some(_) => Err("pipe reader did not finish before cleanup deadline".to_owned()),
+        None => Ok(String::new()),
+    }
+}
+
 struct ProcessResult {
     outcome: EvidenceOutcome,
     exit_code: Option<i32>,
@@ -381,17 +517,21 @@ struct ProcessResult {
     stderr: String,
 }
 
-fn read_pipe<R: Read + Send + 'static>(mut pipe: R) -> thread::JoinHandle<String> {
+type PipeReader = thread::JoinHandle<std::io::Result<String>>;
+
+fn read_pipe<R: Read + Send + 'static>(mut pipe: R) -> PipeReader {
     thread::spawn(move || {
         let mut bytes = Vec::new();
-        let _ = pipe.read_to_end(&mut bytes);
-        String::from_utf8_lossy(&bytes).into_owned()
+        pipe.read_to_end(&mut bytes)?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
     })
 }
 
-fn join_pipe(handle: Option<thread::JoinHandle<String>>) -> String {
+#[cfg(not(windows))]
+fn join_pipe(handle: Option<PipeReader>) -> String {
     handle
         .and_then(|handle| handle.join().ok())
+        .and_then(Result::ok)
         .unwrap_or_default()
 }
 
@@ -405,23 +545,20 @@ fn configure_process_group(command: &mut Command) {
     command.process_group(0);
 }
 
-#[cfg(not(unix))]
+#[cfg(windows)]
+fn configure_process_group(command: &mut Command) {
+    use std::os::windows::process::CommandExt;
+    use windows_sys::Win32::System::Threading::CREATE_SUSPENDED;
+    command.creation_flags(CREATE_SUSPENDED);
+}
+
+#[cfg(not(any(unix, windows)))]
 fn configure_process_group(_command: &mut Command) {}
 
 #[cfg(unix)]
 fn terminate_process_tree(child: &mut std::process::Child) {
     let _ = Command::new("kill")
         .args(["-KILL", "--", &format!("-{}", child.id())])
-        .status();
-    let _ = child.kill();
-}
-
-#[cfg(windows)]
-fn terminate_process_tree(child: &mut std::process::Child) {
-    let _ = Command::new("taskkill")
-        .args(["/PID", &child.id().to_string(), "/T", "/F"])
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
         .status();
     let _ = child.kill();
 }
