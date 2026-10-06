@@ -745,6 +745,15 @@ fn w12_workspace_fast_gate_covers_every_work_item_without_budget_drift() {
 }
 
 #[test]
+fn w11_linux_fixture_harness_cli_is_platform_gated() {
+    let source =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/main.rs")).unwrap();
+    assert!(source.contains(
+        "#[cfg(target_os = \"linux\")]\n        [command] if command == \"campaign-fixture-harness\" => campaign_fixture_harness(),"
+    ));
+}
+
+#[test]
 fn published_b73_requires_exact_tag_archive_and_runtime_relationship() {
     let mut value = contract("baseline-identities.toml");
     value["predecessor_candidate"]["annotated_tag_commit_sha"] =

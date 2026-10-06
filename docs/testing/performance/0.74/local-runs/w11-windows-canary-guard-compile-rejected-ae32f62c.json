@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W11",
+  "source_commit": "ae32f62c65a86af25535888c9fb3aa8d5e152551",
+  "recorded_at_utc": "2026-10-06T13:52:19Z",
+  "tier": "local-fast-canary",
+  "promotable": false,
+  "canary_receipt": {
+    "defect_id": "PERF74-W11",
+    "command_digest": "0dc38b1580a229e4b732ed7ceaa1b32fdd434e533ff6453fb823847ed3200ae4",
+    "registry_digest": "4ebaea45f9a8f23a4ba356a775a1a692cdd0a900b5817df4ca07efcf8c1e4a44",
+    "duration_ms": 7479,
+    "exit_code": 101,
+    "outcome": "guard_failed",
+    "output_sha256": "e8eafe51580675912ec86dab41f045184565b230d85c5555fc2de724154be02f"
+  },
+  "failure": {
+    "platform": "windows",
+    "compiler_code": "E0425",
+    "file": "tools/long-run-supervisor-074/src/main.rs",
+    "line": 92,
+    "missing_symbol": "campaign_fixture_harness",
+    "cause": "The campaign-fixture-harness match arm was compiled on every platform while its implementation was correctly Linux-only."
+  },
+  "resolution": "Apply the same cfg(target_os = \"linux\") guard already used by the adjacent fixture entrypoints. Linux behavior and command semantics remain unchanged.",
+  "release_admission_allowed": false,
+  "claim_boundary": "This retained negative result proves the W11 expected-red guard failed before canary execution because the supervisor binary did not compile on Windows. It is not a controller-canary result, product measurement, qualification result, or release-admission evidence."
+}

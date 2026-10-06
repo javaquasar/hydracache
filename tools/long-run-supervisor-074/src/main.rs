@@ -89,6 +89,7 @@ fn run() -> u8 {
         [command, fixture_args @ ..] if command == "role-overhead-fixture" => {
             role_overhead_fixture(fixture_args)
         }
+        #[cfg(target_os = "linux")]
         [command] if command == "campaign-fixture-harness" => campaign_fixture_harness(),
         #[cfg(target_os = "linux")]
         [command] if command == "campaign-fixture-daemon" => campaign_fixture_daemon(),
