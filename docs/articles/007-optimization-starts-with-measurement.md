@@ -2903,3 +2903,33 @@ that preserves historical identity and fails closed. These results repair verifi
 they neither validate a product candidate nor turn the original failed CI into a green run. The next
 step remains a new ordinary CI execution on one exact repaired source, with costly qualification
 disabled.
+
+### An ordinary green report must not open ship admission
+
+The audit while ordinary CI was running exposed another W12 boundary defect. The dedicated 0.74
+performance-contract command rejected ship admission, but the generic release-evidence aggregator
+did not share that decision. Once ordinary receipts were green, empty gated-proof lists could let
+its generic progression label a row `ShipReady`. That label would overstate what had actually been
+checked: no candidate identity or expensive qualification had been completed.
+
+We reproduced the missing admission reason with a new regression before implementation. The
+aggregator now shares the same closed boundary as the performance-contract CLI and retains it in
+the report's reasons. Both `0.74` and `0.74.0` reject `--require-ship`. Ordinary-green work can reach
+`FastGreen`, but not gated qualification or ship readiness. A separate unit fixture supplies the
+counterfactual "all checks green" booleans and verifies the ceiling, alongside the unchanged
+progression for older releases. The fixture is deliberately synthetic; it is not release evidence.
+
+On clean repair source, 109 library tests, 36 performance-contract tests and 11 aggregator tests
+passed. Both CLI spellings rejected admission, and W11/W12 canaries produced expected red. Linux
+also passed the stage fixture. Earlier Linux registry diagnostics needed scoped Git metadata paths
+because the Windows worktree's `.git` file was not directly interpretable by Linux Git. After those
+environment overrides, the baseline and ownership suites passed without changing the checkout.
+The broader Windows test-target lint still fails on a pre-existing non-Linux supervisor dead-code
+warning; the changed-library strict lint passed. Recording that distinction avoids calling an
+incomplete platform check green.
+
+The ongoing hosted run belongs to its earlier source and does not contain this additional repair.
+Its ordinary test outcomes can be retained, but any ship-ready labels from that older aggregator
+must be rejected as release authorization. A fresh exact-source ordinary CI is still needed for
+the repaired tooling. This correction improves the honesty of readiness reporting; it adds no
+product throughput or allocation claim and starts no qualification workload.

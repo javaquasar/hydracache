@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "tier": "local-admission-regression",
+  "source_commit": "d6294ca7c175cef583cc5417978eb9fed15b532a",
+  "test_commit": "e20cdd1a",
+  "dirty_worktree_at_final_tests_cli_and_canaries": false,
+  "baseline": {
+    "new_report_regression_failed_before_repair": true,
+    "missing_reason": "0.74 ship admission is closed",
+    "defect": "The generic aggregator did not consult the prepared 0.74 ship boundary. All-green fast receipts and empty gated lists could promote rows beyond their authorized scope."
+  },
+  "repair": {
+    "contract_cli_and_aggregator_share_same_closed_boundary": true,
+    "ordinary_green_rows_capped_at": "fast-green",
+    "both_074_and_0740_spellings_blocked": true,
+    "other_release_progression_preserved": true,
+    "product_behavior_changed": false,
+    "qualification_authorized": false
+  },
+  "windows_clean_checks": {
+    "xtask_library_tests": {"passed": 109, "failed": 0},
+    "performance_contract_074": {"passed": 36, "failed": 0},
+    "release_evidence_tests": {"passed": 11, "failed": 0},
+    "release_evidence_require_ship_074_exit": 1,
+    "release_evidence_require_ship_0740_exit": 1,
+    "report_contains_explicit_closed_admission_reason": true,
+    "report_counts_without_full_workspace_receipt": {"implemented": 28, "fast_green": 0, "gated_green": 0, "ship_ready": 0},
+    "format_check": "passed"
+  },
+  "development_strict_xtask_library_clippy": "passed",
+  "linux_wsl_all_green_stage_unit_fixture": {"passed": 1, "failed": 0},
+  "clean_source_canaries": [
+    {"work_item": "W11", "outcome": "expected_red", "duration_ms": 912, "output_sha256": "07d31b75c0ddb2bd9074e261e0fd64b09ca19671fb163d2d901707ff2370f485"},
+    {"work_item": "W12", "outcome": "expected_red", "duration_ms": 18760, "output_sha256": "5953e8579cad3e37c1de2147174af6d100cd6fcb8961d96e6de36be03fa78eb6"}
+  ],
+  "additional_diagnostics_on_prior_b795e58e": {
+    "windows_xtask_library_tests_passed": 108,
+    "windows_extended_clippy": "failed on the pre-existing non-Linux dead-code warning in supervisor host_receipt.rs; the narrower changed-library strict check passed",
+    "initial_wsl_baseline": "failed because Linux Git could not resolve the Windows absolute gitdir in the worktree .git file",
+    "wsl_retry": "Scoped GIT_DIR and GIT_WORK_TREE pointed to existing metadata without changing checkout files; baseline 8, ownership 5, performance contract 35 and governance 7 passed. These are development diagnostics, not promotable receipts."
+  },
+  "workspace_gate_repeated_locally": false,
+  "new_product_or_expensive_qualification_workload": false,
+  "promotable": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "The all-green stage fixture is a synthetic unit test, not measured release evidence. Hosted run 37521028035 remains bound to b795e58e and does not test this repair. Any generic ship-ready labels it might generate lack the 0.74 admission boundary and cannot authorize publication. A subsequent clean exact-source ordinary CI is required."
+}

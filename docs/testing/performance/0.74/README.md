@@ -1207,3 +1207,24 @@ live topology and governance checks passed. Exact scopes and identities are reco
 `local-runs/w12-frozen-registry-separation-83042ecc.json`. No third local workspace retry or expensive
 qualification ran. A new exact-source ordinary CI run must validate all repairs together; the old
 negative run remains negative.
+
+While that new hosted run was in progress, a separate W12 audit found that the generic evidence
+aggregator did not inherit the closed 0.74 admission boundary. An all-green ordinary receipt with
+empty gated lists could otherwise advance a row to `ShipReady`. A new report regression failed
+before repair. The aggregator now shares the performance-contract CLI's closed boundary, records
+it explicitly in report reasons, rejects `--require-ship` for both `0.74` and `0.74.0`, and caps
+ordinary-green rows at `FastGreen`. A synthetic all-green stage fixture verifies this ceiling while
+preserving older releases' progression; it is not a fabricated measured receipt.
+
+Clean source `d6294ca7` passed 109 xtask unit tests, 36 performance-contract tests and 11 aggregator
+tests. Both CLI aliases rejected ship admission and W11/W12 canaries returned expected red. The
+stage fixture also passed on Linux WSL. The prior registry checks passed in WSL after scoped Git
+metadata environment overrides resolved the Windows gitdir path, without rewriting `.git`. A broader
+Windows test-target lint still encounters the existing supervisor non-Linux dead-code warning;
+the changed-library strict lint passes. These scopes, including the failed diagnostic attempts, are
+retained in `local-runs/w12-ship-report-boundary-d6294ca7.json`.
+
+Hosted run `37521028035` is bound to earlier `b795e58e`, not this admission repair. Its ordinary
+test results remain useful for that source, but any generic `ShipReady` labels it might produce
+must not be interpreted as 0.74 release authorization. No candidate, host qualification, Redis
+comparison, six-hour run or 24-hour confirmation has been admitted by these changes.
