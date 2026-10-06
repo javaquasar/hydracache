@@ -745,6 +745,14 @@ fn receipt_problems_for(
     if receipt.outcome != EvidenceOutcome::Pass {
         problems.push(format!("receipt outcome is {:?}", receipt.outcome));
     }
+    if let ReceiptGate::Fast(suite) = gate {
+        if receipt.duration_ms > suite.budget_seconds.saturating_mul(1_000) {
+            problems.push(format!(
+                "suite {} took {}ms, above its {}s budget",
+                suite.id, receipt.duration_ms, suite.budget_seconds
+            ));
+        }
+    }
     if receipt.normalized_result.outcome != receipt.outcome
         || receipt.normalized_result.exit_code != receipt.exit_code
     {
