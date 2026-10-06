@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "recorded_at_utc": "2026-10-06T13:31:37Z",
+  "source_parent_sha": "f2d60a0aa948aa868adea17c7b19552a4b7db04d",
+  "tier": "local-preparation",
+  "promotable": false,
+  "product_candidate_measured": false,
+  "expensive_workload_run": false,
+  "checks": {
+    "release_admission_contract_added": true,
+    "release_note_draft_added": true,
+    "release_scoped_expected_red_canary_added": true,
+    "claim_boundary_frozen": true,
+    "rollback_boundary_documented": true
+  },
+  "release_admission_allowed": false,
+  "unresolved": [
+    "candidate-source",
+    "admitted-host",
+    "redis-binary-digests",
+    "qualification-runner",
+    "explicit-authorization",
+    "exact-c74-d4-artifact",
+    "same-box-redis",
+    "native-non-regression",
+    "controller-overhead-qualification",
+    "six-hour-qualification",
+    "twenty-four-hour-confirmation",
+    "package-receipts",
+    "sbom-receipt",
+    "advisory-receipt",
+    "license-receipt",
+    "supported-target-receipts",
+    "immutable-release-archive",
+    "nested-hash-verification"
+  ],
+  "claim_boundary": "This receipt proves only that the local W12 pre-admission contract, draft release note, and fail-closed canary were prepared. It is not an exact C74 product result, Redis comparison, package receipt, six-hour qualification, 24-hour confirmation, immutable archive, or release-admission evidence."
+}

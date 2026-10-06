@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.74"
+contract_id = "release-admission-074-v1"
+state = "prepared-not-authorized"
+candidate_source_sha = "UNRESOLVED"
+release_admission_allowed = false
+unresolved = [
+  "candidate-source",
+  "admitted-host",
+  "redis-binary-digests",
+  "qualification-runner",
+  "explicit-authorization",
+  "exact-c74-d4-artifact",
+  "same-box-redis",
+  "native-non-regression",
+  "controller-overhead-qualification",
+  "six-hour-qualification",
+  "twenty-four-hour-confirmation",
+  "package-receipts",
+  "sbom-receipt",
+  "advisory-receipt",
+  "license-receipt",
+  "supported-target-receipts",
+  "immutable-release-archive",
+  "nested-hash-verification",
+]
+
+[claims]
+exact_c74_d4_artifact_required = true
+numerical_product_performance_allowed = false
+portable_performance_allowed = false
+redis_superiority_allowed = false
+distributed_capacity_inference_allowed = false
+local_diagnostic_results_are_promotable = false
+
+[authorization]
+explicit_authorization_required = true
+expensive_runs_enabled = false
+product_candidate_runs_enabled = false
+six_hour_qualification_enabled = false
+twenty_four_hour_confirmation_enabled = false
+
+[completion]
+candidate_identity_complete = false
+same_box_redis_complete = false
+native_non_regression_complete = false
+controller_overhead_qualification_complete = false
+six_hour_qualification_complete = false
+twenty_four_hour_confirmation_complete = false
+package_receipts_complete = false
+sbom_receipt_complete = false
+advisory_receipt_complete = false
+license_receipt_complete = false
+supported_target_receipts_complete = false
+immutable_archive_complete = false
+nested_hash_verification_complete = false
+
+[compatibility]
+accepted_product_candidate_count = 0
+product_activation = "none"
+restart_required = false
+wire_format_changed = false
+durable_format_changed = false
+public_api_changed = false
+configuration_changed = false
+rollback = "No 0.74 product candidate exists; keep the published 0.73 product runtime. W11 tooling is opt-in and must be stopped and removed independently."

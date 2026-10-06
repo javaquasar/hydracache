@@ -116,6 +116,12 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
             .is_empty()
     );
     assert!(
+        xtask::performance_contract_074::check_release_admission(&contract(
+            "release-admission-contract.toml"
+        ))
+        .is_empty()
+    );
+    assert!(
         xtask::performance_contract_074::check_at_root(Path::new(&root()), None)
             .unwrap()
             .is_empty()
@@ -530,13 +536,76 @@ fn w12_evidence_skeleton_is_exact_and_fail_closed() {
             .iter()
             .map(|item| item.as_str().unwrap())
             .collect::<Vec<_>>(),
-        ["W11"]
+        ["W11", "W12"]
     );
     assert!(
         xtask::canary_check::check_canary_registry_for_release(&root(), "0.74")
             .unwrap()
             .is_empty()
     );
+}
+
+#[test]
+fn w12_release_admission_contract_is_fail_closed() {
+    let mut value = contract("release-admission-contract.toml");
+    assert!(xtask::performance_contract_074::check_release_admission(&value).is_empty());
+
+    value["candidate_source_sha"] = toml::Value::String("1".repeat(40));
+    value["release_admission_allowed"] = toml::Value::Boolean(true);
+    value["claims"]["numerical_product_performance_allowed"] = toml::Value::Boolean(true);
+    value["authorization"]["expensive_runs_enabled"] = toml::Value::Boolean(true);
+    value["completion"]["immutable_archive_complete"] = toml::Value::Boolean(true);
+    value["unresolved"] = toml::Value::Array(Vec::new());
+
+    let problems = xtask::performance_contract_074::check_release_admission(&value);
+    for field in [
+        "candidate_source_sha",
+        "release_admission_allowed",
+        "numerical_product_performance_allowed",
+        "expensive_runs_enabled",
+        "immutable_archive_complete",
+        "unresolved blockers",
+    ] {
+        assert!(
+            has(&problems, field),
+            "missing problem for {field}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn release_admission_expected_red_canary() {
+    let mut value = contract("release-admission-contract.toml");
+    let defect_enabled = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("PERF74-W12");
+    if defect_enabled {
+        value["authorization"]["expensive_runs_enabled"] = toml::Value::Boolean(true);
+    }
+    let problems = xtask::performance_contract_074::check_release_admission(&value);
+    assert!(
+        problems.is_empty(),
+        "{}: injected unsafe release admission flag was rejected: {problems:?}",
+        if defect_enabled {
+            "HC-CANARY-RED:PERF74-W12"
+        } else {
+            "checked-in release admission contract is invalid"
+        }
+    );
+}
+
+#[test]
+fn w12_release_note_retains_draft_claim_rollback_and_gate_boundaries() {
+    let note = std::fs::read_to_string(root().join("docs/releases/0.74.0.md")).unwrap();
+    for marker in [
+        "pre-release draft; no product candidate is accepted or frozen",
+        "no numerical product-performance",
+        "no exact C74 D4 artifact",
+        "Activation and rollback",
+        "Remaining admission work",
+        "performance-contract-check --require-ship",
+        "release-evidence --require-ship",
+    ] {
+        assert!(note.contains(marker), "release note must retain {marker:?}");
+    }
 }
 
 #[test]

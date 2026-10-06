@@ -32,6 +32,37 @@
       "tier": "fast",
       "artifacts": ["target/release-evidence/canaries/0.74-W11.json"],
       "red_evidence": "Controller reattachment must reject PID-only liveness, restart-from-checkpoint, PID reuse, broken checkpoint hashes, mixed-attempt identity, expired leases and duplicate executors."
+    },
+    {
+      "w_item": "W12",
+      "guard": {
+        "file": "crates/xtask/tests/performance_contract_074.rs",
+        "function": "w12_release_admission_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/performance_contract_074.rs",
+        "function": "release_admission_expected_red_canary"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "performance_contract_074", "--locked", "w12_release_admission_contract_is_fail_closed", "--", "--exact", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "performance_contract_074", "--locked", "release_admission_expected_red_canary", "--", "--exact", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "PERF74-W12"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "PERF74-W12",
+      "expected_failure": "HC-CANARY-RED:PERF74-W12",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.74-W12.json"],
+      "red_evidence": "Release admission must reject unresolved candidate identity, enabled expensive runs, promotable local diagnostics, missing exact C74 D4 evidence, and incomplete archive or supply-chain receipts."
     }
   ]
 }
