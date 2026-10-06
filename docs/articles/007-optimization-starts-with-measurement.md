@@ -2980,3 +2980,12 @@ a new green receipt. The next validation must test all repairs on one exact sour
 Until then, cadence compliance remains unproven, the candidate remains unresolved, and expensive
 qualification remains disabled. These operational timings describe verification infrastructure,
 not HydraCache throughput, native API regression or allocation improvement.
+
+The final local preflight uses one clean source and the pinned 1.94.0 toolchain. Linux passed the
+whole ordinary-CI strict lint matrix, including no allocator, system allocator, jemalloc and
+mimalloc configurations at the same target scopes. Windows passed strict xtask library/test-target
+lint; 109 unit, seven fast-suite, 36 performance-contract and 12 aggregator tests passed. Linux
+again passed 207 supervisor tests with one opt-in systemd check ignored. The expected-red canaries
+and both rejected ship-admission aliases confirm that cleanup did not open a release boundary.
+This closes the reproduced local lint defects, but does not establish the hosted cadence or product
+non-regression. The retained preflight explicitly separates local checks from the next hosted run.

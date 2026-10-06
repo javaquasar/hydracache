@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_items": ["W11", "W12"],
+  "tier": "local-tooling-preflight",
+  "source_commit": "a2ce6e5e5f77d358d85589e87a50f82a1f5c9fff",
+  "implementation_commit": "86d1d2b22e91c97ff86c005b1e98f85657a87035",
+  "dirty_worktree_at_final_checks": false,
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "baseline": {
+    "source_commit": "bbb45129ca975163beffbcdb8627b91364570984",
+    "linux_strict_supervisor_clippy_exit": 1,
+    "production_diagnostics": 24,
+    "additional_test_target_diagnostics": 4,
+    "supervisor_tests_passed": 206,
+    "supervisor_opt_in_systemd_tests_ignored": 1,
+    "cadence_test_commit": "60bcbedddf16c9d172f8630b0f6b461bc7a5a3bd",
+    "cadence_regression_failed_before_implementation": true,
+    "observation_test_commit": "f7fd1e3c15766324ba390dd704a37a8f55485756"
+  },
+  "linux_wsl_checks": {
+    "distribution": "Ubuntu",
+    "build_jobs": 4,
+    "cargo_incremental": 0,
+    "debug_information": 0,
+    "workspace_strict_clippy": "passed: --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings",
+    "hydracache_common_features": "durable-value-store,durable-values,tiered-values,testing",
+    "hydracache_strict_clippy_matrix": [
+      {"allocator": "none", "targets": "all-targets", "result": "passed"},
+      {"allocator": "allocator-system", "targets": "all-targets", "result": "passed"},
+      {"allocator": "allocator-jemalloc", "targets": "lib", "result": "passed"},
+      {"allocator": "allocator-mimalloc", "targets": "lib", "result": "passed"}
+    ],
+    "matrix_flags": "--no-default-features --locked -- -D warnings",
+    "supervisor_tests": {"passed": 207, "failed": 0, "ignored": 1},
+    "real_systemd_service_mutated": false,
+    "toolchain_default_changed": false
+  },
+  "windows_clean_checks": {
+    "xtask_library_and_test_target_strict_clippy": "passed",
+    "xtask_library_tests": {"passed": 109, "failed": 0},
+    "fast_suite_tests": {"passed": 7, "failed": 0},
+    "performance_contract_074_tests": {"passed": 36, "failed": 0},
+    "release_evidence_tests": {"passed": 12, "failed": 0},
+    "format": "passed for xtask and supervisor",
+    "performance_contract_check": "passed: local, non-promotable",
+    "governance": "passed: 17 checks, no TODOs",
+    "live_ci_topology": "passed",
+    "require_ship_074_exit": 1,
+    "require_ship_0740_exit": 1,
+    "explicit_closed_admission_reason": true,
+    "report_rows": {"implemented": 28, "fast_green": 0, "gated_green": 0, "ship_ready": 0}
+  },
+  "development_checks_before_metadata_commit": {
+    "release_governance_tests_passed": 23,
+    "release_doc_check_tests_passed": 4,
+    "doc_check": "passed",
+    "mdbook": "passed",
+    "release_documentation_tests_passed": 3,
+    "release_documentation_sync": "passed",
+    "links": "passed: 51 Markdown files and 20 includes"
+  },
+  "clean_source_canaries": [
+    {"work_item": "W11", "outcome": "expected_red", "duration_ms": 7474, "output_sha256": "31bb6290b477af7312d7754075b8c8b3df6b0380516be9055f18dc5397db2b94"},
+    {"work_item": "W12", "outcome": "expected_red", "duration_ms": 23295, "output_sha256": "b4e7d2776fd774d76be078d8de499b8548808b5fbe5a928dacc5c8df88ab20fb"}
+  ],
+  "original_second_run_receipt_recheck": {
+    "source_commit": "b795e58eeb99c17035c773606db0ca044b26a666",
+    "checker": "fast-suite-check --release 0.74 --receipts-dir <downloaded-receipts>",
+    "exit_code": 1,
+    "problem": "suite fast.workspace-nextest took 856663ms, above its 840s budget",
+    "original_receipt_rewritten": false
+  },
+  "budgets_unchanged": {"workspace_cadence_seconds": 840, "workspace_hard_timeout_seconds": 2400, "aggregate_seconds": 1680},
+  "new_heap_indirection_or_product_change": false,
+  "lint_thresholds_or_fixture_durations_changed": false,
+  "frozen_071_measurement_inputs_changed": false,
+  "local_full_workspace_nextest_repeated": false,
+  "expensive_qualification_run": false,
+  "promotable": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "This is local pinned-toolchain verification of tooling, not a release receipt or a product performance result. CI build concurrency and machine characteristics differ. The next ordinary hosted run must validate one exact source with costly lanes disabled; it may still fail the unchanged cadence guard. C74 remains unresolved and no product candidate has been accepted."
+}

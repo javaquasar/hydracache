@@ -1258,3 +1258,12 @@ expected failure for 856,663 ms. Hard timeout 2,400 seconds, workspace cadence 8
 aggregate budget 1,680 seconds remain unchanged. These checks repair tooling correctness, not
 product throughput. The next proof is ordinary CI on one exact source containing all repairs,
 with every costly lane disabled. Candidate identity remains unresolved and ship admission closed.
+
+Clean source `a2ce6e5e` passed the complete strict Linux Clippy command matrix from ordinary CI on
+local WSL with pinned Rust 1.94.0: workspace all-target/all-feature lint, HydraCache no-allocator
+and system-allocator all-target lint, and jemalloc/mimalloc library lint. Windows strict xtask
+library/test-target lint also passed. Final targeted checks passed 109 xtask unit, seven fast-suite,
+36 performance-contract, 12 aggregator and 207 Linux supervisor tests, with one opt-in systemd
+test ignored. Both admission aliases remained rejected, both canaries returned expected red and
+the report had zero ship-ready rows. Exact scopes, earlier negative diagnostics and unchanged
+budgets are retained in `local-runs/w12-linux-lint-and-cadence-preflight-a2ce6e5e.json`.

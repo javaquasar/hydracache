@@ -331,6 +331,7 @@ required_artifacts = [
   "docs/testing/performance/0.74/local-runs/w12-frozen-registry-separation-83042ecc.json",
   "docs/testing/performance/0.74/local-runs/w12-ship-report-boundary-d6294ca7.json",
   "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-second-failure-b795e58e.json",
+  "docs/testing/performance/0.74/local-runs/w12-linux-lint-and-cadence-preflight-a2ce6e5e.json",
 ]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
