@@ -1073,3 +1073,11 @@ This closes local W12 contract and documentation preparation, not W12 release ad
 D4 evidence, product qualification, packages, SBOM, advisory/license results, supported-target
 receipts, and the independently verifiable immutable archive remain absent. Both `--require-ship`
 checks must stay red until those inputs exist on the same frozen candidate.
+
+The W2-W9 terminal outcomes are also normalized in `terminal-disposition-ledger.toml`. Its 23 rows
+bind every parent/sub-item to retained files and require `terminal=true` plus
+`accepted_product_change=false`. The release-evidence report therefore has zero `Planned` rows and
+28 `Implemented` evidence contracts, but still zero `FastGreen`, `GatedGreen`, or `ShipReady` rows.
+Here, `Implemented` means the negative/deferred disposition is machine-readable; it does not mean
+the proposed optimization was shipped. The remaining transition requires real gate receipts, not
+a relabeling of terminal local evidence.

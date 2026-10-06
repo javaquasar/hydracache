@@ -2732,3 +2732,11 @@ candidate is safely finished only when its code is removed, its evidence is reta
 excluded, and the final admission machinery cannot accidentally treat local diagnostics as shipped
 performance. The local W12 preparation is now complete on that narrow definition. Product
 qualification, packaging and the immutable archive remain deliberately red.
+
+The final local reconciliation also exposed a useful vocabulary trap. Once all W2-W9 negative,
+deferred and not-authorized outcomes were connected to retained artifacts, the release-evidence
+tool reported all 28 work-item contracts as `Implemented`. It still reported zero fast-green,
+gated-green and ship-ready items. That distinction is intentional: implementation of an evidence
+contract means the result can no longer disappear into prose; it says nothing about acceptance of
+the candidate that the evidence rejected. Treating “recorded” as “shipped” would undo the whole
+measurement discipline at the final gate.
