@@ -63,9 +63,10 @@ fields = [
 ]
 
 [operations]
-allowed = ["start", "attach", "status", "seal", "abort", "verify"]
+allowed = ["start", "attach", "status", "seal", "abort", "verify", "host_observation"]
 attach_may_spawn = false
 status_may_spawn = false
+host_observation_may_spawn = false
 verify_requires_live_supervisor = false
 
 [durability]
@@ -162,6 +163,10 @@ start_manifest_schema = "docs/testing/performance/0.74/schemas/campaign-start-ma
 start_manifest_schema_sha256 = "c54407b6cc5046bc4bdc5a2961474579dcd0175c2ed8dbfd2d137d88c0e06569"
 host_observation_schema = "docs/testing/performance/0.74/schemas/host-observation-receipt.schema.json"
 host_observation_schema_sha256 = "f9fdb65e73a6c455ec36efdf2eddb476625ff628ef8c5bd7372545510db00f75"
+host_observation_workflow = ".github/workflows/performance-long-run-host-observation-074.yml"
+host_observation_socket_evidence = "docs/testing/performance/0.74/local-runs/w11-host-observation-127ebc6c.json"
+host_observation_socket_export_complete = true
+installed_source_receipt_binding_complete = true
 full_design_manifest_fields_complete = true
 start_manifest_builder = "scripts/perf/performance_long_run_074.py"
 start_manifest_builder_complete = true

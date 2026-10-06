@@ -160,6 +160,8 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "supervisor_progress_loss_maintenance_complete",
         "supervisor_measurement_loss_maintenance_complete",
         "full_design_manifest_fields_complete",
+        "host_observation_socket_export_complete",
+        "installed_source_receipt_binding_complete",
         "host_receipt_revalidation_complete",
         "live_start_host_receipt_revalidation_complete",
         "start_evidence_import_complete",
@@ -664,6 +666,58 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
     assert!(entry.contains("inputs.mode == 'host-observation'"));
     assert!(
         entry.contains("uses: ./.github/workflows/performance-long-run-host-observation-074.yml")
+    );
+}
+
+#[test]
+fn w11_host_observation_evidence_is_exact_non_mutating_and_non_promotable() {
+    let controller = contract("long-run-controller-resilience-contract.toml");
+    let implementation = controller["local_implementation"].as_table().unwrap();
+    let relative = implementation["host_observation_socket_evidence"]
+        .as_str()
+        .unwrap();
+    let evidence: Value =
+        serde_json::from_slice(&std::fs::read(root().join(relative)).unwrap()).unwrap();
+
+    let source = "127ebc6cb24191d567772966586bdb827a0ae380";
+    assert_eq!(evidence["source_commit"].as_str(), Some(source));
+    assert_eq!(
+        evidence["provisioning"]["run_id"].as_u64(),
+        Some(37394441292)
+    );
+    assert_eq!(
+        evidence["observation"]["run_id"].as_u64(),
+        Some(37394832233)
+    );
+    assert_eq!(
+        evidence["observation"]["installed_source_commit"].as_str(),
+        Some(source)
+    );
+    assert_eq!(
+        evidence["observation"]["campaign_state_mutated"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(evidence["product_candidate_started"].as_bool(), Some(false));
+    assert_eq!(
+        evidence["expensive_qualification_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(evidence["promotable"].as_bool(), Some(false));
+    assert_eq!(
+        evidence["decision"]["host_observation_socket_export_complete"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        evidence["decision"]["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["post_run_host_state"]["runner_active"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        evidence["post_run_host_state"]["supervisor_active"].as_bool(),
+        Some(true)
     );
 }
 

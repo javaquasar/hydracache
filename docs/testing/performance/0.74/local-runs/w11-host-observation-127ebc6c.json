@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-admitted-host-root-supervisor-observation",
+  "source_commit": "127ebc6cb24191d567772966586bdb827a0ae380",
+  "captured_at_utc": "2026-10-06T00:37:21Z",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "provisioning": {
+    "run_id": 37394441292,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "prepare_job_id": 112046961097,
+    "install_job_id": 112047698952,
+    "signed_bundle_artifact": {
+      "id": 11383005907,
+      "name": "long-run-host-provisioning-074-127ebc6cb24191d567772966586bdb827a0ae380-37394441292",
+      "digest": "sha256:3d4c0f6afaa179d9e2814fb21e2cba2160c1d6daa55b6c8f4bbed6e3442a72e7"
+    },
+    "receipt_artifact": {
+      "id": 11382291849,
+      "name": "performance-long-run-host-provisioning-074-127ebc6cb24191d567772966586bdb827a0ae380-37394441292-1",
+      "digest": "sha256:1eeaf15aaa2450e54716f4e226c541bfcd46af405e21fadb34c7a661c429206b"
+    }
+  },
+  "observation": {
+    "run_id": 37394832233,
+    "run_attempt": 1,
+    "job_id": 112048207253,
+    "conclusion": "success",
+    "artifact": {
+      "id": 11382701858,
+      "name": "long-run-074-host-observation-127ebc6cb24191d567772966586bdb827a0ae380-37394832233-1",
+      "digest": "sha256:e9417fe6dea7f7445b013e24b9ee0f63b579c8952fd20abebc33b193662205ad",
+      "size_bytes": 3217
+    },
+    "request_sha256": "792d808a28865ed246c085f434387f24f3a50d3d186f713966e2e9b3e8f6697e",
+    "response_sha256": "39dbaa24c773dca17c66d97a765365a220477838d14ede29549ecc51fe358115",
+    "host_receipt_sha256": "c8041142fc46e87cd1c50d1209ba4590a2762da2f2d2ee48cd894725d9d6045a",
+    "reference_host_freeze_sha256": "e15e5b218c1fee33f842ea8e697507629fab8a6ca4bc362e1bef1d0fe787d763",
+    "installed_supervisor_binary_sha256": "7f8f61bc80fb48c0fa5559189aa362b0387cc5ba069f4d10a94d3e5f78175409",
+    "installed_source_commit": "127ebc6cb24191d567772966586bdb827a0ae380",
+    "peer_admission_required": true,
+    "signed_authorization_used": false,
+    "arbitrary_output_path_accepted": false,
+    "campaign_state_mutated": false
+  },
+  "negative_attribution": [
+    {
+      "run_id": 37393137026,
+      "source_commit": "be32d76d07a8d9a1629d8706dfd82880bfea4c5b",
+      "conclusion": "failure",
+      "finding": "The unprivileged runner could not read the root-owned provisioning receipt through the 0750 state-directory boundary.",
+      "decision": "Keep the filesystem boundary closed and have the already-root supervisor validate the fixed receipt."
+    },
+    {
+      "run_id": 37393593771,
+      "source_commit": "d3c1d4026ffebf594279069270cfc4f7b58f14d2",
+      "conclusion": "failure",
+      "installed_binary_sha256": "50ce538f717561ae7786d5bf5c0aac4cea00f013e66ec5c13b4aa05e2c8d8429",
+      "self_hosted_rebuild_sha256": "43b614a32bcc190842e92855609118810aa10932cfcf2eb6866052516f6d06ab",
+      "finding": "Byte equality across hosted and self-hosted Rust builds was not reproducible because absolute Cargo registry paths differed.",
+      "decision": "Bind the installed source receipt to the digest of the running supervisor instead of treating a cross-home rebuild as identity proof."
+    }
+  ],
+  "post_run_host_state": {
+    "runner_active": false,
+    "supervisor_active": true,
+    "supervisor_main_pid": 25488,
+    "supervisor_restarts": 0,
+    "active_campaign_marker_absent": true,
+    "fixture_context_absent": true,
+    "canonical_freeze_check_passed": true
+  },
+  "decision": {
+    "host_observation_socket_export_complete": true,
+    "privilege_boundary_relaxed": false,
+    "privileged_start_bundle_host_rehearsal_complete": false,
+    "live_mutating_operations_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "Assemble one exact non-product start bundle from this admitted observation and rehearse its signed upload/start path before supervisor-restart or live-role reboot tests."
+  }
+}
