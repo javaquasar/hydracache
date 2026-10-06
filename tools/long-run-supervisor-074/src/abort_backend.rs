@@ -403,21 +403,48 @@ impl SystemdAbortBackend {
             )?;
         }
         if let Some(snapshot) = unit {
-            if !measurement_unit_is_owned(cause, &snapshot) {
-                return Err(SystemdAbortError::Binding);
+            match measurement_unit_action(cause, &snapshot) {
+                Some(MeasurementUnitAction::StopOwned) => {
+                    stop_unit_and_wait(
+                        &cause.harness.unit_name,
+                        manifest.diagnostic_grace_seconds,
+                    )?;
+                }
+                Some(MeasurementUnitAction::AlreadyTerminal) => {}
+                None => return Err(SystemdAbortError::Binding),
             }
-            stop_unit_and_wait(&cause.harness.unit_name, manifest.diagnostic_grace_seconds)?;
         }
         Ok(())
     }
 }
 
-fn measurement_unit_is_owned(cause: &MeasurementLossCause, unit: &UnitSnapshot) -> bool {
-    cause.reason == crate::measurement_loss::MeasurementLossReason::ProcessIdentityDrift
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MeasurementUnitAction {
+    StopOwned,
+    AlreadyTerminal,
+}
+
+fn measurement_unit_action(
+    cause: &MeasurementLossCause,
+    unit: &UnitSnapshot,
+) -> Option<MeasurementUnitAction> {
+    if cause.reason == crate::measurement_loss::MeasurementLossReason::ProcessIdentityDrift
         && unit.unit_name == cause.harness.unit_name
         && unit.control_group == cause.harness.cgroup_path
         && unit.main_pid == cause.harness.pid
         && cause.harness.cgroup_path == cause.daemon.cgroup_path
+    {
+        return Some(MeasurementUnitAction::StopOwned);
+    }
+    if unit.unit_name == cause.harness.unit_name
+        && unit.main_pid == 0
+        && unit.control_group.is_empty()
+        && matches!(unit.active_state.as_str(), "failed" | "inactive")
+        && matches!(unit.sub_state.as_str(), "failed" | "dead")
+    {
+        return Some(MeasurementUnitAction::AlreadyTerminal);
+    }
+    None
 }
 
 fn role_from_unit(unit: &str, campaign_id: &str) -> Result<Role, SystemdAbortError> {
@@ -872,11 +899,11 @@ fn sync_directory(path: &Path) -> Result<(), SystemdAbortError> {
 mod tests {
     use super::{
         diagnostic_path, lease_expiry_diagnostic_path, measurement_loss_diagnostic_path,
-        measurement_unit_is_owned, progress_loss_diagnostic_path, publish_diagnostic,
+        measurement_unit_action, progress_loss_diagnostic_path, publish_diagnostic,
         publish_lease_expiry_diagnostic, publish_measurement_loss_diagnostic,
         publish_progress_loss_diagnostic, verify_existing_diagnostic,
         verify_existing_lease_expiry_diagnostic, verify_existing_measurement_loss_diagnostic,
-        verify_existing_progress_loss_diagnostic,
+        verify_existing_progress_loss_diagnostic, MeasurementUnitAction,
     };
     use crate::lease_expiry::LeaseExpiryCause;
     use crate::measurement_loss::{MeasurementLossCause, MeasurementLossReason};
@@ -1164,19 +1191,40 @@ mod tests {
         assert_eq!(std::fs::read(&path).unwrap(), first);
         verify_existing_measurement_loss_diagnostic(&path, &cause, &state, &Role::I74, 1_048_576)
             .unwrap();
-        assert!(measurement_unit_is_owned(&cause, &snapshot));
+        assert_eq!(
+            measurement_unit_action(&cause, &snapshot),
+            Some(MeasurementUnitAction::StopOwned)
+        );
 
         let mut foreign = snapshot;
         foreign.control_group.push_str("-reused");
-        assert!(!measurement_unit_is_owned(&cause, &foreign));
+        assert_eq!(measurement_unit_action(&cause, &foreign), None);
         let mut reused_pid = foreign.clone();
         reused_pid.control_group = cause.harness.cgroup_path.clone();
         reused_pid.main_pid += 1;
-        assert!(!measurement_unit_is_owned(&cause, &reused_pid));
+        assert_eq!(measurement_unit_action(&cause, &reused_pid), None);
         let mut unit_drift = cause.clone();
         unit_drift.reason = MeasurementLossReason::UnitIdentityDrift;
         reused_pid.main_pid = unit_drift.harness.pid;
-        assert!(!measurement_unit_is_owned(&unit_drift, &reused_pid));
+        assert_eq!(measurement_unit_action(&unit_drift, &reused_pid), None);
+        let terminal = UnitSnapshot {
+            unit_name: unit_drift.harness.unit_name.clone(),
+            active_state: "failed".to_owned(),
+            sub_state: "failed".to_owned(),
+            main_pid: 0,
+            control_group: String::new(),
+            result: "exit-code".to_owned(),
+        };
+        assert_eq!(
+            measurement_unit_action(&unit_drift, &terminal),
+            Some(MeasurementUnitAction::AlreadyTerminal)
+        );
+        let mut ambiguous_terminal = terminal;
+        ambiguous_terminal.control_group = unit_drift.harness.cgroup_path.clone();
+        assert_eq!(
+            measurement_unit_action(&unit_drift, &ambiguous_terminal),
+            None
+        );
         let mut drifted = cause;
         drifted.observed_unix_seconds += 1;
         assert!(verify_existing_measurement_loss_diagnostic(
