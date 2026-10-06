@@ -2933,3 +2933,50 @@ Its ordinary test outcomes can be retained, but any ship-ready labels from that 
 must be rejected as release authorization. A fresh exact-source ordinary CI is still needed for
 the repaired tooling. This correction improves the honesty of readiness reporting; it adds no
 product throughput or allocation claim and starts no qualification workload.
+
+### Passing tests, meeting cadence and authorizing a release are different proofs
+
+The second ordinary hosted run completed on its original repaired-registry source. All 3,761
+executed workspace tests passed; 85 tests were skipped. The old ownership, documentation and MSRV
+failures disappeared on that source. However, strict Linux Clippy failed in the supervisor tool,
+so downstream HC/2 admission refused to proceed. This was an upstream tooling rejection, not a
+new interop failure. Nonfatal cache symlink warnings were not the cause.
+
+We reproduced the lint failure locally using CI's pinned Rust 1.94.0 rather than relying on the
+Windows-only preflight: 24 production diagnostics and four additional test-target diagnostics.
+The baseline supervisor suite passed 206 tests with one opt-in systemd check ignored. We added an
+observation regression before changing representation: even when no process pair exists yet, a
+foreign systemd unit must remain a terminal mismatch, not become a retryable startup observation.
+The repair then passed 207 tests, leaving the opt-in real-service check disabled.
+
+Most changes are straightforward propagation and scoping repairs: return the response builder's
+`Result` directly, remove an unnecessary slice borrow and final optional reborrow, and compile a
+Linux-only helper on Linux and in tests. The two private sum types are expressed with standard
+inline `ControlFlow` and `Option`, preserving owned guards, terminal-versus-pending behavior and
+drop paths. We deliberately add no indirection or heap ownership. The lint repair therefore does
+not trade a warning for a new `Box` allocation. It also does not demonstrate a smaller stack
+representation or reduced product allocations; those would require their own measured hypothesis.
+The rehearsal writer receives the same owned values in a context structure, with its channels and
+timing unchanged. Moving the test module and keeping constant timing relationships as runtime
+checks completes the test-target cleanup without suppressing strict warnings.
+
+The successful workspace receipt exposed a separate reporting defect. JUnit measured 423.370
+seconds of test execution, while the executor measured 856,663 ms including compilation. The
+unchanged cadence budget is 840 seconds, so the receipt exceeds it by 16,663 ms. The executor's
+2,400-second deadline is only a hard stop: finishing before that deadline does not satisfy the
+stricter routine-CI budget. The older aggregator checked outcome and identity but missed this
+cadence condition, allowing a successful yet over-budget command to look green.
+
+A new regression first demonstrated that a one-millisecond overrun was silently accepted. The
+aggregator now rejects it, while accepting the exact boundary and the preceding millisecond. The
+ordinary 0.74 lane also invokes the existing receipt-aware fast-suite checker explicitly; applying
+it to the downloaded original receipt rejects that receipt for the recorded overrun. No budget,
+noise allowance, timeout, workload or estimator was changed to make the run pass.
+
+Both negative executions remain evidence under their own source identities. The second run's old
+28 ship-ready labels are not trusted: they precede the admission ceiling as well as the cadence
+repair. Local lint and regression success cannot be combined with that older execution to create
+a new green receipt. The next validation must test all repairs on one exact source in ordinary CI.
+Until then, cadence compliance remains unproven, the candidate remains unresolved, and expensive
+qualification remains disabled. These operational timings describe verification infrastructure,
+not HydraCache throughput, native API regression or allocation improvement.

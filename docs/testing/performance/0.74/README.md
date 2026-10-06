@@ -1228,3 +1228,33 @@ Hosted run `37521028035` is bound to earlier `b795e58e`, not this admission repa
 test results remain useful for that source, but any generic `ShipReady` labels it might produce
 must not be interpreted as 0.74 release authorization. No candidate, host qualification, Redis
 comparison, six-hour run or 24-hour confirmation has been admitted by these changes.
+
+That second run has now completed with failure. On its exact source `b795e58e`, all 3,761 executed
+workspace tests passed, with 85 skipped across 477 binaries. JUnit reports 423.370 seconds of test
+execution; the executor receipt covers compilation too and records 856,663 ms. This exceeds the
+unchanged 840-second fast-suite budget by 16,663 ms, despite staying below the 2,400-second hard
+timeout. Successful execution is not cadence compliance. The old report's 28 `ShipReady` rows are
+invalid for 0.74 admission; they precede the closed-admission and cadence repairs. The immutable
+negative result, successful jobs and artifact digests are retained in
+`local-runs/w12-ordinary-ci-second-failure-b795e58e.json`.
+
+The independent Rust failure was strict Linux supervisor lint, not the nonfatal cache symlink
+warnings. Local WSL with pinned Rust 1.94.0 reproduced 24 production diagnostics plus four test-only
+diagnostics. Mechanical fixes propagate response results directly, remove an unnecessary borrowed
+slice and final option reborrow, and limit a Linux helper to Linux or tests. Private admission and
+observation enums now use inline `ControlFlow` and `Option`; no `Box`, new allocation, wire-format
+change or lock-lifetime change is introduced. This does not claim smaller stack layout or measured
+allocation savings. Checkpoint writer arguments are grouped into an owned context with the same
+values and channels. Existing fixture timing assertions are kept as runtime checks; no duration,
+lease, authorization rule or lint threshold changed. The added observation regression proves that
+an incomplete process pair cannot hide a terminal foreign-unit mismatch. The local supervisor
+baseline passed 206 tests; after repair it passed 207, with the same opt-in systemd test ignored.
+
+A separate new aggregator regression first failed on a receipt one millisecond above its budget.
+The aggregator now enforces the already registered fast-suite cadence, accepting the boundary
+and rejecting its first overrun. The 0.74 ordinary CI lane also explicitly runs `fast-suite-check`
+on the generated receipts. Applying that checker to the downloaded second-run receipt returns the
+expected failure for 856,663 ms. Hard timeout 2,400 seconds, workspace cadence 840 seconds and
+aggregate budget 1,680 seconds remain unchanged. These checks repair tooling correctness, not
+product throughput. The next proof is ordinary CI on one exact source containing all repairs,
+with every costly lane disabled. Candidate identity remains unresolved and ship admission closed.
