@@ -16,6 +16,8 @@ const COMPOSITION: &str = "composition-ledger.toml";
 const RELEASE_ADMISSION: &str = "release-admission-contract.toml";
 const TERMINAL_DISPOSITIONS: &str = "terminal-disposition-ledger.toml";
 const RELEASE: &str = "0.74";
+pub(crate) const SHIP_ADMISSION_BLOCKER: &str =
+    "0.74 ship admission is closed while candidate identity and release qualification are incomplete";
 const FROZEN_C73: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
 const C73_TREE: &str = "92336607f21a68f563e65dc0fccccd8efaa14f7b";
 const TAG_OBJECT_073: &str = "38b99244ac11371a6a4149c4d95ece0cdf99520f";
@@ -27,10 +29,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
     let mut problems = check_at_root(&options.root, options.receipt.as_deref())?;
     if options.require_ship {
-        problems.push(
-            "0.74 ship admission is closed while candidate identity and release qualification are incomplete"
-                .to_owned(),
-        );
+        problems.push(SHIP_ADMISSION_BLOCKER.to_owned());
     }
     if problems.is_empty() {
         println!("performance-contract-check 0.74: OK (local, non-promotable)");

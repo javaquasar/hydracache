@@ -320,6 +320,12 @@ pub fn build_report(
 
     let (source_commit, current_worktree_dirty) = git_identity(root)?;
     let mut global_reasons = Vec::new();
+    // Ordinary green receipts are not qualification. Keep both CLI spellings
+    // of the prepared 0.74 release behind the same boundary as its contract CLI.
+    let release_ship_admission_closed = definition.version == "0.74.0";
+    if release_ship_admission_closed {
+        global_reasons.push(crate::performance_contract_074::SHIP_ADMISSION_BLOCKER.to_owned());
+    }
     if current_worktree_dirty {
         global_reasons.push("current worktree is dirty".to_owned());
     }
@@ -494,27 +500,26 @@ pub fn build_report(
                 &receipts,
                 &mut reasons,
             ) {
-                stage = EvidenceStage::FastGreen;
-                if all_gates_green(
-                    root,
-                    release,
-                    &source_commit,
-                    &item.gated_gate_ids,
-                    &gates_by_id,
-                    &receipts,
-                    &mut reasons,
-                ) {
-                    stage = EvidenceStage::GatedGreen;
-                    let compatibility_baseline_available =
-                        item.id != "W32" || git_is_ancestor(root, "v0.63.0", "HEAD");
-                    if quarantined.is_empty()
-                        && !current_worktree_dirty
-                        && compatibility_baseline_available
-                        && !active_ship_blocker
-                    {
-                        stage = EvidenceStage::ShipReady;
-                    }
-                }
+                let gated_green = !release_ship_admission_closed
+                    && all_gates_green(
+                        root,
+                        release,
+                        &source_commit,
+                        &item.gated_gate_ids,
+                        &gates_by_id,
+                        &receipts,
+                        &mut reasons,
+                    );
+                let ship_conditions_green = gated_green
+                    && quarantined.is_empty()
+                    && !current_worktree_dirty
+                    && (item.id != "W32" || git_is_ancestor(root, "v0.63.0", "HEAD"))
+                    && !active_ship_blocker;
+                stage = stage_after_fast_gate(
+                    release_ship_admission_closed,
+                    gated_green,
+                    ship_conditions_green,
+                );
             }
         }
         work_items.push(WorkItemReport {
@@ -547,6 +552,49 @@ pub fn build_report(
         reasons: global_reasons,
         work_items,
     })
+}
+
+fn stage_after_fast_gate(
+    ship_admission_closed: bool,
+    gated_green: bool,
+    ship_conditions_green: bool,
+) -> EvidenceStage {
+    if ship_admission_closed || !gated_green {
+        EvidenceStage::FastGreen
+    } else if ship_conditions_green {
+        EvidenceStage::ShipReady
+    } else {
+        EvidenceStage::GatedGreen
+    }
+}
+
+#[cfg(test)]
+mod pre_candidate_stage_tests {
+    use super::{stage_after_fast_gate, EvidenceStage};
+
+    #[test]
+    fn closed_admission_caps_even_all_green_receipts_at_fast_green() {
+        for gated_green in [false, true] {
+            for ship_conditions_green in [false, true] {
+                assert_eq!(
+                    stage_after_fast_gate(true, gated_green, ship_conditions_green),
+                    EvidenceStage::FastGreen
+                );
+            }
+        }
+        assert_eq!(
+            stage_after_fast_gate(false, false, true),
+            EvidenceStage::FastGreen
+        );
+        assert_eq!(
+            stage_after_fast_gate(false, true, false),
+            EvidenceStage::GatedGreen
+        );
+        assert_eq!(
+            stage_after_fast_gate(false, true, true),
+            EvidenceStage::ShipReady
+        );
+    }
 }
 
 // 0.67.1 shipped as a dedicated performance-evidence milestone after the
