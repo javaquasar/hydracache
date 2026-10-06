@@ -2752,3 +2752,11 @@ never executed: one Linux-only fixture function was referenced by an unguarded C
 the supervisor binary failed to compile with E0425. The fix was one platform guard, matching all
 adjacent host-only entrypoints and leaving Linux semantics unchanged. The failed guard remains
 negative evidence; a compile failure cannot masquerade as an expected-red canary.
+
+The first full workspace gate then supplied another negative result. The evidence runner deliberately
+used an isolated Cargo target, and that cold Windows build was still compiling when the unchanged
+2,400-second hard timeout expired. It had already missed the 840-second cadence budget; no test had
+started and no JUnit report existed. Calling this a test failure would be as misleading as calling it
+green. The durable record therefore says `compile-phase timeout`, keeps both limits unchanged, and
+forbids promotion. A single same-command warm-cache retry can attribute the failure to cold-build
+capacity, but it cannot overwrite the cold result or establish release admission by itself.

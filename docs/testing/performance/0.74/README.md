@@ -1096,3 +1096,11 @@ CLI match arm, producing compiler error E0425. The narrow repair adds the same L
 by the adjacent fixture commands; it does not alter Linux execution. The failed guard receipt is
 retained as `local-runs/w11-windows-canary-guard-compile-rejected-ae32f62c.json` and cannot count as
 expected-red evidence.
+
+The first clean exact-source execution of `fast.workspace-nextest` used the evidence runner's
+isolated Cargo target and exhausted the unchanged 2,400-second hard timeout while the workspace was
+still compiling. It also exceeded the unchanged 840-second cadence budget. No test started, the
+required JUnit file was absent, and no product or test failure was observed. The result is retained
+as `local-runs/w12-workspace-fast-gate-cold-timeout-05e7c6e9.json`; it is non-promotable and leaves
+all work items short of `FastGreen`. One same-command warm-cache retry may distinguish cold-build
+capacity from a repeatable gate failure, but cannot erase this result or relax either limit.
