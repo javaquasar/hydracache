@@ -1159,3 +1159,26 @@ individually then passed without changing files. Performance-contract lint passe
 the existing supervisor dependency dead-code warning unchanged. The source identities,
 dirty-documentation scope and non-promotable boundary are retained in
 `local-runs/w12-ordinary-ci-preflight-94368d8a.json`. These checks do not replace full workspace evidence.
+
+The first ordinary hosted dispatch is run `37515470936` on clean `9bf80b4b`, with all expensive,
+nightly and qualification inputs disabled. Both push-triggered touched host workflows skipped every
+job, confirming the new explicit-dispatch boundary. Local W11/W12 canaries on that exact source
+returned expected red. While CI was still running, two completed jobs exposed missing metadata:
+the existing draft lacked its mdBook wrapper/navigation, and the conservative memory scanner found
+the already implemented `ProfiledStoreGuard` without a reviewed registry disposition. Both failures
+were reproduced locally. The wrapper now includes the canonical draft, clearly labeled as draft;
+no 0.73 publication record was rewritten. The guard borrows the map already accounted under
+`ClientSurfaceState`, so its exact registry entry describes inline metadata and avoids double counting.
+A new test proves normal-drop and unwind lock release for profiling on/off, with poisoning preserved.
+Five ownership tests, inventory closure, strict transport lint, three release-doc checker tests,
+documentation synchronization, links and mdBook passed locally. The timestamped partial CI record is
+`local-runs/w12-ordinary-ci-first-dispatch-9bf80b4b.json`; it does not claim the final run outcome or
+validate the subsequent repairs as hosted evidence. No replacement CI run is dispatched concurrently.
+
+The same run later rejected the two internal workspace tools at dependency policy because their
+manifests omitted license metadata; downstream Docker admission then rejected the failed Rust result
+before interop execution. `cargo deny --locked check licenses` and a new inheritance regression both
+reproduced the omission. The tools now inherit the existing workspace `Apache-2.0` metadata. No
+license allowlist, exception, confidence threshold or lockfile changed. License checking and all
+34 performance-contract tests pass locally; the original CI rejection remains retained, not rerun
+against another source under its old identity.

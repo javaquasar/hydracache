@@ -2835,3 +2835,32 @@ its command-line limit for a single workspace formatting invocation. The equival
 passed package-by-package for all 36 workspace members, without editing unrelated files. Recording
 both the limitation and the successful alternative keeps the result reproducible. The next proof is still the
 unchanged full workspace gate on an ordinary hosted CI run, not an expensive qualification campaign.
+
+The first ordinary dispatch confirmed the infrastructure boundary: the two touched host workflows
+were triggered by the push, but all their jobs were skipped. It then exposed two metadata failures
+that the narrower local preflight had not covered. The draft release notes lacked the site's exact
+include wrapper and navigation entry. Separately, the conservative ownership scanner interpreted
+`BTreeMap` inside `MutexGuard` generics as a candidate owner and correctly rejected the missing review.
+
+Neither failure justified weakening a gate. The documentation repair includes the canonical notes
+and labels them as a development draft, without implying publication. Source review showed that
+`ProfiledStoreGuard` stores a borrowed mutex guard, a borrowed instrumentation reference and inline
+timing metadata; `ClientSurfaceState` still owns the map. A precise registry entry records that fact
+and avoids counting the map twice. A new fixture verifies that normal drop and panic unwind release
+the lock with profiling on or off, while preserving mutex poisoning. The scanner, registry closure,
+five ownership tests and strict transport lint then passed locally, as did release-doc synchronization
+and mdBook. These repairs change no product behavior and supply no allocation-reduction claim.
+
+The original hosted run continues to own its original source and failures. Passing local checks on
+the repaired source cannot be combined with that run to manufacture a green release receipt. Its
+timestamped in-progress evidence is retained separately; the repaired source still needs its own
+completed ordinary CI proof before any stronger readiness claim.
+
+Dependency policy found one more omission in that same run: both internal 0.74 workspace tools
+lacked package license metadata. The downstream Docker job consequently rejected the upstream
+Rust result before running interop tests; this was not an independent wire-protocol failure. A local
+license-only check and a new inheritance regression reproduced the missing metadata before the
+repair. Both tool manifests now inherit the workspace's existing `Apache-2.0` declaration. The
+license checker and all 34 performance-contract tests passed with the allowlist, confidence threshold,
+exceptions and lockfile unchanged. Restoring missing metadata is materially different from relaxing
+a supply-chain gate, and neither substitutes for the still-pending exact-source CI proof.
