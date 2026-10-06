@@ -665,6 +665,51 @@ impl Drop for ProfiledStoreGuard<'_> {
     }
 }
 
+#[cfg(test)]
+mod profiled_store_guard_tests {
+    use super::*;
+    use std::sync::TryLockError;
+
+    #[test]
+    fn profiled_store_guard_releases_borrow_on_drop_and_unwind() {
+        for profiling in [false, true] {
+            let store = Mutex::new(BTreeMap::<StoreKey, StoredValue>::new());
+            let instrumentation = ClientSurfaceProfileInstrumentation::default();
+            let make_guard = || ProfiledStoreGuard {
+                guard: store.lock().unwrap(),
+                hold_started: profiling.then(|| Instant::now() - Duration::from_millis(1)),
+                instrumentation: &instrumentation,
+            };
+            {
+                let guard = make_guard();
+                assert!(guard.is_empty());
+                assert!(matches!(store.try_lock(), Err(TryLockError::WouldBlock)));
+            }
+            assert!(store.try_lock().unwrap().is_empty());
+            let normal_hold = instrumentation
+                .store_lock_hold_nanoseconds
+                .load(Ordering::Relaxed);
+            assert_eq!(normal_hold > 0, profiling);
+
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _guard = make_guard();
+                assert!(matches!(store.try_lock(), Err(TryLockError::WouldBlock)));
+                panic!("intentional guard unwind");
+            }));
+            assert!(result.is_err());
+            // Poisoning is preserved. Poisoned means the mutex was released, not leaked.
+            match store.try_lock() {
+                Err(TryLockError::Poisoned(error)) => assert!(error.into_inner().is_empty()),
+                other => panic!("expected released poisoned store, got {other:?}"),
+            }
+            let final_hold = instrumentation
+                .store_lock_hold_nanoseconds
+                .load(Ordering::Relaxed);
+            assert_eq!(final_hold > normal_hold, profiling);
+        }
+    }
+}
+
 struct ConditionalPutArgs {
     request_id: String,
     ns: Namespace,
