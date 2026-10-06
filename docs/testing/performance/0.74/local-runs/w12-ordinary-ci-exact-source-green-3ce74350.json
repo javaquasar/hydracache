@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_items": [
+    "W11",
+    "W12"
+  ],
+  "tier": "ordinary-hosted-ci",
+  "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+  "dirty_worktree_at_dispatch": false,
+  "run": {
+    "id": 37538251858,
+    "attempt": 1,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37538251858",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-06T22:04:44Z",
+    "completed_at": "2026-10-06T22:42:29Z"
+  },
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "dispatch_inputs": {
+    "candidate_release": "0.74",
+    "performance_0671_mode": "off",
+    "run_nightly": false,
+    "run_reference_performance": false,
+    "run_memory_diagnostic": false,
+    "run_retention_soak_070": false,
+    "run_release_070_admission": false,
+    "run_management_candidate_soak_072": false,
+    "run_management_ship_soak_072": false,
+    "run_management_mixed_072": false,
+    "run_redis_compat_release_proof": false,
+    "gated_gate_id": ""
+  },
+  "successful_jobs": [
+    {
+      "id": 112524616047,
+      "name": "0.71 CI topology safety gate",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:06:47Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616418,
+      "name": "Memory Regression Fast",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:07:53Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616435,
+      "name": "Docs",
+      "started_at": "2026-10-06T22:04:50Z",
+      "completed_at": "2026-10-06T22:05:56Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616487,
+      "name": "Migration Conformance PostgreSQL 0.69 (18)",
+      "started_at": "2026-10-06T22:04:50Z",
+      "completed_at": "2026-10-06T22:09:04Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616521,
+      "name": "Rust",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:42:22Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616563,
+      "name": "Migration Conformance PostgreSQL 0.69 (16)",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:10:24Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616585,
+      "name": "0.71 Memory Contracts",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:41:37Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616671,
+      "name": "Migration Conformance 0.69",
+      "started_at": "2026-10-06T22:04:50Z",
+      "completed_at": "2026-10-06T22:12:46Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616672,
+      "name": "MSRV 1.88.0",
+      "started_at": "2026-10-06T22:04:49Z",
+      "completed_at": "2026-10-06T22:27:21Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112524616687,
+      "name": "Migration Conformance Fast Evidence 0.69",
+      "started_at": "2026-10-06T22:04:50Z",
+      "completed_at": "2026-10-06T22:16:52Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112528950567,
+      "name": "Migration Conformance Admission 0.69",
+      "started_at": "2026-10-06T22:16:55Z",
+      "completed_at": "2026-10-06T22:19:03Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112537815041,
+      "name": "HC/2 Docker Interop",
+      "started_at": "2026-10-06T22:42:25Z",
+      "completed_at": "2026-10-06T22:42:29Z",
+      "conclusion": "success"
+    },
+    {
+      "id": 112537815049,
+      "name": "HC/2 Linux Required",
+      "started_at": "2026-10-06T22:42:24Z",
+      "completed_at": "2026-10-06T22:42:27Z",
+      "conclusion": "success"
+    }
+  ],
+  "skipped_jobs": [
+    "0.67.1 Full-Dress Bootstrap Admission",
+    "Memory Diagnostic (GitHub Hosted)",
+    "Redis Compatibility Release Proof",
+    "0.67 Self-hosted Reference Evidence",
+    "Raft Miri",
+    "DST and Soak Nightly",
+    "0.67.1 Dedicated Runner Qualification",
+    "Fuzz Nightly",
+    "ThreadSanitizer",
+    "Raft Loom",
+    "0.67 Shared Performance Tripwire",
+    "0.66 Operator Kind Release Proof",
+    "0.72 Management Ship Confirmation",
+    "Raft Mutation Testing (${{ matrix.label }})",
+    "0.71 to 0.72 Management Compatibility",
+    "0.66 Daemon Process Release Proof",
+    "0.72 Management Candidate Soak",
+    "Retention Soak 0.70",
+    "0.67.1 Frozen Candidate Reference Evidence",
+    "Performance Budget",
+    "Dynamic Canary Sweep",
+    "Raft Corner-Case Nightly",
+    "CI Instruction Work Tripwire",
+    "Coverage Ratchet",
+    "Registered Gated Proof",
+    "0.67.1 Bootstrap Sample Acquisition",
+    "Release 0.70 Admission",
+    "Release 0.71 CI Admission"
+  ],
+  "workspace_gate": {
+    "gate_id": "fast.workspace-nextest",
+    "command": "cargo nextest run --workspace --profile ci --locked",
+    "outcome": "Pass",
+    "exit_code": 0,
+    "receipt_path": "release-evidence/receipts/fast.workspace-nextest-1791325006787341560.json",
+    "receipt_sha256": "0e0fd7590f128e1f89f9cec1ec3b15f177fe6bbd06724170f8d65a5cf663a1c0",
+    "duration_ms": 444319,
+    "started_at": "2026-10-06T22:09:22.468041538Z",
+    "ended_at": "2026-10-06T22:16:46.776282303Z",
+    "tests_passed": 3765,
+    "tests_skipped": 85,
+    "test_binaries": 477,
+    "test_execution_seconds": 229.848,
+    "compilation_log_duration": "3m 32s",
+    "tests_failed": 0,
+    "missing_artifacts": [],
+    "timed_out": false,
+    "duration_basis": "Executor monotonic duration, including compilation; not recomputed from wall-clock captures."
+  },
+  "strict_linux_clippy": {
+    "conclusion": "success",
+    "started_at": "2026-10-06T22:38:54Z",
+    "ended_at": "2026-10-06T22:41:25Z",
+    "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+    "build_jobs": 4,
+    "common_features": "durable-value-store,durable-values,tiered-values,testing",
+    "workspace_scope": "--workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings",
+    "hydracache_matrix": [
+      {
+        "allocator": "none",
+        "scope": "all-targets"
+      },
+      {
+        "allocator": "allocator-system",
+        "scope": "all-targets"
+      },
+      {
+        "allocator": "allocator-jemalloc",
+        "scope": "lib"
+      },
+      {
+        "allocator": "allocator-mimalloc",
+        "scope": "lib"
+      }
+    ],
+    "matrix_flags": "--no-default-features --locked -- -D warnings"
+  },
+  "downloaded_artifact": {
+    "id": 11447437989,
+    "name": "migration-conformance-fast-evidence-069-3ce743508a283a2a0e5612852e9331d9cc65381b",
+    "bytes": 113297,
+    "github_sha256": "2ca76ffa460f4efa0518959ef1b851d0c73463e9bebee89fb727d6d83e24fbb2",
+    "independent_sha256": "2ca76ffa460f4efa0518959ef1b851d0c73463e9bebee89fb727d6d83e24fbb2",
+    "independent_digest_matches": true
+  },
+  "nested_junit": {
+    "artifact_path": "nextest/ci/junit.xml",
+    "receipt_path": "target/nextest/ci/junit.xml",
+    "bytes": 829686,
+    "receipt_sha256": "c1794fa4549fe03df3684b7698941325ffe0387274a7a7f6cffe2c7cef4a6999",
+    "independent_sha256": "c1794fa4549fe03df3684b7698941325ffe0387274a7a7f6cffe2c7cef4a6999",
+    "independent_bytes_and_digest_match": true
+  },
+  "hosted_report": {
+    "artifact_path": "release-evidence/0.74.json",
+    "sha256": "34c8c671fb9a15908bf7b3ebe2b13b789804e673b93cdc7196501b10761a516c",
+    "bytes": 2700,
+    "current_worktree_dirty": false,
+    "receipts_supplied": true,
+    "counts": {
+      "fast-green": 28,
+      "gated-green": 0,
+      "implemented": 0,
+      "planned": 0,
+      "ship-ready": 0
+    },
+    "reasons": [
+      "0.74 ship admission is closed while candidate identity and release qualification are incomplete"
+    ],
+    "original_download_rewritten": false
+  },
+  "hosted_canaries": [
+    {
+      "work_item": "W11",
+      "duration_ms": 3613,
+      "output_sha256": "415ec80d706a25dcd9b117d351fb477e93e945166eda9973102c6a409310fee4",
+      "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+      "dirty_worktree": false,
+      "outcome": "expected_red"
+    },
+    {
+      "work_item": "W12",
+      "duration_ms": 25942,
+      "output_sha256": "b6557e35c645f0c3eb47e055924b27f37c6e317d01255a0e7bc0513d2c5d1670",
+      "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+      "dirty_worktree": false,
+      "outcome": "expected_red"
+    }
+  ],
+  "independent_clean_source_verification": {
+    "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+    "dirty_worktree": false,
+    "fast_suite_check_exit_code": 0,
+    "require_ship_074_exit_code": 1,
+    "require_ship_0740_exit_code": 1,
+    "report_fast_green_rows": 28,
+    "report_ship_ready_rows": 0,
+    "explicit_closed_admission_reason": true,
+    "initial_diagnostic": "First local report verification rejected missing canonical JUnit and pre-existing a2ce6e5e local canaries. This was a local artifact-location/source mismatch, not a failure of the hosted receipt.",
+    "correction": "Verified downloaded JUnit materialized at its previously absent canonical path; downloaded exact-source canaries materialized after backing up existing generated canaries in ignored target storage. Original downloaded receipts, canaries and report were not rewritten.",
+    "historical_identity_only": true
+  },
+  "documentation_update_checks": {
+    "source_base_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+    "working_tree_dirty_with_documentation_only": true,
+    "xtask_targeted_tests": {
+      "performance_contract_074": 36,
+      "release_evidence": 12,
+      "fast_suite": 7,
+      "release_governance": 23,
+      "doc_check": 16,
+      "failed": 0
+    },
+    "strict_xtask_library_and_test_target_clippy": "passed",
+    "format": "passed: xtask and hydracache-long-run-supervisor-074",
+    "format_invocation_diagnostic": "Initial invocation used the wrong package name long-run-supervisor-074 and was rejected before checking; corrected package invocation passed.",
+    "performance_contract_check": "passed: local, non-promotable",
+    "governance": "passed: 17 checks, no TODOs",
+    "doc_check": "passed",
+    "release_documentation_tests_passed": 3,
+    "release_documentation_sync": "passed",
+    "links": "passed: 51 Markdown files and 20 includes",
+    "mdbook": "passed",
+    "json_parse": "passed",
+    "diff_check": "passed",
+    "frozen_071_registry_diff_against_5bc712f1": "empty",
+    "claim_boundary": "These scoped local checks validate the documentation update, not a new clean-source hosted workspace receipt. Hosted evidence above remains bound only to 3ce74350."
+  },
+  "budgets_unchanged": {
+    "workspace_cadence_seconds": 840,
+    "workspace_hard_timeout_seconds": 2400,
+    "aggregate_seconds": 1680
+  },
+  "fast_suite_measured_baselines": 0,
+  "prior_negative_runs_unchanged": [
+    37515470936,
+    37521028035
+  ],
+  "ordinary_fast_evidence_valid": true,
+  "accepted_product_candidates": 0,
+  "candidate_identity": "UNRESOLVED",
+  "release_admission_allowed": false,
+  "product_performance_claim": false,
+  "expensive_qualification_run": false,
+  "frozen_071_measurement_inputs_changed": false,
+  "local_full_workspace_nextest_repeated": false,
+  "host_service_mutated": false,
+  "claim_boundary": "One exact-source ordinary CI execution passes correctness, lint and the unchanged cadence guard. The 28 FastGreen rows include recorded rejected/no-win proposal dispositions, not 28 product improvements. Different sources, test sets, caches and runners prevent interpreting timings versus earlier runs as paired performance evidence. Zero registered cadence baselines means this does not establish a stable execution-time distribution. C74, package/SBOM/advisory/supported-target evidence and expensive qualification remain unresolved. This historical receipt must not be rebound to later documentation commits."
+}

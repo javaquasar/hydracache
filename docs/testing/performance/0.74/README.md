@@ -1267,3 +1267,41 @@ library/test-target lint also passed. Final targeted checks passed 109 xtask uni
 test ignored. Both admission aliases remained rejected, both canaries returned expected red and
 the report had zero ship-ready rows. Exact scopes, earlier negative diagnostics and unchanged
 budgets are retained in `local-runs/w12-linux-lint-and-cadence-preflight-a2ce6e5e.json`.
+
+### Exact-source ordinary CI closes the reproduced tooling failures
+
+[Run 37538251858](https://github.com/javaquasar/hydracache/actions/runs/37538251858), attempt one,
+completed successfully on clean source `3ce743508a283a2a0e5612852e9331d9cc65381b` at
+2026-10-06 22:42:29 UTC. All thirteen executed ordinary jobs passed, including pinned Linux strict
+Clippy, public API checks, MSRV 1.88.0, memory contracts, migration conformance, docs and HC/2
+admission. Every expensive qualification, reference, diagnostic, nightly and soak input remained
+disabled. No rented-host service or product campaign was touched.
+
+The complete workspace gate passed 3,765 tests with zero failures and 85 skips across 477 binaries.
+Its executor receipt records 444,319 ms including compilation, within the unchanged 840-second
+cadence and 2,400-second hard deadline. JUnit separately records 229.848 seconds of test execution.
+The aggregate limit stays 1,680 seconds. This is one valid hosted cadence execution, not a stable
+timing distribution: the fast-suite registry still has zero measured baselines. Different source
+identities, test sets, caches and runners also prevent treating the earlier 856,663 ms result and
+this execution as a paired performance improvement.
+
+The downloaded artifact ZIP digest independently matches GitHub's digest. Nested JUnit bytes and
+SHA-256 independently match the receipt. On the same clean `3ce74350` source, the receipt-aware
+fast-suite checker passed and both `--require-ship` aliases rejected admission. The hosted and
+independently regenerated reports agree: 28 `FastGreen`, zero `GatedGreen`, zero `ShipReady`, with
+the explicit closed-admission reason. Both exact-source W11/W12 mutations returned expected red.
+The first local verification attempt correctly rejected missing canonical JUnit and older local
+canaries; verification succeeded only after materializing the actual verified downloaded files
+and backing up prior generated canaries, without rewriting the original receipts or report.
+
+The immutable summary, run/job identities, artifact/receipt/JUnit/report digests and verification
+scopes are retained in `local-runs/w12-ordinary-ci-exact-source-green-3ce74350.json`. Earlier negative
+runs remain negative. This closes their reproduced ordinary-CI defects on one later source; it
+does not combine old-source results with local repairs, bind receipts to a later documentation
+commit, or promote rejected proposal dispositions into product wins.
+
+Next, W11/W12 still require an admitted C74 identity, candidate-specific native/reference and
+long-run qualification, package/SBOM/advisory/license and supported-target proofs, and the final
+immutable archive. Accepted product candidates remain zero, C74 remains `UNRESOLVED`, and ship
+admission stays closed. Those prerequisites are not waived by ordinary CI, and expensive runs
+are not started by this evidence update.

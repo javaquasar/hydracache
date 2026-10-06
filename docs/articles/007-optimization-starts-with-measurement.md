@@ -2989,3 +2989,50 @@ again passed 207 supervisor tests with one opt-in systemd check ignored. The exp
 and both rejected ship-admission aliases confirm that cleanup did not open a release boundary.
 This closes the reproduced local lint defects, but does not establish the hosted cadence or product
 non-regression. The retained preflight explicitly separates local checks from the next hosted run.
+
+### One green source closes tooling defects, not product qualification
+
+The next ordinary execution now supplies the missing exact-source proof. Run
+[37538251858](https://github.com/javaquasar/hydracache/actions/runs/37538251858), attempt one,
+completed successfully on clean `3ce743508a283a2a0e5612852e9331d9cc65381b`. All thirteen executed
+jobs passed: this includes the strict pinned-toolchain lint matrix, public API, MSRV, memory
+contracts, migration conformance, documentation and downstream HC/2 admission. The workflow
+ran only ordinary checks; costly reference, diagnostic, nightly and soak lanes remained disabled.
+
+The full workspace gate executed 3,765 passing tests and skipped 85 across 477 binaries. The
+receipt's monotonic duration was 444,319 ms, including compilation, below the original 840-second
+cadence ceiling. JUnit's 229.848 seconds measures the narrower test-execution phase. Both numbers
+are operational observations, not API throughput or allocation measurements. The 2,400-second
+hard deadline and 1,680-second aggregate budget also remain unchanged.
+
+Why is this useful? The repaired registry separation, ownership review, license metadata, lint,
+cadence enforcement and ship ceiling coexist in one successfully checked source. We no longer
+need to speculate whether individually passing repairs can run together in ordinary CI. Yet
+comparing this duration with the earlier 856,663 ms would still be a misleading speedup claim:
+the sources and test sets differ, and cache state and runner characteristics were not controlled
+as counterbalanced pairs. One passing run also does not estimate routine-CI variance. The
+fast-suite registry still has zero measured baselines; no historical threshold was moved.
+
+Evidence verification did not stop at the green UI. We downloaded the published ZIP, independently
+matched its SHA-256 to GitHub's digest, and verified nested JUnit bytes and SHA-256 against the
+executor receipt. The original report and both canary outputs retain that same clean source.
+The first local report verification rejected missing canonical JUnit and stale local canaries;
+that diagnostic was preserved rather than hidden. Only actual verified downloaded files were
+then materialized, with previous generated canaries backed up. No receipt or original report
+was rewritten to repair identity. Rechecking on the unchanged source passed the cadence checker
+and rejected both spellings of `--require-ship`.
+
+The resulting report has 28 `FastGreen` rows and no gated-green or ship-ready rows. Its explicit
+reason still says candidate identity and release qualification are incomplete. W11/W12 canaries
+remain expected red. Those 28 rows include honest rejected/no-win proposal dispositions: they
+are not 28 implemented optimizations. Earlier failed runs stay attached to their original SHAs,
+and this successful receipt stays attached to `3ce74350`, not subsequent documentation commits.
+The retained record is
+`docs/testing/performance/0.74/local-runs/w12-ordinary-ci-exact-source-green-3ce74350.json`.
+
+The distinction determines what can happen next. Candidate composition still has zero accepted
+product proposals and C74 remains unresolved. Candidate-specific native/reference measurements,
+long-run qualification, packaging, SBOM/advisory/license and supported-target evidence, and the
+immutable final archive remain separate obligations. Ordinary green CI removes reproduced tooling
+blockers; it does not supply these proofs or authorize expensive workloads. The confirmed outcome
+here is more trustworthy verification and admission reporting, not a numerical product gain.
