@@ -1112,3 +1112,50 @@ hard-timeout boundary. No failure was reported before termination, but the suite
 and JUnit was not produced, so absence of an observed failure is not a pass. The non-promotable
 record is `local-runs/w12-workspace-fast-gate-warm-timeout-415b01fc.json`. There will be no third
 local retry without a newly identified root cause; the unchanged full gate remains the blocker.
+
+The follow-up investigation reproduced a separate evidence-runner defect with a short Windows
+fixture: a parent exited while its descendant retained stdout/stderr, and a one-second gate
+incorrectly returned `Pass` after 4,070 ms. This does not establish the exact cause of the earlier
+workspace overrun. The baseline is retained in
+`local-runs/w12-windows-inherited-pipe-baseline-5bc712f1.json`.
+
+The Windows runner now creates the registered command suspended, assigns it to a private
+kill-on-close Job Object, and resumes its initial thread only after successful assignment. `Pass`
+requires the parent's successful exit, zero live job processes and completed output capture within
+the command deadline. Timeout terminates that owned job and uses a bounded two-second cleanup
+poll, so it no longer waits on an external `taskkill` or unbounded pipe joins. A containment,
+resume, accounting or capture failure fails closed.
+
+On clean source `a4b15edf`, all 15 evidence-runner tests passed. The inherited-pipe, null-pipe and
+three-generation fixtures returned `Timeout` in 1,071, 1,057 and 1,106 ms respectively with a
+one-second limit, and no survivor marker appeared after four seconds. A separate fixture retained
+128 KiB on each stream and a Unicode tail. These diagnostic timings and the local Linux compile
+check and 12/12 Linux runner tests are recorded in
+`local-runs/w12-windows-evidence-job-timeout-a4b15edf.json`. The full workspace
+gate was not repeated; its existing negative receipts and release-admission boundary still apply.
+
+For an ordinary `ci.yml` dispatch with `candidate_release=0.74`, the existing hosted fast-evidence
+lane now runs the 0.74 contract and runner tests plus both expected-red canaries before the
+unchanged workspace gate. It then assembles a non-ship 0.74 report from those same-source receipts,
+and uploads that report with the existing receipts and JUnit artifact. This conditional wiring
+does not select any nightly, performance, rented-host or release-qualification job.
+
+The ordinary CI audit also registered 12 existing Linux-only supervisor test targets and added the
+eight existing 0.74 workflows to the repository-wide 0.71 topology catalog. Existing 0.73 entries,
+the sole publication producer and existing CI artifact budgets remain unchanged. Reviewed expiring
+exceptions describe the existing signed-request and content-addressed artifact identities; those
+names and their consumers were not changed. Three previously unbounded sensitive steps now have
+explicit deadlines, and start-bundle assembly has its own run/source/host concurrency group, distinct
+from its child observation workflow. The touched kernel-attribution and host-capability jobs require
+explicit dispatch, so a metadata push cannot start those host jobs. The other host workflows were
+only inventoried, not dispatched.
+
+Local preflight passed topology, 17 governance checks, 33 performance-contract tests, six gated-registry
+tests, 23 governance regression tests and the topology unit test. The affected Python modules ran 13
+tests with one Windows FIFO skip. On local WSL, the supervisor package passed 206 tests; its one
+opt-in systemd user-bus test stayed ignored, and no real system service was mutated. A single Windows
+workspace fmt invocation hit OS error 206 (command-line length); checking all 36 workspace packages
+individually then passed without changing files. Performance-contract lint passed `clippy::all`, with
+the existing supervisor dependency dead-code warning unchanged. The source identities,
+dirty-documentation scope and non-promotable boundary are retained in
+`local-runs/w12-ordinary-ci-preflight-94368d8a.json`. These checks do not replace full workspace evidence.

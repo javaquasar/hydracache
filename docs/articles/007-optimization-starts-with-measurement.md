@@ -2769,3 +2769,69 @@ failure exists. The useful conclusion is narrow: this local machine cannot compl
 workspace gate inside its current cadence and hard-timeout contract. Repeating the same run again
 would add heat, not information; the next attempt belongs on an appropriately provisioned ordinary
 CI lane or after a concrete test-runtime root cause is identified.
+
+## A deadline must cover the evidence collector too
+
+The long timeout receipt suggested a smaller question worth answering locally: can output capture
+outlive the deadline even when the registered process has already exited? The runner already used
+`taskkill /T /F`, so attributing the delay to killing only the parent would have been premature.
+Inspection instead found unbounded waits for that utility, the child and the pipe-reader threads.
+
+A short fixture made the failure reproducible. Its parent exited successfully, but a descendant
+kept stdout/stderr open for four seconds. With a one-second gate limit, the runner waited 4,070 ms
+and wrote `Pass`. The problem was larger than a slow timeout: a successful parent could make the
+receipt green while its unfinished descendant and output capture escaped the command deadline.
+The fixture's expected-timeout test failed before the implementation changed, and that negative
+baseline remains checked in.
+
+The Windows repair follows the ownership model provided by
+[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects). The command
+starts suspended, joins a private kill-on-close job, and only then resumes its initial thread. This
+ordering closes the race where a newly launched parent could spawn a child before containment.
+The runner checks both the parent's status and the job's active-process count while the output
+readers drain their streams. All three must finish inside the command deadline before `Pass` is
+possible. On timeout, the job owns termination even if the original parent has already exited;
+cleanup polling has an explicit two-second bound. Containment and capture errors reject evidence.
+
+The clean-source regression run passed all 15 runner tests. With a one-second limit, the three
+fixtures returned `Timeout` in 1,071 ms for inherited pipes, 1,057 ms for a descendant with null
+streams, and 1,106 ms for a live three-generation tree. Four seconds later, none had written its
+survivor marker. Another fixture verified complete capture of 128 KiB on each stream and a Unicode
+tail. A local Linux compile check and all 12 applicable runner tests also passed, using their own
+toolchain and target directory.
+
+These are diagnostic observations about the test runner. They establish a reproduced false-green
+boundary and its local repair; they do not identify the precise cause of the earlier 226-second
+workspace termination overrun. The full workspace gate still needs a completed receipt on the
+frozen source. Preserving that distinction keeps a useful tooling fix from becoming an unsupported
+claim about product throughput or release readiness.
+
+The final CI audit found an ownership gap to close before the next ordinary hosted run. Selecting
+`candidate_release=0.74` already labeled the full workspace receipt correctly, but the fast lane
+did not execute the release's two canaries or its contract checker. The existing lane now does so
+conditionally before the same workspace command, then builds a non-ship release report from the
+receipts and uploads it alongside JUnit. This makes one ordinary dispatch reviewable as a coherent
+source-bound test run while keeping product qualification behind its separate authorization.
+
+That audit also exposed a quieter coverage defect: twelve already implemented Linux-only supervisor
+test targets were not registered, and eight existing 0.74 workflows were missing from the global CI
+inventory. Adding their exact sources, commands, platforms, dependencies and ownership makes them
+visible to the same governance checks as older releases. It does not add a new product hypothesis or
+turn isolated fixtures into full-workspace proof. The inventory retains the established publication
+producer and 0.73 records. Artifact names bound to signed request UUIDs or bundle content digests
+remain intact, with explicit expiring exceptions explaining the identity rather than bypassing it.
+
+Three sensitive steps also lacked a separate deadline. Their new bounds limit a profiler build and
+two host-identity reads without changing the measurement workload or acceptance thresholds. Bundle
+assembly now has its own source/host/run concurrency group: reusing the child observation workflow's
+host group would risk serializing a parent against its own child. The touched attribution and host
+capability jobs require explicit dispatch, preventing this preparatory push from starting host work.
+
+Local evidence supports the wiring: 33 performance-contract tests passed, including a new parsed-YAML
+guard for ordinary CI defaults and explicit host dispatch; topology and all 17 governance checks
+passed. Local WSL ran 206 supervisor tests successfully while leaving one opt-in real user-bus test
+ignored. These are deterministic fixture and metadata checks, not throughput results. Windows hit
+its command-line limit for a single workspace formatting invocation. The equivalent check then
+passed package-by-package for all 36 workspace members, without editing unrelated files. Recording
+both the limitation and the successful alternative keeps the result reproducible. The next proof is still the
+unchanged full workspace gate on an ordinary hosted CI run, not an expensive qualification campaign.
