@@ -57,8 +57,6 @@ jobs:
           test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
           test -z "$(git status --porcelain=v1 --untracked-files=normal)"
           test "$(systemctl is-active hydracache-performance-supervisor-074.service)" = active
-          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
-          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
           test -S /run/hydracache-perf/supervisor-v1.sock
           test -f /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
           test ! -L /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
@@ -155,9 +153,9 @@ jobs:
               raise SystemExit("host observation response identity or outcome differs")
           result = response["result"]
           if not isinstance(result, dict) or set(result) != {
-              "schema_version", "installed_source_commit", "fixture_binary",
+              "schema_version", "installed_source_commit", "active_campaign_absent", "fixture_binary",
               "receipt_sha256", "receipt"
-          } or result["schema_version"] != 1:
+          } or result["schema_version"] != 1 or result["active_campaign_absent"] is not True:
               raise SystemExit("host observation result fields differ")
           if result["installed_source_commit"] != os.environ["INPUT_SOURCE_SHA"]:
               raise SystemExit("installed supervisor source differs from requested source")
@@ -207,8 +205,6 @@ jobs:
           )
           PY
           test "$(systemctl is-active hydracache-performance-supervisor-074.service)" = active
-          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
-          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
 
       - name: Retain immutable host observation evidence
         uses: actions/upload-artifact@v6

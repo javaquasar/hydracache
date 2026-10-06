@@ -810,24 +810,36 @@ elapsed-time and role-CPU overhead asymmetry separately so one role cannot be po
 This analyzer is deliberately non-promotable. Even a passing synthetic attempt set leaves
 `role_overhead_qualification_complete=false` and `release_admission_allowed=false`.
 
-The fixed same-host collector/executor is now staged as a second, separate slice. The only
-privileged entry is the no-argument `--role-overhead-smoke` operation in the already constrained
-root-owned provisioning entrypoint. It runs exactly 20 short non-product attempts in ABBA order,
-selects one CPU from the coordinator's admitted affinity, applies that affinity plus nice level zero
-through transient systemd properties, and executes only the installed supervisor binary's hidden
-fixture command. Unit names, argv, operation/warm-up counts, delays, checkpoint size and output
-paths are generated internally; the workflow cannot supply a command, path, unit property or
-workload parameter.
+The fixed same-host collector/executor is now staged as a second, separate slice. The first version
+at `57b3e56d` attempted to add a no-argument `--role-overhead-smoke` verb to the root-owned
+provisioning entrypoint. Signed provisioning run `37461600977` rejected the bundle before mutation
+with `bundle installer differs from the root-owned entrypoint`. That is the required bootstrap
+invariant, not a transient failure: signed payloads may replace the installed product binary but
+cannot enlarge the command that authorizes their own installation. No host file changed, the old
+supervisor was restored active with zero restarts, and the runner was returned inactive/disabled.
+See `local-runs/w11-role-overhead-root-entrypoint-rejected-57b3e56d.json`.
 
-Each attempt binds the installed source/binary and root-owned provisioning-receipt digest, verifies
-the unchanged boot and supervisor process identities, requires the host-wide campaign marker to be
-absent, and records role elapsed/CPU/RSS/write bytes plus supervisor cgroup CPU/I/O and process
-peak RSS. Control writes zero checkpoint bytes; instrumented writes and fsyncs exactly 4,096 bytes.
-The workflow independently requires an idle, zero-restart supervisor and absent lifecycle contexts
-before and after collection, then invokes the frozen analyzer. The collector and workflow are
-locally implemented, but `non_product_role_overhead_rehearsal_complete` remains false until this
-exact source is signed, installed and run on the admitted host. Product I74/C74 pairs are a later,
-separate gate; no product candidate or expensive qualification is started by this mode.
+The corrected collector is entirely unprivileged and the root entrypoint is byte-identical to its
+pre-candidate blob. `performance_long_run_role_overhead_collect_074.py` runs exactly 20 short
+non-product attempts in ABBA order, selects one CPU from the runner's allowed set and invokes only
+`taskset`, `nice` and the installed supervisor binary's hidden bounded fixture with an argv list and
+`shell=False`. Fixed rlimits cap address space, open files, output size and core dumps. The caller
+cannot supply a command, operation count, warm-up, delay, checkpoint size or schedule.
+
+Each attempt binds the installed source/binary and root-emitted provisioning-receipt digest,
+verifies unchanged boot and supervisor process identities, and records role elapsed/CPU/RSS/write
+bytes plus exact supervisor cgroup-v2 CPU/I/O and process peak RSS. Control writes zero checkpoint
+bytes; instrumented writes and fsyncs exactly 4,096 bytes. Because the Actions user intentionally
+cannot traverse the root/service-group campaign directory, the collector does not infer absence
+from an inaccessible path. Instead it brackets every attempt with the existing typed read-only
+host-observation request. The root supervisor validates the marker before and after observation and
+returns `active_campaign_absent=true` inside its response digest; any active, malformed or
+unreadable claim fails closed. The workflow still requires an active zero-restart supervisor, runs
+the frozen analyzer and retains raw attempts, fixture receipts and analysis. The collector and
+workflow are locally implemented, but `non_product_role_overhead_rehearsal_complete` remains false
+until this corrected exact source is signed, installed and run on the admitted host. Product
+I74/C74 pairs are a later, separate gate; no product candidate or expensive qualification is
+started by this mode.
 
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and

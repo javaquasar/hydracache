@@ -1016,6 +1016,7 @@ fn host_observation_returns_digest_bound_receipt_without_campaign_mutation() {
         serde_json::from_value(response.body.result.clone().unwrap()).unwrap();
     assert_eq!(result.schema_version, 1);
     assert_eq!(result.installed_source_commit, "d".repeat(40));
+    assert!(result.active_campaign_absent);
     assert_eq!(
         result.fixture_binary.path,
         "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture"
@@ -1027,6 +1028,31 @@ fn host_observation_returns_digest_bound_receipt_without_campaign_mutation() {
         .join(HOST_OBSERVATION_CAMPAIGN_SCOPE_SHA256)
         .exists());
     assert!(!campaign_root.join(ACTIVE_CAMPAIGN_NAME).exists());
+}
+
+#[test]
+fn host_observation_rejects_an_active_campaign_before_collecting() {
+    let temporary = tempfile::tempdir().unwrap();
+    let campaign_root = temporary.path().join("campaigns");
+    fs::create_dir(&campaign_root).unwrap();
+    fs::write(
+        campaign_root.join(ACTIVE_CAMPAIGN_NAME),
+        format!("{}\n", "a".repeat(64)),
+    )
+    .unwrap();
+    let socket = temporary.path().join("supervisor-host-claimed.sock");
+    let server = SupervisorServer::bind(server_config(&socket, &campaign_root)).unwrap();
+    let mut backend = FakeHostObservationBackend {
+        receipt: sample_host_receipt(),
+        calls: 0,
+        fail: false,
+    };
+
+    let response =
+        exchange_host_observation_once(&server, &socket, &host_observation_request(), &mut backend);
+    assert!(!response.body.ok);
+    assert_eq!(response.body.error_code, Some(6));
+    assert_eq!(backend.calls, 1);
 }
 
 #[test]

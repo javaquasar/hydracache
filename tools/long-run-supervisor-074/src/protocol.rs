@@ -60,6 +60,7 @@ pub struct WireRequest {
 pub struct HostObservationResult {
     pub schema_version: u32,
     pub installed_source_commit: String,
+    pub active_campaign_absent: bool,
     pub fixture_binary: BinaryIdentity,
     pub receipt_sha256: String,
     pub receipt: HostObservationReceipt,

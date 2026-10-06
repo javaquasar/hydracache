@@ -1128,7 +1128,9 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git status --porcelain=v1 --untracked-files=normal)"
-          python3 -m unittest scripts.perf.test_performance_long_run_role_overhead_074
+          python3 -m unittest \
+            scripts.perf.test_performance_long_run_role_overhead_collect_074 \
+            scripts.perf.test_performance_long_run_role_overhead_074
 
       - name: Bind idle host and installed identity
         shell: bash
@@ -1137,8 +1139,6 @@ jobs:
           mkdir -p "$EVIDENCE_DIR"
           test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
           test "$(systemctl show "$SUPERVISOR_SERVICE" --property=NRestarts --value)" = 0
-          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
-          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
           test ! -e /run/hydracache-perf/controller-loss-smoke-v1.json
           sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
             > "$EVIDENCE_DIR/provisioning.json"
@@ -1146,17 +1146,34 @@ jobs:
           host_receipt_sha256="$(sha256sum "$EVIDENCE_DIR/provisioning.json" | awk '{print $1}')"
           test "$installed_source_commit" = "$GITHUB_SHA"
           [[ "$host_receipt_sha256" =~ ^[0-9a-f]{64}$ ]]
+          supervisor_pid="$(systemctl show "$SUPERVISOR_SERVICE" --property=MainPID --value)"
+          supervisor_control_group="$(systemctl show "$SUPERVISOR_SERVICE" --property=ControlGroup --value)"
+          [[ "$supervisor_pid" =~ ^[1-9][0-9]*$ ]]
+          test "$supervisor_pid" -gt 1
+          test "$supervisor_control_group" = "/system.slice/$SUPERVISOR_SERVICE"
           {
             printf 'INSTALLED_SOURCE_COMMIT=%s\n' "$installed_source_commit"
             printf 'HOST_RECEIPT_SHA256=%s\n' "$host_receipt_sha256"
+            printf 'SUPERVISOR_PID=%s\n' "$supervisor_pid"
+            printf 'SUPERVISOR_CONTROL_GROUP=%s\n' "$supervisor_control_group"
           } >> "$GITHUB_ENV"
 
       - name: Collect fixed counterbalanced attempt set
         shell: bash
         run: |
           set -euo pipefail
-          sudo -n /usr/local/sbin/hydracache-provision-host-074 --role-overhead-smoke \
-            > "$EVIDENCE_DIR/attempts.json"
+          python3 scripts/perf/performance_long_run_role_overhead_collect_074.py \
+            --source-commit "$INSTALLED_SOURCE_COMMIT" \
+            --provisioning-receipt "$EVIDENCE_DIR/provisioning.json" \
+            --installed-binary /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 \
+            --supervisor-pid "$SUPERVISOR_PID" \
+            --control-group "$SUPERVISOR_CONTROL_GROUP" \
+            --socket /run/hydracache-perf/supervisor-v1.sock \
+            --repository-id "${{ github.repository_id }}" \
+            --run-id "${{ github.run_id }}" \
+            --run-attempt "${{ github.run_attempt }}" \
+            --actor-id "${{ github.actor_id }}" \
+            --output "$EVIDENCE_DIR/attempts.json"
 
       - name: Analyze non-product role-overhead rehearsal
         shell: bash
@@ -1178,8 +1195,6 @@ jobs:
           set -euo pipefail
           test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
           test "$(systemctl show "$SUPERVISOR_SERVICE" --property=NRestarts --value)" = 0
-          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
-          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
           test ! -e /run/hydracache-perf/controller-loss-smoke-v1.json
           if test -f "$EVIDENCE_DIR/analysis.json"; then
             python3 - <<'PY'

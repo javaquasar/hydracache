@@ -86,8 +86,6 @@ fn run() -> u8 {
             campaign_lifecycle_smoke_resume()
         }
         #[cfg(target_os = "linux")]
-        [command] if command == "role-overhead-smoke" => role_overhead_smoke(),
-        #[cfg(target_os = "linux")]
         [command, fixture_args @ ..] if command == "role-overhead-fixture" => {
             role_overhead_fixture(fixture_args)
         }
@@ -104,18 +102,11 @@ fn run() -> u8 {
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | role-overhead-smoke | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
         }
     }
-}
-
-#[cfg(target_os = "linux")]
-fn role_overhead_smoke() -> u8 {
-    print_json_result(
-        hydracache_long_run_supervisor_074::role_overhead_smoke::run_role_overhead_smoke(),
-    )
 }
 
 #[cfg(target_os = "linux")]

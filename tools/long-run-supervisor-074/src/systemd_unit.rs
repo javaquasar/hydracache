@@ -15,7 +15,6 @@ const SYSTEMD_MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
 const SYSTEMD_UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
 const SYSTEMD_SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
 const UNIT_PREFIX: &str = "hydracache-performance-074-";
-const SUPERVISOR_UNIT_NAME: &str = "hydracache-performance-supervisor-074.service";
 const SERVICE_USER: &str = "hydracache-perf";
 const SERVICE_GROUP: &str = "hydracache-perf";
 const SERVICE_PATH: &str = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
@@ -35,7 +34,6 @@ pub struct ExecCommand {
 pub enum UnitProperty {
     Text(String),
     Boolean(bool),
-    Signed(i32),
     Unsigned(u64),
     Bytes(Vec<u8>),
     Strings(Vec<String>),
@@ -260,12 +258,6 @@ pub fn inspect_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
     inspect_loaded_unit(unit_name)
 }
 
-/// Inspect only the fixed 0.74 supervisor service. This deliberately does not
-/// relax the transient-unit namespace accepted by `inspect_unit`.
-pub fn inspect_supervisor_unit() -> Result<UnitSnapshot, UnitError> {
-    inspect_loaded_unit(SUPERVISOR_UNIT_NAME)
-}
-
 pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
     validate_unit_name(unit_name)?;
     match inspect_loaded_unit(unit_name) {
@@ -455,7 +447,6 @@ fn dbus_properties(spec: &TransientUnitSpec) -> Vec<(&str, Value<'_>)> {
             let value = match property {
                 UnitProperty::Text(value) => Value::from(value),
                 UnitProperty::Boolean(value) => Value::from(*value),
-                UnitProperty::Signed(value) => Value::from(*value),
                 UnitProperty::Unsigned(value) => Value::from(*value),
                 UnitProperty::Bytes(value) => Value::from(value),
                 UnitProperty::Strings(value) => Value::from(value),
@@ -524,7 +515,7 @@ fn role_environment(
     ])
 }
 
-pub(crate) fn cpuset_mask(value: &str) -> Result<Vec<u8>, UnitError> {
+fn cpuset_mask(value: &str) -> Result<Vec<u8>, UnitError> {
     if value.is_empty() || value.len() > 256 || value.bytes().any(|byte| byte.is_ascii_whitespace())
     {
         return Err(UnitError::Policy);

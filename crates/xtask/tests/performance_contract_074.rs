@@ -410,11 +410,19 @@ fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
     )
     .unwrap();
     assert!(collector.contains("non-product-role-overhead-rehearsal"));
-    assert!(collector.contains("const PAIRS: u32 = 5"));
-    assert!(collector.contains("const CHECKPOINT_BYTES: usize = 4_096"));
-    assert!(collector.contains("require_no_active_campaign"));
-    assert!(collector.contains("NoNewPrivileges"));
-    assert!(!collector.contains("path: \"/bin/sh\""));
+    assert!(collector.contains("PAIRS = 5"));
+    assert!(collector.contains("CHECKPOINT_BYTES = 4_096"));
+    assert!(collector.contains("active_campaign_absent"));
+    assert!(collector.contains("shell=False"));
+    assert!(collector.contains("RLIMIT_AS"));
+    assert!(!collector.contains("/bin/sh"));
+    let fixture = std::fs::read_to_string(
+        root().join(implementation["role_overhead_fixture"].as_str().unwrap()),
+    )
+    .unwrap();
+    assert!(fixture.contains("const PAIRS: u32 = 5"));
+    assert!(fixture.contains("const CHECKPOINT_BYTES: usize = 4_096"));
+    assert!(fixture.contains("role-overhead fixture invocation is invalid"));
 
     let provisioning: Value = serde_json::from_slice(
         &std::fs::read(
@@ -790,6 +798,7 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
         "/run/hydracache-perf/supervisor-v1.sock",
         "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
         "installed_source_commit",
+        "active_campaign_absent",
         "installed_fixture_binary",
         "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture",
         "installed_supervisor_binary_sha256",
@@ -1114,7 +1123,10 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
     assert!(workflow.contains("--maximum-cpu-percent 0.5"));
     assert!(workflow.contains("--maximum-rss-bytes 67108864"));
     assert!(workflow.contains("--maximum-io-bytes-per-second 1048576"));
-    assert!(workflow
+    assert!(workflow.contains("performance_long_run_role_overhead_collect_074.py"));
+    assert!(workflow.contains("--supervisor-pid \"$SUPERVISOR_PID\""));
+    assert!(workflow.contains("--control-group \"$SUPERVISOR_CONTROL_GROUP\""));
+    assert!(!workflow
         .contains("sudo -n /usr/local/sbin/hydracache-provision-host-074 --role-overhead-smoke"));
     assert!(workflow.contains("--expected-i74-source \"$INSTALLED_SOURCE_COMMIT\""));
     assert!(workflow.contains("--expected-c74-source \"$INSTALLED_SOURCE_COMMIT\""));

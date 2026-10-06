@@ -8,6 +8,25 @@ use thiserror::Error;
 pub const HOST_EXECUTION_LOCK_NAME: &str = ".host-execution.lock";
 pub const ACTIVE_CAMPAIGN_NAME: &str = "active-campaign";
 
+/// Observe the fixed host-wide claim without creating, recovering, releasing,
+/// or otherwise mutating it. Callers must bracket the work they are guarding.
+pub fn active_campaign_absent(campaign_root: &Path) -> Result<bool, HostExecutionError> {
+    let metadata = fs::symlink_metadata(campaign_root)?;
+    if !metadata.is_dir() || metadata.file_type().is_symlink() {
+        return Err(HostExecutionError::Path);
+    }
+    let root = fs::canonicalize(campaign_root)?;
+    let marker = root.join(ACTIVE_CAMPAIGN_NAME);
+    match fs::symlink_metadata(&marker) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
+        Ok(_) => {
+            read_marker(&marker)?;
+            Ok(false)
+        }
+        Err(error) => Err(error.into()),
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClaimDisposition {
     Created,

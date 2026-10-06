@@ -918,22 +918,34 @@ The analyzer always emits non-promotable evidence. Passing it can close only the
 not `role_overhead_qualification_complete`; exact product-source pairs remain mandatory. This
 prevents synthetic fixtures or hand-assembled numbers from becoming release evidence.
 
-The fixed collector/executor is staged behind one no-argument root entrypoint operation. The root
-coordinator accepts no caller-supplied command, path, unit name, systemd property or workload
-dimension. It derives one admitted CPU, creates an exact five-pair ABBA schedule for each role, and
-starts a short unprivileged transient service with fixed resource limits and hardening. The service
-executes a hidden fixture mode of the installed supervisor binary, never the product benchmark or
-candidate. Control attempts write no checkpoint; instrumented attempts write and fsync exactly
-4,096 bytes to a pre-created root-owned descriptor. A separate receipt descriptor returns observed
-affinity, nice level, elapsed/process CPU, peak RSS, process write characters and completed work.
+The first collector candidate at `57b3e56d` put one new no-argument operation behind the fixed root
+entrypoint. Provisioning run `37461600977` correctly rejected it before mutation because the signed
+bundle's installer differed from the already-installed root trust anchor. The candidate proved
+that signed provisioning cannot authorize an expansion of its own sudo surface. The host was
+restored with the runner offline and the original supervisor active at zero restarts.
+The retained negative receipt is
+`local-runs/w11-role-overhead-root-entrypoint-rejected-57b3e56d.json`.
 
-The coordinator samples the stable production supervisor's cgroup CPU/I/O and process peak RSS
-around each attempt. It binds every row to the root-owned installed-source receipt and binary,
-rejects boot or supervisor process-identity drift, and checks that the host-wide active-campaign
-marker remains absent. The workflow adds zero-restart and lifecycle-context guards, runs the frozen
-analyzer, and retains both raw attempts and analysis. This is deliberately a non-product rehearsal:
-until a signed installed-source host run exists, its completion flag stays false; even afterwards it
-cannot satisfy the product I74/C74 overhead or release-admission gates.
+The corrected collector leaves the root entrypoint byte-identical and executes as the unprivileged
+Actions user. It accepts only fixed identity paths and controller numbers, derives one admitted CPU,
+creates the exact five-pair ABBA schedule for each role, and launches an argv-only `taskset`/`nice`
+chain with `shell=False` plus fixed process resource limits. The only measured executable is the
+installed supervisor binary's hidden fixture mode, never the product benchmark or candidate.
+Control attempts write no checkpoint; instrumented attempts write and fsync exactly 4,096 bytes.
+The fixture returns observed affinity, nice level, elapsed/process CPU, peak RSS, process write
+characters and completed work through bounded stdout/stderr files.
+
+The collector samples the stable production supervisor's cgroup-v2 CPU/I/O and process peak RSS
+around each attempt. It binds every row to the root-emitted installed-source receipt and binary and
+rejects boot, executable, PID/start-time, cpuset or counter drift. It cannot inspect the campaign
+directory directly: the runner is deliberately outside the service group and a failed `lstat`
+must never be interpreted as absence. Every attempt is therefore bracketed by the typed read-only
+host-observation protocol. The root supervisor validates the active marker before and after its
+observation and includes `active_campaign_absent=true` in the hashed response; active, malformed,
+unreadable or racing claims are rejected. The workflow adds zero-restart guards, runs the frozen
+analyzer and retains raw attempts, fixture receipts and analysis. This remains a non-product
+rehearsal: until a signed corrected-source host run exists, its completion flag stays false; even
+afterwards it cannot satisfy product I74/C74 overhead or release-admission gates.
 
 ### Reference-host freeze and reboot boundary
 

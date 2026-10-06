@@ -2646,5 +2646,30 @@ invalidates the set.
 
 Just as importantly, the staged analyzer cannot promote its own result. Synthetic or non-product
 attempts may prove that the measurement logic is sound, but they always leave product overhead and
-release admission false. The fixed host executor and exact I74/C74 product pairs are the next
-evidence boundary.
+release admission false.
+
+The first fixed-host executor tested the wrong trust boundary. Commit `57b3e56d` added a bounded
+no-argument role-overhead verb to the root-owned provisioning entrypoint, but signed provisioning
+run `37461600977` rejected it before changing the host: the bundle installer no longer matched the
+installed bootstrap command. This negative result is useful. A signed payload must not be able to
+grow the sudo command that installs it, even when the proposed verb itself looks narrow. The host
+was restored with the original supervisor active, zero restarts and the runner offline.
+
+The corrected design keeps that entrypoint byte-for-byte unchanged. An unprivileged collector now
+builds the frozen 20-cell ABBA schedule and launches only `taskset`, `nice` and a hidden bounded mode
+of the installed supervisor binary, with no shell and fixed resource limits. It independently binds
+the source, binary and provisioning receipt, samples supervisor cgroup-v2 CPU/I/O plus process RSS,
+and rejects boot or process-identity drift. Control emits no checkpoint; instrumented execution
+writes and fsyncs exactly 4,096 bytes.
+
+One subtle guard mattered more than the launch mechanism. The Actions user cannot traverse the
+root/service-group campaign directory, so `test ! -e active-campaign` can succeed for both absence
+and permission denial. Treating that as an idle host would manufacture evidence. Each attempt is
+therefore bracketed by the existing typed host-observation request. The root supervisor checks the
+marker before and after collecting its immutable observation and returns
+`active_campaign_absent=true` inside the response digest. Thus the collector gains proof, not new
+privilege, and any active or malformed claim fails closed.
+
+The corrected collector still produces rehearsal-only evidence. Its signed host run remains to be
+performed, and even a passing result cannot replace exact I74/C74 product pairs. Those product pairs
+are the next evidence boundary after this non-product rehearsal is retained.

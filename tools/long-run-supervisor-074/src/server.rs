@@ -5,7 +5,7 @@ use crate::artifact::PacketLimits;
 use crate::checkpoint_evidence::{observe_live_checkpoint_evidence, CheckpointEvidenceError};
 use crate::config::ServerConfig;
 use crate::event::{verify_event_journal, LifecycleEvent, EVENT_HEAD_NAME, EVENT_JOURNAL_NAME};
-use crate::host_execution::{HostExecutionClaim, HostExecutionError};
+use crate::host_execution::{active_campaign_absent, HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::{
     collect_campaign_fixture_binary, collect_host_observation,
     collect_installed_provisioning_identity, verify_host_receipt_evidence,
@@ -743,16 +743,19 @@ impl SupervisorServer {
             };
         }
         if request.operation == Operation::HostObservation {
+            let claim_absent_before = active_campaign_absent(&self.config.campaign_root);
             let observed = match host_observation_backend {
                 Some(backend) => backend.collect(&self.config.campaign_root),
                 None => LiveHostObservationBackend.collect(&self.config.campaign_root),
             };
-            return match observed {
-                Ok((receipt, installed_source_commit, fixture_binary)) => {
+            let claim_absent_after = active_campaign_absent(&self.config.campaign_root);
+            return match (claim_absent_before, observed, claim_absent_after) {
+                (Ok(true), Ok((receipt, installed_source_commit, fixture_binary)), Ok(true)) => {
                     let receipt_sha256 = crate::sha256_hex(&crate::canonical_json(&receipt)?);
                     let result = HostObservationResult {
                         schema_version: 1,
                         installed_source_commit,
+                        active_campaign_absent: true,
                         fixture_binary,
                         receipt_sha256,
                         receipt,
@@ -764,7 +767,7 @@ impl SupervisorServer {
                         serde_json::to_value(result)?,
                     )?)
                 }
-                Err(_) => Ok(error_response_from_request(request, now, 6)?),
+                _ => Ok(error_response_from_request(request, now, 6)?),
             };
         }
         if request.operation != Operation::Status {
