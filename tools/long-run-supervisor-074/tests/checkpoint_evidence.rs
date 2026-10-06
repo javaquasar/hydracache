@@ -10,7 +10,10 @@ use hydracache_long_run_supervisor_074::{
     GENESIS_HASH,
 };
 use std::collections::BTreeMap;
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
+use std::thread;
+use std::time::Duration;
 
 fn process(pid: u32) -> ProcessIdentity {
     ProcessIdentity {
@@ -142,6 +145,71 @@ fn live_chain_can_be_observed_before_a_controller_attaches_its_head() {
         verify_checkpoint_evidence(temporary.path(), &state),
         Err(CheckpointEvidenceError::Binding)
     ));
+}
+
+#[test]
+fn live_observation_retries_a_journal_and_head_commit_window() {
+    let (temporary, state) = fixture();
+    let role = temporary.path().join("roles").join("i74");
+    let journal = role.join("checkpoints.jsonl");
+    let head = role.join("checkpoints.head");
+    let third = build_record(
+        3,
+        &state.checkpoint.as_ref().unwrap().record_sha256,
+        payload(Role::I74, 3),
+    )
+    .unwrap();
+    let mut line = serde_json::to_vec(&serde_json::to_value(&third).unwrap()).unwrap();
+    line.push(b'\n');
+    let mut file = OpenOptions::new().append(true).open(&journal).unwrap();
+    file.write_all(&line).unwrap();
+    file.sync_data().unwrap();
+
+    let committed_head = third.record_sha256.clone();
+    let writer = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(15));
+        fs::write(head, format!("{committed_head}\n")).unwrap();
+    });
+    let (report, observed) = observe_live_checkpoint_evidence(temporary.path(), &state).unwrap();
+    writer.join().unwrap();
+    assert_eq!(report.records, 3);
+    assert_eq!(observed.sequence, 3);
+    assert_eq!(observed.record_sha256, third.record_sha256);
+}
+
+#[test]
+fn live_observation_retries_an_incomplete_appended_record() {
+    let (temporary, state) = fixture();
+    let role = temporary.path().join("roles").join("i74");
+    let journal = role.join("checkpoints.jsonl");
+    let head = role.join("checkpoints.head");
+    let third = build_record(
+        3,
+        &state.checkpoint.as_ref().unwrap().record_sha256,
+        payload(Role::I74, 3),
+    )
+    .unwrap();
+    let mut line = serde_json::to_vec(&serde_json::to_value(&third).unwrap()).unwrap();
+    line.push(b'\n');
+    let split = line.len() / 2;
+    let mut file = OpenOptions::new().append(true).open(&journal).unwrap();
+    file.write_all(&line[..split]).unwrap();
+    file.sync_data().unwrap();
+
+    let committed_head = third.record_sha256.clone();
+    let writer = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(15));
+        let mut file = OpenOptions::new().append(true).open(journal).unwrap();
+        file.write_all(&line[split..]).unwrap();
+        file.sync_data().unwrap();
+        fs::write(head, format!("{committed_head}\n")).unwrap();
+    });
+    let (report, observed) = observe_live_checkpoint_evidence(temporary.path(), &state).unwrap();
+    writer.join().unwrap();
+    assert_eq!(report.records, 3);
+    assert_eq!(report.recovered_incomplete_trailing_bytes, 0);
+    assert_eq!(observed.sequence, 3);
+    assert_eq!(observed.record_sha256, third.record_sha256);
 }
 
 #[test]

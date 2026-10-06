@@ -3,10 +3,14 @@ use crate::{verify_journal, ChainError, Phase, Role, VerificationReport};
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::thread;
+use std::time::Duration;
 use thiserror::Error;
 
 pub const CHECKPOINT_JOURNAL_NAME: &str = "checkpoints.jsonl";
 pub const CHECKPOINT_HEAD_NAME: &str = "checkpoints.head";
+const SNAPSHOT_RETRY_ATTEMPTS: usize = 20;
+const SNAPSHOT_RETRY_DELAY: Duration = Duration::from_millis(5);
 
 #[derive(Debug, Error)]
 pub enum CheckpointEvidenceError {
@@ -55,11 +59,7 @@ pub fn observe_live_checkpoint_evidence(
     let (directory, expected_role) = role_directory(campaign_directory, state.campaign_state)?;
     let journal = directory.join(CHECKPOINT_JOURNAL_NAME);
     let head = directory.join(CHECKPOINT_HEAD_NAME);
-    let report = verify_journal(&journal)?;
-    if report.recovered_incomplete_trailing_bytes != 0 {
-        return Err(CheckpointEvidenceError::Binding);
-    }
-    verify_head(&head, &report.head_sha256)?;
+    let report = observe_consistent_snapshot(&journal, &head)?;
     if report.campaign_id != state.identity.campaign_id
         || report.role != expected_role
         || &report.harness != harness
@@ -117,7 +117,60 @@ fn role_directory(
     }
 }
 
-fn verify_head(path: &Path, expected: &str) -> Result<(), CheckpointEvidenceError> {
+fn observe_consistent_snapshot(
+    journal: &Path,
+    head: &Path,
+) -> Result<VerificationReport, CheckpointEvidenceError> {
+    for attempt in 0..SNAPSHOT_RETRY_ATTEMPTS {
+        let head_before = match read_head(head) {
+            Ok(value) => value,
+            Err(head_error) => match verify_journal(journal) {
+                Err(ChainError::TornTailRequiresRecovery { .. })
+                    if attempt + 1 < SNAPSHOT_RETRY_ATTEMPTS =>
+                {
+                    thread::sleep(SNAPSHOT_RETRY_DELAY);
+                    continue;
+                }
+                Err(error) => return Err(error.into()),
+                Ok(_) if attempt + 1 == SNAPSHOT_RETRY_ATTEMPTS => return Err(head_error),
+                Ok(_) => {
+                    thread::sleep(SNAPSHOT_RETRY_DELAY);
+                    continue;
+                }
+            },
+        };
+        let report = match verify_journal(journal) {
+            Ok(value) => value,
+            Err(ChainError::TornTailRequiresRecovery { .. })
+                if attempt + 1 < SNAPSHOT_RETRY_ATTEMPTS =>
+            {
+                thread::sleep(SNAPSHOT_RETRY_DELAY);
+                continue;
+            }
+            Err(error) => return Err(error.into()),
+        };
+        let head_after = match read_head(head) {
+            Ok(value) => value,
+            Err(error) if attempt + 1 == SNAPSHOT_RETRY_ATTEMPTS => return Err(error),
+            Err(_) => {
+                thread::sleep(SNAPSHOT_RETRY_DELAY);
+                continue;
+            }
+        };
+        if report.recovered_incomplete_trailing_bytes == 0
+            && head_before == head_after
+            && head_after == report.head_sha256
+        {
+            return Ok(report);
+        }
+        if attempt + 1 < SNAPSHOT_RETRY_ATTEMPTS {
+            thread::sleep(SNAPSHOT_RETRY_DELAY);
+        }
+    }
+    Err(CheckpointEvidenceError::Head)
+}
+
+fn read_head(path: &Path) -> Result<String, CheckpointEvidenceError> {
     let metadata = fs::symlink_metadata(path).map_err(|_| CheckpointEvidenceError::Head)?;
     if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() != 65 {
         return Err(CheckpointEvidenceError::Head);
@@ -126,8 +179,12 @@ fn verify_head(path: &Path, expected: &str) -> Result<(), CheckpointEvidenceErro
     File::open(path)
         .and_then(|mut file| file.read_to_end(&mut bytes))
         .map_err(|_| CheckpointEvidenceError::Head)?;
-    if bytes != format!("{expected}\n").as_bytes() {
+    let Some(encoded) = bytes.strip_suffix(b"\n") else {
+        return Err(CheckpointEvidenceError::Head);
+    };
+    let value = std::str::from_utf8(encoded).map_err(|_| CheckpointEvidenceError::Head)?;
+    if !crate::is_hash(value) {
         return Err(CheckpointEvidenceError::Head);
     }
-    Ok(())
+    Ok(value.to_owned())
 }
