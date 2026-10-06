@@ -597,6 +597,93 @@ fn w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candida
 }
 
 #[test]
+fn w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes() {
+    let review = contract("w3-staged-execution-review.toml");
+    assert_eq!(review["schema_version"].as_integer(), Some(1));
+    assert_eq!(review["release"].as_str(), Some("0.74"));
+    assert_eq!(
+        review["state"].as_str(),
+        Some("architecture-review-complete-not-admitted")
+    );
+    assert_eq!(review["candidate_source_sha"].as_str(), Some("UNRESOLVED"));
+    assert_eq!(
+        review["architecture_assessment_allowed"].as_bool(),
+        Some(true)
+    );
+    for flag in [
+        "product_implementation_allowed",
+        "numerical_measurement_started",
+        "numerical_claims_allowed",
+        "promotable",
+        "prior_rejections_reopened",
+        "changes_external_semantics",
+    ] {
+        assert_eq!(review[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "first_mutation_visible_before_its_response_completion",
+        "previous_response_complete_write_and_flush_before_next_execution",
+        "commit_before_exposing_success_response",
+        "native_operations_progress_while_resp_writer_pending",
+        "no_store_lock_across_io",
+        "no_early_tenant_quota_reservation",
+        "request_time_and_conditional_result_revalidated_at_execution",
+        "no_early_audit_event_or_mutation_publication",
+        "no_speculative_shared_store_mutation_and_rollback",
+        "no_native_cost_transfer",
+        "no_acknowledgement_or_durability_change",
+        "no_distributed_transactions",
+    ] {
+        assert_eq!(review["invariants"][flag].as_bool(), Some(true), "{flag}");
+    }
+    let verification = &review["verification"];
+    assert_eq!(
+        verification["accepted_first_reply_prefix_bytes"],
+        contract("w3-delivery-frontier-review.toml")["guard_scope"]["accepted_prefixes"]
+    );
+    for flag in [
+        "native_invalidate_changes_queued_nx_result",
+        "native_put_changes_queued_get_result",
+        "expiry_changes_queued_nx_result",
+        "new_ttl_starts_at_queued_command_execution",
+        "native_put_consumes_quota_before_queued_set",
+        "quota_failure_emits_one_audit_and_no_set_mutation",
+        "canonical_separate_write_positive_control",
+    ] {
+        assert_eq!(verification[flag].as_bool(), Some(true), "{flag}");
+    }
+    assert_eq!(verification["model_permutations"].as_integer(), Some(6));
+    assert_eq!(
+        verification["chronological_fixed_batch_schedules"].as_integer(),
+        Some(3)
+    );
+    assert_eq!(
+        verification["admitted_fixed_batch_schedules"].as_integer(),
+        Some(0)
+    );
+    let previous = contract("w3-adaptive-coalescing-contract.toml");
+    for section in ["deep_pipeline_acceptance", "pipeline_one_non_regression"] {
+        assert_eq!(review.get(section), previous.get(section), "{section}");
+    }
+    assert!(root().join(review["design"].as_str().unwrap()).is_file());
+    let source =
+        std::fs::read_to_string(root().join(review["semantic_tests"].as_str().unwrap())).unwrap();
+    for function in [
+        "queued_set_nx_revalidates_after_intervening_native_invalidate",
+        "queued_get_observes_intervening_native_put_without_blocking_native",
+        "queued_set_nx_uses_expiry_and_ttl_at_its_execution_boundary",
+        "queued_set_does_not_reserve_quota_ahead_of_intervening_native_put",
+    ] {
+        assert!(source.contains(&format!("async fn {function}()")));
+    }
+    let model =
+        std::fs::read_to_string(root().join(review["order_model"].as_str().unwrap())).unwrap();
+    assert!(model.contains(
+        "fn fixed_two_reply_batch_cannot_preserve_both_commit_frontier_and_response_order()"
+    ));
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),

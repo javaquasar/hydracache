@@ -1,0 +1,72 @@
+schema_version = 1
+release = "0.74"
+review_id = "w3-staged-execution-074-v1"
+state = "architecture-review-complete-not-admitted"
+baseline_source_sha = "571cd070daf4c50384b650d660d052214ec243ca"
+candidate_source_sha = "UNRESOLVED"
+architecture_assessment_allowed = true
+product_implementation_allowed = false
+numerical_measurement_started = false
+numerical_claims_allowed = false
+promotable = false
+prior_rejections_reopened = false
+changes_external_semantics = false
+design = "docs/testing/performance/0.74/w3-staged-execution-review.md"
+semantic_tests = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+order_model = "crates/hydracache-redis-compat/tests/resp_staged_order_model_074.rs"
+
+[invariants]
+first_mutation_visible_before_its_response_completion = true
+previous_response_complete_write_and_flush_before_next_execution = true
+commit_before_exposing_success_response = true
+native_operations_progress_while_resp_writer_pending = true
+no_store_lock_across_io = true
+no_early_tenant_quota_reservation = true
+request_time_and_conditional_result_revalidated_at_execution = true
+no_early_audit_event_or_mutation_publication = true
+no_speculative_shared_store_mutation_and_rollback = true
+no_native_cost_transfer = true
+no_acknowledgement_or_durability_change = true
+no_distributed_transactions = true
+
+[verification]
+accepted_first_reply_prefix_bytes = [0, 1, 2, 3, 4, 5]
+native_invalidate_changes_queued_nx_result = true
+native_put_changes_queued_get_result = true
+expiry_changes_queued_nx_result = true
+new_ttl_starts_at_queued_command_execution = true
+native_put_consumes_quota_before_queued_set = true
+quota_failure_emits_one_audit_and_no_set_mutation = true
+model_permutations = 6
+chronological_fixed_batch_schedules = 3
+admitted_fixed_batch_schedules = 0
+canonical_separate_write_positive_control = true
+model_scope = "A fixed pre-encoded two-reply batch with generic AsyncWrite; not all possible transports or state machines."
+
+[decision]
+connection_local_overlay = "not-admitted: condition, value, expiry and quota snapshots can become stale before eligibility"
+commit_before_batch_write = "not-admitted: next mutation precedes previous complete write and flush"
+commit_after_batch_write = "not-admitted: success response can precede actual commit or fail after exposure"
+lock_or_quota_reservation_until_delivery = "not-admitted: alters native progress or admission while a RESP writer is pending"
+mutate_then_rollback = "not-admitted: cannot erase shared observations/events or safely restore over intervening native writes"
+prepare_then_revalidate_after_flush = "semantically possible in principle, but supplies no fixed-batch write reduction; no measured candidate"
+dynamic_transport_specific_writer = "outside this finite model; requires a distinct delivery proof and actual syscall accounting before authorization"
+next_product_action = "none: retain W3 negative disposition rather than implement staged batching with weakened guarantees"
+
+# This review retains the exact earlier policy; it does not authorize D2.
+[deep_pipeline_acceptance]
+depths = [10, 50]
+maximum_write_calls_per_reply = 0.20
+maximum_flush_calls_per_reply = 0.20
+minimum_goodput_ratio = 1.20
+maximum_cpu_per_operation_ratio = 1.02
+maximum_p99_ratio = 1.03
+minimum_favorable_pairs = 4
+
+[pipeline_one_non_regression]
+write_calls_per_reply = 1.0
+flush_calls_per_reply = 1.0
+minimum_goodput_ratio = 0.98
+maximum_cpu_per_operation_ratio = 1.03
+maximum_p99_ratio = 1.03
+minimum_passing_pairs = 5
