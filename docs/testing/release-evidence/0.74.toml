@@ -333,6 +333,7 @@ required_artifacts = [
   "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-second-failure-b795e58e.json",
   "docs/testing/performance/0.74/local-runs/w12-linux-lint-and-cadence-preflight-a2ce6e5e.json",
   "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-exact-source-green-3ce74350.json",
+  "docs/testing/performance/0.74/local-runs/w12-report-reasons-local-2056c151.json",
 ]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -385,3 +386,12 @@ function = "closed_admission_caps_even_all_green_receipts_at_fast_green"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_evidence.rs"
 function = "fast_receipts_reject_one_millisecond_over_the_unchanged_cadence_budget"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_evidence.rs"
+function = "cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes"
+[[work_item.required_tests]]
+source = "crates/xtask/src/release_evidence.rs"
+function = "markdown_preserves_every_release_wide_reason_before_work_item_rows"
+[[work_item.required_tests]]
+source = "crates/xtask/src/release_evidence.rs"
+function = "markdown_without_release_wide_reasons_preserves_legacy_layout"

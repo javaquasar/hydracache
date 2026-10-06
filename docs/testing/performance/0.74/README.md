@@ -1305,3 +1305,36 @@ long-run qualification, package/SBOM/advisory/license and supported-target proof
 immutable archive. Accepted product candidates remain zero, C74 remains `UNRESOLVED`, and ship
 admission stays closed. Those prerequisites are not waived by ordinary CI, and expensive runs
 are not started by this evidence update.
+
+### Release-wide reasons remain visible outside JSON
+
+A follow-up W10/W12 audit reproduced a reporting omission on `20194d5f`: JSON retained the closed
+ship-admission reason, but CLI and Markdown showed only row-local reasons. Admission still rejected
+`--require-ship`; the defect did not allow a release. It obscured why even ordinary-green rows could
+not become ship-ready.
+
+Two new regressions failed before repair. The CLI fixture uses an isolated clean synthetic Git
+repository without work-item failures, so the release-wide reason alone must explain rejection.
+It covers `0.74` and `0.74.0`, with and without `--require-ship`. The Markdown fixture preserves
+every global reason before the work-item table, verifies existing pipe escaping and compares the
+JSON contents unchanged. A separate empty-reason legacy fixture passed before and after repair.
+These fixtures are not measured receipts. Temporary Git commands and CLI children discard
+ambient worktree/index overrides and cannot mutate the real checkout.
+
+The repair emits `release-evidence: release-wide: ...` and adds a nonempty-only Markdown
+`Release-wide reasons` section. JSON schema, admission decisions, stages, counts, exit codes and
+all budgets are unchanged. Local checks passed 111 xtask unit, 13 aggregator, 36 performance-contract
+and seven fast-suite tests, all-target `cargo check`, all-target/all-feature strict Clippy and format.
+On clean source `2056c151886869865e0f86b6421de81e13b75115`, all four real CLI combinations preserved
+the same explicit reason in CLI/Markdown/JSON; normal generation exited zero, ship requests exited
+one, and ship-ready rows stayed zero. W11/W12 canaries returned expected red and 17 governance
+checks passed. Exact scopes and generated digests are retained in
+`local-runs/w12-report-reasons-local-2056c151.json`.
+
+No new full-workspace receipt was created or borrowed. The earlier successful hosted proof remains
+historical evidence for `3ce74350`, not this reporting change. W10 still has zero accepted product
+proposals and no C74 to compose. The kernel study confirms the W3 write-amplification owner, but
+explicitly does not reopen its rejected implementations. Any future product retry needs a genuinely
+different design, preregistered backpressure behavior and the same shallow/native/tail guards.
+The plan's no-win outcome is to retain measurements and defer changes, not manufacture a candidate
+from documentation or relax thresholds. No product retry, qualification or release was started.

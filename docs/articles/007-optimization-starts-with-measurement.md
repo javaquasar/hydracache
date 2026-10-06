@@ -3036,3 +3036,43 @@ long-run qualification, packaging, SBOM/advisory/license and supported-target ev
 immutable final archive remain separate obligations. Ordinary green CI removes reproduced tooling
 blockers; it does not supply these proofs or authorize expensive workloads. The confirmed outcome
 here is more trustworthy verification and admission reporting, not a numerical product gain.
+
+### A closed gate needs a visible reason, and a green tool is not a candidate
+
+The next audit found a narrower W12 defect: release-wide blockers were in JSON, but not in the
+human-readable CLI or Markdown report. Row-local failures were printed correctly. This distinction
+matters when ordinary checks are green and rows have no local error: the candidate/qualification
+boundary still applies to the entire release. The existing command rejected ship requests, so this
+was a visibility defect rather than an admission bypass.
+
+We added two regressions before repair. A clean synthetic Git fixture with no failing work-item
+rows isolates the report-wide reason as the sole rejection cause. It checks both release aliases
+and both normal-generation and ship-request modes, without writing into the real checkout. A
+separate Markdown fixture requires every global reason above the row table, retains row escaping,
+and compares the generated JSON with the original report value. The legacy no-global-reason layout
+is kept byte-identical. These are deliberately synthetic rendering/CLI tests, not green performance
+receipts. An initial test compilation diagnostic was also retained: the integration test cannot
+access a crate-private constant, and now asserts the external message without exposing a new API.
+
+The implementation only prints existing reasons and adds a Markdown section when they are present.
+It changes neither report schema nor admission predicates, row stages, exit codes or numerical
+thresholds. The full scoped local set passed 167 tests: 111 unit, 13 aggregator, 36 performance
+contract and seven fast-suite tests. All-target checking, strict all-target/all-feature lint and
+formatting passed. Clean-source real CLI checks then confirmed the reason in CLI, Markdown and
+JSON for all four combinations: normal generation succeeds, ship requests reject, and ship-ready
+rows stay zero. Both canaries remain expected red. The source-bound evidence is retained in
+`docs/testing/performance/0.74/local-runs/w12-report-reasons-local-2056c151.json`.
+
+The W10 audit puts this useful tooling repair in perspective. All product investigations currently
+have negative, no-win or deferred dispositions; accepted proposals remain zero. There is nothing
+to compose into C74. The Linux syscall study confirms per-reply write amplification, but does not
+supply a different mechanism that resolves the previous shallow-tail and backpressure failures.
+A further W3 experiment must begin with a genuinely different design and preregister its semantics
+before candidate measurements. Repeating rejected implementations, selecting a documentation-only
+SHA as C74 or loosening a guard would not complete the approved plan. Its explicit no-win route is
+to publish the measurements and defer the product changes.
+
+Thus two conclusions coexist: ordinary tooling has become more reliable and candid, while a product
+candidate and its qualification still do not exist. The earlier hosted success stays attached to
+its exact source; it cannot be reused as CI proof for this later fix. No new product or expensive
+workload was launched. What remains is a product-direction decision, not an unexplained red tool.

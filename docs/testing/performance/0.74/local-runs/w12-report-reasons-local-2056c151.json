@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "tier": "local-reporting-regression",
+  "source_commit": "2056c151886869865e0f86b6421de81e13b75115",
+  "baseline_source_commit": "20194d5fd30d7ac1e1f0929d2fd72a98159a04a7",
+  "baseline": {
+    "json_contains_closed_admission_reason": true,
+    "cli_contains_closed_admission_reason": false,
+    "markdown_contains_closed_admission_reason": false,
+    "require_ship_exit_code": 1,
+    "ship_ready_rows": 0,
+    "markdown_regression_failed_before_implementation": true,
+    "cli_regression_failed_before_implementation": true,
+    "legacy_empty_reason_layout_test_passed_before_implementation": true,
+    "initial_test_compile_diagnostic": "The integration test first tried to reference a pub(crate) constant. It now asserts the expected external text without exporting that implementation detail.",
+    "failure_class": "Reason visibility only; admission and JSON were already fail-closed."
+  },
+  "repair": {
+    "cli_emits_every_release_wide_reason": true,
+    "markdown_renders_every_release_wide_reason_before_rows": true,
+    "json_schema_or_report_contents_changed": false,
+    "admission_logic_or_exit_codes_changed": false,
+    "legacy_empty_reason_markdown_layout_preserved": true,
+    "work_item_table_and_reason_escaping_preserved": true,
+    "synthetic_fixtures_are_measured_evidence": false,
+    "cli_test_git_environment_isolated": true
+  },
+  "precommit_development_checks": {
+    "working_tree_dirty_with_fix_and_tests": true,
+    "xtask_unit_tests": 111,
+    "release_evidence_tests": 13,
+    "performance_contract_074_tests": 36,
+    "fast_suite_tests": 7,
+    "tests_failed": 0,
+    "cargo_check": "passed: -p xtask --all-targets --locked",
+    "clippy": "passed: -p xtask --all-targets --all-features --locked -- -D warnings",
+    "format": "passed",
+    "diff_check": "passed"
+  },
+  "clean_source_checks": {
+    "dirty_worktree": false,
+    "performance_contract_check": "passed: local, non-promotable",
+    "release_governance": "passed: 17 checks, zero TODOs",
+    "cli": [
+      {
+        "release": "0.74",
+        "require_ship": false,
+        "exit_code": 0,
+        "source_commit": "2056c151886869865e0f86b6421de81e13b75115",
+        "dirty_worktree": false,
+        "cli_reason_present": true,
+        "markdown_reason_present": true,
+        "json_reason_present": true,
+        "counts": {
+          "fast-green": 0,
+          "gated-green": 0,
+          "implemented": 28,
+          "planned": 0,
+          "ship-ready": 0
+        },
+        "report_sha256": "7631791f14018debb09487f67672f3a294a568c5247e99c552427b70a2ad05a9",
+        "markdown_sha256": "1d345fe95c43c1dbce02e9b1279a0e01fa00c30febd3faff5e85cf374d3acd14"
+      },
+      {
+        "release": "0.74",
+        "require_ship": true,
+        "exit_code": 1,
+        "source_commit": "2056c151886869865e0f86b6421de81e13b75115",
+        "dirty_worktree": false,
+        "cli_reason_present": true,
+        "markdown_reason_present": true,
+        "json_reason_present": true,
+        "counts": {
+          "fast-green": 0,
+          "gated-green": 0,
+          "implemented": 28,
+          "planned": 0,
+          "ship-ready": 0
+        },
+        "report_sha256": "7631791f14018debb09487f67672f3a294a568c5247e99c552427b70a2ad05a9",
+        "markdown_sha256": "1d345fe95c43c1dbce02e9b1279a0e01fa00c30febd3faff5e85cf374d3acd14"
+      },
+      {
+        "release": "0.74.0",
+        "require_ship": false,
+        "exit_code": 0,
+        "source_commit": "2056c151886869865e0f86b6421de81e13b75115",
+        "dirty_worktree": false,
+        "cli_reason_present": true,
+        "markdown_reason_present": true,
+        "json_reason_present": true,
+        "counts": {
+          "fast-green": 0,
+          "gated-green": 0,
+          "implemented": 28,
+          "planned": 0,
+          "ship-ready": 0
+        },
+        "report_sha256": "7631791f14018debb09487f67672f3a294a568c5247e99c552427b70a2ad05a9",
+        "markdown_sha256": "1d345fe95c43c1dbce02e9b1279a0e01fa00c30febd3faff5e85cf374d3acd14"
+      },
+      {
+        "release": "0.74.0",
+        "require_ship": true,
+        "exit_code": 1,
+        "source_commit": "2056c151886869865e0f86b6421de81e13b75115",
+        "dirty_worktree": false,
+        "cli_reason_present": true,
+        "markdown_reason_present": true,
+        "json_reason_present": true,
+        "counts": {
+          "fast-green": 0,
+          "gated-green": 0,
+          "implemented": 28,
+          "planned": 0,
+          "ship-ready": 0
+        },
+        "report_sha256": "7631791f14018debb09487f67672f3a294a568c5247e99c552427b70a2ad05a9",
+        "markdown_sha256": "1d345fe95c43c1dbce02e9b1279a0e01fa00c30febd3faff5e85cf374d3acd14"
+      }
+    ],
+    "canaries": [
+      {
+        "work_item": "W11",
+        "outcome": "expected_red",
+        "duration_ms": 647,
+        "output_sha256": "16f26be02b8ab027b147c3653510e87f253d9d4674fee52a1cfff1a3dacf9139"
+      },
+      {
+        "work_item": "W12",
+        "outcome": "expected_red",
+        "duration_ms": 12808,
+        "output_sha256": "2cd2d7c6fc3640ad64f7639561b94c756413e2c048c7d5d5714db053640e01d1"
+      }
+    ]
+  },
+  "prior_hosted_proof": {
+    "run_id": 37538251858,
+    "source_commit": "3ce743508a283a2a0e5612852e9331d9cc65381b",
+    "tests_passed": 3765,
+    "fast_green_rows": 28,
+    "ship_ready_rows": 0,
+    "tests_this_reporting_fix": false,
+    "receipts_rebound_to_new_source": false
+  },
+  "w10_audit": {
+    "accepted_product_candidates": 0,
+    "candidate_identity": "UNRESOLVED",
+    "composition_attempted": false,
+    "freeze_allowed": false,
+    "owner": "docs/testing/performance/0.74/composition-ledger.toml",
+    "terminal_dispositions_owner": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+    "new_product_hypothesis_authorized": false
+  },
+  "documentation_update_checks": {
+    "working_tree_dirty_with_documentation_only": true,
+    "targeted_tests": {
+      "performance_contract_074": 36,
+      "release_evidence": 13,
+      "release_governance": 23,
+      "doc_check": 16,
+      "failed": 0
+    },
+    "performance_contract_check": "passed: local, non-promotable",
+    "doc_check": "passed",
+    "release_documentation_tests_passed": 3,
+    "release_documentation_sync": "passed",
+    "links": "passed: 51 Markdown files and 20 includes",
+    "mdbook": "passed",
+    "json_parse": "passed",
+    "diff_check": "passed"
+  },
+  "budgets_changed": false,
+  "frozen_073_artifacts_changed": false,
+  "frozen_071_inputs_changed": false,
+  "expensive_qualification_run": false,
+  "host_service_mutated": false,
+  "local_full_workspace_nextest_repeated": false,
+  "promotable": false,
+  "release_admission_allowed": false,
+  "product_performance_claim": false,
+  "claim_boundary": "This is a local reporting regression fix with historical clean-source CLI/canary checks. No measured product effect, new accepted proposal, C74 identity or qualification is supplied. Synthetic rendering/CLI fixtures exercise visibility and rejection only. The earlier successful hosted receipt remains bound to 3ce74350 and does not test this fix. Closing reporting gaps cannot authorize composing a zero-accepted-change candidate."
+}
