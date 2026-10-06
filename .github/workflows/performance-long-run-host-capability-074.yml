@@ -16,6 +16,7 @@ on:
           - controller
           - controller-start-abort-rehearsal
           - controller-start-seal-rehearsal
+          - controller-c74-start-seal-rehearsal
           - controller-attach-abort-rehearsal
           - controller-attach-seal-rehearsal
           - systemd-smoke
@@ -338,6 +339,93 @@ jobs:
       manifest_sha256: ${{ inputs.manifest_sha256 }}
       expected_state_revision: "2"
       request_id: ${{ inputs.attach_request_id }}
+    secrets: inherit
+
+  controller-c74-rehearsal-start:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-c74-start-seal-rehearsal'
+    name: Start the non-product C74 continuation
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: start
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: ${{ inputs.expected_state_revision }}
+      request_id: ${{ inputs.request_id }}
+    secrets: inherit
+
+  controller-c74-rehearsal-terminal:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-c74-start-seal-rehearsal'
+    needs: controller-c74-rehearsal-start
+    name: Wait for exact non-product C74 terminal unit
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 16
+    steps:
+      - name: Wait only for the deterministic successful C74 terminal shape
+        shell: bash
+        env:
+          INPUT_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_CAMPAIGN_ID" =~ ^[0-9a-f]{64}$ ]]
+          unit="hydracache-performance-074-c74-${INPUT_CAMPAIGN_ID}.service"
+          for _ in $(seq 1 445); do
+            active="$(systemctl show "$unit" --property ActiveState --value)"
+            sub="$(systemctl show "$unit" --property SubState --value)"
+            main_pid="$(systemctl show "$unit" --property MainPID --value)"
+            result="$(systemctl show "$unit" --property Result --value)"
+            if [[ "$active" = active && "$sub" = exited && "$main_pid" = 0 && "$result" = success ]]; then
+              exit 0
+            fi
+            if [[ "$active" =~ ^(failed|inactive)$ ]]; then
+              printf 'C74 terminal rehearsal unit failed early: %s/%s pid=%s result=%s\n' \
+                "$active" "$sub" "$main_pid" "$result" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          printf 'C74 terminal rehearsal unit did not complete inside the bounded wait\n' >&2
+          exit 1
+
+  controller-c74-rehearsal-terminal-attach:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-c74-start-seal-rehearsal'
+    needs: controller-c74-rehearsal-terminal
+    name: Attach the successful C74 terminal evidence
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: attach
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: "7"
+      request_id: ${{ inputs.attach_request_id }}
+    secrets: inherit
+
+  controller-c74-rehearsal-seal:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-c74-start-seal-rehearsal'
+    needs: controller-c74-rehearsal-terminal-attach
+    name: Seal the same protected C74 continuation
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: seal
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: "8"
+      request_id: ${{ inputs.seal_request_id }}
     secrets: inherit
 
   controller-recovery-attach:

@@ -95,6 +95,7 @@ class ProvisionHostContractTests(unittest.TestCase):
             self.capability_workflow,
         )
         self.assertIn("controller-start-seal-rehearsal", self.capability_workflow)
+        self.assertIn("controller-c74-start-seal-rehearsal", self.capability_workflow)
         self.assertIn("controller-attach-seal-rehearsal", self.capability_workflow)
         self.assertIn("needs: controller-rehearsal-terminal-attach", self.capability_workflow)
         self.assertIn("name: Attach the successful terminal evidence", self.capability_workflow)
@@ -110,6 +111,13 @@ class ProvisionHostContractTests(unittest.TestCase):
             "hydracache-performance-074-i74-${INPUT_CAMPAIGN_ID}.service",
             self.capability_workflow,
         )
+        self.assertIn(
+            "hydracache-performance-074-c74-${INPUT_CAMPAIGN_ID}.service",
+            self.capability_workflow,
+        )
+        self.assertIn("name: Attach the successful C74 terminal evidence", self.capability_workflow)
+        self.assertIn("needs: controller-c74-rehearsal-terminal-attach", self.capability_workflow)
+        self.assertIn('expected_state_revision: "8"', self.capability_workflow)
         self.assertIn("inputs.mode == 'campaign-lifecycle-smoke'", self.capability_workflow)
         self.assertIn("product_candidate_started", self.capability_workflow)
         self.assertIn("original_controller_exited", self.capability_workflow)
