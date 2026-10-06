@@ -11,6 +11,7 @@ on:
         options:
           - probe
           - provision
+          - host-observation
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
@@ -87,6 +88,16 @@ jobs:
     with:
       source_sha: ${{ github.sha }}
     secrets: inherit
+
+  host-observation:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'host-observation'
+    name: Read-only canonical host observation export
+    permissions:
+      contents: read
+    uses: ./.github/workflows/performance-long-run-host-observation-074.yml
+    with:
+      source_sha: ${{ github.sha }}
+      host_id: reference-074
 
   systemd-smoke:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'systemd-smoke'

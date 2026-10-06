@@ -1,0 +1,213 @@
+name: Performance Long-Run Host Observation 0.74
+
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character supervisor/tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character supervisor/tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: long-run-074-${{ inputs.host_id }}
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    name: Export canonical host observation through the root supervisor
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 15
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-host-observation
+    steps:
+      - name: Check out exact reviewed observation source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Verify immutable source and idle supervisor boundary
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_HOST_ID: ${{ inputs.host_id }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$INPUT_HOST_ID" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service)" = active
+          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
+          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+          test -S /run/hydracache-perf/supervisor-v1.sock
+          test -f /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+          test ! -L /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074
+
+      - name: Build the exact typed client and protocol tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test -p hydracache-long-run-supervisor-074 \
+            --test protocol --test service --locked
+          cargo build -p hydracache-long-run-supervisor-074 --release --locked
+          test "$(sha256sum target/release/hydracache-long-run-supervisor-074 | cut -d' ' -f1)" = \
+            "$(sha256sum /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 | cut -d' ' -f1)"
+
+      - name: Construct the fixed-scope read-only request
+        shell: bash
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import uuid
+
+          request = {
+              "schema_version": 1,
+              "request_id": str(uuid.uuid4()),
+              "operation": "host_observation",
+              "campaign_id": "2dd3f4aa960289c385aad3988d988533197269368f851e5834f535a753cd92ba",
+              "expected_state_revision": 0,
+              "manifest_path": None,
+              "manifest_sha256": "baa6e451a7248643e7a96fc5908ac07e0c97d38255e31b1bb1494ea5ac26c6ec",
+              "controller": {
+                  "repository_id": int(os.environ["REPOSITORY_ID"]),
+                  "run_id": int(os.environ["RUN_ID"]),
+                  "run_attempt": int(os.environ["RUN_ATTEMPT"]),
+                  "actor_id": int(os.environ["ACTOR_ID"]),
+                  "authorization_sha256": "0" * 64,
+              },
+              "abort_reason": None,
+              "approval_nonce_sha256": None,
+          }
+          wire = {"request": request, "authorization": None}
+          path = pathlib.Path(os.environ["EVIDENCE_DIR"]) / "request.json"
+          path.write_bytes(
+              json.dumps(wire, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          )
+          PY
+
+      - name: Collect and independently bind the host receipt
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          target/release/hydracache-long-run-supervisor-074 request \
+            /run/hydracache-perf/supervisor-v1.sock \
+            "$EVIDENCE_DIR/request.json" \
+            > "$EVIDENCE_DIR/response.json"
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          request_bytes = (root / "request.json").read_bytes()
+          response_bytes = (root / "response.json").read_bytes()
+          wire = json.loads(request_bytes)
+          response = json.loads(response_bytes)
+          expected_response_fields = {
+              "schema_version", "request_id", "campaign_id", "ok", "state_revision",
+              "server_time_unix_seconds", "result", "error_code", "response_sha256",
+          }
+          if set(response) != expected_response_fields:
+              raise SystemExit("host observation response fields differ")
+          body = {key: value for key, value in response.items() if key != "response_sha256"}
+          canonical_body = json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          if hashlib.sha256(canonical_body).hexdigest() != response["response_sha256"]:
+              raise SystemExit("host observation response digest differs")
+          request = wire["request"]
+          if (
+              response["request_id"] != request["request_id"]
+              or response["campaign_id"] != request["campaign_id"]
+              or response["ok"] is not True
+              or response["state_revision"] != 0
+              or response["error_code"] is not None
+          ):
+              raise SystemExit("host observation response identity or outcome differs")
+          result = response["result"]
+          if not isinstance(result, dict) or set(result) != {
+              "schema_version", "receipt_sha256", "receipt"
+          } or result["schema_version"] != 1:
+              raise SystemExit("host observation result fields differ")
+          receipt = result["receipt"]
+          receipt_bytes = json.dumps(
+              receipt, sort_keys=True, separators=(",", ":")
+          ).encode("utf-8")
+          receipt_sha256 = hashlib.sha256(receipt_bytes).hexdigest()
+          if receipt_sha256 != result["receipt_sha256"]:
+              raise SystemExit("host observation receipt digest differs")
+          (root / "host-observation.json").write_bytes(receipt_bytes + b"\n")
+          (root / "host-observation.sha256").write_text(
+              receipt_sha256 + "\n", encoding="ascii", newline="\n"
+          )
+          installed_binary = pathlib.Path(
+              "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074"
+          ).read_bytes()
+          built_binary = pathlib.Path(
+              "target/release/hydracache-long-run-supervisor-074"
+          ).read_bytes()
+          installed_binary_sha256 = hashlib.sha256(installed_binary).hexdigest()
+          built_binary_sha256 = hashlib.sha256(built_binary).hexdigest()
+          if installed_binary_sha256 != built_binary_sha256:
+              raise SystemExit("installed supervisor binary differs from exact source build")
+          evidence = {
+              "schema_version": "hydracache-w11-host-observation-socket-v1",
+              "source_commit": os.environ["INPUT_SOURCE_SHA"],
+              "installed_supervisor_binary_sha256": installed_binary_sha256,
+              "built_supervisor_binary_sha256": built_binary_sha256,
+              "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
+              "response_sha256": response["response_sha256"],
+              "host_receipt_sha256": receipt_sha256,
+              "peer_admission_required": True,
+              "signed_authorization_used": False,
+              "arbitrary_output_path_accepted": False,
+              "campaign_state_mutated": False,
+              "product_candidate_started": False,
+              "promotable": False,
+          }
+          (root / "evidence.json").write_bytes(
+              json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode("utf-8")
+              + b"\n"
+          )
+          PY
+          test "$(systemctl is-active hydracache-performance-supervisor-074.service)" = active
+          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
+          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+
+      - name: Retain immutable host observation evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: long-run-074-host-observation-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-host-observation/**
+          if-no-files-found: error
+          retention-days: 30

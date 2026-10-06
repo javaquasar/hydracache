@@ -617,6 +617,56 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
 }
 
 #[test]
+fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-observation-074.yml"),
+    )
+    .unwrap();
+    let _: serde_yaml::Value = serde_yaml::from_str(&workflow).unwrap();
+    for required in [
+        "workflow_call:",
+        "workflow_dispatch:",
+        "group: long-run-074-${{ inputs.host_id }}",
+        "cancel-in-progress: false",
+        "runs-on: [self-hosted, linux, x64, hydracache-release]",
+        "environment: performance-reference-074",
+        "operation\": \"host_observation",
+        "2dd3f4aa960289c385aad3988d988533197269368f851e5834f535a753cd92ba",
+        "baa6e451a7248643e7a96fc5908ac07e0c97d38255e31b1bb1494ea5ac26c6ec",
+        "/run/hydracache-perf/supervisor-v1.sock",
+        "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+        "installed_supervisor_binary_sha256",
+        "peer_admission_required",
+        "product_candidate_started",
+        "promotable\": False",
+    ] {
+        assert!(workflow.contains(required), "workflow omitted {required}");
+    }
+    for forbidden in [
+        "sudo -n",
+        "systemctl stop",
+        "request-start",
+        "performance-long-run-qualification-074",
+        "sleep ",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "read-only host observation workflow contains {forbidden}"
+        );
+    }
+
+    let entry = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-capability-074.yml"),
+    )
+    .unwrap();
+    assert!(entry.contains("- host-observation"));
+    assert!(entry.contains("inputs.mode == 'host-observation'"));
+    assert!(
+        entry.contains("uses: ./.github/workflows/performance-long-run-host-observation-074.yml")
+    );
+}
+
+#[test]
 fn w9e_allocator_attribution_is_linux_only_complete_and_non_promotable() {
     let allocator = contract("w9e-linux-allocator-profile-contract.toml");
     assert_eq!(
