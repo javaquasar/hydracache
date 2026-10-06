@@ -275,14 +275,21 @@ function = "both_orderings_preserve_atomic_increment_count"
 
 [[work_item]]
 id = "W9b"
-required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/w9b-response-buffer-attribution-contract.toml", "tools/resp-stage-profile-074/src/main.rs"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/w9b-response-buffer-attribution.md", "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w9b_owner_receipts_preserve_all_registered_cells_without_product_claims"
 
 [[work_item]]
 id = "W9c"

@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W9b",
+  "tier": "local-d1-owner-attribution",
+  "source_commit": "cc0b2fbfc0b7d9c4c9f37e96089f37134fdf546f",
+  "baseline_source_commit": "7919e6d7887316bbd6752d945fde240aa9fdea17",
+  "preregistration_commit": "cc0b2fbfc0b7d9c4c9f37e96089f37134fdf546f",
+  "binary_sha256": "sha256:d1b04c9f22996e95b7e7ac11daff97c713f48a19fc9fba60070601778b249ad3",
+  "profile_id": "w4-w5-w9b-resp-stage-profile-074-v3",
+  "candidate_source_commit": "UNRESOLVED",
+  "promotable": false,
+  "product_changed": false,
+  "product_performance_claim": false,
+  "environment": {
+    "os": "Windows",
+    "build_profile": "release",
+    "source_clean_throughout_all_fifteen_processes": true,
+    "seed": 740074,
+    "concurrency": 1,
+    "namespace": "default",
+    "canonical_warmup_operations": 100,
+    "exact_result_validation": true,
+    "socket_io_included": false,
+    "decode_in_canonical_denominator": false,
+    "connection_scheduling_included": false
+  },
+  "execution": {
+    "planned_processes": 15,
+    "executed_processes": 15,
+    "fresh_process_repeats": 3,
+    "retries": 0,
+    "selected_best_samples": false,
+    "order": "r1 get256,set256,get4096,set4096,get1048576; r2 set256,get4096,set4096,get1048576,get256; r3 get4096,set4096,get1048576,get256,set256",
+    "independent_identically_initialized_servers": true,
+    "dispatches_per_control": "2*N+102 including preload, warmup, both measurement passes and final read",
+    "mutations": "GET:1; SET:2*N+101 before final GET",
+    "final_store_entries": 1,
+    "allocation_and_timing_checksums_per_control": "N",
+    "allocations_match_in_all_three_repeats": true
+  },
+  "cells": [
+    {
+      "operation": "get",
+      "payload_bytes": 1048576,
+      "iterations": 500,
+      "repeats": 3,
+      "workload_sha256": "sha256:cda6cef3008337ae3d00a81ad3dfc2540d1cd04c19777253db5ccb5e157f2943",
+      "request_sha256": "sha256:c2d24f6a965e9e7ad872586237442377ee3727846a4aab309ad77e56fec4cd4d",
+      "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+      "payload_corpus_sha256": "sha256:a2e53b9f18d5eeca3e2fdcd69f00f5109945688a24b649d1b6397c9b864ddc80",
+      "canonical_execution_gross_bytes_per_operation": 2097927,
+      "canonical_execution_and_encode_gross_bytes_per_operation": 3146515.168,
+      "canonical_encode_incremental_bytes_per_operation": 1048588.168,
+      "isolated_encode_incremental_bytes_per_operation": 1048588,
+      "canonical_encode_share": 0.333253810013097,
+      "subtraction_minus_isolated_total_bytes": 84
+    },
+    {
+      "operation": "get",
+      "payload_bytes": 256,
+      "iterations": 10000,
+      "repeats": 3,
+      "workload_sha256": "sha256:6b65f716162dd48a50f24a093fdf608b3fb3cdb350869d97269ef2e3c855a092",
+      "request_sha256": "sha256:c2d24f6a965e9e7ad872586237442377ee3727846a4aab309ad77e56fec4cd4d",
+      "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+      "payload_corpus_sha256": "sha256:77a1bf630c5185d64e79b98da422abbcbd69b2ed93eddfb5beae72bb09f0363b",
+      "canonical_execution_gross_bytes_per_operation": 1291.602,
+      "canonical_execution_and_encode_gross_bytes_per_operation": 1555.602,
+      "canonical_encode_incremental_bytes_per_operation": 264,
+      "isolated_encode_incremental_bytes_per_operation": 264,
+      "canonical_encode_share": 0.16970921868189934,
+      "subtraction_minus_isolated_total_bytes": 0
+    },
+    {
+      "operation": "get",
+      "payload_bytes": 4096,
+      "iterations": 10000,
+      "repeats": 3,
+      "workload_sha256": "sha256:f5a56630574230491eb9cef9f6dda7c0eda84827fb349541cf1a58523f4d2417",
+      "request_sha256": "sha256:c2d24f6a965e9e7ad872586237442377ee3727846a4aab309ad77e56fec4cd4d",
+      "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+      "payload_corpus_sha256": "sha256:1f1548bf9e6b33454ed7dcda911cfe4ce7b6ed02f9315293d41eaa43b5028d3d",
+      "canonical_execution_gross_bytes_per_operation": 8971.602,
+      "canonical_execution_and_encode_gross_bytes_per_operation": 13076.602,
+      "canonical_encode_incremental_bytes_per_operation": 4105,
+      "isolated_encode_incremental_bytes_per_operation": 4105,
+      "canonical_encode_share": 0.3139194723522212,
+      "subtraction_minus_isolated_total_bytes": 0
+    },
+    {
+      "operation": "set",
+      "payload_bytes": 256,
+      "iterations": 10000,
+      "repeats": 3,
+      "workload_sha256": "sha256:e2baede809a45227cf88d427b298c52aeb6c81dd4a5ad502762ff854b8908700",
+      "request_sha256": "sha256:23d3f881f89b9e8ed8274f408010d9f0cb6d1c45802bb593820e130a10c0369f",
+      "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+      "payload_corpus_sha256": "sha256:77a1bf630c5185d64e79b98da422abbcbd69b2ed93eddfb5beae72bb09f0363b",
+      "canonical_execution_gross_bytes_per_operation": 1291.602,
+      "canonical_execution_and_encode_gross_bytes_per_operation": 1299.602,
+      "canonical_encode_incremental_bytes_per_operation": 8,
+      "isolated_encode_incremental_bytes_per_operation": 8,
+      "canonical_encode_share": 0.006155730754492529,
+      "subtraction_minus_isolated_total_bytes": 0
+    },
+    {
+      "operation": "set",
+      "payload_bytes": 4096,
+      "iterations": 10000,
+      "repeats": 3,
+      "workload_sha256": "sha256:773789295d43de62b1d47b364c9b38b54ed3dd5d11322066e5a6ee5c595a39b5",
+      "request_sha256": "sha256:aa4b1de1c5899b98e45f3f94f2678c6bf36fc13dc008ad55e0ae657d035324eb",
+      "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+      "payload_corpus_sha256": "sha256:1f1548bf9e6b33454ed7dcda911cfe4ce7b6ed02f9315293d41eaa43b5028d3d",
+      "canonical_execution_gross_bytes_per_operation": 8971.602,
+      "canonical_execution_and_encode_gross_bytes_per_operation": 8979.602,
+      "canonical_encode_incremental_bytes_per_operation": 8,
+      "isolated_encode_incremental_bytes_per_operation": 8,
+      "canonical_encode_share": 0.0008909080825631247,
+      "subtraction_minus_isolated_total_bytes": 0
+    }
+  ],
+  "raw_receipts": [
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b1048576-r1.json",
+      "original_tool_output_sha256": "d08dc34d3c36384f666880eacee6f4d5a69e852d6f4dea5c941d445857d090bc",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 1048576,
+      "repeat": 1
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b1048576-r2.json",
+      "original_tool_output_sha256": "0f179e4b767569fa9f9afb76e45f6bf89e20d948908dcb33b7f59ddf75f2f698",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 1048576,
+      "repeat": 2
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b1048576-r3.json",
+      "original_tool_output_sha256": "4ec0e6a8e9293f997a6635109da1c0e1053e37408611dfa6d934baa1ec1b965e",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 1048576,
+      "repeat": 3
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b256-r1.json",
+      "original_tool_output_sha256": "155a57a117fd9f7dc6bfa1e3d5405cf1bf8fa254c2f14b2a73362abde787d9c6",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 256,
+      "repeat": 1
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b256-r2.json",
+      "original_tool_output_sha256": "b38a12ae16bdffee1707c1a9594b6c321415f6c84a89944cebcdb3ecb4e2a05c",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 256,
+      "repeat": 2
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b256-r3.json",
+      "original_tool_output_sha256": "c57b2aa74c5cc01a04c292a6155454b7a4c36657e2d31cc02e233883ead4ab34",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 256,
+      "repeat": 3
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b4096-r1.json",
+      "original_tool_output_sha256": "05c765016a80afd9276dba8c7b8b8223ada80d058b61ab386d2ca448d5cec4bd",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 4096,
+      "repeat": 1
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b4096-r2.json",
+      "original_tool_output_sha256": "b3b9594a8b3dd075ba98dba1c04dfe58b7f3cdb553356cb4fc12c156f39fd913",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 4096,
+      "repeat": 2
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-get-b4096-r3.json",
+      "original_tool_output_sha256": "d79682e7b02d3456179400a592fd212ed7264f868b12b81227b831ec1da91b34",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "get",
+      "payload_bytes": 4096,
+      "repeat": 3
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b256-r1.json",
+      "original_tool_output_sha256": "c5b24d7c7b3b239441250b6c6f1ebdecca5287403172c742bb10d720fa4744ed",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 256,
+      "repeat": 1
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b256-r2.json",
+      "original_tool_output_sha256": "b0b61f208e7f1778dfeba83e3b1bf68dcb54e149c485f5a5b3740ff35de752d0",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 256,
+      "repeat": 2
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b256-r3.json",
+      "original_tool_output_sha256": "39b1f28b530e7e3918a967bb0275ced63abc1817396d15696c2bf209a5299c62",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 256,
+      "repeat": 3
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b4096-r1.json",
+      "original_tool_output_sha256": "0f6dfd34ed64b77442a81d29b69ea87a56e8b759b3b3b32b5533a6e3bac3fd3f",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 4096,
+      "repeat": 1
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b4096-r2.json",
+      "original_tool_output_sha256": "ec74fa225356a92dbc7fb963c2c9153620d88658323612925e10f187570c8a5c",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 4096,
+      "repeat": 2
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-set-b4096-r3.json",
+      "original_tool_output_sha256": "52308fc0cfcd1328656ccc9c433e22fee8f68c9d02beee354765a39969664cab",
+      "repository_import_normalization": "UTF-8 text with LF and terminal LF; numeric values unchanged",
+      "operation": "set",
+      "payload_bytes": 4096,
+      "repeat": 3
+    }
+  ],
+  "assessment": {
+    "large_get_encode_owner_supported": true,
+    "small_set_encode_owner_supported": false,
+    "end_to_end_twenty_percent_reduction_proven": false,
+    "serial_scratch_implementation_accepted": false,
+    "unchanged_prior_terminal_dispositions": true,
+    "accepted_product_proposals": 0,
+    "ship_admission": "closed",
+    "next": "D2: review bounded serial scratch reuse only; tests before product candidate, then exact-source counterbalanced end-to-end D3 with separate native, ClientSurfaceState and embedded guards."
+  },
+  "limitations": [
+    "Matched canonical response path is not the complete RESP connection, not native or embedded throughput.",
+    "1 MiB canonical subtraction exceeds isolated encoding by 84 bytes per 500-operation window (0.168 B/op), identically in all three processes. Residual is retained, not asserted to be encoder-owned.",
+    "Counting-allocator timings and coarse Windows process CPU fields are retained but are not product CPU or latency claims.",
+    "Three baseline repetitions identify an owner; no candidate was measured, no goodput, p50/p95/p99, retained/RSS or syscall improvement was established."
+  ],
+  "development_diagnostics": [
+    "Initial parallel zero-allocation validator test charged 75 bytes from other tests (four pass, one fail). Filtered isolated child now asserts the unchanged zero-byte budget; six tool tests pass.",
+    "An attempted xtask test selector release_evidence_074 did not exist. Correct release_evidence target was executed afterward; no result was counted from the invalid selector.",
+    "The new archive-hash regression initially failed to compile because the workspace SHA-256 digest output does not implement LowerHex. It now uses the existing byte-wise hex convention; all 40 contract tests pass, with no runtime or receipt change.",
+    "The strengthened summary regression initially rejected JSON integer 264 versus floating 264.0 despite equal numerical values (39 pass, one fail). Numeric fields now compare exact f64 values, while identities compare exact JSON strings; the original receipts and performance thresholds are unchanged. All 40 tests subsequently pass."
+  ],
+  "checks": {
+    "standalone_tests_passed": 6,
+    "performance_contract_tests_passed": 39,
+    "release_evidence_tests_passed": 13,
+    "release_governance_tests_passed": 23,
+    "doc_check_tests_passed": 16,
+    "affected_all_target_check": "passed",
+    "affected_strict_all_target_all_feature_clippy": "passed",
+    "format": "passed",
+    "local_performance_contract": "passed-non-promotable",
+    "canaries": {
+      "W11": "ExpectedRed",
+      "W12": "ExpectedRed"
+    },
+    "hosted_ci_for_this_source": "not claimed",
+    "full_workspace_gate": "not run; not a release milestone",
+    "archived_receipt_regression_commit_checks": {
+      "performance_contract_tests_passed": 40,
+      "source_bound_39_test_result_not_relabelled": true,
+      "release_evidence_tests_passed": 13,
+      "release_governance_tests_passed": 23,
+      "doc_check_tests_passed": 16,
+      "governance_cli_checks_passed": 17,
+      "docs_release_checker_tests_passed": 3,
+      "docs_link_checker_markdown_files": 51,
+      "docs_link_checker_external_includes": 20,
+      "mdbook_build": "passed",
+      "local_contract": "passed-non-promotable",
+      "scope": "evidence working tree after instrumentation commit; not hosted qualification"
+    }
+  },
+  "restrictions": {
+    "rented_host_used": false,
+    "expensive_workloads_run": false,
+    "qualification_run": false,
+    "frozen_073_mutated": false,
+    "runtime_sources_changed": false,
+    "root_lockfile_changed": false,
+    "qualification_manifest_and_eight_pinned_inputs_changed": false,
+    "thresholds_changed": false
+  }
+}

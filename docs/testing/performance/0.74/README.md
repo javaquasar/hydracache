@@ -1412,3 +1412,40 @@ Runtime, native/shared paths, dependencies, numerical thresholds and qualificati
 are unchanged. There is no new throughput, latency, CPU or allocation measurement, no rented-host
 workload, and no reused CI receipt for this source. The recommendation is to retain W3's negative
 disposition; accepted product proposals remain zero, C74 unresolved and ship admission closed.
+
+### W9b large-GET response encoding: a local D1 owner, not a product win
+
+The separate serial-scratch hypothesis now has preregistered attribution on clean
+source `cc0b2fbfc0b7d9c4c9f37e96089f37134fdf546f`. The v3 stage profiler compares
+independently initialized canonical execution against the same execution plus
+the existing encoder. Exact payload/frame validation performs no allocations;
+dispatches, mutations, checksums, final value and cardinality are reconciled.
+Three fresh-process repeats of all five cells ran in rotating order, without
+retries or selected-best samples. All 15 raw receipts are retained and hash-checked.
+
+GET encoding increments are 264 B/op at 256 B, 4,105 B/op at 4 KiB and
+1,048,588.168 B/op at 1 MiB: 16.97%, 31.39% and 33.325% of the **measured
+execution-plus-encode response path**, respectively. SET encoding is 8 B/op at
+both 256 B and 4 KiB. Every allocation total repeats identically. At 1 MiB the
+canonical subtraction exceeds isolated encoding by 84 bytes per 500-operation
+window; this residual remains unassigned, not attributed to the encoder.
+
+This is not complete RESP/network allocation, CPU, latency or goodput evidence.
+Large GET supplies an owner for D2 serial scratch review, not acceptance or proof
+of the unchanged 20% end-to-end floor. Previous W3/W4 rejections remain unchanged.
+The next isolated design must retain previous complete write/flush before the next
+execution, canonical pipeline-one behavior, bounded scratch lifetime before the
+next read, no cross-connection pool and no larger idle/output bound. Native,
+ClientSurfaceState and embedded remain separate D3 non-regression controls.
+
+See [the assessment](w9b-response-buffer-attribution.md),
+`w9b-response-buffer-attribution-contract.toml` and
+`local-runs/w9b-serial-encoder-owner-cc0b2fbf.json`. Source-bound checks passed six
+profiler tests and 91 xtask tests (39 contract, 13 evidence, 23 governance, 16 docs);
+the evidence stage adds a 40th contract regression verifying all archived cells.
+Affected format, check, strict lint and non-promotable contract passed; W11/W12
+canaries remained expected red. Validator isolation retains the original failed
+75-byte parallel-test diagnostic without relaxing the zero-allocation requirement.
+Runtime, root dependencies, qualification manifest/pinned digests, frozen 0.73 and
+thresholds are unchanged. No rented-host or expensive workload ran; C74 remains
+unresolved with zero accepted product proposals.

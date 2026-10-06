@@ -3193,3 +3193,86 @@ changed. No new allocation or product performance numbers exist, and no historic
 rebound. W3 remains negative, accepted product proposals stay zero, C74 remains unresolved and
 admission closed. The assessment narrowed a plausible architecture into concrete counterexamples;
 it did not turn permission to investigate into permission to change the contract.
+
+## A measured large-response owner without response batching
+
+The rejected batching designs do not imply that every output-path optimization
+is impossible. They rule out those designs under the existing execution frontier.
+A distinct question remains: can we avoid allocating a fresh encoding buffer
+while still executing, writing and flushing each command in exactly the same
+serial order? That question changes allocation ownership, not acknowledgement or
+mutation timing. It does not justify a consuming reducer, native protocol change
+or cross-connection buffer pool at the same time.
+
+We first measured the owner rather than implementing all those ideas together.
+The prior small-payload W4 assessment remains negative; large GET replies require
+their own evidence. The public encoder currently builds a fresh `BytesMut` and
+transfers its ownership into a `Vec`. That transfer is already not another payload
+copy. A reusable scratch could avoid repeated fresh output allocation, but it
+would still copy bytes into the encoding buffer. Claiming both savings before
+measuring either would conflate two different costs.
+
+The standalone profiler therefore gained two matched controls. One runs the
+canonical server command; the other runs the same command and its existing RESP2
+encoder. Each has its own identically initialized store, preload, warmup,
+namespace, key, payload and request-ID sequence. GET validates the exact returned
+payload; SET validates the exact success. Encoded frames are checked against a
+prebuilt header and existing payload slices. We also reconcile dispatch counts,
+mutation counts, checksums, final value and cardinality outside the windows.
+
+Validation itself needs attribution discipline. An initial zero-allocation test
+ran beside other tests using the process-wide allocator and charged 75 unrelated
+bytes. We retained that failure and moved the validator assertion into a filtered
+child process. The budget remained zero; changing it would have hidden a harness
+problem. Six profiler tests now cover malformed results, large payloads, binary
+keys, exact state reconciliation and allocation-free validation.
+
+Before execution we committed a five-cell contract: GET/SET at 256 B and 4 KiB,
+plus GET at 1 MiB, seed 740074, three fresh-process repetitions in rotating order.
+Small and medium cells use 10,000 operations per window; the large cell uses 500.
+All fifteen processes ran from clean source `cc0b2fbf` with the same release
+binary. We kept every receipt, with no retry or selected-best sample. Workload,
+request, key and payload hashes, as well as allocation totals, match in every
+repetition of each cell.
+
+The results identify a large-response owner. GET encoding adds 4,105 B/op at
+4 KiB, about 31.39% of the measured canonical execution-plus-encode path. At
+1 MiB it adds 1,048,588.168 B/op, about 33.325% of that path. GET at 256 B adds
+264 B/op, about 16.97%. SET adds only eight bytes at either tested size. Thus a
+large GET has an allocation owner worth investigating; SET's small success frame
+does not justify rewriting shared storage or moving cost into native requests.
+
+One detail remains deliberately visible: at 1 MiB the canonical subtraction
+exceeds isolated encoder allocation by 84 bytes over each 500-operation window.
+All three repetitions contain the same residual. We record it as unassigned
+control overhead rather than asserting that every byte of the subtraction
+belongs to the encoder. The evidence is
+`docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json`;
+its referenced raw receipts preserve the timing fields and original output hashes.
+A regression checks all registered cells and repetitions, identities, hashes,
+checksums, operation counts and deterministic gross allocation totals.
+
+The denominator is crucial. These controls include command construction,
+dispatch, store access, reduction and encoding; they exclude decoding, socket IO
+and connection scheduling. The percentages are not complete RESP allocation
+fractions and certainly not measured throughput improvements. Counting-allocator
+timings and coarse Windows CPU samples cannot establish a product CPU claim.
+Three baseline repetitions identify an owner; no optimized candidate, p99,
+retained-memory improvement or syscall reduction has been measured.
+
+The next isolated D2 design is serial scratch reuse only. It must preserve
+complete write and flush before executing the next buffered command, keep the
+canonical pipeline-one path, and release scratch before waiting for more input.
+It must not increase idle or input/output retention bounds. Partial writes,
+disconnects, slow readers, large/mixed replies and RESP3 need explicit tests, as
+do the existing native interleavings, expiry and quota guards. A semantically
+admitted candidate then needs at least five counterbalanced independent D3 pairs,
+the unchanged 20% affected end-to-end allocation floor, and separate native,
+ClientSurfaceState and embedded non-regression measurements.
+
+No product runtime, qualification identity, threshold or frozen 0.73 artifact
+changed in this attribution step. No rented-host or expensive workload ran.
+Accepted proposals remain zero and C74 unresolved. The justified conclusion is
+not “scratch reuse made the release faster.” It is narrower and useful: large
+GET encoding is now a repeatably measured owner, and a single bounded hypothesis
+can be tested without retrying the rejected batching architecture.

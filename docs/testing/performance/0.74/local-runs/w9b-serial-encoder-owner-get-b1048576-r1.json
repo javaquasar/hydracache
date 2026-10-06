@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "w4-w5-w9b-resp-stage-profile-074-v3",
+  "source_commit": "cc0b2fbfc0b7d9c4c9f37e96089f37134fdf546f",
+  "binary_sha256": "sha256:d1b04c9f22996e95b7e7ac11daff97c713f48a19fc9fba60070601778b249ad3",
+  "build_profile": "release",
+  "tier": "local-attribution",
+  "promotable": false,
+  "operation": "get",
+  "iterations": 500,
+  "payload_bytes": 1048576,
+  "seed": 740074,
+  "workload_sha256": "sha256:cda6cef3008337ae3d00a81ad3dfc2540d1cd04c19777253db5ccb5e157f2943",
+  "request_sha256": "sha256:c2d24f6a965e9e7ad872586237442377ee3727846a4aab309ad77e56fec4cd4d",
+  "key_corpus_sha256": "sha256:d6168e6995d635e0e8a5b2313bba74c69b9ba596c74c4a967a48a49c8aa2c4db",
+  "payload_corpus_sha256": "sha256:a2e53b9f18d5eeca3e2fdcd69f00f5109945688a24b649d1b6397c9b864ddc80",
+  "exact_result_validation": true,
+  "original_key_bytes": 28,
+  "canonical_stable_key_bytes": 72,
+  "decode": {
+    "gross_allocated_bytes": 153000,
+    "gross_allocated_bytes_per_operation": 306.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 551.6,
+    "checksum": 24000
+  },
+  "translation_context": {
+    "gross_allocated_bytes": 11500,
+    "gross_allocated_bytes_per_operation": 23.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 104.2,
+    "checksum": 500
+  },
+  "command_construction": {
+    "gross_allocated_bytes": 14000,
+    "gross_allocated_bytes_per_operation": 28.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 41.2,
+    "checksum": 500
+  },
+  "command_construction_and_translation": {
+    "gross_allocated_bytes": 213500,
+    "gross_allocated_bytes_per_operation": 427.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 584.4,
+    "checksum": 500
+  },
+  "translation_incremental_allocated_bytes_per_operation": 399.0,
+  "response_construction": {
+    "gross_allocated_bytes": 524288000,
+    "gross_allocated_bytes_per_operation": 1048576.0,
+    "cpu_nanoseconds_per_operation": 281250.0,
+    "wall_nanoseconds_per_operation": 267605.8,
+    "checksum": 500
+  },
+  "response_construction_and_encode": {
+    "gross_allocated_bytes": 1048582000,
+    "gross_allocated_bytes_per_operation": 2097164.0,
+    "cpu_nanoseconds_per_operation": 562500.0,
+    "wall_nanoseconds_per_operation": 581377.0,
+    "checksum": 524294000
+  },
+  "encode_incremental_allocated_bytes_per_operation": 1048588.0,
+  "canonical_warmup_operations": 100,
+  "canonical_execution": {
+    "gross_allocated_bytes": 1048963500,
+    "gross_allocated_bytes_per_operation": 2097927.0,
+    "cpu_nanoseconds_per_operation": 593750.0,
+    "wall_nanoseconds_per_operation": 632988.8,
+    "checksum": 500
+  },
+  "canonical_execution_and_encode": {
+    "gross_allocated_bytes": 1573257584,
+    "gross_allocated_bytes_per_operation": 3146515.168,
+    "cpu_nanoseconds_per_operation": 1000000.0,
+    "wall_nanoseconds_per_operation": 994447.0,
+    "checksum": 500
+  },
+  "canonical_encode_incremental_allocated_bytes_per_operation": 1048588.168,
+  "canonical_control_dispatches": 1102,
+  "canonical_encoded_dispatches": 1102,
+  "stable_key_materialization": {
+    "gross_allocated_bytes": 36000,
+    "gross_allocated_bytes_per_operation": 72.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 43.0,
+    "checksum": 36000
+  },
+  "limitations": [
+    "stage_cpu_includes_counting_allocator_overhead",
+    "incremental_allocation_is_subtraction_of_deterministic_stage_totals",
+    "isolated_stage_fields_do_not_include_dispatch_store_or_socket_io",
+    "canonical_fields_include_execution_and_reduction_but_not_decode_socket_io_or_connection_scheduling",
+    "exact_result_validation_is_allocation_free_inside_measured_windows",
+    "attribution_subtraction_is_not_a_product_candidate_or_a_performance_improvement"
+  ]
+}

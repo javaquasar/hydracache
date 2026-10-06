@@ -781,6 +781,166 @@ fn w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candida
 }
 
 #[test]
+fn w9b_owner_receipts_preserve_all_registered_cells_without_product_claims() {
+    let report: Value = serde_json::from_str(
+        &std::fs::read_to_string(root().join(
+            "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        report["source_commit"],
+        "cc0b2fbfc0b7d9c4c9f37e96089f37134fdf546f"
+    );
+    assert_eq!(report["candidate_source_commit"], "UNRESOLVED");
+    for flag in ["promotable", "product_changed", "product_performance_claim"] {
+        assert_eq!(report[flag], false, "{flag}");
+    }
+    let review = contract("w9b-response-buffer-attribution-contract.toml");
+    let receipts = report["raw_receipts"].as_array().unwrap();
+    assert_eq!(receipts.len(), 15);
+    let paths: std::collections::BTreeSet<_> = receipts
+        .iter()
+        .map(|entry| entry["path"].as_str().unwrap())
+        .collect();
+    assert_eq!(paths.len(), 15);
+    let summaries = report["cells"].as_array().unwrap();
+    assert_eq!(summaries.len(), 5);
+    for cell in review["cell"].as_array().unwrap() {
+        let operation = cell["operation"].as_str().unwrap();
+        let payload_bytes = cell["payload_bytes"].as_integer().unwrap() as u64;
+        let iterations = cell["iterations"].as_integer().unwrap() as u64;
+        let summary = summaries
+            .iter()
+            .find(|entry| {
+                entry["operation"] == operation && entry["payload_bytes"] == payload_bytes
+            })
+            .unwrap();
+        assert_eq!(summary["iterations"], iterations);
+        let matches: Vec<_> = receipts
+            .iter()
+            .filter(|entry| {
+                entry["operation"] == operation && entry["payload_bytes"] == payload_bytes
+            })
+            .collect();
+        assert_eq!(matches.len(), 3);
+        let mut previous: Option<Value> = None;
+        for repeat in 1..=3 {
+            let entry = matches
+                .iter()
+                .find(|entry| entry["repeat"] == repeat)
+                .unwrap();
+            let text = std::fs::read_to_string(root().join(entry["path"].as_str().unwrap()))
+                .unwrap()
+                .replace("\r\n", "\n");
+            let original = text.strip_suffix('\n').unwrap_or(&text);
+            let digest = Sha256::digest(original.as_bytes())
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>();
+            assert_eq!(entry["original_tool_output_sha256"], digest);
+            let receipt: Value = serde_json::from_str(original).unwrap();
+            for field in ["source_commit", "profile_id", "binary_sha256"] {
+                assert_eq!(receipt[field], report[field], "{field}");
+            }
+            assert_eq!(receipt["operation"], operation);
+            assert_eq!(receipt["payload_bytes"], payload_bytes);
+            assert_eq!(receipt["iterations"], iterations);
+            assert_eq!(receipt["seed"], 740074);
+            assert_eq!(receipt["canonical_warmup_operations"], 100);
+            assert_eq!(receipt["promotable"], false);
+            assert_eq!(receipt["exact_result_validation"], true);
+            for (summary_field, receipt_field) in [
+                (
+                    "canonical_encode_incremental_bytes_per_operation",
+                    "canonical_encode_incremental_allocated_bytes_per_operation",
+                ),
+                (
+                    "isolated_encode_incremental_bytes_per_operation",
+                    "encode_incremental_allocated_bytes_per_operation",
+                ),
+                ("workload_sha256", "workload_sha256"),
+                ("request_sha256", "request_sha256"),
+                ("key_corpus_sha256", "key_corpus_sha256"),
+                ("payload_corpus_sha256", "payload_corpus_sha256"),
+            ] {
+                if receipt[receipt_field].is_number() {
+                    assert_eq!(
+                        summary[summary_field].as_f64().unwrap(),
+                        receipt[receipt_field].as_f64().unwrap(),
+                        "{summary_field}"
+                    );
+                } else {
+                    assert_eq!(
+                        summary[summary_field], receipt[receipt_field],
+                        "{summary_field}"
+                    );
+                }
+            }
+            let control = receipt["canonical_execution"]["gross_allocated_bytes_per_operation"]
+                .as_f64()
+                .unwrap();
+            let encoded = receipt["canonical_execution_and_encode"]
+                ["gross_allocated_bytes_per_operation"]
+                .as_f64()
+                .unwrap();
+            assert_eq!(
+                summary["canonical_execution_gross_bytes_per_operation"]
+                    .as_f64()
+                    .unwrap(),
+                control
+            );
+            assert_eq!(
+                summary["canonical_execution_and_encode_gross_bytes_per_operation"]
+                    .as_f64()
+                    .unwrap(),
+                encoded
+            );
+            let increment = receipt["canonical_encode_incremental_allocated_bytes_per_operation"]
+                .as_f64()
+                .unwrap();
+            assert!((increment - (encoded - control)).abs() < 1e-9);
+            assert!(
+                (summary["canonical_encode_share"].as_f64().unwrap() - increment / encoded).abs()
+                    < 1e-12
+            );
+            for field in [
+                "canonical_control_dispatches",
+                "canonical_encoded_dispatches",
+            ] {
+                assert_eq!(receipt[field], 2 * iterations + 102);
+            }
+            for stage in ["canonical_execution", "canonical_execution_and_encode"] {
+                assert_eq!(receipt[stage]["checksum"], iterations);
+                if let Some(previous) = &previous {
+                    assert_eq!(
+                        receipt[stage]["gross_allocated_bytes"],
+                        previous[stage]["gross_allocated_bytes"]
+                    );
+                }
+            }
+            if let Some(previous) = &previous {
+                for field in [
+                    "workload_sha256",
+                    "request_sha256",
+                    "key_corpus_sha256",
+                    "payload_corpus_sha256",
+                ] {
+                    assert_eq!(receipt[field], previous[field], "{field}");
+                }
+            }
+            previous = Some(receipt);
+        }
+    }
+    assert_eq!(report["assessment"]["accepted_product_proposals"], 0);
+    assert_eq!(
+        report["assessment"]["end_to_end_twenty_percent_reduction_proven"],
+        false
+    );
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),
