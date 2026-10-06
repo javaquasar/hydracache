@@ -9,6 +9,83 @@ use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
 use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 
+const TWO_SETS_AND_QUIT: &[u8] = b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+                                  *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n\
+                                  *1\r\n$4\r\nQUIT\r\n";
+
+#[tokio::test]
+async fn every_partial_reply_and_pending_flush_preserve_the_mutation_frontier() {
+    let first_reply = b"+OK\r\n";
+    // Enumerate no progress, every partial prefix, and complete write with a
+    // still-pending flush. Correctness is observed after a deterministic poll,
+    // not after sleeping or racing a scheduler deadline.
+    for accepted_bytes in 0..=first_reply.len() {
+        let server = listener();
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(TWO_SETS_AND_QUIT, Arc::clone(&output))
+            .write_chunk(1)
+            .gate_after_bytes(accepted_bytes, Arc::clone(&gate));
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(&*output.lock().unwrap(), &first_reply[..accepted_bytes]);
+        assert_eq!(server.state().state_mutations(), 1, "cut {accepted_bytes}");
+        assert_eq!(server.metrics().commands, 0, "cut {accepted_bytes}");
+
+        let other = exchange(
+            &server,
+            b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nb\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        assert_eq!(other, b"$1\r\n1\r\n$-1\r\n+OK\r\n");
+        assert_eq!(server.state().state_mutations(), 1);
+
+        gate.open();
+        tokio::time::timeout(Duration::from_secs(2), serving)
+            .await
+            .expect("released frontier must finish")
+            .expect("released connection must complete");
+        assert_eq!(&*output.lock().unwrap(), b"+OK\r\n+OK\r\n+OK\r\n");
+        assert_eq!(server.state().state_mutations(), 2);
+    }
+}
+
+#[tokio::test]
+async fn failed_flush_after_complete_reply_does_not_execute_the_next_set() {
+    let server = listener();
+    let gate = Arc::new(WriteGate::closed());
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let io = AdversarialIo::new(TWO_SETS_AND_QUIT, Arc::clone(&output))
+        .gate_after_bytes(b"+OK\r\n".len(), Arc::clone(&gate))
+        .fail_flush();
+    let serving = server.serve_connection(io);
+    tokio::pin!(serving);
+
+    assert!(futures_util::poll!(&mut serving).is_pending());
+    assert_eq!(&*output.lock().unwrap(), b"+OK\r\n");
+    assert_eq!(server.state().state_mutations(), 1);
+    assert_eq!(server.metrics().commands, 0);
+    gate.open();
+    let error = serving.await.expect_err("flush failure must fail loudly");
+    assert!(error.to_string().contains("scripted flush failure"));
+    assert_eq!(&*output.lock().unwrap(), b"+OK\r\n");
+    assert_eq!(server.state().state_mutations(), 1);
+    assert_eq!(server.metrics().commands, 0);
+
+    let other = exchange(
+        &server,
+        b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+          *2\r\n$3\r\nGET\r\n$1\r\nb\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    assert_eq!(other, b"$1\r\n1\r\n$-1\r\n+OK\r\n");
+}
+
 #[tokio::test]
 async fn fragmented_frames_short_writes_and_pending_flush_preserve_pipeline() {
     let server = listener();
@@ -175,6 +252,8 @@ struct AdversarialIo {
     pending_flushes: usize,
     disconnect_after: Option<usize>,
     gate: Option<Arc<WriteGate>>,
+    gate_after_write_bytes: usize,
+    fail_flush: bool,
 }
 
 impl AdversarialIo {
@@ -189,6 +268,8 @@ impl AdversarialIo {
             pending_flushes: 0,
             disconnect_after: None,
             gate: None,
+            gate_after_write_bytes: 0,
+            fail_flush: false,
         }
     }
 
@@ -221,6 +302,17 @@ impl AdversarialIo {
         self.gate = Some(gate);
         self
     }
+
+    fn gate_after_bytes(mut self, bytes: usize, gate: Arc<WriteGate>) -> Self {
+        self.gate_after_write_bytes = bytes;
+        self.gate = Some(gate);
+        self
+    }
+
+    fn fail_flush(mut self) -> Self {
+        self.fail_flush = true;
+        self
+    }
 }
 
 impl AsyncRead for AdversarialIo {
@@ -247,15 +339,20 @@ impl AsyncWrite for AdversarialIo {
         cx: &mut Context<'_>,
         bytes: &[u8],
     ) -> Poll<io::Result<usize>> {
-        if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
-            return Poll::Pending;
-        }
+        let written = self.output.lock().unwrap().len();
+        let remaining_before_gate = if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
+            if written >= self.gate_after_write_bytes {
+                return Poll::Pending;
+            }
+            self.gate_after_write_bytes - written
+        } else {
+            usize::MAX
+        };
         if self.pending_writes != 0 {
             self.pending_writes -= 1;
             cx.waker().wake_by_ref();
             return Poll::Pending;
         }
-        let written = self.output.lock().unwrap().len();
         if self.disconnect_after.is_some_and(|limit| written >= limit) {
             return Poll::Ready(Err(io::Error::new(
                 io::ErrorKind::BrokenPipe,
@@ -268,6 +365,7 @@ impl AsyncWrite for AdversarialIo {
         let count = bytes
             .len()
             .min(self.write_chunk)
+            .min(remaining_before_gate)
             .min(remaining_before_disconnect);
         if count == 0 {
             return Poll::Ready(Err(io::Error::new(
@@ -285,6 +383,12 @@ impl AsyncWrite for AdversarialIo {
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
             return Poll::Pending;
+        }
+        if self.fail_flush {
+            return Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "scripted flush failure",
+            )));
         }
         if self.pending_flushes != 0 {
             self.pending_flushes -= 1;
