@@ -450,6 +450,49 @@ admission is intended to reveal.
 - scan the Git diff for secrets and hardware identifiers;
 - revoke the runner registration before authorizing server deletion.
 
+## Prove the installed source at the privileged boundary
+
+A source checkout and a running binary are different identities. A benchmark controller can prove
+which commit it checked out, but that does not by itself prove which privileged service answered
+the request. HydraCache 0.74 exposed this gap while adding a read-only host-observation export.
+
+The first idea was to let the unprivileged runner read the provisioning receipt directly. The host
+correctly rejected that access: the receipt lived below a root-owned `0750` state directory.
+Changing the permissions would have made the check pass by weakening the boundary, so the failed
+run was retained and the permissions stayed closed.
+
+The second idea was to rebuild the supervisor inside the self-hosted job and require byte equality
+with the installed binary. That also failed for a useful reason. The hosted and self-hosted Rust
+builds used different Cargo home paths, and those absolute paths were embedded in the optimized
+binaries. Same source did not imply identical bytes in those two build environments. A reproducible
+build claim requires a deliberately reproducible toolchain and path-remapping contract; an ad hoc
+second build cannot stand in for one.
+
+The accepted design moved the proof to the process that already owned the evidence. A typed,
+pathless, read-only operation on the protected Unix socket asks the root supervisor to:
+
+1. collect the live host and supervisor-binary identity;
+2. open one fixed root-owned provisioning receipt, never a caller-selected path;
+3. validate its exact schema, ownership and mode;
+4. require the receipt's binary digest to equal the live supervisor digest;
+5. return the receipt's source commit alongside a digest-bound host observation.
+
+Peer credentials and the reviewed repository/actor principal are still checked, while mutation
+authorization is unnecessary because the operation cannot create or change campaign state. The
+workflow independently recomputes request, response and host-receipt digests and requires the
+returned installed source to equal its exact checkout.
+
+The admitted-host rehearsal succeeded without stopping the supervisor during observation, starting
+a product candidate or running qualification. Its artifact bound source, installed binary,
+canonical host freeze, request, response and host receipt; the runner was taken offline immediately
+afterward and the supervisor retained the same process identity with zero restarts. This is a
+narrow result: it proves a safe source-bound observation input for a later start bundle. It does not
+yet prove signed start, live-role survival, overhead neutrality or release performance.
+
+The broader rule is simple: do not move privileged evidence into a weaker trust domain merely to
+make it observable. Ask the privileged component for a bounded, typed attestation, bind that
+attestation to the live object it describes, and independently verify the returned digests.
+
 ## Open-loop load reveals overload; closed-loop load can hide it
 
 In a closed-loop benchmark, each client waits for a response before sending more work. When the

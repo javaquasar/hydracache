@@ -57,10 +57,12 @@ recovers at most one incomplete trailing line. A later local slice adds atomic r
 watchdog accepts it, and it cannot reuse an existing or torn journal as a new process lifetime.
 
 The Linux executable now also provides a real `SOCK_SEQPACKET` transport and authenticated
-read-only status service. Packet boundaries and the 65,536-byte limit are enforced by the socket
-layer; `SO_PEERCRED` plus `/proc/<pid>/status` supply uid, primary gid and supplemental groups.
+read-only status and host-observation services. Packet boundaries and the 65,536-byte limit are
+enforced by the socket layer; `SO_PEERCRED` plus `/proc/<pid>/status` supply uid, primary gid and
+supplemental groups.
 The wire envelope requires a strict Ed25519 authorization document for mutating operations, while
-status remains read-only but still checks the admitted peer, repository and actor. The client
+both read-only operations still check the admitted peer, repository and actor. Host observation is
+additionally revision-zero, pathless and fixed to sentinel scope. The client
 verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
 round-trip the exact durable state and reject stale revisions.
 
@@ -793,6 +795,43 @@ The next design therefore keeps sudoers and the root entrypoint byte-identical. 
 export must be a typed read-only request served by the already-root supervisor over its protected
 Unix socket, with peer admission and bounded canonical output. That uses the installed trust
 boundary instead of attempting to enlarge the bootstrap boundary.
+
+That corrected path is now rehearsed on the admitted host at exact source `127ebc6c`. Signed
+provisioning run `37394441292` installed a supervisor whose SHA-256 is
+`7f8f61bc80fb48c0fa5559189aa362b0387cc5ba069f4d10a94d3e5f78175409`. Before the self-hosted
+install, the active-campaign marker and fixture context were absent and only the prior supervisor
+was stopped. After installation, the runner was returned offline and the service was active as PID
+25488 with zero restarts. The canonical freeze was regenerated for that exact installed source and
+has SHA-256 `e15e5b218c1fee33f842ea8e697507629fab8a6ca4bc362e1bef1d0fe787d763`;
+`check-frozen` passed.
+
+Read-only observation run `37394832233` then used the existing root supervisor without stopping or
+restarting it. The request was revision zero, pathless, unsigned and fixed to the sentinel campaign
+and manifest identities; peer UID/GID, repository and actor admission still applied. The root
+server read only the fixed root-owned provisioning receipt, required its binary digest to equal the
+live observed supervisor digest, and returned the installed source commit with the canonical host
+receipt. Independent artifact verification reproduced request digest `792d808a...`, response
+digest `39dbaa24...` and host-receipt digest `c8041142...`. The retained artifact is
+`long-run-074-host-observation-127ebc6cb24191d567772966586bdb827a0ae380-37394832233-1`, GitHub
+artifact `11382701858`, digest `sha256:e9417fe6dea7f7445b013e24b9ee0f63b579c8952fd20abebc33b193662205ad`.
+No arbitrary output path was accepted, no campaign state was created, no product candidate ran and
+the result is explicitly non-promotable. See
+`local-runs/w11-host-observation-127ebc6c.json`.
+
+Two preceding failures sharpened the boundary rather than being discarded. Run `37393137026`
+proved that the unprivileged runner cannot read the root-owned provisioning receipt through the
+state-directory permissions; those permissions were not relaxed. Run `37393593771` disproved
+cross-home Rust binary byte equality as source proof: the hosted installation and self-hosted
+rebuild embedded different absolute Cargo registry paths. The accepted design therefore lets the
+root supervisor validate the fixed receipt and bind its `source_commit` to the digest of the binary
+that collected the observation. It does not trust runner-readable state or claim reproducible
+builds where they were not established.
+
+This closes `host_observation_socket_export_complete` and
+`installed_source_receipt_binding_complete`, not signed start. The next safe slice is to assemble
+one exact non-product start bundle from this admitted receipt and rehearse protected authorization,
+supervisor-owned upload and start. Supervisor-restart survival, live-role reboot, live seal,
+role-level overhead and product qualification remain open.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

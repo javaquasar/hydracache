@@ -190,6 +190,12 @@ manifest path. Abort additionally requires a frozen reason enum and an approval 
 the protected environment. Status is read-only and does not require a controller lease. Unknown
 operations fail closed.
 
+`host_observation` is the other read-only operation. It is revision zero, uses fixed sentinel
+campaign/manifest digests, carries no manifest path, abort reason, approval nonce or authorization
+document, and uses an all-zero authorization digest. The server rejects any deviation from that
+shape before host collection. Its response is not journaled as a campaign mutation and cannot
+select an evidence output path.
+
 The server authenticates SO_PEERCRED uid/gid and then checks supplemental group membership from the
 OS, not request JSON. Start, attach, seal and abort also require a short-lived signed authorization
 document created by the protected GitHub environment. The document binds request_id, operation,
@@ -880,6 +886,48 @@ remaining incapable of choosing an output path or mutating campaign state. Signe
 to use the separate protected authorization workflow; observation export only supplies the
 immutable bundle input that start later revalidates live.
 
+### Root-supervisor observation rehearsal
+
+The corrected architecture passed its admitted-host rehearsal at source `127ebc6c`. Provisioning
+run `37394441292` installed binary
+`7f8f61bc80fb48c0fa5559189aa362b0387cc5ba069f4d10a94d3e5f78175409`, then the canonical host
+freeze was regenerated and verified with digest
+`e15e5b218c1fee33f842ea8e697507629fab8a6ca4bc362e1bef1d0fe787d763`. Observation run
+`37394832233` kept that supervisor active and sent the fixed revision-zero `host_observation`
+request through the Unix socket. It used no signed mutation authorization, accepted no path and
+created no campaign state, but still required peer credentials plus the frozen repository and actor
+principal.
+
+The response adds one source-identity field outside the host receipt. The root process opens only
+`/var/lib/hydracache-performance/provisioning-receipt-074.json`, requires a root-owned regular file
+with mode `0444`, rejects any field-set drift, requires a successful provisioning receipt and
+compares its `binary_sha256` with the supervisor binary digest just collected from the live host.
+Only then may it return `installed_source_commit`. This makes the proof transitive:
+
+```text
+workflow source == provisioning source
+provisioning binary digest == live observed supervisor digest
+live observation digest == response-bound host receipt digest
+```
+
+The artifact independently reproduced request digest `792d808a...`, response digest
+`39dbaa24...` and receipt digest `c8041142...`; its GitHub artifact digest is
+`sha256:e9417fe6dea7f7445b013e24b9ee0f63b579c8952fd20abebc33b193662205ad`.
+The runner was disabled after the job, the same supervisor PID remained active with zero restarts,
+and both campaign marker and fixture context remained absent.
+
+Two rejected candidates define what this proof does not do. Direct runner access to the
+root-owned receipt failed with `EACCES`; relaxing the directory boundary would have widened trust.
+A later candidate rebuilt the same source under another account and compared binary bytes, but
+absolute Cargo registry paths made the two optimized binaries differ. Cross-home byte equality is
+therefore not an admitted source-identity primitive. The root-owned, strict-schema receipt bound to
+the live binary is the accepted primitive. The retained evidence is
+`local-runs/w11-host-observation-127ebc6c.json`.
+
+This completes host-observation export only. It does not prove signed start authorization,
+privileged start-bundle staging, supervisor restart with a live role, reboot rejection, live seal,
+role overhead or release qualification.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:
@@ -906,7 +954,8 @@ remains.
 ## Implementation completion checklist
 
 - Rust package, schemas and fixtures compile with the repository MSRV and locked dependencies.
-- Installed and client binary digests are identical and bound by host admission.
+- The installed supervisor digest is bound to its strict root-owned source receipt and independently
+  returned in the host observation; a client rebuild is not used as byte-identity proof.
 - All state transitions, exit codes and recovery windows have deterministic tests.
 - Real systemd rehearsal proves controller and supervisor restart survival without duplicate spawn.
 - Attach validates every frozen identity and is incapable of spawning.
