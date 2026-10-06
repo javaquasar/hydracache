@@ -2613,3 +2613,25 @@ not measure goodput, latency, allocations, RSS under product load or native-API 
 Accordingly, live seal and typed mutation coverage can turn green while product qualification,
 role-overhead, live-role reboot and release admission remain red. Keeping those statements
 separate prevents a reliable benchmark controller from being mistaken for a fast cache.
+
+## A reboot must invalidate a live measurement
+
+The next experiment tested the remaining reboot boundary with a live non-product role. The fixture
+was admitted through the same signed start path, reached `I74_RUNNING`, published a durable
+checkpoint chain and held the only active-host marker. The runner was then stopped and the machine
+was deliberately rebooted. The old process pair could not survive, but absence alone was not enough:
+the restarted supervisor still had to explain the loss, make it durable and avoid replacing the
+workload.
+
+That is exactly what happened. The boot ID changed; the enabled supervisor recovered the marker and
+classified the retained process identity as `host-identity-drift`. It first recorded a cause-bound
+measurement-loss intent and diagnostic, then cleared the old harness, daemon, checkpoint and lease
+identities, committed `FAILED_INCOMPLETE` and released the host claim. The role unit was absent, no
+new fixture was spawned, the runner stayed disabled and the supervisor needed no restart.
+
+The useful idea here is that infrastructure recovery and measurement recovery are different things.
+The supervisor should recover after a reboot, but a performance sample tied to the previous boot
+must not. Turning this gate green therefore means proving deterministic failure and cleanup, not
+making a broken run appear continuous. It remains non-product evidence: role overhead, HydraCache
+throughput and latency, the six-hour qualification, the 24-hour confirmation and release admission
+still require their own measurements.

@@ -1,0 +1,83 @@
+{
+  "schema_version": "hydracache-w11-live-role-reboot-v1",
+  "release": "0.74",
+  "evidence_class": "non-promotable-live-role-reboot-rehearsal",
+  "source_commit": "b83fd1b792cd610de9cb4817d178b5c8c9635914",
+  "campaign_id": "d51757255636706e8940f635959dd968424c4216ae46e82b7eea041adf5a392a",
+  "manifest_sha256": "b98e0468fea1e621d05449a1f27b4a5847cf1fdf429c94383810180539ef5f8a",
+  "start_bundle_sha256": "a566374bb4e1793c92f746f6325998a15cf9a843f3bbffe7abea1adb3167e68e",
+  "host_receipt_sha256": "e6956f530ab8dad64d801c3e28a7e0a93f9ba8b2d3985522a464dfe2e6ddbd69",
+  "campaign_contract_sha256": "a7fff296e2b1e375b158cfdf0334feb7aff65a1e33e7087d8cbc067dc32ef3d2",
+  "retained_contract_sha256": "63f5987b3e98749585d33dbd1a600429192e83b52f854687583d94391e2cef94",
+  "provisioning": {
+    "run_id": 37453559280,
+    "conclusion": "success",
+    "receipt_artifact_id": 11408017033,
+    "receipt_artifact_digest": "sha256:c3a860b3fad05adef0c9e6576370412c99955da62f4e33c49b072eb93016af2b",
+    "bundle_artifact_id": 11407862057,
+    "bundle_artifact_digest": "sha256:e22b1ec39ac22c65eaa05feb02e3dd14cba25762d75cc2960c240a5eb0298a52"
+  },
+  "start_bundle": {
+    "run_id": 37453956080,
+    "conclusion": "success",
+    "artifact_name": "long-run-074-start-bundle-a566374bb4e1793c92f746f6325998a15cf9a843f3bbffe7abea1adb3167e68e",
+    "artifact_id": 11407807567,
+    "artifact_digest": "sha256:2b43b383c4b026509ded28b8c14c98184d1eaa837cd7efd3e590fdac04b94f7f",
+    "construction_evidence_artifact_id": 11408062398,
+    "construction_evidence_artifact_digest": "sha256:ae8fba65c95b631deb99768bd342487dfbe554408db5a61abdbe7ad8d1bd5920",
+    "host_observation_artifact_id": 11408671061,
+    "host_observation_artifact_digest": "sha256:c5d92a5c22e0bc3431e04bfc079e3aa450e27ca817aee3d9ec0ac01eea9e2175"
+  },
+  "start": {
+    "run_id": 37454199519,
+    "conclusion": "success",
+    "request_id": "12fea2f9-3a26-4210-a994-a2829bced7e7",
+    "request_sha256": "29c1dd3f00fc68bc86610b81318ec3b3dbaae1a5987d49a99a754ca9819e669e",
+    "request_artifact_id": 11409525049,
+    "request_artifact_digest": "sha256:c51c89d7412490422579fa4775fb3d852f8966b66240399a94f932a6a14c74aa",
+    "response_artifact_id": 11409755077,
+    "response_artifact_digest": "sha256:1f80a458a9bc33ce28b961bb3c7222ee29ad2ded80a3674c98de5125476fe58e",
+    "initial_revision": 2,
+    "initial_state": "I74_RUNNING",
+    "harness_pid": 173620,
+    "daemon_pid": 173621,
+    "checkpoint_head_sha256": "11837ab4c7ff740283d9781ebc5cf79d6b9217a1cf3a17dcb377d476ecbcc28b"
+  },
+  "reboot": {
+    "requested_after_runner_stop": true,
+    "old_boot_id": "47f3c763-c690-4f97-84e8-70b576cae2b3",
+    "new_boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "old_supervisor_pid": 166175,
+    "new_supervisor_pid": 895,
+    "measurement_loss_observed_at_utc": "2026-10-06T11:11:04Z",
+    "measurement_loss_reason": "host-identity-drift",
+    "measurement_loss_cause_sha256": "e882a0308a5e04a7c0efa33ad644b2fd13bc7e8027e6be41fc96b3c6ee121392",
+    "diagnostic_sha256": "e91b4f2f9068538a5cfed3829c3b3fdb8d08192f6dc362025efc10f74a008687"
+  },
+  "final_state": {
+    "revision": 4,
+    "campaign_state": "FAILED_INCOMPLETE",
+    "events_head_sha256": "6b1f880951a9eead7021b253aed45541166e4202c7fdedfd7c924aea38715db8",
+    "recorded_failure": true,
+    "duplicate_executor": false,
+    "durable_history_corrupt": false,
+    "harness_identity_cleared": true,
+    "daemon_identity_cleared": true,
+    "checkpoint_identity_cleared": true,
+    "controller_lease_cleared": true,
+    "active_campaign_released": true,
+    "role_unit_absent": true,
+    "role_process_absent": true,
+    "replacement_role_started": false,
+    "supervisor_active": true,
+    "supervisor_restart_count": 0,
+    "runner_inactive": true,
+    "runner_disabled": true
+  },
+  "forbidden_work": {
+    "product_candidate_started": false,
+    "six_hour_qualification_started": false,
+    "twenty_four_hour_confirmation_started": false
+  },
+  "claim_boundary": "This proves fail-closed host-boot identity handling for one live non-product I74 fixture on the admitted host: the reboot was classified as host-identity-drift, no role was restarted, the campaign became FAILED_INCOMPLETE, and the host claim was released. It is not reboot-resume support, product throughput, role-overhead, six-hour qualification, 24-hour confirmation, or release-admission evidence."
+}

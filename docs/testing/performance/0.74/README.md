@@ -227,9 +227,23 @@ The complete artifact-bound receipt is
 `local-runs/w11-i74-c74-complete-seal-7a6b5b15.json`.
 
 This closes the admitted-host live `start`, `attach`, `seal` and previously rehearsed `abort`
-operations for the non-product fixture. It does not close live-role reboot, role-level overhead,
-product I74/C74 execution, the six-hour qualification or the separately authorized 24-hour
-confirmation. `live_service_complete`, `host_rehearsal_complete` and
+operations for the non-product fixture.
+
+The next exact-source rehearsal closed the live-role reboot gate without running a product
+candidate. Provisioning run `37453559280` installed source `b83fd1b7`; bundle run `37453956080`
+created campaign `d5175725…`, manifest `b98e0468…` and bundle `a566374b…`; signed start run
+`37454199519` reached revision 2 `I74_RUNNING` with the exact fixture pair and a durable checkpoint
+chain. The Actions runner was stopped and left disabled before the host reboot. Boot ID changed from
+`47f3c763…` to `e81671d6…`; the enabled supervisor returned under a new PID and classified the
+retained identity as `host-identity-drift`. It committed `MEASUREMENT_LOSS_REQUESTED` and
+`MEASUREMENT_LOSS_COMPLETED`, ending at revision 4 `FAILED_INCOMPLETE`, with `recorded_failure=true`.
+The diagnostic is cause-bound, all process/checkpoint/lease identities are clear, the transient
+role unit and process are absent, and the active marker was released. No replacement workload was
+started. See `local-runs/w11-live-role-reboot-b83fd1b7.json`.
+
+This is fail-closed reboot evidence, not support for resuming a measurement across reboot. It does
+not close role-level overhead, product I74/C74 execution, the six-hour qualification or the
+separately authorized 24-hour confirmation. `live_service_complete`, `host_rehearsal_complete` and
 `release_admission_allowed` therefore remain false.
 
 Role-specific canonical `spawn-intent` and `spawn-result` documents have create-new SHA-256
@@ -914,9 +928,10 @@ to share one workflow run, and that systemd may release the cgroup of the exact 
 that exact terminal shape; a non-empty foreign cgroup remains identity drift. See
 `local-runs/w11-supervisor-restart-negative-671c93d6.json`.
 
-This closes supervisor-restart survival, same-process adoption and post-restart attach/abort only.
-Live seal, reboot while a role is active, role-level overhead, product I74/C74 execution, six-hour
-qualification and the separately authorized 24-hour confirmation remain open.
+This rehearsal closed supervisor-restart survival, same-process adoption and post-restart
+attach/abort only. At that stage, live seal, reboot while a role was active, role-level overhead,
+product I74/C74 execution, six-hour qualification and the separately authorized 24-hour
+confirmation were still open; the later receipts above close the two lifecycle gates only.
 `host_rehearsal_complete` and `release_admission_allowed` therefore stay false. No product
 candidate, expensive qualification or isolated-CPU interrupt measurement was performed in this
 slice.

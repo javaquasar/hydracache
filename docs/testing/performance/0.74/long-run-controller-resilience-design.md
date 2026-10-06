@@ -788,9 +788,32 @@ head are retained in
 `local-runs/w11-i74-c74-complete-seal-7a6b5b15.json`.
 
 This closes live seal and the non-product admitted-host coverage of all typed mutating operations.
-It does not prove live-role reboot recovery, role-level overhead, product throughput, six-hour or
-24-hour qualification, or release admission. Those flags remain false and no threshold or product
-duration changed.
+It does not prove role-level overhead, product throughput, six-hour or 24-hour qualification, or
+release admission. Those flags remain false and no threshold or product duration changed.
+
+### Live-role reboot is measurement loss, not recovery
+
+The admitted-host reboot rehearsal passed at exact source `b83fd1b7` with a live non-product I74
+fixture. Provisioning run `37453559280` installed that source, start-bundle run `37453956080`
+created campaign `d5175725…` and manifest `b98e0468…`, and signed run `37454199519` admitted the
+fixture at revision 2 `I74_RUNNING`. Before reboot, boot ID `47f3c763…`, harness PID 173620, daemon
+PID 173621, the exact host marker and checkpoint head `11837ab4…` were independently observed. The
+self-hosted Actions runner was then stopped and remained disabled.
+
+After reboot, boot ID `e81671d6…` differed and the transient role unit no longer existed. The enabled
+root supervisor started once under PID 895, recovered the host claim and treated the stale boot-bound
+process identities as `host-identity-drift`. It durably committed revision 3
+`MEASUREMENT_LOSS_REQUESTED`, wrote cause-bound diagnostic `e91b4f2f…`, then committed revision 4
+`MEASUREMENT_LOSS_COMPLETED` / `FAILED_INCOMPLETE`. The final state keeps
+`recorded_failure=true`, clears harness, daemon, checkpoint and controller lease, and releases the
+active-campaign marker. The runner stayed `inactive/disabled`, the supervisor stayed
+`active/running` with `NRestarts=0`, and no role replacement was started. The event head and all
+workflow artifact digests are retained in
+`local-runs/w11-live-role-reboot-b83fd1b7.json`.
+
+The expected-red result is deliberate: measurements cannot cross a host boot identity. This closes
+`live_role_reboot_rehearsal_complete`; it does not claim reboot resume, product execution,
+role-overhead compliance or release admission.
 
 The operator runbook is:
 
@@ -1035,8 +1058,8 @@ The retained negative receipt is
 
 This rehearsal confirms supervisor restart survival, same-process adoption, signed attach after
 restart and same-principal cleanup. It does not measure product throughput, isolated-CPU interrupt
-deltas or role overhead, and it does not prove live seal or live-role reboot. Those gates and all
-product qualification remain open.
+deltas or role overhead. Live seal and live-role reboot were still open at that stage and are closed
+only by the later independent receipts above; all product qualification remains open.
 
 ## Rollout, gates and rollback
 
