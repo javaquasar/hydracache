@@ -2740,3 +2740,9 @@ gated-green and ship-ready items. That distinction is intentional: implementatio
 contract means the result can no longer disappear into prose; it says nothing about acceptance of
 the candidate that the evidence rejected. Treating “recorded” as “shipped” would undo the whole
 measurement discipline at the final gate.
+
+The next boundary applies the same rule to tests. All 28 work items are now attached to the existing
+workspace-wide nextest gate without changing its command, timeout or budget. A smaller contract test
+would be faster, but letting it stand in for the workspace suite would create a false green edge.
+Registration therefore improves traceability while the stage remains `Implemented`: only an
+exact-commit receipt from the unchanged full gate may advance it to `FastGreen`.

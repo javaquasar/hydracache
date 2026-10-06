@@ -1081,3 +1081,11 @@ bind every parent/sub-item to retained files and require `terminal=true` plus
 Here, `Implemented` means the negative/deferred disposition is machine-readable; it does not mean
 the proposed optimization was shipped. The remaining transition requires real gate receipts, not
 a relabeling of terminal local evidence.
+
+All 28 work items now name the existing `fast.workspace-nextest` gate. Its command remains `cargo
+nextest run --workspace --profile ci --locked`; its 2,400-second timeout, 840-second budget and the
+1,680-second aggregate registry budget are unchanged. The additional W4/W6/W8/W9 sub-item labels
+only make coverage explicit. No narrow evidence-only test substitutes for the workspace gate.
+Until that exact command produces a clean exact-commit receipt, every item remains `Implemented`
+rather than `FastGreen`. The non-promotable registration receipt is
+`local-runs/w12-fast-gate-registration-local-20261006.json`.
