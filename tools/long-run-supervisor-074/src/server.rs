@@ -365,7 +365,12 @@ impl SupervisorServer {
             .map_err(|error| ServerError::LeaseExpiry(error.to_string()))?;
         // A committed failure intent owns recovery for this terminal state. Do not let an
         // expired controller lease relabel or interrupt progress- or measurement-loss recovery.
-        if state.campaign_state == CampaignState::FailedIncomplete {
+        if matches!(
+            state.campaign_state,
+            CampaignState::FailedIncomplete
+                | CampaignState::AbortedIncomplete
+                | CampaignState::CorruptQuarantined
+        ) {
             return Ok(Some(LeaseExpiryOutcome::NotDue));
         }
         if now <= state.identity.lease_deadline_unix_seconds {
@@ -456,6 +461,15 @@ impl SupervisorServer {
             .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
         let state = reconcile_campaign(&lock)
             .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
+        if matches!(
+            state.campaign_state,
+            CampaignState::AbortedIncomplete
+                | CampaignState::LeaseExpiredIncomplete
+                | CampaignState::CorruptQuarantined
+                | CampaignState::CompleteSealed
+        ) {
+            return Ok(None);
+        }
         let manifest = verify_stored_manifest_evidence(lock.campaign_directory(), &state)
             .map_err(|error| ServerError::ProgressLoss(error.to_string()))?;
         let (observed_checkpoint, startup_progress_unix_seconds) = if state.campaign_state
