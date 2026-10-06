@@ -631,6 +631,22 @@ fn w12_release_note_retains_draft_claim_rollback_and_gate_boundaries() {
 }
 
 #[test]
+fn w12_generic_evidence_report_retains_closed_ship_admission() {
+    for release in ["0.74", "0.74.0"] {
+        let report = xtask::release_evidence::build_report(&root(), release, None).unwrap();
+        assert!(
+            has(&report.reasons, "0.74 ship admission is closed"),
+            "ordinary green test receipts must not substitute for qualification: {:?}",
+            report.reasons
+        );
+        assert!(report
+            .work_items
+            .iter()
+            .all(|item| { item.stage <= xtask::release_evidence::EvidenceStage::FastGreen }));
+    }
+}
+
+#[test]
 fn w2_through_w9_terminal_dispositions_are_exact_and_non_promotable() {
     let mut value = contract("terminal-disposition-ledger.toml");
     assert!(
