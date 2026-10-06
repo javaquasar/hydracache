@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-protected-start-attach-abort-rehearsal",
+  "captured_at_utc": "2026-10-06T02:57:22Z",
+  "source_commit": "56ff081938f64157f0f83d8be319795c8d780127",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "provisioning": {
+    "run_id": 37405246561,
+    "conclusion": "success",
+    "installed_source_commit": "56ff081938f64157f0f83d8be319795c8d780127",
+    "installed_binary_sha256": "d4eb5c6b36520af361404c754ac276cb21e125c15d0ef0d5fa760770dc71e178",
+    "installed_receipt_sha256": "cadfa3fefb43ec4459bef2db08a611e04622568f609869a544c0195a4971f876",
+    "hosted_bundle_artifact_id": 11387505828,
+    "hosted_bundle_artifact_digest": "sha256:900dc52f06205d9a36b2ae7442a02d77c1510ffdff35865e06fee425770ab9de",
+    "installed_receipt_artifact_id": 11387600334,
+    "installed_receipt_artifact_digest": "sha256:2f6d2232c5625c01087859b570d9aaa141f8fb62c9922adfbc18a5f818747218"
+  },
+  "host_observation": {
+    "run_id": 37405722464,
+    "artifact_id": 11387451729,
+    "artifact_digest": "sha256:9533fe185f48af1cac417dfa3bd33096e2da1bdf4356b9cfc06710aa6a3a608b",
+    "host_receipt_sha256": "76fda1b206af1ee6754de86640095308e5b55cb21beb545d66dda56a3fa53b63"
+  },
+  "start_bundle": {
+    "run_id": 37405722464,
+    "campaign_id": "3b1fa1431182432aecb72784424341842e8566f30e4f2bd78b6b0b923285ecf6",
+    "manifest_sha256": "cbfcbd5d08bd93735744289eb0b88a3d13de3bd5b747f93e1c77c62d707b9b00",
+    "bundle_sha256": "5888dbb79e8f5492b02da833b6346f2c2f93cf18dc93919fb0104e2b74aba020",
+    "artifact_id": 11386966710,
+    "artifact_digest": "sha256:3de854541364134699e3767e83c7f4cad848dbb31885a49b4d4e0dbf484dfa04",
+    "role_runtime_seconds": 900,
+    "lease_seconds": 3600
+  },
+  "same_run_rehearsal": {
+    "run_id": 37405915773,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "start": {
+      "request_id": "440de8fc-0893-4cf0-8040-6449408b0ef7",
+      "request_sha256": "8258c09c594b24c8f6a16e5aeb9afc0cb72bc73850d8fd3fc9a9515a11d28719",
+      "response_sha256": "69c36ad93e94496748f98774fc61393d5335ce5d78c5a8ea10b7c3883ee67072",
+      "request_artifact_id": 11387051891,
+      "request_artifact_digest": "sha256:69329daaada34becdc380dd3a294b8130a657590d7da71306d537b920f7b8b47",
+      "response_artifact_id": 11386927211,
+      "response_artifact_digest": "sha256:782561e3c3033f50cc8941746b5d88b0306eca08b2a74609586c56150d979798",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 2,
+      "harness_pid": 40310,
+      "daemon_pid": 40311,
+      "unit_runtime_max_seconds": 900
+    },
+    "attach": {
+      "request_id": "b662a2fb-a56d-4c1b-87ce-3b3b9bcff7dc",
+      "request_sha256": "74a8cb467d84feebcdf1dee934afe13c556b9896fbe49cc7656d5e6361cd6690",
+      "response_sha256": "a4c15b944b0fd11eb69893c38391d78985d8cceb68dd8b4eb57d93657044acd8",
+      "request_artifact_id": 11387671709,
+      "request_artifact_digest": "sha256:be1e9117a80819ed1ea4a50c26fc2442680462bd6b16537f5db84b070a84b776",
+      "response_artifact_id": 11387761539,
+      "response_artifact_digest": "sha256:53343feb2c096008062cae737e811cc7d485c119f580a97bc86160299687e12b",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 3,
+      "checkpoint_sequence": 6,
+      "checkpoint_record_sha256": "4f9c65fe70fedb95440d228dcf3c041fa09075208387552fd3fef4f7478d32fe",
+      "controller_run_id": 37405915773
+    },
+    "abort": {
+      "request_id": "5cd59567-9d66-4758-8997-32f03344bae8",
+      "request_sha256": "981eb527f29ee7f61720c942e8811465a6626f3715d20331670c89f0d70c7551",
+      "response_sha256": "4b80eaf03a2a4ebdcd08bb22d65101cb19525a1b4d1a3c8e47f31bde740631c3",
+      "request_artifact_id": 11387228197,
+      "request_artifact_digest": "sha256:98cdc97401082662d8363b2809db8a2cdb966f4f8717ea4c7c77cd7f20826d46",
+      "response_artifact_id": 11386712781,
+      "response_artifact_digest": "sha256:e98794b26c744902e6972a1baa4d16a3d4184948383a284e96e060c91da2460e",
+      "accepted_state": "ABORTED_INCOMPLETE",
+      "accepted_revision": 5,
+      "execution_fields_cleared": true
+    }
+  },
+  "checkpoint_and_host_observation": {
+    "checkpoint_records_written": 11,
+    "final_checkpoint_record_sha256": "5f355f198b5cfd86863ad7a927e7a75f8ab021e3fff54d735ebffbaf023aab55",
+    "checkpoint_journal_sha256": "a221f8492611b4b381a0b5c5bc439dea389f5034346260943204f291761fe9e9",
+    "checkpoint_head_file_sha256": "40f4160b698d06f02b276bdbec0e6ac6ce1211b10012c096df0f3a5fea719ecd",
+    "event_records_written": 8,
+    "final_event_record_sha256": "7b1de812bf04e66ab3fb7c29ca3cee203e4a8ba2f084a7e0c15a0a8fdc9b9ea4",
+    "events_sha256": "a45d7db4fa707ac0efb3fe70abacbf223095d30d934cfd9458e43bddf09bc7b1",
+    "events_head_file_sha256": "050b2a825f40934b134203eec19dca5567b1afe8b3f844de3b2e07e68407a45a",
+    "final_state_sha256": "f4a701480fccd3688cdfeaed61784aa26aadd6ff9c79d74cd166afbae6e370f9",
+    "supervisor_restart_count": 0,
+    "supervisor_pid_unchanged": true,
+    "measurement_cpu_nvme_irq_delta_zero": true,
+    "isolated_cpuset": "1-4",
+    "housekeeping_cpuset": "0,5-7"
+  },
+  "cleanup": {
+    "runner_active": false,
+    "supervisor_active": true,
+    "supervisor_main_pid": 27610,
+    "host_claim_absent": true,
+    "fixture_unit_loaded": false,
+    "fixture_unit_active": false,
+    "recorded_failure": false,
+    "duplicate_executor": false,
+    "durable_history_corrupt": false
+  },
+  "negative_predecessor": "docs/testing/performance/0.74/local-runs/w11-protected-start-attach-abort-negative-29675f17.json",
+  "decision": {
+    "privileged_start_bundle_host_rehearsal_complete": true,
+    "protected_start_attach_abort_rehearsal_complete": true,
+    "checkpoint_snapshot_race_rehearsal_complete": true,
+    "non_product_role_runtime_rehearsal_complete": true,
+    "live_mutating_operations_complete": false,
+    "live_service_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "remaining_scope": "live seal, supervisor restart and reboot while a role is active, role overhead qualification, product I74/C74 execution, six-hour qualification, and separately authorized 24-hour confirmation"
+  }
+}
