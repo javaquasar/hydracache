@@ -1052,3 +1052,24 @@ W10's checked-in `composition-ledger.toml` currently records zero accepted produ
 It therefore forbids a synthetic C74 freeze or addition of isolated percentage gains. Tooling and
 evidence work can continue, but composition remains a no-op until an isolated proposal actually
 passes its native, semantic and local performance gates.
+
+## W12 pre-admission boundary
+
+`release-admission-contract.toml` now makes the current release state machine-readable. C74 remains
+`UNRESOLVED`; product candidate runs, expensive qualification, six-hour qualification and 24-hour
+confirmation remain disabled; every product, portable, distributed-capacity and Redis-superiority
+claim remains forbidden. The contract lists the exact unresolved identity, qualification,
+supply-chain and immutable-archive receipts and is itself a content-addressed input to
+`qualification-manifest.toml`.
+
+The draft release note at `docs/releases/0.74.0.md` records the negative proposal decisions,
+activation/default state, compatibility boundary, rollback path and remaining gates without
+inventing an accepted product candidate. The W12 expected-red canary mutates the expensive-run
+flag and must fail with `HC-CANARY-RED:PERF74-W12`; a green mutant would mean the admission checker
+could silently authorize unresolved work. `local-runs/w12-pre-admission-local-20261006.json`
+records this preparation only and is explicitly non-promotable.
+
+This closes local W12 contract and documentation preparation, not W12 release admission. Exact C74
+D4 evidence, product qualification, packages, SBOM, advisory/license results, supported-target
+receipts, and the independently verifiable immutable archive remain absent. Both `--require-ship`
+checks must stay red until those inputs exist on the same frozen candidate.

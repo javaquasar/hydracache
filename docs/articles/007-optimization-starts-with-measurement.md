@@ -2706,3 +2706,29 @@ Therefore the run closes only the non-product rehearsal flag; product role overh
 qualification, the 24-hour confirmation and release admission remain open. The useful result is
 that later product pairs can reuse a host-proven collector without granting more privilege or
 quietly converting unavailable counters into zeros.
+
+## Write the release boundary before there is a release candidate
+
+The next useful step was not another benchmark. W2 through W9 had produced terminal negative or
+deferred decisions, W10 had zero candidates to compose, and W11 had proved substantial controller
+behavior without running a HydraCache product pair. At that point an optimistic release note could
+easily turn infrastructure progress into a performance story that the evidence did not support.
+
+W12 now encodes the opposite. Its pre-admission contract fixes C74 as unresolved, disables product
+and expensive runs, forbids numerical product, portable-capacity and Redis-superiority claims, and
+enumerates every missing qualification, supply-chain and archive receipt. The qualification
+manifest hashes this contract, so enabling a run or relaxing a claim boundary also invalidates the
+prepared manifest. A release-scoped expected-red canary flips the expensive-run flag and proves
+that the checker rejects the mutation.
+
+The draft release note is useful precisely because it is not a launch announcement. It tells the
+reader that no product optimization has been accepted, preserves 0.73 as the product rollback
+baseline, separates opt-in W11 tooling from the runtime, and records each failed or deferred
+hypothesis. It also states what would invalidate future evidence and what must be repeated on an
+exact frozen C74.
+
+This is a general optimization lesson: negative results need release engineering too. A failed
+candidate is safely finished only when its code is removed, its evidence is retained, its claim is
+excluded, and the final admission machinery cannot accidentally treat local diagnostics as shipped
+performance. The local W12 preparation is now complete on that narrow definition. Product
+qualification, packaging and the immutable archive remain deliberately red.
