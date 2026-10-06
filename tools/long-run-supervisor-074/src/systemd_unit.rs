@@ -67,6 +67,12 @@ pub enum UnitMismatch {
     Result,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AttachableUnitState {
+    Live,
+    Terminal,
+}
+
 #[derive(Debug, Error)]
 pub enum UnitError {
     #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
@@ -340,6 +346,18 @@ pub fn verify_unit_terminal(
     }
 }
 
+pub fn verify_attachable_unit(
+    harness: &ProcessIdentity,
+    daemon: &ProcessIdentity,
+    snapshot: &UnitSnapshot,
+) -> Result<AttachableUnitState, UnitError> {
+    if verify_unit_identity(harness, daemon, snapshot).is_ok() {
+        return Ok(AttachableUnitState::Live);
+    }
+    verify_unit_terminal(harness, daemon, snapshot)?;
+    Ok(AttachableUnitState::Terminal)
+}
+
 fn inspect_loaded_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
     let connection = Connection::system()?;
     let manager = Proxy::new(
@@ -515,7 +533,69 @@ fn path_text(path: &Path) -> Result<String, UnitError> {
 
 #[cfg(test)]
 mod tests {
-    use super::inspect_loaded_unit;
+    use super::{inspect_loaded_unit, verify_attachable_unit, AttachableUnitState, UnitSnapshot};
+    use crate::ProcessIdentity;
+
+    fn process(unit_name: &str, pid: u32) -> ProcessIdentity {
+        ProcessIdentity {
+            boot_id: "boot-a".to_owned(),
+            pid,
+            start_ticks: u64::from(pid) * 10,
+            process_group: 100,
+            cgroup_path: format!("/system.slice/{unit_name}"),
+            cgroup_inode: 500,
+            unit_name: unit_name.to_owned(),
+        }
+    }
+
+    #[test]
+    fn attachable_unit_accepts_exact_live_and_successful_terminal_shapes() {
+        let unit = "hydracache-performance-074-i74-aaaaaaaa.service";
+        let harness = process(unit, 100);
+        let daemon = process(unit, 101);
+        let mut snapshot = UnitSnapshot {
+            unit_name: unit.to_owned(),
+            active_state: "active".to_owned(),
+            sub_state: "running".to_owned(),
+            main_pid: harness.pid,
+            control_group: harness.cgroup_path.clone(),
+            result: "success".to_owned(),
+        };
+        assert_eq!(
+            verify_attachable_unit(&harness, &daemon, &snapshot).unwrap(),
+            AttachableUnitState::Live
+        );
+
+        snapshot.sub_state = "exited".to_owned();
+        snapshot.main_pid = 0;
+        snapshot.control_group.clear();
+        assert_eq!(
+            verify_attachable_unit(&harness, &daemon, &snapshot).unwrap(),
+            AttachableUnitState::Terminal
+        );
+    }
+
+    #[test]
+    fn attachable_unit_rejects_failed_or_ambiguous_terminal_shapes() {
+        let unit = "hydracache-performance-074-i74-aaaaaaaa.service";
+        let harness = process(unit, 100);
+        let daemon = process(unit, 101);
+        let mut snapshot = UnitSnapshot {
+            unit_name: unit.to_owned(),
+            active_state: "failed".to_owned(),
+            sub_state: "failed".to_owned(),
+            main_pid: 0,
+            control_group: String::new(),
+            result: "exit-code".to_owned(),
+        };
+        assert!(verify_attachable_unit(&harness, &daemon, &snapshot).is_err());
+
+        snapshot.active_state = "active".to_owned();
+        snapshot.sub_state = "exited".to_owned();
+        snapshot.result = "success".to_owned();
+        snapshot.control_group = "/system.slice/foreign.service".to_owned();
+        assert!(verify_attachable_unit(&harness, &daemon, &snapshot).is_err());
+    }
 
     #[test]
     #[ignore = "requires a local systemd system bus"]

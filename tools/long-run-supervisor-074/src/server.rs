@@ -41,7 +41,9 @@ use crate::state::{
 };
 use crate::state_store::{CampaignLock, StateStoreError};
 use crate::systemd_spawn::SystemdSpawnBackend;
-use crate::systemd_unit::{inspect_unit, verify_unit_identity, UnitSnapshot};
+use crate::systemd_unit::{
+    inspect_unit, verify_attachable_unit, verify_unit_identity, AttachableUnitState, UnitSnapshot,
+};
 use crate::unix_transport::{SeqpacketConnection, SeqpacketListener, TransportError};
 use serde_json::Value;
 use std::path::Path;
@@ -908,24 +910,32 @@ impl SupervisorServer {
             };
         let execution = match (state.harness.as_ref(), state.daemon.as_ref()) {
             (Some(harness), Some(daemon)) => {
-                match inspect_unit(&harness.unit_name)
-                    .and_then(|snapshot| verify_unit_identity(harness, daemon, &snapshot))
+                let unit_state = match inspect_unit(&harness.unit_name)
+                    .and_then(|snapshot| verify_attachable_unit(harness, daemon, &snapshot))
                 {
-                    Ok(()) => {}
-                    Err(error) => failures.push(format!("systemd-unit:{error}")),
-                }
-                if let Err(error) = verify_process_identity(harness) {
-                    failures.push(format!("harness-process:{error}"));
-                }
-                if let Err(error) = verify_process_identity(daemon) {
-                    failures.push(format!("daemon-process:{error}"));
-                }
-                if let Err(error) = verify_process_cpuset(harness, &state.identity.isolated_cpuset)
-                {
-                    failures.push(format!("harness-cpuset:{error}"));
-                }
-                if let Err(error) = verify_process_cpuset(daemon, &state.identity.isolated_cpuset) {
-                    failures.push(format!("daemon-cpuset:{error}"));
+                    Ok(unit_state) => Some(unit_state),
+                    Err(error) => {
+                        failures.push(format!("systemd-unit:{error}"));
+                        None
+                    }
+                };
+                if unit_state == Some(AttachableUnitState::Live) {
+                    if let Err(error) = verify_process_identity(harness) {
+                        failures.push(format!("harness-process:{error}"));
+                    }
+                    if let Err(error) = verify_process_identity(daemon) {
+                        failures.push(format!("daemon-process:{error}"));
+                    }
+                    if let Err(error) =
+                        verify_process_cpuset(harness, &state.identity.isolated_cpuset)
+                    {
+                        failures.push(format!("harness-cpuset:{error}"));
+                    }
+                    if let Err(error) =
+                        verify_process_cpuset(daemon, &state.identity.isolated_cpuset)
+                    {
+                        failures.push(format!("daemon-cpuset:{error}"));
+                    }
                 }
                 Some((harness.clone(), daemon.clone()))
             }
