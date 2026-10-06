@@ -425,6 +425,27 @@ mod tests {
     }
 
     #[test]
+    fn pending_observation_never_hides_a_terminal_unit_mismatch() {
+        let mut foreign = unit(0);
+        foreign.control_group = "/system.slice/foreign.service".to_owned();
+        assert!(matches!(
+            classify_observation("boot-a", "1-2", UNIT, &foreign, vec![]).unwrap(),
+            ObservationDisposition::Ready(SpawnObservation::Mismatch {
+                reason: SpawnMismatch::Identity,
+                ..
+            })
+        ));
+        assert!(matches!(
+            classify_observation("boot-a", "1-2", UNIT, &unit(0), vec![]).unwrap(),
+            ObservationDisposition::Pending
+        ));
+        assert!(matches!(
+            classify_observation("boot-a", "1-2", UNIT, &unit(100), vec![process(100)]).unwrap(),
+            ObservationDisposition::Pending
+        ));
+    }
+
+    #[test]
     fn startup_is_pending_but_extra_executor_and_identity_drift_are_terminal() {
         assert!(matches!(
             classify_observation("boot-a", "1-2", UNIT, &unit(100), vec![process(100)]).unwrap(),
