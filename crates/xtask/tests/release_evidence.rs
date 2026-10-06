@@ -110,6 +110,110 @@ fn base_receipt(gate: &xtask::gated_tests::GateEntry, source_commit: &str) -> Ev
 }
 
 #[test]
+fn cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes() {
+    // A minimal synthetic repository isolates a report-global blocker from
+    // row failures and writes no generated files in the real checkout.
+    let repo = ScratchRepo::new();
+    repo.write(
+        "docs/plans/releases.toml",
+        "[[release]]\nversion = \"0.74.0\"\nfile = \"docs/plans/fixture.md\"\nwork_items = []\n",
+    );
+    repo.write("docs/plans/fixture.md", "# Synthetic rendering fixture\n");
+    repo.write(
+        "docs/testing/release-evidence/0.74.toml",
+        "schema_version = 1\nrelease = \"0.74.0\"\nplan = \"docs/plans/fixture.md\"\nwork_item = []\n",
+    );
+    repo.write(
+        "docs/testing/gated-test-registry.toml",
+        "schema_version = 1\nrelease = \"0.74.0\"\ngate = []\n",
+    );
+    repo.write(
+        "docs/testing/fast-suite-registry.toml",
+        "schema_version = 1\nrelease = \"0.74.0\"\nnextest_version = \"0.9.137\"\naggregate_budget_seconds = 1680\nsuite = []\n",
+    );
+    repo.write(
+        "docs/testing/canary-registry-0.74.json",
+        r#"{"version":2,"release":"0.74.0","entries":[]}"#,
+    );
+    repo.write(
+        "docs/testing/test-quarantine.toml",
+        "schema_version = 1\nrelease = \"0.74.0\"\nquarantine = []\n",
+    );
+    repo.write(".gitignore", "target/\n");
+    for args in [
+        vec!["init", "--quiet"],
+        vec!["add", "."],
+        vec![
+            "-c",
+            "user.name=Evidence fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "--quiet",
+            "-m",
+            "synthetic fixture",
+        ],
+    ] {
+        let output = Command::new("git")
+            .env_remove("GIT_DIR")
+            .env_remove("GIT_COMMON_DIR")
+            .env_remove("GIT_WORK_TREE")
+            .env_remove("GIT_INDEX_FILE")
+            .args(args)
+            .current_dir(repo.path())
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    let blocker = "0.74 ship admission is closed while candidate identity and release qualification are incomplete";
+    for release in ["0.74", "0.74.0"] {
+        for require_ship in [false, true] {
+            let mut command = Command::new(env!("CARGO_BIN_EXE_xtask"));
+            command
+                .env_remove("GIT_DIR")
+                .env_remove("GIT_COMMON_DIR")
+                .env_remove("GIT_WORK_TREE")
+                .env_remove("GIT_INDEX_FILE")
+                .current_dir(root())
+                .args(["release-evidence", "--root"])
+                .arg(repo.path())
+                .args(["--release", release]);
+            if require_ship {
+                command.arg("--require-ship");
+            }
+            let output = command.output().unwrap();
+            let stdout = String::from_utf8(output.stdout).unwrap();
+            let stderr = String::from_utf8(output.stderr).unwrap();
+            assert_eq!(output.status.success(), !require_ship, "{stdout}\n{stderr}");
+            assert!(
+                stdout.contains(&format!("release-evidence: release-wide: {blocker}")),
+                "{stdout}"
+            );
+            assert_eq!(stdout.matches(blocker).count(), 1);
+            if require_ship {
+                assert!(stderr.contains("--require-ship rejected non-green evidence"));
+            }
+            let json: serde_json::Value = serde_json::from_slice(
+                &fs::read(repo.path().join("target/release-evidence/0.74.json")).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(json["reasons"], serde_json::json!([blocker]));
+            assert_eq!(json["counts"]["ship-ready"], 0);
+            assert_eq!(json["current_worktree_dirty"], false);
+            let markdown =
+                fs::read_to_string(repo.path().join("target/release-evidence/0.74.md")).unwrap();
+            assert!(markdown.contains(&format!("- {blocker}\n")));
+        }
+    }
+}
+
+#[test]
 fn release_evidence_reports_every_manifest_work_item_exactly_once() {
     let report = xtask::release_evidence::build_report(&root(), "0.64", None).unwrap();
     let ids: Vec<_> = report

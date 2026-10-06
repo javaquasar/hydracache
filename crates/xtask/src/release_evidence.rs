@@ -160,6 +160,9 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         count(&report, EvidenceStage::GatedGreen),
         count(&report, EvidenceStage::ShipReady),
     );
+    for reason in &report.reasons {
+        println!("release-evidence: release-wide: {reason}");
+    }
     for item in &report.work_items {
         if item.stage != EvidenceStage::ShipReady {
             println!(
@@ -1738,9 +1741,17 @@ fn write_report(
         serde_json::to_vec_pretty(report)?,
     )?;
     let mut markdown = format!(
-        "# Release {} evidence\n\nCommit: `{}`\n\n| Work item | Stage | Reasons |\n|---|---|---|\n",
+        "# Release {} evidence\n\nCommit: `{}`\n\n",
         report.release, report.source_commit
     );
+    if !report.reasons.is_empty() {
+        markdown.push_str("## Release-wide reasons\n\n");
+        for reason in &report.reasons {
+            writeln!(markdown, "- {reason}")?;
+        }
+        markdown.push('\n');
+    }
+    markdown.push_str("| Work item | Stage | Reasons |\n|---|---|---|\n");
     for item in &report.work_items {
         writeln!(
             markdown,
@@ -1856,6 +1867,72 @@ impl Options {
             require_ship,
             emit_template,
         })
+    }
+}
+
+#[cfg(test)]
+mod report_output_tests {
+    use super::{write_report, EvidenceStage, ReleaseEvidenceReport, WorkItemReport};
+
+    fn fixture() -> ReleaseEvidenceReport {
+        ReleaseEvidenceReport {
+            schema_version: 1,
+            release: "0.74.0".to_owned(),
+            source_commit: "synthetic-rendering-fixture".to_owned(),
+            current_worktree_dirty: false,
+            receipts_supplied: true,
+            counts: [("fast-green".to_owned(), 1), ("ship-ready".to_owned(), 0)].into(),
+            reasons: Vec::new(),
+            work_items: vec![WorkItemReport {
+                id: "W0".to_owned(),
+                stage: EvidenceStage::FastGreen,
+                reasons: Vec::new(),
+            }],
+        }
+    }
+
+    #[test]
+    fn markdown_preserves_every_release_wide_reason_before_work_item_rows() {
+        let root = tempfile::tempdir().unwrap();
+        let mut report = fixture();
+        report.reasons = vec![
+            crate::performance_contract_074::SHIP_ADMISSION_BLOCKER.to_owned(),
+            "required compatibility baseline tag v0.example is missing".to_owned(),
+        ];
+        report.work_items[0].reasons = vec!["row-local | reason".to_owned()];
+        for release in ["0.74", "0.74.0"] {
+            write_report(root.path(), release, &report).unwrap();
+            let markdown =
+                std::fs::read_to_string(root.path().join("target/release-evidence/0.74.md"))
+                    .unwrap();
+            let heading = markdown.find("## Release-wide reasons").unwrap();
+            let table = markdown.find("| Work item | Stage | Reasons |").unwrap();
+            for reason in &report.reasons {
+                let position = markdown.find(&format!("- {reason}\n")).unwrap();
+                assert!(heading < position && position < table);
+                assert_eq!(markdown.matches(reason).count(), 1);
+            }
+            assert!(markdown.contains("| W0 | fast-green | row-local \\| reason |"));
+            let json: serde_json::Value = serde_json::from_slice(
+                &std::fs::read(root.path().join("target/release-evidence/0.74.json")).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(json, serde_json::to_value(&report).unwrap());
+        }
+    }
+
+    #[test]
+    fn markdown_without_release_wide_reasons_preserves_legacy_layout() {
+        let root = tempfile::tempdir().unwrap();
+        let mut report = fixture();
+        report.release = "0.64.0".to_owned();
+        write_report(root.path(), "0.64", &report).unwrap();
+        let markdown =
+            std::fs::read_to_string(root.path().join("target/release-evidence/0.64.md")).unwrap();
+        assert_eq!(
+            markdown,
+            "# Release 0.64.0 evidence\n\nCommit: `synthetic-rendering-fixture`\n\n| Work item | Stage | Reasons |\n|---|---|---|\n| W0 | fast-green |  |\n"
+        );
     }
 }
 
