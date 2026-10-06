@@ -16,6 +16,11 @@ repository notes, GitHub release source, search index and public site on the sam
   backpressure and immutable six-/24-hour measurement archives. Publication remains conditional on
   green corrected exact-SHA gates.
 
+## Development drafts
+
+- [HydraCache 0.74.0 (draft)](0.74.0.md) — RESP/native throughput investigation and opt-in
+  measurement tooling. No product candidate is accepted or frozen; no release admission is claimed.
+
 ## Verification records
 
 - [HydraCache 0.72 verification](../reference/release-0.72-verification.md) — executable gates,
