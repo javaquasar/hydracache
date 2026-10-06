@@ -2589,3 +2589,27 @@ throughput, latency, role-overhead or isolated-CPU interrupt claim was measured.
 live-role reboot and expensive product qualification remain separate gates. The useful result is
 architectural: a restartable controller needs semantic identities that survive namespace renewal,
 and each relaxation must be no wider than the lifecycle state that justifies it.
+
+## A complete control-plane rehearsal is still not a product benchmark
+
+The next admitted-host run completed the path that the earlier abort and recovery experiments had
+left open. A freshly provisioned exact source produced a new root-bound host observation and one
+immutable six-file start bundle. I74 then crossed signed start, deterministic terminal wait,
+terminal-evidence attach and seal. C74 was admitted only from that exact `I74_SEALED` revision and
+crossed the same sequence to `COMPLETE_SEALED`.
+
+This mattered because final seal owns more than a state label. It must verify the retained
+successful unit, clear every process/checkpoint/controller-lease field and release the host-wide
+claim only after the durable event chain and final state agree. At the end, both role units were
+`active/exited` with zero MainPID and `Result=success`; the campaign had no failure, corruption or
+duplicate-executor flag; the active marker was absent; the supervisor had zero restarts; and the
+Actions runner was offline again. Every signed request and response, the start bundle and the final
+event head are content-addressed in the retained receipt.
+
+The important measurement lesson is negative: completing infrastructure does not create a
+throughput claim. The roles were bounded lifecycle fixtures, not HydraCache product candidates.
+They measured authorization, identity continuity, exact revision transitions and cleanup. They did
+not measure goodput, latency, allocations, RSS under product load or native-API non-regression.
+Accordingly, live seal and typed mutation coverage can turn green while product qualification,
+role-overhead, live-role reboot and release admission remain red. Keeping those statements
+separate prevents a reliable benchmark controller from being mistaken for a fast cache.

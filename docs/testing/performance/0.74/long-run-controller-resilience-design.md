@@ -766,7 +766,31 @@ was restored active with zero restarts. The retained receipt does not independen
 temporary mismatch during the drift interval, so it proves post-window identity revalidation and
 lease ownership, not a host-observed drift interval. This closes
 `lease_expiry_host_rehearsal_complete`; signed socket admission, supervisor restart, reboot, live
-seal and full host rehearsal remain open.
+seal and full host rehearsal remained open at that stage.
+
+### Complete non-product I74 to C74 seal rehearsal
+
+The full signed two-role lifecycle passed on the admitted host at exact source `7a6b5b15` without
+executing a product candidate. Provisioning run `37437254815` installed the reviewed supervisor;
+bundle run `37437612895` bound the fresh host observation to campaign `57c731a1…`, manifest
+`65c28087…` and six-file bundle `83301e4d…`. Each role used distinct signed start, attach and seal
+request UUIDs. The I74 workflow `37437854001` advanced through the exact terminal unit to revision
+5 `I74_SEALED`. The C74 workflow `37440450794` could start only from that revision and advanced to
+revision 10 `COMPLETE_SEALED`.
+
+The final durable state has no harness, daemon, checkpoint or controller lease and keeps
+`recorded_failure`, `duplicate_executor` and `durable_history_corrupt` false. Both deterministic
+units are retained as `active/exited`, `MainPID=0`, `Result=success` with no cgroup. Only after the
+final seal did the state machine release the active-campaign marker. The root supervisor remained
+`active/running` with `NRestarts=0`, and the self-hosted runner was returned to
+`inactive/disabled`. Request and response artifact digests, bundle provenance and the final event
+head are retained in
+`local-runs/w11-i74-c74-complete-seal-7a6b5b15.json`.
+
+This closes live seal and the non-product admitted-host coverage of all typed mutating operations.
+It does not prove live-role reboot recovery, role-level overhead, product throughput, six-hour or
+24-hour qualification, or release admission. Those flags remain false and no threshold or product
+duration changed.
 
 The operator runbook is:
 

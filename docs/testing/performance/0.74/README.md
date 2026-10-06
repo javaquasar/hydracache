@@ -213,6 +213,25 @@ empty C74 transient unit was reset and unloaded, the active marker was released 
 machine, the supervisor recorded zero restarts, and the Actions runner was returned offline. See
 `local-runs/w11-quarantine-recovery-83b19a98.json`; this is non-promotable resilience evidence,
 not a product or throughput qualification result.
+
+The fresh two-role rehearsal then closed the live-seal path at exact source `7a6b5b15`. Signed
+provisioning run `37437254815` installed that source, and bundle run `37437612895` constructed
+campaign `57c731a1…`, manifest `65c28087…` and immutable bundle `83301e4d…` from a new root-bound
+host observation. I74 run `37437854001` performed signed start, waited for the exact successful
+terminal unit, attached terminal evidence and sealed revision 5 `I74_SEALED`. C74 run
+`37440450794` continued only from that exact revision and repeated the same sequence to revision 10
+`COMPLETE_SEALED`. Both retained units were `active/exited`, `MainPID=0`, `Result=success`; all
+failure, corruption and duplicate-executor flags were false. Final seal released the active marker,
+the supervisor stayed active with zero restarts, and the runner was returned inactive and disabled.
+The complete artifact-bound receipt is
+`local-runs/w11-i74-c74-complete-seal-7a6b5b15.json`.
+
+This closes the admitted-host live `start`, `attach`, `seal` and previously rehearsed `abort`
+operations for the non-product fixture. It does not close live-role reboot, role-level overhead,
+product I74/C74 execution, the six-hour qualification or the separately authorized 24-hour
+confirmation. `live_service_complete`, `host_rehearsal_complete` and
+`release_admission_allowed` therefore remain false.
+
 Role-specific canonical `spawn-intent` and `spawn-result` documents have create-new SHA-256
 sidecars and deterministic unit names. The intent is durable before the backend call; after that
 boundary every retry observes or adopts the exact unit and can never call start again. An absent
