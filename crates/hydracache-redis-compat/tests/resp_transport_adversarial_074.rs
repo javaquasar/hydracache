@@ -5,13 +5,188 @@ use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, Waker};
 use std::time::Duration;
 
-use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
-use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer};
+use hydracache::{
+    ConsumerIsolation, ConsumerIsolationConfig, NamespaceQuota, Tenant, TenantRoster,
+};
+use hydracache_client_protocol::{
+    ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
+};
+use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceLimits, ClientSurfaceState};
+use hydracache_redis_compat::{
+    translate_redis_command, RedisCommand, RedisListenerConfig, RedisRespServer,
+    RedisTranslatedCommand, RedisTranslationContext, DEFAULT_REDIS_NAMESPACE,
+};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 
 const TWO_SETS_AND_QUIT: &[u8] = b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
                                   *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n\
                                   *1\r\n$4\r\nQUIT\r\n";
+
+#[tokio::test]
+async fn queued_set_nx_revalidates_after_intervening_native_invalidate() {
+    for accepted_bytes in 0..=5 {
+        let server = listener();
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(
+            b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+              *6\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n2\r\n$2\r\nNX\r\n$2\r\nPX\r\n$4\r\n5000\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+            Arc::clone(&output),
+        )
+        .gate_after_bytes(accepted_bytes, Arc::clone(&gate));
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(server.state().state_mutations(), 1);
+        assert_eq!(native_get(&server, b"a"), Some(b"1".to_vec()));
+
+        let (ns, key) = native_key(b"a");
+        assert_eq!(
+            native_dispatch(
+                &server,
+                "native-delete",
+                ClientRequest::Invalidate { ns, key }
+            ),
+            ClientResponse::Invalidated
+        );
+        assert_eq!(native_get(&server, b"a"), None);
+        assert_eq!(server.state().state_mutations(), 2);
+
+        gate.open();
+        tokio::time::timeout(Duration::from_secs(2), serving)
+            .await
+            .expect("released NX must finish")
+            .unwrap();
+        assert_eq!(&*output.lock().unwrap(), b"+OK\r\n+OK\r\n+OK\r\n");
+        assert_eq!(native_get(&server, b"a"), Some(b"2".to_vec()));
+        assert_eq!(server.state().state_mutations(), 3);
+    }
+}
+
+#[tokio::test]
+async fn queued_get_observes_intervening_native_put_without_blocking_native() {
+    for accepted_bytes in 0..=5 {
+        let server = listener();
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(
+            b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+            Arc::clone(&output),
+        )
+        .gate_after_bytes(accepted_bytes, Arc::clone(&gate));
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(native_get(&server, b"a"), Some(b"1".to_vec()));
+        native_put(&server, b"a", b"N");
+        assert_eq!(native_get(&server, b"a"), Some(b"N".to_vec()));
+
+        gate.open();
+        tokio::time::timeout(Duration::from_secs(2), serving)
+            .await
+            .expect("released GET must finish")
+            .unwrap();
+        assert_eq!(&*output.lock().unwrap(), b"+OK\r\n$1\r\nN\r\n+OK\r\n");
+        assert_eq!(server.state().state_mutations(), 2);
+    }
+}
+
+#[tokio::test]
+async fn queued_set_nx_uses_expiry_and_ttl_at_its_execution_boundary() {
+    for accepted_bytes in 0..=5 {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(
+            b"*5\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n$2\r\nPX\r\n$2\r\n10\r\n\
+              *6\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n2\r\n$2\r\nNX\r\n$2\r\nPX\r\n$2\r\n10\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+            Arc::clone(&output),
+        )
+        .gate_after_bytes(accepted_bytes, Arc::clone(&gate));
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(native_get(&server, b"a"), Some(b"1".to_vec()));
+        // Advance the injected clock to the exact first-key expiry. This is a
+        // logical input change, not waiting on wall-clock time.
+        server.state().advance_cache_time_for_tests(10);
+        assert_eq!(native_get(&server, b"a"), None);
+
+        gate.open();
+        tokio::time::timeout(Duration::from_secs(2), serving)
+            .await
+            .expect("released expiring NX must finish")
+            .unwrap();
+        assert_eq!(&*output.lock().unwrap(), b"+OK\r\n+OK\r\n+OK\r\n");
+        assert_eq!(native_get(&server, b"a"), Some(b"2".to_vec()));
+        server.state().advance_cache_time_for_tests(9);
+        assert_eq!(native_get(&server, b"a"), Some(b"2".to_vec()));
+        server.state().advance_cache_time_for_tests(1);
+        assert_eq!(native_get(&server, b"a"), None);
+    }
+}
+
+#[tokio::test]
+async fn queued_set_does_not_reserve_quota_ahead_of_intervening_native_put() {
+    for accepted_bytes in 0..=5 {
+        let roster = TenantRoster::new(vec![Tenant::new(DEFAULT_REDIS_NAMESPACE)
+            .unwrap()
+            .allow_client("redis-resp")
+            .allow_client("native-client")
+            .namespace(DEFAULT_REDIS_NAMESPACE, NamespaceQuota::new(2, 2))])
+        .unwrap();
+        let isolation = ConsumerIsolation::new(roster, ConsumerIsolationConfig::default());
+        let state =
+            ClientSurfaceState::with_isolation(ClientSurfaceLimits::default(), isolation).unwrap();
+        let server = RedisRespServer::new(Arc::new(state), RedisListenerConfig::default()).unwrap();
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(
+            b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nc\r\n$1\r\n2\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+            Arc::clone(&output),
+        )
+        .gate_after_bytes(accepted_bytes, Arc::clone(&gate));
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(server.state().state_mutations(), 1);
+        assert!(server.state().audit_events_for_tests().is_empty());
+        native_put(&server, b"b", b"N");
+        assert_eq!(native_get(&server, b"b"), Some(b"N".to_vec()));
+        assert_eq!(native_get(&server, b"c"), None);
+
+        gate.open();
+        tokio::time::timeout(Duration::from_secs(2), serving)
+            .await
+            .expect("quota-rejected pipeline must finish")
+            .unwrap();
+        assert_eq!(
+            &*output.lock().unwrap(),
+            b"+OK\r\n-ERR HydraCache client error: tenant quota exceeded\r\n+OK\r\n"
+        );
+        assert_eq!(server.state().state_mutations(), 2);
+        assert_eq!(native_get(&server, b"a"), Some(b"1".to_vec()));
+        assert_eq!(native_get(&server, b"b"), Some(b"N".to_vec()));
+        assert_eq!(native_get(&server, b"c"), None);
+        let audit = server.state().audit_events_for_tests();
+        assert_eq!(audit.len(), 1);
+        assert!(format!("{:?}", audit[0]).contains("QuotaRejected"));
+        assert_eq!(
+            server
+                .state()
+                .retained_state_for_diagnostics()
+                .store_entries,
+            2
+        );
+    }
+}
 
 #[tokio::test]
 async fn every_partial_reply_and_pending_flush_preserve_the_mutation_frontier() {
@@ -197,6 +372,62 @@ fn listener() -> RedisRespServer {
         RedisListenerConfig::default(),
     )
     .unwrap()
+}
+
+// Translate only to obtain the existing binary-safe identity. All interleaving
+// operations themselves use the supported direct native dispatch seam, not RESP
+// execution or private store access.
+fn native_key(key: &[u8]) -> (Namespace, StructuredKey) {
+    let RedisTranslatedCommand::Execute(plan) = translate_redis_command(
+        RedisCommand::Get { key: key.to_vec() },
+        &RedisTranslationContext::new(DEFAULT_REDIS_NAMESPACE, "native-key").unwrap(),
+    )
+    .unwrap() else {
+        panic!("GET must translate to an execution plan");
+    };
+    let ClientRequest::Get { ns, key } = &plan.initial_requests()[0].request else {
+        panic!("GET must translate to a native GET");
+    };
+    (ns.clone(), key.clone())
+}
+
+fn native_dispatch(server: &RedisRespServer, id: &str, request: ClientRequest) -> ClientResponse {
+    server
+        .state()
+        .dispatch_verified_request(
+            &ClientIdentity::new("native-client", DEFAULT_REDIS_NAMESPACE).unwrap(),
+            ClientRequestEnvelope::new(id, request),
+        )
+        .result
+        .expect("intervening native operation must make progress")
+}
+
+fn native_get(server: &RedisRespServer, key: &[u8]) -> Option<Vec<u8>> {
+    let (ns, key) = native_key(key);
+    let ClientResponse::Value { value } =
+        native_dispatch(server, "native-get", ClientRequest::Get { ns, key })
+    else {
+        panic!("native GET must return Value");
+    };
+    value
+}
+
+fn native_put(server: &RedisRespServer, key: &[u8], value: &[u8]) {
+    let (ns, key) = native_key(key);
+    assert_eq!(
+        native_dispatch(
+            server,
+            "native-put",
+            ClientRequest::Put {
+                ns,
+                key,
+                value: value.to_vec(),
+                ttl_ms: None,
+                dimensions: Vec::new(),
+            },
+        ),
+        ClientResponse::Stored
+    );
 }
 
 async fn exchange(server: &RedisRespServer, input: &'static [u8]) -> Vec<u8> {
