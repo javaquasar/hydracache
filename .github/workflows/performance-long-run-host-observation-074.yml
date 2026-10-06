@@ -85,7 +85,6 @@ jobs:
           import json
           import os
           import pathlib
-          import re
           import uuid
 
           request = {
@@ -128,6 +127,7 @@ jobs:
           import json
           import os
           import pathlib
+          import re
 
           root = pathlib.Path(os.environ["EVIDENCE_DIR"])
           request_bytes = (root / "request.json").read_bytes()

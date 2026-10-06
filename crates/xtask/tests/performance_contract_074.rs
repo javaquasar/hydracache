@@ -659,6 +659,14 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
             "read-only host observation workflow contains {forbidden}"
         );
     }
+    let collector = workflow
+        .split_once("- name: Collect and independently bind the host receipt")
+        .unwrap()
+        .1;
+    assert!(
+        collector.contains("import re"),
+        "fixture digest validation must import its regular-expression dependency"
+    );
 
     let entry = std::fs::read_to_string(
         root().join(".github/workflows/performance-long-run-host-capability-074.yml"),
