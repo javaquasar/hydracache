@@ -914,10 +914,26 @@ RSS and combined supervisor/checkpoint I/O against the existing frozen ceilings 
 attempt. It retains elapsed and role-CPU deltas per role, compares their medians against the frozen
 asymmetry budget, and never pools the roles.
 
-The first implementation is analysis-only and always emits non-promotable evidence. Passing it can
-close only the analyzer shape, not `role_overhead_qualification_complete`; a fixed host collector
-and executor plus exact product-source pairs remain mandatory. This prevents synthetic fixtures or
-hand-assembled numbers from becoming release evidence.
+The analyzer always emits non-promotable evidence. Passing it can close only the rehearsal shape,
+not `role_overhead_qualification_complete`; exact product-source pairs remain mandatory. This
+prevents synthetic fixtures or hand-assembled numbers from becoming release evidence.
+
+The fixed collector/executor is staged behind one no-argument root entrypoint operation. The root
+coordinator accepts no caller-supplied command, path, unit name, systemd property or workload
+dimension. It derives one admitted CPU, creates an exact five-pair ABBA schedule for each role, and
+starts a short unprivileged transient service with fixed resource limits and hardening. The service
+executes a hidden fixture mode of the installed supervisor binary, never the product benchmark or
+candidate. Control attempts write no checkpoint; instrumented attempts write and fsync exactly
+4,096 bytes to a pre-created root-owned descriptor. A separate receipt descriptor returns observed
+affinity, nice level, elapsed/process CPU, peak RSS, process write characters and completed work.
+
+The coordinator samples the stable production supervisor's cgroup CPU/I/O and process peak RSS
+around each attempt. It binds every row to the root-owned installed-source receipt and binary,
+rejects boot or supervisor process-identity drift, and checks that the host-wide active-campaign
+marker remains absent. The workflow adds zero-restart and lifecycle-context guards, runs the frozen
+analyzer, and retains both raw attempts and analysis. This is deliberately a non-product rehearsal:
+until a signed installed-source host run exists, its completion flag stays false; even afterwards it
+cannot satisfy the product I74/C74 overhead or release-admission gates.
 
 ### Reference-host freeze and reboot boundary
 

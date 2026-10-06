@@ -808,9 +808,26 @@ elapsed-time and role-CPU overhead asymmetry separately so one role cannot be po
 `scripts/perf/performance_long_run_role_overhead_074.py`.
 
 This analyzer is deliberately non-promotable. Even a passing synthetic attempt set leaves
-`role_overhead_qualification_complete=false` and `release_admission_allowed=false`. A fixed
-same-host collector/executor, a non-product live rehearsal, and then exact product I74/C74 pairs are
-still required; no role workload was run while staging the analyzer.
+`role_overhead_qualification_complete=false` and `release_admission_allowed=false`.
+
+The fixed same-host collector/executor is now staged as a second, separate slice. The only
+privileged entry is the no-argument `--role-overhead-smoke` operation in the already constrained
+root-owned provisioning entrypoint. It runs exactly 20 short non-product attempts in ABBA order,
+selects one CPU from the coordinator's admitted affinity, applies that affinity plus nice level zero
+through transient systemd properties, and executes only the installed supervisor binary's hidden
+fixture command. Unit names, argv, operation/warm-up counts, delays, checkpoint size and output
+paths are generated internally; the workflow cannot supply a command, path, unit property or
+workload parameter.
+
+Each attempt binds the installed source/binary and root-owned provisioning-receipt digest, verifies
+the unchanged boot and supervisor process identities, requires the host-wide campaign marker to be
+absent, and records role elapsed/CPU/RSS/write bytes plus supervisor cgroup CPU/I/O and process
+peak RSS. Control writes zero checkpoint bytes; instrumented writes and fsyncs exactly 4,096 bytes.
+The workflow independently requires an idle, zero-restart supervisor and absent lifecycle contexts
+before and after collection, then invokes the frozen analyzer. The collector and workflow are
+locally implemented, but `non_product_role_overhead_rehearsal_complete` remains false until this
+exact source is signed, installed and run on the admitted host. Product I74/C74 pairs are a later,
+separate gate; no product candidate or expensive qualification is started by this mode.
 
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and

@@ -26,6 +26,7 @@ on:
           - campaign-measurement-loss-smoke
           - campaign-lease-expiry-smoke
           - supervisor-overhead-smoke
+          - role-overhead-smoke
       controller_source_sha:
         description: Exact installed tooling source for controller mode
         required: false
@@ -1102,5 +1103,108 @@ jobs:
         with:
           name: performance-long-run-supervisor-idle-overhead-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/performance-evidence/0.74/reference/w11-supervisor-idle-overhead/**
+          if-no-files-found: error
+          retention-days: 90
+
+  role-overhead-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'role-overhead-smoke'
+    name: Non-product role-overhead collector rehearsal
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-074
+    timeout-minutes: 15
+    env:
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-role-overhead-smoke
+      SUPERVISOR_SERVICE: hydracache-performance-supervisor-074.service
+    steps:
+      - name: Check out exact role-overhead collector source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify immutable source and analyzer tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          python3 -m unittest scripts.perf.test_performance_long_run_role_overhead_074
+
+      - name: Bind idle host and installed identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
+          test "$(systemctl show "$SUPERVISOR_SERVICE" --property=NRestarts --value)" = 0
+          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
+          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+          test ! -e /run/hydracache-perf/controller-loss-smoke-v1.json
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --emit-receipt \
+            > "$EVIDENCE_DIR/provisioning.json"
+          installed_source_commit="$(python3 -c 'import json, os; print(json.load(open(os.environ["EVIDENCE_DIR"] + "/provisioning.json"))["source_commit"])')"
+          host_receipt_sha256="$(sha256sum "$EVIDENCE_DIR/provisioning.json" | awk '{print $1}')"
+          test "$installed_source_commit" = "$GITHUB_SHA"
+          [[ "$host_receipt_sha256" =~ ^[0-9a-f]{64}$ ]]
+          {
+            printf 'INSTALLED_SOURCE_COMMIT=%s\n' "$installed_source_commit"
+            printf 'HOST_RECEIPT_SHA256=%s\n' "$host_receipt_sha256"
+          } >> "$GITHUB_ENV"
+
+      - name: Collect fixed counterbalanced attempt set
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n /usr/local/sbin/hydracache-provision-host-074 --role-overhead-smoke \
+            > "$EVIDENCE_DIR/attempts.json"
+
+      - name: Analyze non-product role-overhead rehearsal
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_role_overhead_074.py \
+            --attempts "$EVIDENCE_DIR/attempts.json" \
+            --contract docs/testing/performance/0.74/long-run-controller-resilience-contract.toml \
+            --statistics docs/testing/performance/0.74/statistics.toml \
+            --expected-i74-source "$INSTALLED_SOURCE_COMMIT" \
+            --expected-c74-source "$INSTALLED_SOURCE_COMMIT" \
+            --expected-host-receipt "$HOST_RECEIPT_SHA256" \
+            --output "$EVIDENCE_DIR/analysis.json"
+
+      - name: Verify stable service and rehearsal-only decision
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(systemctl is-active "$SUPERVISOR_SERVICE" || true)" = active
+          test "$(systemctl show "$SUPERVISOR_SERVICE" --property=NRestarts --value)" = 0
+          test ! -e /var/lib/hydracache-performance/campaigns/active-campaign
+          test ! -e /var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json
+          test ! -e /run/hydracache-perf/controller-loss-smoke-v1.json
+          if test -f "$EVIDENCE_DIR/analysis.json"; then
+            python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          receipt = json.loads(
+              (pathlib.Path(os.environ["EVIDENCE_DIR"]) / "analysis.json").read_text()
+          )
+          assert receipt["schema_version"] == "hydracache-w11-role-overhead-rehearsal-v1"
+          assert receipt["evidence_class"] == "non-product-role-overhead-rehearsal"
+          assert receipt["promotable"] is False
+          assert receipt["pairs_per_role"] == 5
+          assert receipt["host_receipt_sha256"] == os.environ["HOST_RECEIPT_SHA256"]
+          assert receipt["decision"]["role_overhead_qualification_complete"] is False
+          assert receipt["decision"]["release_admission_allowed"] is False
+          PY
+          fi
+
+      - name: Retain role-overhead rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-long-run-role-overhead-smoke-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.74/reference/w11-role-overhead-smoke/**
           if-no-files-found: error
           retention-days: 90

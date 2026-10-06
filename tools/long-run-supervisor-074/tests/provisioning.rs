@@ -82,3 +82,14 @@ fn sudo_boundary_exposes_only_the_fixed_signed_bundle_installer() {
         assert!(!sudoers.contains(forbidden), "forbidden {forbidden}");
     }
 }
+
+#[test]
+fn role_overhead_entrypoint_is_fixed_no_argument_and_non_product() {
+    let entrypoint = fs::read_to_string(repository_path(
+        "scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+    ))
+    .unwrap();
+    assert!(entrypoint.contains("--role-overhead-smoke) && $# -eq 1"));
+    assert!(entrypoint.contains("exec \"$INSTALL_BINARY\" role-overhead-smoke"));
+    assert!(!entrypoint.contains("exec \"$INSTALL_BINARY\" role-overhead-smoke \"$@\""));
+}

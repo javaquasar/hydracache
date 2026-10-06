@@ -23,7 +23,7 @@ usage() {
   die "usage: $0 --bundle-dir DIR --source-commit SHA --repository-id ID --actor-id ID --runner-user NAME --runner-uid UID --runner-gid GID"
 }
 
-if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume || "${1-}" = --campaign-lifecycle-smoke-start || "${1-}" = --campaign-lifecycle-smoke-resume) && $# -eq 1 ]]; then
+if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-smoke || "${1-}" = --controller-loss-smoke-start || "${1-}" = --controller-loss-smoke-resume || "${1-}" = --campaign-lifecycle-smoke-start || "${1-}" = --campaign-lifecycle-smoke-resume || "${1-}" = --role-overhead-smoke) && $# -eq 1 ]]; then
   (( EUID == 0 )) || die "root is required"
   [[ "$(realpath -e -- "$0")" = "$ENTRYPOINT" ]] || die "operation requires the fixed root-owned entrypoint"
   [[ "$(stat -c '%a:%u:%g' "$ENTRYPOINT")" = 755:0:0 ]] || die "entrypoint metadata differs"
@@ -49,6 +49,9 @@ if [[ ("${1-}" = --preflight || "${1-}" = --emit-receipt || "${1-}" = --systemd-
   fi
   if [[ "$1" = --campaign-lifecycle-smoke-resume ]]; then
     exec "$INSTALL_BINARY" campaign-lifecycle-smoke-resume
+  fi
+  if [[ "$1" = --role-overhead-smoke ]]; then
+    exec "$INSTALL_BINARY" role-overhead-smoke
   fi
   printf 'ready\n'
   exit 0

@@ -36,6 +36,8 @@ pub mod process_identity;
 pub mod progress_loss;
 pub mod protocol;
 pub mod request_builder;
+#[cfg(target_os = "linux")]
+pub mod role_overhead_smoke;
 pub mod seal_artifact;
 pub mod seal_input;
 #[cfg(target_os = "linux")]

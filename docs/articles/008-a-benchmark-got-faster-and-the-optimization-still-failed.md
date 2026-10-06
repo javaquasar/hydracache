@@ -1259,6 +1259,33 @@ W9c therefore closes as measured-no-new-candidate. Platform defaults stay unchan
 requires a semantically different shallow-free batching design, not a reinterpretation of the same
 one-write-per-reply evidence.
 
+## Measuring the observer before trusting the release
+
+The same discipline applies to the release machinery itself. HydraCache 0.74 uses a detached host
+supervisor for long runs, so its CPU, memory and checkpoint I/O cannot be waved away as “tooling.”
+The idle screen passed, but that proves only the cost of waiting. It says nothing about the cost
+while I74 and C74 are doing identical work.
+
+We first froze an analyzer that refuses partial or convenient inputs: five counterbalanced
+control/instrumented pairs for each role, exact source/binary/workload/payload/host identities, equal
+seed, operation count, warm-up and affinity, zero checkpoint bytes in control, and every identity,
+placement and error guard true. It evaluates elapsed and role-CPU overhead separately for I74 and
+C74, and includes supervisor CPU, peak RSS and combined supervisor/checkpoint I/O. A pooled average
+cannot hide that instrumentation harms only one side.
+
+Then we staged a fixed same-host executor. Its privileged interface has no workload arguments and
+no shell escape: one command creates exactly 20 short transient services with internally generated
+unit names, argv, resource limits and output paths. The fixture is non-product, CPU-pinned and
+unprivileged. Instrumented attempts write and fsync exactly 4,096 checkpoint bytes; controls write
+none. Every row is bound to the installed receipt and binary, the unchanged boot and supervisor
+process, and an absent campaign claim.
+
+That rehearsal is useful, but it is not a product result. Even if every budget passes, its output is
+marked non-promotable and both role qualification and release admission remain false. Only the
+later exact I74/C74 product pairs may answer whether instrumentation moves cost between the paths.
+The important idea is the same one the rejected optimizations taught us: validate the measurement
+mechanism first, then let the complete product contract decide.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:

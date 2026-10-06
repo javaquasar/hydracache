@@ -193,6 +193,7 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "live_seal_complete",
         "live_mutating_operations_complete",
         "role_overhead_analyzer_complete",
+        "role_overhead_collector_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
@@ -404,6 +405,16 @@ fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
     assert!(analyzer.contains("non-product-role-overhead-rehearsal"));
     assert!(analyzer.contains("\"role_overhead_qualification_complete\": False"));
     assert!(analyzer.contains("\"release_admission_allowed\": False"));
+    let collector = std::fs::read_to_string(
+        root().join(implementation["role_overhead_collector"].as_str().unwrap()),
+    )
+    .unwrap();
+    assert!(collector.contains("non-product-role-overhead-rehearsal"));
+    assert!(collector.contains("const PAIRS: u32 = 5"));
+    assert!(collector.contains("const CHECKPOINT_BYTES: usize = 4_096"));
+    assert!(collector.contains("require_no_active_campaign"));
+    assert!(collector.contains("NoNewPrivileges"));
+    assert!(!collector.contains("path: \"/bin/sh\""));
 
     let provisioning: Value = serde_json::from_slice(
         &std::fs::read(
@@ -1077,6 +1088,7 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
         "campaign-measurement-loss-smoke",
         "campaign-lease-expiry-smoke",
         "supervisor-overhead-smoke",
+        "role-overhead-smoke",
     ] {
         assert!(
             workflow.contains(&format!("inputs.mode == '{mode}'")),
@@ -1102,6 +1114,13 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
     assert!(workflow.contains("--maximum-cpu-percent 0.5"));
     assert!(workflow.contains("--maximum-rss-bytes 67108864"));
     assert!(workflow.contains("--maximum-io-bytes-per-second 1048576"));
+    assert!(workflow
+        .contains("sudo -n /usr/local/sbin/hydracache-provision-host-074 --role-overhead-smoke"));
+    assert!(workflow.contains("--expected-i74-source \"$INSTALLED_SOURCE_COMMIT\""));
+    assert!(workflow.contains("--expected-c74-source \"$INSTALLED_SOURCE_COMMIT\""));
+    assert!(workflow.contains(
+        "assert receipt[\"decision\"][\"role_overhead_qualification_complete\"] is False"
+    ));
     let overhead_job = workflow
         .split("\n  supervisor-overhead-smoke:")
         .nth(1)
