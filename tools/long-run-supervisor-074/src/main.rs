@@ -88,6 +88,14 @@ fn run() -> u8 {
         [command] if command == "campaign-fixture-harness" => campaign_fixture_harness(),
         #[cfg(target_os = "linux")]
         [command] if command == "campaign-fixture-daemon" => campaign_fixture_daemon(),
+        #[cfg(target_os = "linux")]
+        [command] if command == "campaign-start-rehearsal-harness" => {
+            campaign_start_rehearsal_harness()
+        }
+        #[cfg(target_os = "linux")]
+        [command] if command == "campaign-start-rehearsal-daemon" => {
+            campaign_start_rehearsal_daemon()
+        }
         _ => {
             eprintln!(
                 "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
@@ -125,6 +133,28 @@ fn campaign_fixture_harness() -> u8 {
 #[cfg(target_os = "linux")]
 fn campaign_fixture_daemon() -> u8 {
     match hydracache_long_run_supervisor_074::campaign_smoke::run_fixture_daemon() {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("{error}");
+            9
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn campaign_start_rehearsal_harness() -> u8 {
+    match hydracache_long_run_supervisor_074::campaign_smoke::run_start_rehearsal_harness() {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("{error}");
+            9
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn campaign_start_rehearsal_daemon() -> u8 {
+    match hydracache_long_run_supervisor_074::campaign_smoke::run_start_rehearsal_daemon() {
         Ok(()) => 0,
         Err(error) => {
             eprintln!("{error}");

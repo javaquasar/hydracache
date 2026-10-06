@@ -79,7 +79,7 @@ def inputs() -> dict:
         "secret_identifiers": ["github-environment-key-v1"],
     }
     value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
-        MODULE.campaign_id(value)
+        MODULE.campaign_id(value), value["isolated_cpuset"], value["housekeeping_cpuset"]
     )
     return value
 
@@ -181,11 +181,15 @@ class PerformanceLongRun074Tests(unittest.TestCase):
     def test_environment_digest_binds_only_the_fixed_role_environment(self) -> None:
         value = inputs()
         manifest = MODULE.build_manifest(value)
-        environments = MODULE.command_environments(manifest["campaign_id"])
+        environments = MODULE.command_environments(
+            manifest["campaign_id"], manifest["isolated_cpuset"], manifest["housekeeping_cpuset"]
+        )
         self.assertEqual(set(environments), {"i74", "c74"})
         for environment in environments.values():
             self.assertTrue(all(not item.startswith("GITHUB_") for item in environment))
             self.assertTrue(all(not item.startswith("RUNNER_") for item in environment))
+            self.assertIn("HYDRACACHE_ISOLATED_CPUSET=2-7", environment)
+            self.assertIn("HYDRACACHE_HOUSEKEEPING_CPUSET=0-1", environment)
         drifted = copy.deepcopy(value)
         drifted["command_environment_sha256"] = "0" * 64
         with self.assertRaisesRegex(ValueError, "fixed role environments"):
@@ -230,7 +234,7 @@ class PerformanceLongRun074Tests(unittest.TestCase):
             receipt_digest = write_host_receipt(root / "receipt", value)
             value["host_receipt_sha256"] = receipt_digest
             value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
-                MODULE.campaign_id(value)
+                MODULE.campaign_id(value), value["isolated_cpuset"], value["housekeeping_cpuset"]
             )
             manifest = MODULE.build_manifest(value)
             MODULE.write_manifest(root / "manifest", manifest)
@@ -264,7 +268,7 @@ class PerformanceLongRun074Tests(unittest.TestCase):
             receipt_digest = write_host_receipt(root / "receipt", value)
             value["host_receipt_sha256"] = receipt_digest
             value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
-                MODULE.campaign_id(value)
+                MODULE.campaign_id(value), value["isolated_cpuset"], value["housekeeping_cpuset"]
             )
             MODULE.write_manifest(root / "manifest", MODULE.build_manifest(value))
             MODULE.assemble_start_bundle(root / "manifest", root / "receipt", root / "bundle")
@@ -295,7 +299,7 @@ class PerformanceLongRun074Tests(unittest.TestCase):
             )
             value["host_receipt_sha256"] = digest
             value["command_environment_sha256"] = MODULE.expected_command_environment_sha256(
-                MODULE.campaign_id(value)
+                MODULE.campaign_id(value), value["isolated_cpuset"], value["housekeeping_cpuset"]
             )
             MODULE.write_manifest(root / "manifest-drift", MODULE.build_manifest(value))
             with self.assertRaisesRegex(ValueError, "boot_id"):

@@ -171,8 +171,19 @@ class PerformanceNonProductStartBundle074Tests(unittest.TestCase):
                 )
             builder = MODULE.load_builder()
             campaign, bundle_digest = builder.verify_start_bundle(root / "bundle")
+            manifest = json.loads(
+                (root / "bundle" / "campaign-start.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(campaign, evidence["campaign_id"])
             self.assertEqual(bundle_digest, evidence["start_bundle_sha256"])
+            self.assertEqual(
+                manifest["argv_templates"]["i74"],
+                [MODULE.FIXTURE_PATH, "campaign-start-rehearsal-harness"],
+            )
+            self.assertEqual(
+                manifest["argv_templates"]["c74"],
+                [MODULE.FIXTURE_PATH, "campaign-start-rehearsal-harness"],
+            )
             self.assertEqual(
                 evidence["installed_fixture_binary"],
                 observation["installed_fixture_binary"],

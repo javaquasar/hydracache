@@ -41,8 +41,9 @@ use std::io::{Read, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::mpsc::{self, RecvTimeoutError};
 use std::thread;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 const CAMPAIGN_ROOT: &str = "/var/lib/hydracache-performance/campaigns";
 const FIXTURE_BINARY: &str = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture";
@@ -51,6 +52,8 @@ const SUPERVISOR_SERVICE: &str = "hydracache-performance-supervisor-074.service"
 const FIXTURE_DAEMON_DRIFT_AFTER_SECONDS: u64 = 210;
 const FIXTURE_DAEMON_DRIFT_SECONDS: u64 = 20;
 const FIXTURE_DAEMON_AFTER_DRIFT_SECONDS: u64 = 80;
+const START_REHEARSAL_DAEMON_SECONDS: u64 = 900;
+const START_REHEARSAL_CHECKPOINT_SECONDS: u64 = 30;
 const FIXTURE_LEASE_SECONDS: u64 = 250;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
@@ -1103,6 +1106,8 @@ pub fn run_fixture_harness() -> Result<(), String> {
     let role = std::env::var("HYDRACACHE_ROLE").map_err(display)?;
     let evidence_directory =
         PathBuf::from(std::env::var("HYDRACACHE_EVIDENCE_DIRECTORY").map_err(display)?);
+    let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
+    let housekeeping_cpuset = std::env::var("HYDRACACHE_HOUSEKEEPING_CPUSET").map_err(display)?;
     if role != "i74" || campaign_id.len() != 64 {
         return Err("fixture environment differs".to_owned());
     }
@@ -1110,10 +1115,9 @@ pub fn run_fixture_harness() -> Result<(), String> {
     if executable != Path::new(FIXTURE_BINARY) {
         return Err("fixture executable path differs".to_owned());
     }
-    let mut child = Command::new(&executable)
-        .arg("campaign-fixture-daemon")
-        .spawn()
-        .map_err(display)?;
+    set_current_thread_affinity(&isolated_cpuset)?;
+    let mut child =
+        spawn_daemon_on_housekeeping(&executable, "campaign-fixture-daemon", &housekeeping_cpuset)?;
     let own_snapshot = inspect_process(std::process::id()).map_err(display)?;
     let unit_name = Path::new(&own_snapshot.cgroup_path)
         .file_name()
@@ -1151,12 +1155,7 @@ pub fn run_fixture_harness() -> Result<(), String> {
         },
     )
     .map_err(display)?;
-    append_record(
-        &evidence_directory.join("checkpoints.jsonl"),
-        &evidence_directory.join("checkpoints.head"),
-        &record,
-    )
-    .map_err(display)?;
+    append_record_on_housekeeping(&evidence_directory, &housekeeping_cpuset, record)?;
     let status = child.wait().map_err(display)?;
     if status.success() {
         Ok(())
@@ -1166,6 +1165,8 @@ pub fn run_fixture_harness() -> Result<(), String> {
 }
 
 pub fn run_fixture_daemon() -> Result<(), String> {
+    let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
+    set_current_thread_affinity(&isolated_cpuset)?;
     let mut original = unsafe { std::mem::zeroed::<libc::cpu_set_t>() };
     let cpu_set_bytes = std::mem::size_of::<libc::cpu_set_t>();
     if unsafe { libc::sched_getaffinity(0, cpu_set_bytes, &mut original) } != 0 {
@@ -1193,6 +1194,238 @@ pub fn run_fixture_daemon() -> Result<(), String> {
     }
     thread::sleep(Duration::from_secs(FIXTURE_DAEMON_AFTER_DRIFT_SECONDS));
     Ok(())
+}
+
+pub fn run_start_rehearsal_harness() -> Result<(), String> {
+    let campaign_id = std::env::var("HYDRACACHE_CAMPAIGN_ID").map_err(display)?;
+    let role = std::env::var("HYDRACACHE_ROLE").map_err(display)?;
+    let evidence_directory =
+        PathBuf::from(std::env::var("HYDRACACHE_EVIDENCE_DIRECTORY").map_err(display)?);
+    let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
+    let housekeeping_cpuset = std::env::var("HYDRACACHE_HOUSEKEEPING_CPUSET").map_err(display)?;
+    if role != "i74" || campaign_id.len() != 64 {
+        return Err("start rehearsal fixture environment differs".to_owned());
+    }
+    let executable = std::env::current_exe().map_err(display)?;
+    if executable != Path::new(FIXTURE_BINARY) {
+        return Err("start rehearsal fixture executable path differs".to_owned());
+    }
+
+    set_current_thread_affinity(&isolated_cpuset)?;
+    let mut child = spawn_daemon_on_housekeeping(
+        &executable,
+        "campaign-start-rehearsal-daemon",
+        &housekeeping_cpuset,
+    )?;
+    let own_snapshot = inspect_process(std::process::id()).map_err(display)?;
+    let unit_name = Path::new(&own_snapshot.cgroup_path)
+        .file_name()
+        .and_then(|value| value.to_str())
+        .ok_or_else(|| "start rehearsal fixture unit name is unavailable".to_owned())?
+        .to_owned();
+    let harness = identity_from_snapshot(own_snapshot, &unit_name).map_err(display)?;
+    let daemon = identity_from_snapshot(inspect_process(child.id()).map_err(display)?, &unit_name)
+        .map_err(display)?;
+
+    let (ready_tx, ready_rx) = mpsc::sync_channel(1);
+    let (stop_tx, stop_rx) = mpsc::channel();
+    let writer = thread::spawn(move || {
+        let result = run_start_rehearsal_checkpoint_writer(
+            evidence_directory,
+            housekeeping_cpuset,
+            campaign_id,
+            harness,
+            daemon,
+            stop_rx,
+            &ready_tx,
+        );
+        if let Err(error) = &result {
+            let _ = ready_tx.try_send(Err(error.clone()));
+        }
+        result
+    });
+    match ready_rx.recv_timeout(Duration::from_secs(10)) {
+        Ok(Ok(())) => {}
+        Ok(Err(error)) => {
+            let _ = child.kill();
+            let _ = child.wait();
+            let _ = writer.join();
+            return Err(error);
+        }
+        Err(error) => {
+            let _ = child.kill();
+            let _ = child.wait();
+            let _ = writer.join();
+            return Err(error.to_string());
+        }
+    }
+
+    let status = child.wait().map_err(display)?;
+    let _ = stop_tx.send(());
+    writer
+        .join()
+        .map_err(|_| "start rehearsal checkpoint writer panicked".to_owned())??;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("start rehearsal fixture daemon failed".to_owned())
+    }
+}
+
+pub fn run_start_rehearsal_daemon() -> Result<(), String> {
+    let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
+    set_current_thread_affinity(&isolated_cpuset)?;
+    thread::sleep(Duration::from_secs(START_REHEARSAL_DAEMON_SECONDS));
+    Ok(())
+}
+
+fn run_start_rehearsal_checkpoint_writer(
+    evidence_directory: PathBuf,
+    housekeeping_cpuset: String,
+    campaign_id: String,
+    harness: crate::ProcessIdentity,
+    daemon: crate::ProcessIdentity,
+    stop_rx: mpsc::Receiver<()>,
+    ready_tx: &mpsc::SyncSender<Result<(), String>>,
+) -> Result<(), String> {
+    set_current_thread_affinity(&housekeeping_cpuset)?;
+    let started = Instant::now();
+    let mut sequence = 1_u64;
+    let mut previous = GENESIS_HASH.to_owned();
+    loop {
+        let now = unix_seconds()?;
+        let record = build_record(
+            sequence,
+            &previous,
+            CheckpointPayload {
+                campaign_id: campaign_id.clone(),
+                role: Role::I74,
+                phase: Phase::Startup,
+                phase_epoch: sequence,
+                monotonic_elapsed_ns: u64::try_from(started.elapsed().as_nanos())
+                    .map_err(display)?,
+                wall_clock_utc: format!("{now:020}"),
+                observed_unix_seconds: now,
+                useful_progress_unix_seconds: now,
+                completed: sequence.saturating_sub(1),
+                failed: 0,
+                rejected: 0,
+                timed_out: 0,
+                outstanding: 1,
+                telemetry_sequence: sequence,
+                milestone: format!("non-product-signed-start-rehearsal-{sequence}"),
+                surface_counters: BTreeMap::new(),
+                resource_counters: BTreeMap::new(),
+                owner_counters: BTreeMap::new(),
+                harness: harness.clone(),
+                daemon: daemon.clone(),
+            },
+        )
+        .map_err(display)?;
+        append_record(
+            &evidence_directory.join("checkpoints.jsonl"),
+            &evidence_directory.join("checkpoints.head"),
+            &record,
+        )
+        .map_err(display)?;
+        previous = record.record_sha256;
+        if sequence == 1 {
+            ready_tx.send(Ok(())).map_err(|error| error.to_string())?;
+        }
+        match stop_rx.recv_timeout(Duration::from_secs(START_REHEARSAL_CHECKPOINT_SECONDS)) {
+            Ok(()) | Err(RecvTimeoutError::Disconnected) => return Ok(()),
+            Err(RecvTimeoutError::Timeout) => {
+                sequence = sequence
+                    .checked_add(1)
+                    .ok_or_else(|| "start rehearsal checkpoint sequence overflow".to_owned())?;
+            }
+        }
+    }
+}
+
+fn append_record_on_housekeeping(
+    evidence_directory: &Path,
+    housekeeping_cpuset: &str,
+    record: crate::RecordEnvelope,
+) -> Result<(), String> {
+    let directory = evidence_directory.to_owned();
+    let cpuset = housekeeping_cpuset.to_owned();
+    thread::spawn(move || {
+        set_current_thread_affinity(&cpuset)?;
+        append_record(
+            &directory.join("checkpoints.jsonl"),
+            &directory.join("checkpoints.head"),
+            &record,
+        )
+        .map_err(display)
+    })
+    .join()
+    .map_err(|_| "fixture checkpoint writer panicked".to_owned())?
+}
+
+fn spawn_daemon_on_housekeeping(
+    executable: &Path,
+    command: &str,
+    housekeeping_cpuset: &str,
+) -> Result<std::process::Child, String> {
+    use std::os::unix::process::CommandExt;
+
+    let cpus = parse_cpuset(housekeeping_cpuset)?;
+    let mut child = Command::new(executable);
+    child.arg(command);
+    unsafe {
+        child.pre_exec(move || set_affinity(&cpus).map_err(std::io::Error::other));
+    }
+    child.spawn().map_err(display)
+}
+
+fn set_current_thread_affinity(cpuset: &str) -> Result<(), String> {
+    set_affinity(&parse_cpuset(cpuset)?)
+}
+
+fn set_affinity(cpus: &[usize]) -> Result<(), String> {
+    let mut affinity = unsafe { std::mem::zeroed::<libc::cpu_set_t>() };
+    unsafe {
+        libc::CPU_ZERO(&mut affinity);
+        for cpu in cpus {
+            libc::CPU_SET(*cpu, &mut affinity);
+        }
+    }
+    if unsafe { libc::sched_setaffinity(0, std::mem::size_of::<libc::cpu_set_t>(), &affinity) } != 0
+    {
+        return Err(std::io::Error::last_os_error().to_string());
+    }
+    Ok(())
+}
+
+fn parse_cpuset(value: &str) -> Result<Vec<usize>, String> {
+    if value.is_empty() || value.len() > 256 || value.bytes().any(|byte| byte.is_ascii_whitespace())
+    {
+        return Err("fixture cpuset is invalid".to_owned());
+    }
+    let mut cpus = Vec::new();
+    for item in value.split(',') {
+        let mut bounds = item.split('-');
+        let first = bounds
+            .next()
+            .ok_or_else(|| "fixture cpuset is invalid".to_owned())?
+            .parse::<usize>()
+            .map_err(display)?;
+        let last = bounds
+            .next()
+            .map_or(Ok(first), |value| value.parse::<usize>().map_err(display))?;
+        if bounds.next().is_some() || first > last || last >= libc::CPU_SETSIZE as usize {
+            return Err("fixture cpuset is invalid".to_owned());
+        }
+        cpus.extend(first..=last);
+    }
+    cpus.sort_unstable();
+    let original_len = cpus.len();
+    cpus.dedup();
+    if cpus.is_empty() || cpus.len() != original_len {
+        return Err("fixture cpuset is invalid".to_owned());
+    }
+    Ok(cpus)
 }
 
 #[derive(Default)]
@@ -1509,8 +1742,8 @@ fn display(error: impl std::fmt::Display) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        fixture_diagnostic, lease_deadline_elapsed, progress_deadline_elapsed, uuid_from_hash,
-        FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
+        fixture_diagnostic, lease_deadline_elapsed, parse_cpuset, progress_deadline_elapsed,
+        uuid_from_hash, FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
         FIXTURE_DAEMON_DRIFT_SECONDS, FIXTURE_LEASE_SECONDS, HASH_A,
     };
     use std::fs;
@@ -1521,6 +1754,15 @@ mod tests {
         assert_eq!(value.len(), 36);
         assert_eq!(&value[14..15], "4");
         assert_eq!(&value[19..20], "8");
+    }
+
+    #[test]
+    fn fixture_cpuset_parser_is_exact_and_rejects_overlap() {
+        assert_eq!(parse_cpuset("0,5-7").unwrap(), vec![0, 5, 6, 7]);
+        assert_eq!(parse_cpuset("1-4").unwrap(), vec![1, 2, 3, 4]);
+        for invalid in ["", "1,1", "2-1", "1-2,2", " 1", "1,"] {
+            assert!(parse_cpuset(invalid).is_err(), "accepted {invalid}");
+        }
     }
 
     #[test]

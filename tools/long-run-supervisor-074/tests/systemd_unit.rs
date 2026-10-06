@@ -265,7 +265,7 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
     assert_eq!(names.len(), spec.properties.len());
     assert_eq!(
         property(&spec, "CPUAffinity"),
-        &UnitProperty::Bytes(vec![6])
+        &UnitProperty::Bytes(vec![15])
     );
     assert_eq!(
         property(&spec, "RuntimeMaxUSec"),
@@ -315,6 +315,12 @@ fn transient_policy_has_exact_argv_clean_environment_and_resource_bounds() {
         panic!("environment property must be a string array");
     };
     assert!(environment.iter().any(|item| item == "HYDRACACHE_ROLE=i74"));
+    assert!(environment
+        .iter()
+        .any(|item| item == "HYDRACACHE_ISOLATED_CPUSET=1-2"));
+    assert!(environment
+        .iter()
+        .any(|item| item == "HYDRACACHE_HOUSEKEEPING_CPUSET=0,3"));
     assert!(environment.iter().all(|item| {
         !item.starts_with("GITHUB_")
             && !item.starts_with("RUNNER_")

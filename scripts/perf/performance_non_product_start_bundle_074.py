@@ -333,8 +333,8 @@ def assemble(
         "maximum_campaign_files": 20_000,
         "installed_binaries": [fixture_i74, fixture_c74],
         "argv_templates": {
-            "i74": [FIXTURE_PATH, "campaign-fixture-harness"],
-            "c74": [FIXTURE_PATH, "campaign-fixture-harness"],
+            "i74": [FIXTURE_PATH, "campaign-start-rehearsal-harness"],
+            "c74": [FIXTURE_PATH, "campaign-start-rehearsal-harness"],
         },
         "command_environment_sha256": "0" * 64,
         "role_order": ["i74", "c74"],
@@ -369,7 +369,7 @@ def assemble(
     builder = load_builder()
     campaign_id = builder.campaign_id(values)
     values["command_environment_sha256"] = builder.expected_command_environment_sha256(
-        campaign_id
+        campaign_id, values["isolated_cpuset"], values["housekeeping_cpuset"]
     )
     manifest = builder.build_manifest(values)
     with tempfile.TemporaryDirectory(prefix="hydracache-074-non-product-manifest-") as temporary:

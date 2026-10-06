@@ -308,7 +308,9 @@ def campaign_id(value: dict[str, Any]) -> str:
     return digest.hexdigest()
 
 
-def command_environments(campaign: str) -> dict[str, list[str]]:
+def command_environments(
+    campaign: str, isolated_cpuset: str, housekeeping_cpuset: str
+) -> dict[str, list[str]]:
     result: dict[str, list[str]] = {}
     for role in ["i74", "c74"]:
         evidence = CAMPAIGN_ROOT / campaign / "roles" / role
@@ -316,6 +318,8 @@ def command_environments(campaign: str) -> dict[str, list[str]]:
             f"HYDRACACHE_CAMPAIGN_ID={campaign}",
             f"HYDRACACHE_ROLE={role}",
             f"HYDRACACHE_EVIDENCE_DIRECTORY={evidence}",
+            f"HYDRACACHE_ISOLATED_CPUSET={isolated_cpuset}",
+            f"HYDRACACHE_HOUSEKEEPING_CPUSET={housekeeping_cpuset}",
             "LANG=C.UTF-8",
             "LC_ALL=C.UTF-8",
             f"PATH={SERVICE_PATH}",
@@ -325,8 +329,12 @@ def command_environments(campaign: str) -> dict[str, list[str]]:
     return result
 
 
-def expected_command_environment_sha256(campaign: str) -> str:
-    return digest_bytes(canonical_json(command_environments(campaign)))
+def expected_command_environment_sha256(
+    campaign: str, isolated_cpuset: str, housekeeping_cpuset: str
+) -> str:
+    return digest_bytes(
+        canonical_json(command_environments(campaign, isolated_cpuset, housekeeping_cpuset))
+    )
 
 
 def build_manifest(value: dict[str, Any]) -> dict[str, Any]:
@@ -335,7 +343,9 @@ def build_manifest(value: dict[str, Any]) -> dict[str, Any]:
     if (
         identity is not None
         and value.get("command_environment_sha256")
-        != expected_command_environment_sha256(identity)
+        != expected_command_environment_sha256(
+            identity, value["isolated_cpuset"], value["housekeeping_cpuset"]
+        )
     ):
         problems.append("command_environment_sha256 does not bind the fixed role environments")
     if problems:

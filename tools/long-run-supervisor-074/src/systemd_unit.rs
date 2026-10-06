@@ -118,7 +118,13 @@ pub fn build_transient_unit_spec(
     }
     let runtime_seconds = role_runtime_seconds(manifest)?;
     let role_directory = campaign_directory.join("roles").join(role_name);
-    let environment = role_environment(&manifest.campaign_id, role_name, &role_directory)?;
+    let environment = role_environment(
+        &manifest.campaign_id,
+        role_name,
+        &role_directory,
+        &manifest.isolated_cpuset,
+        &manifest.housekeeping_cpuset,
+    )?;
     if expected_command_environment_sha256(manifest, campaign_directory)?
         != manifest.command_environment_sha256
     {
@@ -143,7 +149,10 @@ pub fn build_transient_unit_spec(
         ("IOAccounting", UnitProperty::Boolean(true)),
         (
             "CPUAffinity",
-            UnitProperty::Bytes(cpuset_mask(&manifest.isolated_cpuset)?),
+            UnitProperty::Bytes(cpuset_mask(&format!(
+                "{},{}",
+                manifest.isolated_cpuset, manifest.housekeeping_cpuset
+            ))?),
         ),
         (
             "WorkingDirectory",
@@ -213,6 +222,8 @@ pub fn expected_command_environment_sha256(
                 &manifest.campaign_id,
                 role,
                 &campaign_directory.join("roles").join(role),
+                &manifest.isolated_cpuset,
+                &manifest.housekeeping_cpuset,
             )?,
         );
     }
@@ -406,6 +417,8 @@ fn role_environment(
     campaign_id: &str,
     role: &str,
     role_directory: &Path,
+    isolated_cpuset: &str,
+    housekeeping_cpuset: &str,
 ) -> Result<Vec<String>, UnitError> {
     if !matches!(role, "i74" | "c74") {
         return Err(UnitError::Policy);
@@ -417,6 +430,8 @@ fn role_environment(
             "HYDRACACHE_EVIDENCE_DIRECTORY={}",
             path_text(role_directory)?
         ),
+        format!("HYDRACACHE_ISOLATED_CPUSET={isolated_cpuset}"),
+        format!("HYDRACACHE_HOUSEKEEPING_CPUSET={housekeeping_cpuset}"),
         "LANG=C.UTF-8".to_owned(),
         "LC_ALL=C.UTF-8".to_owned(),
         format!("PATH={SERVICE_PATH}"),
