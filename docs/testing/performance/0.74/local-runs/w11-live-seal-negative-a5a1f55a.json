@@ -1,0 +1,104 @@
+{
+  "schema_version": "hydracache-w11-live-seal-negative-v1",
+  "release": "0.74",
+  "evidence_class": "non-promotable-negative-host-rehearsal",
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "source_commit": "a5a1f55ace745cf9eca1621677ebd089a5c2704b",
+  "workflow_run_id": 37416449100,
+  "workflow_run_url": "https://github.com/javaquasar/hydracache/actions/runs/37416449100",
+  "workflow_conclusion": "failure",
+  "campaign_id": "c1f3846155221ed2b340223d6dcaee5dc200c65f358a6bef2b1ef0ea68050bf1",
+  "manifest_sha256": "a325c841c5339c805f4f72f2182f2dc88aa6971ecbb7bf86ade4a4010c41dfc7",
+  "host_receipt_sha256": "dbacdfb69e2e7c7ac62ae70b1a72e8486116795d4dadbeb7ee86eef688cd573d",
+  "installed_fixture_sha256": "91e5f43148471565587e8d378e602271161621de00f4b181f772909c6cdcb81e",
+  "start_bundle": {
+    "workflow_run_id": 37416258603,
+    "bundle_sha256": "9f7f9ebf371c2a88b2e755c1e790b14723ed3c278613900cc62f34eb4a0dab82",
+    "artifact_id": 11391650833,
+    "artifact_digest": "sha256:f670e3fe8ad5fae1f48a6aae081c9fb3449fb8457438879c37d9b638c9440e88"
+  },
+  "start_operation": {
+    "request_id": "c8e8dc4d-d847-4715-80c8-2ab71ba1c16d",
+    "request_sha256": "c4c13c8adffbe19fdf01ecdf0120197ea8188fdecfac2a4cb8a534b8efe1b199",
+    "request_artifact_id": 11391415885,
+    "request_artifact_digest": "sha256:08998d81aedd2578a9e4a210e9bc8edc3957d9a3b8bb506819bb4e68526b19aa",
+    "response_sha256": "4eb373bbec55bd7564b214e30c29361778c77de57fc16a97e2a4c60538a24b09",
+    "response_artifact_id": 11391591554,
+    "response_artifact_digest": "sha256:0aaf3c20e0c6295987ec3d04ff9c3cddf4069336fee40723f5d0933802c704eb",
+    "accepted_state": "I74_RUNNING",
+    "accepted_revision": 2
+  },
+  "terminal_observation": {
+    "unit_name": "hydracache-performance-074-i74-c1f3846155221ed2b340223d6dcaee5dc200c65f358a6bef2b1ef0ea68050bf1.service",
+    "active_state": "active",
+    "sub_state": "exited",
+    "main_pid": 0,
+    "result": "success",
+    "terminal_inventory_present": true,
+    "terminal_proof_present": true,
+    "semantic_guards_present": 2,
+    "stdout_empty": true,
+    "stderr_empty": true,
+    "manifest_digest_sidecar_mode": "0440",
+    "manifest_digest_sidecar_uid": 0,
+    "manifest_digest_sidecar_gid": 986
+  },
+  "seal_operation": {
+    "request_id": "7a66646e-8b35-4a49-a0a8-2ab7ed9e254c",
+    "request_sha256": "cde5c9803cb72572e2fcd7023880a71ac95fd332a45c72ee8019fcf31c287def",
+    "request_artifact_id": 11391052840,
+    "request_artifact_digest": "sha256:0f7dce2981eae2fb4ffcd6e4d91ecdef7293a26c847c2d29ada2ec9394e730e1",
+    "response_sha256": "3302810526c31ccc45b9b5dedb13ddb211ea95e8a18840fc9a9470551832577c",
+    "response_artifact_id": 11391242679,
+    "response_artifact_digest": "sha256:93f277baedbc3befacfe68a1767808f07777aec8060880c6f02381e7487fe061",
+    "ok": false,
+    "error_code": 5,
+    "retained_state": "I74_RUNNING",
+    "retained_revision": 2,
+    "checkpoint_attached": false,
+    "controller_lease_attached": false
+  },
+  "attribution": {
+    "confirmed": true,
+    "finding": "the same-run seal workflow waited for successful terminal evidence but skipped attach, so durable state retained neither the terminal checkpoint nor a fresh controller lease",
+    "semantic_result": "the server rejected seal before artifact or lifecycle mutation",
+    "identity_preserved": true
+  },
+  "corrective_commits": [
+    "cc7f5038",
+    "c3178607"
+  ],
+  "corrected_sequence": [
+    "signed start",
+    "wait for the exact successful terminal unit",
+    "signed terminal attach of the observed checkpoint and fresh controller lease",
+    "signed seal under the same workflow principal"
+  ],
+  "lease_expiry_recovery": {
+    "lease_id": "9d8c715f-ee2c-4bb0-a3f0-d5f889778885",
+    "lease_deadline_unix_seconds": 1791266405,
+    "observed_unix_seconds": 1791266453,
+    "completed_revision": 4,
+    "completed_state": "LEASE_EXPIRED_INCOMPLETE",
+    "diagnostic_sha256": "99c4d0e57673230a321c9049a5ecb11edcad79368b568b950c8162a88a3ab956",
+    "execution_identity_cleared": true,
+    "checkpoint_cleared": true,
+    "controller_lease_cleared": true,
+    "host_claim_released": true,
+    "exact_unit_stopped": true,
+    "supervisor_active_after_recovery": true,
+    "supervisor_main_pid_after_recovery": 92161,
+    "supervisor_restart_count_after_recovery": 14
+  },
+  "local_validation": {
+    "supervisor_unit_passed": 33,
+    "supervisor_unit_ignored_manual_system_bus": 1,
+    "supervisor_integration_suites_passed": true,
+    "python_contract_tests_passed": 11,
+    "workflow_loaded_by_github": true,
+    "push_probe_run_id": 37418708085,
+    "push_probe_succeeded": true
+  },
+  "claim_boundary": "This receipt proves successful terminal fixture publication and fail-closed seal rejection when terminal attach is absent. It does not prove live seal completion, product throughput, a release candidate, or expensive qualification."
+}

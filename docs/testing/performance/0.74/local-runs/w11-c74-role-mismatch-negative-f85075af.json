@@ -1,0 +1,86 @@
+{
+  "schema_version": "hydracache-w11-c74-role-mismatch-negative-v1",
+  "release": "0.74",
+  "evidence_class": "non-promotable-negative-host-rehearsal",
+  "captured_at_utc": "2026-10-06T07:03:56Z",
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "workflow_source_commit": "f85075af3945ea25185853be7d282eaeb5e2dde8",
+  "installed_source_commit": "c3178607236f72cfb50e5634e3817d140f50b6d9",
+  "installed_binary_sha256": "0b7f20b06faf58417eca6b8ef50b61d72b762d531f9c5ae0a5c849a2db680f43",
+  "workflow_run_id": 37424240636,
+  "workflow_run_url": "https://github.com/javaquasar/hydracache/actions/runs/37424240636",
+  "workflow_conclusion": "failure",
+  "campaign_id": "83b19a98df5d556623dfe02451c67ba666a86d4f685e33ffc3d57e0ba00ecc19",
+  "manifest_sha256": "737a96ca88a2235cc0cebdfc6ace6825fb7dd4d6fc821ff9358c60dfd2fb1959",
+  "host_receipt_sha256": "9e5ae29b18a425760759ea1a567b7e31ec816a582a7b5aeec1d2dc9802ca5518",
+  "lease_id": "e24f62a0-1b6b-4a21-8a23-9f6344131780",
+  "lease_deadline_unix_seconds": 1791270396,
+  "successful_i74_predecessor": {
+    "workflow_run_id": 37422045597,
+    "sealed_revision": 5,
+    "archive_sha256": "7aea4618784598e6b9c3c6771baebaf5e8835c729bce8b7fc4be5046fef6a8f4",
+    "packet_manifest_sha256": "7981fe8655bad5375e7df25108b6d59ac3712b37ce9c96b851ce4e8fbaa59416"
+  },
+  "c74_start": {
+    "request_id": "e0a3efc6-8348-465f-8fcc-0a7c04d49c2d",
+    "request_artifact_id": 11394291085,
+    "request_artifact_digest": "sha256:8620c31f44d0942b55b82b06067cbf67bed253a515cb9969b994cbeab9d8ec1c",
+    "response_sha256": "c73dd67d7e709702e0c0951f98e944ac1fdb2db027a7de30e1288ebca8b43de6",
+    "response_artifact_id": 11394915369,
+    "response_artifact_digest": "sha256:f9555fe925975467039c74a0b29349e086a593793fb874d47f5bce03706db973",
+    "exit_code": 11,
+    "starting_revision": 6,
+    "retained_revision": 7,
+    "retained_state": "CORRUPT_QUARANTINED",
+    "lifecycle_transition": "C74_SPAWN_MISMATCH",
+    "spawn_resolution": "MISMATCH",
+    "spawn_mismatch": "IDENTITY",
+    "unit_name": "hydracache-performance-074-c74-83b19a98df5d556623dfe02451c67ba666a86d4f685e33ffc3d57e0ba00ecc19.service",
+    "fixture_stderr": "start rehearsal fixture environment differs"
+  },
+  "attribution": {
+    "confirmed": true,
+    "finding": "the non-product signed start rehearsal fixture accepted only HYDRACACHE_ROLE=i74 while the exact C74 transient unit correctly supplied HYDRACACHE_ROLE=c74",
+    "effect": "the fixture exited before publishing a C74 process pair or checkpoint; the supervisor retained the failed spawn evidence and quarantined the campaign",
+    "product_workload_executed": false,
+    "corrective_commit": "bf52d8cc",
+    "corrective_change": "parse the exact i74/c74 role and preserve it in checkpoint, proof, guard, inventory and role-relative paths"
+  },
+  "durable_host_evidence": {
+    "state_sha256": "a72a06c70eba25699d637758db54bc42767ec20d143170f9f84090f72e5d813c",
+    "event_journal_sha256": "c1842d28a8b4fab2ba83d0e32dfc4e33038232d8ab73abfe552c1c592ac1dc9d",
+    "event_head_file_sha256": "64cbcb688142ac8a4e484cf697ffc481edef55ca9d05a40e1cfbbc6bab017a68",
+    "c74_spawn_intent_sha256": "51bfd974538049db7e85205313d135ac762cee71f61ee58fa13e8b6024abf258",
+    "c74_spawn_result_sha256": "1a6900d73d20a14b883083639813da147e47cce06da4701cb876a726c7d77a01",
+    "active_campaign_marker_sha256": "9f5e3f6538eced27d1fff006ffebe4299a5f1d594820b1c6aae593fc49bc50a8",
+    "active_campaign_marker_metadata": "0400:0:0:65"
+  },
+  "safe_host_posture": {
+    "observed_unix_seconds": 1791270236,
+    "runner_active": false,
+    "runner_enabled": false,
+    "supervisor_active": false,
+    "supervisor_restart_count_since_install": 0,
+    "c74_unit_loaded": false,
+    "c74_main_pid": 0,
+    "active_campaign_claim_retained": true,
+    "manual_state_or_marker_mutation_performed": false,
+    "reason_supervisor_stopped": "prevent a post-deadline restart loop because the installed lease-expiry coordinator intentionally rejects corrupt quarantine"
+  },
+  "recovery_gap": {
+    "confirmed": true,
+    "finding": "the active-campaign claim has no reviewed release path from CORRUPT_QUARANTINED even when spawn evidence is intact, duplicate_executor is false, retained process identity is empty and the deterministic unit is absent",
+    "lease_expiry_applies_to_corrupt_quarantine": false,
+    "ordinary_abort_applies_to_corrupt_quarantine": false,
+    "required_next_slice": "add and review an evidence-bound operator quarantine cleanup path; do not remove the marker or rewrite durable state manually"
+  },
+  "local_validation": {
+    "role_specific_tests_passed": 4,
+    "supervisor_unit_passed": 35,
+    "supervisor_unit_ignored_manual_system_bus": 1,
+    "supervisor_integration_suites_passed": true,
+    "strict_clippy_result": "blocked by pre-existing new-toolchain lints outside this isolated candidate"
+  },
+  "claim_boundary": "This receipt proves fail-closed attribution of the C74 rehearsal fixture defect and preserves the resulting quarantine. It does not prove C74 seal completion, quarantine cleanup, product throughput, a release candidate, or expensive qualification."
+}
