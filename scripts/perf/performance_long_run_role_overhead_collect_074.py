@@ -193,8 +193,12 @@ def _cgroup_cpu_ns(path: Path) -> int:
 def _cgroup_io_bytes(path: Path) -> int:
     total = 0
     lines = path.read_text(encoding="ascii").splitlines()
+    # cgroup v2 creates io.stat even when this cgroup has not issued I/O to a
+    # block device.  In that state the kernel returns an empty file, which is
+    # the canonical zero counter rather than missing telemetry.  A missing or
+    # unreadable file still fails through read_text above.
     if not lines:
-        raise ValueError("cgroup io.stat is empty")
+        return 0
     for line in lines:
         fields = line.split()
         if len(fields) < 2:

@@ -117,8 +117,13 @@ class RoleOverheadCollectorTests(unittest.TestCase):
             io.write_text("8:0 rbytes=11 wbytes=13 rios=1 wios=1\n")
             self.assertEqual(MODULE._cgroup_cpu_ns(cpu), 17_000)
             self.assertEqual(MODULE._cgroup_io_bytes(io), 24)
+            io.write_text("")
+            self.assertEqual(MODULE._cgroup_io_bytes(io), 0)
             io.write_text("8:0 rios=1 wios=1\n")
             with self.assertRaisesRegex(ValueError, "byte counters"):
+                MODULE._cgroup_io_bytes(io)
+            io.unlink()
+            with self.assertRaises(FileNotFoundError):
                 MODULE._cgroup_io_bytes(io)
 
     def test_supervisor_process_identity_binds_exact_argv_and_cgroup(self):
