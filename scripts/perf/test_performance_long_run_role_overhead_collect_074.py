@@ -121,6 +121,28 @@ class RoleOverheadCollectorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "byte counters"):
                 MODULE._cgroup_io_bytes(io)
 
+    def test_supervisor_process_identity_binds_exact_argv_and_cgroup(self):
+        binary = MODULE.INSTALLED_BINARY
+        command_line = (
+            str(binary).encode("utf-8")
+            + b"\0serve\0/etc/hydracache-perf/supervisor-074.toml\0"
+        )
+        control_group = "/system.slice/hydracache-performance-supervisor-074.service"
+        self.assertEqual(
+            MODULE._validate_process_identity(
+                binary, control_group, command_line, f"0::{control_group}\n"
+            ),
+            hashlib.sha256(command_line).hexdigest(),
+        )
+        with self.assertRaisesRegex(ValueError, "command identity"):
+            MODULE._validate_process_identity(
+                binary, control_group, command_line + b"extra", f"0::{control_group}\n"
+            )
+        with self.assertRaisesRegex(ValueError, "process cgroup"):
+            MODULE._validate_process_identity(
+                binary, control_group, command_line, "0::/foreign.service\n"
+            )
+
     def test_fixture_requires_exact_checkpoint_and_uses_shell_false(self):
         receipt = {
             "schema_version": 1,

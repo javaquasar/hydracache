@@ -937,7 +937,8 @@ characters and completed work through bounded stdout/stderr files.
 
 The collector samples the stable production supervisor's cgroup-v2 CPU/I/O and process peak RSS
 around each attempt. It binds every row to the root-emitted installed-source receipt and binary and
-rejects boot, executable, PID/start-time, cpuset or counter drift. It cannot inspect the campaign
+rejects boot, exact argv, cgroup, PID/start-time, cpuset or counter drift. The live binary digest is
+independently bound through the root host-observation response. It cannot inspect the campaign
 directory directly: the runner is deliberately outside the service group and a failed `lstat`
 must never be interpreted as absence. Every attempt is therefore bracketed by the typed read-only
 host-observation protocol. The root supervisor validates the active marker before and after its
@@ -946,6 +947,14 @@ unreadable or racing claims are rejected. The workflow adds zero-restart guards,
 analyzer and retains raw attempts, fixture receipts and analysis. This remains a non-product
 rehearsal: until a signed corrected-source host run exists, its completion flag stays false; even
 afterwards it cannot satisfy product I74/C74 overhead or release-admission gates.
+
+Run `37465569900` at `02a1123d` exercised that design and rejected its first process guard before
+attempt one because the runner cannot dereference `/proc/<root-pid>/exe` under the host ptrace
+policy. The correction preserves the same strength without privilege: exact `/proc/<pid>/cmdline`
+binds the installed path, verb and config; `/proc/<pid>/cgroup` binds the service; PID/start ticks and
+cpuset must remain stable; and the bracketed root observation independently binds the live binary
+SHA-256. The negative receipt is
+`local-runs/w11-role-overhead-runner-proc-guard-rejected-02a1123d.json`.
 
 ### Reference-host freeze and reboot boundary
 

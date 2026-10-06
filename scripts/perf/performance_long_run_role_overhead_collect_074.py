@@ -221,6 +221,20 @@ def resolve_cgroup(root: Path, control_group: str) -> Path:
     return candidate
 
 
+def _validate_process_identity(
+    binary: Path, relative_cgroup: str, command_line: bytes, process_cgroup: str
+) -> str:
+    expected_command_line = (
+        str(binary).encode("utf-8")
+        + b"\0serve\0/etc/hydracache-perf/supervisor-074.toml\0"
+    )
+    if command_line != expected_command_line:
+        raise ValueError("supervisor command identity differs")
+    if process_cgroup != f"0::{relative_cgroup}\n":
+        raise ValueError("supervisor process cgroup differs")
+    return hashlib.sha256(command_line).hexdigest()
+
+
 def supervisor_snapshot(
     pid: int, cgroup: Path, binary: Path, proc_root: Path = Path("/proc")
 ) -> dict[str, Any]:
@@ -233,13 +247,17 @@ def supervisor_snapshot(
     if len(stat_fields) < 20:
         raise ValueError("supervisor stat identity is truncated")
     status = _fields(process / "status")
-    executable = (process / "exe").resolve(strict=True)
-    if executable != binary.resolve(strict=True):
-        raise ValueError("supervisor executable identity differs")
+    command_line = (process / "cmdline").read_bytes()
+    relative_cgroup = "/" + cgroup.relative_to("/sys/fs/cgroup").as_posix()
+    process_cgroup = (process / "cgroup").read_text(encoding="ascii")
+    command_line_sha256 = _validate_process_identity(
+        binary, relative_cgroup, command_line, process_cgroup
+    )
     return {
         "pid": pid,
         "start_ticks": int(stat_fields[19]),
-        "executable": str(executable),
+        "command_line_sha256": command_line_sha256,
+        "process_cgroup": relative_cgroup,
         "cpuset": status["Cpus_allowed_list"],
         "cpu_ns": _cgroup_cpu_ns(cgroup / "cpu.stat"),
         "rss_peak_bytes": _kilobytes(status["VmHWM"]),
@@ -489,7 +507,13 @@ def collect_attempts(
                 )
                 after = supervisor_snapshot(supervisor_pid, cgroup, binary)
                 observe_idle_guard(*guard_args)
-                stable_fields = ("pid", "start_ticks", "executable", "cpuset")
+                stable_fields = (
+                    "pid",
+                    "start_ticks",
+                    "command_line_sha256",
+                    "process_cgroup",
+                    "cpuset",
+                )
                 supervisor_stable = all(before[field] == after[field] for field in stable_fields)
                 if not supervisor_stable:
                     raise ValueError("supervisor identity changed during fixture")

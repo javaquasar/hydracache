@@ -2659,7 +2659,8 @@ The corrected design keeps that entrypoint byte-for-byte unchanged. An unprivile
 builds the frozen 20-cell ABBA schedule and launches only `taskset`, `nice` and a hidden bounded mode
 of the installed supervisor binary, with no shell and fixed resource limits. It independently binds
 the source, binary and provisioning receipt, samples supervisor cgroup-v2 CPU/I/O plus process RSS,
-and rejects boot or process-identity drift. Control emits no checkpoint; instrumented execution
+and rejects boot or PID/start-time, exact argv, cgroup and cpuset drift. The root observation
+separately binds the live binary digest. Control emits no checkpoint; instrumented execution
 writes and fsyncs exactly 4,096 bytes.
 
 One subtle guard mattered more than the launch mechanism. The Actions user cannot traverse the
@@ -2673,3 +2674,12 @@ privilege, and any active or malformed claim fails closed.
 The corrected collector still produces rehearsal-only evidence. Its signed host run remains to be
 performed, and even a passing result cannot replace exact I74/C74 product pairs. Those product pairs
 are the next evidence boundary after this non-product rehearsal is retained.
+
+The first unprivileged run found one more host-specific boundary before measuring anything. Linux
+ptrace policy correctly prevented the Actions user from dereferencing `/proc/<root-pid>/exe`, so run
+`37465569900` stopped before attempt one. The fix did not request more privilege. It replaced that
+single inaccessible link with an exact readable tuple: command line (binary path, `serve`, fixed
+config), unified cgroup, PID/start ticks and cpuset. The bracketed root observation still binds the
+live binary SHA-256. This is a useful pattern for instrumentation: when a strong-looking check is
+unavailable in the real security context, compose independent readable identities with an existing
+trusted observation instead of weakening the host or silently skipping the guard.

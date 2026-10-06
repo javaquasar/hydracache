@@ -827,7 +827,7 @@ non-product attempts in ABBA order, selects one CPU from the runner's allowed se
 cannot supply a command, operation count, warm-up, delay, checkpoint size or schedule.
 
 Each attempt binds the installed source/binary and root-emitted provisioning-receipt digest,
-verifies unchanged boot and supervisor process identities, and records role elapsed/CPU/RSS/write
+verifies unchanged boot and supervisor PID/start-time, exact argv, cgroup and cpuset identities, and records role elapsed/CPU/RSS/write
 bytes plus exact supervisor cgroup-v2 CPU/I/O and process peak RSS. Control writes zero checkpoint
 bytes; instrumented writes and fsyncs exactly 4,096 bytes. Because the Actions user intentionally
 cannot traverse the root/service-group campaign directory, the collector does not infer absence
@@ -840,6 +840,14 @@ workflow are locally implemented, but `non_product_role_overhead_rehearsal_compl
 until this corrected exact source is signed, installed and run on the admitted host. Product
 I74/C74 pairs are a later, separate gate; no product candidate or expensive qualification is
 started by this mode.
+
+The first unprivileged host run, `37465569900` at `02a1123d`, failed closed before attempt one:
+Linux ptrace policy denied the Actions user access to `/proc/5083/exe`. The retained artifact proves
+that source/provisioning binding and all earlier guards passed, no checkpoint was written, and the
+supervisor remained active with zero restarts. The corrected identity check uses the exact readable
+`cmdline`, unified `cgroup`, PID/start ticks and cpuset, while the root host-observation response
+continues to bind the installed/live binary digest. It adds no privilege and does not weaken binary
+identity. See `local-runs/w11-role-overhead-runner-proc-guard-rejected-02a1123d.json`.
 
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and

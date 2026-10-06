@@ -1,0 +1,54 @@
+{
+  "schema_version": "hydracache-w11-negative-design-evidence-v1",
+  "release": "0.74",
+  "source_commit": "02a1123d47349bde3ed2fce876711096211505ce",
+  "candidate": "unprivileged-role-overhead-collector-proc-exe-guard",
+  "github_run": {
+    "id": 37465569900,
+    "attempt": 1,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37465569900",
+    "created_at_utc": "2026-10-06T12:45:19Z",
+    "completed_at_utc": "2026-10-06T12:45:36Z",
+    "conclusion": "failure",
+    "job_id": 112275616733,
+    "artifact_id": 11414650077,
+    "artifact_digest": "2e665c94c8fc47f7ff1134906118b9c34318a388a8609b96435769c739aee549"
+  },
+  "rejection": {
+    "stage": "supervisor process identity preflight before first attempt",
+    "message": "[Errno 13] Permission denied: '/proc/5083/exe'",
+    "first_attempt_started": false,
+    "checkpoint_bytes_written": 0,
+    "product_candidate_started": false,
+    "expensive_qualification_started": false
+  },
+  "corrected_guard": {
+    "unprivileged_readable_fields": [
+      "/proc/<pid>/stat start ticks",
+      "/proc/<pid>/cmdline exact argv",
+      "/proc/<pid>/cgroup exact unified cgroup",
+      "/proc/<pid>/status cpuset and VmHWM"
+    ],
+    "root_observation_binding": "installed source and live binary SHA-256",
+    "privilege_expansion_required": false
+  },
+  "post_run_host_state": {
+    "observed_at_utc": "2026-10-06T12:47:17Z",
+    "supervisor_active": true,
+    "supervisor_main_pid": 5083,
+    "supervisor_restarts": 0,
+    "runner_active": true,
+    "runner_enabled": false,
+    "active_campaign_absent": true,
+    "campaign_lifecycle_context_absent": true,
+    "controller_loss_context_absent": true
+  },
+  "decision": {
+    "candidate_accepted": false,
+    "negative_result_retained": true,
+    "non_product_role_overhead_rehearsal_complete": false,
+    "role_overhead_qualification_complete": false,
+    "release_admission_allowed": false
+  },
+  "claim_boundary": "This proves the first unprivileged process-identity guard failed closed before measurement because Linux ptrace policy denied the runner access to a root process exe link. It is not role-overhead, product throughput, six-hour qualification, 24-hour confirmation, or release-admission evidence."
+}
