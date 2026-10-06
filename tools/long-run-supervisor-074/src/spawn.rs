@@ -227,6 +227,27 @@ pub fn read_spawn_result(
     Ok(result)
 }
 
+/// Read and validate the complete durable spawn evidence for one role.
+///
+/// This is intentionally stricter than reading either document alone: the
+/// intent/result digest pair and every campaign, role, unit, and result-shape
+/// binding must still agree before callers may use the evidence for recovery.
+pub fn read_spawn_evidence(
+    campaign_directory: &Path,
+    role: &Role,
+) -> Result<(SpawnIntent, SpawnResult), SpawnError> {
+    let directory = canonical_directory(campaign_directory)?;
+    let paths = evidence_paths(&directory, role);
+    let intent: SpawnIntent = read_document_pair(&paths.intent, &paths.intent_head)?;
+    if &intent.role != role {
+        return Err(SpawnError::Document);
+    }
+    validate_intent(&intent)?;
+    let result: SpawnResult = read_document_pair(&paths.result, &paths.result_head)?;
+    validate_result(&result, &intent, &document_digest(&intent)?)?;
+    Ok((intent, result))
+}
+
 pub fn apply_spawn_result(
     state: &DurableCampaignState,
     role: &Role,

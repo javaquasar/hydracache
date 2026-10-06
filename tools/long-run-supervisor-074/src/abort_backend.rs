@@ -1,4 +1,4 @@
-use crate::abort_lifecycle::AbortBackend;
+use crate::abort_lifecycle::{AbortBackend, QuarantineRecoveryCause};
 use crate::lease_expiry::{LeaseExpiryBackend, LeaseExpiryCause};
 use crate::manifest::CampaignManifest;
 use crate::measurement_loss::{MeasurementLossBackend, MeasurementLossCause};
@@ -29,6 +29,27 @@ struct AbortDiagnostic {
     role: Role,
     state: DurableCampaignState,
     unit: UnitSnapshot,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct QuarantineAbortDiagnostic {
+    schema_version: u32,
+    release: String,
+    campaign_id: String,
+    request_id: String,
+    request_sha256: String,
+    cause: QuarantineRecoveryCauseDocument,
+    state: DurableCampaignState,
+    unit: UnitSnapshot,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct QuarantineRecoveryCauseDocument {
+    role: Role,
+    intent: crate::spawn::SpawnIntent,
+    result: crate::spawn::SpawnResult,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -112,6 +133,17 @@ impl AbortBackend for SystemdAbortBackend {
         self.capture_and_stop_inner(campaign_directory, request, state)
             .map_err(|error| error.to_string())
     }
+
+    fn capture_quarantine_and_stop(
+        &mut self,
+        campaign_directory: &Path,
+        request: &Request,
+        state: &DurableCampaignState,
+        cause: &QuarantineRecoveryCause,
+    ) -> Result<(), String> {
+        self.capture_quarantine_and_stop_inner(campaign_directory, request, state, cause)
+            .map_err(|error| error.to_string())
+    }
 }
 
 impl LeaseExpiryBackend for SystemdAbortBackend {
@@ -151,6 +183,56 @@ impl MeasurementLossBackend for SystemdAbortBackend {
 }
 
 impl SystemdAbortBackend {
+    fn capture_quarantine_and_stop_inner(
+        &mut self,
+        campaign_directory: &Path,
+        request: &Request,
+        state: &DurableCampaignState,
+        cause: &QuarantineRecoveryCause,
+    ) -> Result<(), SystemdAbortError> {
+        let manifest = self.manifest.as_ref().ok_or(SystemdAbortError::Manifest)?;
+        if manifest.campaign_id != request.campaign_id
+            || manifest.campaign_id != state.identity.campaign_id
+            || cause.intent.campaign_id != request.campaign_id
+            || cause.intent.manifest_sha256 != request.manifest_sha256
+            || cause.intent.role != cause.role
+            || cause.result.campaign_id != request.campaign_id
+            || cause.result.unit_name != cause.intent.unit_name
+            || cause.result.resolution != crate::spawn::SpawnResolution::Mismatch
+            || cause.result.mismatch != Some(crate::spawn::SpawnMismatch::Identity)
+            || cause.result.harness.is_some()
+            || cause.result.daemon.is_some()
+        {
+            return Err(SystemdAbortError::Binding);
+        }
+        let diagnostic_path =
+            quarantine_abort_diagnostic_path(campaign_directory, &cause.role, &request.request_id)?;
+        match inspect_unit_optional(&cause.intent.unit_name)? {
+            Some(snapshot) => {
+                if !quarantine_unit_is_terminal_empty(&cause.intent.unit_name, &snapshot) {
+                    return Err(SystemdAbortError::Binding);
+                }
+                publish_quarantine_abort_diagnostic(
+                    &diagnostic_path,
+                    request,
+                    state,
+                    cause,
+                    snapshot,
+                    manifest.output_limits.diagnostic_bytes,
+                )?;
+                stop_unit_and_wait(&cause.intent.unit_name, manifest.diagnostic_grace_seconds)?;
+            }
+            None => verify_existing_quarantine_abort_diagnostic(
+                &diagnostic_path,
+                request,
+                state,
+                cause,
+                manifest.output_limits.diagnostic_bytes,
+            )?,
+        }
+        Ok(())
+    }
+
     fn capture_and_stop_inner(
         &mut self,
         campaign_directory: &Path,
@@ -424,6 +506,14 @@ enum MeasurementUnitAction {
     AlreadyTerminal,
 }
 
+fn quarantine_unit_is_terminal_empty(expected_unit: &str, unit: &UnitSnapshot) -> bool {
+    unit.unit_name == expected_unit
+        && unit.main_pid == 0
+        && unit.control_group.is_empty()
+        && matches!(unit.active_state.as_str(), "failed" | "inactive")
+        && matches!(unit.sub_state.as_str(), "failed" | "dead")
+}
+
 fn measurement_unit_action(
     cause: &MeasurementLossCause,
     unit: &UnitSnapshot,
@@ -463,6 +553,14 @@ fn diagnostic_path(
     request_id: &str,
 ) -> Result<PathBuf, SystemdAbortError> {
     diagnostic_path_with_prefix(campaign_directory, role, "abort", request_id)
+}
+
+fn quarantine_abort_diagnostic_path(
+    campaign_directory: &Path,
+    role: &Role,
+    request_id: &str,
+) -> Result<PathBuf, SystemdAbortError> {
+    diagnostic_path_with_prefix(campaign_directory, role, "quarantine-abort", request_id)
 }
 
 fn lease_expiry_diagnostic_path(
@@ -613,6 +711,71 @@ fn verify_existing_diagnostic(
         || document.request_sha256 != crate::event::request_sha256(request)?
         || &document.role != role
         || document.state != *state
+    {
+        return Err(SystemdAbortError::Binding);
+    }
+    Ok(())
+}
+
+fn publish_quarantine_abort_diagnostic(
+    path: &Path,
+    request: &Request,
+    state: &DurableCampaignState,
+    cause: &QuarantineRecoveryCause,
+    unit: UnitSnapshot,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let document = QuarantineAbortDiagnostic {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: request.campaign_id.clone(),
+        request_id: request.request_id.clone(),
+        request_sha256: crate::event::request_sha256(request)?,
+        cause: QuarantineRecoveryCauseDocument {
+            role: cause.role.clone(),
+            intent: cause.intent.clone(),
+            result: cause.result.clone(),
+        },
+        state: state.clone(),
+        unit,
+    };
+    let bytes = canonical_json(&document)?;
+    enforce_limit(bytes.len() as u64, limit)?;
+    publish_exact(path, &bytes)
+}
+
+fn verify_existing_quarantine_abort_diagnostic(
+    path: &Path,
+    request: &Request,
+    state: &DurableCampaignState,
+    cause: &QuarantineRecoveryCause,
+    limit: u64,
+) -> Result<(), SystemdAbortError> {
+    let pending = path.with_extension("json.pending");
+    if pending.exists() {
+        let final_bytes = read_regular_allow_links(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+        if read_regular_allow_links(&pending, limit.min(MAX_DIAGNOSTIC_BYTES))? != final_bytes {
+            return Err(SystemdAbortError::Binding);
+        }
+        fs::remove_file(&pending)?;
+        sync_directory(path.parent().ok_or(SystemdAbortError::Binding)?)?;
+    }
+    let bytes = read_regular(path, limit.min(MAX_DIAGNOSTIC_BYTES))?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    if serde_json::to_vec(&value)? != bytes {
+        return Err(SystemdAbortError::Binding);
+    }
+    let document: QuarantineAbortDiagnostic = serde_json::from_value(value)?;
+    if document.schema_version != 1
+        || document.release != "0.74"
+        || document.campaign_id != request.campaign_id
+        || document.request_id != request.request_id
+        || document.request_sha256 != crate::event::request_sha256(request)?
+        || document.cause.role != cause.role
+        || document.cause.intent != cause.intent
+        || document.cause.result != cause.result
+        || document.state != *state
+        || !quarantine_unit_is_terminal_empty(&cause.intent.unit_name, &document.unit)
     {
         return Err(SystemdAbortError::Binding);
     }
@@ -901,9 +1064,10 @@ mod tests {
         diagnostic_path, lease_expiry_diagnostic_path, measurement_loss_diagnostic_path,
         measurement_unit_action, progress_loss_diagnostic_path, publish_diagnostic,
         publish_lease_expiry_diagnostic, publish_measurement_loss_diagnostic,
-        publish_progress_loss_diagnostic, verify_existing_diagnostic,
-        verify_existing_lease_expiry_diagnostic, verify_existing_measurement_loss_diagnostic,
-        verify_existing_progress_loss_diagnostic, MeasurementUnitAction,
+        publish_progress_loss_diagnostic, quarantine_unit_is_terminal_empty,
+        verify_existing_diagnostic, verify_existing_lease_expiry_diagnostic,
+        verify_existing_measurement_loss_diagnostic, verify_existing_progress_loss_diagnostic,
+        MeasurementUnitAction,
     };
     use crate::lease_expiry::LeaseExpiryCause;
     use crate::measurement_loss::{MeasurementLossCause, MeasurementLossReason};
@@ -1235,5 +1399,38 @@ mod tests {
             1_048_576,
         )
         .is_err());
+    }
+
+    #[test]
+    fn quarantine_recovery_accepts_only_the_exact_failed_empty_unit() {
+        let (_temporary, _campaign, request, _state, _snapshot) = fixture();
+        let expected = format!(
+            "hydracache-performance-074-i74-{}.service",
+            request.campaign_id
+        );
+        let terminal = UnitSnapshot {
+            unit_name: expected.clone(),
+            active_state: "failed".to_owned(),
+            sub_state: "failed".to_owned(),
+            main_pid: 0,
+            control_group: String::new(),
+            result: "exit-code".to_owned(),
+        };
+        assert!(quarantine_unit_is_terminal_empty(&expected, &terminal));
+
+        let mut live = terminal.clone();
+        live.active_state = "active".to_owned();
+        live.sub_state = "running".to_owned();
+        live.main_pid = 44;
+        live.control_group = format!("/system.slice/{expected}");
+        assert!(!quarantine_unit_is_terminal_empty(&expected, &live));
+
+        let mut ambiguous = terminal.clone();
+        ambiguous.control_group = format!("/system.slice/{expected}");
+        assert!(!quarantine_unit_is_terminal_empty(&expected, &ambiguous));
+
+        let mut foreign = terminal;
+        foreign.unit_name.push_str("-foreign");
+        assert!(!quarantine_unit_is_terminal_empty(&expected, &foreign));
     }
 }

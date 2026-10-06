@@ -9,7 +9,8 @@ use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::host_receipt::{
     collect_campaign_fixture_binary, collect_host_observation,
     collect_installed_provisioning_identity, verify_host_receipt_evidence,
-    verify_installed_binaries, verify_live_observation, verify_receipt_manifest_binding,
+    verify_installed_binaries, verify_live_observation,
+    verify_quarantine_recovery_host_receipt_evidence, verify_receipt_manifest_binding,
     BinaryIdentity, HostObservationReceipt,
 };
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryBackend, LeaseExpiryOutcome};
@@ -98,6 +99,15 @@ pub trait AbortObservationBackend: AbortBackend {
         manifest: &CampaignManifest,
         state: &DurableCampaignState,
     ) -> Result<(), String>;
+
+    fn verify_quarantine_host(
+        &mut self,
+        _campaign_directory: &Path,
+        _manifest: &CampaignManifest,
+        _state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        Err("quarantine host recovery is not implemented by this backend".to_owned())
+    }
 }
 
 pub trait LeaseExpiryObservationBackend: LeaseExpiryBackend {
@@ -203,6 +213,18 @@ impl AbortObservationBackend for SystemdAbortBackend {
         state: &DurableCampaignState,
     ) -> Result<(), String> {
         verify_host_receipt_evidence(campaign_directory, manifest, state)
+            .map_err(|error| error.to_string())?;
+        self.bind_manifest(manifest.clone());
+        Ok(())
+    }
+
+    fn verify_quarantine_host(
+        &mut self,
+        campaign_directory: &Path,
+        manifest: &CampaignManifest,
+        state: &DurableCampaignState,
+    ) -> Result<(), String> {
+        verify_quarantine_recovery_host_receipt_evidence(campaign_directory, manifest, state)
             .map_err(|error| error.to_string())?;
         self.bind_manifest(manifest.clone());
         Ok(())
@@ -1240,22 +1262,38 @@ impl SupervisorServer {
                 )?)
             }
         };
-        let manifest =
-            match verify_manifest_evidence(lock.campaign_directory(), request, &state, now) {
-                Ok(manifest) => manifest,
-                Err(_) => {
-                    return Ok(error_response_with_revision(
-                        request,
-                        now,
-                        state.revision,
-                        5,
-                    )?)
-                }
-            };
-        if backend
-            .verify_host(lock.campaign_directory(), &manifest, &state)
-            .is_err()
-        {
+        let quarantine_recovery = matches!(
+            state.campaign_state,
+            CampaignState::CorruptQuarantined | CampaignState::AbortedIncomplete
+        ) && state.recorded_failure
+            && state.durable_history_corrupt
+            && !state.duplicate_executor
+            && state.harness.is_none()
+            && state.daemon.is_none()
+            && state.checkpoint.is_none()
+            && state.controller_lease.is_none()
+            && request.manifest_sha256 == state.identity.manifest_sha256;
+        let manifest = match if quarantine_recovery {
+            verify_stored_manifest_evidence(lock.campaign_directory(), &state)
+        } else {
+            verify_manifest_evidence(lock.campaign_directory(), request, &state, now)
+        } {
+            Ok(manifest) => manifest,
+            Err(_) => {
+                return Ok(error_response_with_revision(
+                    request,
+                    now,
+                    state.revision,
+                    5,
+                )?)
+            }
+        };
+        let host_verified = if quarantine_recovery {
+            backend.verify_quarantine_host(lock.campaign_directory(), &manifest, &state)
+        } else {
+            backend.verify_host(lock.campaign_directory(), &manifest, &state)
+        };
+        if host_verified.is_err() {
             return Ok(error_response_with_revision(
                 request,
                 now,

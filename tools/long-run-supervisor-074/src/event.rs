@@ -108,6 +108,7 @@ pub struct EventVerificationReport {
     pub replay_index: BTreeMap<String, ReplayEntry>,
     pub latest_state_after: Option<DurableCampaignState>,
     pub latest_lifecycle: Option<LifecycleReplayEntry>,
+    pub lifecycle_events: Vec<LifecycleReplayEntry>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -299,6 +300,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
     let mut replay_index = BTreeMap::new();
     let mut latest_state_after = None;
     let mut latest_lifecycle = None;
+    let mut lifecycle_events = Vec::new();
     for (index, line) in parts.iter().enumerate() {
         if line.is_empty() {
             return Err(EventError::Parse {
@@ -386,12 +388,14 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
             transition,
         } = &event.payload.event
         {
-            latest_lifecycle = Some(LifecycleReplayEntry {
+            let entry = LifecycleReplayEntry {
                 cause_request_id: cause_request_id.clone(),
                 cause_request_sha256: cause_request_sha256.clone(),
                 transition: *transition,
                 occurred_at_unix_seconds: event.payload.occurred_at_unix_seconds,
-            });
+            };
+            latest_lifecycle = Some(entry.clone());
+            lifecycle_events.push(entry);
         }
         if let Some(state) = event.payload.state_after.as_deref() {
             if let Some(previous_state) = &latest_state_after {
@@ -420,6 +424,7 @@ pub fn verify_event_bytes(bytes: &[u8]) -> Result<EventVerificationReport, Event
         replay_index,
         latest_state_after,
         latest_lifecycle,
+        lifecycle_events,
     })
 }
 
@@ -778,9 +783,19 @@ fn validate_lifecycle_event(
                 | LifecycleEvent::C74Adopted
         ) && (state.harness.is_none() || state.daemon.is_none() || state.checkpoint.is_some()))
         || (transition == LifecycleEvent::AbortRequested
-            && (state.harness.is_none()
-                || state.daemon.is_none()
-                || state.controller_lease.is_none()))
+            && !((state.harness.is_some()
+                && state.daemon.is_some()
+                && state.controller_lease.is_some()
+                && !state.recorded_failure
+                && !state.duplicate_executor
+                && !state.durable_history_corrupt)
+                || (state.harness.is_none()
+                    && state.daemon.is_none()
+                    && state.checkpoint.is_none()
+                    && state.controller_lease.is_none()
+                    && state.recorded_failure
+                    && !state.duplicate_executor
+                    && state.durable_history_corrupt)))
         || (transition == LifecycleEvent::AbortCompleted && state.controller_lease.is_some())
         || (transition == LifecycleEvent::LeaseExpiryRequested
             && (state.harness.is_none() || state.daemon.is_none()))

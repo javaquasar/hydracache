@@ -6,10 +6,12 @@ use crate::event::{
 use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use crate::mutation::{reconcile_campaign, MutationError};
 use crate::protocol::{sign_response, Operation, Request, Response, ResponseBody};
+use crate::spawn::{read_spawn_evidence, SpawnIntent, SpawnMismatch, SpawnResolution, SpawnResult};
 use crate::state::{
     controller_lease_authorizes, transition, CampaignState, DurableCampaignState, Transition,
 };
 use crate::state_store::{CampaignLock, StateStoreError};
+use crate::Role;
 use std::path::Path;
 use thiserror::Error;
 
@@ -22,6 +24,26 @@ pub trait AbortBackend {
         request: &Request,
         state: &DurableCampaignState,
     ) -> Result<(), String>;
+
+    /// Capture an exact identity-mismatch quarantine and retire its empty,
+    /// failed deterministic unit. No live or ambiguously owned process may be
+    /// stopped through this recovery path.
+    fn capture_quarantine_and_stop(
+        &mut self,
+        _campaign_directory: &Path,
+        _request: &Request,
+        _state: &DurableCampaignState,
+        _cause: &QuarantineRecoveryCause,
+    ) -> Result<(), String> {
+        Err("quarantine recovery is not implemented by this backend".to_owned())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuarantineRecoveryCause {
+    pub role: Role,
+    pub intent: SpawnIntent,
+    pub result: SpawnResult,
 }
 
 #[derive(Debug, Error)]
@@ -70,18 +92,19 @@ pub fn drive_abort_request<B: AbortBackend + ?Sized>(
         return Ok(recorded.response.clone());
     }
 
-    validate_common(host_claim, lock, request, &state)?;
+    let quarantine_cause =
+        validate_common(host_claim, lock, request, &state, report.as_ref(), &digest)?;
     if state.campaign_state != CampaignState::AbortedIncomplete {
         if state.revision != request.expected_state_revision
-            || !controller_lease_authorizes(
-                &state,
-                request.controller.repository_id,
-                request.controller.run_id,
-                request.controller.actor_id,
-                now_unix_seconds,
-            )
-            || state.harness.is_none()
-            || state.daemon.is_none()
+            || (quarantine_cause.is_none()
+                && (!controller_lease_authorizes(
+                    &state,
+                    request.controller.repository_id,
+                    request.controller.run_id,
+                    request.controller.actor_id,
+                    now_unix_seconds,
+                ) || state.harness.is_none()
+                    || state.daemon.is_none()))
         {
             return Err(AbortLifecycleError::Binding);
         }
@@ -105,7 +128,12 @@ pub fn drive_abort_request<B: AbortBackend + ?Sized>(
         report = Some(event_report(lock)?);
     }
 
-    if state.harness.is_some() || state.daemon.is_some() || state.checkpoint.is_some() {
+    if state.revision == request.expected_state_revision.saturating_add(1)
+        && (state.harness.is_some()
+            || state.daemon.is_some()
+            || state.checkpoint.is_some()
+            || quarantine_cause.is_some())
+    {
         if state.revision != request.expected_state_revision.saturating_add(1) {
             return Err(AbortLifecycleError::Binding);
         }
@@ -115,9 +143,15 @@ pub fn drive_abort_request<B: AbortBackend + ?Sized>(
             &digest,
             LifecycleEvent::AbortRequested,
         )?;
-        backend
-            .capture_and_stop(lock.campaign_directory(), request, &state)
-            .map_err(AbortLifecycleError::Backend)?;
+        if let Some(cause) = quarantine_cause.as_ref() {
+            backend
+                .capture_quarantine_and_stop(lock.campaign_directory(), request, &state, cause)
+                .map_err(AbortLifecycleError::Backend)?;
+        } else {
+            backend
+                .capture_and_stop(lock.campaign_directory(), request, &state)
+                .map_err(AbortLifecycleError::Backend)?;
+        }
         let mut completed = state.clone();
         completed.revision = completed
             .revision
@@ -163,7 +197,9 @@ fn validate_common(
     lock: &CampaignLock,
     request: &Request,
     state: &DurableCampaignState,
-) -> Result<(), AbortLifecycleError> {
+    report: Option<&EventVerificationReport>,
+    request_digest: &str,
+) -> Result<Option<QuarantineRecoveryCause>, AbortLifecycleError> {
     if request.operation != Operation::Abort
         || request
             .abort_reason
@@ -182,15 +218,105 @@ fn validate_common(
         || request.manifest_sha256 != state.identity.manifest_sha256
         || host_claim.campaign_id() != request.campaign_id
         || lock.campaign_directory().parent() != Some(host_claim.campaign_root())
-        || state.recorded_failure
-        || state.duplicate_executor
-        || state.durable_history_corrupt
-        || state.campaign_state.is_corrupt()
         || state.campaign_state == CampaignState::CompleteSealed
     {
         return Err(AbortLifecycleError::Binding);
     }
-    Ok(())
+    if state.campaign_state == CampaignState::CorruptQuarantined
+        || (state.campaign_state == CampaignState::AbortedIncomplete
+            && state.recorded_failure
+            && state.durable_history_corrupt)
+    {
+        return validate_quarantine_recovery(
+            lock,
+            request,
+            state,
+            report.ok_or(AbortLifecycleError::Binding)?,
+            request_digest,
+        )
+        .map(Some);
+    }
+    if state.recorded_failure
+        || state.duplicate_executor
+        || state.durable_history_corrupt
+        || state.campaign_state.is_corrupt()
+    {
+        return Err(AbortLifecycleError::Binding);
+    }
+    Ok(None)
+}
+
+fn validate_quarantine_recovery(
+    lock: &CampaignLock,
+    request: &Request,
+    state: &DurableCampaignState,
+    report: &EventVerificationReport,
+    request_digest: &str,
+) -> Result<QuarantineRecoveryCause, AbortLifecycleError> {
+    if !state.recorded_failure
+        || !state.durable_history_corrupt
+        || state.duplicate_executor
+        || state.harness.is_some()
+        || state.daemon.is_some()
+        || state.checkpoint.is_some()
+        || state.controller_lease.is_some()
+    {
+        return Err(AbortLifecycleError::Binding);
+    }
+    let spawn = report
+        .lifecycle_events
+        .iter()
+        .rev()
+        .find(|entry| {
+            matches!(
+                entry.transition,
+                LifecycleEvent::I74SpawnMismatch | LifecycleEvent::C74SpawnMismatch
+            )
+        })
+        .ok_or(AbortLifecycleError::Binding)?;
+    let role = match spawn.transition {
+        LifecycleEvent::I74SpawnMismatch => Role::I74,
+        LifecycleEvent::C74SpawnMismatch => Role::C74,
+        _ => return Err(AbortLifecycleError::Binding),
+    };
+    let (intent, result) = read_spawn_evidence(lock.campaign_directory(), &role)
+        .map_err(|_| AbortLifecycleError::Binding)?;
+    if intent.campaign_id != request.campaign_id
+        || intent.manifest_sha256 != request.manifest_sha256
+        || intent.request_id != spawn.cause_request_id
+        || intent.request_sha256 != spawn.cause_request_sha256
+        || result.resolution != SpawnResolution::Mismatch
+        || result.mismatch != Some(SpawnMismatch::Identity)
+        || result.harness.is_some()
+        || result.daemon.is_some()
+    {
+        return Err(AbortLifecycleError::Binding);
+    }
+    let latest_valid = match state.campaign_state {
+        CampaignState::CorruptQuarantined => report.latest_lifecycle.as_ref() == Some(spawn),
+        CampaignState::AbortedIncomplete => report.latest_lifecycle.as_ref().is_some_and(|entry| {
+            let expected_transition =
+                if state.revision == request.expected_state_revision.saturating_add(1) {
+                    LifecycleEvent::AbortRequested
+                } else if state.revision == request.expected_state_revision.saturating_add(2) {
+                    LifecycleEvent::AbortCompleted
+                } else {
+                    return false;
+                };
+            entry.transition == expected_transition
+                && entry.cause_request_id == request.request_id
+                && entry.cause_request_sha256 == request_digest
+        }),
+        _ => false,
+    };
+    if !latest_valid {
+        return Err(AbortLifecycleError::Binding);
+    }
+    Ok(QuarantineRecoveryCause {
+        role,
+        intent,
+        result,
+    })
 }
 
 fn event_report(lock: &CampaignLock) -> Result<EventVerificationReport, AbortLifecycleError> {

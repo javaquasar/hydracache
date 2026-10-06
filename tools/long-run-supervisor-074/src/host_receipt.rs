@@ -214,6 +214,16 @@ pub fn verify_live_observation(
     }
 }
 
+fn verify_quarantine_recovery_live_observation(
+    admitted: &HostObservationReceipt,
+    observed: &HostObservationReceipt,
+) -> Result<(), HostReceiptError> {
+    validate_receipt(observed)?;
+    let mut normalized = observed.clone();
+    normalized.supervisor_binary = admitted.supervisor_binary.clone();
+    verify_live_observation(admitted, &normalized)
+}
+
 /// Hashes the stable backing-mount properties while retaining `mount_id` only
 /// as diagnostic evidence. Linux mount IDs are local to a mount namespace and
 /// may change when systemd reconstructs an otherwise identical private
@@ -248,6 +258,28 @@ pub fn verify_host_receipt_evidence(
     verify_receipt_binding(&receipt, manifest, state)?;
     let observed = collect_host_observation(campaign_directory)?;
     verify_live_observation(&receipt, &observed)?;
+    Ok(receipt)
+}
+
+/// Revalidate a quarantined campaign after a signed in-place supervisor
+/// upgrade. Every admitted host property remains frozen; only the supervisor
+/// binary identity may differ, and the replacement must be bound to the
+/// root-owned provisioning receipt produced by the signed installer.
+#[cfg(target_os = "linux")]
+pub fn verify_quarantine_recovery_host_receipt_evidence(
+    campaign_directory: &Path,
+    manifest: &CampaignManifest,
+    state: &DurableCampaignState,
+) -> Result<HostObservationReceipt, HostReceiptError> {
+    let receipt_path = campaign_directory.join(HOST_RECEIPT_NAME);
+    let head_path = campaign_directory.join(HOST_RECEIPT_HEAD_NAME);
+    let bytes = read_regular_bounded(&receipt_path, MAX_HOST_RECEIPT_BYTES as u64)?;
+    verify_head(&head_path, &manifest.host_receipt_sha256)?;
+    let receipt = parse_and_validate(&bytes, &manifest.host_receipt_sha256)?;
+    verify_receipt_binding(&receipt, manifest, state)?;
+    let observed = collect_host_observation(campaign_directory)?;
+    collect_installed_provisioning_identity(&observed.supervisor_binary.sha256)?;
+    verify_quarantine_recovery_live_observation(&receipt, &observed)?;
     Ok(receipt)
 }
 
@@ -1050,6 +1082,25 @@ mod tests {
         drifted.kernel_release.push_str("-drift");
         assert_eq!(
             verify_live_observation(&receipt, &drifted),
+            Err(HostReceiptError::Drift)
+        );
+    }
+
+    #[test]
+    fn quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change() {
+        let admitted = receipt();
+        let mut upgraded = admitted.clone();
+        upgraded.supervisor_binary.sha256 = "e".repeat(64);
+        upgraded.supervisor_binary.size += 1;
+        upgraded.supervisor_binary.inode += 1;
+        assert_eq!(
+            verify_quarantine_recovery_live_observation(&admitted, &upgraded),
+            Ok(())
+        );
+
+        upgraded.kernel_release.push_str("-drift");
+        assert_eq!(
+            verify_quarantine_recovery_live_observation(&admitted, &upgraded),
             Err(HostReceiptError::Drift)
         );
     }

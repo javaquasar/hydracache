@@ -92,7 +92,8 @@ pub fn transition(
             | S::C74Starting
             | S::C74Running
             | S::C74Terminal
-            | S::FailedIncomplete,
+            | S::FailedIncomplete
+            | S::CorruptQuarantined,
             T::Abort,
         ) => S::AbortedIncomplete,
         (current, T::ExpireLease) if current.is_live() => S::LeaseExpiredIncomplete,
