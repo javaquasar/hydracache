@@ -248,7 +248,7 @@ HYDRACACHE_CANCELLATION_CLIENT_EVIDENCE = "../../target/test-evidence/0.64/cance
 
 [[suite]]
 id = "fast.workspace-nextest"
-work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W5a", "W6", "W6b", "W7", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W25", "W27", "W28", "W29", "W30", "W32", "W33", "W34", "W35", "W36", "W37", "W39"]
+work_items = ["W0", "W1", "W2", "W3", "W4", "W4a", "W4b", "W4c", "W4d", "W4e", "W5", "W5a", "W6", "W6a", "W6b", "W7", "W8", "W8a", "W8b", "W8c", "W9", "W9a", "W9b", "W9c", "W9d", "W9e", "W10", "W11", "W12", "W13", "W14", "W15", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W25", "W27", "W28", "W29", "W30", "W32", "W33", "W34", "W35", "W36", "W37", "W39"]
 timeout_seconds = 2400
 budget_seconds = 840
 deterministic = false

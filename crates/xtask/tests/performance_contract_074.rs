@@ -670,6 +670,81 @@ fn w2_through_w9_terminal_dispositions_are_exact_and_non_promotable() {
 }
 
 #[test]
+fn w12_workspace_fast_gate_covers_every_work_item_without_budget_drift() {
+    let registry = xtask::fast_suite::load_registry(&root()).unwrap();
+    assert_eq!(registry.aggregate_budget_seconds, 1_680);
+    assert_eq!(
+        registry
+            .suite
+            .iter()
+            .map(|suite| suite.budget_seconds)
+            .sum::<u64>(),
+        1_680
+    );
+    let gate = registry
+        .suite
+        .iter()
+        .find(|suite| suite.id == "fast.workspace-nextest")
+        .unwrap();
+    assert_eq!(gate.timeout_seconds, 2_400);
+    assert_eq!(gate.budget_seconds, 840);
+    assert_eq!(gate.command.program, "cargo");
+    assert_eq!(
+        gate.command.args,
+        [
+            "nextest",
+            "run",
+            "--workspace",
+            "--profile",
+            "ci",
+            "--locked"
+        ]
+    );
+
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),
+    )
+    .unwrap();
+    let gate_items = gate
+        .work_items
+        .iter()
+        .map(String::as_str)
+        .collect::<std::collections::BTreeSet<_>>();
+    for item in manifest["work_item"].as_array().unwrap() {
+        let id = item["id"].as_str().unwrap();
+        assert!(gate_items.contains(id), "workspace gate must cover {id}");
+        assert_eq!(
+            item["fast_gate_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|value| value.as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["fast.workspace-nextest"],
+            "release evidence must bind {id} to the unchanged workspace gate"
+        );
+    }
+
+    let receipt: Value = serde_json::from_slice(
+        &std::fs::read(root().join(
+            "docs/testing/performance/0.74/local-runs/w12-fast-gate-registration-local-20261006.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(receipt["gate_id"].as_str(), Some("fast.workspace-nextest"));
+    assert_eq!(receipt["work_items_bound"].as_u64(), Some(28));
+    assert_eq!(receipt["command_changed"].as_bool(), Some(false));
+    assert_eq!(receipt["budget_changed"].as_bool(), Some(false));
+    assert_eq!(receipt["gate_executed"].as_bool(), Some(false));
+    assert_eq!(
+        receipt["exact_commit_receipt_present"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(receipt["promotable"].as_bool(), Some(false));
+}
+
+#[test]
 fn published_b73_requires_exact_tag_archive_and_runtime_relationship() {
     let mut value = contract("baseline-identities.toml");
     value["predecessor_candidate"]["annotated_tag_commit_sha"] =

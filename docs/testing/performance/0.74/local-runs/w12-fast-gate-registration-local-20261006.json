@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "recorded_at_utc": "2026-10-06T13:50:30Z",
+  "source_parent_sha": "f52b0c851c00092b5ead28236e32297659f5b1f3",
+  "tier": "local-preparation",
+  "promotable": false,
+  "gate_id": "fast.workspace-nextest",
+  "command": ["cargo", "nextest", "run", "--workspace", "--profile", "ci", "--locked"],
+  "timeout_seconds": 2400,
+  "budget_seconds": 840,
+  "aggregate_budget_seconds": 1680,
+  "aggregate_budget_sum_seconds": 1680,
+  "work_items_bound": 28,
+  "command_changed": false,
+  "budget_changed": false,
+  "gate_executed": false,
+  "exact_commit_receipt_present": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "This receipt proves only that every 0.74 work item is bound to the existing unchanged workspace fast gate without changing its command, timeout, budget, or aggregate budget. The gate has not been executed on this source commit, so no work item is FastGreen and this is not product or release-admission evidence."
+}

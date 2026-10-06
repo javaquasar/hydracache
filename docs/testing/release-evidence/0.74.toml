@@ -10,7 +10,7 @@ dynamic_canary_work_items = ["W11", "W12"]
 id = "W0"
 required_sources = ["docs/testing/performance/0.74/baseline-identities.toml", "docs/testing/performance/0.74/scenario-matrix.toml", "docs/testing/performance/0.74/statistics.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -21,7 +21,7 @@ function = "checked_in_w0_contract_is_valid_and_non_promotable"
 id = "W1"
 required_sources = ["docs/testing/performance/0.74/w1-local-attribution.md", "tools/resp-stage-profile-074/src/main.rs"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -32,7 +32,7 @@ function = "proposal_admission_requires_w1_attribution_and_evidence"
 id = "W2"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -43,7 +43,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W3"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -54,7 +54,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -65,7 +65,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4a"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -76,7 +76,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4b"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -87,7 +87,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4c"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -98,7 +98,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4d"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -109,7 +109,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W4e"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -120,7 +120,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W5"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -131,7 +131,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W6"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -142,7 +142,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W6a"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -153,7 +153,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W6b"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -164,7 +164,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W7"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -175,7 +175,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W8"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -186,7 +186,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W8a"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -197,7 +197,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W8b"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -208,7 +208,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W8c"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -219,7 +219,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W9"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -230,7 +230,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W9a"
 required_sources = ["docs/testing/performance/0.74/w9a-atomic-ordering-registry.toml", "docs/testing/performance/0.74/w9-local-followups.md"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w9a-atomic-ordering-c1.json", "docs/testing/performance/0.74/local-runs/w9a-atomic-ordering-c8.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -241,7 +241,7 @@ function = "both_orderings_preserve_atomic_increment_count"
 id = "W9b"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -252,7 +252,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W9c"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -263,7 +263,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W9d"
 required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -274,7 +274,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 id = "W9e"
 required_sources = ["tools/allocator-profile-074/src/main.rs", "scripts/perf/performance_allocator_profile_074.py", "docs/testing/performance/0.74/w9e-linux-allocator-profile-contract.toml", "docs/testing/performance/0.74/w9e-linux-allocator-attribution.md"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w9e-linux-allocator-attribution-707abde4.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -285,7 +285,7 @@ function = "w9e_allocator_attribution_is_linux_only_complete_and_non_promotable"
 id = "W10"
 required_sources = ["docs/testing/performance/0.74/composition-ledger.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -296,7 +296,7 @@ function = "w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal"
 id = "W11"
 required_sources = ["tools/long-run-supervisor-074/src/state.rs", "tools/long-run-supervisor-074/src/measurement_loss.rs", "scripts/ci/monitor-long-run-campaign-074.py", "crates/xtask/src/long_run_campaign.rs", "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"]
 required_artifacts = ["docs/testing/canary-registry-0.74.json", "docs/testing/performance/0.74/local-runs/w11-controller-canaries-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-measurement-loss-maintenance-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-campaign-progress-loss-smoke-1de46cac.json", "docs/testing/performance/0.74/local-runs/w11-campaign-measurement-loss-smoke-8d786d8f.json", "docs/testing/performance/0.74/local-runs/w11-campaign-lease-expiry-smoke-187b63fb.json"]
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -312,8 +312,8 @@ function = "interrupted_backend_recovers_exact_measurement_cause_once"
 [[work_item]]
 id = "W12"
 required_sources = ["docs/testing/performance/0.74/release-admission-contract.toml", "docs/releases/0.74.0.md"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w12-pre-admission-local-20261006.json"]
-fast_gate_ids = []
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w12-pre-admission-local-20261006.json", "docs/testing/performance/0.74/local-runs/w12-fast-gate-registration-local-20261006.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -322,3 +322,6 @@ function = "w12_release_admission_contract_is_fail_closed"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w12_release_note_retains_draft_claim_rollback_and_gate_boundaries"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w12_workspace_fast_gate_covers_every_work_item_without_budget_drift"
