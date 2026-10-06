@@ -1089,3 +1089,10 @@ only make coverage explicit. No narrow evidence-only test substitutes for the wo
 Until that exact command produces a clean exact-commit receipt, every item remains `Implemented`
 rather than `FastGreen`. The non-promotable registration receipt is
 `local-runs/w12-fast-gate-registration-local-20261006.json`.
+
+The first exact-source W11 canary refresh on Windows stopped in its green guard before the canary
+ran. The supervisor binary referenced the Linux-only `campaign_fixture_harness` from one unguarded
+CLI match arm, producing compiler error E0425. The narrow repair adds the same Linux cfg guard used
+by the adjacent fixture commands; it does not alter Linux execution. The failed guard receipt is
+retained as `local-runs/w11-windows-canary-guard-compile-rejected-ae32f62c.json` and cannot count as
+expected-red evidence.

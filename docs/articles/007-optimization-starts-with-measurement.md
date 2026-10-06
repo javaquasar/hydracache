@@ -2746,3 +2746,9 @@ workspace-wide nextest gate without changing its command, timeout or budget. A s
 would be faster, but letting it stand in for the workspace suite would create a false green edge.
 Registration therefore improves traceability while the stage remains `Implemented`: only an
 exact-commit receipt from the unchanged full gate may advance it to `FastGreen`.
+
+Refreshing the W11 canary on Windows then demonstrated why its green guard runs first. The canary
+never executed: one Linux-only fixture function was referenced by an unguarded CLI match arm, so
+the supervisor binary failed to compile with E0425. The fix was one platform guard, matching all
+adjacent host-only entrypoints and leaving Linux semantics unchanged. The failed guard remains
+negative evidence; a compile failure cannot masquerade as an expected-red canary.
