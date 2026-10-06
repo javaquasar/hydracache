@@ -1338,3 +1338,38 @@ explicitly does not reopen its rejected implementations. Any future product retr
 different design, preregistered backpressure behavior and the same shallow/native/tail guards.
 The plan's no-win outcome is to retain measurements and defer changes, not manufacture a candidate
 from documentation or relax thresholds. No product retry, qualification or release was started.
+
+### W3 feasibility: partial progress is not the mutation frontier
+
+The next local step screens a proposed shallow-free W3 mechanism before product code. On baseline
+`8bf4eb26`, the existing seven adversarial/adaptive tests passed. Source inspection shows that the
+generic connection loop requires the previous response's entire `write_all` and `flush` to succeed
+before executing another command. Completion refers to the supplied `AsyncWrite` boundary, not
+TCP acknowledgement or peer receipt. Readiness or a first accepted byte cannot replace it.
+
+Two deterministic integration guards now supply both SETs and QUIT in one read. One enumerates
+every accepted prefix, zero through five bytes, of `+OK\r\n`; the serving future is explicitly
+polled to its pending boundary. A separate connection sees the first SET and a miss for the second
+at every cut, including a complete first reply with pending flush. Opening the gate permits the
+second SET and three ordered replies. The other guard injects a failed flush after all five bytes:
+the server fails loudly without executing the second SET or automatically retrying. Correctness
+uses exact bytes/state, not sleeps; completion timeouts apply only after release.
+
+The review therefore rejects readiness/progress-gated coalescing of already-executed SET responses
+as a new mechanism. Completing each previous write and flush preserves semantics but supplies no
+elimination of that previous write. This narrow result does not prove all transport optimizations
+impossible. GET-only purity is unproven, and staged execution needs an explicit separate authority,
+visibility, quota, audit and acknowledgement design; neither is authorized by this investigation.
+
+Clean source `849fea3a2d802611191307996fb0dbd443aeb250` passed 152 redis-compat tests with 23 existing
+opt-in cases ignored, and 37 performance-contract tests. Both affected packages passed all-target
+checking, strict all-target/all-feature lint and format during development. The local performance
+contract passed and W11/W12 canaries remained expected red. Exact scope, earlier metadata/format
+diagnostics and outcomes live in `local-runs/w3-delivery-frontier-review-849fea3a.json`; the design
+and frozen review policy are `w3-delivery-frontier-review.md` and `.toml`. W3 release-evidence now
+requires these artifacts and all three new regression selectors alongside its original evidence.
+
+No product code, dependency, native/shared hot path, frozen 0.73 artifact, qualification input or
+numerical threshold changed. No new goodput, latency, CPU, allocation or memory measurement exists.
+The older hosted receipt remains proof for `3ce74350` only. Previous negative candidates remain
+negative, accepted product proposals stay zero, C74 is unresolved and release admission is closed.

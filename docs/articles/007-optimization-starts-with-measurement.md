@@ -3076,3 +3076,62 @@ Thus two conclusions coexist: ordinary tooling has become more reliable and cand
 candidate and its qualification still do not exist. The earlier hosted success stays attached to
 its exact source; it cannot be reused as CI proof for this later fix. No new product or expensive
 workload was launched. What remains is a product-direction decision, not an unexplained red tool.
+
+### W3: test the permission to execute, not merely the permission to write
+
+The next investigation asks whether a different adaptive mechanism can resolve the backpressure
+failure without penalizing pipeline one. A tempting idea is to check socket readiness or write the
+first byte of a response, then execute more buffered commands and coalesce their replies. The
+question is semantic before it is numerical: what exactly permits the next mutation?
+
+The canonical generic `AsyncWrite` path executes one command, awaits the complete response write,
+awaits flush, and only then dispatches the next buffered command. A SET can already be visible
+while its own reply is blocked. That does not permit the second SET to become visible. Here
+completion means the writer's completed write and flush, not a TCP acknowledgement, peer receipt
+or durability guarantee. Substituting acceptance into a new application buffer would silently
+move the existing boundary.
+
+We first passed the seven existing adversarial/adaptive regressions on baseline `8bf4eb26`, then
+added two deterministic tests without modifying the server. Both SET requests and QUIT arrive in
+one read. A gated writer accepts each possible prefix of the first five-byte `+OK\r\n` response,
+from zero bytes through the entire reply, and then returns pending. Explicitly polling the serving
+future establishes the blocked state; no sleep or elapsed-time inference establishes correctness.
+
+At all six cuts, exactly one mutation is visible. Another connection reads the first value and a
+miss for the second, proving exact state and its own progress while the original writer is blocked.
+Releasing the gate permits the second SET and the exact three ordered replies. The complete-reply
+case is particularly important: all response bytes can be accepted while flush is still pending,
+and the second mutation must still wait. The second test makes that flush fail with BrokenPipe.
+The first mutation remains visible, but there is no second SET, second reply or automatic retry.
+
+This eliminates two convenient but invalid permission signals: a writable hint and partial byte
+progress. Postponing flush after a full write fails the same contract. Completing write and flush
+before continuing is valid, but the previous response write has already happened; collecting
+already-executed SET replies before that completion recreates the rejected design. These results
+are a narrow feasibility finding for that mechanism family, not a proof that every possible
+transport-specific optimization is impossible. The finite test enumeration also covers one SET
+reply shape, not every command and transport.
+
+Staging mutations until a shared response write completes is a different architecture, not a
+small IO patch. It needs explicit authority, visibility, audit, quota, acknowledgement and native
+lock ownership analysis. GET-only specialization likewise cannot assume purity: expiry,
+authorization and accounting remain shared obligations. Neither avenue is implemented or admitted
+here, and no earlier candidate is reopened. A genuinely different mechanism must establish its
+semantic source of savings before a new D2 performance experiment.
+
+The resulting review is frozen in `w3-delivery-frontier-review.toml` with the original deep-pipeline
+and pipeline-one thresholds unchanged. A new xtask regression checks both policy equality and
+the explicit absence of candidate authorization. Clean source `849fea3a` passed 152 redis-compat
+tests with 23 existing opt-in cases ignored and all 37 performance-contract tests. Scoped all-target
+checks, strict all-target/all-feature lint and format passed during development; the local contract
+passed and W11/W12 canaries remained expected red. Development diagnostics are retained too:
+formatting needed repair, and the first contract test exposed a repository-relative design path
+that was corrected without changing product behavior or a threshold.
+
+The exact source-bound record is
+`docs/testing/performance/0.74/local-runs/w3-delivery-frontier-review-849fea3a.json`.
+No new throughput, tail latency, CPU/op, allocation or memory measurements were taken. The RESP
+runtime, native/shared hot path and dependencies are unchanged; published 0.73 is untouched. The
+earlier hosted green execution remains evidence for its original source, not this review. Accepted
+product candidates remain zero, C74 unresolved and admission closed. The useful result is a
+stronger semantic screen and a narrower design space, not an invented numerical win.

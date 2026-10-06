@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W3",
+  "tier": "local-semantic-feasibility-review",
+  "baseline_source_commit": "8bf4eb261b349410aa22b01390e7edb35c31c2c1",
+  "semantic_guard_commit": "08fb370eeec6ceeaf6eebfa1580928542a03d587",
+  "source_commit": "849fea3a2d802611191307996fb0dbd443aeb250",
+  "candidate_source_commit": "UNRESOLVED",
+  "promotable": false,
+  "baseline": {
+    "dirty_worktree": false,
+    "adversarial_transport_tests_passed": 4,
+    "adaptive_coalescing_tests_passed": 3,
+    "tests_failed": 0,
+    "observed_source_boundary": "execute one command, await write_all of the complete response and flush, then dispatch the next command"
+  },
+  "semantic_guards": {
+    "first_reply": "+OK\r\n",
+    "commands_supplied_in_one_read": ["SET a 1", "SET b 2", "QUIT"],
+    "accepted_first_reply_prefix_bytes": [0, 1, 2, 3, 4, 5],
+    "each_prefix_visible_mutations_before_gate_release": 1,
+    "each_prefix_completed_commands_before_gate_release": 0,
+    "each_prefix_visible_mutations_after_successful_release": 2,
+    "each_prefix_second_connection_response_before_release": "$1\r\n1\r\n$-1\r\n+OK\r\n",
+    "each_prefix_output_after_successful_release": "+OK\r\n+OK\r\n+OK\r\n",
+    "full_response_with_pending_flush_blocks_second_set": true,
+    "injected_flush_error": "BrokenPipe: scripted flush failure",
+    "flush_error_visible_mutations": 1,
+    "flush_error_completed_commands": 0,
+    "flush_error_second_set_or_reply_executed": false,
+    "automatic_retry": false,
+    "correctness_signal": "explicit poll of the serving future and exact bytes/state; no correctness sleeps",
+    "timeout_scope": "bounds completion after gate release only",
+    "boundary_is_peer_receipt_or_tcp_ack": false,
+    "coverage_limit": "Finite enumeration of all six cuts of a five-byte SET reply; not a proof for every command, writer or response size."
+  },
+  "precommit_development_checks": {
+    "dirty_worktree": true,
+    "focused_transport_tests_passed": 9,
+    "redis_compat_tests_passed": 152,
+    "redis_compat_tests_ignored": 23,
+    "performance_contract_074_tests_passed_after_metadata_repair": 37,
+    "cargo_check": "passed for redis-compat and xtask: --all-targets --locked",
+    "clippy": "passed for redis-compat and xtask: --all-targets --all-features --locked -- -D warnings",
+    "format_after_repair": "passed",
+    "retained_diagnostics": [
+      "Initial format check requested mechanical formatting; cargo fmt applied it.",
+      "The new contract regression initially passed 36 tests and failed one because the design path was a basename while resolution was repository-root-relative. Only that metadata path was corrected; no product or acceptance policy was changed."
+    ]
+  },
+  "clean_source_checks": {
+    "dirty_worktree": false,
+    "redis_compat_tests_passed": 152,
+    "redis_compat_tests_ignored": 23,
+    "redis_compat_tests_failed": 0,
+    "redis_compat_doctests": 0,
+    "ignored_scope": "Existing external/Docker/resource opt-in cases; not run and not claimed green.",
+    "performance_contract_074_tests_passed": 37,
+    "performance_contract_074_tests_failed": 0,
+    "performance_contract_check": "passed: local, non-promotable",
+    "canaries": [
+      {
+        "w_item": "W11",
+        "source_commit": "849fea3a2d802611191307996fb0dbd443aeb250",
+        "dirty_worktree": false,
+        "outcome": "expected_red",
+        "duration_ms": 673,
+        "output_sha256": "d24e4a4ac6db2ff12aff4055a4df04d71cd4ca5367c0965d6b2acafbc8988690"
+      },
+      {
+        "w_item": "W12",
+        "source_commit": "849fea3a2d802611191307996fb0dbd443aeb250",
+        "dirty_worktree": false,
+        "outcome": "expected_red",
+        "duration_ms": 5551,
+        "output_sha256": "5d475d39ea80f73e8b2381fd2d5106f617bb81352b2aed48eccaf6a2d75f5f1d"
+      }
+    ]
+  },
+  "evidence_and_documentation_checks": {
+    "source_commit_at_check": "849fea3a2d802611191307996fb0dbd443aeb250",
+    "dirty_worktree": true,
+    "scope": "Documentation/evidence/manifest edits after clean-source semantic checks; not a new clean-source or hosted receipt.",
+    "performance_contract_074_tests_passed": 37,
+    "release_evidence_tests_passed": 13,
+    "release_governance_tests_passed": 23,
+    "doc_check_tests_passed": 16,
+    "tests_failed": 0,
+    "performance_contract_check": "passed: local, non-promotable",
+    "release_governance_check": "passed: 17 checks, zero explicit TODOs",
+    "doc_check": "passed",
+    "docs_release_checker_tests_passed": 3,
+    "docs_release_checker": "passed",
+    "docs_link_checker": "passed: 51 Markdown files and 20 external includes",
+    "mdbook_build": "passed",
+    "format": "passed: redis-compat and xtask",
+    "diff_check": "passed"
+  },
+  "unchanged_runtime": {
+    "runtime_or_dependency_changes": false,
+    "native_or_shared_hot_path_changes": false,
+    "resp_source_raw_windows_file_sha256": "95d1479dc0718241752e4fa0ffc7693d6e34fd2e0f5072ecad6065a0e14326a1",
+    "digest_scope": "Raw Windows working-tree bytes of crates/hydracache-redis-compat/src/lib.rs, equal before and after; not a normalized-source or benchmark identity.",
+    "diff_from_baseline_empty_for": [
+      "crates/hydracache-redis-compat/src/lib.rs",
+      "crates/hydracache-client-transport-axum/src/lib.rs",
+      "Cargo.lock"
+    ],
+    "frozen_073_artifacts_changed": false
+  },
+  "decision": {
+    "readiness_or_partial_progress_authorizes_next_mutation": false,
+    "complete_write_without_flush_authorizes_next_mutation": false,
+    "reviewed_mechanisms_admitted_as_product_candidates": 0,
+    "prior_rejections_reopened": false,
+    "numerical_acceptance_policy_changed": false,
+    "accepted_product_candidates": 0,
+    "release_admission": "closed",
+    "narrow_inference": "Coalescing already-executed SET responses before completion of the preceding write and flush violates the retained mutation frontier. This does not prove all possible transport optimizations impossible.",
+    "architectural_boundary": "Transactional staging or acknowledgement/visibility changes require a separate architectural review, not an inferred IO-only W3 authorization."
+  },
+  "not_run": [
+    "new product candidate or comparative performance benchmark",
+    "dedicated-host workload or 6-hour/24-hour qualification",
+    "new full-workspace hosted CI or Linux/WSL check for this source"
+  ],
+  "claims": {
+    "new_goodput_latency_cpu_allocation_or_memory_measurements": false,
+    "product_performance_or_native_non_regression_proven": false,
+    "canary_durations_are_product_performance_measurements": false,
+    "earlier_hosted_ci_receipt_rebound_to_this_source": false
+  }
+}
