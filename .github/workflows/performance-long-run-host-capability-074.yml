@@ -13,6 +13,7 @@ on:
           - provision
           - host-observation
           - start-bundle
+          - controller
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
@@ -20,6 +21,56 @@ on:
           - campaign-measurement-loss-smoke
           - campaign-lease-expiry-smoke
           - supervisor-overhead-smoke
+      controller_source_sha:
+        description: Exact installed tooling source for controller mode
+        required: false
+        default: ""
+        type: string
+      controller_operation:
+        description: Typed controller operation
+        required: false
+        default: start
+        type: choice
+        options:
+          - start
+          - attach
+          - seal
+          - abort
+      campaign_id:
+        description: Frozen campaign id for controller mode
+        required: false
+        default: ""
+        type: string
+      manifest_sha256:
+        description: Frozen manifest digest for controller mode
+        required: false
+        default: ""
+        type: string
+      expected_state_revision:
+        description: Expected durable revision for controller mode
+        required: false
+        default: ""
+        type: string
+      request_id:
+        description: New UUIDv4 for controller mode
+        required: false
+        default: ""
+        type: string
+      approval_nonce_sha256:
+        description: Required only for controller abort
+        required: false
+        default: ""
+        type: string
+      start_bundle_run_id:
+        description: Bundle workflow run id for revision-zero start
+        required: false
+        default: ""
+        type: string
+      start_bundle_artifact_name:
+        description: Exact six-file bundle artifact for revision-zero start
+        required: false
+        default: ""
+        type: string
   push:
     branches:
       - feat/0.74-resp-native-throughput
@@ -110,6 +161,26 @@ jobs:
     with:
       source_sha: ${{ github.sha }}
       host_id: reference-074
+
+  controller:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller'
+    name: Signed detached supervisor controller
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: ${{ inputs.controller_operation }}
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: ${{ inputs.expected_state_revision }}
+      request_id: ${{ inputs.request_id }}
+      approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}
+      start_bundle_run_id: ${{ inputs.start_bundle_run_id }}
+      start_bundle_artifact_name: ${{ inputs.start_bundle_artifact_name }}
+    secrets: inherit
 
   systemd-smoke:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'systemd-smoke'

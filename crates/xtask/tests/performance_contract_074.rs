@@ -585,6 +585,7 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
         root().join(".github/workflows/performance-long-run-qualification-074.yml"),
     )
     .unwrap();
+    assert!(workflow.contains("workflow_call:"));
     assert!(workflow.contains("workflow_dispatch:"));
     assert!(!workflow.contains("pull_request:"));
     assert!(!workflow.contains("schedule:"));
@@ -616,6 +617,24 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
     assert!(workflow.contains("inputs.expected_state_revision == '0'"));
     assert!(workflow.contains("Capture a best-effort read-only status snapshot"));
     assert!(!workflow.contains("continue-on-error: true"));
+
+    let entry = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-capability-074.yml"),
+    )
+    .unwrap();
+    for required in [
+        "- controller",
+        "inputs.mode == 'controller'",
+        "uses: ./.github/workflows/performance-long-run-qualification-074.yml",
+        "source_sha: ${{ inputs.controller_source_sha }}",
+        "operation: ${{ inputs.controller_operation }}",
+        "approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}",
+        "start_bundle_run_id: ${{ inputs.start_bundle_run_id }}",
+        "start_bundle_artifact_name: ${{ inputs.start_bundle_artifact_name }}",
+        "secrets: inherit",
+    ] {
+        assert!(entry.contains(required), "controller entrypoint omitted {required}");
+    }
 }
 
 #[test]

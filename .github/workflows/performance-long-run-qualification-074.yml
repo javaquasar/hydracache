@@ -1,6 +1,51 @@
 name: Performance Long-Run Controller 0.74
 
 on:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact reviewed 40-character tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+      operation:
+        description: Explicit typed supervisor mutation
+        required: true
+        type: string
+      campaign_id:
+        description: Existing frozen 64-character campaign id
+        required: true
+        type: string
+      manifest_sha256:
+        description: Exact frozen campaign manifest SHA-256
+        required: true
+        type: string
+      expected_state_revision:
+        description: Exact durable revision expected by this operation
+        required: true
+        type: string
+      request_id:
+        description: New UUIDv4
+        required: true
+        type: string
+      approval_nonce_sha256:
+        description: Required only for abort
+        required: false
+        default: ""
+        type: string
+      start_bundle_run_id:
+        description: Source workflow run containing the revision-zero start bundle
+        required: false
+        default: ""
+        type: string
+      start_bundle_artifact_name:
+        description: Exact six-file start bundle artifact name
+        required: false
+        default: ""
+        type: string
   workflow_dispatch:
     inputs:
       source_sha:
