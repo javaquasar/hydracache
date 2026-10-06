@@ -3135,3 +3135,61 @@ runtime, native/shared hot path and dependencies are unchanged; published 0.73 i
 earlier hosted green execution remains evidence for its original source, not this review. Accepted
 product candidates remain zero, C74 unresolved and admission closed. The useful result is a
 stronger semantic screen and a narrower design space, not an invented numerical win.
+
+### W3 staged execution: hidden work still has visible dependencies
+
+The delivery-frontier review left one architectural question: could a connection prepare mutations
+privately, coalesce predicted replies, and commit at a compatible boundary? We assessed that idea
+locally with explicit authorization to design, not to weaken semantics or implement a product
+executor. This is still **not distributed transactions**, nor a store or durability redesign.
+
+An overlay hides the second mutation, but it does not freeze the world. While the first SET reply
+is blocked, a direct native caller may invalidate that key, replace its value or consume the
+remaining tenant quota. Time may also reach an expiry boundary. A prepared result can therefore
+be wrong even if no speculative value was ever visible.
+
+Four new integration guards make those dependencies concrete. Each explicitly polls the canonical
+RESP future to every cut of its first five-byte reply, including pending flush after all bytes.
+Intervening requests use `dispatch_verified_request` directly; the translator only supplies the
+existing binary-safe key identity. Native invalidation makes the queued supported `SET NX PX`
+succeed. Native replacement makes the queued GET return the new value. Advancing the injected
+clock to exact expiry makes NX succeed and proves that its new TTL begins at execution, not at
+earlier preparation. Finally, a native PUT claims the remaining quota while RESP is blocked:
+the queued SET must fail with the exact quota error, no third mutation and exactly one rejection
+audit. Early reservation would instead reject or delay the legitimate native write.
+
+All 24 controlled trace instances pass. They demonstrate those precise interleavings and native
+progress, not a throughput or latency measurement. They also do not exhaust mutable authorization,
+event publication, idempotency, cancellation or multi-key atomicity requirements. Development
+diagnostics were retained: the first helper mistakenly treated the translated-command enum as a
+plan, and an initial bare-NX fixture correctly hit the existing syntax error. Matching the enum
+and using the supported NX-plus-TTL shape fixed the fixtures without changing runtime behavior.
+
+A small order model exposes the remaining shared-write problem. For one fixed pre-encoded batch,
+the first flush follows the batch's start; the second commit must follow that first flush; but
+the second success must already be committed before an arbitrary writer can expose all supplied
+bytes. No chronological ordering satisfies all three conditions. Of six enumerated permutations,
+three describe a chronological shared write and none retain both guards. The canonical sequence
+passes as a positive control because its second response uses a later, separate write. This is
+an executable model of explicit assumptions, not a universal transport-impossibility theorem.
+
+The design options now have clearer costs. Commit before shared IO breaks the mutation frontier;
+commit after predicted success introduces early acknowledgement and an unretractable failure
+window. A store lock or quota reservation across a slow reader moves the cost into native admission
+and progress. Apply-and-rollback cannot erase observations or safely restore over a native write.
+Preparing privately and revalidating after flush can preserve semantics, but no longer supplies
+the proposed fixed-batch syscall reduction. Transport-specific dynamic writers are outside this
+model and need their own completion/error/TLS proof and real syscall accounting before a proposal.
+
+We therefore do not implement staged batching for 0.74. Its architecture assessment, explicit
+non-admission and unchanged numerical policy live in `w3-staged-execution-review.md` and `.toml`.
+Clean source `4caa3b69` passed 157 redis-compat tests, with 23 existing opt-in cases ignored, and
+90 targeted xtask tests. Scoped all-target check, strict all-target/all-feature lint and format
+passed; the local contract passed and both admission canaries stayed expected red. The record is
+`docs/testing/performance/0.74/local-runs/w3-staged-execution-review-4caa3b69.json`.
+
+No runtime, native/embedded path, dependency, threshold, qualification input or frozen 0.73 artifact
+changed. No new allocation or product performance numbers exist, and no historic CI receipt was
+rebound. W3 remains negative, accepted product proposals stay zero, C74 remains unresolved and
+admission closed. The assessment narrowed a plausible architecture into concrete counterexamples;
+it did not turn permission to investigate into permission to change the contract.

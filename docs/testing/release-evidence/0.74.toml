@@ -41,8 +41,8 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W3"
-required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/w3-delivery-frontier-review.toml", "docs/testing/performance/0.74/w3-delivery-frontier-review.md"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/local-runs/w3-delivery-frontier-review-849fea3a.json"]
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/w3-delivery-frontier-review.toml", "docs/testing/performance/0.74/w3-delivery-frontier-review.md", "docs/testing/performance/0.74/w3-staged-execution-review.toml", "docs/testing/performance/0.74/w3-staged-execution-review.md"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/local-runs/w3-delivery-frontier-review-849fea3a.json", "docs/testing/performance/0.74/local-runs/w3-staged-execution-review-4caa3b69.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
@@ -61,6 +61,30 @@ function = "failed_flush_after_complete_reply_does_not_execute_the_next_set"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+function = "queued_set_nx_revalidates_after_intervening_native_invalidate"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+function = "queued_get_observes_intervening_native_put_without_blocking_native"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+function = "queued_set_nx_uses_expiry_and_ttl_at_its_execution_boundary"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+function = "queued_set_does_not_reserve_quota_ahead_of_intervening_native_put"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_staged_order_model_074.rs"
+function = "fixed_two_reply_batch_cannot_preserve_both_commit_frontier_and_response_order"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes"
 
 [[work_item]]
 id = "W4"

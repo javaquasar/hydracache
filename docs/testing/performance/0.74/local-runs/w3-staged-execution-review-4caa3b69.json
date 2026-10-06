@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W3",
+  "tier": "local-architecture-and-semantic-review",
+  "baseline_source_commit": "571cd070daf4c50384b650d660d052214ec243ca",
+  "semantic_guard_commit": "279760e0888f2b60a04e073edc99da6d1aa6e6db",
+  "source_commit": "4caa3b69049b666906ff136c974971b5c3f9b588",
+  "candidate_source_commit": "UNRESOLVED",
+  "promotable": false,
+  "baseline": {
+    "dirty_worktree": false,
+    "adversarial_tests_passed": 6,
+    "adaptive_tests_passed": 3,
+    "tests_failed": 0
+  },
+  "verification": {
+    "accepted_first_reply_prefix_bytes": [0, 1, 2, 3, 4, 5],
+    "controlled_trace_instances": 24,
+    "native_operation_seam": "ClientSurfaceState::dispatch_verified_request; translation obtains canonical key identity only",
+    "traces": [
+      {
+        "id": "native-invalidate-before-queued-nx",
+        "queued_command": "SET a 2 NX PX 5000",
+        "intervention": "Native Invalidate removes a while the first SET reply is pending.",
+        "output": "+OK\r\n+OK\r\n+OK\r\n",
+        "final_value": "2",
+        "state_mutations": 3
+      },
+      {
+        "id": "native-put-before-queued-get",
+        "queued_command": "GET a",
+        "intervention": "Native Put replaces a with N while the first SET reply is pending.",
+        "output": "+OK\r\n$1\r\nN\r\n+OK\r\n",
+        "state_mutations": 2
+      },
+      {
+        "id": "expiry-before-queued-nx-and-ttl-origin",
+        "queued_command": "SET a 2 NX PX 10",
+        "intervention": "Injected time advances from 1000 to 1010, exactly expiring SET a 1 PX 10; a native GET observes the miss.",
+        "output": "+OK\r\n+OK\r\n+OK\r\n",
+        "replacement_live_at_injected_time": [1010, 1019],
+        "replacement_absent_at_injected_time": 1020,
+        "wall_clock_sleep_used": false
+      },
+      {
+        "id": "native-put-consumes-unreserved-quota",
+        "queued_command": "SET c 2",
+        "intervention": "Native Put b N occupies the remaining byte/entry quota of a two-byte, two-entry tenant.",
+        "output": "+OK\r\n-ERR HydraCache client error: tenant quota exceeded\r\n+OK\r\n",
+        "state_mutations": 2,
+        "final_store_entries": 2,
+        "c_absent": true,
+        "quota_rejected_audit_events": 1
+      }
+    ],
+    "finite_order_model": {
+      "permutations": 6,
+      "chronological_fixed_batch_schedules": 3,
+      "admitted_fixed_batch_schedules": 0,
+      "canonical_separate_write_positive_control": "passed",
+      "assumptions": "First SET committed; one fixed pre-encoded two-reply batch; generic writer may immediately expose every supplied byte; no dynamic mutation callback.",
+      "scope_limit": "Executable check of stated assumptions, not all transports or future executors."
+    },
+    "correctness_signal": "Explicit future polls, exact response bytes, direct native results and injected clock; not elapsed-time assertions.",
+    "native_progress_is_numerical_non_regression_proof": false,
+    "authorization_policy_event_idempotency_and_multikey_obligations_exhaustively_proven": false
+  },
+  "retained_development_diagnostics": [
+    "Initial helper compilation failed because translate_redis_command returns RedisTranslatedCommand, not RedisExecutionPlan; the helper now matches Execute without exporting or changing runtime APIs.",
+    "Initial NX interleaving fixture used unsupported bare NX and received the existing syntax error (9 transport tests passed, one failed). It was corrected to the supported NX PX 5000 form; no runtime behavior or conformance policy was changed."
+  ],
+  "precommit_checks": {
+    "dirty_worktree": true,
+    "focused_adversarial_and_adaptive_tests_passed_after_fixture_repair": 13,
+    "redis_compat_tests_passed_before_order_model_addition": 156,
+    "redis_compat_tests_ignored": 23,
+    "order_model_tests_passed": 1,
+    "performance_contract_074_tests_passed": 38,
+    "cargo_check": "passed: -p hydracache-redis-compat -p xtask --all-targets --locked",
+    "clippy": "passed: -p hydracache-redis-compat -p xtask --all-targets --all-features --locked -- -D warnings",
+    "format": "passed",
+    "diff_check": "passed"
+  },
+  "clean_source_checks": {
+    "dirty_worktree": false,
+    "redis_compat_tests_passed": 157,
+    "redis_compat_tests_ignored": 23,
+    "redis_compat_tests_failed": 0,
+    "redis_compat_doctests": 0,
+    "ignored_scope": "Existing external/Docker/resource opt-in cases; not executed or claimed green.",
+    "performance_contract_074_tests_passed": 38,
+    "release_evidence_tests_passed": 13,
+    "release_governance_tests_passed": 23,
+    "doc_check_tests_passed": 16,
+    "tests_failed": 0,
+    "performance_contract_check": "passed: local, non-promotable",
+    "canaries": [
+      {
+        "w_item": "W11",
+        "source_commit": "4caa3b69049b666906ff136c974971b5c3f9b588",
+        "dirty_worktree": false,
+        "outcome": "expected_red",
+        "duration_ms": 635,
+        "output_sha256": "b17d527b936b77c79f3f80f5ba1839fc6b88d85855642467c3f3b0fe26a32804"
+      },
+      {
+        "w_item": "W12",
+        "source_commit": "4caa3b69049b666906ff136c974971b5c3f9b588",
+        "dirty_worktree": false,
+        "outcome": "expected_red",
+        "duration_ms": 5393,
+        "output_sha256": "edba9ece311ec68dd6b8eeb63aa981268e727fab1c19200032ee7718cfeb3894"
+      }
+    ]
+  },
+  "documentation_evidence_checks": {
+    "source_commit_at_check": "4caa3b69049b666906ff136c974971b5c3f9b588",
+    "dirty_worktree": true,
+    "scope": "Later evidence/article/README/selector edits; not a new clean-source or hosted receipt.",
+    "performance_contract_074_tests_passed": 38,
+    "release_evidence_tests_passed": 13,
+    "release_governance_tests_passed": 23,
+    "doc_check_tests_passed": 16,
+    "tests_failed": 0,
+    "performance_contract_check": "passed: local, non-promotable",
+    "release_governance_check": "passed: 17 checks, zero explicit TODOs",
+    "doc_check": "passed",
+    "docs_release_checker_tests_passed": 3,
+    "docs_release_checker": "passed",
+    "docs_link_checker": "passed: 51 Markdown files and 20 external includes",
+    "mdbook_build": "passed",
+    "format": "passed: redis-compat and xtask",
+    "diff_check": "passed"
+  },
+  "unchanged_inputs": {
+    "runtime_dependency_or_native_hot_path_changed": false,
+    "frozen_073_changed": false,
+    "proposal_or_composition_ledgers_changed": false,
+    "qualification_manifest_inputs_or_digests_changed": false,
+    "numerical_thresholds_changed": false,
+    "raw_windows_resp_lib_sha256": "95d1479dc0718241752e4fa0ffc7693d6e34fd2e0f5072ecad6065a0e14326a1",
+    "raw_windows_native_transport_lib_sha256": "98dea1b2c299825669fc0ab0e75891f25de4fa796cb6f313f0a49f00deff58e1",
+    "digest_scope": "Raw Windows working-tree bytes, equal before and after; not normalized source or measured binary identity."
+  },
+  "decision": {
+    "staged_product_executor_admitted": false,
+    "fixed_batch_design_preserves_all_guards_and_reduces_writes": false,
+    "compatible_post_flush_revalidation_supplies_fixed_batch_write_reduction": false,
+    "prior_negative_candidates_reopened": false,
+    "accepted_product_candidates": 0,
+    "release_admission": "closed",
+    "recommendation": "Retain W3 negative disposition; do not implement staged batching or weaken the frontier. A genuinely different mechanism requires its own evidence and D2 review."
+  },
+  "not_run": [
+    "new numerical product comparison or allocation benchmark",
+    "rented-host workload or 6-hour/24-hour qualification",
+    "new hosted CI, full workspace verification or Linux/WSL proof"
+  ],
+  "claims": {
+    "new_product_performance_claim": false,
+    "canary_durations_are_product_measurements": false,
+    "historical_ci_receipt_rebound_to_this_source": false
+  }
+}

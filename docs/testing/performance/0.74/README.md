@@ -1373,3 +1373,42 @@ No product code, dependency, native/shared hot path, frozen 0.73 artifact, quali
 numerical threshold changed. No new goodput, latency, CPU, allocation or memory measurement exists.
 The older hosted receipt remains proof for `3ce74350` only. Previous negative candidates remain
 negative, accepted product proposals stay zero, C74 is unresolved and release admission is closed.
+
+### W3 staged-execution assessment: an overlay does not make the result stable
+
+An explicitly authorized local architecture review now examines staged execution rather than
+assuming that a private overlay resolves the previous mutation-frontier failure. The compatible
+path still completes the preceding response write and flush, validates current state/time/admission,
+commits the next command, and only then writes its actual response. This remains **not distributed
+transactions** and introduces no executor, public API, durable/wire artifact or new store ownership.
+
+Four new deterministic integration guards enumerate all six cuts of the first SET reply. Direct
+native invalidation changes a queued `SET NX PX` from failure to success; native replacement changes
+a queued GET's value; exact injected-clock expiry changes NX and its replacement TTL origin; native
+PUT consumes remaining quota before a queued SET, which must return the exact error and one audit
+without a third mutation. These 24 controlled traces prove the enumerated state/progress outcomes,
+not numerical native performance or exhaustive authorization/event/idempotency/multi-key semantics.
+
+A finite ordering model enumerates six permutations for a fixed pre-encoded two-reply batch. Its
+three chronological shared-write schedules cannot both delay SET 2 until flush 1 and commit SET 2
+before exposing its response. The ordinary separate-write sequence is a passing positive control.
+This checks the model's stated generic-writer assumptions, not all possible transport designs.
+
+The design screens overlays, early/late commit, quota/store-lock reservation, rollback and post-flush
+revalidation. The first variants change semantics or native admission/progress; revalidation can
+preserve the boundary but supplies no fixed-batch write reduction. No reviewed staged design is
+admitted for implementation. Dynamic transport-specific work remains a separate unproven mechanism,
+not permission to relabel several kernel writes as one application call.
+
+Clean source `4caa3b69049b666906ff136c974971b5c3f9b588` passed 157 redis-compat tests with 23 opt-in
+cases ignored, and 90 targeted xtask tests (38 contract, 13 evidence, 23 governance, 16 doc-check).
+Both affected packages passed all-target checking, strict all-target/all-feature lint and format
+during development; the local contract passed and W11/W12 canaries remained expected red. The
+design/policy are `w3-staged-execution-review.md` and `.toml`; source-bound scope, negative fixture
+diagnostics and outcomes are in `local-runs/w3-staged-execution-review-4caa3b69.json`. W3 manifest
+selectors retain all earlier evidence and require the four guards, model and policy regression.
+
+Runtime, native/shared paths, dependencies, numerical thresholds and qualification inputs/digests
+are unchanged. There is no new throughput, latency, CPU or allocation measurement, no rented-host
+workload, and no reused CI receipt for this source. The recommendation is to retain W3's negative
+disposition; accepted product proposals remain zero, C74 unresolved and ship admission closed.
