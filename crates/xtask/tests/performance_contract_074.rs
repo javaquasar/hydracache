@@ -635,6 +635,7 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
         "baa6e451a7248643e7a96fc5908ac07e0c97d38255e31b1bb1494ea5ac26c6ec",
         "/run/hydracache-perf/supervisor-v1.sock",
         "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
+        "installed_source_commit",
         "installed_supervisor_binary_sha256",
         "peer_admission_required",
         "product_candidate_started",

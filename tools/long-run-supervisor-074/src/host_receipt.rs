@@ -24,6 +24,8 @@ pub const SUPERVISOR_BINARY_PATH: &str =
     "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074";
 pub const REFERENCE_HOST_FREEZE_PATH: &str =
     "/var/lib/hydracache-perf/host-tuning-v1/freeze/host-freeze.json";
+pub const PROVISIONING_RECEIPT_PATH: &str =
+    "/var/lib/hydracache-performance/provisioning-receipt-074.json";
 
 const TUNABLES: [(&str, &str); 7] = [
     ("kernel.numa_balancing", "/proc/sys/kernel/numa_balancing"),
@@ -230,6 +232,91 @@ pub fn collect_host_observation(
     campaign_directory: &Path,
 ) -> Result<HostObservationReceipt, HostReceiptError> {
     collect_host_observation_with_freeze(campaign_directory, Path::new(REFERENCE_HOST_FREEZE_PATH))
+}
+
+#[cfg(target_os = "linux")]
+pub fn collect_installed_source_commit(
+    supervisor_binary_sha256: &str,
+) -> Result<String, HostReceiptError> {
+    use std::os::unix::fs::MetadataExt;
+
+    let path = Path::new(PROVISIONING_RECEIPT_PATH);
+    let metadata = safe_regular_metadata(path, MAX_HOST_RECEIPT_BYTES as u64)?;
+    if metadata.uid() != 0 || metadata.gid() != 0 || metadata.mode() & 0o7777 != 0o444 {
+        return Err(HostReceiptError::Path);
+    }
+    let bytes = read_regular_bounded(path, MAX_HOST_RECEIPT_BYTES as u64)?;
+    parse_installed_source_commit(&bytes, supervisor_binary_sha256)
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn parse_installed_source_commit(
+    bytes: &[u8],
+    supervisor_binary_sha256: &str,
+) -> Result<String, HostReceiptError> {
+    if bytes.is_empty()
+        || bytes.len() > MAX_HOST_RECEIPT_BYTES
+        || !is_hash(supervisor_binary_sha256)
+    {
+        return Err(HostReceiptError::Document);
+    }
+    let value: serde_json::Value =
+        serde_json::from_slice(&bytes).map_err(|_| HostReceiptError::Document)?;
+    let object = value.as_object().ok_or(HostReceiptError::Document)?;
+    const EXPECTED_FIELDS: [&str; 24] = [
+        "schema_version",
+        "source_commit",
+        "created_at_utc",
+        "mutation_performed",
+        "repository_id",
+        "allowed_actor_ids",
+        "runner_uid",
+        "runner_gid",
+        "supervisor_uid",
+        "client_gid",
+        "runner_group_database_membership",
+        "runner_process_group_refresh_may_be_required",
+        "service_active",
+        "socket_mode",
+        "binary_sha256",
+        "fixture_binary_sha256",
+        "config_sha256",
+        "service_sha256",
+        "sysusers_sha256",
+        "tmpfiles_sha256",
+        "verification_key_sha256",
+        "unit_properties_sha256",
+        "machine_id_sha256",
+        "boot_id_sha256",
+    ];
+    if object.len() != EXPECTED_FIELDS.len()
+        || EXPECTED_FIELDS
+            .iter()
+            .any(|field| !object.contains_key(*field))
+        || object.get("schema_version").and_then(|item| item.as_str())
+            != Some("hydracache-w11-host-provisioning-v1")
+        || object
+            .get("mutation_performed")
+            .and_then(|item| item.as_bool())
+            != Some(true)
+        || object.get("service_active").and_then(|item| item.as_bool()) != Some(true)
+        || object.get("binary_sha256").and_then(|item| item.as_str())
+            != Some(supervisor_binary_sha256)
+    {
+        return Err(HostReceiptError::Invariant);
+    }
+    let source_commit = object
+        .get("source_commit")
+        .and_then(|item| item.as_str())
+        .ok_or(HostReceiptError::Invariant)?;
+    if source_commit.len() != 40
+        || !source_commit
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return Err(HostReceiptError::Invariant);
+    }
+    Ok(source_commit.to_owned())
 }
 
 #[cfg(target_os = "linux")]
@@ -836,6 +923,53 @@ mod tests {
         assert_eq!(
             verify_live_observation(&receipt, &drifted),
             Err(HostReceiptError::Drift)
+        );
+    }
+
+    #[test]
+    fn provisioning_source_is_strict_and_binary_bound() {
+        let binary = "e".repeat(64);
+        let source = "f".repeat(40);
+        let mut value = serde_json::json!({
+            "schema_version": "hydracache-w11-host-provisioning-v1",
+            "source_commit": source,
+            "created_at_utc": "2026-10-06T00:00:00Z",
+            "mutation_performed": true,
+            "repository_id": 1,
+            "allowed_actor_ids": [2],
+            "runner_uid": 1001,
+            "runner_gid": 1001,
+            "supervisor_uid": 986,
+            "client_gid": 987,
+            "runner_group_database_membership": true,
+            "runner_process_group_refresh_may_be_required": true,
+            "service_active": true,
+            "socket_mode": 432,
+            "binary_sha256": binary,
+            "fixture_binary_sha256": "e".repeat(64),
+            "config_sha256": "1".repeat(64),
+            "service_sha256": "2".repeat(64),
+            "sysusers_sha256": "3".repeat(64),
+            "tmpfiles_sha256": "4".repeat(64),
+            "verification_key_sha256": "5".repeat(64),
+            "unit_properties_sha256": "6".repeat(64),
+            "machine_id_sha256": "7".repeat(64),
+            "boot_id_sha256": "8".repeat(64),
+        });
+        let bytes = serde_json::to_vec(&value).unwrap();
+        assert_eq!(
+            parse_installed_source_commit(&bytes, &"e".repeat(64)).unwrap(),
+            "f".repeat(40)
+        );
+
+        assert_eq!(
+            parse_installed_source_commit(&bytes, &"d".repeat(64)),
+            Err(HostReceiptError::Invariant)
+        );
+        value["unexpected"] = serde_json::json!(true);
+        assert_eq!(
+            parse_installed_source_commit(&serde_json::to_vec(&value).unwrap(), &"e".repeat(64)),
+            Err(HostReceiptError::Invariant)
         );
     }
 

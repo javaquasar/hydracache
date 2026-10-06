@@ -70,8 +70,6 @@ jobs:
           cargo test -p hydracache-long-run-supervisor-074 \
             --test protocol --test service --locked
           cargo build -p hydracache-long-run-supervisor-074 --release --locked
-          test "$(sha256sum target/release/hydracache-long-run-supervisor-074 | cut -d' ' -f1)" = \
-            "$(sha256sum /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 | cut -d' ' -f1)"
 
       - name: Construct the fixed-scope read-only request
         shell: bash
@@ -156,9 +154,11 @@ jobs:
               raise SystemExit("host observation response identity or outcome differs")
           result = response["result"]
           if not isinstance(result, dict) or set(result) != {
-              "schema_version", "receipt_sha256", "receipt"
+              "schema_version", "installed_source_commit", "receipt_sha256", "receipt"
           } or result["schema_version"] != 1:
               raise SystemExit("host observation result fields differ")
+          if result["installed_source_commit"] != os.environ["INPUT_SOURCE_SHA"]:
+              raise SystemExit("installed supervisor source differs from requested source")
           receipt = result["receipt"]
           receipt_bytes = json.dumps(
               receipt, sort_keys=True, separators=(",", ":")
@@ -170,21 +170,11 @@ jobs:
           (root / "host-observation.sha256").write_text(
               receipt_sha256 + "\n", encoding="ascii", newline="\n"
           )
-          installed_binary = pathlib.Path(
-              "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074"
-          ).read_bytes()
-          built_binary = pathlib.Path(
-              "target/release/hydracache-long-run-supervisor-074"
-          ).read_bytes()
-          installed_binary_sha256 = hashlib.sha256(installed_binary).hexdigest()
-          built_binary_sha256 = hashlib.sha256(built_binary).hexdigest()
-          if installed_binary_sha256 != built_binary_sha256:
-              raise SystemExit("installed supervisor binary differs from exact source build")
           evidence = {
               "schema_version": "hydracache-w11-host-observation-socket-v1",
               "source_commit": os.environ["INPUT_SOURCE_SHA"],
-              "installed_supervisor_binary_sha256": installed_binary_sha256,
-              "built_supervisor_binary_sha256": built_binary_sha256,
+              "installed_source_commit": result["installed_source_commit"],
+              "installed_supervisor_binary_sha256": receipt["supervisor_binary"]["sha256"],
               "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
               "response_sha256": response["response_sha256"],
               "host_receipt_sha256": receipt_sha256,

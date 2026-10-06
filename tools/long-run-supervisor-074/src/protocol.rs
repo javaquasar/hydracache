@@ -59,6 +59,7 @@ pub struct WireRequest {
 #[serde(deny_unknown_fields)]
 pub struct HostObservationResult {
     pub schema_version: u32,
+    pub installed_source_commit: String,
     pub receipt_sha256: String,
     pub receipt: HostObservationReceipt,
 }

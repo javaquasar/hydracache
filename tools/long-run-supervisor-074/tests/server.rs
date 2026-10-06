@@ -521,12 +521,15 @@ struct FakeHostObservationBackend {
 }
 
 impl HostObservationBackend for FakeHostObservationBackend {
-    fn collect(&mut self, _campaign_root: &Path) -> Result<HostObservationReceipt, String> {
+    fn collect(
+        &mut self,
+        _campaign_root: &Path,
+    ) -> Result<(HostObservationReceipt, String), String> {
         self.calls += 1;
         if self.fail {
             Err("host observation unavailable".to_owned())
         } else {
-            Ok(self.receipt.clone())
+            Ok((self.receipt.clone(), "d".repeat(40)))
         }
     }
 }
@@ -1011,6 +1014,7 @@ fn host_observation_returns_digest_bound_receipt_without_campaign_mutation() {
     let result: HostObservationResult =
         serde_json::from_value(response.body.result.clone().unwrap()).unwrap();
     assert_eq!(result.schema_version, 1);
+    assert_eq!(result.installed_source_commit, "d".repeat(40));
     assert_eq!(result.receipt_sha256, expected_digest);
     assert_eq!(result.receipt, receipt);
     assert!(serde_json::to_vec(&response).unwrap().len() <= MAX_PACKET_BYTES);
