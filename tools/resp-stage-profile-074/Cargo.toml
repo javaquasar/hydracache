@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 hydracache-client-protocol = { path = "../../crates/hydracache-client-protocol" }
+hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
 hydracache-loadgen = { path = "../../crates/hydracache-loadgen" }
 hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
 serde = { version = "1", features = ["derive"] }

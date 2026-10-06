@@ -1832,6 +1832,7 @@ name = "resp-stage-profile-074"
 version = "0.0.0"
 dependencies = [
  "hydracache-client-protocol",
+ "hydracache-client-transport-axum",
  "hydracache-loadgen",
  "hydracache-redis-compat",
  "libc",

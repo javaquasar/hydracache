@@ -1,0 +1,63 @@
+schema_version = 1
+release = "0.74"
+contract_id = "w9b-serial-response-buffer-attribution-074-v1"
+state = "preregistered-local-d1-only"
+baseline_source_sha = "7919e6d7887316bbd6752d945fde240aa9fdea17"
+profile_id = "w4-w5-w9b-resp-stage-profile-074-v3"
+product_mutation_allowed = false
+candidate_source_sha = "UNRESOLVED"
+promotable = false
+product_numeric_claims_allowed = false
+prior_w3_or_w4_rejections_reopened = false
+hypothesis = "Canonical large GET responses may make repeated encoded-output allocation material enough to investigate serial scratch reuse, without batching responses or changing the write/flush frontier."
+source = "tools/resp-stage-profile-074/src/main.rs"
+
+[screen]
+seed = 740074
+warmup_operations_per_canonical_control = 100
+fresh_process_repeats = 3
+maximum_attempts = 15
+order = "rotate the five fixed cells once per repeat; no candidate pair or best-sample selection"
+namespace = "default"
+hit_ratio_percent = 100
+concurrency = 1
+socket_io_included = false
+counting_allocator_timing_is_product_cpu_evidence = false
+expected_payload_allocation_inside_validator_allowed = false
+independent_identically_initialized_canonical_controls = true
+exact_results_dispatch_mutations_and_final_cardinality_required = true
+
+[[cell]]
+operation = "get"
+payload_bytes = 256
+iterations = 10000
+[[cell]]
+operation = "set"
+payload_bytes = 256
+iterations = 10000
+[[cell]]
+operation = "get"
+payload_bytes = 4096
+iterations = 10000
+[[cell]]
+operation = "set"
+payload_bytes = 4096
+iterations = 10000
+[[cell]]
+operation = "get"
+payload_bytes = 1048576
+iterations = 500
+
+[future_candidate_boundary]
+authorization = "none: D1 owner data is not D2 acceptance or implementation permission"
+one_hypothesis = "reuse one serial encoder scratch buffer only; no response coalescing, consuming reducer, native protocol or store change"
+previous_complete_write_and_flush_before_next_command = true
+pipeline_one_retains_canonical_path = true
+release_scratch_before_waiting_for_another_read = true
+no_cross_connection_pool = true
+no_larger_input_output_or_idle_retention_bound = true
+minimum_affected_end_to_end_gross_allocation_reduction = 0.20
+unaffected_minimum_goodput_ratio = 0.98
+unaffected_maximum_cpu_or_p99_ratio = 1.03
+minimum_counterbalanced_independent_pairs_for_d3 = 5
+native_surfaces_remain_separate_required_guards = true

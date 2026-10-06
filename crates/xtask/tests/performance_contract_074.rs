@@ -684,6 +684,103 @@ fn w3_staged_execution_assessment_does_not_authorize_product_or_threshold_change
 }
 
 #[test]
+fn w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates() {
+    let review = contract("w9b-response-buffer-attribution-contract.toml");
+    assert_eq!(
+        review["state"].as_str(),
+        Some("preregistered-local-d1-only")
+    );
+    assert_eq!(review["candidate_source_sha"].as_str(), Some("UNRESOLVED"));
+    for flag in [
+        "product_mutation_allowed",
+        "promotable",
+        "product_numeric_claims_allowed",
+        "prior_w3_or_w4_rejections_reopened",
+    ] {
+        assert_eq!(review[flag].as_bool(), Some(false), "{flag}");
+    }
+    let screen = &review["screen"];
+    assert_eq!(screen["seed"].as_integer(), Some(740074));
+    assert_eq!(
+        screen["warmup_operations_per_canonical_control"].as_integer(),
+        Some(100)
+    );
+    assert_eq!(screen["fresh_process_repeats"].as_integer(), Some(3));
+    assert_eq!(screen["maximum_attempts"].as_integer(), Some(15));
+    for flag in [
+        "independent_identically_initialized_canonical_controls",
+        "exact_results_dispatch_mutations_and_final_cardinality_required",
+    ] {
+        assert_eq!(screen[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "socket_io_included",
+        "counting_allocator_timing_is_product_cpu_evidence",
+        "expected_payload_allocation_inside_validator_allowed",
+    ] {
+        assert_eq!(screen[flag].as_bool(), Some(false), "{flag}");
+    }
+    let cells: Vec<_> = review["cell"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|cell| {
+            (
+                cell["operation"].as_str().unwrap(),
+                cell["payload_bytes"].as_integer().unwrap(),
+                cell["iterations"].as_integer().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        cells,
+        vec![
+            ("get", 256, 10000),
+            ("set", 256, 10000),
+            ("get", 4096, 10000),
+            ("set", 4096, 10000),
+            ("get", 1048576, 500)
+        ]
+    );
+    let boundary = &review["future_candidate_boundary"];
+    for flag in [
+        "previous_complete_write_and_flush_before_next_command",
+        "pipeline_one_retains_canonical_path",
+        "release_scratch_before_waiting_for_another_read",
+        "no_cross_connection_pool",
+        "no_larger_input_output_or_idle_retention_bound",
+        "native_surfaces_remain_separate_required_guards",
+    ] {
+        assert_eq!(boundary[flag].as_bool(), Some(true), "{flag}");
+    }
+    assert_eq!(
+        boundary["minimum_affected_end_to_end_gross_allocation_reduction"].as_float(),
+        Some(0.20)
+    );
+    assert_eq!(
+        boundary["unaffected_minimum_goodput_ratio"].as_float(),
+        Some(0.98)
+    );
+    assert_eq!(
+        boundary["unaffected_maximum_cpu_or_p99_ratio"].as_float(),
+        Some(1.03)
+    );
+    assert_eq!(
+        boundary["minimum_counterbalanced_independent_pairs_for_d3"].as_integer(),
+        Some(5)
+    );
+    let source = std::fs::read_to_string(root().join(review["source"].as_str().unwrap())).unwrap();
+    assert!(source.contains(review["profile_id"].as_str().unwrap()));
+    for function in [
+        "canonical_controls_reconcile_dispatch_mutation_and_cardinality",
+        "canonical_result_validator_adds_no_gross_allocation",
+        "canonical_validator_rejects_changed_values_errors_and_frame_bytes",
+    ] {
+        assert!(source.contains(&format!("fn {function}()")));
+    }
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),
