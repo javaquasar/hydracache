@@ -321,7 +321,13 @@ pub fn verify_unit_terminal(
     if snapshot.main_pid != 0 {
         mismatches.push(UnitMismatch::MainPid);
     }
-    if harness.cgroup_path != daemon.cgroup_path || snapshot.control_group != harness.cgroup_path {
+    // systemd removes an exited transient service's empty cgroup while the
+    // RemainAfterExit unit stays loaded as active/exited. A non-empty cgroup
+    // must still be the exact admitted one; only its normal terminal absence
+    // is accepted here.
+    if harness.cgroup_path != daemon.cgroup_path
+        || (!snapshot.control_group.is_empty() && snapshot.control_group != harness.cgroup_path)
+    {
         mismatches.push(UnitMismatch::ControlGroup);
     }
     if snapshot.result != "success" {

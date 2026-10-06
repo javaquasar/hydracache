@@ -225,6 +225,19 @@ fn retained_successful_exit_is_the_only_terminal_unit_shape() {
     };
     assert!(verify_unit_terminal(&harness, &daemon, &terminal).is_ok());
 
+    let mut released_cgroup = terminal.clone();
+    released_cgroup.control_group.clear();
+    assert!(verify_unit_terminal(&harness, &daemon, &released_cgroup).is_ok());
+
+    let mut foreign_cgroup = terminal.clone();
+    foreign_cgroup.control_group = "/system.slice/replacement.service".to_owned();
+    let UnitError::Mismatch(mismatches) =
+        verify_unit_terminal(&harness, &daemon, &foreign_cgroup).unwrap_err()
+    else {
+        panic!("expected foreign retained cgroup to fail terminal admission");
+    };
+    assert!(mismatches.contains(&UnitMismatch::ControlGroup));
+
     let UnitError::Mismatch(mismatches) =
         verify_unit_terminal(&harness, &daemon, &snapshot()).unwrap_err()
     else {
