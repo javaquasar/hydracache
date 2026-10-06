@@ -14,6 +14,7 @@ on:
           - host-observation
           - start-bundle
           - controller
+          - controller-start-abort-rehearsal
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
@@ -52,7 +53,17 @@ on:
         default: ""
         type: string
       request_id:
-        description: New UUIDv4 for controller mode
+        description: New UUIDv4 for controller mode or rehearsal start
+        required: false
+        default: ""
+        type: string
+      attach_request_id:
+        description: New UUIDv4 for the same-run rehearsal attach
+        required: false
+        default: ""
+        type: string
+      abort_request_id:
+        description: New UUIDv4 for the same-run rehearsal abort
         required: false
         default: ""
         type: string
@@ -180,6 +191,62 @@ jobs:
       approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}
       start_bundle_run_id: ${{ inputs.start_bundle_run_id }}
       start_bundle_artifact_name: ${{ inputs.start_bundle_artifact_name }}
+    secrets: inherit
+
+  controller-rehearsal-start:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-start-abort-rehearsal'
+    name: Signed non-product rehearsal start
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: start
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: "0"
+      request_id: ${{ inputs.request_id }}
+      start_bundle_run_id: ${{ inputs.start_bundle_run_id }}
+      start_bundle_artifact_name: ${{ inputs.start_bundle_artifact_name }}
+    secrets: inherit
+
+  controller-rehearsal-attach:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-start-abort-rehearsal'
+    needs: controller-rehearsal-start
+    name: Attach the same protected controller run
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: attach
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: "2"
+      request_id: ${{ inputs.attach_request_id }}
+    secrets: inherit
+
+  controller-rehearsal-abort:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-start-abort-rehearsal'
+    needs: controller-rehearsal-attach
+    name: Abort and clean the same protected controller run
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: abort
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: "3"
+      request_id: ${{ inputs.abort_request_id }}
+      approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}
     secrets: inherit
 
   systemd-smoke:

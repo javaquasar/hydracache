@@ -624,7 +624,9 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
     .unwrap();
     for required in [
         "- controller",
+        "- controller-start-abort-rehearsal",
         "inputs.mode == 'controller'",
+        "inputs.mode == 'controller-start-abort-rehearsal'",
         "uses: ./.github/workflows/performance-long-run-qualification-074.yml",
         "source_sha: ${{ inputs.controller_source_sha }}",
         "operation: ${{ inputs.controller_operation }}",
@@ -635,6 +637,29 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
     ] {
         assert!(entry.contains(required), "controller entrypoint omitted {required}");
     }
+    for required in [
+        "needs: controller-rehearsal-start",
+        "needs: controller-rehearsal-attach",
+        "operation: start",
+        "operation: attach",
+        "operation: abort",
+        "expected_state_revision: \"0\"",
+        "expected_state_revision: \"2\"",
+        "expected_state_revision: \"3\"",
+        "request_id: ${{ inputs.attach_request_id }}",
+        "request_id: ${{ inputs.abort_request_id }}",
+    ] {
+        assert!(
+            entry.contains(required),
+            "same-run controller rehearsal omitted {required}"
+        );
+    }
+    assert_eq!(
+        entry
+            .matches("uses: ./.github/workflows/performance-long-run-qualification-074.yml")
+            .count(),
+        4
+    );
 }
 
 #[test]
@@ -737,7 +762,7 @@ fn non_product_start_bundle_workflow_is_observation_bound_and_does_not_start() {
     for required in [
         "non-product-start-fixture.toml",
         "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture",
-        "campaign-fixture-harness",
+        "campaign-start-rehearsal-harness",
         "signed_start_dispatched\": False",
         "campaign_state_mutated\": False",
         "product_candidate_started\": False",
