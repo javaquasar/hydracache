@@ -314,8 +314,8 @@ function = "w11_linux_fixture_harness_cli_is_platform_gated"
 
 [[work_item]]
 id = "W12"
-required_sources = ["docs/testing/performance/0.74/release-admission-contract.toml", "docs/releases/0.74.0.md"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w12-pre-admission-local-20261006.json", "docs/testing/performance/0.74/local-runs/w12-fast-gate-registration-local-20261006.json", "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-cold-timeout-05e7c6e9.json", "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-warm-timeout-415b01fc.json"]
+required_sources = ["docs/testing/performance/0.74/release-admission-contract.toml", "docs/releases/0.74.0.md", "crates/xtask/src/evidence_run.rs", "crates/xtask/src/evidence_run/windows_job.rs"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w12-pre-admission-local-20261006.json", "docs/testing/performance/0.74/local-runs/w12-fast-gate-registration-local-20261006.json", "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-cold-timeout-05e7c6e9.json", "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-warm-timeout-415b01fc.json", "docs/testing/performance/0.74/local-runs/w12-windows-inherited-pipe-baseline-5bc712f1.json", "docs/testing/performance/0.74/local-runs/w12-windows-evidence-job-timeout-a4b15edf.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
@@ -328,3 +328,15 @@ function = "w12_release_note_retains_draft_claim_rollback_and_gate_boundaries"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w12_workspace_fast_gate_covers_every_work_item_without_budget_drift"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/evidence_run.rs"
+function = "evidence_executor_bounds_inherited_pipe_capture_after_parent_exit"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/evidence_run.rs"
+function = "evidence_executor_waits_for_descendants_without_inherited_pipes"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/evidence_run.rs"
+function = "evidence_executor_terminates_live_three_generation_tree"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/evidence_run.rs"
+function = "evidence_executor_drains_large_stdout_and_stderr_without_truncation"
