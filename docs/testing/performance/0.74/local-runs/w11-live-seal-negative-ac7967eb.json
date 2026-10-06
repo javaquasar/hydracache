@@ -1,0 +1,78 @@
+{
+  "schema_version": "hydracache-w11-live-seal-negative-v1",
+  "release": "0.74",
+  "evidence_class": "non-promotable-negative-host-rehearsal",
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "source_commit": "ac7967eb090e9c49080cd62ce4045183552eff06",
+  "workflow_run_id": 37413845437,
+  "workflow_run_url": "https://github.com/javaquasar/hydracache/actions/runs/37413845437",
+  "workflow_conclusion": "failure",
+  "campaign_id": "b142f11efd46ba22c935e59d96c860beec6dac0cffc008a0a89770ad408f8402",
+  "manifest_sha256": "8755c0dff9607fdd8c296e67a5e91ab8d77871bb0c9f90bc0c828bfffa1c3b38",
+  "start_request_id": "c23f7539-43dc-4fff-b048-a6742db9bd4a",
+  "unused_seal_request_id": "095cb884-9385-400d-af2d-81013d0b3bf1",
+  "start_response_artifact": {
+    "id": 11390706349,
+    "name": "long-run-074-response-c23f7539-43dc-4fff-b048-a6742db9bd4a",
+    "artifact_digest": "sha256:adb3e5405f690a3b04735e5fbfd81b925829600ad0f5a44f53c50d9ecfefd6f7",
+    "response_sha256": "b45ec3a0a065b11a1f217ff0899ff5a7b156101ca9a84a0ea34079e82bb13a79",
+    "accepted_state": "I74_RUNNING",
+    "accepted_revision": 2
+  },
+  "observed_failure": {
+    "unit_name": "hydracache-performance-074-i74-b142f11efd46ba22c935e59d96c860beec6dac0cffc008a0a89770ad408f8402.service",
+    "active_state": "failed",
+    "sub_state": "failed",
+    "main_pid": 0,
+    "result": "exit-code",
+    "exec_main_status": 9,
+    "stderr": "Permission denied (os error 13)",
+    "seal_dispatched": false,
+    "durable_failure_revision": 3,
+    "durable_failure_state": "FAILED_INCOMPLETE",
+    "durable_transition": "MEASUREMENT_LOSS_REQUESTED",
+    "cause": "unit-identity-drift"
+  },
+  "root_causes": [
+    {
+      "owner": "terminal-fixture-publication",
+      "finding": "the unprivileged fixture tried to read root-only campaign-start.json while publishing terminal seal inputs"
+    },
+    {
+      "owner": "measurement-loss-recovery",
+      "finding": "an empty failed transient unit was retained as a D-Bus object, but the backend accepted only an exactly owned live process for cleanup and therefore retried fail closed"
+    }
+  ],
+  "corrective_commits": [
+    "8b832329",
+    "2a45a8cc"
+  ],
+  "recovery_provisioning": {
+    "source_commit": "2a45a8cc7c6239b9e39695688021033f28a3e1a0",
+    "workflow_run_id": 37415681902,
+    "workflow_run_url": "https://github.com/javaquasar/hydracache/actions/runs/37415681902",
+    "bundle_artifact_id": 11390034746,
+    "bundle_artifact_digest": "sha256:42f4f71056cd45b8d3fb04ebea2859bd26a733f868b0223b3d8beb784dbef2cc",
+    "receipt_artifact_id": 11391235263,
+    "receipt_artifact_digest": "sha256:a155aec34e90b9d00e77810cf5ccda30c581f982d0350745d3482103c9706353",
+    "installed_binary_sha256": "91e5f43148471565587e8d378e602271161621de00f4b181f772909c6cdcb81e",
+    "recovered_revision": 4,
+    "recovered_state": "FAILED_INCOMPLETE",
+    "recovered_transition": "MEASUREMENT_LOSS_COMPLETED",
+    "execution_identity_cleared": true,
+    "host_claim_released": true,
+    "supervisor_active_after_recovery": true,
+    "supervisor_main_pid_after_recovery": 92161,
+    "runner_stopped_after_recovery": true
+  },
+  "local_validation": {
+    "focused_terminal_publication_tests_passed": 2,
+    "focused_measurement_recovery_tests_passed": 1,
+    "supervisor_unit_passed": 31,
+    "supervisor_unit_ignored_manual_system_bus": 1,
+    "supervisor_integration_suites_passed": true,
+    "python_contract_tests_passed": 17
+  },
+  "claim_boundary": "This receipt preserves a failed non-product rehearsal and its durable recovery. It does not prove live seal completion, product throughput, a release candidate, or expensive qualification."
+}
