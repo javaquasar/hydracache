@@ -66,7 +66,8 @@ additionally revision-zero, pathless and fixed to sentinel scope. The client
 verifies the response digest and request/campaign binding before printing it. End-to-end WSL tests
 round-trip the exact durable state and reject stale revisions.
 
-This is still not the complete release supervisor. The initial revision-zero `start` now
+At that implementation stage this was not yet the complete release supervisor. The initial
+revision-zero `start`
 authenticates, imports immutable evidence, obtains the host-wide claim, advances I74 and dispatches
 through the production-form systemd backend. After an exact `I74_SEALED` revision, a second
 pathless `start` reuses that immutable evidence and advances C74 with independent spawn evidence;
@@ -76,8 +77,8 @@ error 11.
 implemented journal, manifest, systemd, `/proc`, cpuset, checkpoint, admitted-host and lease guards
 and durably records an exact response. There is no unconditional rejection left in the attach path:
 a lease can be granted only when every guard matches. Production provisioning, bounded diagnostics,
-an accepted attach rehearsal and real host fault rehearsals remain incomplete, so release admission
-stays closed.
+an accepted attach rehearsal and real host fault rehearsals were still incomplete at that point;
+the later evidence below records their isolated closure while release admission remains closed.
 
 The next local slice adds the repository-side service definition, sysusers/tmpfiles definitions,
 a deliberately invalid configuration template and `Type=notify` readiness support. The socket is
@@ -832,6 +833,39 @@ This closes `host_observation_socket_export_complete` and
 one exact non-product start bundle from this admitted receipt and rehearse protected authorization,
 supervisor-owned upload and start. Supervisor-restart survival, live-role reboot, live seal,
 role-level overhead and product qualification remain open.
+
+That protected socket slice is now complete at exact source `56ff0819`. Signed provisioning run
+`37405246561` installed binary
+`d4eb5c6b36520af361404c754ac276cb21e125c15d0ef0d5fa760770dc71e178` after the active claim and
+fixture context were proven absent. Bundle run `37405722464` bound the installed source, canonical
+host receipt, fixture identity and a 900-second non-product role limit into campaign `3b1fa143...`.
+The lease remained 3,600 seconds; no product binary was selected.
+
+One top-level protected run, `37405915773`, then signed and executed start, attach and abort with
+three distinct request UUIDs but the same GitHub run principal. Start accepted the exact
+harness/daemon pair at revision 2. Attach accepted checkpoint sequence 6 at revision 3 and bound
+the controller lease to that same run. The recurring writer reached 11 checkpoints before signed
+abort committed revision 5 `ABORTED_INCOMPLETE`, stopped the exact transient unit, cleared process,
+checkpoint and controller-lease fields, and released the host claim. The runner was returned
+offline; the supervisor retained PID 27610 and `NRestarts=0`. NVMe interrupt counters on isolated
+CPUs 1-4 remained zero while housekeeping CPUs owned the evidence I/O. See
+`local-runs/w11-protected-start-attach-abort-56ff0819.json`.
+
+The immediately preceding run `37402969310` remains checked in as negative attribution. It exposed
+a real read/write race: the checkpoint writer had fdatasynced a new JSONL record but had not yet
+atomically replaced `checkpoints.head`, so maintenance treated a valid commit window as stale
+evidence and exited. The restart then changed the service mount-namespace identity and correctly
+failed closed rather than stopping an ambiguous unit. A separate bound mismatch also gave the
+900-second rehearsal daemon only 360 seconds of `RuntimeMaxSec`. The fix reads journal/head as a
+bounded stable snapshot, covers both complete-record and partial-tail windows, and makes the
+fixture unit limit exactly 900 seconds. Permanent chain corruption is still rejected. See
+`local-runs/w11-protected-start-attach-abort-negative-29675f17.json`.
+
+This closes privileged start-bundle staging and the signed start/attach/abort host rehearsal. It
+does not close all mutating operations or W11: live seal, supervisor restart and reboot while a
+role is active, role-level overhead, product I74/C74 execution, six-hour qualification and the
+separately authorized 24-hour confirmation remain open. `host_rehearsal_complete` and
+`release_admission_allowed` therefore stay false.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

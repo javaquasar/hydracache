@@ -928,6 +928,47 @@ This completes host-observation export only. It does not prove signed start auth
 privileged start-bundle staging, supervisor restart with a live role, reboot rejection, live seal,
 role overhead or release qualification.
 
+### Protected start, attach and abort rehearsal
+
+The next admitted-host slice passed at exact source `56ff0819`. Provisioning run `37405246561`
+installed the reviewed supervisor and fixture with binary SHA-256
+`d4eb5c6b36520af361404c754ac276cb21e125c15d0ef0d5fa760770dc71e178`.
+Bundle run `37405722464` then produced the immutable six-file non-product start bundle for campaign
+`3b1fa143...`, manifest `cbfcbd5d...` and a 900-second role runtime under the unchanged 3,600-second
+lease.
+
+Run `37405915773` exercised the actual protected workflow as one controller principal. Signed
+revision-zero start imported the bundle, acquired the host claim and started the exact two-process
+fixture. Signed attach advanced revision 2 to 3 from checkpoint sequence 6 and bound the controller
+lease to that same run id. While hosted signing jobs continued, the housekeeping-owned writer
+published 11 checkpoints at the frozen 30-second cadence. Signed abort then stopped only the bound
+unit and committed revision 5 `ABORTED_INCOMPLETE`; process identities, checkpoint, controller
+lease and active host claim were all absent afterward. The supervisor retained one PID with zero
+restarts, the runner was stopped, and isolated CPUs 1-4 received zero NVMe interrupts across the
+rehearsal.
+
+The retained failed predecessor proves why the snapshot rule is part of correctness. A journal
+append is durable before the same-directory head replacement. Reading the new journal between
+those operations and comparing it with the old head is not corruption; it is an ordinary
+two-file commit window. The old observer treated it as fatal, which restarted the supervisor and
+then triggered the intentionally fail-closed mount-namespace drift path. The corrected observer
+requires an unchanged head before and after journal verification, retries incomplete-tail and
+head-transition windows for at most 100 milliseconds, and still returns permanent chain errors
+immediately. Deterministic tests cover both a complete appended record with the old head and a
+partially visible appended record.
+
+The same failed run showed that a 900-second fixture daemon must not be placed in a unit whose
+phase sum plus diagnostic grace is only 360 seconds. The non-product manifest now freezes six
+145-second phase budgets plus 30 seconds of diagnostic grace, yielding the observed 15-minute
+`RuntimeMaxSec`. This changes only rehearsal containment, not the product lease or qualification
+duration.
+
+The retained receipts are
+`local-runs/w11-protected-start-attach-abort-negative-29675f17.json` and
+`local-runs/w11-protected-start-attach-abort-56ff0819.json`. They close protected start-bundle
+staging and signed start/attach/abort on the admitted host. They do not prove live seal, supervisor
+restart or reboot with a live role, role overhead, product execution or release qualification.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:

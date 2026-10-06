@@ -2501,3 +2501,40 @@ cpuset throughout. This does not turn one idle window into a role-overhead claim
 I74/C74 timing and asymmetric paired controls are different measurements and remain open. What
 changed is narrower and important: a missing measurement channel was converted into an exact,
 least-privilege counter, and only the gate actually covered by that counter was closed.
+
+## A durable writer still needs a consistent reader
+
+The first full signed start/attach/abort rehearsal exposed a failure that no mocked backend had
+made visible. The checkpoint writer followed the intended durable order: append one canonical
+JSONL record, fdatasync it, write a new head file, then atomically replace the old head. Maintenance
+happened to read after the journal sync but before the head replacement. It saw the new record and
+the previous head and classified the pair as corrupt.
+
+That classification was wrong. Each file was valid; the observer had sampled between the two
+commits. Its fatal exit restarted the root supervisor, whose private systemd mount namespace then
+had a different identity. The recovery path correctly refused to stop an ambiguously identified
+unit, but the original trigger was an avoidable reader race. The failed run was retained with all
+12 checkpoints, 58 supervisor restarts and the final fail-closed diagnostic instead of being
+discarded as infrastructure noise.
+
+The repair did not weaken journal verification. The reader now samples the head, verifies the
+journal, samples the head again, and accepts only an unchanged head equal to the verified journal
+tip with no incomplete tail. A head transition or partial appended record receives a bounded
+100-millisecond retry; stable malformed input and permanent hash-chain errors still fail closed.
+Two deterministic tests hold the files in each real commit window before completing the writer.
+
+The same rehearsal found an independent containment mismatch: the daemon was intentionally
+bounded to 900 seconds, but its manifest produced only 360 seconds of systemd `RuntimeMaxSec`.
+The corrected non-product bundle uses six 145-second phase budgets plus 30 seconds of diagnostic
+grace. The lease and every product duration remain unchanged.
+
+After exact-source reprovisioning, one GitHub run signed start, attach and abort for the same
+controller principal. Attach accepted checkpoint sequence 6; the writer reached sequence 11;
+abort stopped the exact unit and released the host claim. The supervisor kept one PID with zero
+restarts, and checkpoint I/O caused no NVMe interrupts on measurement CPUs 1-4. This is confirmed
+non-product lifecycle evidence, not a throughput or release claim. Live seal, supervisor restart,
+reboot, role overhead and the expensive product qualification still require their own proofs.
+
+The lesson generalizes beyond this supervisor: crash consistency is not enough when one logical
+state spans multiple durable files. Readers must define which inter-file snapshots are valid,
+which are transient, and how long they may retry without turning real corruption into availability.
