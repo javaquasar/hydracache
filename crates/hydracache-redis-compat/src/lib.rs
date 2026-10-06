@@ -4,6 +4,9 @@
 //! facade. The RESP listener executes through the same verified client-surface
 //! dispatch seam as the stable HydraCache client API.
 
+#[cfg(feature = "experimental-resp-serial-scratch-074")]
+mod serial_get_scratch_074;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -999,6 +1002,10 @@ impl RedisRespServer {
             if bytes_read == 0 {
                 return Ok(());
             }
+            // Experimental scratch never survives this received-read iteration:
+            // it is dropped before the next read/event/idle await, or any return.
+            #[cfg(feature = "experimental-resp-serial-scratch-074")]
+            let mut response_scratch = serial_get_scratch_074::SerialGetScratch::default();
             buffer.extend_from_slice(&read_chunk[..bytes_read]);
             if self.pipeline_instrumentation.enabled() {
                 self.pipeline_instrumentation
@@ -1022,6 +1029,8 @@ impl RedisRespServer {
                     Ok(Some(decoded)) => decoded,
                     Ok(None) => break,
                     Err(error) => {
+                        #[cfg(feature = "experimental-resp-serial-scratch-074")]
+                        response_scratch.reset();
                         self.write_error(&mut stream, connection.dialect, format!("ERR {error}"))
                             .await?;
                         return Ok(());
@@ -1044,6 +1053,14 @@ impl RedisRespServer {
                 buffer.drain(..consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
+                #[cfg(feature = "experimental-resp-serial-scratch-074")]
+                let scratch_get = matches!(&command, RedisCommand::Get { .. });
+                #[cfg(feature = "experimental-resp-serial-scratch-074")]
+                if !scratch_get {
+                    // AUTH, HELLO, subscriptions, QUIT and mutations are barriers
+                    // before execution, including changes of connection principal.
+                    response_scratch.reset();
+                }
                 if self
                     .handle_subscription_command(
                         &mut stream,
@@ -1077,6 +1094,16 @@ impl RedisRespServer {
                     } else {
                         self.execute_connection_command(command, &mut connection)
                     };
+                    #[cfg(feature = "experimental-resp-serial-scratch-074")]
+                    if response_scratch.prepare(&response, scratch_get) {
+                        let encoded = response_scratch.encode(response, connection.dialect)?;
+                        self.write_serial_scratch_response(&mut stream, encoded)
+                            .await?;
+                    } else {
+                        self.write_response(&mut stream, connection.dialect, response)
+                            .await?;
+                    }
+                    #[cfg(not(feature = "experimental-resp-serial-scratch-074"))]
                     self.write_response(&mut stream, connection.dialect, response)
                         .await?;
                 }
@@ -1734,6 +1761,41 @@ impl RedisRespServer {
                 .fetch_add(1, Ordering::Relaxed);
         }
         stream.write_all(&encoded).await?;
+        if self.pipeline_instrumentation.enabled() {
+            self.pipeline_instrumentation
+                .flush_calls
+                .fetch_add(1, Ordering::Relaxed);
+        }
+        stream.flush().await?;
+        Ok(())
+    }
+
+    #[cfg(feature = "experimental-resp-serial-scratch-074")]
+    async fn write_serial_scratch_response<S>(
+        &self,
+        stream: &mut S,
+        encoded: &[u8],
+    ) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        // Keep the canonical writer's counters and complete write/flush boundary.
+        // This function does not append another reply or execute another command.
+        if self.pipeline_instrumentation.enabled() {
+            self.pipeline_instrumentation
+                .output_frames
+                .fetch_add(1, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .output_bytes
+                .fetch_add(encoded.len() as u64, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .output_buffer_high_water_bytes
+                .fetch_max(encoded.len() as u64, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .write_calls
+                .fetch_add(1, Ordering::Relaxed);
+        }
+        stream.write_all(encoded).await?;
         if self.pipeline_instrumentation.enabled() {
             self.pipeline_instrumentation
                 .flush_calls

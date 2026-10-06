@@ -1023,6 +1023,49 @@ fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gate
 }
 
 #[test]
+fn w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default() {
+    let proposal = contract("w9b-serial-scratch-proposal.toml");
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("crates/hydracache-redis-compat/Cargo.toml")).unwrap(),
+    )
+    .unwrap();
+    let feature = proposal["feature"].as_str().unwrap();
+    assert!(manifest["features"]["default"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert!(manifest["features"][feature].as_array().unwrap().is_empty());
+    let source = std::fs::read_to_string(root().join("crates/hydracache-redis-compat/src/lib.rs"))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert!(source.contains(&format!(
+        "#[cfg(feature = \"{feature}\")]\nmod serial_get_scratch_074;"
+    )));
+    assert!(!source.contains("pub mod serial_get_scratch_074"));
+    let scratch = std::fs::read_to_string(
+        root().join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs"),
+    )
+    .unwrap();
+    assert!(scratch.contains("const MIN_PAYLOAD_BYTES: usize = 4096;"));
+    assert!(scratch.contains("const MAX_PAYLOAD_BYTES: usize = 1048576;"));
+    assert!(scratch.contains("const MAX_SCRATCH_BYTES: usize = MAX_PAYLOAD_BYTES + 12;"));
+    for forbidden in ["unsafe", "Mutex", "Atomic", "pub struct SerialGetScratch"] {
+        assert!(
+            !scratch.contains(forbidden),
+            "unexpected shared owner: {forbidden}"
+        );
+    }
+    for function in [
+        "first_get_and_out_of_range_responses_never_allocate_scratch",
+        "equal_size_replies_reuse_capacity_and_overwrite_exact_resp2_and_resp3_bytes",
+        "size_error_missing_and_principal_command_boundaries_release_capacity",
+        "binary_get_scratch_matches_canonical_codec",
+    ] {
+        assert!(scratch.contains(&format!("fn {function}(")));
+    }
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),

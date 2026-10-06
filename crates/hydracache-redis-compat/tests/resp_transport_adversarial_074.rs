@@ -13,8 +13,9 @@ use hydracache_client_protocol::{
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceLimits, ClientSurfaceState};
 use hydracache_redis_compat::{
-    translate_redis_command, RedisCommand, RedisListenerConfig, RedisRespServer,
-    RedisTranslatedCommand, RedisTranslationContext, DEFAULT_REDIS_NAMESPACE,
+    translate_redis_command, RedisAuthConfig, RedisCommand, RedisKeyspaceEventConfig,
+    RedisListenerConfig, RedisRespServer, RedisTranslatedCommand, RedisTranslationContext,
+    DEFAULT_REDIS_NAMESPACE,
 };
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 
@@ -32,22 +33,24 @@ async fn consecutive_large_get_pending_reply_preserves_native_progress_and_mutat
         for cut in [0, 1, reply.len() / 2, reply.len() - 1, reply.len()] {
             let server = listener();
             native_put(&server, b"a", &value);
+            server.set_pipeline_instrumentation_enabled(true);
             let gate = Arc::new(WriteGate::closed());
             let output = Arc::new(Mutex::new(Vec::new()));
             let io = AdversarialIo::new(
                 b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n\
                   *1\r\n$4\r\nQUIT\r\n",
                 Arc::clone(&output),
             )
-            .gate_after_bytes(reply.len() + cut, Arc::clone(&gate))
-            .allow_flushes_before_gate(1);
+            .gate_after_bytes(reply.len() * 2 + cut, Arc::clone(&gate))
+            .allow_flushes_before_gate(2);
             let serving = server.serve_connection(io);
             tokio::pin!(serving);
             assert!(futures_util::poll!(&mut serving).is_pending());
-            assert_eq!(output.lock().unwrap().len(), reply.len() + cut);
-            assert_eq!(server.metrics().commands, 1);
+            assert_eq!(output.lock().unwrap().len(), reply.len() * 2 + cut);
+            assert_eq!(server.metrics().commands, 2);
             assert_eq!(server.state().state_mutations(), 1);
             native_put(&server, b"a", b"N");
             native_put(&server, b"b", b"N");
@@ -56,11 +59,18 @@ async fn consecutive_large_get_pending_reply_preserves_native_progress_and_mutat
             serving.await.unwrap();
             let mut expected = reply.clone();
             expected.extend_from_slice(&reply);
+            expected.extend_from_slice(&reply);
             expected.extend_from_slice(b"+OK\r\n+OK\r\n");
             assert_eq!(*output.lock().unwrap(), expected);
             assert_eq!(native_get(&server, b"a"), Some(b"N".to_vec()));
             assert_eq!(native_get(&server, b"b"), Some(b"2".to_vec()));
             assert_eq!(server.state().state_mutations(), 4);
+            let metrics = server.pipeline_metrics();
+            assert_eq!(metrics.output_frames, 5);
+            assert_eq!(metrics.write_calls, 5);
+            assert_eq!(metrics.flush_calls, 5);
+            assert_eq!(metrics.output_bytes, expected.len() as u64);
+            assert_eq!(metrics.output_buffer_high_water_bytes, reply.len() as u64);
         }
     }
 }
@@ -76,24 +86,25 @@ async fn consecutive_large_get_write_or_flush_failure_never_executes_following_s
         let io = AdversarialIo::new(
             b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
               *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
               *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n",
             Arc::clone(&output),
         );
         let io = if fail_flush {
-            io.fail_flush_after(reply_len * 2)
+            io.fail_flush_after(reply_len * 3)
         } else {
-            io.disconnect_after(reply_len + 101)
+            io.disconnect_after(reply_len * 2 + 101)
         };
         assert!(server.serve_connection(io).await.is_err());
-        assert_eq!(server.metrics().commands, 1);
+        assert_eq!(server.metrics().commands, 2);
         assert_eq!(server.state().state_mutations(), 1);
         assert_eq!(native_get(&server, b"b"), None);
         assert_eq!(
             output.lock().unwrap().len(),
             if fail_flush {
-                reply_len * 2
+                reply_len * 3
             } else {
-                reply_len + 101
+                reply_len * 2 + 101
             }
         );
     }
@@ -106,15 +117,17 @@ async fn consecutive_large_get_fragmentation_mixed_sizes_and_dialects_keep_exact
     native_put(&server, b"b", b"small");
     let input = b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\nb\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
                   *2\r\n$3\r\nGET\r\n$7\r\nmissing\r\n\
                   *1\r\n$4\r\nQUIT\r\n";
     let expected = exchange(&server, input).await;
-    let hello_start = 3 * 4105 + b"$5\r\nsmall\r\n".len();
+    let hello_start = 4 * 4105 + b"$5\r\nsmall\r\n".len();
     let (expected_hello, hello_bytes) = redis_protocol::resp3::decode::complete::decode_bytes(
         &bytes::Bytes::copy_from_slice(&expected[hello_start..]),
     )
@@ -157,6 +170,229 @@ async fn consecutive_large_get_fragmentation_mixed_sizes_and_dialects_keep_exact
         .windows(b"$5\r\nsmall\r\n".len())
         .any(|bytes| bytes == b"$5\r\nsmall\r\n"));
     assert!(expected.ends_with(b"_\r\n+OK\r\n"));
+}
+
+fn three_large_gets() -> Vec<u8> {
+    b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n".repeat(3)
+}
+
+async fn scripted_exchange(server: &RedisRespServer, input: &[u8], chunk: usize) -> Vec<u8> {
+    let output = Arc::new(Mutex::new(Vec::new()));
+    server
+        .serve_connection(AdversarialIo::new(input, Arc::clone(&output)).read_chunk(chunk))
+        .await
+        .unwrap();
+    let bytes = output.lock().unwrap().clone();
+    bytes
+}
+
+#[tokio::test]
+async fn large_get_scratch_malformed_and_quit_barriers_do_not_run_later_set() {
+    for tail in [
+        b"*0\r\n*3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n".as_slice(),
+        b"*1\r\n$4\r\nQUIT\r\n*3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n",
+    ] {
+        let mut input = three_large_gets();
+        input.extend_from_slice(tail);
+        let mut expected = None;
+        for chunk in [1, input.len()] {
+            let server = listener();
+            native_put(&server, b"a", &vec![0xff; 4096]);
+            let actual = scripted_exchange(&server, &input, chunk).await;
+            // One-byte reads never activate scratch, even in the candidate
+            // build: this is a genuine canonical-writer differential control.
+            if let Some(expected) = &expected {
+                assert!(actual == *expected);
+            } else {
+                expected = Some(actual);
+            }
+            assert_eq!(native_get(&server, b"b"), None);
+            assert_eq!(server.state().state_mutations(), 1);
+        }
+    }
+}
+
+#[tokio::test]
+async fn large_get_scratch_auth_barrier_matches_fragmented_canonical_control() {
+    let mut input = b"*2\r\n$4\r\nAUTH\r\n$6\r\nsecret\r\n".to_vec();
+    input.extend_from_slice(&three_large_gets());
+    input.extend_from_slice(
+        b"*2\r\n$4\r\nAUTH\r\n$5\r\nwrong\r\n*2\r\n$3\r\nGET\r\n$1\r\na\r\n*1\r\n$4\r\nQUIT\r\n",
+    );
+    let mut expected = None;
+    for chunk in [1, input.len()] {
+        let server = RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+            RedisListenerConfig {
+                auth: RedisAuthConfig::required("secret"),
+                ..RedisListenerConfig::default()
+            },
+        )
+        .unwrap();
+        native_put(&server, b"a", &vec![0xff; 4096]);
+        let actual = scripted_exchange(&server, &input, chunk).await;
+        assert!(actual
+            .windows(b"WRONGPASS".len())
+            .any(|bytes| bytes == b"WRONGPASS"));
+        if let Some(expected) = &expected {
+            assert!(actual == *expected);
+        } else {
+            expected = Some(actual);
+        }
+        assert_eq!(server.state().state_mutations(), 1);
+    }
+}
+
+#[tokio::test]
+async fn large_get_scratch_subscription_transition_matches_canonical_and_releases_subscriber() {
+    let mut input = three_large_gets();
+    input.extend_from_slice(b"*2\r\n$10\r\nPSUBSCRIBE\r\n$16\r\n__keyspace@0__:*\r\n*1\r\n$4\r\nPING\r\n*1\r\n$4\r\nQUIT\r\n");
+    let mut expected = None;
+    for chunk in [1, input.len()] {
+        let server = RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+            RedisListenerConfig {
+                keyspace_events: RedisKeyspaceEventConfig {
+                    enabled: true,
+                    ..RedisKeyspaceEventConfig::default()
+                },
+                ..RedisListenerConfig::default()
+            },
+        )
+        .unwrap();
+        native_put(&server, b"a", &vec![0xff; 4096]);
+        let actual = scripted_exchange(&server, &input, chunk).await;
+        assert!(actual
+            .windows(b"psubscribe".len())
+            .any(|bytes| bytes == b"psubscribe"));
+        if let Some(expected) = &expected {
+            assert!(actual == *expected);
+        } else {
+            expected = Some(actual);
+        }
+        assert_eq!(server.metrics().active_event_subscribers, 0);
+        assert_eq!(server.state().state_mutations(), 1);
+    }
+}
+
+#[tokio::test]
+async fn cancelled_reused_large_get_writer_does_not_execute_queued_mutation() {
+    let server = listener();
+    native_put(&server, b"a", &vec![0xff; 4096]);
+    let mut input = three_large_gets();
+    input.extend_from_slice(b"*3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n");
+    let gate = Arc::new(WriteGate::closed());
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let io = AdversarialIo::new(&input, Arc::clone(&output))
+        .gate_after_bytes(2 * 4105 + 17, gate)
+        .allow_flushes_before_gate(2);
+    let mut serving = Box::pin(server.serve_connection(io));
+    assert!(futures_util::poll!(&mut serving).is_pending());
+    assert_eq!(server.metrics().commands, 2);
+    drop(serving);
+    assert_eq!(native_get(&server, b"b"), None);
+    assert_eq!(server.state().state_mutations(), 1);
+    assert_eq!(output.lock().unwrap().len(), 2 * 4105 + 17);
+}
+
+#[tokio::test]
+async fn reused_large_get_reply_does_not_hide_expiry_before_next_get() {
+    for cut in [17, 4105] {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1000));
+        let value = vec![b'x'; 4096];
+        let (ns, key) = native_key(b"a");
+        assert_eq!(
+            native_dispatch(
+                &server,
+                "expiring-large-value",
+                ClientRequest::Put {
+                    ns,
+                    key,
+                    value: value.clone(),
+                    ttl_ms: Some(10),
+                    dimensions: Vec::new(),
+                }
+            ),
+            ClientResponse::Stored
+        );
+        let mut input = three_large_gets();
+        input.extend_from_slice(b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n*1\r\n$4\r\nQUIT\r\n");
+        let gate = Arc::new(WriteGate::closed());
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(&input, Arc::clone(&output))
+            .gate_after_bytes(2 * 4105 + cut, Arc::clone(&gate))
+            .allow_flushes_before_gate(2);
+        let serving = server.serve_connection(io);
+        tokio::pin!(serving);
+        assert!(futures_util::poll!(&mut serving).is_pending());
+        assert_eq!(server.metrics().commands, 2);
+        server.state().advance_cache_time_for_tests(10);
+        assert_eq!(native_get(&server, b"a"), None);
+        gate.open();
+        serving.await.unwrap();
+        let mut reply = b"$4096\r\n".to_vec();
+        reply.extend_from_slice(&value);
+        reply.extend_from_slice(b"\r\n");
+        let mut expected = reply.repeat(3);
+        expected.extend_from_slice(b"$-1\r\n+OK\r\n");
+        assert!(*output.lock().unwrap() == expected);
+        assert_eq!(
+            server
+                .state()
+                .retained_state_for_diagnostics()
+                .store_entries,
+            0
+        );
+    }
+}
+
+#[tokio::test]
+async fn reused_large_get_reply_does_not_reserve_quota_for_following_set() {
+    let roster = TenantRoster::new(vec![Tenant::new(DEFAULT_REDIS_NAMESPACE)
+        .unwrap()
+        .allow_client("redis-resp")
+        .allow_client("native-client")
+        .namespace(DEFAULT_REDIS_NAMESPACE, NamespaceQuota::new(4097, 2))])
+    .unwrap();
+    let isolation = ConsumerIsolation::new(roster, ConsumerIsolationConfig::default());
+    let state =
+        ClientSurfaceState::with_isolation(ClientSurfaceLimits::default(), isolation).unwrap();
+    let server = RedisRespServer::new(Arc::new(state), RedisListenerConfig::default()).unwrap();
+    native_put(&server, b"a", &vec![b'x'; 4096]);
+    let mut input = three_large_gets();
+    input.extend_from_slice(b"*3\r\n$3\r\nSET\r\n$1\r\nc\r\n$1\r\n2\r\n*1\r\n$4\r\nQUIT\r\n");
+    let gate = Arc::new(WriteGate::closed());
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let io = AdversarialIo::new(&input, Arc::clone(&output))
+        .gate_after_bytes(3 * 4105, Arc::clone(&gate))
+        .allow_flushes_before_gate(2);
+    let serving = server.serve_connection(io);
+    tokio::pin!(serving);
+    assert!(futures_util::poll!(&mut serving).is_pending());
+    assert_eq!(server.metrics().commands, 2);
+    native_put(&server, b"b", b"N");
+    assert_eq!(native_get(&server, b"b"), Some(b"N".to_vec()));
+    assert!(server.state().audit_events_for_tests().is_empty());
+    gate.open();
+    serving.await.unwrap();
+    let bytes = output.lock().unwrap();
+    assert_eq!(
+        &bytes[3 * 4105..],
+        b"-ERR HydraCache client error: tenant quota exceeded\r\n+OK\r\n"
+    );
+    assert_eq!(native_get(&server, b"c"), None);
+    assert_eq!(server.state().state_mutations(), 2);
+    let audit = server.state().audit_events_for_tests();
+    assert_eq!(audit.len(), 1);
+    assert!(format!("{:?}", audit[0]).contains("QuotaRejected"));
+    assert_eq!(
+        server
+            .state()
+            .retained_state_for_diagnostics()
+            .store_entries,
+        2
+    );
 }
 
 #[tokio::test]
