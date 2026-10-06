@@ -1,0 +1,26 @@
+schema_version = 1
+release = "0.71"
+discovery_scope = "publishable-workspace-production-rust-v1"
+
+[[owner]]
+owner_id = "owner-b6bfdc3e6de5d8cd"
+subsystem = "hydracache-client-transport-axum"
+owning_type = "MutexGuard borrowing BTreeMap; borrowed instrumentation and inline Instant"
+source = "crates/hydracache-client-transport-axum/src/lib.rs"
+symbol = "ProfiledStoreGuard"
+allocation_sites = ["guard"]
+keying_dimension = "aggregate store-lock timing only; no key, tenant or payload labels"
+retained_unit = "inline guard metadata only; map entries remain owned and accounted by ClientSurfaceState owner-263f70a1cc5b27ea"
+creation_transition = "lock_store borrows the existing store mutex and instrumentation"
+terminal_transitions = ["critical-section scope exit", "explicit guard drop", "panic unwind with mutex poisoning preserved"]
+cleanup = "ProfiledStoreGuard Drop records optional aggregate hold time; field Drop releases the underlying borrowed MutexGuard"
+count_bound = "one inline guard per successful store lock; no retained collection of guards"
+byte_bound = "constant inline metadata; no cloned map, payload, Arc or independently owned heap allocation"
+age_bound = "synchronous critical-section scope; no task, channel or persistent guard retention"
+overflow_behavior = "mutex acquisition blocks; poisoned store acquisition remains a failure, not recovery or a new owner"
+snapshot_fields = []
+security_classification = "aggregate-sensitive; payloads remain in the existing store"
+focused_tests = ["profiled_store_guard_tests::profiled_store_guard_releases_borrow_on_drop_and_unwind", "memory_ownership_071::checked_in_registry_closes_current_production_inventory"]
+slow_evidence_ids = []
+disposition = "not_applicable"
+disposition_reason = "AST discovery sees BTreeMap inside MutexGuard generics. Review confirms borrowed access, not ownership of another map; counting it again would duplicate ClientSurfaceState. Normal-drop and unwind fixtures prove lock release with profiling enabled and disabled, preserving poisoning semantics."

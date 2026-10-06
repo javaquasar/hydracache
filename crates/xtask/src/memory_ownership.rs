@@ -9,6 +9,8 @@ use syn::visit::Visit;
 use syn::{Attribute, ItemMacro, ItemMod, ItemStatic, ItemStruct, ItemType, Type};
 
 const REGISTRY_PATH: &str = "docs/testing/memory/0.71/ownership-registry.toml";
+// Live reviews must not rewrite the frozen 0.71 baseline prerequisite.
+const ADDITIONS_PATH: &str = "docs/testing/memory/ownership-registry-additions.toml";
 const INVENTORY_PATH: &str = "target/memory-evidence/0.71/ownership-inventory.json";
 const OWNING_TYPES: [&str; 18] = [
     "Arc",
@@ -365,7 +367,8 @@ pub fn run_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 pub fn check(root: &Path, release: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let registry_text = fs::read_to_string(root.join(REGISTRY_PATH))?;
-    let registry: Registry = toml::from_str(&registry_text)?;
+    let additions_text = fs::read_to_string(root.join(ADDITIONS_PATH))?;
+    let registry = merge_registry_documents(&registry_text, &additions_text)?;
     let candidates = scan_repo(root)?;
     let mut problems = validate_registry(&registry, &candidates, release);
     let focused_tests: BTreeSet<_> = registry
@@ -391,6 +394,48 @@ pub fn validate_registry_document(
 ) -> Result<Vec<String>, Box<dyn Error>> {
     let registry: Registry = toml::from_str(registry)?;
     Ok(validate_registry(&registry, candidates, release))
+}
+
+fn merge_registry_documents(base: &str, additions: &str) -> Result<Registry, Box<dyn Error>> {
+    let mut base: Registry = toml::from_str(base)?;
+    let additions: Registry = toml::from_str(additions)?;
+    if additions.schema_version != base.schema_version
+        || additions.release != base.release
+        || additions.discovery_scope != base.discovery_scope
+    {
+        return Err("ownership additions must match the frozen registry schema, release and discovery scope".into());
+    }
+    let mut reviewed_symbols: BTreeSet<_> = base
+        .owner
+        .iter()
+        .map(|record| (record.source.clone(), record.symbol.clone()))
+        .chain(
+            base.exemption
+                .iter()
+                .map(|record| (record.source.clone(), record.symbol.clone())),
+        )
+        .collect();
+    for (source, symbol) in additions
+        .owner
+        .iter()
+        .map(|record| (&record.source, &record.symbol))
+        .chain(
+            additions
+                .exemption
+                .iter()
+                .map(|record| (&record.source, &record.symbol)),
+        )
+    {
+        if !reviewed_symbols.insert((source.clone(), symbol.clone())) {
+            return Err(format!(
+                "ownership additions cannot replace or duplicate review {source}::{symbol}"
+            )
+            .into());
+        }
+    }
+    base.owner.extend(additions.owner);
+    base.exemption.extend(additions.exemption);
+    Ok(base)
 }
 
 fn validate_registry(
@@ -892,5 +937,65 @@ mod option_tests {
             "inventory.json".to_owned(),
         ])
         .is_err());
+    }
+}
+
+#[cfg(test)]
+mod additions_tests {
+    use super::{merge_registry_documents, validate_registry, OwnershipCandidate};
+
+    fn document() -> String {
+        "schema_version = 1\nrelease = \"0.71\"\ndiscovery_scope = \"publishable-workspace-production-rust-v1\"\n".to_owned()
+    }
+
+    fn exemption(symbol: &str) -> String {
+        format!("\n[[exemption]]\nsource = \"fixture.rs\"\nsymbol = \"{symbol}\"\ncandidate_kind = \"struct\"\nreviewer = \"fixture\"\nreason = \"reviewed borrow\"\nexpires_after_release = \"0.75\"\nruntime_evidence = [\"fixture\"]\nterminal_transition_test = \"fixture_drop\"\n")
+    }
+
+    #[test]
+    fn additions_reject_identity_drift_malformed_input_and_replacement() {
+        let base = document() + &exemption("Original");
+        let new = document() + &exemption("Added");
+        assert!(merge_registry_documents(&base, &new).is_ok());
+        for mutation in [
+            new.replace("schema_version = 1", "schema_version = 2"),
+            new.replace("release = \"0.71\"", "release = \"0.74\""),
+            new.replace("publishable-workspace-production-rust-v1", "weaker-scope"),
+            new.replace("Added", "Original"),
+            new.clone() + &exemption("Added"),
+            "not valid TOML".to_owned(),
+        ] {
+            assert!(merge_registry_documents(&base, &mutation).is_err());
+        }
+    }
+
+    #[test]
+    fn merged_reviews_still_reject_stale_expired_and_unreviewed_candidates() {
+        let base = document() + &exemption("Original");
+        let additions = document() + &exemption("Added");
+        let candidate = |symbol: &str| OwnershipCandidate {
+            candidate_id: symbol.to_owned(),
+            source: "fixture.rs".to_owned(),
+            symbol: symbol.to_owned(),
+            candidate_kind: "struct".to_owned(),
+            allocation_sites: vec![],
+            owning_types: vec![],
+            uncertainty: None,
+        };
+        let candidates = vec![candidate("Original"), candidate("Added")];
+        let merged = merge_registry_documents(&base, &additions).unwrap();
+        assert!(validate_registry(&merged, &candidates, "0.71").is_empty());
+        assert!(validate_registry(&merged, &candidates[..1], "0.71")
+            .iter()
+            .any(|p| p.contains("stale")));
+        let expired = merge_registry_documents(&base, &additions.replace("0.75", "0.71")).unwrap();
+        assert!(validate_registry(&expired, &candidates, "0.71")
+            .iter()
+            .any(|p| p.contains("expired")));
+        let mut unreviewed = candidates;
+        unreviewed.push(candidate("Unreviewed"));
+        assert!(validate_registry(&merged, &unreviewed, "0.71")
+            .iter()
+            .any(|p| p.contains("unreviewed candidate")));
     }
 }
