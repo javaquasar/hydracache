@@ -969,6 +969,41 @@ The retained receipts are
 staging and signed start/attach/abort on the admitted host. They do not prove live seal, supervisor
 restart or reboot with a live role, role overhead, product execution or release qualification.
 
+### Supervisor restart rehearsal
+
+The next bounded slice passed at exact source `9178f3ab`. Provisioning run `37410275153` installed
+the reviewed binary with SHA-256
+`1dfb472f54998e0d12cf68fa050b8819cc277629368d5f8378d22ba7b2f9815b`, and bundle run
+`37410539986` produced campaign `6689c9cd...`. Combined protected run `37410711175` kept start,
+attach and abort under one controller principal. After start reached revision 2, only the root
+supervisor was restarted. The supervisor PID changed from 65781 to 74207, but `state.json` kept the
+same digest and the live fixture retained PIDs 73941/73942 plus their original start ticks. Recovery
+observed and adopted that exact pair; it did not spawn a replacement.
+
+The fresh supervisor admitted a signed attach at checkpoint sequence 7 and revision 3. The same
+workflow run then issued signed abort, which stopped the exact transient unit and committed
+revision 5 `ABORTED_INCOMPLETE`. Thirteen checkpoint records remained hash-verifiable. Execution
+and controller-lease fields were cleared, the active host claim was released, fixture processes
+were absent, the runner was offline and the supervisor remained active with zero restarts. The
+retained positive receipt is `local-runs/w11-supervisor-restart-9178f3ab.json`.
+
+The negative predecessor at `671c93d6` supplied three independent correctness constraints. First,
+the numeric mount ID is scoped to a mount namespace: the service restart changed it from 324 to 430
+without changing device, root, mount point, filesystem, source or options. The stable comparison
+therefore excludes only `mount_id`; the full host receipt still records it and all semantic mount
+fields remain mandatory. Second, a protected abort dispatched as another GitHub run must be
+rejected after attach binds the controller lease, so recovery attach and abort now have a same-run
+orchestration mode. Third, after the exact fixture exits successfully, systemd may retain the unit
+as `active/exited` with `MainPID=0` while releasing its cgroup. Empty `ControlGroup` is accepted only
+for that exact successful terminal shape; a live or non-empty mismatched cgroup still fails closed.
+The retained negative receipt is
+`local-runs/w11-supervisor-restart-negative-671c93d6.json`.
+
+This rehearsal confirms supervisor restart survival, same-process adoption, signed attach after
+restart and same-principal cleanup. It does not measure product throughput, isolated-CPU interrupt
+deltas or role overhead, and it does not prove live seal or live-role reboot. Those gates and all
+product qualification remain open.
+
 ## Rollout, gates and rollback
 
 Rollout proceeds in this order:

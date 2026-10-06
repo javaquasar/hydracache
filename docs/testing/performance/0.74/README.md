@@ -862,10 +862,37 @@ fixture unit limit exactly 900 seconds. Permanent chain corruption is still reje
 `local-runs/w11-protected-start-attach-abort-negative-29675f17.json`.
 
 This closes privileged start-bundle staging and the signed start/attach/abort host rehearsal. It
-does not close all mutating operations or W11: live seal, supervisor restart and reboot while a
-role is active, role-level overhead, product I74/C74 execution, six-hour qualification and the
-separately authorized 24-hour confirmation remain open. `host_rehearsal_complete` and
-`release_admission_allowed` therefore stay false.
+does not close all mutating operations or W11.
+
+The supervisor-restart slice is now also complete at exact source `9178f3ab`. Signed provisioning
+run `37410275153` installed binary
+`1dfb472f54998e0d12cf68fa050b8819cc277629368d5f8378d22ba7b2f9815b`; bundle run
+`37410539986` bound campaign `6689c9cd...` to the installed receipt. Combined protected run
+`37410711175` started the non-product pair, after which only the supervisor was restarted. Its PID
+changed from 65781 to 74207 while the campaign state digest, fixture PIDs 73941/73942 and both
+start-tick identities remained unchanged. No duplicate executor appeared. Signed attach in that
+same run accepted checkpoint sequence 7 at revision 3, and the same controller principal then
+aborted to revision 5 `ABORTED_INCOMPLETE`. Thirteen checkpoint records were retained; the unit,
+fixture processes and host claim were absent afterward, the runner was offline and the restored
+supervisor remained active with `NRestarts=0`. See
+`local-runs/w11-supervisor-restart-9178f3ab.json`.
+
+The failed predecessor is part of the result. A service restart creates a new private mount
+namespace, so its numeric mount ID changed from 324 to 430 although the device, root, mount point,
+filesystem, source and mount options were identical. The durable identity now excludes only that
+namespace-local number while the full receipt still records it; every semantic mount field remains
+fail-closed. The same attempt also proved that controller lease ownership requires attach and abort
+to share one workflow run, and that systemd may release the cgroup of the exact retained
+`active/exited`, `MainPID=0`, successful unit. That empty terminal cgroup is now admitted only for
+that exact terminal shape; a non-empty foreign cgroup remains identity drift. See
+`local-runs/w11-supervisor-restart-negative-671c93d6.json`.
+
+This closes supervisor-restart survival, same-process adoption and post-restart attach/abort only.
+Live seal, reboot while a role is active, role-level overhead, product I74/C74 execution, six-hour
+qualification and the separately authorized 24-hour confirmation remain open.
+`host_rehearsal_complete` and `release_admission_allowed` therefore stay false. No product
+candidate, expensive qualification or isolated-CPU interrupt measurement was performed in this
+slice.
 
 `scripts/ci/monitor-long-run-campaign-074.py` is a replaceable read-only observer. It strictly
 validates the complete durable-state shape and expected campaign/manifest identities, reports

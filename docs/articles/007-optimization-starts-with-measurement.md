@@ -2538,3 +2538,42 @@ reboot, role overhead and the expensive product qualification still require thei
 The lesson generalizes beyond this supervisor: crash consistency is not enough when one logical
 state spans multiple durable files. Readers must define which inter-file snapshots are valid,
 which are transient, and how long they may retry without turning real corruption into availability.
+
+## Durable identity cannot depend on a namespace-local number
+
+The next real-host experiment restarted the supervisor while the exact non-product fixture pair
+continued to run. The initial hypothesis was simple: the persisted process, cgroup, cpuset and
+mount receipt should let the fresh supervisor adopt the existing pair without respawning it. The
+process part worked. The fixture retained its PIDs and start ticks, the campaign state file did not
+change and no duplicate appeared. One identity field did change: the numeric mount ID moved from
+324 to 430 because the restarted service entered a new private mount namespace.
+
+Treating those numbers as a durable equality key would reject a valid restart. Ignoring the mount
+altogether would be worse because a changed device, root, path, filesystem, source or option set
+could then pass. The admitted projection is deliberately narrower: the full receipt still records
+the numeric mount ID for diagnosis, while the stable digest excludes only that namespace-local
+field. Tests mutate every semantic mount component independently and require each mutation to
+remain identity drift.
+
+The negative rehearsal found two more boundary conditions. A signed attach transfers the active
+controller lease to its GitHub run principal, so an abort dispatched as another run was correctly
+rejected. Recovery orchestration therefore performs attach and abort in one run rather than
+weakening lease ownership. Later, the 900-second fixture exited successfully before abort signing
+finished. Systemd retained the exact unit as `active/exited` with `MainPID=0` but released its
+cgroup. Requiring the old non-empty cgroup in that terminal shape caused a fail-closed diagnostic
+loop. The verifier now accepts an empty cgroup only for that exact successful terminal unit; live
+units and non-empty foreign cgroups still fail.
+
+After those isolated fixes, the repeated rehearsal passed at source `9178f3ab`. Restarting only the
+supervisor changed its PID from 65781 to 74207 while fixture PIDs 73941/73942, their start ticks and
+the campaign-state digest stayed constant. The fresh process adopted the pair, signed attach
+accepted checkpoint sequence 7, and a same-run signed abort ended at revision 5
+`ABORTED_INCOMPLETE`. Thirteen checkpoint records remained verifiable, no duplicate executor was
+observed, and the unit, processes and active host claim were absent at the end. The runner was
+returned offline and the supervisor remained active with zero restarts.
+
+That is confirmed lifecycle evidence, not a performance result. No product candidate ran; no
+throughput, latency, role-overhead or isolated-CPU interrupt claim was measured. Live seal,
+live-role reboot and expensive product qualification remain separate gates. The useful result is
+architectural: a restartable controller needs semantic identities that survive namespace renewal,
+and each relaxation must be no wider than the lifecycle state that justifies it.
