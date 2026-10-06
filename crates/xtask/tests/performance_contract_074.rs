@@ -329,7 +329,7 @@ fn w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable() {
 }
 
 #[test]
-fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
+fn w11_non_product_role_rehearsal_is_complete_but_role_budget_stays_closed() {
     let controller = contract("long-run-controller-resilience-contract.toml");
     let implementation = controller["local_implementation"].as_table().unwrap();
     let relative = implementation["supervisor_idle_overhead_evidence"]
@@ -390,10 +390,53 @@ fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
     for field in [
         "idle_overhead_budget_complete",
         "role_overhead_qualification_complete",
-        "non_product_role_overhead_rehearsal_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(false), "{field}");
     }
+    assert_eq!(
+        implementation["non_product_role_overhead_rehearsal_complete"].as_bool(),
+        Some(true)
+    );
+    let role_evidence: Value = serde_json::from_slice(
+        &std::fs::read(
+            root().join(
+                implementation["non_product_role_overhead_rehearsal"]
+                    .as_str()
+                    .unwrap(),
+            ),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        role_evidence["evidence_class"].as_str(),
+        Some("non-product-role-overhead-rehearsal")
+    );
+    assert_eq!(role_evidence["promotable"].as_bool(), Some(false));
+    assert_eq!(
+        role_evidence["source_commit"].as_str(),
+        Some("543108f1ccd206ae670803c2617f07e7fa91ae62")
+    );
+    assert_eq!(
+        role_evidence["github_run"]["id"].as_u64(),
+        Some(37467960862)
+    );
+    assert_eq!(
+        role_evidence["workload_identity"]["attempt_count"].as_u64(),
+        Some(20)
+    );
+    assert_eq!(
+        role_evidence["budgets"]["non_product_rehearsal_passed"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        role_evidence["decision"]["role_overhead_qualification_complete"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        role_evidence["decision"]["release_admission_allowed"].as_bool(),
+        Some(false)
+    );
     assert_eq!(
         implementation["role_overhead_analyzer_complete"].as_bool(),
         Some(true)

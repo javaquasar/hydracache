@@ -1,0 +1,110 @@
+{
+  "schema_version": "hydracache-w11-non-product-role-overhead-rehearsal-v1",
+  "release": "0.74",
+  "evidence_class": "non-product-role-overhead-rehearsal",
+  "promotable": false,
+  "source_commit": "543108f1ccd206ae670803c2617f07e7fa91ae62",
+  "binary_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+  "root_entrypoint_sha256": "1103e4da6d743a3552cc23e80d90d68864c8bea37d333823ccccccf9de841c96",
+  "provisioning": {
+    "run_id": 37467505392,
+    "conclusion": "success",
+    "bundle_artifact_id": 11415472420,
+    "bundle_artifact_digest": "sha256:4d2ca504208d22c962c22bc7a52af4d0240349177f58171ca25645c02b1ec4e0",
+    "receipt_artifact_id": 11415212604,
+    "receipt_artifact_digest": "sha256:d5ea236058ac663b22e36e04dbceb88b2a7b3fc1df4e260fa784ca808421a6a0"
+  },
+  "github_run": {
+    "id": 37467960862,
+    "attempt": 1,
+    "job_id": 112283689390,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37467960862",
+    "created_at_utc": "2026-10-06T13:04:27Z",
+    "completed_at_utc": "2026-10-06T13:04:52Z",
+    "conclusion": "success",
+    "artifact_id": 11415577648,
+    "artifact_name": "performance-long-run-role-overhead-smoke-074-543108f1ccd206ae670803c2617f07e7fa91ae62-37467960862-1",
+    "artifact_digest": "sha256:375e482dd783a7ab1530407ef6ffcd7359d3fc27fb15705db6b827ea39e14e16"
+  },
+  "receipts": {
+    "attempts_sha256": "dc91abe24d5a4deb5d87012bbc0c721f026f1a95540ba0926cfe0fbea06d7711",
+    "analysis_sha256": "57a2b4d43b835dc1af6d9bb3a473afc24575bcc1a16ac78efc4da6637bd02619",
+    "provisioning_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "workload_identity": {
+    "order": "abba-counterbalanced-v1",
+    "pairs_per_role": 5,
+    "attempt_count": 20,
+    "cpuset": "0",
+    "seed": 740074,
+    "operations_per_attempt": 100000000,
+    "warmup_operations_per_attempt": 1000000,
+    "workload_sha256": "3eeaad27be1df4f1cb2cdfe423fa130af89b475b14039c47dc498412fa93867b",
+    "payload_sha256": "05d397368445a122f0a954b4a4aec2939e2c7a65935506fab9f470bbfde4f635",
+    "host_receipt_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525",
+    "all_guards_passed": true,
+    "control_checkpoint_write_bytes": 0,
+    "instrumented_checkpoint_write_bytes": 4096
+  },
+  "measurements": {
+    "i74": {
+      "median_control_elapsed_ns": 447540937,
+      "median_instrumented_elapsed_ns": 453235406,
+      "median_elapsed_overhead_percent": 1.2713871580422698,
+      "median_control_role_cpu_ns": 147490332,
+      "median_instrumented_role_cpu_ns": 147453973,
+      "median_role_cpu_overhead_percent": 0.04317540494431782,
+      "maximum_role_rss_bytes": 3739648
+    },
+    "c74": {
+      "median_control_elapsed_ns": 447415624,
+      "median_instrumented_elapsed_ns": 453194152,
+      "median_elapsed_overhead_percent": 1.2917418412366155,
+      "median_control_role_cpu_ns": 147372572,
+      "median_instrumented_role_cpu_ns": 147448022,
+      "median_role_cpu_overhead_percent": 0.04572371780939832,
+      "maximum_role_rss_bytes": 3739648
+    },
+    "elapsed_overhead_asymmetry_percentage_points": 0.020354683194345746,
+    "role_cpu_overhead_asymmetry_percentage_points": 0.0025483128650805043,
+    "maximum_supervisor_cpu_percent": 0.0,
+    "maximum_supervisor_rss_bytes": 5242880,
+    "maximum_supervisor_io_bytes": 0,
+    "maximum_combined_control_plane_io_bytes_per_second": 9039.897412878248
+  },
+  "budgets": {
+    "maximum_elapsed_or_cpu_asymmetry_percentage_points": 1.0,
+    "maximum_supervisor_cpu_percent": 0.5,
+    "maximum_supervisor_rss_bytes": 67108864,
+    "maximum_checkpoint_io_bytes_per_second": 1048576,
+    "elapsed_asymmetry_passed": true,
+    "role_cpu_asymmetry_passed": true,
+    "resource_budgets_passed": true,
+    "non_product_rehearsal_passed": true
+  },
+  "post_run_host_state": {
+    "observed_at_utc": "2026-10-06T13:05:55Z",
+    "supervisor_active": true,
+    "supervisor_main_pid": 8839,
+    "supervisor_restarts": 0,
+    "runner_active": false,
+    "runner_enabled": false,
+    "active_campaign_absent": true,
+    "campaign_lifecycle_context_absent": true,
+    "controller_loss_context_absent": true
+  },
+  "decision": {
+    "non_product_role_overhead_rehearsal_complete": true,
+    "idle_overhead_budget_complete": false,
+    "role_overhead_qualification_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "run exact product I74/C74 role-overhead pairs only after candidate freeze and explicit expensive-qualification authorization"
+  },
+  "forbidden_work": {
+    "product_candidate_started": false,
+    "six_hour_qualification_started": false,
+    "twenty_four_hour_confirmation_started": false
+  },
+  "claim_boundary": "This proves the fixed unprivileged collector, identity guards, counterbalanced schedule and frozen analyzer on one bounded non-product fixture run. The measured overhead belongs to the synthetic fixture and does not qualify product I74/C74 role overhead, throughput, latency, six-hour qualification, 24-hour confirmation or release admission."
+}
