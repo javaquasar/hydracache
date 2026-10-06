@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-signed-non-product-start-negative-rehearsal",
+  "captured_at_utc": "2026-10-06T01:48:30Z",
+  "installed_source_commit": "70dcc95f72a02b86b03a1a867a43888a12ef1bbf",
+  "controller_wrapper_commit": "e5ba7fe714257fff09a8b6e3c2aaf837a7f7933a",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "bundle": {
+    "run_id": 37399210572,
+    "run_attempt": 1,
+    "campaign_id": "238407ec85231d2a054b51563043832d447dcbc628459aa9cc726d2ceaa01607",
+    "manifest_sha256": "fc36f0bb229f352ff4569814c142471aceaaf91bc5ff676e2b27fbd6c7b2c6d4",
+    "bundle_sha256": "3a804906b5295e0c7482ab6c48a529f7b8058df34e2cc4eb9eabb2f4bc52f447",
+    "lease_id": "8116809c-49a2-48a7-9707-54205584bc91",
+    "lease_deadline_unix_seconds": 1791253717,
+    "host_receipt_sha256": "fbd299e0c3336a702a7c0c0a773188e6f3d24d0151442fe1f6b7f747b2232eda",
+    "reference_host_freeze_sha256": "a6a890fd7fd3f4e21d3dac0967abfa10a7752e07e1b62d004544bf90443bbf3e",
+    "artifact": {
+      "id": 11384785005,
+      "name": "long-run-074-start-bundle-3a804906b5295e0c7482ab6c48a529f7b8058df34e2cc4eb9eabb2f4bc52f447",
+      "digest": "sha256:a2622a0635d13874497e51c014a0278e848220efc84bcfdeacfec0a3033cbf10",
+      "size_bytes": 3864
+    }
+  },
+  "signed_start": {
+    "run_id": 37399781792,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "authorization_job_id": 112064157852,
+    "dispatch_job_id": 112064657436,
+    "request_id": "0820455f-f0b3-4637-bd9f-46d138cc3a80",
+    "transport_request_sha256": "1a46f5f83df554523b7cbe909cb191df7915641bb57284f42a427c4e11ac76ec",
+    "durable_request_sha256": "d443a8831b9478a0f29b03c5a06cb3a75f1c470f8cae8c799e44347b07edbe05",
+    "response_sha256": "68e1eb714fcdd54fe6f1b80899a5f5dc194aa738b8c9939311f0b9bbdbf6d46e",
+    "request_artifact": {
+      "id": 11384569925,
+      "name": "long-run-074-request-0820455f-f0b3-4637-bd9f-46d138cc3a80",
+      "digest": "sha256:0d2d4fd3f8b0f6e2f89143867c8a5d2b5b3f9cf6b3a2e126b592a0c3a059a8c0",
+      "size_bytes": 862
+    },
+    "response_artifact": {
+      "id": 11384996167,
+      "name": "long-run-074-response-0820455f-f0b3-4637-bd9f-46d138cc3a80",
+      "digest": "sha256:a2cb8005ab16b99270a64b0336ba33972495ba0e4c3eaa572929f7f24f2ec95b",
+      "size_bytes": 1926
+    },
+    "accepted_at_unix_seconds": 1791250649,
+    "accepted_state": "I74_RUNNING",
+    "accepted_revision": 2,
+    "harness_pid": 60224,
+    "daemon_pid": 60226,
+    "unit_name": "hydracache-performance-074-i74-238407ec85231d2a054b51563043832d447dcbc628459aa9cc726d2ceaa01607.service",
+    "duplicate_executor": false,
+    "recorded_failure": false,
+    "durable_history_corrupt": false
+  },
+  "watchdog_terminal": {
+    "occurred_at_unix_seconds": 1791250830,
+    "elapsed_since_initial_checkpoint_seconds": 181,
+    "frozen_progress_rejection_gap_seconds": 180,
+    "terminal_state": "FAILED_INCOMPLETE",
+    "terminal_revision": 4,
+    "checkpoint_sequence": 1,
+    "checkpoint_useful_progress_unix_seconds": 1791250649,
+    "checkpoint_record_sha256": "a4ad774393de9e3bb1bba2cda2bcaa2d11f43b6ade992d22302076eb6daa57ac",
+    "checkpoints_sha256": "ea56e7c617f019c0426f06f77e9c35629247389d4f1d7a423522ec4dcafc0c1b",
+    "checkpoint_head_sha256": "030d02780a8a914db8f945f144fc3686e8819d88200cce5ce985b1a95b6fb632",
+    "diagnostic_sha256": "4b3cfe03b1387a43ad34f6c26f919840a166a91b5db93a17364b92ae66c7d557",
+    "diagnostic_bytes": 2872,
+    "state_sha256": "aca2053ba93869803cb554bfad92ffd97f927b1919880bc831dd8cec8a0053ba",
+    "events_sha256": "9035d4b5583a23176954dbade109bbbfbafe7c745a69dbd7d0852e125709237e",
+    "events_head_sha256": "a357020f3465f9a1433ab814e170ea874d6bb8ee1deb27448d3ef0d60abe152e",
+    "execution_fields_cleared": true,
+    "fixture_unit_stopped": true,
+    "host_claim_released": true
+  },
+  "cancelled_abort": {
+    "run_id": 37400171345,
+    "run_attempt": 1,
+    "conclusion": "cancelled",
+    "authorization_job_id": 112065355611,
+    "dispatch_job_id": 112065843593,
+    "request_id": "329ed9f9-c366-417d-9bee-0309a663da11",
+    "expected_state_revision": 2,
+    "transport_request_sha256": "5516e70d5a61d28cd05e1fcfda08993eb685d240f148a42f61913c4888c426a1",
+    "request_artifact": {
+      "id": 11383634693,
+      "name": "long-run-074-request-329ed9f9-c366-417d-9bee-0309a663da11",
+      "digest": "sha256:8e44fdfbba54b7f1d954265907fc34df208cebc7b0d743dbf3d69f84ffe6dc89",
+      "size_bytes": 856
+    },
+    "packet_executed": false,
+    "cancellation_reason": "The durable revision advanced from 2 to 4 before the self-hosted job started; the runner remained offline and the stale packet was cancelled without execution."
+  },
+  "host_freeze_observation": {
+    "pre_start_check_passed": true,
+    "isolated_cpu_irq_after_fixture": {
+      "irq": 60,
+      "action": "nvme1q3",
+      "effective_affinity_list": "2",
+      "interrupt_count": 2,
+      "manual_affinity_restore_rejected_by_kernel": true
+    },
+    "controlled_reboot_required": true,
+    "boot_id_before": "24737c1d-08ce-4051-a440-c5724a5e36ee",
+    "boot_id_after": "47f3c763-c690-4f97-84e8-70b576cae2b3",
+    "post_reboot_irq_60_interrupt_count": 0,
+    "post_reboot_freeze_check_passed": true,
+    "runner_active_after_restore": false,
+    "supervisor_active_after_restore": true,
+    "supervisor_main_pid_after_restore": 914,
+    "supervisor_restarts_after_restore": 0,
+    "host_claim_absent_after_restore": true,
+    "fixture_context_absent_after_restore": true
+  },
+  "negative_attribution": [
+    {
+      "finding": "The start path is signed, exact-source, exact-bundle and accepted, but the fixture publishes only its initial checkpoint. Two sequential hosted signing jobs exceed the frozen 180-second progress-loss window.",
+      "required_change": "A rehearsal must keep useful progress alive while authorization is prepared or perform the complete multi-operation controller sequence inside one durable workflow."
+    },
+    {
+      "finding": "The controller lease is bound to GitHub run_id, while the registered wrapper currently creates a new run for each operation. A later attach, seal or abort therefore cannot inherit the previous run's lease.",
+      "required_change": "Execute start, attach and abort/seal under one top-level workflow run, carrying exact response revisions and observed process/checkpoint identity between jobs."
+    },
+    {
+      "finding": "The transient role unit pins both harness and daemon to isolated CPUs. The fixture's checkpoint write activated an NVMe managed IRQ on measurement CPU 2 and invalidated the frozen host until reboot.",
+      "required_change": "Separate housekeeping-owned evidence I/O from measurement-owned daemon execution and prove zero measurement-CPU IRQ delta before another signed rehearsal."
+    }
+  ],
+  "decision": {
+    "signed_revision_zero_start_path_exercised": true,
+    "signed_cleanup_path_exercised": false,
+    "protected_start_abort_rehearsal_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "Implement and locally test same-run controller sequencing plus separate harness/daemon CPU ownership, provision a fresh exact-source fixture, rebuild the immutable bundle and repeat only the non-product rehearsal."
+  }
+}
