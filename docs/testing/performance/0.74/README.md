@@ -835,11 +835,9 @@ from an inaccessible path. Instead it brackets every attempt with the existing t
 host-observation request. The root supervisor validates the marker before and after observation and
 returns `active_campaign_absent=true` inside its response digest; any active, malformed or
 unreadable claim fails closed. The workflow still requires an active zero-restart supervisor, runs
-the frozen analyzer and retains raw attempts, fixture receipts and analysis. The collector and
-workflow are locally implemented, but `non_product_role_overhead_rehearsal_complete` remains false
-until this corrected exact source is signed, installed and run on the admitted host. Product
-I74/C74 pairs are a later, separate gate; no product candidate or expensive qualification is
-started by this mode.
+the frozen analyzer and retains raw attempts, fixture receipts and analysis. Before the admitted
+host run, `non_product_role_overhead_rehearsal_complete` remained false. Product I74/C74 pairs are
+a later, separate gate; no product candidate or expensive qualification is started by this mode.
 
 The first unprivileged host run, `37465569900` at `02a1123d`, failed closed before attempt one:
 Linux ptrace policy denied the Actions user access to `/proc/5083/exe`. The retained artifact proves
@@ -857,6 +855,22 @@ correction accepts only that readable empty file as zero; a missing or unreadabl
 row, or a row without `rbytes`/`wbytes` still fails closed. The supervisor remained active at PID
 6982 with zero restarts and no campaign context. See
 `local-runs/w11-role-overhead-empty-io-stat-rejected-2815c72c.json`.
+
+The corrected exact-source run `37467960862` at `543108f1` completed all 20 attempts. Each role had
+five ABBA control/instrumented pairs with seed 740074, 100,000,000 measured operations and 1,000,000
+warm-up operations per attempt on CPU 0. I74 median elapsed overhead was 1.271387% and median role
+CPU overhead was 0.043175%; C74 measured 1.291742% and 0.045724%. The cross-role differences were
+0.020355 and 0.002548 percentage points, below the frozen 1-point asymmetry ceiling. Maximum
+supervisor CPU was 0%, peak supervisor RSS was 5,242,880 bytes, and maximum combined checkpoint
+plus supervisor I/O rate was 9,039.898 bytes/s, all below their frozen ceilings. Every identity,
+placement, operation-count and campaign guard passed; control attempts wrote zero checkpoint bytes
+and instrumented attempts wrote exactly 4,096 bytes.
+
+This closes only `non_product_role_overhead_rehearsal_complete`. The fixture is synthetic, so
+`idle_overhead_budget_complete`, `role_overhead_qualification_complete`, `host_rehearsal_complete`
+and release admission remain false. The runner was returned inactive/disabled and the supervisor
+remained active at PID 8839 with zero restarts. See
+`local-runs/w11-role-overhead-rehearsal-543108f1.json`.
 
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and

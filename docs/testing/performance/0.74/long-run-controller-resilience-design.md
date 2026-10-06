@@ -944,9 +944,9 @@ must never be interpreted as absence. Every attempt is therefore bracketed by th
 host-observation protocol. The root supervisor validates the active marker before and after its
 observation and includes `active_campaign_absent=true` in the hashed response; active, malformed,
 unreadable or racing claims are rejected. The workflow adds zero-restart guards, runs the frozen
-analyzer and retains raw attempts, fixture receipts and analysis. This remains a non-product
-rehearsal: until a signed corrected-source host run exists, its completion flag stays false; even
-afterwards it cannot satisfy product I74/C74 overhead or release-admission gates.
+analyzer and retains raw attempts, fixture receipts and analysis. Passing this non-product mode can
+close only its rehearsal flag; it cannot satisfy product I74/C74 overhead or release-admission
+gates.
 
 Run `37465569900` at `02a1123d` exercised that design and rejected its first process guard before
 attempt one because the runner cannot dereference `/proc/<root-pid>/exe` under the host ptrace
@@ -963,6 +963,20 @@ an empty readable file is the exact zero counter, not unavailable telemetry. The
 only that state to zero while preserving hard failures for an absent/unreadable file, malformed
 rows and missing byte counters. The retained negative receipt is
 `local-runs/w11-role-overhead-empty-io-stat-rejected-2815c72c.json`.
+
+The final corrected rehearsal passed in run `37467960862` at exact source `543108f1`. It collected
+the frozen 20 attempts: five ABBA pairs for each role, all at seed 740074 with identical workload,
+payload, operation, warm-up, cpuset, binary, source and host-receipt identities. I74 median elapsed
+and role-CPU overhead were 1.271387% and 0.043175%; C74 were 1.291742% and 0.045724%. Their
+asymmetries were only 0.020355 and 0.002548 percentage points against the frozen 1-point ceiling.
+The supervisor contributed no observed CPU or block-I/O delta during any pair, peaked at 5,242,880
+bytes RSS, and the maximum combined checkpoint/control-plane I/O rate was 9,039.898 bytes/s against
+the 1,048,576-byte/s ceiling. All guards and per-pair resource budgets passed.
+
+This closes `non_product_role_overhead_rehearsal_complete`, not the product budget. The bounded
+fixture does not represent I74/C74 product execution, so `idle_overhead_budget_complete`,
+`role_overhead_qualification_complete`, `host_rehearsal_complete` and release admission remain
+false. The retained receipt is `local-runs/w11-role-overhead-rehearsal-543108f1.json`.
 
 ### Reference-host freeze and reboot boundary
 

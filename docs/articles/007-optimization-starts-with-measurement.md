@@ -2671,9 +2671,9 @@ marker before and after collecting its immutable observation and returns
 `active_campaign_absent=true` inside the response digest. Thus the collector gains proof, not new
 privilege, and any active or malformed claim fails closed.
 
-The corrected collector still produces rehearsal-only evidence. Its signed host run remains to be
-performed, and even a passing result cannot replace exact I74/C74 product pairs. Those product pairs
-are the next evidence boundary after this non-product rehearsal is retained.
+The corrected collector still produces rehearsal-only evidence. Before its admitted-host run, the
+completion flag stayed false, and even a passing result could not replace exact I74/C74 product
+pairs. Those product pairs remain a separate evidence boundary.
 
 The first unprivileged run found one more host-specific boundary before measuring anything. Linux
 ptrace policy correctly prevented the Actions user from dereferencing `/proc/<root-pid>/exe`, so run
@@ -2691,3 +2691,18 @@ valid zero look like missing telemetry. The narrow correction treats a readable 
 but still rejects a missing or unreadable file, malformed device rows and rows without byte
 counters. This distinction matters: accepting the kernel's canonical zero is not the same as
 turning absent evidence into a passing metric.
+
+With that distinction fixed, run `37467960862` completed the exact 20-cell schedule. The measured
+fixture cost was consistent across roles: median elapsed overhead was 1.271387% for I74 and
+1.291742% for C74, while median process-CPU overhead was 0.043175% and 0.045724%. The elapsed and
+CPU asymmetries were 0.020355 and 0.002548 percentage points, far below the frozen one-point
+ceiling. Supervisor CPU and block-I/O deltas were zero in every short pair, peak supervisor RSS was
+5.00 MiB, and the maximum combined checkpoint/control-plane rate was about 8.83 KiB/s against a
+1 MiB/s ceiling. All identity, placement, workload and campaign guards passed.
+
+Those numbers validate the measurement path, not HydraCache performance. The executable was a
+bounded synthetic fixture, and the instrumented cells intentionally performed one 4 KiB fsync.
+Therefore the run closes only the non-product rehearsal flag; product role overhead, the six-hour
+qualification, the 24-hour confirmation and release admission remain open. The useful result is
+that later product pairs can reuse a host-proven collector without granting more privilege or
+quietly converting unavailable counters into zeros.
