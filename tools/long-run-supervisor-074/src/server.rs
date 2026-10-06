@@ -760,12 +760,7 @@ impl SupervisorServer {
                         receipt_sha256,
                         receipt,
                     };
-                    Ok(success_response(
-                        request,
-                        now,
-                        0,
-                        serde_json::to_value(result)?,
-                    )?)
+                    success_response(request, now, 0, serde_json::to_value(result)?)
                 }
                 _ => Ok(error_response_from_request(request, now, 6)?),
             };
@@ -919,22 +914,14 @@ impl SupervisorServer {
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    state_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, state_error_code(&error))
             }
         };
         let transaction = match begin_attach(&lock, request, now) {
             Ok(BeginAttach::Replayed(response)) => return Ok(response),
             Ok(BeginAttach::New(transaction)) => transaction,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    mutation_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, mutation_error_code(&error))
             }
         };
         let state = transaction.state().clone();
@@ -1068,34 +1055,19 @@ impl SupervisorServer {
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    state_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, state_error_code(&error))
             }
         };
         let state = match reconcile_campaign(&lock) {
             Ok(state) => state,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    mutation_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, mutation_error_code(&error))
             }
         };
         let manifest =
             match verify_manifest_evidence(lock.campaign_directory(), request, &state, now) {
                 Ok(manifest) => manifest,
-                Err(_) => {
-                    return Ok(error_response_with_revision(
-                        request,
-                        now,
-                        state.revision,
-                        5,
-                    )?)
-                }
+                Err(_) => return error_response_with_revision(request, now, state.revision, 5),
             };
         let host_verified = match seal_backend.as_deref_mut() {
             Some(backend) => backend
@@ -1106,12 +1078,7 @@ impl SupervisorServer {
             }
         };
         if !host_verified {
-            return Ok(error_response_with_revision(
-                request,
-                now,
-                state.revision,
-                5,
-            )?);
+            return error_response_with_revision(request, now, state.revision, 5);
         }
         let role = match state.campaign_state {
             CampaignState::I74Running | CampaignState::I74Terminal | CampaignState::I74Sealed => {
@@ -1120,14 +1087,7 @@ impl SupervisorServer {
             CampaignState::C74Running
             | CampaignState::C74Terminal
             | CampaignState::CompleteSealed => crate::Role::C74,
-            _ => {
-                return Ok(error_response_with_revision(
-                    request,
-                    now,
-                    state.revision,
-                    5,
-                )?)
-            }
+            _ => return error_response_with_revision(request, now, state.revision, 5),
         };
         let plan = match resolve_packet_plan(
             lock.campaign_directory(),
@@ -1137,14 +1097,7 @@ impl SupervisorServer {
             role,
         ) {
             Ok(plan) => plan,
-            Err(_) => {
-                return Ok(error_response_with_revision(
-                    request,
-                    now,
-                    state.revision,
-                    5,
-                )?)
-            }
+            Err(_) => return error_response_with_revision(request, now, state.revision, 5),
         };
         let host_claim = if state.campaign_state == CampaignState::CompleteSealed {
             HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id)
@@ -1154,36 +1107,26 @@ impl SupervisorServer {
         let host_claim = match host_claim {
             Ok(claim) => claim,
             Err(error) => {
-                return Ok(error_response_with_revision(
+                return error_response_with_revision(
                     request,
                     now,
                     state.revision,
                     host_execution_error_code(&error),
-                )?)
+                )
             }
         };
         let observed = match state.harness.as_ref() {
-            Some(harness) => match seal_backend.as_deref_mut() {
+            Some(harness) => match seal_backend {
                 Some(backend) => match backend.inspect_terminal(harness) {
                     Ok(snapshot) => snapshot,
                     Err(_) => {
-                        return Ok(error_response_with_revision(
-                            request,
-                            now,
-                            state.revision,
-                            11,
-                        )?)
+                        return error_response_with_revision(request, now, state.revision, 11)
                     }
                 },
                 None => match inspect_unit(&harness.unit_name) {
                     Ok(snapshot) => snapshot,
                     Err(_) => {
-                        return Ok(error_response_with_revision(
-                            request,
-                            now,
-                            state.revision,
-                            11,
-                        )?)
+                        return error_response_with_revision(request, now, state.revision, 11)
                     }
                 },
             },
@@ -1198,25 +1141,11 @@ impl SupervisorServer {
         };
         let maximum_files = match usize::try_from(manifest.output_limits.files) {
             Ok(value) => value,
-            Err(_) => {
-                return Ok(error_response_with_revision(
-                    request,
-                    now,
-                    state.revision,
-                    5,
-                )?)
-            }
+            Err(_) => return error_response_with_revision(request, now, state.revision, 5),
         };
         let archive_files = match maximum_files.checked_add(2) {
             Some(value) => value,
-            None => {
-                return Ok(error_response_with_revision(
-                    request,
-                    now,
-                    state.revision,
-                    5,
-                )?)
-            }
+            None => return error_response_with_revision(request, now, state.revision, 5),
         };
         let result = drive_seal_request(
             &host_claim,
@@ -1262,21 +1191,13 @@ impl SupervisorServer {
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    state_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, state_error_code(&error))
             }
         };
         let state = match reconcile_campaign(&lock) {
             Ok(state) => state,
             Err(error) => {
-                return Ok(error_response_from_request(
-                    request,
-                    now,
-                    mutation_error_code(&error),
-                )?)
+                return error_response_from_request(request, now, mutation_error_code(&error))
             }
         };
         let quarantine_recovery = matches!(
@@ -1296,14 +1217,7 @@ impl SupervisorServer {
             verify_manifest_evidence(lock.campaign_directory(), request, &state, now)
         } {
             Ok(manifest) => manifest,
-            Err(_) => {
-                return Ok(error_response_with_revision(
-                    request,
-                    now,
-                    state.revision,
-                    5,
-                )?)
-            }
+            Err(_) => return error_response_with_revision(request, now, state.revision, 5),
         };
         let host_verified = if quarantine_recovery {
             backend.verify_quarantine_host(lock.campaign_directory(), &manifest, &state)
@@ -1311,12 +1225,7 @@ impl SupervisorServer {
             backend.verify_host(lock.campaign_directory(), &manifest, &state)
         };
         if host_verified.is_err() {
-            return Ok(error_response_with_revision(
-                request,
-                now,
-                state.revision,
-                5,
-            )?);
+            return error_response_with_revision(request, now, state.revision, 5);
         }
         let completed = state.campaign_state == CampaignState::AbortedIncomplete
             && state.harness.is_none()
@@ -1331,12 +1240,12 @@ impl SupervisorServer {
         let host_claim = match host_claim {
             Ok(claim) => claim,
             Err(error) => {
-                return Ok(error_response_with_revision(
+                return error_response_with_revision(
                     request,
                     now,
                     state.revision,
                     host_execution_error_code(&error),
-                )?)
+                )
             }
         };
         match drive_abort_request(&host_claim, &lock, request, now, backend) {

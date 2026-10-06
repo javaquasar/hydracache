@@ -214,6 +214,7 @@ pub fn verify_live_observation(
     }
 }
 
+#[cfg(any(target_os = "linux", test))]
 fn verify_quarantine_recovery_live_observation(
     admitted: &HostObservationReceipt,
     observed: &HostObservationReceipt,
@@ -338,7 +339,7 @@ fn parse_installed_provisioning_identity(
         return Err(HostReceiptError::Document);
     }
     let value: serde_json::Value =
-        serde_json::from_slice(&bytes).map_err(|_| HostReceiptError::Document)?;
+        serde_json::from_slice(bytes).map_err(|_| HostReceiptError::Document)?;
     let object = value.as_object().ok_or(HostReceiptError::Document)?;
     const EXPECTED_FIELDS: [&str; 24] = [
         "schema_version",
