@@ -94,6 +94,15 @@ class ProvisionHostContractTests(unittest.TestCase):
             "expected_state_revision: ${{ inputs.abort_expected_state_revision }}",
             self.capability_workflow,
         )
+        self.assertIn("controller-start-seal-rehearsal", self.capability_workflow)
+        self.assertIn("needs: controller-rehearsal-terminal", self.capability_workflow)
+        self.assertIn("operation: seal", self.capability_workflow)
+        self.assertIn('expected_state_revision: "2"', self.capability_workflow)
+        self.assertIn("request_id: ${{ inputs.seal_request_id }}", self.capability_workflow)
+        self.assertIn(
+            "hydracache-performance-074-i74-${INPUT_CAMPAIGN_ID}.service",
+            self.capability_workflow,
+        )
         self.assertIn("inputs.mode == 'campaign-lifecycle-smoke'", self.capability_workflow)
         self.assertIn("product_candidate_started", self.capability_workflow)
         self.assertIn("original_controller_exited", self.capability_workflow)
