@@ -742,6 +742,43 @@ fn w12_workspace_fast_gate_covers_every_work_item_without_budget_drift() {
         Some(false)
     );
     assert_eq!(receipt["promotable"].as_bool(), Some(false));
+
+    let timeout: Value = serde_json::from_slice(
+        &std::fs::read(root().join(
+            "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-cold-timeout-05e7c6e9.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        timeout["source_commit"].as_str(),
+        Some("05e7c6e957ca7c1705f22977164f1576e358f88c")
+    );
+    assert_eq!(timeout["outcome"].as_str(), Some("timeout"));
+    assert_eq!(timeout["execution_phase"].as_str(), Some("compile"));
+    assert_eq!(timeout["duration_ms"].as_u64(), Some(2_400_607));
+    assert_eq!(timeout["timeout_seconds"].as_u64(), Some(2_400));
+    assert_eq!(timeout["budget_seconds"].as_u64(), Some(840));
+    assert_eq!(timeout["tests_started"].as_bool(), Some(false));
+    assert_eq!(timeout["junit_present"].as_bool(), Some(false));
+    assert_eq!(timeout["test_failure_observed"].as_bool(), Some(false));
+    assert_eq!(timeout["command_changed"].as_bool(), Some(false));
+    assert_eq!(timeout["budget_changed"].as_bool(), Some(false));
+    assert_eq!(timeout["timeout_changed"].as_bool(), Some(false));
+    assert_eq!(timeout["promotable"].as_bool(), Some(false));
+    assert_eq!(timeout["release_admission_allowed"].as_bool(), Some(false));
+    assert_eq!(
+        timeout["command_digest"].as_str(),
+        Some("c5dcee3e2ec9668589f44d012e3b0a902fe342bbb44402f14cfda5ded4283c3c")
+    );
+    assert_eq!(
+        timeout["registry_digest"].as_str(),
+        Some("1edc459e489c1c7e1f6f292e9d1fef2eb00f46f9d1b385e9100748ea9e333d60")
+    );
+    assert_eq!(
+        timeout["input_digest"].as_str(),
+        Some("32b2acb938379beafeac9ad5b476b218d77bd977b268bf3d862ef457589ed6c8")
+    );
 }
 
 #[test]
