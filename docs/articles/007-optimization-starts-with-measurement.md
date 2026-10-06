@@ -2635,3 +2635,16 @@ must not. Turning this gate green therefore means proving deterministic failure 
 making a broken run appear continuous. It remains non-product evidence: role overhead, HydraCache
 throughput and latency, the six-hour qualification, the 24-hour confirmation and release admission
 still require their own measurements.
+
+The next overhead step therefore starts with the admission shape, not a convenient number. The
+analyzer requires five counterbalanced control/instrumented pairs for each role, preserves I74 and
+C74 separately, and binds every attempt to the same workload, payload, seed, operation count,
+warm-up, cpuset and host receipt. It checks the frozen supervisor CPU/RSS and control-plane I/O
+ceilings on every instrumented attempt, while elapsed and CPU overhead asymmetry are compared across
+roles. A control cell that emits checkpoint bytes, or any identity/placement/operation drift,
+invalidates the set.
+
+Just as importantly, the staged analyzer cannot promote its own result. Synthetic or non-product
+attempts may prove that the measurement logic is sound, but they always leave product overhead and
+release admission false. The fixed host executor and exact I74/C74 product pairs are the next
+evidence boundary.

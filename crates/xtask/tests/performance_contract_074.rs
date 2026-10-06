@@ -140,6 +140,10 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         ("start_manifest_schema", "start_manifest_schema_sha256"),
         ("host_observation_schema", "host_observation_schema_sha256"),
         ("start_bundle_schema", "start_bundle_schema_sha256"),
+        (
+            "role_overhead_attempt_schema",
+            "role_overhead_attempt_schema_sha256",
+        ),
     ] {
         let path = root().join(implementation[path_field].as_str().unwrap());
         let digest = Sha256::digest(std::fs::read(path).unwrap())
@@ -179,6 +183,16 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         "lease_expiry_host_rehearsal_complete",
         "real_systemd_spawn_backend_host_rehearsal_complete",
         "systemd_confinement_complete",
+        "privileged_start_bundle_host_rehearsal_complete",
+        "protected_start_attach_abort_rehearsal_complete",
+        "signed_socket_start_host_rehearsal_complete",
+        "live_attach_host_rehearsal_complete",
+        "live_abort_host_rehearsal_complete",
+        "supervisor_restart_rehearsal_complete",
+        "live_role_reboot_rehearsal_complete",
+        "live_seal_complete",
+        "live_mutating_operations_complete",
+        "role_overhead_analyzer_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(true), "{field}");
     }
@@ -187,11 +201,79 @@ fn w11_schema_hashes_and_local_completion_flags_are_exact() {
         Some(false)
     );
     assert_eq!(
-        implementation["privileged_start_bundle_host_rehearsal_complete"].as_bool(),
+        implementation["release_admission_allowed"].as_bool(),
+        Some(false)
+    );
+}
+
+#[test]
+fn w11_live_role_reboot_is_fail_closed_and_non_promotable() {
+    let controller = contract("long-run-controller-resilience-contract.toml");
+    let implementation = controller["local_implementation"].as_table().unwrap();
+    let relative = implementation["live_role_reboot_rehearsal"]
+        .as_str()
+        .unwrap();
+    let evidence: Value =
+        serde_json::from_slice(&std::fs::read(root().join(relative)).unwrap()).unwrap();
+
+    assert_eq!(
+        evidence["source_commit"].as_str(),
+        Some("b83fd1b792cd610de9cb4817d178b5c8c9635914")
+    );
+    assert_eq!(
+        evidence["provisioning"]["run_id"].as_u64(),
+        Some(37453559280)
+    );
+    assert_eq!(
+        evidence["start_bundle"]["run_id"].as_u64(),
+        Some(37453956080)
+    );
+    assert_eq!(evidence["start"]["run_id"].as_u64(), Some(37454199519));
+    assert_ne!(
+        evidence["reboot"]["old_boot_id"].as_str(),
+        evidence["reboot"]["new_boot_id"].as_str()
+    );
+    assert_eq!(
+        evidence["reboot"]["measurement_loss_reason"].as_str(),
+        Some("host-identity-drift")
+    );
+    assert_eq!(
+        evidence["final_state"]["campaign_state"].as_str(),
+        Some("FAILED_INCOMPLETE")
+    );
+    for field in [
+        "recorded_failure",
+        "harness_identity_cleared",
+        "daemon_identity_cleared",
+        "checkpoint_identity_cleared",
+        "controller_lease_cleared",
+        "active_campaign_released",
+        "role_unit_absent",
+        "role_process_absent",
+        "supervisor_active",
+        "runner_inactive",
+        "runner_disabled",
+    ] {
+        assert_eq!(
+            evidence["final_state"][field].as_bool(),
+            Some(true),
+            "{field}"
+        );
+    }
+    assert_eq!(
+        evidence["final_state"]["replacement_role_started"].as_bool(),
         Some(false)
     );
     assert_eq!(
-        implementation["release_admission_allowed"].as_bool(),
+        evidence["forbidden_work"]["product_candidate_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        implementation["live_role_reboot_rehearsal_complete"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        implementation["live_service_complete"].as_bool(),
         Some(false)
     );
 }
@@ -307,9 +389,21 @@ fn w11_supervisor_idle_overhead_is_complete_but_role_budget_stays_closed() {
     for field in [
         "idle_overhead_budget_complete",
         "role_overhead_qualification_complete",
+        "non_product_role_overhead_rehearsal_complete",
     ] {
         assert_eq!(implementation[field].as_bool(), Some(false), "{field}");
     }
+    assert_eq!(
+        implementation["role_overhead_analyzer_complete"].as_bool(),
+        Some(true)
+    );
+    let analyzer = std::fs::read_to_string(
+        root().join(implementation["role_overhead_analyzer"].as_str().unwrap()),
+    )
+    .unwrap();
+    assert!(analyzer.contains("non-product-role-overhead-rehearsal"));
+    assert!(analyzer.contains("\"role_overhead_qualification_complete\": False"));
+    assert!(analyzer.contains("\"release_admission_allowed\": False"));
 
     let provisioning: Value = serde_json::from_slice(
         &std::fs::read(
@@ -635,7 +729,10 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
         "start_bundle_artifact_name: ${{ inputs.start_bundle_artifact_name }}",
         "secrets: inherit",
     ] {
-        assert!(entry.contains(required), "controller entrypoint omitted {required}");
+        assert!(
+            entry.contains(required),
+            "controller entrypoint omitted {required}"
+        );
     }
     for required in [
         "needs: controller-rehearsal-start",
@@ -658,7 +755,7 @@ fn long_run_controller_workflow_is_manual_serialized_and_signs_off_host() {
         entry
             .matches("uses: ./.github/workflows/performance-long-run-qualification-074.yml")
             .count(),
-        4
+        12
     );
 }
 
@@ -780,7 +877,10 @@ fn non_product_start_bundle_workflow_is_observation_bound_and_does_not_start() {
         "role_started = \"i74\"",
         "cleanup = \"explicit-signed-abort\"",
     ] {
-        assert!(fixture.contains(required), "fixture contract omitted {required}");
+        assert!(
+            fixture.contains(required),
+            "fixture contract omitted {required}"
+        );
     }
 
     let entry = std::fs::read_to_string(

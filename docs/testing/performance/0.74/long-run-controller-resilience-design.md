@@ -905,6 +905,20 @@ cgroup I/O, all below their frozen idle ceilings with stable identity. This clos
 supervisor idle screen. Checkpoint I/O and paired role overhead/asymmetry remain required, so the
 overall overhead and release flags remain false.
 
+The role-level analyzer is frozen before those measurements. The input schema admits exactly five
+counterbalanced control/instrumented pairs for each of I74 and C74. Pair identity includes exact
+source and binary, workload and payload digests, host receipt, seed, operation and warm-up counts,
+and cpuset. Attempts are independent, every placement/identity/claim/error guard must pass, and a
+control attempt that writes any checkpoint byte is invalid. The analyzer checks supervisor CPU,
+RSS and combined supervisor/checkpoint I/O against the existing frozen ceilings per instrumented
+attempt. It retains elapsed and role-CPU deltas per role, compares their medians against the frozen
+asymmetry budget, and never pools the roles.
+
+The first implementation is analysis-only and always emits non-promotable evidence. Passing it can
+close only the analyzer shape, not `role_overhead_qualification_complete`; a fixed host collector
+and executor plus exact product-source pairs remain mandatory. This prevents synthetic fixtures or
+hand-assembled numbers from becoming release evidence.
+
 ### Reference-host freeze and reboot boundary
 
 The first exact-source W11 freeze rehearsal completed at `e756a41e` without a product role. The

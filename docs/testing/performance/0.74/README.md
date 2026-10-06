@@ -797,6 +797,21 @@ role timing/asymmetry and role-level overhead remain unevaluated. Accordingly
 `idle_overhead_budget_complete`, `role_overhead_qualification_complete` and release admission stay
 false.
 
+The local role-overhead analyzer is now staged before collecting any role-level numbers. Its strict
+attempt-set schema requires 20 independent attempts: five counterbalanced control/instrumented
+pairs for I74 and five for C74. Every attempt binds source, binary, workload, payload, host receipt,
+seed, operation count, warm-up and cpuset; control attempts must write zero checkpoint bytes. The
+analyzer rejects order, identity, guard or operation-count drift, checks the frozen supervisor CPU,
+RSS and combined supervisor/checkpoint I/O ceilings on every instrumented attempt, and evaluates
+elapsed-time and role-CPU overhead asymmetry separately so one role cannot be pooled away. See
+`schemas/role-overhead-attempt-set.schema.json` and
+`scripts/perf/performance_long_run_role_overhead_074.py`.
+
+This analyzer is deliberately non-promotable. Even a passing synthetic attempt set leaves
+`role_overhead_qualification_complete=false` and `release_admission_allowed=false`. A fixed
+same-host collector/executor, a non-product live rehearsal, and then exact product I74/C74 pairs are
+still required; no role workload was run while staging the analyzer.
+
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and
 fixture contexts were absent; and the profile-driven quiet-service policy was applied into a fresh

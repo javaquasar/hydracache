@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.74/role-overhead-attempt-set.schema.json",
+  "title": "HydraCache 0.74 non-product role-overhead attempt set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release",
+    "evidence_class",
+    "promotable",
+    "seed",
+    "order",
+    "attempts"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.74" },
+    "evidence_class": { "const": "non-product-role-overhead-rehearsal" },
+    "promotable": { "const": false },
+    "seed": { "type": "integer", "minimum": 0 },
+    "order": { "const": "abba-counterbalanced-v1" },
+    "attempts": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/attempt" }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "role",
+        "variant",
+        "pair_index",
+        "position",
+        "identity",
+        "metrics",
+        "guards"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "role": { "enum": ["i74", "c74"] },
+        "variant": { "enum": ["control", "instrumented"] },
+        "pair_index": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "position": { "type": "integer", "minimum": 1, "maximum": 2 },
+        "identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_commit",
+            "binary_sha256",
+            "workload_sha256",
+            "payload_sha256",
+            "host_receipt_sha256",
+            "seed",
+            "operations",
+            "warmup_operations",
+            "cpuset"
+          ],
+          "properties": {
+            "source_commit": { "$ref": "#/$defs/sha1" },
+            "binary_sha256": { "$ref": "#/$defs/sha256" },
+            "workload_sha256": { "$ref": "#/$defs/sha256" },
+            "payload_sha256": { "$ref": "#/$defs/sha256" },
+            "host_receipt_sha256": { "$ref": "#/$defs/sha256" },
+            "seed": { "type": "integer", "minimum": 0 },
+            "operations": { "type": "integer", "minimum": 1 },
+            "warmup_operations": { "type": "integer", "minimum": 1 },
+            "cpuset": {
+              "type": "string",
+              "pattern": "^[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*$"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "elapsed_ns",
+            "role_cpu_ns",
+            "role_rss_peak_bytes",
+            "role_io_bytes",
+            "supervisor_cpu_ns",
+            "supervisor_rss_peak_bytes",
+            "supervisor_io_bytes",
+            "checkpoint_write_bytes",
+            "completed_operations"
+          ],
+          "properties": {
+            "elapsed_ns": { "type": "integer", "minimum": 1 },
+            "role_cpu_ns": { "type": "integer", "minimum": 1 },
+            "role_rss_peak_bytes": { "type": "integer", "minimum": 1 },
+            "role_io_bytes": { "type": "integer", "minimum": 0 },
+            "supervisor_cpu_ns": { "type": "integer", "minimum": 0 },
+            "supervisor_rss_peak_bytes": { "type": "integer", "minimum": 1 },
+            "supervisor_io_bytes": { "type": "integer", "minimum": 0 },
+            "checkpoint_write_bytes": { "type": "integer", "minimum": 0 },
+            "completed_operations": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "guards": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "affinity_applied",
+            "priority_applied",
+            "host_identity_stable",
+            "role_identity_stable",
+            "supervisor_identity_stable",
+            "campaign_claim_valid",
+            "unexpected_errors_absent"
+          ],
+          "properties": {
+            "affinity_applied": { "const": true },
+            "priority_applied": { "const": true },
+            "host_identity_stable": { "const": true },
+            "role_identity_stable": { "const": true },
+            "supervisor_identity_stable": { "const": true },
+            "campaign_claim_valid": { "const": true },
+            "unexpected_errors_absent": { "const": true }
+          }
+        }
+      }
+    }
+  }
+}
