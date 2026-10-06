@@ -205,6 +205,14 @@ ordinary supervisor tests.
 The next start-lifecycle slice removes the remaining placeholder-state shortcut without invoking a
 real process. PREPARED and `*_STARTING` snapshots contain no fabricated PID or checkpoint. A
 host-wide flock plus persistent active-campaign marker admits recovery only for the same campaign.
+
+The October 6 non-product recovery rehearsal also closed the terminal identity-mismatch cleanup
+gap. Campaign `83b19a98…` recovered from revision 7 `CORRUPT_QUARANTINED` through two signed,
+journal-bound abort authorizations and finished at revision 10 `ABORTED_INCOMPLETE`. The failed
+empty C74 transient unit was reset and unloaded, the active marker was released by the state
+machine, the supervisor recorded zero restarts, and the Actions runner was returned offline. See
+`local-runs/w11-quarantine-recovery-83b19a98.json`; this is non-promotable resilience evidence,
+not a product or throughput qualification result.
 Role-specific canonical `spawn-intent` and `spawn-result` documents have create-new SHA-256
 sidecars and deterministic unit names. The intent is durable before the backend call; after that
 boundary every retry observes or adopts the exact unit and can never call start again. An absent

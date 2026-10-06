@@ -3,6 +3,16 @@
 Status: implementation specification; no 0.74 candidate evidence is admitted by this document.
 
 This document turns the W11 controller-resilience requirements into an implementation contract.
+
+The terminal cleanup contract now includes one deliberately narrow quarantine exit. A freshly
+signed abort may recover `CORRUPT_QUARANTINED` only when the canonical spawn evidence says
+`MISMATCH/IDENTITY`, both process identities are absent, `duplicate_executor` is false, and the
+exact deterministic unit is failed or inactive with PID zero and an empty cgroup. The backend
+publishes immutable request/cause/unit diagnostics, resets the failed transient unit, records
+`ABORTED_INCOMPLETE`, and only then releases `active-campaign`. Ambiguous, live, foreign, or
+multiple-executor observations remain fail-closed. If the first signed packet expires after its
+abort intent becomes durable, a new signed abort can re-authorize that exact current revision;
+the journal records a new `AbortRequested` before retrying the side effect.
 Its purpose is narrow: loss of a GitHub Actions controller, network session, or runner service must
 not discard a valid six-hour or 24-hour role that is still executing on the admitted host. It does
 not make a dead process resumable and does not permit statistical continuation across process,

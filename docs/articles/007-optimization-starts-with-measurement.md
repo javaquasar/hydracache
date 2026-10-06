@@ -2443,6 +2443,18 @@ event journal records PREPARED, STARTING and the spawn outcome before advancing 
 crash after the journal sync but before `state.json` replacement has one deterministic repair:
 finish that exact compare-and-swap from the authoritative hash-chain.
 
+The live C74 rehearsal exposed the important final edge of that rule: quarantine also needs a
+reviewed terminal cleanup path, otherwise a correctly preserved failure can reserve the host
+forever. The implemented path is intentionally asymmetric. It can release only an exact
+`IDENTITY` spawn mismatch with no retained process identities, no duplicate executor, and a
+failed/inactive empty deterministic unit. A signed abort first becomes durable, diagnostics bind
+the request, spawn evidence and unit snapshot, systemd resets the failed transient unit, and only
+the completed `ABORTED_INCOMPLETE` transition releases the host claim. The rehearsal also showed
+why retry authorization must be separate from the durable intent: the first backend attempt can
+outlive the packet's authorization window. A fresh signed request now records a second
+`AbortRequested` at the exact current revision before continuing; it cannot change the original
+campaign, mismatch cause, or unit identity.
+
 Fake-backend tests are valuable here because they can stop at every unsafe boundary: after intent
 but before launch, after launch but before result, after a lost backend response, and after an event
 append but before snapshot replacement. They proved the local exactly-once decision logic without
