@@ -1574,3 +1574,25 @@ fn w12_internal_workspace_tools_inherit_reviewed_license() {
     }
     assert!(checked >= 2, "both 0.74 workspace tools must be checked");
 }
+
+#[test]
+fn w12_live_registries_preserve_frozen_baseline_inputs() {
+    let identities: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("docs/testing/memory/0.71/baseline-identities.toml"))
+            .unwrap(),
+    )
+    .unwrap();
+    for input in identities["scenario"]["input"].as_array().unwrap() {
+        let path = input["path"].as_str().unwrap();
+        let bytes = std::fs::read(root().join(path)).unwrap();
+        let text = String::from_utf8(bytes).unwrap().replace("\r\n", "\n");
+        assert_eq!(
+            Sha256::digest(text.as_bytes())
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
+            input["sha256"].as_str().unwrap(),
+            "historical prerequisite must not be rewritten to register live CI: {path}"
+        );
+    }
+}
