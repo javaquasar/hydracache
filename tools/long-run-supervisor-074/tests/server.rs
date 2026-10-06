@@ -15,8 +15,9 @@ use hydracache_long_run_supervisor_074::event::{
 };
 use hydracache_long_run_supervisor_074::host_execution::ACTIVE_CAMPAIGN_NAME;
 use hydracache_long_run_supervisor_074::host_receipt::{
-    encode_canonical as encode_host_receipt, BinaryIdentity, HostObservationReceipt, MountIdentity,
-    HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME, SUPERVISOR_BINARY_PATH,
+    encode_canonical as encode_host_receipt, mount_identity_digest, BinaryIdentity,
+    HostObservationReceipt, MountIdentity, HOST_RECEIPT_HEAD_NAME, HOST_RECEIPT_NAME,
+    SUPERVISOR_BINARY_PATH,
 };
 use hydracache_long_run_supervisor_074::lease_expiry::{
     LeaseExpiryBackend, LeaseExpiryCause, LeaseExpiryOutcome,
@@ -591,9 +592,7 @@ fn sample_host_receipt() -> HostObservationReceipt {
         source: "/dev/nvme0n1p2".to_owned(),
         super_options: vec!["errors=remount-ro".to_owned(), "rw".to_owned()],
     };
-    let mount_identity = hex(&Sha256::digest(
-        serde_json::to_vec(&serde_json::to_value(&mount).unwrap()).unwrap(),
-    ));
+    let mount_identity = mount_identity_digest(&mount).unwrap();
     HostObservationReceipt {
         schema_version: 1,
         machine_id: "machine-a".to_owned(),

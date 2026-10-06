@@ -65,6 +65,17 @@ pub struct MountIdentity {
     pub super_options: Vec<String>,
 }
 
+#[derive(Serialize)]
+struct StableMountIdentity<'a> {
+    device_major_minor: &'a str,
+    root: &'a str,
+    mount_point: &'a str,
+    mount_options: &'a [String],
+    filesystem_type: &'a str,
+    source: &'a str,
+    super_options: &'a [String],
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct BinaryIdentity {
@@ -194,11 +205,33 @@ pub fn verify_live_observation(
     observed: &HostObservationReceipt,
 ) -> Result<(), HostReceiptError> {
     validate_receipt(observed)?;
-    if admitted == observed {
+    let mut normalized = observed.clone();
+    normalized.campaign_mount.mount_id = admitted.campaign_mount.mount_id;
+    if admitted == &normalized {
         Ok(())
     } else {
         Err(HostReceiptError::Drift)
     }
+}
+
+/// Hashes the stable backing-mount properties while retaining `mount_id` only
+/// as diagnostic evidence. Linux mount IDs are local to a mount namespace and
+/// may change when systemd reconstructs an otherwise identical private
+/// namespace after a supervisor restart.
+pub fn mount_identity_digest(mount: &MountIdentity) -> Result<String, HostReceiptError> {
+    validate_mount(mount)?;
+    let stable = StableMountIdentity {
+        device_major_minor: &mount.device_major_minor,
+        root: &mount.root,
+        mount_point: &mount.mount_point,
+        mount_options: &mount.mount_options,
+        filesystem_type: &mount.filesystem_type,
+        source: &mount.source,
+        super_options: &mount.super_options,
+    };
+    Ok(sha256_hex(
+        &canonical_json(&stable).map_err(|_| HostReceiptError::Invariant)?,
+    ))
 }
 
 #[cfg(target_os = "linux")]
@@ -433,7 +466,7 @@ fn collect_host_observation_with_freeze(
     let canonical_campaign = campaign_directory.canonicalize()?;
     let campaign_mount = parse_mountinfo(&mountinfo, &canonical_campaign)?;
     let mount_identity =
-        sha256_hex(&canonical_json(&campaign_mount).map_err(|_| HostReceiptError::Observation)?);
+        mount_identity_digest(&campaign_mount).map_err(|_| HostReceiptError::Observation)?;
 
     let online_cpuset = canonical_cpuset(&read_trimmed(
         Path::new("/sys/devices/system/cpu/online"),
@@ -565,9 +598,7 @@ fn validate_receipt(receipt: &HostObservationReceipt) -> Result<(), HostReceiptE
     {
         return Err(HostReceiptError::Invariant);
     }
-    let expected_mount = sha256_hex(
-        &canonical_json(&receipt.campaign_mount).map_err(|_| HostReceiptError::Invariant)?,
-    );
+    let expected_mount = mount_identity_digest(&receipt.campaign_mount)?;
     if receipt.mount_identity != expected_mount {
         return Err(HostReceiptError::Invariant);
     }
@@ -979,7 +1010,7 @@ mod tests {
             boot_id: "123e4567-e89b-42d3-a456-426614174000".to_owned(),
             kernel_release: "6.8.0-90-generic".to_owned(),
             kernel_command_line_sha256: "b".repeat(64),
-            mount_identity: sha256_hex(&canonical_json(&campaign_mount).unwrap()),
+            mount_identity: mount_identity_digest(&campaign_mount).unwrap(),
             campaign_mount,
             online_cpuset: "0-7".to_owned(),
             isolated_cpuset: "1-4".to_owned(),
@@ -1021,6 +1052,39 @@ mod tests {
             verify_live_observation(&receipt, &drifted),
             Err(HostReceiptError::Drift)
         );
+    }
+
+    #[test]
+    fn live_observation_ignores_only_namespace_local_mount_id() {
+        let admitted = receipt();
+        let mut new_namespace = admitted.clone();
+        new_namespace.campaign_mount.mount_id += 1;
+
+        assert_eq!(
+            mount_identity_digest(&admitted.campaign_mount),
+            mount_identity_digest(&new_namespace.campaign_mount)
+        );
+        assert_eq!(verify_live_observation(&admitted, &new_namespace), Ok(()));
+
+        let mutations: [fn(&mut MountIdentity); 7] = [
+            |mount| mount.device_major_minor = "8:3".to_owned(),
+            |mount| mount.root = "/different-root".to_owned(),
+            |mount| mount.mount_point = "/different-mount".to_owned(),
+            |mount| mount.mount_options.push("sync".to_owned()),
+            |mount| mount.filesystem_type = "xfs".to_owned(),
+            |mount| mount.source = "/dev/nvme1n1p2".to_owned(),
+            |mount| mount.super_options.insert(0, "discard".to_owned()),
+        ];
+        for mutate in mutations {
+            let mut different_backing = new_namespace.clone();
+            mutate(&mut different_backing.campaign_mount);
+            different_backing.mount_identity =
+                mount_identity_digest(&different_backing.campaign_mount).unwrap();
+            assert_eq!(
+                verify_live_observation(&admitted, &different_backing),
+                Err(HostReceiptError::Drift)
+            );
+        }
     }
 
     #[test]
