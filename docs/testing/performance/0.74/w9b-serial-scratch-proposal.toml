@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.74"
+proposal_id = "p74-w9b-serial-get-scratch-v1"
+state = "d2-authorized-for-local-isolated-implementation-only"
+baseline_source_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
+owner_evidence = "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json"
+accepted_product_change = false
+promotable = false
+candidate_source_sha = "UNRESOLVED"
+feature = "experimental-resp-serial-scratch-074"
+default_enabled = false
+one_hypothesis = "avoid fresh encoder output allocation for consecutive equal-sized large GET responses within one already received read; preserve separate write_all and flush for every response"
+runtime_files = ["crates/hydracache-redis-compat/src/lib.rs", "crates/hydracache-redis-compat/src/serial_get_scratch_074.rs", "crates/hydracache-redis-compat/Cargo.toml"]
+semantic_tests = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+existing_terminal_dispositions_reopened = false
+expensive_workloads_allowed = false
+qualification_allowed = false
+
+[activation]
+command = "GET"
+response = "actual successful bulk string only"
+minimum_payload_bytes = 4096
+maximum_payload_bytes = 1048576
+minimum_consecutive_equal_sized_gets = 2
+first_response_uses_canonical_writer = true
+pipeline_one_uses_canonical_writer = true
+decode_lookahead_or_early_execution = false
+read_buffer_compaction_changed = false
+public_codec_functions_changed = false
+maximum_serial_scratch_capacity_bytes = 1048588
+
+[lifetime]
+owner = "lexically scoped to one received read iteration; never stored on server/session"
+same_payload_size_required = true
+release_before_non_get_execution = true
+release_on_response_shape_or_size_change = true
+release_before_protocol_error_reply = true
+release_before_next_read = true
+release_on_eof_error_cancel_quit = true
+idle_retained_bytes = 0
+cross_connection_pool = false
+cross_principal_reuse = false
+new_lock_or_atomic_on_native_path = false
+previous_complete_write_and_flush_before_next_command = true
+
+[local_verification]
+baseline_semantics_before_implementation = true
+canonical_and_feature_enabled_test_builds = true
+resp2_and_resp3 = true
+fragmented_frames_partial_writes_pending_flush = true
+disconnect_write_and_flush_failure = true
+slow_reader_native_progress_and_expiration_quota_guards = true
+mixed_sizes_and_large_to_small_release = true
+property_exact_codec_bytes = true
+
+[d3_boundary]
+authorization = "not started: pre-register complete paired matrix, baseline binary and per-surface controls before any numerical candidate comparison"
+minimum_independent_counterbalanced_pairs = 5
+minimum_affected_end_to_end_gross_allocation_reduction = 0.20
+unaffected_minimum_goodput_ratio = 0.98
+unaffected_maximum_cpu_or_p99_ratio = 1.03
+maximum_native_gross_allocation_ratio = 1.05
+required_separate_native_controls = ["embedded", "ClientSurfaceState", "HC1", "HC2"]
+full_retention_rss_and_idle_proof_required_before_acceptance = true
+source_feature_binary_identity_required = true
+on_failure = "retain negative evidence and remove only this isolated feature candidate; do not change floors"

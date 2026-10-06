@@ -941,6 +941,88 @@ fn w9b_owner_receipts_preserve_all_registered_cells_without_product_claims() {
 }
 
 #[test]
+fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates() {
+    let proposal = contract("w9b-serial-scratch-proposal.toml");
+    assert_eq!(
+        proposal["feature"].as_str(),
+        Some("experimental-resp-serial-scratch-074")
+    );
+    for flag in [
+        "default_enabled",
+        "accepted_product_change",
+        "promotable",
+        "qualification_allowed",
+        "expensive_workloads_allowed",
+        "existing_terminal_dispositions_reopened",
+    ] {
+        assert_eq!(proposal[flag].as_bool(), Some(false), "{flag}");
+    }
+    let activation = &proposal["activation"];
+    assert_eq!(activation["minimum_payload_bytes"].as_integer(), Some(4096));
+    assert_eq!(
+        activation["maximum_payload_bytes"].as_integer(),
+        Some(1048576)
+    );
+    assert_eq!(
+        activation["maximum_serial_scratch_capacity_bytes"].as_integer(),
+        Some(1048588)
+    );
+    for flag in [
+        "first_response_uses_canonical_writer",
+        "pipeline_one_uses_canonical_writer",
+    ] {
+        assert_eq!(activation[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "decode_lookahead_or_early_execution",
+        "read_buffer_compaction_changed",
+        "public_codec_functions_changed",
+    ] {
+        assert_eq!(activation[flag].as_bool(), Some(false), "{flag}");
+    }
+    let lifetime = &proposal["lifetime"];
+    assert_eq!(lifetime["idle_retained_bytes"].as_integer(), Some(0));
+    for flag in [
+        "release_before_non_get_execution",
+        "release_on_response_shape_or_size_change",
+        "release_before_protocol_error_reply",
+        "release_before_next_read",
+        "release_on_eof_error_cancel_quit",
+        "previous_complete_write_and_flush_before_next_command",
+    ] {
+        assert_eq!(lifetime[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "cross_connection_pool",
+        "cross_principal_reuse",
+        "new_lock_or_atomic_on_native_path",
+    ] {
+        assert_eq!(lifetime[flag].as_bool(), Some(false), "{flag}");
+    }
+    let d3 = &proposal["d3_boundary"];
+    assert_eq!(
+        d3["minimum_independent_counterbalanced_pairs"].as_integer(),
+        Some(5)
+    );
+    assert_eq!(
+        d3["minimum_affected_end_to_end_gross_allocation_reduction"].as_float(),
+        Some(0.20)
+    );
+    assert_eq!(
+        d3["unaffected_minimum_goodput_ratio"].as_float(),
+        Some(0.98)
+    );
+    assert_eq!(
+        d3["unaffected_maximum_cpu_or_p99_ratio"].as_float(),
+        Some(1.03)
+    );
+    assert_eq!(
+        d3["maximum_native_gross_allocation_ratio"].as_float(),
+        Some(1.05)
+    );
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),

@@ -23,6 +23,143 @@ const TWO_SETS_AND_QUIT: &[u8] = b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
                                   *1\r\n$4\r\nQUIT\r\n";
 
 #[tokio::test]
+async fn consecutive_large_get_pending_reply_preserves_native_progress_and_mutation_frontier() {
+    for size in [4096, 1048576] {
+        let value = vec![b'x'; size];
+        let mut reply = format!("${size}\r\n").into_bytes();
+        reply.extend_from_slice(&value);
+        reply.extend_from_slice(b"\r\n");
+        for cut in [0, 1, reply.len() / 2, reply.len() - 1, reply.len()] {
+            let server = listener();
+            native_put(&server, b"a", &value);
+            let gate = Arc::new(WriteGate::closed());
+            let output = Arc::new(Mutex::new(Vec::new()));
+            let io = AdversarialIo::new(
+                b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n\
+                  *1\r\n$4\r\nQUIT\r\n",
+                Arc::clone(&output),
+            )
+            .gate_after_bytes(reply.len() + cut, Arc::clone(&gate))
+            .allow_flushes_before_gate(1);
+            let serving = server.serve_connection(io);
+            tokio::pin!(serving);
+            assert!(futures_util::poll!(&mut serving).is_pending());
+            assert_eq!(output.lock().unwrap().len(), reply.len() + cut);
+            assert_eq!(server.metrics().commands, 1);
+            assert_eq!(server.state().state_mutations(), 1);
+            native_put(&server, b"a", b"N");
+            native_put(&server, b"b", b"N");
+            assert_eq!(native_get(&server, b"b"), Some(b"N".to_vec()));
+            gate.open();
+            serving.await.unwrap();
+            let mut expected = reply.clone();
+            expected.extend_from_slice(&reply);
+            expected.extend_from_slice(b"+OK\r\n+OK\r\n");
+            assert_eq!(*output.lock().unwrap(), expected);
+            assert_eq!(native_get(&server, b"a"), Some(b"N".to_vec()));
+            assert_eq!(native_get(&server, b"b"), Some(b"2".to_vec()));
+            assert_eq!(server.state().state_mutations(), 4);
+        }
+    }
+}
+
+#[tokio::test]
+async fn consecutive_large_get_write_or_flush_failure_never_executes_following_set() {
+    let value = vec![b'x'; 4096];
+    let reply_len = 4105;
+    for fail_flush in [false, true] {
+        let server = listener();
+        native_put(&server, b"a", &value);
+        let output = Arc::new(Mutex::new(Vec::new()));
+        let io = AdversarialIo::new(
+            b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n",
+            Arc::clone(&output),
+        );
+        let io = if fail_flush {
+            io.fail_flush_after(reply_len * 2)
+        } else {
+            io.disconnect_after(reply_len + 101)
+        };
+        assert!(server.serve_connection(io).await.is_err());
+        assert_eq!(server.metrics().commands, 1);
+        assert_eq!(server.state().state_mutations(), 1);
+        assert_eq!(native_get(&server, b"b"), None);
+        assert_eq!(
+            output.lock().unwrap().len(),
+            if fail_flush {
+                reply_len * 2
+            } else {
+                reply_len + 101
+            }
+        );
+    }
+}
+
+#[tokio::test]
+async fn consecutive_large_get_fragmentation_mixed_sizes_and_dialects_keep_exact_bytes() {
+    let server = listener();
+    native_put(&server, b"a", &vec![0xff; 4096]);
+    native_put(&server, b"b", b"small");
+    let input = b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\nb\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *2\r\n$3\r\nGET\r\n$7\r\nmissing\r\n\
+                  *1\r\n$4\r\nQUIT\r\n";
+    let expected = exchange(&server, input).await;
+    let hello_start = 3 * 4105 + b"$5\r\nsmall\r\n".len();
+    let (expected_hello, hello_bytes) = redis_protocol::resp3::decode::complete::decode_bytes(
+        &bytes::Bytes::copy_from_slice(&expected[hello_start..]),
+    )
+    .unwrap()
+    .unwrap();
+    for chunk in [1, 17, 53, input.len()] {
+        let output = Arc::new(Mutex::new(Vec::new()));
+        server
+            .serve_connection(
+                AdversarialIo::new(input, Arc::clone(&output))
+                    .read_chunk(chunk)
+                    .write_chunk(97)
+                    .pending_writes(3)
+                    .pending_flushes(3),
+            )
+            .await
+            .unwrap();
+        let actual = output.lock().unwrap();
+        // Canonical HELLO uses a RESP3 hash map with unspecified entry wire
+        // order. Its map is compared structurally; GET/miss/QUIT bytes are exact.
+        assert_eq!(actual.len(), expected.len());
+        assert!(
+            actual[..hello_start] == expected[..hello_start],
+            "GET prefix differs at read chunk {chunk}"
+        );
+        let (actual_hello, actual_hello_bytes) =
+            redis_protocol::resp3::decode::complete::decode_bytes(&bytes::Bytes::copy_from_slice(
+                &actual[hello_start..],
+            ))
+            .unwrap()
+            .unwrap();
+        assert_eq!(actual_hello, expected_hello);
+        assert_eq!(actual_hello_bytes, hello_bytes);
+        assert!(
+            actual[hello_start + hello_bytes..] == expected[hello_start + hello_bytes..],
+            "RESP3 suffix differs at read chunk {chunk}"
+        );
+    }
+    assert!(expected
+        .windows(b"$5\r\nsmall\r\n".len())
+        .any(|bytes| bytes == b"$5\r\nsmall\r\n"));
+    assert!(expected.ends_with(b"_\r\n+OK\r\n"));
+}
+
+#[tokio::test]
 async fn queued_set_nx_revalidates_after_intervening_native_invalidate() {
     for accepted_bytes in 0..=5 {
         let server = listener();
@@ -484,7 +621,9 @@ struct AdversarialIo {
     disconnect_after: Option<usize>,
     gate: Option<Arc<WriteGate>>,
     gate_after_write_bytes: usize,
-    fail_flush: bool,
+    gate_after_flushes: usize,
+    completed_flushes: usize,
+    fail_flush_after: Option<usize>,
 }
 
 impl AdversarialIo {
@@ -500,7 +639,9 @@ impl AdversarialIo {
             disconnect_after: None,
             gate: None,
             gate_after_write_bytes: 0,
-            fail_flush: false,
+            gate_after_flushes: 0,
+            completed_flushes: 0,
+            fail_flush_after: None,
         }
     }
 
@@ -541,7 +682,17 @@ impl AdversarialIo {
     }
 
     fn fail_flush(mut self) -> Self {
-        self.fail_flush = true;
+        self.fail_flush_after = Some(0);
+        self
+    }
+
+    fn allow_flushes_before_gate(mut self, flushes: usize) -> Self {
+        self.gate_after_flushes = flushes;
+        self
+    }
+
+    fn fail_flush_after(mut self, bytes: usize) -> Self {
+        self.fail_flush_after = Some(bytes);
         self
     }
 }
@@ -571,7 +722,9 @@ impl AsyncWrite for AdversarialIo {
         bytes: &[u8],
     ) -> Poll<io::Result<usize>> {
         let written = self.output.lock().unwrap().len();
-        let remaining_before_gate = if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
+        let remaining_before_gate = if self.completed_flushes >= self.gate_after_flushes
+            && self.gate.as_ref().is_some_and(|gate| !gate.poll(cx))
+        {
             if written >= self.gate_after_write_bytes {
                 return Poll::Pending;
             }
@@ -612,10 +765,14 @@ impl AsyncWrite for AdversarialIo {
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
+        let written = self.output.lock().unwrap().len();
+        if self.completed_flushes >= self.gate_after_flushes
+            && written >= self.gate_after_write_bytes
+            && self.gate.as_ref().is_some_and(|gate| !gate.poll(cx))
+        {
             return Poll::Pending;
         }
-        if self.fail_flush {
+        if self.fail_flush_after.is_some_and(|limit| written >= limit) {
             return Poll::Ready(Err(io::Error::new(
                 io::ErrorKind::BrokenPipe,
                 "scripted flush failure",
@@ -626,6 +783,7 @@ impl AsyncWrite for AdversarialIo {
             cx.waker().wake_by_ref();
             return Poll::Pending;
         }
+        self.completed_flushes += 1;
         Poll::Ready(Ok(()))
     }
 
