@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "tier": "local-structural-regression",
+  "source_commit": "83042ecc7f75f4aa14e6021a493b4ab88e40f977",
+  "test_commit": "d4e9f04b",
+  "dirty_worktree_at_targeted_tests_and_canaries": false,
+  "baseline": "New frozen-input guard failed before repair; the original hosted workspace and MSRV jobs independently rejected frozen topology input drift.",
+  "repair": {
+    "frozen_baseline_identities_changed": false,
+    "all_twelve_frozen_input_digests_match": true,
+    "frozen_topology_sha256_lf": "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0",
+    "frozen_ownership_sha256_lf": "90bc6785a626c6e810a3a39c7ccdbcd0e9c6f0ee7d9ff5c6c3e3f651031c8b54",
+    "live_topology": "docs/testing/ci-topology.json",
+    "additional_reviews": "docs/testing/memory/ownership-registry-additions.toml",
+    "replacement_duplicate_schema_release_scope_drift_rejected": true,
+    "production_scanner_and_review_validation_unchanged": true
+  },
+  "windows_clean_source_checks": {
+    "memory_baseline_071": {"passed": 8, "failed": 0},
+    "memory_ownership_071": {"passed": 5, "failed": 0},
+    "performance_contract_074": {"passed": 35, "failed": 0},
+    "release_governance_071_tests": {"passed": 7, "failed": 0},
+    "ownership_additions_unit_tests": {"passed": 2, "failed": 0},
+    "ci_topology_check": "passed using live catalog",
+    "memory_owner_inventory_check": "passed"
+  },
+  "development_checks_before_commit": {
+    "release_governance_071": "passed: 20 checks",
+    "release_governance_074": "passed: 17 checks",
+    "strict_xtask_library_clippy": "passed",
+    "xtask_format_check": "passed",
+    "linux_wsl_ownership_additions_unit_tests": {"passed": 2, "failed": 0, "toolchain": "stable 1.98.1; diagnostic only"}
+  },
+  "clean_source_canaries": [
+    {"work_item": "W11", "outcome": "expected_red", "duration_ms": 1681, "output_sha256": "d3e07fcb0bdd6422bfd006050004b1297e0bc4bd059ca886b809de48ca75474b"},
+    {"work_item": "W12", "outcome": "expected_red", "duration_ms": 39431, "output_sha256": "9bf0be11dc78b98ba8b495b612e244990940889c655ebdfca1f3574cb7d30a44"}
+  ],
+  "workspace_gate_repeated_locally": false,
+  "test_thresholds_changed": false,
+  "product_behavior_changed": false,
+  "product_or_expensive_qualification_workload_started": false,
+  "promotable": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "Clean-source targeted tests and expected-red proofs cover registry separation, not full workspace admission or allocation/throughput improvement. The Linux merge fixtures began before the implementation commit, so they remain explicitly development diagnostics. No prior-source CI failure is upgraded by these local results."
+}

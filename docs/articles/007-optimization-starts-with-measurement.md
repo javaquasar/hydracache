@@ -2864,3 +2864,42 @@ repair. Both tool manifests now inherit the workspace's existing `Apache-2.0` de
 license checker and all 34 performance-contract tests passed with the allowlist, confidence threshold,
 exceptions and lockfile unchanged. Restoring missing metadata is materially different from relaxing
 a supply-chain gate, and neither substitutes for the still-pending exact-source CI proof.
+
+### Frozen measurement inputs are not live registries
+
+The first ordinary CI run eventually completed the entire workspace command. Including compilation,
+it took 607,210 ms on that hosted runner, with 3,754 of 3,756 executed tests passing and two failing.
+JUnit was captured and there was no timeout. That is useful operational evidence: one hosted run
+fits the unchanged 840-second cadence that the local Windows attempts could not meet. It says
+nothing about HydraCache goodput, allocations or native API performance, and two failed tests still
+make the receipt fail. The final negative result is retained separately from the earlier in-progress
+observation, with source, artifact and JUnit digests.
+
+One failing test was the missing guard review already diagnosed. The other caught a mistake in our
+own CI inventory work: the topology JSON under `memory/0.71/` was included in a frozen baseline's
+scenario inputs. Extending it silently changed a measurement prerequisite. Adding the guard review
+to the neighboring frozen owner registry would create the same problem. Recomputing the baseline
+hashes would hide the defect, not repair it.
+
+The repair therefore restores both historical snapshots exactly and separates ongoing bookkeeping
+from historical evidence. The topology checker reads a current repository-wide catalog outside the
+frozen directory. Ownership validation combines the frozen registry with a mandatory additions file,
+then runs the same production scanner and review validation. Additions must preserve the registry's
+schema, release and discovery scope. They cannot replace an existing symbol review or duplicate
+another addition. Stale reviews, expired exemptions, unresolved test references and newly unreviewed
+owners remain failures. The guard's borrowed map disposition is unchanged; it merely lives in the
+appropriate extension file.
+
+We first added a digest regression and observed it fail, then implemented the separation. The new
+guard verifies all twelve frozen input digests. On clean repair source, eight baseline tests, five
+ownership tests, 35 performance-contract tests, seven governance tests and two merge fixtures passed.
+Linux also passed the merge fixtures as a development diagnostic. W11 and W12 mutations both
+produced their required expected-red failures. Formatting, strict library lint and live inventory
+checks passed without weakening thresholds or changing product behavior.
+
+The lesson is practical: a file named "registry" can still be an immutable measurement input. Its
+role follows its consumers, not its filename. Live review data needs an explicit extension boundary
+that preserves historical identity and fails closed. These results repair verification machinery;
+they neither validate a product candidate nor turn the original failed CI into a green run. The next
+step remains a new ordinary CI execution on one exact repaired source, with costly qualification
+disabled.

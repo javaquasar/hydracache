@@ -1141,7 +1141,7 @@ and uploads that report with the existing receipts and JUnit artifact. This cond
 does not select any nightly, performance, rented-host or release-qualification job.
 
 The ordinary CI audit also registered 12 existing Linux-only supervisor test targets and added the
-eight existing 0.74 workflows to the repository-wide 0.71 topology catalog. Existing 0.73 entries,
+eight existing 0.74 workflows to the repository-wide topology catalog. Existing 0.73 entries,
 the sole publication producer and existing CI artifact budgets remain unchanged. Reviewed expiring
 exceptions describe the existing signed-request and content-addressed artifact identities; those
 names and their consumers were not changed. Three previously unbounded sensitive steps now have
@@ -1182,3 +1182,28 @@ reproduced the omission. The tools now inherit the existing workspace `Apache-2.
 license allowlist, exception, confidence threshold or lockfile changed. License checking and all
 34 performance-contract tests pass locally; the original CI rejection remains retained, not rerun
 against another source under its old identity.
+
+The original run has now completed with failure. Its unchanged full workspace gate finished in
+607,210 ms, including compilation, without timeout or missing JUnit: 3,756 tests ran, 3,754 passed,
+two failed and 85 were skipped. This shows one hosted execution fits the existing 840-second
+cadence; it is neither green evidence nor a product performance measurement. The two failures were
+the missing guard review on the original source and a frozen 0.71 scenario digest mismatch. MSRV
+independently rejected the same frozen input. The final negative record and downloaded receipt/JUnit
+digests are retained in `local-runs/w12-ordinary-ci-final-failure-9bf80b4b.json`.
+
+The digest failure exposed an error in our earlier inventory update: the topology catalog and owner
+registry under `memory/0.71/` are frozen baseline inputs, not live extension points. Both snapshots
+are restored exactly, without changing baseline identities or refreshing their hashes. The current
+workflow catalog is now `docs/testing/ci-topology.json`; reviewed new symbols are composed from
+`docs/testing/memory/ownership-registry-additions.toml`. Composition cannot replace or duplicate old
+reviews, change schema/release/discovery scope, or bypass the existing production scanner, stale
+review checks, expiry rules and focused-test resolution. A new regression checks all twelve frozen
+prerequisite digests, not only the two files that exposed the mistake.
+
+On clean repair source `83042ecc`, Windows passed eight baseline, five ownership, 35 performance
+contract, seven governance and two merge tests; W11/W12 mutations returned expected red. The two
+merge fixtures also passed on Linux WSL as development diagnostics. Format, strict library lint,
+live topology and governance checks passed. Exact scopes and identities are recorded in
+`local-runs/w12-frozen-registry-separation-83042ecc.json`. No third local workspace retry or expensive
+qualification ran. A new exact-source ordinary CI run must validate all repairs together; the old
+negative run remains negative.

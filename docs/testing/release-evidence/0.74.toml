@@ -314,7 +314,7 @@ function = "w11_linux_fixture_harness_cli_is_platform_gated"
 
 [[work_item]]
 id = "W12"
-required_sources = ["docs/testing/performance/0.74/release-admission-contract.toml", "docs/releases/0.74.0.md", "crates/xtask/src/evidence_run.rs", "crates/xtask/src/evidence_run/windows_job.rs", ".github/workflows/ci.yml", "docs/testing/gated-test-registry.toml", "docs/testing/memory/0.71/ci-topology.json", "docs/testing/memory/0.71/ownership-registry.toml", "docs-site/src/releases/0.74.0.md"]
+required_sources = ["docs/testing/performance/0.74/release-admission-contract.toml", "docs/releases/0.74.0.md", "crates/xtask/src/evidence_run.rs", "crates/xtask/src/evidence_run/windows_job.rs", ".github/workflows/ci.yml", "docs/testing/gated-test-registry.toml", "docs/testing/memory/0.71/ci-topology.json", "docs/testing/memory/0.71/ownership-registry.toml", "docs/testing/ci-topology.json", "docs/testing/memory/ownership-registry-additions.toml", "crates/xtask/src/ci_topology.rs", "crates/xtask/src/memory_ownership.rs", "docs-site/src/releases/0.74.0.md"]
 required_artifacts = [
   "docs/testing/performance/0.74/local-runs/w12-pre-admission-local-20261006.json",
   "docs/testing/performance/0.74/local-runs/w12-fast-gate-registration-local-20261006.json",
@@ -324,6 +324,8 @@ required_artifacts = [
   "docs/testing/performance/0.74/local-runs/w12-windows-evidence-job-timeout-a4b15edf.json",
   "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-preflight-94368d8a.json",
   "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-first-dispatch-9bf80b4b.json",
+  "docs/testing/performance/0.74/local-runs/w12-ordinary-ci-final-failure-9bf80b4b.json",
+  "docs/testing/performance/0.74/local-runs/w12-frozen-registry-separation-83042ecc.json",
 ]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -358,3 +360,12 @@ function = "profiled_store_guard_releases_borrow_on_drop_and_unwind"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w12_internal_workspace_tools_inherit_reviewed_license"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w12_live_registries_preserve_frozen_baseline_inputs"
+[[work_item.required_tests]]
+source = "crates/xtask/src/memory_ownership.rs"
+function = "additions_reject_identity_drift_malformed_input_and_replacement"
+[[work_item.required_tests]]
+source = "crates/xtask/src/memory_ownership.rs"
+function = "merged_reviews_still_reject_stale_expired_and_unreviewed_candidates"
