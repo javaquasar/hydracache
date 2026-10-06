@@ -779,6 +779,50 @@ fn w12_workspace_fast_gate_covers_every_work_item_without_budget_drift() {
         timeout["input_digest"].as_str(),
         Some("32b2acb938379beafeac9ad5b476b218d77bd977b268bf3d862ef457589ed6c8")
     );
+
+    let warm_timeout: Value = serde_json::from_slice(
+        &std::fs::read(root().join(
+            "docs/testing/performance/0.74/local-runs/w12-workspace-fast-gate-warm-timeout-415b01fc.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        warm_timeout["source_commit"].as_str(),
+        Some("415b01fc59fdf0829197d50832f0963a77bf3b5b")
+    );
+    assert_eq!(warm_timeout["outcome"].as_str(), Some("timeout"));
+    assert_eq!(warm_timeout["execution_phase"].as_str(), Some("tests"));
+    assert_eq!(warm_timeout["duration_ms"].as_u64(), Some(2_626_352));
+    assert_eq!(
+        warm_timeout["termination_overrun_ms"].as_u64(),
+        Some(226_352)
+    );
+    assert_eq!(warm_timeout["compile_duration_seconds"].as_u64(), Some(684));
+    assert_eq!(warm_timeout["tests_started"].as_bool(), Some(true));
+    assert_eq!(warm_timeout["tests_scheduled"].as_u64(), Some(3_655));
+    assert_eq!(warm_timeout["test_binaries"].as_u64(), Some(477));
+    assert_eq!(warm_timeout["tests_skipped"].as_u64(), Some(82));
+    assert_eq!(warm_timeout["junit_present"].as_bool(), Some(false));
+    assert_eq!(warm_timeout["test_failure_reported"].as_bool(), Some(false));
+    assert_eq!(
+        warm_timeout["test_completion_proven"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(warm_timeout["timeout_seconds"].as_u64(), Some(2_400));
+    assert_eq!(warm_timeout["budget_seconds"].as_u64(), Some(840));
+    assert_eq!(warm_timeout["command_changed"].as_bool(), Some(false));
+    assert_eq!(warm_timeout["budget_changed"].as_bool(), Some(false));
+    assert_eq!(warm_timeout["timeout_changed"].as_bool(), Some(false));
+    assert_eq!(warm_timeout["promotable"].as_bool(), Some(false));
+    assert_eq!(
+        warm_timeout["release_admission_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        warm_timeout["retry_count_after_this_result"].as_u64(),
+        Some(0)
+    );
 }
 
 #[test]
