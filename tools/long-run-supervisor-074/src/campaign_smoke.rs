@@ -1,5 +1,6 @@
 use crate::abort_backend::SystemdAbortBackend;
 use crate::abort_lifecycle::drive_abort_request;
+use crate::artifact::PacketResult;
 use crate::checkpoint_evidence::observe_live_checkpoint_evidence;
 use crate::event::request_sha256;
 use crate::host_execution::HostExecutionClaim;
@@ -9,8 +10,9 @@ use crate::host_receipt::{
 };
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryOutcome};
 use crate::manifest::{
-    frozen_identity_from_manifest, CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary,
-    OutputLimits, PhaseDurationsSeconds, RoleArgvTemplates,
+    frozen_identity_from_manifest, parse_stored_and_validate, CampaignManifest,
+    ExpectedOutputSchemaSha256s, InstalledBinary, OutputLimits, PhaseDurationsSeconds,
+    RoleArgvTemplates,
 };
 use crate::measurement_loss::{
     drive_measurement_loss, MeasurementLossOutcome, MeasurementLossReason,
@@ -22,6 +24,9 @@ use crate::process_identity::{
 };
 use crate::progress_loss::{drive_progress_loss, ProgressLossOutcome};
 use crate::protocol::{ControllerIdentity, Operation, Request};
+use crate::seal_input::{
+    resolve_packet_plan, InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
+};
 use crate::spawn::{SpawnBackend, SpawnObservation};
 use crate::start_lifecycle::drive_i74_start_request;
 use crate::state::{apply_attach, AttachRequest, CampaignState};
@@ -35,7 +40,7 @@ use crate::{
     GENESIS_HASH,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
@@ -52,14 +57,46 @@ const SUPERVISOR_SERVICE: &str = "hydracache-performance-supervisor-074.service"
 const FIXTURE_DAEMON_DRIFT_AFTER_SECONDS: u64 = 210;
 const FIXTURE_DAEMON_DRIFT_SECONDS: u64 = 20;
 const FIXTURE_DAEMON_AFTER_DRIFT_SECONDS: u64 = 80;
-const START_REHEARSAL_DAEMON_SECONDS: u64 = 900;
+const START_REHEARSAL_DAEMON_SECONDS: u64 = 840;
 const START_REHEARSAL_CHECKPOINT_SECONDS: u64 = 30;
+const START_REHEARSAL_COMPLETION_TIMEOUT_SECONDS: u64 = 30;
+const START_REHEARSAL_READY_MARKER: &str = ".seal-ready";
+const START_REHEARSAL_RELEASE_MARKER: &str = ".seal-release";
+const START_REHEARSAL_AUTHORIZATION_IDENTITY: &str =
+    "performance-reference-074/non-product-start-v1";
+const START_REHEARSAL_GUARDS: [&str; 2] = [
+    "non-product-protected-start-rehearsal-only",
+    "product-candidate-started-false",
+];
 const FIXTURE_LEASE_SECONDS: u64 = 250;
 const MAX_CONTEXT_BYTES: u64 = 64 * 1024;
 const MAX_FIXTURE_DIAGNOSTIC_BYTES: u64 = 4 * 1024;
 const HASH_A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const HASH_B: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const GIT_SHA: &str = "0000000000000000000000000000000000000000";
+
+#[derive(Debug, Serialize)]
+struct StartRehearsalSealProof<'a> {
+    schema_version: u32,
+    release: &'static str,
+    campaign_id: &'a str,
+    role: Role,
+    fixture_binary: &'static str,
+    product_candidate_started: bool,
+    promotable: bool,
+    outcome: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct StartRehearsalGuardDocument<'a> {
+    schema_version: u32,
+    release: &'static str,
+    campaign_id: &'a str,
+    role: Role,
+    guard_id: &'a str,
+    passed: bool,
+    evidence_relative_paths: &'a [PathBuf],
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -1228,15 +1265,16 @@ pub fn run_start_rehearsal_harness() -> Result<(), String> {
         .map_err(display)?;
 
     let (ready_tx, ready_rx) = mpsc::sync_channel(1);
-    let (stop_tx, stop_rx) = mpsc::channel();
+    let (finish_tx, finish_rx) = mpsc::channel();
+    let writer_evidence_directory = evidence_directory.clone();
     let writer = thread::spawn(move || {
         let result = run_start_rehearsal_checkpoint_writer(
-            evidence_directory,
+            writer_evidence_directory,
             housekeeping_cpuset,
             campaign_id,
             harness,
             daemon,
-            stop_rx,
+            finish_rx,
             &ready_tx,
         );
         if let Err(error) = &result {
@@ -1260,23 +1298,117 @@ pub fn run_start_rehearsal_harness() -> Result<(), String> {
         }
     }
 
-    let status = child.wait().map_err(display)?;
-    let _ = stop_tx.send(());
-    writer
-        .join()
-        .map_err(|_| "start rehearsal checkpoint writer panicked".to_owned())??;
-    if status.success() {
-        Ok(())
-    } else {
-        Err("start rehearsal fixture daemon failed".to_owned())
+    let ready_marker = evidence_directory.join(START_REHEARSAL_READY_MARKER);
+    let release_marker = evidence_directory.join(START_REHEARSAL_RELEASE_MARKER);
+    if let Err(error) = wait_for_start_rehearsal_ready(&mut child, &ready_marker) {
+        let _ = finish_tx.send(false);
+        let _ = child.kill();
+        let _ = child.wait();
+        let _ = writer.join();
+        return Err(error);
     }
+    finish_tx
+        .send(true)
+        .map_err(|error| format!("start rehearsal writer completion failed: {error}"))?;
+    if let Err(error) = writer
+        .join()
+        .map_err(|_| "start rehearsal checkpoint writer panicked".to_owned())?
+    {
+        let _ = child.kill();
+        let _ = child.wait();
+        let _ = remove_start_rehearsal_marker(&ready_marker);
+        return Err(error);
+    }
+    write_new_file(&release_marker, b"release\n", 0o600)?;
+    let status = child.wait().map_err(display)?;
+    remove_start_rehearsal_marker(&ready_marker)?;
+    remove_start_rehearsal_marker(&release_marker)?;
+    if !status.success() {
+        return Err("start rehearsal fixture daemon failed".to_owned());
+    }
+    Ok(())
 }
 
 pub fn run_start_rehearsal_daemon() -> Result<(), String> {
     let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
+    let evidence_directory =
+        PathBuf::from(std::env::var("HYDRACACHE_EVIDENCE_DIRECTORY").map_err(display)?);
     set_current_thread_affinity(&isolated_cpuset)?;
     thread::sleep(Duration::from_secs(START_REHEARSAL_DAEMON_SECONDS));
-    Ok(())
+    write_new_file(
+        &evidence_directory.join(START_REHEARSAL_READY_MARKER),
+        b"ready\n",
+        0o600,
+    )?;
+    wait_for_start_rehearsal_release(&evidence_directory.join(START_REHEARSAL_RELEASE_MARKER))
+}
+
+fn wait_for_start_rehearsal_ready(
+    child: &mut std::process::Child,
+    marker: &Path,
+) -> Result<(), String> {
+    let deadline = Instant::now()
+        + Duration::from_secs(
+            START_REHEARSAL_DAEMON_SECONDS + START_REHEARSAL_COMPLETION_TIMEOUT_SECONDS,
+        );
+    loop {
+        if marker_matches(marker, b"ready\n")? {
+            return Ok(());
+        }
+        if let Some(status) = child.try_wait().map_err(display)? {
+            return Err(format!(
+                "start rehearsal fixture daemon exited before terminal publication: {status}"
+            ));
+        }
+        if Instant::now() >= deadline {
+            return Err("start rehearsal fixture daemon readiness timed out".to_owned());
+        }
+        thread::sleep(Duration::from_millis(50));
+    }
+}
+
+fn wait_for_start_rehearsal_release(marker: &Path) -> Result<(), String> {
+    let deadline = Instant::now() + Duration::from_secs(START_REHEARSAL_COMPLETION_TIMEOUT_SECONDS);
+    loop {
+        if marker_matches(marker, b"release\n")? {
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            return Err("start rehearsal terminal publication timed out".to_owned());
+        }
+        thread::sleep(Duration::from_millis(50));
+    }
+}
+
+fn marker_matches(path: &Path, expected: &[u8]) -> Result<bool, String> {
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(error.to_string()),
+    };
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.nlink() != 1
+        || metadata.uid() != unsafe { libc::geteuid() }
+        || metadata.gid() != unsafe { libc::getegid() }
+        || metadata.mode() & 0o7777 != 0o600
+        || metadata.len() != expected.len() as u64
+        || fs::read(path).map_err(display)? != expected
+    {
+        return Err("start rehearsal completion marker is unsafe".to_owned());
+    }
+    Ok(true)
+}
+
+fn remove_start_rehearsal_marker(path: &Path) -> Result<(), String> {
+    let parent = path
+        .parent()
+        .ok_or_else(|| "start rehearsal marker parent is unavailable".to_owned())?;
+    fs::remove_file(path).map_err(display)?;
+    File::open(parent)
+        .map_err(display)?
+        .sync_all()
+        .map_err(display)
 }
 
 fn run_start_rehearsal_checkpoint_writer(
@@ -1285,7 +1417,7 @@ fn run_start_rehearsal_checkpoint_writer(
     campaign_id: String,
     harness: crate::ProcessIdentity,
     daemon: crate::ProcessIdentity,
-    stop_rx: mpsc::Receiver<()>,
+    finish_rx: mpsc::Receiver<bool>,
     ready_tx: &mpsc::SyncSender<Result<(), String>>,
 ) -> Result<(), String> {
     set_current_thread_affinity(&housekeeping_cpuset)?;
@@ -1332,8 +1464,23 @@ fn run_start_rehearsal_checkpoint_writer(
         if sequence == 1 {
             ready_tx.send(Ok(())).map_err(|error| error.to_string())?;
         }
-        match stop_rx.recv_timeout(Duration::from_secs(START_REHEARSAL_CHECKPOINT_SECONDS)) {
-            Ok(()) | Err(RecvTimeoutError::Disconnected) => return Ok(()),
+        match finish_rx.recv_timeout(Duration::from_secs(START_REHEARSAL_CHECKPOINT_SECONDS)) {
+            Ok(true) => {
+                return publish_start_rehearsal_terminal_evidence(
+                    &evidence_directory,
+                    &campaign_id,
+                    &harness,
+                    &daemon,
+                    sequence,
+                    &previous,
+                    started.elapsed(),
+                    unix_seconds()?,
+                );
+            }
+            Ok(false) => return Err("start rehearsal fixture daemon failed".to_owned()),
+            Err(RecvTimeoutError::Disconnected) => {
+                return Err("start rehearsal completion channel disconnected".to_owned());
+            }
             Err(RecvTimeoutError::Timeout) => {
                 sequence = sequence
                     .checked_add(1)
@@ -1341,6 +1488,223 @@ fn run_start_rehearsal_checkpoint_writer(
             }
         }
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn publish_start_rehearsal_terminal_evidence(
+    evidence_directory: &Path,
+    campaign_id: &str,
+    harness: &crate::ProcessIdentity,
+    daemon: &crate::ProcessIdentity,
+    sequence: u64,
+    previous_record_sha256: &str,
+    elapsed: Duration,
+    now: u64,
+) -> Result<(), String> {
+    let roles_directory = evidence_directory
+        .parent()
+        .filter(|path| path.file_name().and_then(|name| name.to_str()) == Some("roles"))
+        .ok_or_else(|| "start rehearsal role directory differs".to_owned())?;
+    let campaign_directory = roles_directory
+        .parent()
+        .filter(|path| path.file_name().and_then(|name| name.to_str()) == Some(campaign_id))
+        .ok_or_else(|| "start rehearsal campaign directory differs".to_owned())?;
+    if evidence_directory
+        .file_name()
+        .and_then(|name| name.to_str())
+        != Some("i74")
+    {
+        return Err("start rehearsal evidence role differs".to_owned());
+    }
+
+    let manifest_bytes =
+        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
+    let encoded_manifest = manifest_bytes
+        .strip_suffix(b"\n")
+        .unwrap_or(&manifest_bytes);
+    let manifest_sha256 = sha256_hex(encoded_manifest);
+    let manifest = parse_stored_and_validate(&manifest_bytes, &manifest_sha256, campaign_id)
+        .map_err(display)?;
+    publish_start_rehearsal_terminal_documents(
+        campaign_directory,
+        evidence_directory,
+        &manifest,
+        &manifest_sha256,
+        harness,
+        daemon,
+        sequence,
+        previous_record_sha256,
+        elapsed,
+        now,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn publish_start_rehearsal_terminal_documents(
+    campaign_directory: &Path,
+    evidence_directory: &Path,
+    manifest: &CampaignManifest,
+    manifest_sha256: &str,
+    harness: &crate::ProcessIdentity,
+    daemon: &crate::ProcessIdentity,
+    sequence: u64,
+    previous_record_sha256: &str,
+    elapsed: Duration,
+    now: u64,
+) -> Result<(), String> {
+    let expected_guards = START_REHEARSAL_GUARDS
+        .iter()
+        .map(|guard| (*guard).to_owned())
+        .collect::<BTreeSet<_>>();
+    let actual_guards = manifest
+        .required_final_guards
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    if manifest.release != "0.74"
+        || campaign_directory
+            .file_name()
+            .and_then(|name| name.to_str())
+            != Some(manifest.campaign_id.as_str())
+        || manifest.authorization_identity != START_REHEARSAL_AUTHORIZATION_IDENTITY
+        || manifest.dirty
+        || manifest.argv_templates.i74
+            != [
+                FIXTURE_BINARY.to_owned(),
+                "campaign-start-rehearsal-harness".to_owned(),
+            ]
+        || actual_guards != expected_guards
+        || actual_guards.len() != manifest.required_final_guards.len()
+    {
+        return Err("start rehearsal terminal manifest differs".to_owned());
+    }
+
+    let terminal_sequence = sequence
+        .checked_add(1)
+        .ok_or_else(|| "start rehearsal terminal sequence overflow".to_owned())?;
+    let terminal = build_record(
+        terminal_sequence,
+        previous_record_sha256,
+        CheckpointPayload {
+            campaign_id: manifest.campaign_id.clone(),
+            role: Role::I74,
+            phase: Phase::Terminal,
+            phase_epoch: terminal_sequence,
+            monotonic_elapsed_ns: u64::try_from(elapsed.as_nanos()).map_err(display)?,
+            wall_clock_utc: format!("{now:020}"),
+            observed_unix_seconds: now,
+            useful_progress_unix_seconds: now,
+            completed: sequence,
+            failed: 0,
+            rejected: 0,
+            timed_out: 0,
+            outstanding: 0,
+            telemetry_sequence: terminal_sequence,
+            milestone: "non-product-signed-seal-rehearsal-terminal".to_owned(),
+            surface_counters: BTreeMap::new(),
+            resource_counters: BTreeMap::new(),
+            owner_counters: BTreeMap::new(),
+            harness: harness.clone(),
+            daemon: daemon.clone(),
+        },
+    )
+    .map_err(display)?;
+    append_record(
+        &evidence_directory.join("checkpoints.jsonl"),
+        &evidence_directory.join("checkpoints.head"),
+        &terminal,
+    )
+    .map_err(display)?;
+
+    let role_root = PathBuf::from("roles/i74");
+    let proof_relative = role_root.join("non-product-seal-proof.json");
+    let proof = canonical_json(&StartRehearsalSealProof {
+        schema_version: 1,
+        release: "0.74",
+        campaign_id: &manifest.campaign_id,
+        role: Role::I74,
+        fixture_binary: FIXTURE_BINARY,
+        product_candidate_started: false,
+        promotable: false,
+        outcome: "complete-non-product-fixture",
+    })
+    .map_err(display)?;
+    write_new_file(&campaign_directory.join(&proof_relative), &proof, 0o600)?;
+
+    let guard_directory = evidence_directory.join("guards");
+    fs::create_dir(&guard_directory).map_err(display)?;
+    File::open(evidence_directory)
+        .map_err(display)?
+        .sync_all()
+        .map_err(display)?;
+    let evidence_paths = vec![proof_relative.clone()];
+    let mut inventory_guards = Vec::with_capacity(manifest.required_final_guards.len());
+    let mut raw_files = BTreeSet::from([
+        PathBuf::from("campaign-start.json"),
+        role_root.join("checkpoints.jsonl"),
+        proof_relative,
+    ]);
+    for guard_id in &manifest.required_final_guards {
+        let guard_relative = role_root
+            .join("guards")
+            .join(format!("{}.json", sha256_hex(guard_id.as_bytes())));
+        let document = canonical_json(&StartRehearsalGuardDocument {
+            schema_version: 1,
+            release: "0.74",
+            campaign_id: &manifest.campaign_id,
+            role: Role::I74,
+            guard_id,
+            passed: true,
+            evidence_relative_paths: &evidence_paths,
+        })
+        .map_err(display)?;
+        write_new_file(&campaign_directory.join(&guard_relative), &document, 0o600)?;
+        raw_files.insert(guard_relative.clone());
+        inventory_guards.push(InventoryGuardEvidence {
+            id: guard_id.clone(),
+            passed: true,
+            source_relative_path: guard_relative,
+        });
+    }
+
+    let inventory_relative = role_root.join(SEAL_INPUT_INVENTORY_NAME);
+    raw_files.insert(inventory_relative.clone());
+    let inventory = SealInputInventory {
+        schema_version: 1,
+        release: "0.74".to_owned(),
+        campaign_id: manifest.campaign_id.clone(),
+        campaign_manifest_sha256: manifest_sha256.to_owned(),
+        role: Role::I74,
+        result: PacketResult::Complete,
+        terminal_reason: None,
+        journal_relative_path: role_root.join("checkpoints.jsonl"),
+        guard_evidence: inventory_guards,
+        raw_files: raw_files.into_iter().collect(),
+    };
+    let inventory_bytes = canonical_json(&inventory).map_err(display)?;
+    write_new_file(
+        &campaign_directory.join(&inventory_relative),
+        &inventory_bytes,
+        0o600,
+    )?;
+
+    let seal_root = campaign_directory
+        .parent()
+        .and_then(Path::parent)
+        .map(|root| root.join("seals"))
+        .ok_or_else(|| "start rehearsal seal root is unavailable".to_owned())?;
+    let plan = resolve_packet_plan(
+        campaign_directory,
+        &seal_root,
+        manifest,
+        manifest_sha256,
+        Role::I74,
+    )
+    .map_err(display)?;
+    if plan.result != PacketResult::Complete || plan.promotable {
+        return Err("start rehearsal seal plan differs".to_owned());
+    }
+    Ok(())
 }
 
 fn append_record_on_housekeeping(
@@ -1743,10 +2107,196 @@ fn display(error: impl std::fmt::Display) -> String {
 mod tests {
     use super::{
         fixture_diagnostic, lease_deadline_elapsed, parse_cpuset, progress_deadline_elapsed,
-        uuid_from_hash, FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
+        publish_start_rehearsal_terminal_documents, uuid_from_hash,
+        FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
         FIXTURE_DAEMON_DRIFT_SECONDS, FIXTURE_LEASE_SECONDS, HASH_A,
     };
+    use crate::manifest::{
+        CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary, OutputLimits,
+        PhaseDurationsSeconds, RoleArgvTemplates,
+    };
+    use crate::{
+        append_record, build_record, canonical_json, sha256_hex, verify_journal, CheckpointPayload,
+        Phase, ProcessIdentity, Role, GENESIS_HASH,
+    };
+    use std::collections::BTreeMap;
     use std::fs;
+    use std::path::PathBuf;
+    use std::time::Duration;
+
+    fn process(pid: u32) -> ProcessIdentity {
+        ProcessIdentity {
+            boot_id: "1".repeat(36),
+            pid,
+            start_ticks: u64::from(pid) + 100,
+            process_group: 40,
+            cgroup_path: "/system.slice/hydracache-performance-074-test.service".to_owned(),
+            cgroup_inode: 50,
+            unit_name: "hydracache-performance-074-test.service".to_owned(),
+        }
+    }
+
+    fn terminal_manifest(campaign_id: &str) -> CampaignManifest {
+        let installed = |role: &str| InstalledBinary {
+            role: role.to_owned(),
+            path: "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture".to_owned(),
+            sha256: "a".repeat(64),
+            size: 1,
+            inode: 2,
+            device: 3,
+            uid: 0,
+            gid: 0,
+            mode: 0o755,
+        };
+        CampaignManifest {
+            schema_version: 1,
+            repository_id: 1,
+            authorization_identity: "performance-reference-074/non-product-start-v1".to_owned(),
+            contract_sha256: "a".repeat(64),
+            tooling_sha: "a".repeat(40),
+            i74_source_sha: "a".repeat(40),
+            c74_source_sha: "a".repeat(40),
+            i74_tree_sha: "a".repeat(40),
+            c74_tree_sha: "a".repeat(40),
+            i74_cargo_lock_sha256: "a".repeat(64),
+            c74_cargo_lock_sha256: "a".repeat(64),
+            i74_dirty: false,
+            c74_dirty: false,
+            scenario_sha256: "a".repeat(64),
+            workload_sha256: "a".repeat(64),
+            offered_load_sha256: "a".repeat(64),
+            estimator_sha256: "a".repeat(64),
+            thresholds_sha256: "a".repeat(64),
+            host_receipt_sha256: "a".repeat(64),
+            lease_id: "00000000-0000-4000-8000-000000000074".to_owned(),
+            machine_id: "machine".to_owned(),
+            boot_id: "boot".to_owned(),
+            mount_identity: "a".repeat(64),
+            isolated_cpuset: "1-4".to_owned(),
+            housekeeping_cpuset: "0,5-7".to_owned(),
+            seed: 740074,
+            checkpoint_cadence_seconds: 30,
+            progress_warning_gap_seconds: 90,
+            progress_rejection_gap_seconds: 180,
+            diagnostic_grace_seconds: 30,
+            product_lease_deadline_unix_seconds: 3_600,
+            maximum_campaign_bytes: 21_474_836_480,
+            maximum_campaign_files: 20_000,
+            installed_binaries: vec![installed("i74"), installed("c74")],
+            argv_templates: RoleArgvTemplates {
+                i74: vec![
+                    "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture".to_owned(),
+                    "campaign-start-rehearsal-harness".to_owned(),
+                ],
+                c74: vec![
+                    "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture".to_owned(),
+                    "campaign-start-rehearsal-harness".to_owned(),
+                ],
+            },
+            command_environment_sha256: "a".repeat(64),
+            role_order: vec!["i74".to_owned(), "c74".to_owned()],
+            phase_durations_seconds: PhaseDurationsSeconds {
+                warmup: 145,
+                measured: 145,
+                drain: 145,
+                durable_companion: 145,
+                post_work_idle: 145,
+                reconciliation: 145,
+            },
+            output_limits: OutputLimits {
+                stdout_bytes: 1_048_576,
+                stderr_bytes: 1_048_576,
+                diagnostic_bytes: 1_048_576,
+                final_artifact_bytes: 1_048_576,
+                files: 100,
+            },
+            expected_output_schema_sha256s: ExpectedOutputSchemaSha256s {
+                checkpoint: "a".repeat(64),
+                measurement: "a".repeat(64),
+                reconciliation: "a".repeat(64),
+                raw_manifest: "a".repeat(64),
+                packet_manifest: "a".repeat(64),
+            },
+            required_final_guards: vec![
+                "non-product-protected-start-rehearsal-only".to_owned(),
+                "product-candidate-started-false".to_owned(),
+            ],
+            secret_identifiers: Vec::new(),
+            release: "0.74".to_owned(),
+            campaign_id: campaign_id.to_owned(),
+            nonce_sha256: "a".repeat(64),
+            dirty: false,
+            controller_history: Vec::new(),
+            state: "PREPARED".to_owned(),
+        }
+    }
+
+    fn prepare_terminal_fixture() -> (
+        tempfile::TempDir,
+        PathBuf,
+        PathBuf,
+        CampaignManifest,
+        String,
+        ProcessIdentity,
+        ProcessIdentity,
+        String,
+    ) {
+        let temporary = tempfile::tempdir().unwrap();
+        let campaign_id = "1".repeat(64);
+        let campaign = temporary.path().join("campaigns").join(&campaign_id);
+        let role = campaign.join("roles/i74");
+        fs::create_dir_all(&role).unwrap();
+        fs::create_dir(temporary.path().join("seals")).unwrap();
+        let manifest = terminal_manifest(&campaign_id);
+        let manifest_bytes = canonical_json(&manifest).unwrap();
+        let manifest_sha256 = sha256_hex(&manifest_bytes);
+        fs::write(campaign.join("campaign-start.json"), manifest_bytes).unwrap();
+        let harness = process(41);
+        let daemon = process(42);
+        let first = build_record(
+            1,
+            GENESIS_HASH,
+            CheckpointPayload {
+                campaign_id,
+                role: Role::I74,
+                phase: Phase::Startup,
+                phase_epoch: 1,
+                monotonic_elapsed_ns: 1,
+                wall_clock_utc: format!("{:020}", 1),
+                observed_unix_seconds: 1,
+                useful_progress_unix_seconds: 1,
+                completed: 0,
+                failed: 0,
+                rejected: 0,
+                timed_out: 0,
+                outstanding: 1,
+                telemetry_sequence: 1,
+                milestone: "fixture-start".to_owned(),
+                surface_counters: BTreeMap::new(),
+                resource_counters: BTreeMap::new(),
+                owner_counters: BTreeMap::new(),
+                harness: harness.clone(),
+                daemon: daemon.clone(),
+            },
+        )
+        .unwrap();
+        append_record(
+            &role.join("checkpoints.jsonl"),
+            &role.join("checkpoints.head"),
+            &first,
+        )
+        .unwrap();
+        (
+            temporary,
+            campaign,
+            role,
+            manifest,
+            manifest_sha256,
+            harness,
+            daemon,
+            first.record_sha256,
+        )
+    }
 
     #[test]
     fn derived_request_id_is_a_lowercase_v4_uuid() {
@@ -1810,5 +2360,67 @@ mod tests {
         assert!(LEASE_RESUME_SECONDS > FIXTURE_LEASE_SECONDS);
         assert!(LEASE_RESUME_SECONDS < daemon_end);
         assert!(daemon_end < ROLE_RUNTIME_SECONDS);
+    }
+
+    #[test]
+    fn start_rehearsal_terminal_publication_is_resolver_ready_and_non_promotable() {
+        let (_temporary, campaign, role, manifest, digest, harness, daemon, previous) =
+            prepare_terminal_fixture();
+        publish_start_rehearsal_terminal_documents(
+            &campaign,
+            &role,
+            &manifest,
+            &digest,
+            &harness,
+            &daemon,
+            1,
+            &previous,
+            Duration::from_secs(2),
+            2,
+        )
+        .unwrap();
+
+        let report = verify_journal(&role.join("checkpoints.jsonl")).unwrap();
+        assert_eq!(report.records, 2);
+        assert_eq!(report.last_phase, Phase::Terminal);
+        let inventory: crate::seal_input::SealInputInventory = serde_json::from_slice(
+            &fs::read(role.join(crate::seal_input::SEAL_INPUT_INVENTORY_NAME)).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(inventory.result, crate::artifact::PacketResult::Complete);
+        assert_eq!(inventory.guard_evidence.len(), 2);
+        assert!(inventory.guard_evidence.iter().all(|guard| guard.passed));
+        assert!(campaign
+            .join("roles/i74/non-product-seal-proof.json")
+            .is_file());
+    }
+
+    #[test]
+    fn start_rehearsal_terminal_publication_rejects_guard_drift_before_append() {
+        let (_temporary, campaign, role, mut manifest, digest, harness, daemon, previous) =
+            prepare_terminal_fixture();
+        manifest.required_final_guards.pop();
+        assert!(publish_start_rehearsal_terminal_documents(
+            &campaign,
+            &role,
+            &manifest,
+            &digest,
+            &harness,
+            &daemon,
+            1,
+            &previous,
+            Duration::from_secs(2),
+            2,
+        )
+        .is_err());
+        assert_eq!(
+            verify_journal(&role.join("checkpoints.jsonl"))
+                .unwrap()
+                .records,
+            1
+        );
+        assert!(!role
+            .join(crate::seal_input::SEAL_INPUT_INVENTORY_NAME)
+            .exists());
     }
 }
