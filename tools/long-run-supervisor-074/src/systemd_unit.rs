@@ -309,6 +309,57 @@ pub fn stop_unit_and_wait(unit_name: &str, timeout_seconds: u64) -> Result<(), U
     }
 }
 
+/// Clear the failed state of an already-empty transient unit and wait until
+/// systemd releases it. This is deliberately separate from `stop_unit_and_wait`:
+/// stopping a failed transient unit does not necessarily change `failed/failed`,
+/// so treating StopUnit as retirement can spin until the timeout.
+pub fn reset_failed_unit_and_wait(unit_name: &str, timeout_seconds: u64) -> Result<(), UnitError> {
+    validate_unit_name(unit_name)?;
+    if timeout_seconds == 0 || timeout_seconds > 300 {
+        return Err(UnitError::Policy);
+    }
+    let snapshot = inspect_loaded_unit(unit_name)?;
+    if snapshot.active_state != "failed"
+        || snapshot.sub_state != "failed"
+        || snapshot.main_pid != 0
+        || !snapshot.control_group.is_empty()
+    {
+        return Err(UnitError::Policy);
+    }
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let _: () = manager.call("ResetFailedUnit", &(unit_name,))?;
+    let deadline = Instant::now() + Duration::from_secs(timeout_seconds);
+    loop {
+        match inspect_loaded_unit(unit_name) {
+            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+                if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+            {
+                return Ok(())
+            }
+            Ok(snapshot)
+                if snapshot.active_state == "inactive"
+                    && snapshot.sub_state == "dead"
+                    && snapshot.main_pid == 0
+                    && snapshot.control_group.is_empty() =>
+            {
+                return Ok(())
+            }
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+        if Instant::now() >= deadline {
+            return Err(UnitError::StopTimeout);
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+}
+
 pub fn verify_unit_terminal(
     harness: &crate::ProcessIdentity,
     daemon: &crate::ProcessIdentity,

@@ -6,8 +6,8 @@ use crate::progress_loss::{ProgressLossBackend, ProgressLossCause};
 use crate::protocol::Request;
 use crate::state::DurableCampaignState;
 use crate::systemd_unit::{
-    inspect_unit_optional, stop_unit_and_wait, verify_unit_identity, verify_unit_terminal,
-    UnitSnapshot,
+    inspect_unit_optional, reset_failed_unit_and_wait, stop_unit_and_wait, verify_unit_identity,
+    verify_unit_terminal, UnitSnapshot,
 };
 use crate::{canonical_json, Role};
 use serde::{Deserialize, Serialize};
@@ -212,6 +212,7 @@ impl SystemdAbortBackend {
                 if !quarantine_unit_is_terminal_empty(&cause.intent.unit_name, &snapshot) {
                     return Err(SystemdAbortError::Binding);
                 }
+                let failed = snapshot.active_state == "failed";
                 publish_quarantine_abort_diagnostic(
                     &diagnostic_path,
                     request,
@@ -220,7 +221,14 @@ impl SystemdAbortBackend {
                     snapshot,
                     manifest.output_limits.diagnostic_bytes,
                 )?;
-                stop_unit_and_wait(&cause.intent.unit_name, manifest.diagnostic_grace_seconds)?;
+                if failed {
+                    reset_failed_unit_and_wait(
+                        &cause.intent.unit_name,
+                        manifest.diagnostic_grace_seconds,
+                    )?;
+                } else {
+                    stop_unit_and_wait(&cause.intent.unit_name, manifest.diagnostic_grace_seconds)?;
+                }
             }
             None => verify_existing_quarantine_abort_diagnostic(
                 &diagnostic_path,
