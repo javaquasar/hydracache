@@ -1538,3 +1538,39 @@ fn w12_ordinary_ci_preserves_explicit_infrastructure_boundary() {
         Some(false)
     );
 }
+
+#[test]
+fn w12_internal_workspace_tools_inherit_reviewed_license() {
+    let workspace: toml::Value =
+        toml::from_str(&std::fs::read_to_string(root().join("Cargo.toml")).unwrap()).unwrap();
+    assert_eq!(
+        workspace["workspace"]["package"]["license"].as_str(),
+        Some("Apache-2.0")
+    );
+    let mut checked = 0;
+    for member in workspace["workspace"]["members"].as_array().unwrap() {
+        let member = member.as_str().unwrap();
+        if !member.starts_with("tools/") {
+            continue;
+        }
+        let manifest: toml::Value = toml::from_str(
+            &std::fs::read_to_string(root().join(member).join("Cargo.toml")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            manifest["package"]["publish"].as_bool(),
+            Some(false),
+            "{member}"
+        );
+        assert_eq!(
+            manifest["package"]
+                .get("license")
+                .and_then(|license| license.get("workspace"))
+                .and_then(toml::Value::as_bool),
+            Some(true),
+            "internal tool must inherit the reviewed workspace license: {member}"
+        );
+        checked += 1;
+    }
+    assert!(checked >= 2, "both 0.74 workspace tools must be checked");
+}
