@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-protected-start-attach-abort-negative-rehearsal",
+  "captured_at_utc": "2026-10-06T02:38:20Z",
+  "source_commit": "29675f17eec76d0a715e3905b3f10aaf1e4f7d51",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "provisioning": {
+    "run_id": 37402217678,
+    "conclusion": "success",
+    "installed_source_commit": "29675f17eec76d0a715e3905b3f10aaf1e4f7d51",
+    "installed_binary_sha256": "9a2cada7c69daee59d7f72dbf6bb651aeaf326082931620303e096d672e89314",
+    "hosted_bundle_artifact_id": 11386050528,
+    "hosted_bundle_artifact_digest": "sha256:996ccaa1956f4774e06adaac6858cdee8e4bbc5ae3f9abb9d76b33319f6bd183",
+    "installed_receipt_artifact_id": 11386355238,
+    "installed_receipt_artifact_digest": "sha256:e7035d7f94debca8c10d7d5651e5d0e54ec36131df6c7e1f157ce34a56ebc1bf"
+  },
+  "host_observation": {
+    "run_id": 37402598696,
+    "conclusion": "success",
+    "artifact_id": 11385782371,
+    "artifact_digest": "sha256:80d856ad4bf43699b66b48f3c76fe212ede90bec7e76438e96dcc97e80b15aa2",
+    "host_receipt_sha256": "da260782614895d7f2cb27e4f121558ebc36cba531735e7cf2b49ef25e32e818"
+  },
+  "start_bundle": {
+    "run_id": 37402726947,
+    "conclusion": "success",
+    "campaign_id": "6a72344ce203c36f0006ca3df2898305752884f2b776e0e6746dd807b60571e7",
+    "manifest_sha256": "00d6b271a11b2740c78732d188eba1240f2506010081e49ead7f4e80e3925bf0",
+    "bundle_sha256": "48e493e9cca3b588bcecc221d225d5f185d9f03d7a1f4259ab1c95c78c0f7f72",
+    "artifact_id": 11386350889,
+    "artifact_digest": "sha256:b8d4ab2db0c5ca3c4498eb87f16b1644a6d2179b18f1a71a92f7a2a1fe19901b"
+  },
+  "same_run_rehearsal": {
+    "run_id": 37402969310,
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "start": {
+      "request_id": "79d3b047-d669-4863-b4cb-8c3f572c8c85",
+      "authorization_job_id": 112074078996,
+      "dispatch_job_id": 112074545953,
+      "request_sha256": "9b75a2b3331056e42987d9840aa43ff50eeb656204a5bafb06e6c745ed258c9c",
+      "response_sha256": "6d9827548ba955e563da393c623f87ccf962a08c0099a43f67bd950e6db3b23e",
+      "response_artifact_id": 11386575455,
+      "response_artifact_digest": "sha256:96006ee0dac14fc3e5a6ca00566705f0e7985b7c535b107c3258db07ac8100cb",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 2,
+      "harness_pid": 18812,
+      "daemon_pid": 18813
+    },
+    "attach": {
+      "request_id": "ec9b6023-93cc-45bd-9308-5485b32539e4",
+      "authorization_job_id": 112074893460,
+      "dispatch_job_id": 112075361753,
+      "request_sha256": "76f745167d916ac4fd292f192bf381beaef493e76723363964a73a3e8c22bd85",
+      "response_sha256": "b18c916b18e9691108273ce1b391be6415594daccb67e8cd9343ecd98623d1ba",
+      "response_artifact_id": 11385858202,
+      "response_artifact_digest": "sha256:c37ff949d4303016122c5b4a4a00af3dfad98f2a6161821b26595f93f09c2efb",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 3,
+      "checkpoint_sequence": 6,
+      "checkpoint_record_sha256": "50897d4cced404a36f2208881fa0f2d6de363fa9ce9808cb629b4f72e3db01e8",
+      "controller_run_id": 37402969310
+    },
+    "abort": {
+      "request_id": "8466238e-1d80-40f6-9aae-8b17c85caabf",
+      "authorization_job_id": 112075583844,
+      "dispatch_job_id": 112076072420,
+      "request_sha256": "15696388aadcb094fba4a5eae9f88564c80a6fe5891b775bd005ea5394f9611b",
+      "request_artifact_id": 11386551299,
+      "request_artifact_digest": "sha256:686e3f41b2897e762b74839cbb1f7ae0e212f412affd65e9efc247dac1227f37",
+      "response_artifact_id": 11385848557,
+      "response_artifact_digest": "sha256:2cb9822e8a0c1d6e17fe834c006665abb0ed6aba933f89edbfc1d39098d09a87",
+      "packet_executed": false,
+      "failure": "the detached supervisor socket was absent after the supervisor restart loop"
+    }
+  },
+  "host_failure_attribution": {
+    "first_failure_at": "2026-10-06T02:19:14Z",
+    "first_failure": "progress-loss maintenance rejected an inconsistent checkpoint journal/head snapshot",
+    "checkpoint_records_written": 12,
+    "final_checkpoint_record_sha256": "615dccaf8d66b4fc6bb91e7e4c5e5a36820bc67c1a20c51e920c0ea7c822bfe5",
+    "checkpoint_journal_sha256": "853e8981153a17064995e615e426814150f7ad37482c84a6e1a5406c0283d830",
+    "checkpoint_head_file_sha256": "ccc9839c21a1beff825b2bbdd3c715682908327af0f73a2c072d7ed8bd89658b",
+    "secondary_failure": "a restarted supervisor had a different systemd mount-namespace identity and entered fail-closed measurement-loss recovery",
+    "supervisor_restart_count": 58,
+    "diagnostic_sha256": "14b519b63431123bdf402a9921a9a1bc41ef65f490a9a546d6b5a66be89ae6ac",
+    "diagnostic_reason": "host-identity-drift",
+    "fixture_runtime_max_seconds": 360,
+    "fixture_daemon_lifetime_seconds": 900
+  },
+  "recovery": {
+    "final_state": "FAILED_INCOMPLETE",
+    "final_revision": 5,
+    "state_sha256": "91b0f00aafd45d7d26160b9952d5f6f4431e81f9b2e59fa0fa10666fe83f3ec7",
+    "events_sha256": "c3bf505681d49919f6913a6682e400ef09500a5f2245d7a5b19cd588543c36d7",
+    "events_head_file_sha256": "ed1cbce9ee6bcf6102178a20dc61059770970c38d599daecad7ffc44b503cc67",
+    "execution_fields_cleared": true,
+    "host_claim_absent": true,
+    "fixture_unit_loaded": false,
+    "fixture_unit_active": false,
+    "runner_active": false,
+    "supervisor_active": true,
+    "supervisor_main_pid": 25898,
+    "measurement_cpu_nvme_irq_delta_zero": true
+  },
+  "pre_host_cancellation": {
+    "run_id": 37402907436,
+    "conclusion": "cancelled",
+    "self_hosted_steps_executed": false,
+    "reason": "an empty locally generated approval nonce was detected and the run was cancelled before enabling the runner"
+  },
+  "implemented_fixes": [
+    {
+      "commit": "9061f37f2b336973e29caf7e8cd50fe260b8e6ea",
+      "change": "read checkpoint journal and head as a bounded stable snapshot and cover complete-record and partial-tail commit windows"
+    },
+    {
+      "commit": "4c28496774a7cb63017a545c9352006bf56d4a8f",
+      "change": "make the non-product role RuntimeMaxSec equal the fixture's bounded 900-second lifetime while retaining the 3600-second lease"
+    }
+  ],
+  "decision": {
+    "same_run_start_attach_exercised": true,
+    "same_run_signed_abort_exercised": false,
+    "protected_start_attach_abort_rehearsal_complete": false,
+    "host_rehearsal_complete": false,
+    "release_admission_allowed": false,
+    "next_required_step": "Provision the two fixes from an exact pushed source commit and repeat only the non-product same-run start, attach and abort rehearsal."
+  }
+}
