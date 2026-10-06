@@ -99,6 +99,7 @@ fn evidence_provenance_requires_valid_shas_and_the_tested_checkout() {
 }
 
 #[test]
+#[allow(clippy::zombie_processes)] // The fixture deliberately exits before its descendant.
 fn evidence_child_helper() {
     match std::env::var(CHILD_ENV).as_deref() {
         Ok("pass") => println!("logical pass"),
@@ -114,6 +115,21 @@ fn evidence_child_helper() {
         }
         Ok("fail") => panic!("intentional evidence failure"),
         Ok("timeout") => std::thread::sleep(Duration::from_secs(10)),
+        Ok("inherited-pipe-parent") => {
+            let descendant = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "evidence_child_helper", "--nocapture"])
+                .env(CHILD_ENV, "inherited-pipe-descendant")
+                .spawn()
+                .unwrap();
+            println!("parent leaving inherited pipes open");
+            // Intentionally model a tool that exits while its child retains stdout/stderr.
+            // Reaping happens outside this short-lived helper process.
+            drop(descendant);
+        }
+        Ok("inherited-pipe-descendant") => {
+            println!("descendant holds inherited pipes");
+            std::thread::sleep(Duration::from_secs(4));
+        }
         _ => {}
     }
 }
@@ -351,6 +367,23 @@ fn evidence_executor_propagates_child_exit_and_captures_output() {
     let (timeout_root, timeout) = execute("timeout", 1);
     assert_eq!(xtask::evidence_run::exit_code_for(&timeout.receipt), 124);
     fs::remove_dir_all(timeout_root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_bounds_inherited_pipe_capture_after_parent_exit() {
+    let (root, result) = execute("inherited-pipe-parent", 1);
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(
+        result.receipt.duration_ms < 3_000,
+        "a one-second gate must not wait for the four-second descendant: {} ms",
+        result.receipt.duration_ms
+    );
+    assert!(result
+        .receipt
+        .stdout
+        .contains("parent leaving inherited pipes open"));
+    fs::remove_dir_all(root).unwrap();
 }
 
 #[test]

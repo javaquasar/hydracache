@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W12",
+  "source_parent_sha": "5bc712f1683174753d5330dfe86c5d8d0b1d9539",
+  "source_identity_note": "Parent prefix 5bc712f1; only the newly added regression fixture was present in the worktree. The receipt source SHA is for the fixture's synthetic Git repository, not HydraCache.",
+  "tier": "local-tooling-regression",
+  "platform": "windows-x86_64",
+  "fixture": "evidence_executor_bounds_inherited_pipe_capture_after_parent_exit",
+  "timeout_seconds": 1,
+  "descendant_sleep_seconds": 4,
+  "duration_ms": 4070,
+  "actual_outcome": "pass",
+  "expected_outcome": "timeout",
+  "test_result": "failed-as-expected-before-fix",
+  "promotable": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "A synthetic child exited while its descendant retained stdout/stderr. The existing runner returned Pass after 4070 ms despite a 1-second timeout. This reproduces an unbounded stream-drain and false-green boundary. It does not establish the root cause of the earlier full-workspace timeout overrun or any product performance result."
+}
