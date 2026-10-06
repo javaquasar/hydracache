@@ -1,0 +1,52 @@
+{
+  "schema_version": "hydracache-w11-negative-design-evidence-v1",
+  "release": "0.74",
+  "source_commit": "2815c72cfd0a31b0e5617a4f9da08d197497078e",
+  "candidate": "unprivileged-role-overhead-collector-nonempty-io-stat-guard",
+  "github_run": {
+    "id": 37466656900,
+    "attempt": 1,
+    "url": "https://github.com/javaquasar/hydracache/actions/runs/37466656900",
+    "created_at_utc": "2026-10-06T12:54:04Z",
+    "completed_at_utc": "2026-10-06T12:54:21Z",
+    "conclusion": "failure",
+    "job_id": 112279290139,
+    "artifact_id": 11415176161,
+    "artifact_digest": "238c69a61818b01d1401645e90aab592cbe929781d7c5bed4b256596aa95613c"
+  },
+  "rejection": {
+    "stage": "supervisor cgroup counter preflight before first attempt",
+    "message": "cgroup io.stat is empty",
+    "first_attempt_started": false,
+    "checkpoint_bytes_written": 0,
+    "product_candidate_started": false,
+    "expensive_qualification_started": false
+  },
+  "host_observation": {
+    "io_accounting": true,
+    "io_stat_readable": true,
+    "io_stat_size_bytes": 0,
+    "interpretation": "A readable empty cgroup-v2 io.stat is the kernel representation of zero block-device entries for a cgroup that has issued no block I/O. Missing or unreadable telemetry remains an error."
+  },
+  "post_run_host_state": {
+    "observed_at_utc": "2026-10-06T12:56:12Z",
+    "supervisor_active": true,
+    "supervisor_main_pid": 6982,
+    "supervisor_restarts": 0,
+    "runner_active": true,
+    "runner_enabled": false,
+    "active_campaign_absent": true,
+    "campaign_lifecycle_context_absent": true,
+    "controller_loss_context_absent": true
+  },
+  "decision": {
+    "candidate_accepted": false,
+    "negative_result_retained": true,
+    "empty_readable_io_stat_is_zero": true,
+    "missing_or_unreadable_io_stat_is_rejected": true,
+    "non_product_role_overhead_rehearsal_complete": false,
+    "role_overhead_qualification_complete": false,
+    "release_admission_allowed": false
+  },
+  "claim_boundary": "This proves the first exact-process-identity host run failed closed before measurement because the collector incorrectly required a readable cgroup-v2 io.stat to contain a device row even when the cgroup had issued zero block I/O. It is not role-overhead, product throughput, six-hour qualification, 24-hour confirmation, or release-admission evidence."
+}

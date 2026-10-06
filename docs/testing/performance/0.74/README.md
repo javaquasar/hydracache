@@ -849,6 +849,15 @@ supervisor remained active with zero restarts. The corrected identity check uses
 continues to bind the installed/live binary digest. It adds no privilege and does not weaken binary
 identity. See `local-runs/w11-role-overhead-runner-proc-guard-rejected-02a1123d.json`.
 
+The next signed run, `37466656900` at `2815c72c`, passed that corrected process-identity guard but
+stopped before attempt one because the collector treated an empty, readable cgroup-v2 `io.stat` as
+missing telemetry. On this freshly restarted `IOAccounting=yes` service, the zero-length file is
+the kernel's valid zero state: no block-device row exists until the cgroup issues block I/O. The
+correction accepts only that readable empty file as zero; a missing or unreadable file, a malformed
+row, or a row without `rbytes`/`wbytes` still fails closed. The supervisor remained active at PID
+6982 with zero restarts and no campaign context. See
+`local-runs/w11-role-overhead-empty-io-stat-rejected-2815c72c.json`.
+
 The exact-source reference-host preparation is now rehearsed at `e756a41e`. The runner was proven
 idle, disabled and stopped; rootless and rootful Docker were absent; all campaign markers and
 fixture contexts were absent; and the profile-driven quiet-service policy was applied into a fresh

@@ -956,6 +956,14 @@ cpuset must remain stable; and the bracketed root observation independently bind
 SHA-256. The negative receipt is
 `local-runs/w11-role-overhead-runner-proc-guard-rejected-02a1123d.json`.
 
+Run `37466656900` at `2815c72c` then crossed the process guard and exposed a distinct zero-state
+mistake before attempt one. The newly restarted, `IOAccounting=yes` service had a readable but
+empty cgroup-v2 `io.stat`. Linux emits device rows only after the cgroup has issued block I/O, so
+an empty readable file is the exact zero counter, not unavailable telemetry. The parser now maps
+only that state to zero while preserving hard failures for an absent/unreadable file, malformed
+rows and missing byte counters. The retained negative receipt is
+`local-runs/w11-role-overhead-empty-io-stat-rejected-2815c72c.json`.
+
 ### Reference-host freeze and reboot boundary
 
 The first exact-source W11 freeze rehearsal completed at `e756a41e` without a product role. The

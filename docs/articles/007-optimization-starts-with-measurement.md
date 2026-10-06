@@ -2683,3 +2683,11 @@ config), unified cgroup, PID/start ticks and cpuset. The bracketed root observat
 live binary SHA-256. This is a useful pattern for instrumentation: when a strong-looking check is
 unavailable in the real security context, compose independent readable identities with an existing
 trusted observation instead of weakening the host or silently skipping the guard.
+
+The following signed run found a second measurement-interface edge before attempt one. A fresh
+`IOAccounting=yes` cgroup can expose a readable zero-length `io.stat`: the kernel has no block
+device row to report until that cgroup actually performs block I/O. Rejecting the empty file made a
+valid zero look like missing telemetry. The narrow correction treats a readable empty file as zero
+but still rejects a missing or unreadable file, malformed device rows and rows without byte
+counters. This distinction matters: accepting the kernel's canonical zero is not the same as
+turning absent evidence into a passing metric.
