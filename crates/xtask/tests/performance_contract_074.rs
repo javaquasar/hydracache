@@ -122,6 +122,13 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
         .is_empty()
     );
     assert!(
+        xtask::performance_contract_074::check_terminal_dispositions(
+            &root(),
+            &contract("terminal-disposition-ledger.toml")
+        )
+        .is_empty()
+    );
+    assert!(
         xtask::performance_contract_074::check_at_root(Path::new(&root()), None)
             .unwrap()
             .is_empty()
@@ -543,6 +550,21 @@ fn w12_evidence_skeleton_is_exact_and_fail_closed() {
             .unwrap()
             .is_empty()
     );
+    let report = xtask::release_evidence::build_report(&root(), "0.74", None).unwrap();
+    for item in report
+        .work_items
+        .iter()
+        .filter(|item| !matches!(item.id.as_str(), "W11" | "W12"))
+    {
+        assert!(
+            item.reasons
+                .iter()
+                .all(|reason| !reason.contains("dynamic canary")),
+            "explicit W11/W12 canary selection must not block {}: {:?}",
+            item.id,
+            item.reasons
+        );
+    }
 }
 
 #[test]
@@ -606,6 +628,45 @@ fn w12_release_note_retains_draft_claim_rollback_and_gate_boundaries() {
     ] {
         assert!(note.contains(marker), "release note must retain {marker:?}");
     }
+}
+
+#[test]
+fn w2_through_w9_terminal_dispositions_are_exact_and_non_promotable() {
+    let mut value = contract("terminal-disposition-ledger.toml");
+    assert!(
+        xtask::performance_contract_074::check_terminal_dispositions(&root(), &value).is_empty()
+    );
+
+    let receipt_path = root().join(
+        "docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json",
+    );
+    let receipt: Value = serde_json::from_slice(&std::fs::read(receipt_path).unwrap()).unwrap();
+    let ledger_bytes = std::fs::read(
+        root().join("docs/testing/performance/0.74/terminal-disposition-ledger.toml"),
+    )
+    .unwrap();
+    let digest = Sha256::digest(ledger_bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert_eq!(
+        receipt["terminal_disposition_ledger_sha256"].as_str(),
+        Some(digest.as_str())
+    );
+    assert_eq!(
+        receipt["accepted_product_candidate_count"].as_u64(),
+        Some(0)
+    );
+    assert_eq!(receipt["promotable"].as_bool(), Some(false));
+    assert_eq!(receipt["release_admission_allowed"].as_bool(), Some(false));
+
+    value["disposition"]
+        .as_array_mut()
+        .unwrap()
+        .first_mut()
+        .unwrap()["accepted_product_change"] = toml::Value::Boolean(true);
+    let problems = xtask::performance_contract_074::check_terminal_dispositions(&root(), &value);
+    assert!(has(&problems, "cannot accept a product change"));
 }
 
 #[test]

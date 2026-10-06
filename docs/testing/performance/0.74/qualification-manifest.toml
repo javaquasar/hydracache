@@ -41,6 +41,10 @@ sha256 = "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
 path = "docs/testing/performance/0.74/release-admission-contract.toml"
 sha256 = "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
 
+[[contract_inputs]]
+path = "docs/testing/performance/0.74/terminal-disposition-ledger.toml"
+sha256 = "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+
 [[phases]]
 id = "Q0-identity-and-contract"
 expensive = false

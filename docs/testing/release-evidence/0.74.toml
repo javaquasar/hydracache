@@ -30,165 +30,201 @@ function = "proposal_admission_requires_w1_attribution_and_evidence"
 
 [[work_item]]
 id = "W2"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W3"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4a"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4b"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4c"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4d"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W4e"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W5"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W6"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W6a"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W6b"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W7"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8a"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8b"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8c"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W9"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W9a"
@@ -203,30 +239,36 @@ function = "both_orderings_preserve_atomic_increment_count"
 
 [[work_item]]
 id = "W9b"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W9c"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W9d"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W9e"

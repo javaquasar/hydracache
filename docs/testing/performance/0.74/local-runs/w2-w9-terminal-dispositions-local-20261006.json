@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_items": ["W2", "W3", "W4", "W4a", "W4b", "W4c", "W4d", "W4e", "W5", "W6", "W6a", "W6b", "W7", "W8", "W8a", "W8b", "W8c", "W9", "W9a", "W9b", "W9c", "W9d", "W9e"],
+  "recorded_at_utc": "2026-10-06T13:42:03Z",
+  "source_parent_sha": "eacd98e79f61df59130c21e9e84bae659d795022",
+  "terminal_disposition_ledger": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+  "terminal_disposition_ledger_sha256": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968",
+  "accepted_product_candidate_count": 0,
+  "candidate_source_sha": "UNRESOLVED",
+  "promotable": false,
+  "release_admission_allowed": false,
+  "claim_boundary": "This receipt reconciles already retained W2-W9 terminal negative, deferred, not-authorized, and no-compatible-candidate dispositions. Implemented release-evidence rows mean the disposition is machine-readable, not that a product change, performance win, C74 identity, or release gate was accepted."
+}

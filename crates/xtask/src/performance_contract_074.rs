@@ -14,6 +14,7 @@ const HOST: &str = "host-profile.toml";
 const LOCAL_HARNESS: &str = "local-harness.toml";
 const COMPOSITION: &str = "composition-ledger.toml";
 const RELEASE_ADMISSION: &str = "release-admission-contract.toml";
+const TERMINAL_DISPOSITIONS: &str = "terminal-disposition-ledger.toml";
 const RELEASE: &str = "0.74";
 const FROZEN_C73: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
 const C73_TREE: &str = "92336607f21a68f563e65dc0fccccd8efaa14f7b";
@@ -56,6 +57,7 @@ pub fn check_at_root(root: &Path, receipt: Option<&Path>) -> Result<Vec<String>,
     let local_harness = read_toml(&evidence.join(LOCAL_HARNESS))?;
     let composition = read_toml(&evidence.join(COMPOSITION))?;
     let release_admission = read_toml(&evidence.join(RELEASE_ADMISSION))?;
+    let terminal_dispositions = read_toml(&evidence.join(TERMINAL_DISPOSITIONS))?;
     let mut problems = Vec::new();
     problems.extend(check_identities(&identities));
     problems.extend(check_matrix(&matrix));
@@ -65,6 +67,7 @@ pub fn check_at_root(root: &Path, receipt: Option<&Path>) -> Result<Vec<String>,
     problems.extend(check_local_harness(&local_harness));
     problems.extend(check_composition(&composition));
     problems.extend(check_release_admission(&release_admission));
+    problems.extend(check_terminal_dispositions(root, &terminal_dispositions));
     if let Some(path) = receipt {
         let path = if path.is_absolute() {
             path.to_owned()
@@ -649,6 +652,121 @@ pub fn check_release_admission(value: &TomlValue) -> Vec<String> {
     .collect::<BTreeSet<_>>();
     if unresolved != expected {
         problems.push("release-admission unresolved blockers must remain exact".to_owned());
+    }
+    problems
+}
+
+pub fn check_terminal_dispositions(root: &Path, value: &TomlValue) -> Vec<String> {
+    let mut problems = common(value, "terminal-disposition-ledger");
+    expect_str(
+        value,
+        "ledger_id",
+        "terminal-disposition-ledger-074-v1",
+        &mut problems,
+    );
+    expect_str(
+        value,
+        "state",
+        "terminal-no-accepted-product-candidate",
+        &mut problems,
+    );
+    expect_i64(value, "accepted_product_candidate_count", 0, &mut problems);
+    expect_str(value, "candidate_source_sha", "UNRESOLVED", &mut problems);
+    expect_bool(value, "release_admission_allowed", false, &mut problems);
+
+    let expected = BTreeMap::from([
+        ("W2", "rejected-local-non-regression"),
+        (
+            "W3",
+            "adaptive-retry-rejected-backpressure-before-measurement",
+        ),
+        ("W4", "measured-below-isolated-floor"),
+        ("W4a", "screened-no-authorized-isolated-candidate"),
+        ("W4b", "screened-no-authorized-isolated-candidate"),
+        ("W4c", "screened-no-authorized-isolated-candidate"),
+        ("W4d", "screened-no-authorized-isolated-candidate"),
+        ("W4e", "screened-no-authorized-isolated-candidate"),
+        ("W5", "deferred-measured-below-floor"),
+        ("W6", "w6a-rejected-w6b-not-authorized"),
+        ("W6a", "rejected-local-non-regression"),
+        (
+            "W6b",
+            "not-authorized-without-material-contention-after-w6a",
+        ),
+        (
+            "W7",
+            "del-candidate-rejected-native-guard-local-aa-unresolved",
+        ),
+        (
+            "W8",
+            "w8a-rejected-local-tail-guard-w8b-no-compatible-candidate",
+        ),
+        ("W8a", "rejected-local-tail-guard"),
+        ("W8b", "no-compatible-candidate"),
+        ("W8c", "not-started-prerequisites-not-accepted"),
+        (
+            "W9",
+            "w9a-rejected-w9b-not-authorized-w9c-measured-no-new-candidate-w9d-unauthorized-w9e-measured-no-admissible-candidate",
+        ),
+        ("W9a", "rejected-no-isolated-cpu-win"),
+        ("W9b", "not-authorized-without-measured-owner"),
+        (
+            "W9c",
+            "measured-no-new-candidate-existing-w3-owner-confirmed",
+        ),
+        ("W9d", "not-authorized-durability-separate"),
+        ("W9e", "measured-no-admissible-candidate"),
+    ]);
+    let rows = array_of_tables(value, "disposition", &mut problems);
+    let mut actual = BTreeMap::new();
+    for row in rows {
+        let Some(id) = string(row, "id") else {
+            problems.push("terminal disposition is missing id".to_owned());
+            continue;
+        };
+        let Some(decision) = string(row, "decision") else {
+            problems.push(format!("terminal disposition {id} is missing decision"));
+            continue;
+        };
+        if actual.insert(id, decision).is_some() {
+            problems.push(format!("terminal disposition {id} is duplicated"));
+        }
+        if boolean(row, "terminal") != Some(true) {
+            problems.push(format!("terminal disposition {id} must remain terminal"));
+        }
+        if boolean(row, "accepted_product_change") != Some(false) {
+            problems.push(format!(
+                "terminal disposition {id} cannot accept a product change"
+            ));
+        }
+        let evidence = row
+            .get("evidence")
+            .and_then(TomlValue::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(TomlValue::as_str)
+            .collect::<Vec<_>>();
+        if evidence.is_empty() {
+            problems.push(format!(
+                "terminal disposition {id} has no retained evidence"
+            ));
+        }
+        for path in evidence {
+            let relative = Path::new(path);
+            if relative.is_absolute()
+                || relative
+                    .components()
+                    .any(|part| matches!(part, std::path::Component::ParentDir))
+                || !root.join(relative).is_file()
+            {
+                problems.push(format!(
+                    "terminal disposition {id} evidence is missing or unsafe: {path}"
+                ));
+            }
+        }
+    }
+    if actual != expected {
+        problems.push("W2-W9 terminal disposition ids or decisions drifted".to_owned());
     }
     problems
 }

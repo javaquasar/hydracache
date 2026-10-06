@@ -443,11 +443,13 @@ pub fn build_report(
                 reasons.push("missing dynamic canary registry row".to_owned());
                 false
             }
-        } else if matches!(
-            manifest.canary_policy,
-            CanaryPolicy::DedicatedFlipSentinels
-                | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
-        ) {
+        } else if !manifest.dynamic_canary_work_items.is_empty()
+            || matches!(
+                manifest.canary_policy,
+                CanaryPolicy::DedicatedFlipSentinels
+                    | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+            )
+        {
             true
         } else if let Some(problem) = &canary_release_problem {
             reasons.push(problem.clone());

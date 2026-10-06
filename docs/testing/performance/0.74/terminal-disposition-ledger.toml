@@ -1,0 +1,168 @@
+schema_version = 1
+release = "0.74"
+ledger_id = "terminal-disposition-ledger-074-v1"
+state = "terminal-no-accepted-product-candidate"
+accepted_product_candidate_count = 0
+candidate_source_sha = "UNRESOLVED"
+release_admission_allowed = false
+
+[[disposition]]
+id = "W2"
+decision = "rejected-local-non-regression"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w2-ab-baseline-get-p1-off-r1.json", "docs/testing/performance/0.74/local-runs/w2-ab-candidate-get-p1-off-r1.json"]
+
+[[disposition]]
+id = "W3"
+decision = "adaptive-retry-rejected-backpressure-before-measurement"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w3-adaptive-coalescing-contract.toml", "docs/testing/performance/0.74/w3-adaptive-baseline.md", "docs/testing/performance/0.74/local-runs/w3-adaptive-semantic-rejection.json"]
+
+[[disposition]]
+id = "W4"
+decision = "measured-below-isolated-floor"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-get-r1.json", "docs/testing/performance/0.74/local-runs/w4-stage-set-r1.json"]
+
+[[disposition]]
+id = "W4a"
+decision = "screened-no-authorized-isolated-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-get-r1.json"]
+
+[[disposition]]
+id = "W4b"
+decision = "screened-no-authorized-isolated-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-get-r1.json"]
+
+[[disposition]]
+id = "W4c"
+decision = "screened-no-authorized-isolated-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-get-r1.json"]
+
+[[disposition]]
+id = "W4d"
+decision = "screened-no-authorized-isolated-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-set-r1.json"]
+
+[[disposition]]
+id = "W4e"
+decision = "screened-no-authorized-isolated-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w4-stage-get-r1.json"]
+
+[[disposition]]
+id = "W5"
+decision = "deferred-measured-below-floor"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/adr/0022-retain-canonical-key-representation-for-074.md", "docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w5-key-get-r1.json", "docs/testing/performance/0.74/local-runs/w5-key-set-r1.json"]
+
+[[disposition]]
+id = "W6"
+decision = "w6a-rejected-w6b-not-authorized"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w6a-ab-baseline-raw-embedded-get-c8-off-r1.json", "docs/testing/performance/0.74/local-runs/w6a-ab-candidate-raw-embedded-get-c8-off-r1.json"]
+
+[[disposition]]
+id = "W6a"
+decision = "rejected-local-non-regression"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w6a-ab-baseline-raw-embedded-get-c8-off-r1.json", "docs/testing/performance/0.74/local-runs/w6a-ab-candidate-raw-embedded-get-c8-off-r1.json"]
+
+[[disposition]]
+id = "W6b"
+decision = "not-authorized-without-material-contention-after-w6a"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/proposal-registry.toml"]
+
+[[disposition]]
+id = "W7"
+decision = "del-candidate-rejected-native-guard-local-aa-unresolved"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w7-native-guard-client-surface-get-c8-off-baseline-r1.json", "docs/testing/performance/0.74/local-runs/w7-native-guard-client-surface-get-c8-off-candidate-r1.json"]
+
+[[disposition]]
+id = "W8"
+decision = "w8a-rejected-local-tail-guard-w8b-no-compatible-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w8a-v6-screen-client-surface-get-c8-b64-r1.json", "docs/testing/performance/0.74/local-runs/w8a-v6-screen-verified-session-get-c8-b64-r1.json"]
+
+[[disposition]]
+id = "W8a"
+decision = "rejected-local-tail-guard"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w8a-v6-screen-client-surface-get-c8-b64-r1.json", "docs/testing/performance/0.74/local-runs/w8a-v6-screen-verified-session-get-c8-b64-r1.json"]
+
+[[disposition]]
+id = "W8b"
+decision = "no-compatible-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/local-runs/w8-ownership-v4-raw-embedded-get-b4096-r1.json"]
+
+[[disposition]]
+id = "W8c"
+decision = "not-started-prerequisites-not-accepted"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w1-local-attribution.md", "docs/testing/performance/0.74/proposal-registry.toml"]
+
+[[disposition]]
+id = "W9"
+decision = "w9a-rejected-w9b-not-authorized-w9c-measured-no-new-candidate-w9d-unauthorized-w9e-measured-no-admissible-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9-local-followups.md", "docs/testing/performance/0.74/local-runs/w9a-atomic-ordering-c1.json", "docs/testing/performance/0.74/local-runs/w9c-linux-kernel-attribution-c126283c.json", "docs/testing/performance/0.74/local-runs/w9e-linux-allocator-attribution-707abde4.json"]
+
+[[disposition]]
+id = "W9a"
+decision = "rejected-no-isolated-cpu-win"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9a-atomic-ordering-registry.toml", "docs/testing/performance/0.74/local-runs/w9a-atomic-ordering-c1.json", "docs/testing/performance/0.74/local-runs/w9a-atomic-ordering-c8.json"]
+
+[[disposition]]
+id = "W9b"
+decision = "not-authorized-without-measured-owner"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9-local-followups.md", "docs/testing/performance/0.74/proposal-registry.toml"]
+
+[[disposition]]
+id = "W9c"
+decision = "measured-no-new-candidate-existing-w3-owner-confirmed"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9c-linux-kernel-attribution-contract.toml", "docs/testing/performance/0.74/w9c-linux-kernel-attribution.md", "docs/testing/performance/0.74/local-runs/w9c-linux-kernel-attribution-c126283c.json"]
+
+[[disposition]]
+id = "W9d"
+decision = "not-authorized-durability-separate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9-local-followups.md", "docs/testing/performance/0.74/proposal-registry.toml"]
+
+[[disposition]]
+id = "W9e"
+decision = "measured-no-admissible-candidate"
+terminal = true
+accepted_product_change = false
+evidence = ["docs/testing/performance/0.74/w9e-linux-allocator-profile-contract.toml", "docs/testing/performance/0.74/w9e-linux-allocator-attribution.md", "docs/testing/performance/0.74/local-runs/w9e-linux-allocator-attribution-707abde4.json"]
