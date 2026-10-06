@@ -1231,12 +1231,12 @@ pub fn run_fixture_daemon() -> Result<(), String> {
 
 pub fn run_start_rehearsal_harness() -> Result<(), String> {
     let campaign_id = std::env::var("HYDRACACHE_CAMPAIGN_ID").map_err(display)?;
-    let role = std::env::var("HYDRACACHE_ROLE").map_err(display)?;
+    let role = start_rehearsal_role(&std::env::var("HYDRACACHE_ROLE").map_err(display)?)?;
     let evidence_directory =
         PathBuf::from(std::env::var("HYDRACACHE_EVIDENCE_DIRECTORY").map_err(display)?);
     let isolated_cpuset = std::env::var("HYDRACACHE_ISOLATED_CPUSET").map_err(display)?;
     let housekeeping_cpuset = std::env::var("HYDRACACHE_HOUSEKEEPING_CPUSET").map_err(display)?;
-    if role != "i74" || campaign_id.len() != 64 {
+    if campaign_id.len() != 64 {
         return Err("start rehearsal fixture environment differs".to_owned());
     }
     let executable = std::env::current_exe().map_err(display)?;
@@ -1268,6 +1268,7 @@ pub fn run_start_rehearsal_harness() -> Result<(), String> {
             writer_evidence_directory,
             housekeeping_cpuset,
             campaign_id,
+            role,
             harness,
             daemon,
             finish_rx,
@@ -1411,6 +1412,7 @@ fn run_start_rehearsal_checkpoint_writer(
     evidence_directory: PathBuf,
     housekeeping_cpuset: String,
     campaign_id: String,
+    role: Role,
     harness: crate::ProcessIdentity,
     daemon: crate::ProcessIdentity,
     finish_rx: mpsc::Receiver<bool>,
@@ -1427,7 +1429,7 @@ fn run_start_rehearsal_checkpoint_writer(
             &previous,
             CheckpointPayload {
                 campaign_id: campaign_id.clone(),
-                role: Role::I74,
+                role: role.clone(),
                 phase: Phase::Startup,
                 phase_epoch: sequence,
                 monotonic_elapsed_ns: u64::try_from(started.elapsed().as_nanos())
@@ -1465,6 +1467,7 @@ fn run_start_rehearsal_checkpoint_writer(
                 return publish_start_rehearsal_terminal_evidence(
                     &evidence_directory,
                     &campaign_id,
+                    &role,
                     &harness,
                     &daemon,
                     sequence,
@@ -1490,6 +1493,7 @@ fn run_start_rehearsal_checkpoint_writer(
 fn publish_start_rehearsal_terminal_evidence(
     evidence_directory: &Path,
     campaign_id: &str,
+    role: &Role,
     harness: &crate::ProcessIdentity,
     daemon: &crate::ProcessIdentity,
     sequence: u64,
@@ -1508,7 +1512,7 @@ fn publish_start_rehearsal_terminal_evidence(
     if evidence_directory
         .file_name()
         .and_then(|name| name.to_str())
-        != Some("i74")
+        != Some(start_rehearsal_role_name(role))
     {
         return Err("start rehearsal evidence role differs".to_owned());
     }
@@ -1519,6 +1523,7 @@ fn publish_start_rehearsal_terminal_evidence(
         evidence_directory,
         campaign_id,
         &manifest_sha256,
+        role,
         harness,
         daemon,
         sequence,
@@ -1534,6 +1539,7 @@ fn publish_start_rehearsal_terminal_documents(
     evidence_directory: &Path,
     campaign_id: &str,
     manifest_sha256: &str,
+    role: &Role,
     harness: &crate::ProcessIdentity,
     daemon: &crate::ProcessIdentity,
     sequence: u64,
@@ -1559,7 +1565,7 @@ fn publish_start_rehearsal_terminal_documents(
         previous_record_sha256,
         CheckpointPayload {
             campaign_id: campaign_id.to_owned(),
-            role: Role::I74,
+            role: role.clone(),
             phase: Phase::Terminal,
             phase_epoch: terminal_sequence,
             monotonic_elapsed_ns: u64::try_from(elapsed.as_nanos()).map_err(display)?,
@@ -1588,13 +1594,13 @@ fn publish_start_rehearsal_terminal_documents(
     )
     .map_err(display)?;
 
-    let role_root = PathBuf::from("roles/i74");
+    let role_root = PathBuf::from("roles").join(start_rehearsal_role_name(role));
     let proof_relative = role_root.join("non-product-seal-proof.json");
     let proof = canonical_json(&StartRehearsalSealProof {
         schema_version: 1,
         release: "0.74",
         campaign_id,
-        role: Role::I74,
+        role: role.clone(),
         fixture_binary: FIXTURE_BINARY,
         product_candidate_started: false,
         promotable: false,
@@ -1624,7 +1630,7 @@ fn publish_start_rehearsal_terminal_documents(
             schema_version: 1,
             release: "0.74",
             campaign_id,
-            role: Role::I74,
+            role: role.clone(),
             guard_id,
             passed: true,
             evidence_relative_paths: &evidence_paths,
@@ -1646,7 +1652,7 @@ fn publish_start_rehearsal_terminal_documents(
         release: "0.74".to_owned(),
         campaign_id: campaign_id.to_owned(),
         campaign_manifest_sha256: manifest_sha256.to_owned(),
-        role: Role::I74,
+        role: role.clone(),
         result: PacketResult::Complete,
         terminal_reason: None,
         journal_relative_path: role_root.join("checkpoints.jsonl"),
@@ -1661,6 +1667,21 @@ fn publish_start_rehearsal_terminal_documents(
     )?;
 
     Ok(())
+}
+
+fn start_rehearsal_role(value: &str) -> Result<Role, String> {
+    match value {
+        "i74" => Ok(Role::I74),
+        "c74" => Ok(Role::C74),
+        _ => Err("start rehearsal fixture environment differs".to_owned()),
+    }
+}
+
+fn start_rehearsal_role_name(role: &Role) -> &'static str {
+    match role {
+        Role::I74 => "i74",
+        Role::C74 => "c74",
+    }
 }
 
 fn read_start_rehearsal_manifest_head(campaign_directory: &Path) -> Result<String, String> {
@@ -2090,8 +2111,8 @@ fn display(error: impl std::fmt::Display) -> String {
 mod tests {
     use super::{
         fixture_diagnostic, lease_deadline_elapsed, parse_cpuset, progress_deadline_elapsed,
-        publish_start_rehearsal_terminal_evidence, uuid_from_hash,
-        FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
+        publish_start_rehearsal_terminal_evidence, start_rehearsal_role, start_rehearsal_role_name,
+        uuid_from_hash, FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
         FIXTURE_DAEMON_DRIFT_SECONDS, FIXTURE_LEASE_SECONDS, HASH_A,
     };
     use crate::manifest::{
@@ -2215,7 +2236,9 @@ mod tests {
         }
     }
 
-    fn prepare_terminal_fixture() -> (
+    fn prepare_terminal_fixture(
+        role: Role,
+    ) -> (
         tempfile::TempDir,
         PathBuf,
         PathBuf,
@@ -2228,8 +2251,10 @@ mod tests {
         let temporary = tempfile::tempdir().unwrap();
         let campaign_id = "1".repeat(64);
         let campaign = temporary.path().join("campaigns").join(&campaign_id);
-        let role = campaign.join("roles/i74");
-        fs::create_dir_all(&role).unwrap();
+        let role_directory = campaign
+            .join("roles")
+            .join(start_rehearsal_role_name(&role));
+        fs::create_dir_all(&role_directory).unwrap();
         fs::create_dir(temporary.path().join("seals")).unwrap();
         let manifest = terminal_manifest(&campaign_id);
         let manifest_bytes = canonical_json(&manifest).unwrap();
@@ -2253,7 +2278,7 @@ mod tests {
             GENESIS_HASH,
             CheckpointPayload {
                 campaign_id,
-                role: Role::I74,
+                role,
                 phase: Phase::Startup,
                 phase_epoch: 1,
                 monotonic_elapsed_ns: 1,
@@ -2276,15 +2301,15 @@ mod tests {
         )
         .unwrap();
         append_record(
-            &role.join("checkpoints.jsonl"),
-            &role.join("checkpoints.head"),
+            &role_directory.join("checkpoints.jsonl"),
+            &role_directory.join("checkpoints.head"),
             &first,
         )
         .unwrap();
         (
             temporary,
             campaign,
-            role,
+            role_directory,
             manifest,
             manifest_sha256,
             harness,
@@ -2360,10 +2385,11 @@ mod tests {
     #[test]
     fn start_rehearsal_terminal_publication_is_resolver_ready_and_non_promotable() {
         let (_temporary, campaign, role, manifest, digest, harness, daemon, previous) =
-            prepare_terminal_fixture();
+            prepare_terminal_fixture(Role::I74);
         publish_start_rehearsal_terminal_evidence(
             &role,
             &manifest.campaign_id,
+            &Role::I74,
             &harness,
             &daemon,
             1,
@@ -2400,9 +2426,58 @@ mod tests {
     }
 
     #[test]
+    fn start_rehearsal_terminal_publication_preserves_c74_role_and_paths() {
+        let (_temporary, campaign, role, manifest, _digest, harness, daemon, previous) =
+            prepare_terminal_fixture(Role::C74);
+        publish_start_rehearsal_terminal_evidence(
+            &role,
+            &manifest.campaign_id,
+            &Role::C74,
+            &harness,
+            &daemon,
+            1,
+            &previous,
+            Duration::from_secs(2),
+            2,
+        )
+        .unwrap();
+
+        let report = verify_journal(&role.join("checkpoints.jsonl")).unwrap();
+        assert_eq!(report.records, 2);
+        assert_eq!(report.last_phase, Phase::Terminal);
+        let inventory: crate::seal_input::SealInputInventory = serde_json::from_slice(
+            &fs::read(role.join(crate::seal_input::SEAL_INPUT_INVENTORY_NAME)).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(inventory.role, Role::C74);
+        assert_eq!(
+            inventory.journal_relative_path,
+            PathBuf::from("roles/c74/checkpoints.jsonl")
+        );
+        assert!(inventory
+            .raw_files
+            .iter()
+            .all(|path| !path.starts_with("roles/i74")));
+        let proof: serde_json::Value = serde_json::from_slice(
+            &fs::read(campaign.join("roles/c74/non-product-seal-proof.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(proof["role"], "c74");
+    }
+
+    #[test]
+    fn start_rehearsal_role_is_exact_and_bounded_to_campaign_roles() {
+        assert_eq!(start_rehearsal_role("i74").unwrap(), Role::I74);
+        assert_eq!(start_rehearsal_role("c74").unwrap(), Role::C74);
+        for invalid in ["", "I74", "c73", "i74 ", "c74/../i74"] {
+            assert!(start_rehearsal_role(invalid).is_err(), "accepted {invalid}");
+        }
+    }
+
+    #[test]
     fn start_rehearsal_terminal_publication_rejects_unsafe_manifest_head_before_append() {
         let (_temporary, campaign, role, manifest, _digest, harness, daemon, previous) =
-            prepare_terminal_fixture();
+            prepare_terminal_fixture(Role::I74);
         fs::set_permissions(
             campaign.join("campaign-start.sha256"),
             fs::Permissions::from_mode(0o640),
@@ -2411,6 +2486,7 @@ mod tests {
         assert!(publish_start_rehearsal_terminal_evidence(
             &role,
             &manifest.campaign_id,
+            &Role::I74,
             &harness,
             &daemon,
             1,
