@@ -638,6 +638,8 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
         "/run/hydracache-perf/supervisor-v1.sock",
         "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074",
         "installed_source_commit",
+        "installed_fixture_binary",
+        "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture",
         "installed_supervisor_binary_sha256",
         "peer_admission_required",
         "product_candidate_started",
@@ -667,6 +669,75 @@ fn host_observation_workflow_is_read_only_fixed_scope_and_socket_bound() {
     assert!(
         entry.contains("uses: ./.github/workflows/performance-long-run-host-observation-074.yml")
     );
+}
+
+#[test]
+fn non_product_start_bundle_workflow_is_observation_bound_and_does_not_start() {
+    let workflow = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-start-bundle-074.yml"),
+    )
+    .unwrap();
+    let _: serde_yaml::Value = serde_yaml::from_str(&workflow).unwrap();
+    for required in [
+        "workflow_call:",
+        "workflow_dispatch:",
+        "uses: ./.github/workflows/performance-long-run-host-observation-074.yml",
+        "runs-on: ubuntu-latest",
+        "performance_non_product_start_bundle_074.py",
+        "test_performance_non_product_start_bundle_074",
+        "--verify-start-bundle",
+        "long-run-074-start-bundle-${{ steps.bundle.outputs.bundle_sha256 }}",
+        "long-run-074-start-bundle-evidence-${{ steps.bundle.outputs.bundle_sha256 }}",
+    ] {
+        assert!(workflow.contains(required), "workflow omitted {required}");
+    }
+    for forbidden in [
+        "request-start",
+        "HYDRACACHE_074_AUTH_SIGNING_KEY_HEX",
+        "sudo -n",
+        "systemctl stop",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "bundle-only workflow contains {forbidden}"
+        );
+    }
+
+    let assembler = std::fs::read_to_string(
+        root().join("scripts/perf/performance_non_product_start_bundle_074.py"),
+    )
+    .unwrap();
+    for required in [
+        "non-product-start-fixture.toml",
+        "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture",
+        "campaign-fixture-harness",
+        "signed_start_dispatched\": False",
+        "campaign_state_mutated\": False",
+        "product_candidate_started\": False",
+        "promotable\": False",
+    ] {
+        assert!(assembler.contains(required), "assembler omitted {required}");
+    }
+    let fixture = std::fs::read_to_string(
+        root().join("docs/testing/performance/0.74/non-product-start-fixture.toml"),
+    )
+    .unwrap();
+    for required in [
+        "product_candidate = false",
+        "promotable = false",
+        "role_started = \"i74\"",
+        "cleanup = \"explicit-signed-abort\"",
+    ] {
+        assert!(fixture.contains(required), "fixture contract omitted {required}");
+    }
+
+    let entry = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-capability-074.yml"),
+    )
+    .unwrap();
+    assert!(entry.contains("- start-bundle"));
+    assert!(entry.contains("inputs.mode == 'start-bundle'"));
+    assert!(entry.contains("performance-long-run-start-bundle-074.yml"));
 }
 
 #[test]

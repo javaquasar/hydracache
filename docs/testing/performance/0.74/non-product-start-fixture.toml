@@ -1,0 +1,16 @@
+schema_version = 1
+fixture_id = "w11-protected-start-path-v1"
+release = "0.74"
+product_candidate = false
+promotable = false
+role_started = "i74"
+binary_path = "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture"
+argv = ["/opt/hydracache-performance/0.74/campaign-lifecycle-fixture", "campaign-fixture-harness"]
+seed = 740074
+checkpoint_cadence_seconds = 30
+progress_warning_gap_seconds = 90
+progress_rejection_gap_seconds = 180
+diagnostic_grace_seconds = 30
+lease_seconds = 3600
+cleanup = "explicit-signed-abort"
+final_guard = "non-product-protected-start-rehearsal-only"

@@ -85,6 +85,7 @@ jobs:
           import json
           import os
           import pathlib
+          import re
           import uuid
 
           request = {
@@ -154,11 +155,25 @@ jobs:
               raise SystemExit("host observation response identity or outcome differs")
           result = response["result"]
           if not isinstance(result, dict) or set(result) != {
-              "schema_version", "installed_source_commit", "receipt_sha256", "receipt"
+              "schema_version", "installed_source_commit", "fixture_binary",
+              "receipt_sha256", "receipt"
           } or result["schema_version"] != 1:
               raise SystemExit("host observation result fields differ")
           if result["installed_source_commit"] != os.environ["INPUT_SOURCE_SHA"]:
               raise SystemExit("installed supervisor source differs from requested source")
+          fixture = result["fixture_binary"]
+          if not isinstance(fixture, dict) or set(fixture) != {
+              "path", "sha256", "size", "inode", "device", "uid", "gid", "mode"
+          } or (
+              fixture["path"] != "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture"
+              or not re.fullmatch(r"[0-9a-f]{64}", fixture["sha256"])
+              or any(type(fixture[field]) is not int or fixture[field] <= 0
+                     for field in ["size", "inode", "device"])
+              or type(fixture["uid"]) is not int or fixture["uid"] != 0
+              or type(fixture["gid"]) is not int or fixture["gid"] != 0
+              or type(fixture["mode"]) is not int or fixture["mode"] != 0o755
+          ):
+              raise SystemExit("fixed non-product fixture identity differs")
           receipt = result["receipt"]
           receipt_bytes = json.dumps(
               receipt, sort_keys=True, separators=(",", ":")
@@ -175,6 +190,7 @@ jobs:
               "source_commit": os.environ["INPUT_SOURCE_SHA"],
               "installed_source_commit": result["installed_source_commit"],
               "installed_supervisor_binary_sha256": receipt["supervisor_binary"]["sha256"],
+              "installed_fixture_binary": fixture,
               "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
               "response_sha256": response["response_sha256"],
               "host_receipt_sha256": receipt_sha256,

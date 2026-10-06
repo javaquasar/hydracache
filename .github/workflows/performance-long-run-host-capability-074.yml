@@ -12,6 +12,7 @@ on:
           - probe
           - provision
           - host-observation
+          - start-bundle
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
@@ -95,6 +96,17 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/performance-long-run-host-observation-074.yml
+    with:
+      source_sha: ${{ github.sha }}
+      host_id: reference-074
+
+  start-bundle:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'start-bundle'
+    name: Immutable non-product start bundle
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-start-bundle-074.yml
     with:
       source_sha: ${{ github.sha }}
       host_id: reference-074

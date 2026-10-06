@@ -1,0 +1,114 @@
+name: Performance Long-Run Non-Product Start Bundle 0.74
+
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact installed supervisor and reviewed tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact installed supervisor and reviewed tooling commit
+        required: true
+        type: string
+      host_id:
+        description: Stable admitted-host identifier used only for serialization
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  observe:
+    name: Collect exact source-bound host input
+    permissions:
+      contents: read
+    uses: ./.github/workflows/performance-long-run-host-observation-074.yml
+    with:
+      source_sha: ${{ inputs.source_sha }}
+      host_id: ${{ inputs.host_id }}
+
+  assemble:
+    name: Assemble immutable non-product start bundle
+    needs: observe
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OBSERVATION_DIR: target/controller-host-observation-074
+      BUNDLE_DIR: target/controller-start-bundle-074
+      EVIDENCE_DIR: target/performance-evidence/0.74/reference/w11-start-bundle
+    steps:
+      - name: Check out exact reviewed bundle tooling
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.source_sha }}
+
+      - name: Download exact source-bound host observation
+        uses: actions/download-artifact@v5
+        with:
+          name: long-run-074-host-observation-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/controller-host-observation-074
+
+      - name: Validate exact tooling and local bundle tests
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          python3 -m unittest \
+            scripts.perf.test_performance_long_run_074 \
+            scripts.perf.test_performance_non_product_start_bundle_074
+
+      - name: Assemble and independently verify six-file bundle
+        id: bundle
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_non_product_start_bundle_074.py \
+            --observation-directory "$OBSERVATION_DIR" \
+            --output "$BUNDLE_DIR" \
+            --evidence-output "$EVIDENCE_DIR" \
+            --source-sha "$INPUT_SOURCE_SHA" \
+            --repository-id "$REPOSITORY_ID"
+          verified="$(python3 scripts/perf/performance_long_run_074.py \
+            --verify-start-bundle --output "$BUNDLE_DIR")"
+          printf '%s\n' "$verified"
+          bundle_sha256="$(tr -d '\r\n' < "$BUNDLE_DIR/start-bundle.sha256")"
+          [[ "$bundle_sha256" =~ ^[0-9a-f]{64}$ ]]
+          campaign_id="$(python3 -c 'import json; print(json.load(open("target/controller-start-bundle-074/start-bundle.json"))["campaign_id"])')"
+          manifest_sha256="$(tr -d '\r\n' < "$BUNDLE_DIR/campaign-start.sha256")"
+          echo "bundle_sha256=$bundle_sha256" >> "$GITHUB_OUTPUT"
+          echo "campaign_id=$campaign_id" >> "$GITHUB_OUTPUT"
+          echo "manifest_sha256=$manifest_sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Retain immutable non-product start bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: long-run-074-start-bundle-${{ steps.bundle.outputs.bundle_sha256 }}
+          path: target/controller-start-bundle-074/**
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Retain non-promotable bundle-construction evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: long-run-074-start-bundle-evidence-${{ steps.bundle.outputs.bundle_sha256 }}
+          path: target/performance-evidence/0.74/reference/w11-start-bundle/**
+          if-no-files-found: error
+          retention-days: 30
