@@ -10,9 +10,8 @@ use crate::host_receipt::{
 };
 use crate::lease_expiry::{drive_lease_expiry, LeaseExpiryOutcome};
 use crate::manifest::{
-    frozen_identity_from_manifest, parse_stored_and_validate, CampaignManifest,
-    ExpectedOutputSchemaSha256s, InstalledBinary, OutputLimits, PhaseDurationsSeconds,
-    RoleArgvTemplates,
+    frozen_identity_from_manifest, CampaignManifest, ExpectedOutputSchemaSha256s, InstalledBinary,
+    OutputLimits, PhaseDurationsSeconds, RoleArgvTemplates,
 };
 use crate::measurement_loss::{
     drive_measurement_loss, MeasurementLossOutcome, MeasurementLossReason,
@@ -24,9 +23,7 @@ use crate::process_identity::{
 };
 use crate::progress_loss::{drive_progress_loss, ProgressLossOutcome};
 use crate::protocol::{ControllerIdentity, Operation, Request};
-use crate::seal_input::{
-    resolve_packet_plan, InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME,
-};
+use crate::seal_input::{InventoryGuardEvidence, SealInputInventory, SEAL_INPUT_INVENTORY_NAME};
 use crate::spawn::{SpawnBackend, SpawnObservation};
 use crate::start_lifecycle::drive_i74_start_request;
 use crate::state::{apply_attach, AttachRequest, CampaignState};
@@ -62,8 +59,7 @@ const START_REHEARSAL_CHECKPOINT_SECONDS: u64 = 30;
 const START_REHEARSAL_COMPLETION_TIMEOUT_SECONDS: u64 = 30;
 const START_REHEARSAL_READY_MARKER: &str = ".seal-ready";
 const START_REHEARSAL_RELEASE_MARKER: &str = ".seal-release";
-const START_REHEARSAL_AUTHORIZATION_IDENTITY: &str =
-    "performance-reference-074/non-product-start-v1";
+const CAMPAIGN_MANIFEST_HEAD_NAME: &str = "campaign-start.sha256";
 const START_REHEARSAL_GUARDS: [&str; 2] = [
     "non-product-protected-start-rehearsal-only",
     "product-candidate-started-false",
@@ -1517,18 +1513,11 @@ fn publish_start_rehearsal_terminal_evidence(
         return Err("start rehearsal evidence role differs".to_owned());
     }
 
-    let manifest_bytes =
-        fs::read(campaign_directory.join("campaign-start.json")).map_err(display)?;
-    let encoded_manifest = manifest_bytes
-        .strip_suffix(b"\n")
-        .unwrap_or(&manifest_bytes);
-    let manifest_sha256 = sha256_hex(encoded_manifest);
-    let manifest = parse_stored_and_validate(&manifest_bytes, &manifest_sha256, campaign_id)
-        .map_err(display)?;
+    let manifest_sha256 = read_start_rehearsal_manifest_head(campaign_directory)?;
     publish_start_rehearsal_terminal_documents(
         campaign_directory,
         evidence_directory,
-        &manifest,
+        campaign_id,
         &manifest_sha256,
         harness,
         daemon,
@@ -1543,7 +1532,7 @@ fn publish_start_rehearsal_terminal_evidence(
 fn publish_start_rehearsal_terminal_documents(
     campaign_directory: &Path,
     evidence_directory: &Path,
-    manifest: &CampaignManifest,
+    campaign_id: &str,
     manifest_sha256: &str,
     harness: &crate::ProcessIdentity,
     daemon: &crate::ProcessIdentity,
@@ -1552,29 +1541,12 @@ fn publish_start_rehearsal_terminal_documents(
     elapsed: Duration,
     now: u64,
 ) -> Result<(), String> {
-    let expected_guards = START_REHEARSAL_GUARDS
-        .iter()
-        .map(|guard| (*guard).to_owned())
-        .collect::<BTreeSet<_>>();
-    let actual_guards = manifest
-        .required_final_guards
-        .iter()
-        .cloned()
-        .collect::<BTreeSet<_>>();
-    if manifest.release != "0.74"
+    if !crate::is_hash(campaign_id)
+        || !crate::is_hash(manifest_sha256)
         || campaign_directory
             .file_name()
             .and_then(|name| name.to_str())
-            != Some(manifest.campaign_id.as_str())
-        || manifest.authorization_identity != START_REHEARSAL_AUTHORIZATION_IDENTITY
-        || manifest.dirty
-        || manifest.argv_templates.i74
-            != [
-                FIXTURE_BINARY.to_owned(),
-                "campaign-start-rehearsal-harness".to_owned(),
-            ]
-        || actual_guards != expected_guards
-        || actual_guards.len() != manifest.required_final_guards.len()
+            != Some(campaign_id)
     {
         return Err("start rehearsal terminal manifest differs".to_owned());
     }
@@ -1586,7 +1558,7 @@ fn publish_start_rehearsal_terminal_documents(
         terminal_sequence,
         previous_record_sha256,
         CheckpointPayload {
-            campaign_id: manifest.campaign_id.clone(),
+            campaign_id: campaign_id.to_owned(),
             role: Role::I74,
             phase: Phase::Terminal,
             phase_epoch: terminal_sequence,
@@ -1621,7 +1593,7 @@ fn publish_start_rehearsal_terminal_documents(
     let proof = canonical_json(&StartRehearsalSealProof {
         schema_version: 1,
         release: "0.74",
-        campaign_id: &manifest.campaign_id,
+        campaign_id,
         role: Role::I74,
         fixture_binary: FIXTURE_BINARY,
         product_candidate_started: false,
@@ -1638,20 +1610,20 @@ fn publish_start_rehearsal_terminal_documents(
         .sync_all()
         .map_err(display)?;
     let evidence_paths = vec![proof_relative.clone()];
-    let mut inventory_guards = Vec::with_capacity(manifest.required_final_guards.len());
+    let mut inventory_guards = Vec::with_capacity(START_REHEARSAL_GUARDS.len());
     let mut raw_files = BTreeSet::from([
         PathBuf::from("campaign-start.json"),
         role_root.join("checkpoints.jsonl"),
         proof_relative,
     ]);
-    for guard_id in &manifest.required_final_guards {
+    for guard_id in START_REHEARSAL_GUARDS {
         let guard_relative = role_root
             .join("guards")
             .join(format!("{}.json", sha256_hex(guard_id.as_bytes())));
         let document = canonical_json(&StartRehearsalGuardDocument {
             schema_version: 1,
             release: "0.74",
-            campaign_id: &manifest.campaign_id,
+            campaign_id,
             role: Role::I74,
             guard_id,
             passed: true,
@@ -1661,7 +1633,7 @@ fn publish_start_rehearsal_terminal_documents(
         write_new_file(&campaign_directory.join(&guard_relative), &document, 0o600)?;
         raw_files.insert(guard_relative.clone());
         inventory_guards.push(InventoryGuardEvidence {
-            id: guard_id.clone(),
+            id: guard_id.to_owned(),
             passed: true,
             source_relative_path: guard_relative,
         });
@@ -1672,7 +1644,7 @@ fn publish_start_rehearsal_terminal_documents(
     let inventory = SealInputInventory {
         schema_version: 1,
         release: "0.74".to_owned(),
-        campaign_id: manifest.campaign_id.clone(),
+        campaign_id: campaign_id.to_owned(),
         campaign_manifest_sha256: manifest_sha256.to_owned(),
         role: Role::I74,
         result: PacketResult::Complete,
@@ -1688,23 +1660,34 @@ fn publish_start_rehearsal_terminal_documents(
         0o600,
     )?;
 
-    let seal_root = campaign_directory
-        .parent()
-        .and_then(Path::parent)
-        .map(|root| root.join("seals"))
-        .ok_or_else(|| "start rehearsal seal root is unavailable".to_owned())?;
-    let plan = resolve_packet_plan(
-        campaign_directory,
-        &seal_root,
-        manifest,
-        manifest_sha256,
-        Role::I74,
-    )
-    .map_err(display)?;
-    if plan.result != PacketResult::Complete || plan.promotable {
-        return Err("start rehearsal seal plan differs".to_owned());
-    }
     Ok(())
+}
+
+fn read_start_rehearsal_manifest_head(campaign_directory: &Path) -> Result<String, String> {
+    let campaign_metadata = fs::symlink_metadata(campaign_directory).map_err(display)?;
+    let path = campaign_directory.join(CAMPAIGN_MANIFEST_HEAD_NAME);
+    let metadata = fs::symlink_metadata(&path).map_err(display)?;
+    if !campaign_metadata.is_dir()
+        || campaign_metadata.file_type().is_symlink()
+        || campaign_metadata.mode() & 0o7777 != 0o750
+        || !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.nlink() != 1
+        || metadata.uid() != campaign_metadata.uid()
+        || metadata.gid() != campaign_metadata.gid()
+        || metadata.gid() != unsafe { libc::getegid() }
+        || metadata.mode() & 0o7777 != 0o440
+        || metadata.len() != 65
+    {
+        return Err("start rehearsal manifest head is unsafe".to_owned());
+    }
+    let bytes = fs::read(&path).map_err(display)?;
+    let value = bytes
+        .strip_suffix(b"\n")
+        .and_then(|value| std::str::from_utf8(value).ok())
+        .filter(|value| crate::is_hash(value))
+        .ok_or_else(|| "start rehearsal manifest head is unsafe".to_owned())?;
+    Ok(value.to_owned())
 }
 
 fn append_record_on_housekeeping(
@@ -2107,7 +2090,7 @@ fn display(error: impl std::fmt::Display) -> String {
 mod tests {
     use super::{
         fixture_diagnostic, lease_deadline_elapsed, parse_cpuset, progress_deadline_elapsed,
-        publish_start_rehearsal_terminal_documents, uuid_from_hash,
+        publish_start_rehearsal_terminal_evidence, uuid_from_hash,
         FIXTURE_DAEMON_AFTER_DRIFT_SECONDS, FIXTURE_DAEMON_DRIFT_AFTER_SECONDS,
         FIXTURE_DAEMON_DRIFT_SECONDS, FIXTURE_LEASE_SECONDS, HASH_A,
     };
@@ -2121,6 +2104,7 @@ mod tests {
     };
     use std::collections::BTreeMap;
     use std::fs;
+    use std::os::unix::fs::PermissionsExt;
     use std::path::PathBuf;
     use std::time::Duration;
 
@@ -2251,6 +2235,17 @@ mod tests {
         let manifest_bytes = canonical_json(&manifest).unwrap();
         let manifest_sha256 = sha256_hex(&manifest_bytes);
         fs::write(campaign.join("campaign-start.json"), manifest_bytes).unwrap();
+        fs::write(
+            campaign.join("campaign-start.sha256"),
+            format!("{manifest_sha256}\n"),
+        )
+        .unwrap();
+        fs::set_permissions(&campaign, fs::Permissions::from_mode(0o750)).unwrap();
+        fs::set_permissions(
+            campaign.join("campaign-start.sha256"),
+            fs::Permissions::from_mode(0o440),
+        )
+        .unwrap();
         let harness = process(41);
         let daemon = process(42);
         let first = build_record(
@@ -2366,11 +2361,9 @@ mod tests {
     fn start_rehearsal_terminal_publication_is_resolver_ready_and_non_promotable() {
         let (_temporary, campaign, role, manifest, digest, harness, daemon, previous) =
             prepare_terminal_fixture();
-        publish_start_rehearsal_terminal_documents(
-            &campaign,
+        publish_start_rehearsal_terminal_evidence(
             &role,
-            &manifest,
-            &digest,
+            &manifest.campaign_id,
             &harness,
             &daemon,
             1,
@@ -2393,18 +2386,31 @@ mod tests {
         assert!(campaign
             .join("roles/i74/non-product-seal-proof.json")
             .is_file());
+        let seal_root = campaign.parent().unwrap().parent().unwrap().join("seals");
+        let plan = crate::seal_input::resolve_packet_plan(
+            &campaign,
+            &seal_root,
+            &manifest,
+            &digest,
+            Role::I74,
+        )
+        .unwrap();
+        assert_eq!(plan.result, crate::artifact::PacketResult::Complete);
+        assert!(!plan.promotable);
     }
 
     #[test]
-    fn start_rehearsal_terminal_publication_rejects_guard_drift_before_append() {
-        let (_temporary, campaign, role, mut manifest, digest, harness, daemon, previous) =
+    fn start_rehearsal_terminal_publication_rejects_unsafe_manifest_head_before_append() {
+        let (_temporary, campaign, role, manifest, _digest, harness, daemon, previous) =
             prepare_terminal_fixture();
-        manifest.required_final_guards.pop();
-        assert!(publish_start_rehearsal_terminal_documents(
-            &campaign,
+        fs::set_permissions(
+            campaign.join("campaign-start.sha256"),
+            fs::Permissions::from_mode(0o640),
+        )
+        .unwrap();
+        assert!(publish_start_rehearsal_terminal_evidence(
             &role,
-            &manifest,
-            &digest,
+            &manifest.campaign_id,
             &harness,
             &daemon,
             1,

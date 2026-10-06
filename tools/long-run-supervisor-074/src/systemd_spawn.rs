@@ -285,6 +285,7 @@ fn prepare_role_directory(
     }
     let (uid, gid) = service_account_ids()?;
     set_owner_and_mode(&campaign_directory, 0, gid, 0o750)?;
+    prepare_manifest_head(&campaign_directory, intent, gid)?;
     let roles = create_or_validate_directory(&campaign_directory, "roles", 0, gid)?;
     let role = match intent.role {
         crate::Role::I74 => "i74",
@@ -294,6 +295,28 @@ fn prepare_role_directory(
     File::open(&role_directory)?.sync_all()?;
     File::open(&roles)?.sync_all()?;
     File::open(&campaign_directory)?.sync_all()?;
+    Ok(())
+}
+
+fn prepare_manifest_head(
+    campaign_directory: &Path,
+    intent: &SpawnIntent,
+    service_gid: libc::gid_t,
+) -> Result<(), SystemdSpawnError> {
+    use std::os::unix::fs::MetadataExt;
+
+    let path = campaign_directory.join("campaign-start.sha256");
+    let metadata = fs::symlink_metadata(&path)?;
+    if !metadata.is_file()
+        || metadata.file_type().is_symlink()
+        || metadata.nlink() != 1
+        || metadata.len() != 65
+        || fs::read(&path)? != format!("{}\n", intent.manifest_sha256).as_bytes()
+    {
+        return Err(SystemdSpawnError::Directory);
+    }
+    set_owner_and_mode(&path, 0, service_gid, 0o440)?;
+    File::open(campaign_directory)?.sync_all()?;
     Ok(())
 }
 
