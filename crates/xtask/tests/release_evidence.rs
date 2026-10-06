@@ -131,6 +131,39 @@ fn release_evidence_reports_every_manifest_work_item_exactly_once() {
 }
 
 #[test]
+fn fast_receipts_reject_one_millisecond_over_the_unchanged_cadence_budget() {
+    let root = root();
+    let suites = xtask::fast_suite::load_registry(&root).unwrap();
+    let suite = suites
+        .suite
+        .iter()
+        .find(|suite| suite.artifacts.is_empty())
+        .unwrap();
+    let gates = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut receipt = base_receipt(&gates.gate[0], "fixture");
+    let expected = xtask::evidence_run::expected_fast_digests(&root, suite).unwrap();
+    receipt.gate_id = suite.id.clone();
+    receipt.command_digest = expected.command;
+    receipt.registry_digest = expected.registry;
+    receipt.input_digest = expected.input;
+    let boundary = suite.budget_seconds * 1_000;
+    for duration in [boundary - 1, boundary] {
+        receipt.duration_ms = duration;
+        assert!(xtask::release_evidence::fast_receipt_problems(
+            &root, "0.64", "fixture", suite, &receipt
+        )
+        .is_empty());
+    }
+    receipt.duration_ms = boundary + 1;
+    let problems =
+        xtask::release_evidence::fast_receipt_problems(&root, "0.64", "fixture", suite, &receipt);
+    assert!(
+        problems.iter().any(|problem| problem.contains("budget")),
+        "{problems:?}"
+    );
+}
+
+#[test]
 fn active_ship_blocker_artifact_is_preserved_by_the_manifest_schema() {
     let manifest = xtask::release_evidence::parse_manifest_text(
         r#"
