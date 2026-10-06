@@ -128,7 +128,8 @@ def write_observation(directory: pathlib.Path, *, source_sha: str = SOURCE_SHA) 
         "promotable": False,
     }
     (directory / "request.json").write_bytes(request_bytes)
-    (directory / "response.json").write_bytes(canonical_json(response) + b"\n")
+    response_bytes = json.dumps(response, separators=(",", ":")).encode("utf-8")
+    (directory / "response.json").write_bytes(response_bytes + b"\n")
     (directory / "host-observation.json").write_bytes(receipt_bytes + b"\n")
     (directory / "host-observation.sha256").write_text(
         receipt_sha256 + "\n", encoding="ascii", newline="\n"

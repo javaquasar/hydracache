@@ -125,7 +125,9 @@ def read_safe_regular(path: pathlib.Path) -> bytes:
     return value
 
 
-def strict_canonical_object(value: bytes, label: str) -> dict[str, Any]:
+def strict_json_object(
+    value: bytes, label: str, *, sort_keys: bool
+) -> dict[str, Any]:
     encoded = value[:-1] if value.endswith(b"\n") else value
 
     def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -137,8 +139,11 @@ def strict_canonical_object(value: bytes, label: str) -> dict[str, Any]:
         return result
 
     parsed = json.loads(encoded, object_pairs_hook=reject_duplicates)
-    if not isinstance(parsed, dict) or canonical_json(parsed) != encoded:
-        raise ValueError(f"{label} is not one canonical JSON object")
+    rendered = json.dumps(
+        parsed, sort_keys=sort_keys, separators=(",", ":")
+    ).encode("utf-8")
+    if not isinstance(parsed, dict) or rendered != encoded:
+        raise ValueError(f"{label} is not one strict JSON object")
     return parsed
 
 
@@ -162,10 +167,10 @@ def load_observation(directory: pathlib.Path, source_sha: str) -> tuple[dict, di
     request_bytes = read_safe_regular(directory / "request.json")
     response_bytes = read_safe_regular(directory / "response.json")
     receipt_bytes = read_safe_regular(directory / "host-observation.json")
-    evidence = strict_canonical_object(evidence_bytes, "evidence.json")
-    request = strict_canonical_object(request_bytes, "request.json")
-    response = strict_canonical_object(response_bytes, "response.json")
-    receipt = strict_canonical_object(receipt_bytes, "host-observation.json")
+    evidence = strict_json_object(evidence_bytes, "evidence.json", sort_keys=True)
+    request = strict_json_object(request_bytes, "request.json", sort_keys=True)
+    response = strict_json_object(response_bytes, "response.json", sort_keys=False)
+    receipt = strict_json_object(receipt_bytes, "host-observation.json", sort_keys=True)
     canonical_receipt = canonical_json(receipt)
     response_body = {key: value for key, value in response.items() if key != "response_sha256"}
     result = response.get("result", {})
