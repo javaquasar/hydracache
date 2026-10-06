@@ -57,13 +57,19 @@
     "active_campaign_marker_metadata": "0400:0:0:65"
   },
   "safe_host_posture": {
-    "observed_unix_seconds": 1791270236,
+    "observed_unix_seconds": 1791270406,
+    "lease_deadline_crossed": true,
     "runner_active": false,
     "runner_enabled": false,
     "supervisor_active": false,
     "supervisor_restart_count_since_install": 0,
-    "c74_unit_loaded": false,
+    "c74_unit_loaded": true,
+    "c74_unit_active_state": "failed",
+    "c74_unit_sub_state": "failed",
+    "c74_unit_result": "exit-code",
+    "c74_unit_exec_main_status": 9,
     "c74_main_pid": 0,
+    "c74_control_group_empty": true,
     "active_campaign_claim_retained": true,
     "manual_state_or_marker_mutation_performed": false,
     "reason_supervisor_stopped": "prevent a post-deadline restart loop because the installed lease-expiry coordinator intentionally rejects corrupt quarantine"
