@@ -47,6 +47,7 @@ use crate::systemd_unit::{
 };
 use crate::unix_transport::{SeqpacketConnection, SeqpacketListener, TransportError};
 use serde_json::Value;
+use std::ops::ControlFlow;
 use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
@@ -766,7 +767,7 @@ impl SupervisorServer {
             };
         }
         if request.operation != Operation::Status {
-            return Ok(error_response_from_request(request, now, 11)?);
+            return error_response_from_request(request, now, 11);
         }
         let result = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => match reconcile_campaign(&lock) {
@@ -793,8 +794,8 @@ impl SupervisorServer {
         backend: &mut B,
     ) -> Result<Response, ServerError> {
         match self.admit_start(authorized, now, backend)? {
-            StartAdmission::Rejected(response) => Ok(response),
-            StartAdmission::Ready(admission) => finish_start(authorized, now, admission, backend),
+            ControlFlow::Break(response) => Ok(response),
+            ControlFlow::Continue(admission) => finish_start(authorized, now, admission, backend),
         }
     }
 
@@ -805,8 +806,8 @@ impl SupervisorServer {
     ) -> Result<Response, ServerError> {
         let mut observer = LiveStartObservationBackend;
         match self.admit_start(authorized, now, &mut observer)? {
-            StartAdmission::Rejected(response) => Ok(response),
-            StartAdmission::Ready(admission) => {
+            ControlFlow::Break(response) => Ok(response),
+            ControlFlow::Continue(admission) => {
                 let mut backend = SystemdSpawnBackend::new(
                     admission.evidence.manifest.clone(),
                     admission.evidence.campaign_directory.clone(),
@@ -837,7 +838,7 @@ impl SupervisorServer {
         let evidence = match evidence {
             Ok(evidence) => evidence,
             Err(error) => {
-                return Ok(StartAdmission::Rejected(error_response_from_request(
+                return Ok(ControlFlow::Break(error_response_from_request(
                     request,
                     now,
                     start_evidence_error_code(&error),
@@ -848,7 +849,7 @@ impl SupervisorServer {
             match frozen_identity_from_manifest(&evidence.manifest, &request.manifest_sha256) {
                 Ok(identity) => identity,
                 Err(_) => {
-                    return Ok(StartAdmission::Rejected(error_response_from_request(
+                    return Ok(ControlFlow::Break(error_response_from_request(
                         request, now, 9,
                     )?))
                 }
@@ -856,7 +857,7 @@ impl SupervisorServer {
         let lock = match CampaignLock::acquire(&self.config.campaign_root, &request.campaign_id) {
             Ok(lock) => lock,
             Err(error) => {
-                return Ok(StartAdmission::Rejected(error_response_from_request(
+                return Ok(ControlFlow::Break(error_response_from_request(
                     request,
                     now,
                     state_error_code(&error),
@@ -864,10 +865,10 @@ impl SupervisorServer {
             }
         };
         match replay_start_response(&lock, request) {
-            Ok(Some(response)) => return Ok(StartAdmission::Rejected(response)),
+            Ok(Some(response)) => return Ok(ControlFlow::Break(response)),
             Ok(None) => {}
             Err(error) => {
-                return Ok(StartAdmission::Rejected(error_response_from_request(
+                return Ok(ControlFlow::Break(error_response_from_request(
                     request,
                     now,
                     start_lifecycle_error_code(&error),
@@ -882,7 +883,7 @@ impl SupervisorServer {
             )
             .is_err()
         {
-            return Ok(StartAdmission::Rejected(error_response_from_request(
+            return Ok(ControlFlow::Break(error_response_from_request(
                 request, now, 6,
             )?));
         }
@@ -890,14 +891,14 @@ impl SupervisorServer {
             match HostExecutionClaim::acquire(&self.config.campaign_root, &request.campaign_id) {
                 Ok(claim) => claim,
                 Err(error) => {
-                    return Ok(StartAdmission::Rejected(error_response_from_request(
+                    return Ok(ControlFlow::Break(error_response_from_request(
                         request,
                         now,
                         host_execution_error_code(&error),
                     )?))
                 }
             };
-        Ok(StartAdmission::Ready(AdmittedStart {
+        Ok(ControlFlow::Continue(AdmittedStart {
             evidence,
             host_claim,
             lock,
@@ -1274,10 +1275,7 @@ fn checkpoint_evidence_is_absent(error: &CheckpointEvidenceError) -> bool {
     }
 }
 
-enum StartAdmission {
-    Ready(AdmittedStart),
-    Rejected(Response),
-}
+type StartAdmission = ControlFlow<Response, AdmittedStart>;
 
 struct AdmittedStart {
     evidence: PreparedCampaignEvidence,
