@@ -519,6 +519,84 @@ fn w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal() {
 }
 
 #[test]
+fn w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate() {
+    let review = contract("w3-delivery-frontier-review.toml");
+    assert_eq!(review["schema_version"].as_integer(), Some(1));
+    assert_eq!(review["release"].as_str(), Some("0.74"));
+    assert_eq!(
+        review["state"].as_str(),
+        Some("local-feasibility-review-no-candidate")
+    );
+    assert_eq!(review["candidate_source_sha"].as_str(), Some("UNRESOLVED"));
+    for flag in [
+        "product_mutation_allowed",
+        "numerical_measurement_started",
+        "numerical_claims_allowed",
+        "promotable",
+        "prior_rejections_reopened",
+    ] {
+        assert_eq!(review[flag].as_bool(), Some(false), "{flag}");
+    }
+    let boundary = &review["delivery_boundary"];
+    for flag in [
+        "previous_response_write_all_complete_required",
+        "previous_response_flush_complete_required",
+    ] {
+        assert_eq!(boundary[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "first_byte_authorizes_next_mutation",
+        "socket_writable_hint_authorizes_next_mutation",
+        "complete_write_without_flush_authorizes_next_mutation",
+        "execute_then_batch_before_write_allowed",
+        "transaction_staging_or_early_ack_allowed",
+    ] {
+        assert_eq!(boundary[flag].as_bool(), Some(false), "{flag}");
+    }
+    let scope = &review["guard_scope"];
+    assert_eq!(scope["first_reply_bytes"].as_integer(), Some(5));
+    assert_eq!(
+        scope["accepted_prefixes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        (0..=5).collect::<Vec<_>>()
+    );
+    assert_eq!(scope["mutations_before_release"].as_integer(), Some(1));
+    assert_eq!(
+        scope["mutations_after_successful_release"].as_integer(),
+        Some(2)
+    );
+    for flag in [
+        "complete_reply_pending_flush",
+        "flush_error_stops_next_command",
+        "other_connection_reads_exact_committed_state",
+        "correctness_uses_explicit_future_poll",
+    ] {
+        assert_eq!(scope[flag].as_bool(), Some(true), "{flag}");
+    }
+    assert_eq!(
+        scope["sleep_based_correctness_allowed"].as_bool(),
+        Some(false)
+    );
+    let previous = contract("w3-adaptive-coalescing-contract.toml");
+    for section in ["deep_pipeline_acceptance", "pipeline_one_non_regression"] {
+        assert_eq!(review.get(section), previous.get(section), "{section}");
+    }
+    assert!(root().join(review["design"].as_str().unwrap()).is_file());
+    let source =
+        std::fs::read_to_string(root().join(review["semantic_tests"].as_str().unwrap())).unwrap();
+    for function in [
+        "every_partial_reply_and_pending_flush_preserve_the_mutation_frontier",
+        "failed_flush_after_complete_reply_does_not_execute_the_next_set",
+    ] {
+        assert!(source.contains(&format!("async fn {function}()")));
+    }
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),

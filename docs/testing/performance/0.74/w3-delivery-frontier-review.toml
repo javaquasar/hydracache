@@ -1,0 +1,61 @@
+schema_version = 1
+release = "0.74"
+review_id = "w3-delivery-frontier-074-v1"
+state = "local-feasibility-review-no-candidate"
+baseline_source_sha = "8bf4eb261b349410aa22b01390e7edb35c31c2c1"
+candidate_source_sha = "UNRESOLVED"
+product_mutation_allowed = false
+numerical_measurement_started = false
+numerical_claims_allowed = false
+promotable = false
+prior_rejections_reopened = false
+scope = "Determine whether readiness/progress-gated coalescing can preserve the existing generic AsyncWrite SET mutation frontier before proposing product code."
+design = "docs/testing/performance/0.74/w3-delivery-frontier-review.md"
+semantic_tests = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+
+[delivery_boundary]
+previous_response_write_all_complete_required = true
+previous_response_flush_complete_required = true
+first_byte_authorizes_next_mutation = false
+socket_writable_hint_authorizes_next_mutation = false
+complete_write_without_flush_authorizes_next_mutation = false
+execute_then_batch_before_write_allowed = false
+transaction_staging_or_early_ack_allowed = false
+
+[guard_scope]
+first_reply_bytes = 5
+accepted_prefixes = [0, 1, 2, 3, 4, 5]
+complete_reply_pending_flush = true
+flush_error_stops_next_command = true
+mutations_before_release = 1
+mutations_after_successful_release = 2
+other_connection_reads_exact_committed_state = true
+correctness_uses_explicit_future_poll = true
+sleep_based_correctness_allowed = false
+
+[reviewed_mechanisms]
+writable_hint = "not-authorized: readiness is not complete write and flush"
+first_byte_probe = "not-authorized: a partial response still blocks the second mutation"
+execute_then_coalesce = "not-authorized: second SET would precede first delivery completion"
+write_then_continue = "preserves boundary but does not eliminate the preceding response write"
+transactional_staging = "not-authorized: changes mutation/acknowledgement ownership outside IO-only W3"
+read_only_specialization = "unproven: GET purity and shared expiry/authorization/accounting need separate proof"
+
+# Retain the rejected adaptive attempt's policy, not its measurements/source.
+# This review does not authorize a new D2 candidate or a numerical experiment.
+[deep_pipeline_acceptance]
+depths = [10, 50]
+maximum_write_calls_per_reply = 0.20
+maximum_flush_calls_per_reply = 0.20
+minimum_goodput_ratio = 1.20
+maximum_cpu_per_operation_ratio = 1.02
+maximum_p99_ratio = 1.03
+minimum_favorable_pairs = 4
+
+[pipeline_one_non_regression]
+write_calls_per_reply = 1.0
+flush_calls_per_reply = 1.0
+minimum_goodput_ratio = 0.98
+maximum_cpu_per_operation_ratio = 1.03
+maximum_p99_ratio = 1.03
+minimum_passing_pairs = 5
