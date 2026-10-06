@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-supervisor-restart-negative-rehearsal",
+  "captured_at_utc": "2026-10-06T03:59:05Z",
+  "source_commit": "671c93d68411b7f6837cb8c504acd00c03ae7f2d",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "provisioning": {
+    "run_id": 37407718680,
+    "conclusion": "success",
+    "installed_source_commit": "671c93d68411b7f6837cb8c504acd00c03ae7f2d",
+    "installed_binary_sha256": "e187e94a0294d08d550e69395006c5459c81c19696f61a85affcf81f535b4e42"
+  },
+  "start_bundle": {
+    "run_id": 37407999727,
+    "conclusion": "success",
+    "campaign_id": "5a15ae7a70640d2f78046e794dd99d1bdc705ffebf2f3eee6e551a2ba6f7643e",
+    "manifest_sha256": "595ad64963a2ea4cc854dbf805d80058e910fac827b3f2524161693a3cb11d29",
+    "bundle_sha256": "22aebfd0435ddf1d845bb02a20016c936b4d950c5090e8200e30ad949bb2b7ab",
+    "bundle_artifact_id": 11386744923,
+    "bundle_artifact_digest": "sha256:7710e1592ca0ce4af5c6fc94216bc8f7f17d3c9931ba7359f0704166e50a8de5"
+  },
+  "confirmed_restart_behavior": {
+    "start_run_id": 37408197057,
+    "start_request_id": "61020269-15e1-4031-a95a-e46038d0ba6a",
+    "state_revision_before_restart": 2,
+    "state_sha256_before_and_after_restart": "ed4adcca689ac698000db9d7810b74a408ad6f3f0692a5dc684057d968e05772",
+    "supervisor_pid_before": 46730,
+    "supervisor_pid_after": 54807,
+    "stored_mount_id": 324,
+    "live_mount_id_before": 324,
+    "live_mount_id_after": 430,
+    "stable_mount_identity": "d7eab4fe3e9539b4467323c2a6715d775ba25346f93dbfe291c3c7bacb01fade",
+    "harness_pid": 54496,
+    "harness_start_ticks": 556031,
+    "daemon_pid": 54497,
+    "daemon_start_ticks": 556033,
+    "fixture_unit_remained_active": true,
+    "duplicate_spawn_observed": false,
+    "attach_run_id": 37408553301,
+    "attach_request_id": "0e194d05-89b0-4459-898c-d19d037edd40",
+    "attach_revision": 3,
+    "attach_checkpoint_sequence": 8,
+    "attach_checkpoint_record_sha256": "e05dbc6b2e7357beab121359893ec465c000b113dd2ae2621a72bc4770f5cdec"
+  },
+  "negative_findings": [
+    {
+      "run_id": 37408817536,
+      "request_id": "f16bd962-b113-487d-8aa2-3f7c3b12bb99",
+      "outcome": "rejected_without_state_mutation",
+      "error_code": 5,
+      "reason": "a separately dispatched abort had a different controller run id from the active attach lease"
+    },
+    {
+      "run_id": 37409291926,
+      "attach_request_id": "555ef065-c72a-43f3-8c22-53ec4d5ef9fe",
+      "attach_revision": 4,
+      "attach_checkpoint_sequence": 28,
+      "outcome": "cancelled_before_abort",
+      "reason": "the 900-second fixture reached its retained active/exited terminal shape while abort signing was still in progress"
+    },
+    {
+      "measurement_loss_reason": "unit-identity-drift",
+      "measurement_loss_event_unix_seconds": 1791257687,
+      "diagnostic_sha256": "597eda80f30184d97f032bc998a440831e3516a5369360dd42d118e5cc017df6",
+      "supervisor_restart_count_before_containment": 68,
+      "reason": "systemd released the empty terminal cgroup, but the verifier required the previous non-empty ControlGroup and repeatedly retried the preserved diagnostic"
+    }
+  ],
+  "recovery": {
+    "exact_fixture_unit_stopped_after_retained_successful_exit": true,
+    "final_state": "FAILED_INCOMPLETE",
+    "final_revision": 6,
+    "execution_fields_cleared": true,
+    "host_claim_absent": true,
+    "runner_active": false,
+    "supervisor_active": true
+  },
+  "implemented_fixes": [
+    {
+      "commit": "16bcc3043ea08afb91360b7906271f0bb958a47b",
+      "change": "provide a same-run recovery attach and abort orchestration mode so controller lease ownership is preserved"
+    },
+    {
+      "commit": "9178f3abcd9004968d18f0de8492481720543143",
+      "change": "admit the normal empty ControlGroup only for the exact retained active/exited successful terminal unit"
+    }
+  ],
+  "decision": {
+    "supervisor_restart_survival_confirmed": true,
+    "complete_restart_rehearsal_confirmed": false,
+    "release_admission_allowed": false,
+    "next_required_step": "Repeat start, supervisor restart, attach and same-run abort on the exact fixed source before claiming the rehearsal complete."
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "evidence_family": "w11-supervisor-restart-rehearsal",
+  "captured_at_utc": "2026-10-06T03:59:05Z",
+  "source_commit": "9178f3abcd9004968d18f0de8492481720543143",
+  "promotable": false,
+  "product_candidate_started": false,
+  "expensive_qualification_started": false,
+  "provisioning": {
+    "run_id": 37410275153,
+    "conclusion": "success",
+    "installed_source_commit": "9178f3abcd9004968d18f0de8492481720543143",
+    "installed_binary_sha256": "1dfb472f54998e0d12cf68fa050b8819cc277629368d5f8378d22ba7b2f9815b",
+    "hosted_bundle_artifact_id": 11388797713,
+    "hosted_bundle_artifact_digest": "sha256:4d8084149d9e77650a18a14530f031685e71b00ffda654779ade618bccc916f1",
+    "installed_receipt_artifact_id": 11388982476,
+    "installed_receipt_artifact_digest": "sha256:c3493e4bbf20f5616b43570d0b5da330582f182731c7985757281555c51eead3"
+  },
+  "start_bundle": {
+    "run_id": 37410539986,
+    "conclusion": "success",
+    "campaign_id": "6689c9cd4941e4d655149ec1ee9c93d705a63388cd90df5f2949f72d921e5bb5",
+    "manifest_sha256": "4a1a8ef89a80cee76faf048cf72e74574a94f91561b62e313c9305a6f74a1240",
+    "host_receipt_sha256": "5ba52ef38ed198438291a87a403588b46d7c433d345d2b2b5972ddc6cf2c635e",
+    "bundle_sha256": "4212dee56401a212acbfd257b50291b99ebf704327c398b26e82225909a4b547",
+    "bundle_artifact_id": 11389265638,
+    "bundle_artifact_digest": "sha256:af44c91c2bdd16a6ebe81910df7e96cb4ca9ed5315afb7b1999f50f3fc59e02a",
+    "host_observation_artifact_id": 11389190792,
+    "host_observation_artifact_digest": "sha256:fe43e86b78261ee61bfe1f7213960748a6cca58adf7c00fc3eac463119af1dbb",
+    "construction_evidence_artifact_id": 11389014128,
+    "construction_evidence_artifact_digest": "sha256:b3c0f423df6aab80dd88dc08bde02a17fab5da35101e1491c5d51c0136632c41"
+  },
+  "same_run_rehearsal": {
+    "run_id": 37410711175,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "start": {
+      "request_id": "0c129e50-0759-4ceb-b3bf-539491f2da0d",
+      "request_sha256": "aaa6a82678abab714ccef72c8be693fc28b0cfde7d79d8e1a2a229f5d8fd1006",
+      "response_sha256": "c1673fa54a1a3c297950c1fb44342d82abbe69e763007f4e9eead7e5e6024cc5",
+      "request_artifact_id": 11389049412,
+      "request_artifact_digest": "sha256:68ae383737627cb1ec28848a677f72eece2a5cf41dbdc03a7e9a9079ca8822cd",
+      "response_artifact_id": 11389151380,
+      "response_artifact_digest": "sha256:404366b61d22dd90089940ee244d6a843e4093d1abb4be939fd26215ca100a5c",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 2,
+      "harness_pid": 73941,
+      "harness_start_ticks": 746064,
+      "daemon_pid": 73942,
+      "daemon_start_ticks": 746066
+    },
+    "supervisor_restart": {
+      "supervisor_pid_before": 65781,
+      "supervisor_pid_after": 74207,
+      "supervisor_restart_count_after": 0,
+      "stored_mount_id": 324,
+      "live_mount_id_before": 324,
+      "live_mount_id_after": 430,
+      "stable_mount_identity": "d7eab4fe3e9539b4467323c2a6715d775ba25346f93dbfe291c3c7bacb01fade",
+      "state_sha256_before_and_after": "2b6a3dd5926ba6b8d9470c93db6589cfa9348c860ef0585e6e27570263af8a38",
+      "fixture_unit_remained_active": true,
+      "fixture_process_identity_unchanged": true,
+      "duplicate_spawn_observed": false
+    },
+    "attach": {
+      "request_id": "6d588ffe-2aa3-40a4-a9c2-053f1a26adc7",
+      "request_sha256": "79b693dc8d86c65bbf598fe1a0ca5f8d557a807495c2791fea1617bdaa0b3dfe",
+      "response_sha256": "a096dbb69ff8d9d5b7a19cdf43ff4835fac1c31ce3f30e26b24bd120bdb55708",
+      "request_artifact_id": 11389665334,
+      "request_artifact_digest": "sha256:8eff1894df20b5ab1c06636941c286a764da1f72a0867f6bf740a5c25d35d603",
+      "response_artifact_id": 11389176813,
+      "response_artifact_digest": "sha256:fbc334c98690f0d5326f3fd83d764bba2f0a8ebe894c9065262775e61327b83a",
+      "accepted_state": "I74_RUNNING",
+      "accepted_revision": 3,
+      "checkpoint_sequence": 7,
+      "checkpoint_record_sha256": "a517eeb767edd526ac1fafcec9f7a23a1250823c786230346df7f3bb5cbb094e",
+      "controller_run_id": 37410711175,
+      "harness_pid": 73941,
+      "daemon_pid": 73942
+    },
+    "abort": {
+      "request_id": "2d8f9c94-b400-4aa0-bd0b-54801618e92d",
+      "request_sha256": "bdbdf06955e89b2edbb035ef1425d6a505bab460e28e7936846551de7134d122",
+      "response_sha256": "ce5497786f5f74f73e04f47191e7e252f10acf130dd52da662e32be866c5c6c4",
+      "request_artifact_id": 11389655824,
+      "request_artifact_digest": "sha256:dc422a49150b3788e4b1bf29d059cbdb96243949bbdc644b088de5d8930919fe",
+      "response_artifact_id": 11388544276,
+      "response_artifact_digest": "sha256:af7bf63df3b7d0b97f9d7498764e63025e1e42dcb395c5648e3b8b90c2ad5832",
+      "accepted_state": "ABORTED_INCOMPLETE",
+      "accepted_revision": 5
+    }
+  },
+  "retained_campaign_evidence": {
+    "checkpoint_records": 13,
+    "checkpoint_journal_sha256": "bba810a08dc068c1875058a1c566d3461eee45403612676fa785936f54e97035",
+    "checkpoint_head_file_sha256": "01354df198c29a7e3fb36995d9e5ec22c910b20db9c3e2116428964fcd305b5d",
+    "state_sha256": "fb7b3c8f233da708023983f90be2efddf38c4888f8fc73a79794a6dbd32c18ab",
+    "events_sha256": "94a98ccc966eb59604faedfc4274e97dd2316e82f3c4b127f4cced8cbd8de8a3",
+    "events_head_file_sha256": "1e087b85ba75f05128600d8d0ad5794c21ce51a239dce1e6422f569697471b5e"
+  },
+  "final_host_state": {
+    "campaign_state": "ABORTED_INCOMPLETE",
+    "campaign_revision": 5,
+    "execution_fields_cleared": true,
+    "host_claim_absent": true,
+    "fixture_unit_active": false,
+    "fixture_processes_absent": true,
+    "runner_active": false,
+    "supervisor_active": true,
+    "supervisor_main_pid": 74207,
+    "supervisor_restart_count": 0
+  },
+  "not_measured": [
+    "product throughput or latency",
+    "six-hour or twenty-four-hour qualification",
+    "supervisor role-overhead budget",
+    "live seal",
+    "live-role reboot",
+    "isolated-CPU interrupt deltas"
+  ],
+  "decision": {
+    "supervisor_restart_survival_confirmed": true,
+    "same_process_adoption_confirmed": true,
+    "signed_attach_after_restart_confirmed": true,
+    "same_run_signed_abort_confirmed": true,
+    "supervisor_restart_rehearsal_complete": true,
+    "release_admission_allowed": false,
+    "next_required_step": "Exercise a live-role reboot and live seal, then measure role overhead before any product qualification."
+  }
+}
