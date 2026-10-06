@@ -1104,3 +1104,11 @@ required JUnit file was absent, and no product or test failure was observed. The
 as `local-runs/w12-workspace-fast-gate-cold-timeout-05e7c6e9.json`; it is non-promotable and leaves
 all work items short of `FastGreen`. One same-command warm-cache retry may distinguish cold-build
 capacity from a repeatable gate failure, but cannot erase this result or relax either limit.
+
+That one warm-cache retry completed compilation in 11 minutes 24 seconds and started 3,655 tests
+across 477 binaries, with 82 tests skipped by the profile. The overall command still timed out:
+the evidence receipt records 2,626,352 ms including 226,352 ms spent returning after the nominal
+hard-timeout boundary. No failure was reported before termination, but the suite did not complete
+and JUnit was not produced, so absence of an observed failure is not a pass. The non-promotable
+record is `local-runs/w12-workspace-fast-gate-warm-timeout-415b01fc.json`. There will be no third
+local retry without a newly identified root cause; the unchanged full gate remains the blocker.

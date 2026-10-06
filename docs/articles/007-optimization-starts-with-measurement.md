@@ -2760,3 +2760,12 @@ started and no JUnit report existed. Calling this a test failure would be as mis
 green. The durable record therefore says `compile-phase timeout`, keeps both limits unchanged, and
 forbids promotion. A single same-command warm-cache retry can attribute the failure to cold-build
 capacity, but it cannot overwrite the cold result or establish release admission by itself.
+
+The warm-cache retry made the attribution sharper without making the gate green. Compilation
+finished in 11 minutes 24 seconds, after which nextest scheduled 3,655 tests across 477 binaries.
+The complete command still reached the hard timeout, returned only after process termination, and
+never produced JUnit. No failure had been reported, but an interrupted suite cannot prove that no
+failure exists. The useful conclusion is narrow: this local machine cannot complete the unchanged
+workspace gate inside its current cadence and hard-timeout contract. Repeating the same run again
+would add heat, not information; the next attempt belongs on an appropriately provisioned ordinary
+CI lane or after a concrete test-runtime root cause is identified.
