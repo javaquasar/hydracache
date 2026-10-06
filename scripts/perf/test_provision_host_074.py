@@ -88,6 +88,12 @@ class ProvisionHostContractTests(unittest.TestCase):
         self.assertIn("inputs.mode == 'provision'", self.capability_workflow)
         self.assertIn("inputs.mode == 'systemd-smoke'", self.capability_workflow)
         self.assertIn("inputs.mode == 'controller-loss-smoke'", self.capability_workflow)
+        self.assertIn("controller-attach-abort-rehearsal", self.capability_workflow)
+        self.assertIn("needs: controller-recovery-attach", self.capability_workflow)
+        self.assertIn(
+            "expected_state_revision: ${{ inputs.abort_expected_state_revision }}",
+            self.capability_workflow,
+        )
         self.assertIn("inputs.mode == 'campaign-lifecycle-smoke'", self.capability_workflow)
         self.assertIn("product_candidate_started", self.capability_workflow)
         self.assertIn("original_controller_exited", self.capability_workflow)

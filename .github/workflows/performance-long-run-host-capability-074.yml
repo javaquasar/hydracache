@@ -15,6 +15,7 @@ on:
           - start-bundle
           - controller
           - controller-start-abort-rehearsal
+          - controller-attach-abort-rehearsal
           - systemd-smoke
           - controller-loss-smoke
           - campaign-lifecycle-smoke
@@ -48,7 +49,12 @@ on:
         default: ""
         type: string
       expected_state_revision:
-        description: Expected durable revision for controller mode
+        description: Expected durable revision for controller or recovery attach mode
+        required: false
+        default: ""
+        type: string
+      abort_expected_state_revision:
+        description: Expected revision after recovery attach and before same-run abort
         required: false
         default: ""
         type: string
@@ -245,6 +251,42 @@ jobs:
       campaign_id: ${{ inputs.campaign_id }}
       manifest_sha256: ${{ inputs.manifest_sha256 }}
       expected_state_revision: "3"
+      request_id: ${{ inputs.abort_request_id }}
+      approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}
+    secrets: inherit
+
+  controller-recovery-attach:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-attach-abort-rehearsal'
+    name: Reattach after supervisor recovery
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: attach
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: ${{ inputs.expected_state_revision }}
+      request_id: ${{ inputs.attach_request_id }}
+    secrets: inherit
+
+  controller-recovery-abort:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'controller-attach-abort-rehearsal'
+    needs: controller-recovery-attach
+    name: Abort after same-run recovery attach
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/performance-long-run-qualification-074.yml
+    with:
+      source_sha: ${{ inputs.controller_source_sha }}
+      host_id: reference-074
+      operation: abort
+      campaign_id: ${{ inputs.campaign_id }}
+      manifest_sha256: ${{ inputs.manifest_sha256 }}
+      expected_state_revision: ${{ inputs.abort_expected_state_revision }}
       request_id: ${{ inputs.abort_request_id }}
       approval_nonce_sha256: ${{ inputs.approval_nonce_sha256 }}
     secrets: inherit
