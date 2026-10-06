@@ -7565,3 +7565,388 @@ cwd = "."
 platform = "any"
 
 [gate.command.env]
+
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.abort-lifecycle"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/abort_lifecycle.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "abort_lifecycle"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "abort_lifecycle", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.config"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/config.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "config"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "config", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.lease-expiry"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/lease_expiry.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "lease_expiry"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "lease_expiry", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.measurement-loss"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/measurement_loss.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "measurement_loss"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "measurement_loss", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.process-identity"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/process_identity.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "process_identity"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "process_identity", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.progress-loss"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/progress_loss.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "progress_loss"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "progress_loss", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.seal-lifecycle"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/seal_lifecycle.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "seal_lifecycle"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "seal_lifecycle", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.server"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/server.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "server"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "server", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.service"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/service.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "service"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "service", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.systemd-notify"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/systemd_notify.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "systemd_notify"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "systemd_notify", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.systemd-unit"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/systemd_unit.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "systemd_unit"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "systemd_unit", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.unix-transport"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/unix_transport.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "unix_transport"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Existing Linux-only supervisor contracts use local fixtures and synthetic backends; ordinary CI must execute them without an admitted performance host"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "unix_transport", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]

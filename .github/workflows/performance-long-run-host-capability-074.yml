@@ -121,7 +121,7 @@ concurrency:
 
 jobs:
   probe:
-    if: github.event_name == 'push' || inputs.mode == 'probe'
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'probe'
     name: Read-only systemd and supervisor capability probe
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-074
@@ -999,6 +999,7 @@ jobs:
           python3 -m unittest scripts.perf.test_performance_long_run_supervisor_overhead_074
 
       - name: Bind the active installed supervisor identity
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail
@@ -1133,6 +1134,7 @@ jobs:
             scripts.perf.test_performance_long_run_role_overhead_074
 
       - name: Bind idle host and installed identity
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail

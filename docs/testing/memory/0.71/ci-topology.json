@@ -348,6 +348,335 @@
       }
     },
     {
+      "path": ".github/workflows/performance-allocator-attribution-074.yml",
+      "purpose": "Protected non-promotable allocator owner attribution; explicit immutable source and lease are checked before measurement",
+      "triggers": [
+        "push_branch",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "performance-reference-074-host"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "attribute"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/performance-kernel-attribution-074.yml",
+      "purpose": "Protected non-promotable scheduler and socket attribution; explicit immutable source and lease are checked before measurement",
+      "triggers": [
+        "push_branch",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "performance-reference-074-host"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "attribute"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/performance-kernel-capability-074.yml",
+      "purpose": "Read-only protected-host kernel profiling capability probe",
+      "triggers": [
+        "push_branch",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "performance-reference-074-host"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "probe"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-host-capability-074.yml",
+      "purpose": "Explicit protected controller and non-product lifecycle rehearsals; push does not schedule host jobs",
+      "triggers": [
+        "push_branch",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "performance-reference-074-host"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "probe",
+          "provision",
+          "host-observation",
+          "start-bundle",
+          "controller",
+          "controller-rehearsal-start",
+          "controller-rehearsal-attach",
+          "controller-rehearsal-abort",
+          "controller-rehearsal-terminal",
+          "controller-rehearsal-seal",
+          "controller-rehearsal-terminal-attach",
+          "controller-c74-rehearsal-start",
+          "controller-c74-rehearsal-terminal",
+          "controller-c74-rehearsal-terminal-attach",
+          "controller-c74-rehearsal-seal",
+          "controller-recovery-attach",
+          "controller-recovery-abort",
+          "controller-recovery-seal",
+          "systemd-smoke",
+          "controller-loss-smoke",
+          "campaign-lifecycle-smoke",
+          "campaign-progress-loss-smoke",
+          "campaign-measurement-loss-smoke",
+          "campaign-lease-expiry-smoke",
+          "supervisor-overhead-smoke",
+          "role-overhead-smoke"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "dependencies": {
+        "controller-rehearsal-attach": [
+          "controller-rehearsal-start"
+        ],
+        "controller-rehearsal-abort": [
+          "controller-rehearsal-attach"
+        ],
+        "controller-rehearsal-terminal": [
+          "controller-rehearsal-start"
+        ],
+        "controller-rehearsal-seal": [
+          "controller-rehearsal-terminal-attach"
+        ],
+        "controller-rehearsal-terminal-attach": [
+          "controller-rehearsal-terminal"
+        ],
+        "controller-c74-rehearsal-terminal": [
+          "controller-c74-rehearsal-start"
+        ],
+        "controller-c74-rehearsal-terminal-attach": [
+          "controller-c74-rehearsal-terminal"
+        ],
+        "controller-c74-rehearsal-seal": [
+          "controller-c74-rehearsal-terminal-attach"
+        ],
+        "controller-recovery-abort": [
+          "controller-recovery-attach"
+        ],
+        "controller-recovery-seal": [
+          "controller-recovery-attach"
+        ]
+      },
+      "timeout_exemptions": {
+        "provision": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-host-provision-074.yml owns positive per-job timeouts",
+        "host-observation": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-host-observation-074.yml owns positive per-job timeouts",
+        "start-bundle": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-start-bundle-074.yml owns positive per-job timeouts",
+        "controller": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-rehearsal-start": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-rehearsal-attach": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-rehearsal-abort": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-rehearsal-seal": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-rehearsal-terminal-attach": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-c74-rehearsal-start": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-c74-rehearsal-terminal-attach": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-c74-rehearsal-seal": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-recovery-attach": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-recovery-abort": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts",
+        "controller-recovery-seal": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-074.yml owns positive per-job timeouts"
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-host-observation-074.yml",
+      "purpose": "Read-only canonical installed-source-bound host input for the detached controller",
+      "triggers": [
+        "workflow_call",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "inputs.host_id"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "observe"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "observe": {
+          "reason": "Observation identity binds the explicitly validated installed source SHA plus run id and attempt, not the caller tooling SHA",
+          "expires_after_release": "0.75"
+        }
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-host-provision-074.yml",
+      "purpose": "Signed exact-source provisioning with hosted preparation followed by protected-host install",
+      "triggers": [
+        "workflow_call",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "performance-reference-074-host-provisioning"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "prepare",
+          "provision"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "dependencies": {
+        "provision": [
+          "prepare"
+        ]
+      },
+      "artifact_identity_exemptions": {
+        "prepare": {
+          "reason": "The signed provisioning transport uses validated source SHA and same-run id; existing consumer downloads that exact name",
+          "expires_after_release": "0.75"
+        },
+        "provision": {
+          "reason": "Installed-source receipt uses validated source SHA plus run id and attempt",
+          "expires_after_release": "0.75"
+        }
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-074.yml",
+      "purpose": "Signed typed detached-controller requests; controller job duration does not own or imply product campaign qualification",
+      "triggers": [
+        "workflow_call",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "inputs.host_id"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "authorize",
+          "dispatch"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "dependencies": {
+        "dispatch": [
+          "authorize"
+        ]
+      },
+      "artifact_identity_exemptions": {
+        "authorize": {
+          "reason": "Request transport is bound to a validated unique request UUID and signed source/campaign fields; dispatch consumes its exact name",
+          "expires_after_release": "0.75"
+        },
+        "dispatch": {
+          "reason": "Controller response identity is bound to the signed unique request UUID and verified response; existing consumers use the exact request name",
+          "expires_after_release": "0.75"
+        }
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-start-bundle-074.yml",
+      "purpose": "Assemble an immutable six-file non-product bundle from canonical source-bound host observation",
+      "triggers": [
+        "workflow_call",
+        "workflow_dispatch"
+      ],
+      "concurrency_markers": [
+        "inputs.host_id",
+        "inputs.source_sha",
+        "github.run_id"
+      ],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "observe",
+          "assemble"
+        ],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 2,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "dependencies": {
+        "assemble": [
+          "observe"
+        ]
+      },
+      "timeout_exemptions": {
+        "observe": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-host-observation-074.yml#observe owns the 15 minute timeout"
+      },
+      "artifact_identity_exemptions": {
+        "assemble": {
+          "reason": "Immutable start bundle and construction evidence use verified bundle SHA256 content identity; signed controller consumers resolve that exact content-addressed name",
+          "expires_after_release": "0.75"
+        }
+      }
+    },
+    {
       "path": ".github/workflows/post-publish.yml",
       "purpose": "Verify published packages through a version- and SHA-scoped reusable workflow",
       "triggers": ["workflow_call", "workflow_dispatch"],

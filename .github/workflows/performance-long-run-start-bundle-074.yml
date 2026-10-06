@@ -26,6 +26,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: long-run-074-start-bundle-${{ inputs.host_id }}-${{ inputs.source_sha }}-${{ github.run_id }}
+  cancel-in-progress: false
+
 jobs:
   observe:
     name: Collect exact source-bound host input

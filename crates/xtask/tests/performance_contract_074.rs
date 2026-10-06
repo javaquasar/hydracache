@@ -1408,7 +1408,9 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
     assert!(workflow.contains("cancel-in-progress: false"));
     assert!(workflow.contains("runs-on: [self-hosted, linux, x64, hydracache-release]"));
     assert!(workflow.contains("Collect read-only host capability receipt"));
-    assert!(workflow.contains("if: github.event_name == 'push' || inputs.mode == 'probe'"));
+    assert!(
+        workflow.contains("if: github.event_name == 'workflow_dispatch' && inputs.mode == 'probe'")
+    );
     let probe_job = workflow
         .split("\n  provision:")
         .next()
@@ -1487,4 +1489,52 @@ fn w11_host_capability_probe_is_read_only_and_serialized() {
             "overhead screen must remain read-only: {forbidden}"
         );
     }
+}
+
+#[test]
+fn w12_ordinary_ci_preserves_explicit_infrastructure_boundary() {
+    let read = |name: &str| {
+        let text = std::fs::read_to_string(root().join(".github/workflows").join(name)).unwrap();
+        serde_yaml::from_str::<serde_yaml::Value>(&text).unwrap()
+    };
+    let ci = read("ci.yml");
+    let inputs = &ci["on"]["workflow_dispatch"]["inputs"];
+    for flag in [
+        "run_nightly",
+        "run_reference_performance",
+        "run_memory_diagnostic",
+        "run_retention_soak_070",
+        "run_management_candidate_soak_072",
+        "run_management_ship_soak_072",
+        "run_management_mixed_072",
+        "run_redis_compat_release_proof",
+    ] {
+        assert_eq!(inputs[flag]["default"].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        inputs["performance_0671_mode"]["default"].as_str(),
+        Some("off")
+    );
+    for (file, job) in [
+        ("performance-kernel-attribution-074.yml", "attribute"),
+        ("performance-long-run-host-capability-074.yml", "probe"),
+    ] {
+        let workflow = read(file);
+        let condition = workflow["jobs"][job]["if"].as_str().unwrap();
+        assert!(condition.contains("github.event_name == 'workflow_dispatch'"));
+        assert!(
+            !condition.contains("||"),
+            "push must not select {file}#{job}"
+        );
+    }
+    let bundle = read("performance-long-run-start-bundle-074.yml");
+    let group = bundle["concurrency"]["group"].as_str().unwrap();
+    assert!(group.starts_with("long-run-074-start-bundle-"));
+    for marker in ["inputs.host_id", "inputs.source_sha", "github.run_id"] {
+        assert!(group.contains(marker));
+    }
+    assert_eq!(
+        bundle["concurrency"]["cancel-in-progress"].as_bool(),
+        Some(false)
+    );
 }

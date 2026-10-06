@@ -771,6 +771,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.73
           cargo run -p xtask --locked -- canary-sweep --release 0.73 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.74
+          cargo run -p xtask --locked -- canary-sweep --release 0.74 --tier fast
 
       - name: Management Center 0.72 admission contract
         run: |
@@ -786,6 +788,10 @@ jobs:
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
+
+      - name: Release 0.74 Linux supervisor contracts
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
+        run: cargo test -p hydracache-long-run-supervisor-074 --locked
 
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
@@ -961,7 +967,16 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
           cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
           cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069
+          if [ "$HYDRACACHE_CANDIDATE_RELEASE" = "0.74" ]; then
+            cargo test -p xtask --test evidence_run --test performance_contract_074 --locked
+            cargo run -p xtask --locked -- canary-check --release 0.74
+            cargo run -p xtask --locked -- canary-sweep --release 0.74 --tier fast
+            cargo run -p xtask --locked -- performance-contract-check --release 0.74
+          fi
           cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
+          if [ "$HYDRACACHE_CANDIDATE_RELEASE" = "0.74" ]; then
+            cargo run -p xtask --locked -- release-evidence --release 0.74 --receipts-dir target/release-evidence/receipts
+          fi
 
       - name: Finalize fast evidence lane status
         if: always()
@@ -984,6 +999,7 @@ jobs:
             target/release-evidence/lanes/*.json
             target/release-evidence/receipts/**
             target/nextest/ci/junit.xml
+            target/release-evidence/0.74.*
           if-no-files-found: error
 
   migration-conformance-069:
