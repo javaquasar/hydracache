@@ -483,6 +483,45 @@ fn quarantine_backend_failure_retains_intent_and_exact_retry_completes() {
 }
 
 #[test]
+fn fresh_signed_abort_reauthorizes_a_durable_quarantine_retry() {
+    let fixture = quarantine_fixture();
+    let mut backend = FakeAbortBackend {
+        calls: 0,
+        fail_next: true,
+        observed_requested_state: false,
+        quarantine_calls: 0,
+    };
+    assert!(matches!(
+        drive_abort_request(
+            &fixture.claim,
+            &fixture.lock,
+            &fixture.request,
+            1_000,
+            &mut backend
+        ),
+        Err(AbortLifecycleError::Backend(_))
+    ));
+    let mut reauthorized = fixture.request.clone();
+    reauthorized.request_id = "423e4567-e89b-42d3-a456-426614174000".to_owned();
+    reauthorized.expected_state_revision = 3;
+    let response = drive_abort_request(
+        &fixture.claim,
+        &fixture.lock,
+        &reauthorized,
+        1_100,
+        &mut backend,
+    )
+    .unwrap();
+    assert_eq!(response.body.state_revision, 5);
+    assert_eq!(backend.quarantine_calls, 2);
+    assert!(!fixture
+        .claim
+        .campaign_root()
+        .join(ACTIVE_CAMPAIGN_NAME)
+        .exists());
+}
+
+#[test]
 fn duplicate_executor_quarantine_remains_fail_closed() {
     let fixture = quarantine_fixture_with(SpawnMismatch::MultipleExecutors);
     let mut backend = FakeAbortBackend {

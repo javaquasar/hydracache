@@ -94,9 +94,20 @@ pub fn drive_abort_request<B: AbortBackend + ?Sized>(
 
     let quarantine_cause =
         validate_common(host_claim, lock, request, &state, report.as_ref(), &digest)?;
-    if state.campaign_state != CampaignState::AbortedIncomplete {
+    let quarantine_reauthorization = quarantine_cause.is_some()
+        && state.campaign_state == CampaignState::AbortedIncomplete
+        && state.revision == request.expected_state_revision
+        && report.as_ref().is_some_and(|report| {
+            report.latest_lifecycle.as_ref().is_some_and(|entry| {
+                entry.transition == LifecycleEvent::AbortRequested
+                    && (entry.cause_request_id != request.request_id
+                        || entry.cause_request_sha256 != digest)
+            })
+        });
+    if state.campaign_state != CampaignState::AbortedIncomplete || quarantine_reauthorization {
         if state.revision != request.expected_state_revision
-            || (quarantine_cause.is_none()
+            || (!quarantine_reauthorization
+                && quarantine_cause.is_none()
                 && (!controller_lease_authorizes(
                     &state,
                     request.controller.repository_id,
@@ -113,8 +124,12 @@ pub fn drive_abort_request<B: AbortBackend + ?Sized>(
             .revision
             .checked_add(1)
             .ok_or(AbortLifecycleError::Binding)?;
-        requested.campaign_state = transition(state.campaign_state, Transition::Abort)
-            .map_err(|_| AbortLifecycleError::Binding)?;
+        requested.campaign_state = if quarantine_reauthorization {
+            CampaignState::AbortedIncomplete
+        } else {
+            transition(state.campaign_state, Transition::Abort)
+                .map_err(|_| AbortLifecycleError::Binding)?
+        };
         append_transition(
             lock,
             request,
@@ -295,6 +310,11 @@ fn validate_quarantine_recovery(
     let latest_valid = match state.campaign_state {
         CampaignState::CorruptQuarantined => report.latest_lifecycle.as_ref() == Some(spawn),
         CampaignState::AbortedIncomplete => report.latest_lifecycle.as_ref().is_some_and(|entry| {
+            if state.revision == request.expected_state_revision
+                && entry.transition == LifecycleEvent::AbortRequested
+            {
+                return true;
+            }
             let expected_transition =
                 if state.revision == request.expected_state_revision.saturating_add(1) {
                     LifecycleEvent::AbortRequested
