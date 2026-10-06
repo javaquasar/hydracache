@@ -81,6 +81,9 @@ RESPONSE_FIELDS = {
     "response_sha256",
 }
 MAX_OBSERVATION_FILE_BYTES = 1024 * 1024
+START_REHEARSAL_PHASE_SECONDS = 145
+START_REHEARSAL_DIAGNOSTIC_GRACE_SECONDS = 30
+START_REHEARSAL_ROLE_RUNTIME_SECONDS = 900
 
 
 def canonical_json(value: Any) -> bytes:
@@ -296,6 +299,19 @@ def assemble(
     fixture_i74 = dict(fixture, role="i74")
     fixture_c74 = dict(fixture, role="c74")
     now = int(time.time()) if now_unix_seconds is None else now_unix_seconds
+    phase_durations = {
+        "warmup": START_REHEARSAL_PHASE_SECONDS,
+        "measured": START_REHEARSAL_PHASE_SECONDS,
+        "drain": START_REHEARSAL_PHASE_SECONDS,
+        "durable_companion": START_REHEARSAL_PHASE_SECONDS,
+        "post_work_idle": START_REHEARSAL_PHASE_SECONDS,
+        "reconciliation": START_REHEARSAL_PHASE_SECONDS,
+    }
+    if (
+        sum(phase_durations.values()) + START_REHEARSAL_DIAGNOSTIC_GRACE_SECONDS
+        != START_REHEARSAL_ROLE_RUNTIME_SECONDS
+    ):
+        raise RuntimeError("non-product start fixture runtime constants differ")
     values = {
         "schema_version": 1,
         "repository_id": repository_id,
@@ -327,7 +343,7 @@ def assemble(
         "checkpoint_cadence_seconds": 30,
         "progress_warning_gap_seconds": 90,
         "progress_rejection_gap_seconds": 180,
-        "diagnostic_grace_seconds": 30,
+        "diagnostic_grace_seconds": START_REHEARSAL_DIAGNOSTIC_GRACE_SECONDS,
         "product_lease_deadline_unix_seconds": now + 3600,
         "maximum_campaign_bytes": 21_474_836_480,
         "maximum_campaign_files": 20_000,
@@ -338,14 +354,7 @@ def assemble(
         },
         "command_environment_sha256": "0" * 64,
         "role_order": ["i74", "c74"],
-        "phase_durations_seconds": {
-            "warmup": 55,
-            "measured": 55,
-            "drain": 55,
-            "durable_companion": 55,
-            "post_work_idle": 55,
-            "reconciliation": 55,
-        },
+        "phase_durations_seconds": phase_durations,
         "output_limits": {
             "stdout_bytes": 1_048_576,
             "stderr_bytes": 1_048_576,

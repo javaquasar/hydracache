@@ -185,6 +185,19 @@ class PerformanceNonProductStartBundle074Tests(unittest.TestCase):
                 [MODULE.FIXTURE_PATH, "campaign-start-rehearsal-harness"],
             )
             self.assertEqual(
+                set(manifest["phase_durations_seconds"].values()),
+                {MODULE.START_REHEARSAL_PHASE_SECONDS},
+            )
+            self.assertEqual(
+                sum(manifest["phase_durations_seconds"].values())
+                + manifest["diagnostic_grace_seconds"],
+                MODULE.START_REHEARSAL_ROLE_RUNTIME_SECONDS,
+            )
+            self.assertLess(
+                MODULE.START_REHEARSAL_ROLE_RUNTIME_SECONDS,
+                manifest["product_lease_deadline_unix_seconds"] - 2_000_000_000,
+            )
+            self.assertEqual(
                 evidence["installed_fixture_binary"],
                 observation["installed_fixture_binary"],
             )
