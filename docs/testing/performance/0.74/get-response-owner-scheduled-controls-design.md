@@ -373,3 +373,54 @@ checks and mdbook build. The separate
 retains exact source/blob identities and the dispatch/atomicity distinction.
 No numerical series, native nonregression, full workspace or hosted receipt is
 inferred. Product/default/lock/qualification identities and older evidence stay unchanged.
+
+## Plaintext RESP3: prove negotiation before adding a security cohort
+
+The next adapter extension is dialect-explicit and remains plaintext loopback.
+Existing `start`/`start_connections` still select RESP2; the new
+`start_connections_dialect` performs HELLO 3 on every RESP3 socket before actor
+creation, preload or the original-offer origin. Failed or timed-out setup drops
+the socket/control owners rather than silently retrying or falling back. HELLO
+is setup cost and does not become a measured command, response or good success.
+
+The setup-only metadata reader caps its buffer at 4 KiB, accepts exactly seven
+required unique fields and their fixed scalar/empty-modules shapes, and retains
+only a bounded printable version string (64 bytes maximum). Negotiation has a
+five-second safety timeout, tested with virtual time and socket closure rather
+than a wall-clock performance assertion. Server/protocol/id/mode/role values are checked;
+the version is diagnostic metadata, not independently verified source/binary
+identity. Unknown or duplicate fields and unexpected types fail loudly. There
+is no recursive map decoder in the scheduled actor. The first real test exposed
+an invalid observer assumption: the production encoder uses a frame map whose
+field order is not fixed. The oracle was corrected to check the key set and
+values independently of order; no product behavior or threshold changed.
+
+The reply parser now receives an explicit connection dialect. RESP3 null is
+`_\r\n`, including positions in a flat bulk/null MGET array; RESP2 null remains
+`$-1\r\n`. Each refuses the other's null. Null and empty bytes stay distinct,
+all prefix splits and 128-null arrays are checked, and cancellation retains one
+whole-array FIFO owner until its last byte arrives. Existing byte/header/item/
+aggregate/history/drain limits are unchanged. Map/push/attribute/nested-array
+responses remain outside the measured operation grammar and fail, not silently
+become another scalar. Coalesced next-frame bytes keep their own owner.
+
+Observation and per-socket wire records carry a dialect. The validator requires
+every RESP3 connection's completed HELLO count and bounded version, rejects
+mixed dialect metadata, and keeps RESP2's no-HELLO receipts separate. These
+tool records are not a cryptographic TLS/source attestation. `GetMissing` is a
+separate all-miss operation in either dialect, never mixed with hit-only GET.
+
+The 56-cell RESP3 scheduled fixture uses seven operations (GET hit/miss, fixed
+SET, batch-8 MGET/MSET/EXISTS/missing-DEL) at 1/8 sockets and depths 1/10/50,
+plus 32/128 sockets at depth 10. Each cell has two offers per socket and one
+sample per command; HELLO cannot multiply the denominator. Separate 1 MiB GET/
+SET, ordered binary/null/empty/duplicate MGET and one-write HELLO3/miss/HELLO2/miss
+fixtures check large payloads and immediate dialect transitions. The mixed
+transition fixture is not a scheduled protocol-changing workload. RESP2's prior
+grid additionally covers all-miss GET; old summaries retain their original scope.
+
+This closes only a local plaintext RESP3 instrumentation prerequisite. It does
+not close matched mTLS, full RESP3 command/subscription/attribute conformance,
+expiration/quota/events/faults, representative mixed/live-delete traces, native
+nonregression, allocator retained/RSS observations or repeated numerical pairs.
+Product/default/lock/qualification and sealed B0/D3a packets remain unchanged.

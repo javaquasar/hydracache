@@ -1,9 +1,88 @@
 use get_owner_scheduled_controls_074::{
     native::Dataset,
-    resp::{validate_wire, Operation, RespControl},
+    resp::{validate_wire, Dialect, Operation, RespControl},
     scheduled::Config,
 };
 use std::sync::Arc;
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn resp3_negotiates_every_socket_and_keeps_command_denominators() {
+    for connections in [1, 8, 32, 128] {
+        for depth in [1, 10, 50] {
+            if connections >= 32 && depth != 10 {
+                continue;
+            }
+            for operation in [
+                Operation::Get,
+                Operation::GetMissing,
+                Operation::Set,
+                Operation::Mget { batch_size: 8 },
+                Operation::Mset { batch_size: 8 },
+                Operation::Exists { batch_size: 8 },
+                Operation::DelMissing { batch_size: 8 },
+            ] {
+                let control = Arc::new(
+                    RespControl::start_connections_dialect(
+                        Dataset::new(4, 256).unwrap(),
+                        depth,
+                        connections,
+                        operation,
+                        Dialect::Resp3,
+                    )
+                    .await
+                    .unwrap(),
+                );
+                let digest = control.verify().await.unwrap();
+                let mut result = control
+                    .run(&Config {
+                        operations: (2 * connections) as u64,
+                        offered_rate_per_second: 10000,
+                        concurrency: 128,
+                        maximum_queued: 128,
+                        operation_timeout_ns: 5_000_000_000,
+                        drain_timeout_ns: 5_000_000_000,
+                        slo_ns: 5_000_000_000,
+                        highest_trackable_ns: 10_000_000_000,
+                    })
+                    .await
+                    .unwrap();
+                assert_eq!(result.dialect, Dialect::Resp3);
+                assert_eq!(result.hello_connections, connections);
+                assert!(result
+                    .hello_server_version
+                    .as_ref()
+                    .is_some_and(|version| !version.is_empty()));
+                assert_eq!(result.operations.successes, (2 * connections) as u64);
+                assert_eq!(
+                    result.wire_samples.len(),
+                    result.operations.offered as usize
+                );
+                assert_eq!(
+                    result.operations.scheduled_response_latency.samples,
+                    result.operations.offered
+                );
+                for sample in &result.wire_samples {
+                    assert_eq!(sample.dialect, Dialect::Resp3);
+                    assert_eq!(sample.scheduled_ns, sample.sequence * 100_000);
+                    assert_eq!(sample.frame_kind, Some(operation.frame_kind()));
+                }
+                result.wire_samples[0].dialect = Dialect::Resp2;
+                assert!(validate_wire(&result).is_err());
+                result.wire_samples[0].dialect = Dialect::Resp3;
+                result.hello_connections -= 1;
+                assert!(validate_wire(&result).is_err());
+                result.hello_connections += 1;
+                validate_wire(&result).unwrap();
+                assert_eq!(control.verify().await.unwrap(), digest);
+                Arc::try_unwrap(control)
+                    .unwrap_or_else(|_| panic!("RESP3 control still owned"))
+                    .shutdown()
+                    .await
+                    .unwrap();
+            }
+        }
+    }
+}
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scheduled_multikey_commands_keep_one_original_offer_and_exact_reply_shape() {
@@ -123,7 +202,7 @@ async fn unsupported_batch_and_aggregate_payload_fail_before_opening_sockets() {
 async fn multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles() {
     for connections in [1, 8, 32, 128] {
         for depth in [1, 10, 50] {
-            for operation in [Operation::Get, Operation::Set] {
+            for operation in [Operation::Get, Operation::GetMissing, Operation::Set] {
                 let control = Arc::new(
                     RespControl::start_connections(
                         Dataset::new(4, 256).unwrap(),
@@ -152,6 +231,9 @@ async fn multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles() {
                 assert_eq!(observation.operations.successes, (connections * 2) as u64);
                 assert_eq!(observation.physical_connections, connections);
                 assert_eq!(observation.operation, operation);
+                assert_eq!(observation.dialect, Dialect::Resp2);
+                assert_eq!(observation.hello_connections, 0);
+                assert!(observation.hello_server_version.is_none());
                 for connection in 0..connections {
                     let samples = observation
                         .wire_samples
@@ -330,4 +412,45 @@ async fn large_binary_resp2_frame_has_one_operation_timestamp() {
         .shutdown()
         .await
         .unwrap();
+}
+
+#[tokio::test]
+async fn large_resp3_get_set_keep_one_complete_frame_observation() {
+    for operation in [Operation::Get, Operation::Set] {
+        let control = Arc::new(
+            RespControl::start_connections_dialect(
+                Dataset::new(1, 1_048_576).unwrap(),
+                1,
+                1,
+                operation,
+                Dialect::Resp3,
+            )
+            .await
+            .unwrap(),
+        );
+        let result = control
+            .run(&Config {
+                operations: 1,
+                offered_rate_per_second: 1000,
+                concurrency: 1,
+                maximum_queued: 0,
+                operation_timeout_ns: 5_000_000_000,
+                drain_timeout_ns: 5_000_000_000,
+                slo_ns: 5_000_000_000,
+                highest_trackable_ns: 10_000_000_000,
+            })
+            .await
+            .unwrap();
+        assert_eq!(result.operations.successes, 1);
+        assert_eq!(result.wire_samples.len(), 1);
+        assert!(result.wire_samples[0].byte_oracle_verified);
+        assert_eq!(result.wire_samples[0].dialect, Dialect::Resp3);
+        assert_eq!(result.wire_samples[0].response_items, Some(1));
+        control.verify().await.unwrap();
+        Arc::try_unwrap(control)
+            .unwrap_or_else(|_| panic!("large RESP3 control still owned"))
+            .shutdown()
+            .await
+            .unwrap();
+    }
 }

@@ -3795,3 +3795,35 @@ contexts. A native batch-engine optimization, if justified by profiling, needs i
 own proposal and repeated numerical evidence. It cannot be smuggled into the
 observer to make RESP gains look like native nonregression. Expiration, quota,
 events, faults, secure RESP and retained-memory measurements remain separate work.
+
+## A RESP3 label must follow an observed handshake
+
+Before adding an equally secured native/RESP comparison, the observer needs to
+prove which dialect a socket actually speaks. The next local step therefore
+adds plaintext RESP3 separately from TLS. Every connection sends HELLO 3 and
+validates its metadata before preload and the original-offer clock. Setup does
+not inflate goodput; a failed handshake cannot silently fall back to RESP2.
+
+The first real test caught an observer mistake, not a product defect: it assumed
+the HELLO map's field order was fixed. The production encoder builds a frame map,
+so a legitimate reply can arrive in another order. The corrected oracle checks
+exactly seven required unique fields, their types and expected values, while
+accepting field permutations. Its 4 KiB buffer, shallow empty-modules shape,
+64-byte version bound and timeout prevent a metadata parser from becoming an
+unbounded general Redis client. The version string is diagnostic metadata; it
+does not attest a binary hash, TLS principal or release artifact.
+
+RESP3 also changes the null frame: `_\r\n` replaces RESP2's `$-1\r\n`.
+The connection-local parser refuses the other dialect's null. Empty values,
+missing values and binary bytes remain different positional MGET results; an
+unfinished array remains one FIFO owner after caller cancellation. A separate
+all-miss GET cell keeps misses visible without changing the hit-only workload.
+Another real TCP fixture sends HELLO3/miss/HELLO2/miss in one write and checks
+that each transition governs the next reply, including bytes already pipelined.
+
+The result is a stronger measurement prerequisite, not a RESP3 speedup. Fifty-six
+small scheduled cells, large-value fixtures and parser boundaries establish
+dialect/ownership semantics. They do not replace TLS/authentication parity,
+subscriptions or full RESP3 conformance, expiration/quota/fault coverage,
+native nonregression or retained-memory measurements. No product optimization
+is accepted merely because the observer now understands more correct replies.

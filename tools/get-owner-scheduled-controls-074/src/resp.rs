@@ -1,4 +1,4 @@
-//! Tool-only bounded RESP2 single/multi-key controls with FIFO owners and timestamps.
+//! Tool-only bounded RESP2/RESP3 controls with FIFO owners and timestamps.
 //! This is not a general Redis client, security-matched cohort, or timing CLI.
 use crate::{
     native::Dataset,
@@ -25,11 +25,20 @@ const MAX_HEADER: usize = 128;
 const MAX_HISTORY: usize = 10_256;
 const MAX_ARRAY: usize = 128;
 const MAX_FRAME: usize = MAX_REPLY + MAX_HEADER + 4;
+const MAX_HELLO_FRAME: usize = 4096;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Dialect {
+    Resp2,
+    Resp3,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Operation {
     Get,
+    GetMissing,
     /// Write the same preloaded value; no cross-connection last-writer claim.
     Set,
     Mget {
@@ -49,7 +58,7 @@ pub enum Operation {
 impl Operation {
     pub fn batch_size(self) -> usize {
         match self {
-            Self::Get | Self::Set => 1,
+            Self::Get | Self::GetMissing | Self::Set => 1,
             Self::Mget { batch_size }
             | Self::Mset { batch_size }
             | Self::Exists { batch_size }
@@ -59,6 +68,7 @@ impl Operation {
     pub fn frame_kind(self) -> &'static str {
         match self {
             Self::Get => "bulk",
+            Self::GetMissing => "null",
             Self::Set | Self::Mset { .. } => "simple",
             Self::Mget { .. } => "array",
             Self::Exists { .. } | Self::DelMissing { .. } => "integer",
@@ -81,7 +91,11 @@ enum Frame<'a> {
     Bulk(Option<&'a [u8]>),
     Simple(&'a [u8]),
     Error(&'a [u8]),
-    Array { body: &'a [u8], count: usize },
+    Array {
+        body: &'a [u8],
+        count: usize,
+        dialect: Dialect,
+    },
     Integer(i64),
 }
 impl Frame<'_> {
@@ -117,13 +131,20 @@ impl Frame<'_> {
                         .windows(expected.len())
                         .any(|part| part == *expected)
             }
-            (Self::Array { body, count }, Expected::Array(values)) => {
+            (
+                Self::Array {
+                    body,
+                    count,
+                    dialect,
+                },
+                Expected::Array(values),
+            ) => {
                 if *count != values.len() {
                     return false;
                 }
                 let mut remaining = *body;
                 for value in values {
-                    match decode_scalar(remaining, MAX_FRAME) {
+                    match decode_scalar(remaining, MAX_FRAME, *dialect) {
                         Ok(Some((Self::Bulk(actual), consumed))) if actual == value.as_deref() => {
                             remaining = &remaining[consumed..];
                         }
@@ -138,9 +159,13 @@ impl Frame<'_> {
 }
 
 /// Incremental bounded parser: only the response types used by this control.
+#[cfg(test)]
 fn decode(bytes: &[u8]) -> Result<Option<(Frame<'_>, usize)>> {
+    decode_dialect(bytes, Dialect::Resp2)
+}
+fn decode_dialect(bytes: &[u8], dialect: Dialect) -> Result<Option<(Frame<'_>, usize)>> {
     if bytes.first() != Some(&b'*') {
-        return decode_scalar(bytes, MAX_FRAME);
+        return decode_scalar(bytes, MAX_FRAME, dialect);
     }
     let Some(end) = header_end(bytes)? else {
         return Ok(None);
@@ -155,10 +180,14 @@ fn decode(bytes: &[u8]) -> Result<Option<(Frame<'_>, usize)>> {
         if offset >= MAX_FRAME {
             return Err("RESP2 aggregate reply over budget".to_owned());
         }
-        if bytes.get(offset).is_some_and(|kind| *kind != b'$') {
+        if bytes
+            .get(offset)
+            .is_some_and(|kind| *kind != b'$' && !(dialect == Dialect::Resp3 && *kind == b'_'))
+        {
             return Err("RESP2 array requires flat bulk/null items".to_owned());
         }
-        let Some((_, consumed)) = decode_scalar(&bytes[offset..], MAX_FRAME - offset)? else {
+        let Some((_, consumed)) = decode_scalar(&bytes[offset..], MAX_FRAME - offset, dialect)?
+        else {
             return Ok(None);
         };
         offset += consumed;
@@ -167,6 +196,7 @@ fn decode(bytes: &[u8]) -> Result<Option<(Frame<'_>, usize)>> {
         Frame::Array {
             body: &bytes[body_start..offset],
             count,
+            dialect,
         },
         offset,
     )))
@@ -192,9 +222,25 @@ fn unsigned_length(length: &[u8]) -> Result<usize> {
         .parse::<usize>()
         .map_err(|_| "RESP2 length overflow".to_owned())
 }
-fn decode_scalar(bytes: &[u8], budget: usize) -> Result<Option<(Frame<'_>, usize)>> {
+fn decode_scalar(
+    bytes: &[u8],
+    budget: usize,
+    dialect: Dialect,
+) -> Result<Option<(Frame<'_>, usize)>> {
     if bytes.is_empty() {
         return Ok(None);
+    }
+    if bytes[0] == b'_' && dialect == Dialect::Resp3 {
+        if budget < 3 {
+            return Err("RESP3 null over aggregate budget".to_owned());
+        }
+        if bytes.len() < 3 {
+            return Ok(None);
+        }
+        if &bytes[1..3] != b"\r\n" {
+            return Err("invalid RESP3 null".to_owned());
+        }
+        return Ok(Some((Frame::Bulk(None), 3)));
     }
     if ![b'$', b'+', b'-', b':'].contains(&bytes[0]) {
         return Err("unsupported RESP2 reply type".to_owned());
@@ -225,6 +271,9 @@ fn decode_scalar(bytes: &[u8], budget: usize) -> Result<Option<(Frame<'_>, usize
     }
     let length = &bytes[1..end];
     if length == b"-1" {
+        if dialect == Dialect::Resp3 {
+            return Err("RESP2 null in a RESP3 reply".to_owned());
+        }
         return Ok(Some((Frame::Bulk(None), end + 2)));
     }
     let size = unsigned_length(length)?;
@@ -242,6 +291,151 @@ fn decode_scalar(bytes: &[u8], budget: usize) -> Result<Option<(Frame<'_>, usize
         return Err("invalid RESP2 bulk terminator".to_owned());
     }
     Ok(Some((Frame::Bulk(Some(&bytes[end + 2..total - 2])), total)))
+}
+
+// HELLO has one fixed shallow metadata shape. It is deliberately not part of
+// the scheduled reply grammar: no general recursive map/array parser is added.
+fn decode_hello(bytes: &[u8], dialect: Dialect) -> Result<Option<(usize, &[u8])>> {
+    if bytes.is_empty() {
+        return Ok(None);
+    }
+    let expected_prefix = if dialect == Dialect::Resp3 {
+        b'%'
+    } else {
+        b'*'
+    };
+    if bytes[0] != expected_prefix {
+        return Err("HELLO metadata container mismatch".to_owned());
+    }
+    let Some(end) = header_end(bytes)? else {
+        return Ok(None);
+    };
+    let expected_count = if dialect == Dialect::Resp3 { 7 } else { 14 };
+    if unsigned_length(&bytes[1..end])? != expected_count {
+        return Err("HELLO metadata count mismatch".to_owned());
+    }
+    let mut offset = end + 2;
+    let mut version = None;
+    let keys = [
+        b"server".as_slice(),
+        b"version",
+        b"proto",
+        b"id",
+        b"mode",
+        b"role",
+        b"modules",
+    ];
+    let mut seen = [false; 7];
+    for _ in 0..7 {
+        let Some((name, consumed)) =
+            decode_scalar(&bytes[offset..], MAX_HELLO_FRAME - offset, dialect)?
+        else {
+            return Ok(None);
+        };
+        let name = match (dialect, name) {
+            (Dialect::Resp3, Frame::Simple(name)) | (Dialect::Resp2, Frame::Bulk(Some(name))) => {
+                name
+            }
+            _ => return Err("HELLO metadata key type mismatch".to_owned()),
+        };
+        let index = keys
+            .iter()
+            .position(|key| *key == name)
+            .ok_or("unknown HELLO metadata key")?;
+        if seen[index] {
+            return Err("duplicate HELLO metadata key".to_owned());
+        }
+        seen[index] = true;
+        offset += consumed;
+        if index == 6 {
+            let remaining = &bytes[offset..];
+            if remaining.len() < 4 {
+                if !b"*0\r\n".starts_with(remaining) {
+                    return Err("HELLO modules mismatch".to_owned());
+                }
+                return Ok(None);
+            }
+            if &remaining[..4] != b"*0\r\n" {
+                return Err("HELLO modules mismatch".to_owned());
+            }
+            offset += 4;
+            continue;
+        }
+        let Some((value, consumed)) =
+            decode_scalar(&bytes[offset..], MAX_HELLO_FRAME - offset, dialect)?
+        else {
+            return Ok(None);
+        };
+        let valid = match (index, dialect, value) {
+            (2, _, Frame::Integer(proto)) => proto == if dialect == Dialect::Resp3 { 3 } else { 2 },
+            (3, _, Frame::Integer(id)) => id == 0,
+            (field, Dialect::Resp3, Frame::Simple(text))
+            | (field, Dialect::Resp2, Frame::Bulk(Some(text))) => match field {
+                0 => text == b"hydracache",
+                1 => {
+                    version = Some(text);
+                    valid_hello_version(text)
+                }
+                4 => text == b"standalone",
+                5 => text == b"master",
+                _ => false,
+            },
+            _ => false,
+        };
+        if !valid {
+            return Err("HELLO metadata value mismatch".to_owned());
+        }
+        offset += consumed;
+        if offset >= MAX_HELLO_FRAME {
+            return Err("HELLO metadata over budget".to_owned());
+        }
+    }
+    if offset > MAX_HELLO_FRAME {
+        return Err("HELLO metadata over budget".to_owned());
+    }
+    Ok(Some((offset, version.ok_or("HELLO version missing")?)))
+}
+fn valid_hello_version(version: &[u8]) -> bool {
+    !version.is_empty()
+        && version.len() <= 64
+        && version
+            .iter()
+            .all(|byte| byte.is_ascii_alphanumeric() || b".-+".contains(byte))
+}
+async fn negotiate_resp3<S: AsyncRead + AsyncWrite + Unpin>(stream: &mut S) -> Result<String> {
+    tokio::time::timeout(Duration::from_secs(5), negotiate_resp3_inner(stream))
+        .await
+        .map_err(|_| "HELLO negotiation timed out")?
+}
+async fn negotiate_resp3_inner<S: AsyncRead + AsyncWrite + Unpin>(
+    stream: &mut S,
+) -> Result<String> {
+    stream
+        .write_all(&command(&[b"HELLO", b"3"]))
+        .await
+        .map_err(|e| e.to_string())?;
+    let mut buffer = Vec::new();
+    let mut scratch = [0u8; 256];
+    loop {
+        if let Some((consumed, version)) = decode_hello(&buffer, Dialect::Resp3)? {
+            if consumed != buffer.len() {
+                return Err("unsolicited bytes after HELLO".to_owned());
+            }
+            return String::from_utf8(version.to_vec()).map_err(|e| e.to_string());
+        }
+        let available = (MAX_HELLO_FRAME - buffer.len()).min(scratch.len());
+        if available == 0 {
+            return Err("HELLO metadata buffer over budget".to_owned());
+        }
+        let count = stream
+            .read(&mut scratch[..available])
+            .await
+            .map_err(|e| e.to_string())?;
+        if count == 0 {
+            return Err("disconnect during HELLO".to_owned());
+        }
+        buffer.extend_from_slice(&scratch[..count]);
+    }
 }
 
 fn command(parts: &[&[u8]]) -> Bytes {
@@ -271,6 +465,10 @@ fn make_request(
         Operation::Get => {
             parts.extend([b"GET".as_slice(), selected[0].0.as_ref()]);
             Expected::Bulk(Some(selected[0].1.clone()))
+        }
+        Operation::GetMissing => {
+            parts.extend([b"GET".as_slice(), b"missing-key"]);
+            Expected::Bulk(None)
         }
         Operation::Set => {
             parts.extend([
@@ -399,6 +597,7 @@ fn record(
 
 async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
     stream: S,
+    dialect: Dialect,
     mut requests: mpsc::Receiver<Submission>,
     mut shutdown: watch::Receiver<bool>,
     records: Arc<Mutex<Vec<Record>>>,
@@ -411,7 +610,7 @@ async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
     let mut ordinal = 0;
     let result:Result<()> = async {
         loop {
-            while let Some((frame, consumed)) = decode(&buffer)? {
+            while let Some((frame, consumed)) = decode_dialect(&buffer, dialect)? {
                 let received = Instant::now();
                 if pending.front().ok_or("unsolicited RESP2 reply")?.written.is_none() { return Err("reply before full request write".to_owned()); }
                 let owner = pending.pop_front().expect("checked FIFO owner");
@@ -478,6 +677,7 @@ async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
 }
 
 struct Pipeline {
+    dialect: Dialect,
     requests: mpsc::Sender<Submission>,
     slots: Arc<Semaphore>,
     seen: Mutex<HashSet<u64>>,
@@ -499,14 +699,28 @@ impl Pipeline {
         stream: S,
         depth: usize,
     ) -> Result<Self> {
+        Self::new_dialect(stream, depth, Dialect::Resp2)
+    }
+    fn new_dialect<S: AsyncRead + AsyncWrite + Unpin + Send + 'static>(
+        stream: S,
+        depth: usize,
+        dialect: Dialect,
+    ) -> Result<Self> {
         if ![1, 10, 50].contains(&depth) {
             return Err("unsupported RESP2 pipeline depth".to_owned());
         }
         let (requests, receiver) = mpsc::channel(depth);
         let (stop, shutdown) = watch::channel(false);
         let records = Arc::new(Mutex::new(Vec::new()));
-        let actor = tokio::spawn(pump(stream, receiver, shutdown, Arc::clone(&records)));
+        let actor = tokio::spawn(pump(
+            stream,
+            dialect,
+            receiver,
+            shutdown,
+            Arc::clone(&records),
+        ));
         Ok(Self {
+            dialect,
             requests,
             slots: Arc::new(Semaphore::new(depth)),
             seen: Mutex::new(HashSet::new()),
@@ -582,6 +796,7 @@ async fn drain_pipelines(pipelines: &[Pipeline]) -> Result<()> {
 
 #[derive(Serialize)]
 pub struct WireSample {
+    pub dialect: Dialect,
     pub sequence: u64,
     pub connection_id: usize,
     pub wire_ordinal: u64,
@@ -600,6 +815,9 @@ pub struct WireSample {
 }
 #[derive(Serialize)]
 pub struct RespObservation {
+    pub dialect: Dialect,
+    pub hello_connections: usize,
+    pub hello_server_version: Option<String>,
     pub operations: Observation,
     pub wire_samples: Vec<WireSample>,
     pub pipeline_limit: usize,
@@ -610,6 +828,8 @@ pub struct RespObservation {
 }
 /// Bounded real TCP connections, independent FIFOs, one shared fixture store.
 pub struct RespControl {
+    dialect: Dialect,
+    hello_server_version: Option<String>,
     pipelines: Vec<Pipeline>,
     entries: Vec<(Bytes, Bytes)>,
     state: Arc<ClientSurfaceState>,
@@ -637,6 +857,16 @@ impl RespControl {
         depth: usize,
         connections: usize,
         operation: Operation,
+    ) -> Result<Self> {
+        Self::start_connections_dialect(dataset, depth, connections, operation, Dialect::Resp2)
+            .await
+    }
+    pub async fn start_connections_dialect(
+        dataset: Dataset,
+        depth: usize,
+        connections: usize,
+        operation: Operation,
+        dialect: Dialect,
     ) -> Result<Self> {
         if ![1, 10, 50].contains(&depth) {
             return Err("unsupported RESP2 pipeline depth".to_owned());
@@ -673,6 +903,8 @@ impl RespControl {
         // Construct the owner before connecting: every error path drops/aborts
         // already-created client actors and server tasks instead of detaching them.
         let mut control = Self {
+            dialect,
+            hello_server_version: None,
             pipelines: Vec::new(),
             entries: dataset.entries(),
             state,
@@ -686,13 +918,12 @@ impl RespControl {
         };
         let address = tcp.local_addr().map_err(|e| e.to_string())?;
         for _ in 0..connections {
-            let client = tokio::net::TcpStream::connect(address)
+            let mut client = tokio::net::TcpStream::connect(address)
                 .await
                 .map_err(|e| e.to_string())?;
             client.set_nodelay(true).map_err(|e| e.to_string())?;
             let (stream, _) = tcp.accept().await.map_err(|e| e.to_string())?;
             stream.set_nodelay(true).map_err(|e| e.to_string())?;
-            control.pipelines.push(Pipeline::new(client, depth)?);
             let observed = Arc::clone(&control.server);
             control.listeners.push(tokio::spawn(async move {
                 observed
@@ -700,6 +931,22 @@ impl RespControl {
                     .await
                     .map_err(|e| e.to_string())
             }));
+            if dialect == Dialect::Resp3 {
+                let version = negotiate_resp3(&mut client).await?;
+                if control
+                    .hello_server_version
+                    .as_ref()
+                    .is_some_and(|previous| previous != &version)
+                {
+                    return Err("HELLO version differs across sockets".to_owned());
+                }
+                control.hello_server_version = Some(version);
+                control
+                    .pipelines
+                    .push(Pipeline::new_dialect(client, depth, dialect)?);
+            } else {
+                control.pipelines.push(Pipeline::new(client, depth)?);
+            }
         }
         // Preload once through TCP, then verify visibility through EVERY socket.
         for (key, value) in &control.entries {
@@ -794,6 +1041,7 @@ impl RespControl {
                     .map(|r| {
                         let scheduled_ns = schedule.scheduled_ns(r.sequence);
                         WireSample {
+                            dialect: pipeline.dialect,
                             sequence: r.sequence,
                             connection_id,
                             wire_ordinal: r.ordinal,
@@ -816,6 +1064,13 @@ impl RespControl {
             );
         }
         let result = RespObservation {
+            dialect: self.dialect,
+            hello_connections: if self.dialect == Dialect::Resp3 {
+                self.pipelines.len()
+            } else {
+                0
+            },
+            hello_server_version: self.hello_server_version.clone(),
             operations,
             wire_samples,
             pipeline_limit: self.depth,
@@ -879,6 +1134,23 @@ impl Target for RespControl {
 
 /// Reject response reassignment, timestamp rebasing and fabricated wire replies.
 pub fn validate_wire(observation: &RespObservation) -> Result<()> {
+    match observation.dialect {
+        Dialect::Resp2
+            if observation.hello_connections != 0 || observation.hello_server_version.is_some() =>
+        {
+            return Err("unexpected RESP2 HELLO receipt".to_owned());
+        }
+        Dialect::Resp3
+            if observation.hello_connections != observation.physical_connections
+                || observation
+                    .hello_server_version
+                    .as_ref()
+                    .is_none_or(|v| !valid_hello_version(v.as_bytes())) =>
+        {
+            return Err("missing or invalid RESP3 HELLO receipt".to_owned());
+        }
+        _ => {}
+    }
     if ![1, 8, 32, 128].contains(&observation.physical_connections)
         || ![1, 10, 50].contains(&observation.pipeline_limit)
         || observation.product_performance_claim
@@ -893,7 +1165,8 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
     let mut previous_ordinals = vec![None; observation.physical_connections];
     let mut previous_responses = vec![None; observation.physical_connections];
     for sample in &observation.wire_samples {
-        if sample.connection_id >= observation.physical_connections
+        if sample.dialect != observation.dialect
+            || sample.connection_id >= observation.physical_connections
             || sample.sequence as usize % observation.physical_connections != sample.connection_id
         {
             return Err("wire connection or deterministic route drift".to_owned());
@@ -999,6 +1272,268 @@ mod tests {
     };
     use tokio::io::{DuplexStream, ReadBuf};
     use tokio::sync::Notify;
+
+    fn hello3_fixture(rotation: usize) -> Vec<u8> {
+        let fields = [
+            (b"server".as_slice(), b"+hydracache\r\n".as_slice()),
+            (b"version".as_slice(), b"+0.73.0\r\n".as_slice()),
+            (b"proto".as_slice(), b":3\r\n".as_slice()),
+            (b"id".as_slice(), b":0\r\n".as_slice()),
+            (b"mode".as_slice(), b"+standalone\r\n".as_slice()),
+            (b"role".as_slice(), b"+master\r\n".as_slice()),
+            (b"modules".as_slice(), b"*0\r\n".as_slice()),
+        ];
+        let mut bytes = b"%7\r\n".to_vec();
+        for position in 0..7 {
+            let (key, value) = fields[(position + rotation) % 7];
+            bytes.push(b'+');
+            bytes.extend_from_slice(key);
+            bytes.extend_from_slice(b"\r\n");
+            bytes.extend_from_slice(value);
+        }
+        bytes
+    }
+
+    #[test]
+    fn resp3_hello_metadata_is_shallow_bounded_and_map_order_independent() {
+        for rotation in 0..7 {
+            let bytes = hello3_fixture(rotation);
+            for split in 0..bytes.len() {
+                assert!(
+                    decode_hello(&bytes[..split], Dialect::Resp3)
+                        .unwrap()
+                        .is_none(),
+                    "rotation={rotation}, split={split}"
+                );
+            }
+            let (used, version) = decode_hello(&bytes, Dialect::Resp3).unwrap().unwrap();
+            assert_eq!(used, bytes.len());
+            assert_eq!(version, b"0.73.0");
+            assert!(decode_dialect(&bytes, Dialect::Resp3).is_err()); // Maps are setup-only.
+            assert!(decode_hello(&bytes, Dialect::Resp2).is_err());
+        }
+        for bytes in [
+            b"%8\r\n".as_slice(),
+            b"%7\r\n+unknown\r\n",
+            b"%7\r\n$6\r\nserver\r\n",
+            b"%7\r\n+server\r\n+hydracache\r\n+server\r\n",
+            b"%7\r\n+proto\r\n:2\r\n",
+            b"%7\r\n+modules\r\n*1\r\n",
+            b"%7\r\n+version\r\n+\r\n",
+            b"%7\r\n+server\r\n$1048576\r\n",
+        ] {
+            assert!(decode_hello(bytes, Dialect::Resp3).is_err(), "{bytes:?}");
+        }
+        let mut header = b"%7\r\n+".to_vec();
+        header.extend(std::iter::repeat_n(b'a', MAX_HEADER + 1));
+        assert!(decode_hello(&header, Dialect::Resp3).is_err());
+        assert!(!valid_hello_version(b"\0"));
+        assert!(!valid_hello_version(&[b'a'; 65]));
+    }
+
+    #[test]
+    fn resp3_null_arrays_are_fragmented_without_legacy_null_fallback() {
+        let bytes = b"*4\r\n$3\r\n\0\xffb\r\n_\r\n$0\r\n\r\n_\r\n";
+        for split in 0..bytes.len() {
+            assert!(decode_dialect(&bytes[..split], Dialect::Resp3)
+                .unwrap()
+                .is_none());
+        }
+        assert!(decode_dialect(bytes, Dialect::Resp3)
+            .unwrap()
+            .unwrap()
+            .0
+            .matches(&Expected::Array(vec![
+                Some(Bytes::from_static(b"\0\xffb")),
+                None,
+                Some(Bytes::new()),
+                None,
+            ])));
+        for split in 0..3 {
+            assert!(decode_dialect(&b"_\r\n"[..split], Dialect::Resp3)
+                .unwrap()
+                .is_none());
+        }
+        assert!(decode_dialect(b"_\r\n", Dialect::Resp3)
+            .unwrap()
+            .unwrap()
+            .0
+            .matches(&Expected::Bulk(None)));
+        assert!(decode(b"_\r\n").is_err());
+        assert!(decode(bytes).is_err());
+        for bytes in [
+            b"$-1\r\n".as_slice(),
+            b"*1\r\n$-1\r\n",
+            b"_x\n",
+            b"*1\r\n*0\r\n",
+            b">0\r\n",
+            b"%0\r\n",
+            b"*129\r\n",
+        ] {
+            assert!(decode_dialect(bytes, Dialect::Resp3).is_err(), "{bytes:?}");
+        }
+        assert!(decode_scalar(b"_\r\n", 2, Dialect::Resp3).is_err());
+        let mut maximum = b"*128\r\n".to_vec();
+        maximum.extend_from_slice(&b"_\r\n".repeat(128));
+        maximum.extend_from_slice(b":2\r\n");
+        let (frame, used) = decode_dialect(&maximum, Dialect::Resp3).unwrap().unwrap();
+        assert!(frame.matches(&Expected::Array(vec![None; 128])));
+        assert!(decode_dialect(&maximum[used..], Dialect::Resp3)
+            .unwrap()
+            .unwrap()
+            .0
+            .matches(&Expected::Integer(2)));
+    }
+
+    #[tokio::test]
+    async fn hello_negotiation_refuses_error_disconnect_and_unsolicited_tail() {
+        let mut tail = hello3_fixture(0);
+        tail.extend_from_slice(b"+OK\r\n");
+        for reply in [Vec::new(), b"-ERR unsupported\r\n".to_vec(), tail] {
+            let (mut client, mut peer) = tokio::io::duplex(4096);
+            let server = tokio::spawn(async move {
+                let hello = command(&[b"HELLO", b"3"]);
+                let mut input = vec![0; hello.len()];
+                peer.read_exact(&mut input).await.unwrap();
+                assert_eq!(input, hello);
+                peer.write_all(&reply).await.unwrap();
+                peer.shutdown().await.unwrap();
+            });
+            assert!(negotiate_resp3(&mut client).await.is_err());
+            server.await.unwrap();
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn hello_negotiation_timeout_drops_socket_without_fallback() {
+        let (mut client, mut peer) = tokio::io::duplex(64);
+        let handshake = tokio::spawn(async move { negotiate_resp3(&mut client).await });
+        let hello = command(&[b"HELLO", b"3"]);
+        let mut request = vec![0; hello.len()];
+        peer.read_exact(&mut request).await.unwrap();
+        assert_eq!(request, hello);
+        tokio::time::advance(Duration::from_secs(5)).await;
+        assert_eq!(
+            handshake.await.unwrap().unwrap_err(),
+            "HELLO negotiation timed out"
+        );
+        assert!(peer.write_all(b"+late\r\n").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn real_resp2_resp3_mget_preserves_null_empty_binary_and_duplicate_positions() {
+        for dialect in [Dialect::Resp2, Dialect::Resp3] {
+            let control = RespControl::start_connections_dialect(
+                Dataset::new(1, 16).unwrap(),
+                10,
+                1,
+                Operation::Get,
+                dialect,
+            )
+            .await
+            .unwrap();
+            let key = &control.entries[0].0;
+            let value = control.entries[0].1.clone();
+            assert_eq!(
+                control.pipelines[0]
+                    .submit(
+                        control.setup_id(),
+                        command(&[b"SET", b"empty", b""]),
+                        Expected::Stored
+                    )
+                    .await,
+                TargetOutcome::Success
+            );
+            assert_eq!(
+                control.pipelines[0]
+                    .submit(
+                        control.setup_id(),
+                        command(&[b"MGET", key, b"missing-key", b"empty", key]),
+                        Expected::Array(vec![
+                            Some(value.clone()),
+                            None,
+                            Some(Bytes::new()),
+                            Some(value)
+                        ])
+                    )
+                    .await,
+                TargetOutcome::Success
+            );
+            assert_eq!(
+                control.pipelines[0]
+                    .submit(
+                        control.setup_id(),
+                        command(&[b"DEL", b"empty"]),
+                        Expected::Integer(1)
+                    )
+                    .await,
+                TargetOutcome::Success
+            );
+            control.verify().await.unwrap();
+            control.shutdown().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn real_hello_transitions_apply_to_the_next_pipelined_reply() {
+        let control = RespControl::start(Dataset::new(1, 16).unwrap(), 1)
+            .await
+            .unwrap();
+        let tcp = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut client = tokio::net::TcpStream::connect(tcp.local_addr().unwrap())
+            .await
+            .unwrap();
+        let (stream, _) = tcp.accept().await.unwrap();
+        let observed = Arc::clone(&control.server);
+        let server = tokio::spawn(async move { observed.serve_connection(stream).await });
+        let mut requests = Vec::new();
+        for parts in [
+            &[b"HELLO".as_slice(), b"3"][..],
+            &[b"GET".as_slice(), b"missing-key"][..],
+            &[b"HELLO".as_slice(), b"2"][..],
+            &[b"GET".as_slice(), b"missing-key"][..],
+        ] {
+            requests.extend_from_slice(&command(parts));
+        }
+        client.write_all(&requests).await.unwrap();
+        let mut buffer = Vec::new();
+        for (hello, dialect) in [
+            (true, Dialect::Resp3),
+            (false, Dialect::Resp3),
+            (true, Dialect::Resp2),
+            (false, Dialect::Resp2),
+        ] {
+            loop {
+                let complete = if hello {
+                    decode_hello(&buffer, dialect)
+                        .unwrap()
+                        .map(|(used, _)| used)
+                } else {
+                    decode_dialect(&buffer, dialect)
+                        .unwrap()
+                        .map(|(frame, used)| {
+                            assert!(frame.matches(&Expected::Bulk(None)));
+                            used
+                        })
+                };
+                if let Some(used) = complete {
+                    buffer.drain(..used);
+                    break;
+                }
+                let mut scratch = [0; 64];
+                let count = client.read(&mut scratch).await.unwrap();
+                assert_ne!(count, 0);
+                buffer.extend_from_slice(&scratch[..count]);
+                assert!(buffer.len() <= MAX_HELLO_FRAME);
+            }
+        }
+        assert!(buffer.is_empty());
+        client.shutdown().await.unwrap();
+        drop(client);
+        server.await.unwrap().unwrap();
+        control.verify().await.unwrap();
+        control.shutdown().await.unwrap();
+    }
 
     #[tokio::test]
     async fn seeded_real_batch_sequence_matches_independent_reference_map() {
@@ -1276,41 +1811,48 @@ mod tests {
 
     #[tokio::test]
     async fn cancelled_fragmented_array_keeps_one_command_owner() {
-        let (client, mut peer) = tokio::io::duplex(128);
-        let pipeline = Arc::new(Pipeline::new(client, 1).unwrap());
-        let request = command(&[b"MGET", b"a", b"b"]);
-        let p = Arc::clone(&pipeline);
-        let first = request.clone();
-        let waiter = tokio::spawn(async move {
-            p.submit(
-                0,
-                first,
-                Expected::Array(vec![Some(Bytes::from_static(b"a")), None]),
-            )
-            .await
-        });
-        let mut input = vec![0; request.len()];
-        peer.read_exact(&mut input).await.unwrap();
-        peer.write_all(b"*2\r\n$1\r\na\r\n$-1\r").await.unwrap();
-        waiter.abort();
-        assert!(waiter.await.unwrap_err().is_cancelled());
-        assert_eq!(pipeline.slots.available_permits(), 0);
-        let p = Arc::clone(&pipeline);
-        let second = command(&[b"EXISTS", b"a", b"a"]);
-        let next_size = second.len();
-        let next = tokio::spawn(async move { p.submit(1, second, Expected::Integer(2)).await });
-        peer.write_all(b"\n").await.unwrap();
-        peer.read_exact(&mut vec![0; next_size]).await.unwrap();
-        peer.write_all(b":2\r\n").await.unwrap();
-        assert_eq!(next.await.unwrap(), TargetOutcome::Success);
-        pipeline.drain().await.unwrap();
-        let records = pipeline.records.lock().unwrap().clone();
-        assert_eq!(records.len(), 2);
-        assert!(records[0].cancelled && records[0].verified);
-        assert_eq!(records[0].items, Some(2));
-        assert_eq!(records[1].items, Some(1));
-        assert_eq!(records[1].sequence, 1);
-        pipeline.shutdown().await.unwrap();
+        for dialect in [Dialect::Resp2, Dialect::Resp3] {
+            let (client, mut peer) = tokio::io::duplex(128);
+            let pipeline = Arc::new(Pipeline::new_dialect(client, 1, dialect).unwrap());
+            let request = command(&[b"MGET", b"a", b"b"]);
+            let p = Arc::clone(&pipeline);
+            let first = request.clone();
+            let waiter = tokio::spawn(async move {
+                p.submit(
+                    0,
+                    first,
+                    Expected::Array(vec![Some(Bytes::from_static(b"a")), None]),
+                )
+                .await
+            });
+            let mut input = vec![0; request.len()];
+            peer.read_exact(&mut input).await.unwrap();
+            let fragmented = if dialect == Dialect::Resp3 {
+                b"*2\r\n$1\r\na\r\n_\r".as_slice()
+            } else {
+                b"*2\r\n$1\r\na\r\n$-1\r".as_slice()
+            };
+            peer.write_all(fragmented).await.unwrap();
+            waiter.abort();
+            assert!(waiter.await.unwrap_err().is_cancelled());
+            assert_eq!(pipeline.slots.available_permits(), 0);
+            let p = Arc::clone(&pipeline);
+            let second = command(&[b"EXISTS", b"a", b"a"]);
+            let next_size = second.len();
+            let next = tokio::spawn(async move { p.submit(1, second, Expected::Integer(2)).await });
+            peer.write_all(b"\n").await.unwrap();
+            peer.read_exact(&mut vec![0; next_size]).await.unwrap();
+            peer.write_all(b":2\r\n").await.unwrap();
+            assert_eq!(next.await.unwrap(), TargetOutcome::Success);
+            pipeline.drain().await.unwrap();
+            let records = pipeline.records.lock().unwrap().clone();
+            assert_eq!(records.len(), 2);
+            assert!(records[0].cancelled && records[0].verified);
+            assert_eq!(records[0].items, Some(2));
+            assert_eq!(records[1].items, Some(1));
+            assert_eq!(records[1].sequence, 1);
+            pipeline.shutdown().await.unwrap();
+        }
     }
 
     #[test]

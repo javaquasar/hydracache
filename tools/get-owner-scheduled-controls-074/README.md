@@ -73,3 +73,21 @@ difference visible. A mixed HC2 PUT/unapplied-CAS fixture retains the first writ
 it is not an atomic MSET oracle. No product path is changed to hide these costs
 or semantic differences. Numerical native floors, matched secure RESP controls,
 live DELETE/EXISTS and expiration/quota/event/fault matrices remain open.
+
+Plaintext RESP3 is now an explicit `Dialect::Resp3` control, not automatic
+fallback. `start_connections_dialect` validates HELLO 3 on every socket before
+preload and scheduled offers. Its setup-only metadata reader is capped at 4 KiB,
+seven required unique fields, a 64-byte printable version and a five-second
+negotiation safety timeout. Map field order is irrelevant; unknown/duplicate
+fields or wrong types/values fail. The version is bounded metadata, not a binary
+identity or release receipt. HELLO/setup is not counted as measured goodput.
+
+RESP3 scalar/array null uses `_\r\n`, while RESP2 retains `$-1\r\n`. Each parser
+refuses the other dialect's null, and records carry a validated dialect plus
+negotiated connection count/version. `GetMissing` adds a separate all-miss cell.
+The normal reply grammar still rejects maps, pushes, attributes and nested arrays;
+HELLO metadata is a separate shallow reader. Fifty-six RESP3 scheduled cells cover
+seven operations and socket/depth boundaries; separate tests cover 1 MiB GET/SET,
+mixed HELLO transitions, fragmentation, null/empty/binary/duplicate MGET and
+cancelled array owners. This is not RESP3-wide conformance, TLS, numeric native
+nonregression or release qualification. mTLS remains a separate required step.

@@ -289,6 +289,61 @@ fn independent_native_batches_preserve_denominators_and_expose_hc2_semantic_diff
 }
 
 #[test]
+fn resp3_controls_require_hello_without_waiving_security_or_numeric_guards() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let resp3 = &c["resp"]["resp3"];
+    for (field, expected) in [
+        ("maximum_hello_frame_bytes", 4096),
+        ("maximum_hello_version_bytes", 64),
+        ("hello_metadata_fields", 7),
+        ("maximum_hello_timeout_seconds", 5),
+    ] {
+        assert_eq!(resp3[field].as_integer(), Some(expected), "{field}");
+    }
+    for flag in [
+        "hello_map_order_independent",
+        "per_connection_dialect_validated",
+        "mixed_hello_transition_is_separate_fixture",
+        "null_and_empty_are_distinct",
+    ] {
+        assert_eq!(resp3[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "hello_duplicate_or_unknown_fields_allowed",
+        "general_recursive_map_parser",
+        "hello_setup_counted_as_measured_offer",
+        "resp2_null_in_resp3_allowed",
+        "resp3_null_in_resp2_allowed",
+        "secure_transport_claim_allowed",
+        "numerical_nonregression_measured",
+        "full_qualification_completed",
+    ] {
+        assert_eq!(resp3[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(c["numerical_series_started"].as_bool(), Some(false));
+    assert_eq!(
+        c["pending"]["matched_mtls_resp3_required"].as_bool(),
+        Some(true)
+    );
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/resp.rs")).unwrap();
+    for token in [
+        "negotiate_resp3(&mut client)",
+        "sample.dialect != observation.dialect",
+        "resp3_hello_metadata_is_shallow_bounded_and_map_order_independent",
+        "hello_negotiation_refuses_error_disconnect_and_unsolicited_tail",
+        "hello_negotiation_timeout_drops_socket_without_fallback",
+        "real_hello_transitions_apply_to_the_next_pipelined_reply",
+        "real_resp2_resp3_mget_preserves_null_empty_binary_and_duplicate_positions",
+    ] {
+        assert!(source.contains(token), "{token}");
+    }
+    let tests = std::fs::read_to_string(tool.join("tests/resp.rs")).unwrap();
+    assert!(tests.contains("resp3_negotiates_every_socket_and_keeps_command_denominators"));
+    assert!(tests.contains("large_resp3_get_set_keep_one_complete_frame_observation"));
+}
+
+#[test]
 fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     assert_eq!(

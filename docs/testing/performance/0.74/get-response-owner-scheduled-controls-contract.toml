@@ -113,6 +113,27 @@ parser_borrows_array_body = true
 independent_native_batch_measurements_required = true
 full_multikey_qualification_completed = false
 
+[resp.resp3]
+state = "local-plaintext-resp3-semantic-controls-only"
+operations = ["get", "get-missing", "set-same-fixed-value", "mget", "mset-same-fixed-values", "exists-live-duplicates", "del-missing"]
+negotiation_per_connection = "validated-HELLO-3-before-preload-and-original-offers"
+maximum_hello_frame_bytes = 4096
+maximum_hello_version_bytes = 64
+hello_metadata_fields = 7
+maximum_hello_timeout_seconds = 5
+hello_map_order_independent = true
+hello_duplicate_or_unknown_fields_allowed = false
+general_recursive_map_parser = false
+hello_setup_counted_as_measured_offer = false
+resp2_null_in_resp3_allowed = false
+resp3_null_in_resp2_allowed = false
+per_connection_dialect_validated = true
+mixed_hello_transition_is_separate_fixture = true
+null_and_empty_are_distinct = true
+secure_transport_claim_allowed = false
+numerical_nonregression_measured = false
+full_qualification_completed = false
+
 [pending]
 new_sealed_numerical_cohort_required = true
 invalidated_b0_retry_allowed = false

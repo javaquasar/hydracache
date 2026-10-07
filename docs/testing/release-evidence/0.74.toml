@@ -297,6 +297,10 @@ function = "independent_native_batches_preserve_denominators_and_expose_hc2_sema
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
+function = "resp3_controls_require_hello_without_waiving_security_or_numeric_guards"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
 function = "get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci"
 
 [[work_item.required_tests]]

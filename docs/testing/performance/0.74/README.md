@@ -1695,3 +1695,12 @@ governance checks. The separate
 [native batch check summary](local-runs/get-owner-native-batch-checks-e1b981c0.json)
 binds semantic results to source/blob identities. Scheduled numerical series remain unstarted;
 product/default/lock/qualification and historical packets remain unchanged.
+
+The next local extension adds explicit plaintext RESP3 after validated HELLO 3
+on every socket, plus all-miss GET in either dialect. Fifty-six scheduled RESP3
+cells retain the original command denominator, dialect-bound null/array decoding
+and per-socket FIFO ownership. Shallow HELLO metadata is order-independent and
+bounded, not a general map parser or source/TLS attestation. Large frames, mixed
+HELLO transitions and cancelled fragmented arrays have separate semantic fixtures.
+Matched mTLS, full conformance and numerical nonregression remain open; see the
+[methodology](get-response-owner-scheduled-controls-design.md).
