@@ -3614,3 +3614,52 @@ unrelated applications nor relax the threshold to create a favorable sample.
 Before another numerical cohort, quiet conditions must be explicit and separately
 preregistered, retaining the refused series. Scheduled per-operation timing and
 independent HC1/HC2 harness work can continue locally without a performance claim.
+
+## Preserve offered work before interpreting latency
+
+The next local implementation addresses that methodological gap without running
+a new numerical series. It reuses the existing fixed-rate loadgen calendar and
+Target interface, but not the old unbounded executor queue or counting allocator.
+Every operation retains its original scheduled timestamp, actual target start
+and terminal outcome. A stall therefore appears in scheduled response latency,
+even when the service duration of later operations looks unchanged. Service
+latency is still useful attribution, but it is a separate histogram, not a
+substitute for the time a scheduled user operation waited.
+
+Bounded instrumentation must also tell the whole story about lost work. A full
+queue is an explicit admission rejection; an expired queued operation cannot
+start with a fresh timeout. Drain cancellation records incomplete work with a
+censored lower bound, never a made-up response or a zero-latency sample. Success,
+error, execution timeout, queue timeout, rejection and incomplete accounting
+conserve all offers. Good fraction uses all offers; goodput uses the elapsed
+original-offer-through-drain interval. Response percentiles always accompany loss
+counts, because a histogram of completed responses alone cannot describe every
+offered operation. Histogram overflow is explicit, and nanosecond units do not
+claim nanosecond Windows clock accuracy.
+
+Independent native controls now exercise real production HC1 routes over HTTP
+and HC2 listeners over gRPC/mTLS, without a daemon or system-service change.
+The fixed seed, binary key/value corpus and digest are identical, but each control
+owns a separate store. GET/PUT byte oracles, misses, 1 MiB values, tenant separation,
+anonymous HTTP rejection and foreign client-CA rejection check that the fixture
+is not gaining apparent efficiency through a semantics or authentication shortcut.
+Closing clients, joining the listener and checking HC2 resource accounting are
+part of fixture completion, not assumptions about cleanup.
+
+These transports do not have identical security contexts: HTTP header identity
+is not gRPC mTLS identity. They must be tested as independent off/on controls,
+not pooled into a transport-speed comparison. Client-slot mutexes, task ownership,
+timestamp recording and response validation also cost CPU/allocations. Removing
+a profiling allocator does not remove observer cost; a future preregistration
+must keep those costs identical across variants and state its timing boundary.
+
+Virtual-time fixtures confirm that queue stalls are visible, bounded overload
+preserves the schedule, deadlines include queue delay, cancellations release
+owners and forged/incomplete records cannot become response evidence. Real
+native fixtures confirm transport semantics at one/eight slots. None of this
+establishes throughput, CPU/op, native nonregression, allocator retention or RSS
+improvement. The earlier B0 refusal and bounded D3a result retain their original
+meaning. Scheduled RESP response matching, real 32/128 native concurrency,
+matched-security cohorts, retention/refill and current-source hosted execution
+still precede any full D3 decision. The implementation and remaining limits are
+documented in `get-response-owner-scheduled-controls-design.md`.

@@ -1,0 +1,100 @@
+use get_owner_scheduled_controls_074::target::Target;
+use get_owner_scheduled_controls_074::{
+    native::{Dataset, NativeControl, Operation, Surface},
+    scheduled::{run, Config},
+};
+use std::sync::Arc;
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn independent_hc1_hc2_get_put_use_real_transports_and_same_binary_oracle() {
+    let mut digest = None;
+    for surface in [Surface::Hc1Http, Surface::Hc2GrpcMtls] {
+        for slots in [1, 8] {
+            for operation in [Operation::Get, Operation::Put] {
+                let control = Arc::new(
+                    NativeControl::start(surface, slots, Dataset::new(4, 1024).unwrap(), operation)
+                        .await
+                        .unwrap(),
+                );
+                let expected = control.dataset_digest();
+                let preload = control.preload().await.unwrap();
+                assert_eq!(preload.operations, 4);
+                assert_eq!(preload.state_digest, expected);
+                assert_eq!(control.reset().await.unwrap(), expected);
+                if let Some(digest) = &digest {
+                    assert_eq!(digest, &expected);
+                } else {
+                    digest = Some(expected.clone());
+                }
+                let result = run(
+                    Arc::clone(&control),
+                    &Config {
+                        operations: 8,
+                        offered_rate_per_second: 100,
+                        concurrency: slots,
+                        maximum_queued: 8,
+                        operation_timeout_ns: 2_000_000_000,
+                        drain_timeout_ns: 2_000_000_000,
+                        slo_ns: 2_000_000_000,
+                        highest_trackable_ns: 5_000_000_000,
+                    },
+                )
+                .await
+                .unwrap();
+                // Semantic fixture only: no real-clock percentile/goodput assertions.
+                assert_eq!(result.successes, 8);
+                assert_eq!(result.target_completed, 8);
+                assert!(!result.promotable);
+                assert_eq!(control.verify().await.unwrap(), expected);
+                assert_eq!(control.retained_entries(), 4);
+                assert_eq!(control.retained_value_bytes(), 4096);
+                Arc::try_unwrap(control)
+                    .unwrap_or_else(|_| panic!("control still owned"))
+                    .shutdown()
+                    .await
+                    .unwrap();
+            }
+        }
+    }
+}
+
+#[test]
+fn dataset_and_slot_bounds_are_explicit() {
+    assert!(Dataset::new(0, 1).is_err());
+    assert!(Dataset::new(17, 1).is_err());
+    assert!(Dataset::new(1, 0).is_err());
+    assert!(Dataset::new(1, 1_048_577).is_err());
+    assert_ne!(
+        Dataset::new(1, 256).unwrap().digest(),
+        Dataset::new(2, 256).unwrap().digest()
+    );
+}
+
+#[tokio::test]
+async fn large_binary_payload_crosses_real_native_frames_without_truncation() {
+    for surface in [Surface::Hc1Http, Surface::Hc2GrpcMtls] {
+        let control = NativeControl::start(
+            surface,
+            1,
+            Dataset::new(1, 1_048_576).unwrap(),
+            Operation::Get,
+        )
+        .await
+        .unwrap();
+        assert_eq!(control.retained_value_bytes(), 1_048_576);
+        assert_eq!(control.verify().await.unwrap(), control.dataset_digest());
+        control.shutdown().await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn invalid_slots_fail_before_starting_any_listener() {
+    assert!(NativeControl::start(
+        Surface::Hc1Http,
+        2,
+        Dataset::new(1, 1).unwrap(),
+        Operation::Get
+    )
+    .await
+    .is_err());
+}

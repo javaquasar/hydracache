@@ -1611,3 +1611,19 @@ started: 57.8125% background CPU versus the unchanged 10% ceiling. One refused
 attempt, zero numerical pairs, no native/throughput result or retry. All three
 raw files and an offline no-spawn audit survive; see
 [invalidation, exact boundary and next work](get-response-owner-phase-b0-result.md).
+
+### Scheduled latency and independent HC1/HC2 instrumentation
+
+The bounded extension of the canonical loadgen calendar now retains each original
+offer, queue/execution boundary, terminal class and censored incomplete owner.
+Separate scheduled/service histograms and all-offer goodput accounting prevent
+a service-only or successful-response-only tail from silently hiding overload.
+HC1 production HTTP routes and HC2 production gRPC/mTLS listeners have independent
+real-loopback GET/PUT byte-oracle controls, including binary/1 MiB values, missing
+keys, tenant separation and anonymous/foreign-CA rejection.
+
+These are local semantic fixtures, not measured native floors or a retry of B0.
+No numerical CLI/series exists; real transport 32/128, scheduled RESP per-response
+adapter, security-matched cohorts, retention/refill and hosted CI are still open.
+See [methodology and remaining proofs](get-response-owner-scheduled-controls-design.md).
+The private feature remains off and qualification/integrated admission unchanged.

@@ -7,6 +7,122 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    assert_eq!(
+        c["profile_id"].as_str(),
+        Some("get-owner-scheduled-controls-074-v1")
+    );
+    assert_eq!(
+        c["state"].as_str(),
+        Some("local-instrumentation-and-semantic-controls-only")
+    );
+    for flag in [
+        "promotable",
+        "product_numeric_claims_allowed",
+        "numerical_series_started",
+        "product_mutation_allowed",
+        "expensive_workloads_allowed",
+        "qualification_allowed",
+        "prior_rejections_reopened",
+        "accepted_product_change",
+        "default_enabled",
+        "complete_d3_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "original_offer_timestamps_preserved",
+        "overflow_must_be_counted",
+        "incomplete_is_censored_not_response",
+        "all_offers_accounted",
+    ] {
+        assert_eq!(c["driver"][flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "legacy_unbounded_driver_used",
+        "global_counting_allocator_linked",
+        "response_pacing_allowed",
+        "retry_allowed",
+    ] {
+        assert_eq!(c["driver"][flag].as_bool(), Some(false), "{flag}");
+    }
+    for (key, expected) in [
+        ("maximum_operations", 10000),
+        ("maximum_queued", 1024),
+        ("maximum_schedule_seconds", 15),
+        ("maximum_operation_timeout_seconds", 5),
+        ("maximum_drain_seconds", 5),
+    ] {
+        assert_eq!(c["driver"][key].as_integer(), Some(expected), "{key}");
+    }
+    assert_eq!(c["native"]["seed"].as_integer(), Some(740074));
+    assert_eq!(c["native"]["surfaces"].as_array().unwrap().len(), 2);
+    for flag in [
+        "shared_surface_state_between_controls",
+        "product_instrumentation_enabled",
+        "system_service_used",
+        "cross_security_context_numeric_comparison_allowed",
+    ] {
+        assert_eq!(c["native"][flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "new_sealed_numerical_cohort_required",
+        "resp_per_response_scheduled_adapter_required",
+        "hc1_hc2_nonregression_measurements_required",
+        "real_transport_concurrency_32_128_required",
+        "matched_mtls_resp3_required",
+        "miss_error_slow_reader_size_transition_required",
+        "allocator_active_resident_retained_idle_refill_required",
+        "feature_on_hosted_ci_receipt_required",
+    ] {
+        assert_eq!(c["pending"][flag].as_bool(), Some(true), "{flag}");
+    }
+    assert_eq!(
+        c["pending"]["invalidated_b0_retry_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(c["pending"]["integrated_c74"].as_str(), Some("UNRESOLVED"));
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let manifest: toml::Value =
+        toml::from_str(&std::fs::read_to_string(tool.join("Cargo.toml")).unwrap()).unwrap();
+    assert!(manifest["features"]["default"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(
+        manifest["features"]["get-owner"][0].as_str(),
+        Some("hydracache-redis-compat/experimental-resp-get-owner-074")
+    );
+    assert!(manifest["dependencies"].get("hydracache-loadgen").is_none());
+    assert!(!tool.join("src/main.rs").exists());
+    let driver = std::fs::read_to_string(tool.join("src/scheduled.rs")).unwrap();
+    assert!(!driver.contains("run_open_loop("));
+    assert!(!driver.contains("unbounded_channel"));
+    assert!(driver.contains("tasks.abort_all()"));
+    assert!(driver.contains("incomplete_lower_bound_ns"));
+    let library = std::fs::read_to_string(tool.join("src/lib.rs")).unwrap();
+    assert!(library.contains("crates/hydracache-loadgen/src/rate.rs"));
+    assert!(!library.contains("global_allocator"));
+    let registry = contract("proposal-registry.toml");
+    let proposal = registry["followup_proposals"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["id"].as_str() == Some("p74-get-response-owner-v1"))
+        .unwrap();
+    assert_eq!(
+        proposal["scheduled_controls_contract"].as_str(),
+        Some("get-response-owner-scheduled-controls-contract.toml")
+    );
+    assert_eq!(
+        proposal["scheduled_controls_numerical_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(proposal["accepted_product_change"].as_bool(), Some(false));
+}
+
+#[test]
 fn get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3() {
     let c = contract("get-response-owner-phase-b0-contract.toml");
     assert_eq!(

@@ -1,0 +1,64 @@
+schema_version = 1
+release = "0.74"
+profile_id = "get-owner-scheduled-controls-074-v1"
+state = "local-instrumentation-and-semantic-controls-only"
+promotable = false
+product_numeric_claims_allowed = false
+numerical_series_started = false
+product_mutation_allowed = false
+expensive_workloads_allowed = false
+qualification_allowed = false
+prior_rejections_reopened = false
+accepted_product_change = false
+default_enabled = false
+complete_d3_allowed = false
+tool = "tools/get-owner-scheduled-controls-074"
+design = "get-response-owner-scheduled-controls-design.md"
+
+[driver]
+canonical_schedule = "crates/hydracache-loadgen/src/rate.rs"
+canonical_target = "crates/hydracache-loadgen/src/target.rs"
+legacy_unbounded_driver_used = false
+global_counting_allocator_linked = false
+original_offer_timestamps_preserved = true
+response_pacing_allowed = false
+retry_allowed = false
+maximum_operations = 10000
+maximum_queued = 1024
+maximum_schedule_seconds = 15
+maximum_operation_timeout_seconds = 5
+maximum_drain_seconds = 5
+concurrency = [1, 8, 32, 128]
+histogram_unit = "nanosecond-histogram-not-clock-resolution"
+overflow_must_be_counted = true
+incomplete_is_censored_not_response = true
+all_offers_accounted = true
+goodput_denominator = "first-original-offer-through-owned-task-drain"
+
+[native]
+seed = 740074
+maximum_key_space = 16
+maximum_payload_bytes = 1048576
+surfaces = ["hc1-http-loopback", "hc2-grpc-mtls-loopback"]
+operations = ["get", "put-same-fixed-value"]
+tested_transport_client_slots = [1, 8]
+binary_value_oracle = true
+missing_get_oracle = true
+same_dataset_digest_across_surfaces = true
+shared_surface_state_between_controls = false
+product_instrumentation_enabled = false
+system_service_used = false
+hc2_client_certificate_required = true
+cross_security_context_numeric_comparison_allowed = false
+
+[pending]
+new_sealed_numerical_cohort_required = true
+invalidated_b0_retry_allowed = false
+resp_per_response_scheduled_adapter_required = true
+hc1_hc2_nonregression_measurements_required = true
+real_transport_concurrency_32_128_required = true
+matched_mtls_resp3_required = true
+miss_error_slow_reader_size_transition_required = true
+allocator_active_resident_retained_idle_refill_required = true
+feature_on_hosted_ci_receipt_required = true
+integrated_c74 = "UNRESOLVED"
