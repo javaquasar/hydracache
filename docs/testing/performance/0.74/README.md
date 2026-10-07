@@ -1605,3 +1605,9 @@ See [scope, methodology and required follow-ups](get-response-owner-phase-b0-des
 HC1/HC2, matched mTLS/RESP3, higher concurrency, scheduled per-operation latency,
 retention/refill and current-source hosted CI remain required. Feature stays off,
 accepted proposals zero, integrated C74 unresolved, qualification unchanged.
+
+The first sealed B0 launch (`18ee8cdc`) was refused before a benchmark process
+started: 57.8125% background CPU versus the unchanged 10% ceiling. One refused
+attempt, zero numerical pairs, no native/throughput result or retry. All three
+raw files and an offline no-spawn audit survive; see
+[invalidation, exact boundary and next work](get-response-owner-phase-b0-result.md).

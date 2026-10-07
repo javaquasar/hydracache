@@ -101,3 +101,13 @@ attempts, counting/timing separation, latency/CPU denominators, precision/noise,
 native/batch regression, trace identity and all-file offline hash replay.
 `get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3` enrolls
 the finite contract and closed admission boundaries in xtask.
+
+## First sealed launch refused
+
+The instrumentation was committed at `18ee8cdc` before any sample. The sealed
+launch then observed 57.8125% background CPU against the unchanged 10% ceiling
+and refused before creating the first benchmark process. No numerical pair or
+candidate/native measurement exists. The three-file packet and independent
+offline refusal audit are retained; the measurement tool, runner and contract
+are unchanged from preregistration. See `get-response-owner-phase-b0-result.md`.
+This invalidated series is not retried or relabeled as a negative product result.

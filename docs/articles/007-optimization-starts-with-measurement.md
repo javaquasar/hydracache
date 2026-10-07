@@ -3599,3 +3599,18 @@ proposal nor enables it by default; it makes the next comparison capable of
 falsifying it without moving the cost into native API or overstating evidence.
 The precise contract and scope live in
 `docs/testing/performance/0.74/get-response-owner-phase-b0-design.md`.
+
+The first sealed launch at `18ee8cdc` illustrates why those rules matter. Its
+500 ms prelaunch CPU sample was 57.8125%, above the preregistered 10% background
+ceiling. The runner stopped before spawning the benchmark process. All three
+packet files survive, with raw hashes and an independent offline refusal audit;
+there are no numerical pairs, no throughput/native guard result and no retry.
+
+This does not falsify ownership transfer. It falsifies the suitability of that
+launch interval for the planned timing comparison. The D3a allocation result is
+still bounded evidence, not suddenly stronger or weaker CPU evidence. A later
+quiet-looking snapshot cannot explain the earlier interval, and we neither stop
+unrelated applications nor relax the threshold to create a favorable sample.
+Before another numerical cohort, quiet conditions must be explicit and separately
+preregistered, retaining the refused series. Scheduled per-operation timing and
+independent HC1/HC2 harness work can continue locally without a performance claim.

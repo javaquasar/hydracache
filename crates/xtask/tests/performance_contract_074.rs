@@ -93,9 +93,36 @@ fn get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3() {
         Some("get-response-owner-phase-b0-contract.toml")
     );
     assert_eq!(
+        proposal["phase_b0_state"].as_str(),
+        Some("invalidated-background-cpu-before-first-process")
+    );
+    assert_eq!(
         proposal["phase_b0_numerical_started"].as_bool(),
         Some(false)
     );
+    assert_eq!(proposal["phase_b0_attempts_retained"].as_integer(), Some(1));
+    let packet = root().join("docs/testing/performance/0.74/local-runs/get-owner-b0-18ee8cdc");
+    for (file, expected) in [
+        (
+            "seal.json",
+            "bc9c2ae4ea38801905ee1c96b81df9f8f59ae579a29838c22dcba03f62bcf572",
+        ),
+        (
+            "summary.json",
+            "789bd36b7f62c0f220eee304d4d0fe8c1a09d9cefb5c8956b9555be62d716cea",
+        ),
+        (
+            "attempt-0001/attempt.json",
+            "a28d1f46c06569bc936a39bd8b31d90814dd31cf9dd15cea45db79a0b6412e70",
+        ),
+    ] {
+        let bytes = std::fs::read(packet.join(file)).unwrap();
+        let hash: String = Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        assert_eq!(hash, expected, "{file}");
+    }
     assert_eq!(proposal["accepted_product_change"].as_bool(), Some(false));
 }
 

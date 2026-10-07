@@ -1,0 +1,9 @@
+{
+  "profile_id": "get-owner-local-controls-074-v1",
+  "classification": "invalidated",
+  "reason": "background CPU outside frozen ceiling",
+  "attempts_retained": 1,
+  "promotable": false,
+  "accepted_product_change": false,
+  "product_performance_claim": false
+}
