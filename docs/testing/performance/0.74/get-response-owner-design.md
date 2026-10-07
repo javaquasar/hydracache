@@ -143,3 +143,12 @@ independent native, unprofiled timing, real transport/security/concurrency,
 retention/refill and hosted feature-on evidence. The rejected scratch packet and
 all previous terminal decisions remain intact. Qualification manifest, root lock
 and frozen 0.73 are unchanged; ship admission remains closed.
+
+Clean `3f13f1d1` subsequently produced W11/W12 ExpectedRed receipts (3,499 and
+54,042 ms), retained in `local-runs/get-response-owner-checks-3f13f1d1.json`.
+Local aggregation resolves all 28 structural source/test/artifact rows, but has
+zero fast-green, gated-green or ship-ready rows without complete lane receipts.
+It is not an accepted optimization count or release readiness. Before that
+evidence commit, 99 targeted xtask, 16 replay and three documentation-script tests,
+format, contract, 17 governance checks, docs registry/sync/links and mdbook passed.
+Full workspace verify and hosted CI are not claimed by these local checks.

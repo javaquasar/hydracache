@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "tier": "local-d2-source-and-evidence-verification",
+  "source_commit": "3f13f1d1a8f8ca0fa5584a8160b53e65f5f77dc3",
+  "implementation_commit": "2379698d6aa61280b6f6054403f4fbd3e4b60641",
+  "default_enabled": false,
+  "promotable": false,
+  "accepted_product_change": false,
+  "ship_admission": "closed",
+  "checks": {
+    "scope": "99 targeted xtask, 16 replay and 3 doc tests, format/docs/contract/governance before 3f13f1d1; canaries and local aggregation on its clean source",
+    "xtask_groups": {"performance_contract": 47, "release_evidence": 13, "release_governance": 23, "doc_check": 16},
+    "python_replay_tests_passed": 16,
+    "documentation_script_tests_passed": 3,
+    "scoped_format_and_diff_check": "passed",
+    "performance_contract": "passed; local non-promotable",
+    "release_governance": "passed; 17 structural checks",
+    "doc_registry_release_sync_links_and_mdbook": "passed",
+    "qualification_manifest_raw_sha256_unchanged": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "numerical_candidate_attempts": 0,
+    "local_release_evidence_aggregation": {
+      "planned": 0,
+      "implemented": 28,
+      "fast_green": 0,
+      "gated_green": 0,
+      "ship_ready": 0,
+      "scope": "structural source/test/artifact mapping only; no fast.workspace-nextest receipt supplied; implemented rows include preserved terminal dispositions, not 28 accepted optimizations"
+    }
+  },
+  "canary_receipts": [
+    {
+      "schema_version": 1,
+      "release": "0.74",
+      "w_item": "W11",
+      "source_commit": "3f13f1d1a8f8ca0fa5584a8160b53e65f5f77dc3",
+      "dirty_worktree": false,
+      "defect_id": "PERF74-W11",
+      "command_digest": "0dc38b1580a229e4b732ed7ceaa1b32fdd434e533ff6453fb823847ed3200ae4",
+      "registry_digest": "4ebaea45f9a8f23a4ba356a775a1a692cdd0a900b5817df4ca07efcf8c1e4a44",
+      "expected_failure": "HC-CANARY-RED:PERF74-W11",
+      "started_at": "2026-10-07T09:45:15.3844293Z",
+      "ended_at": "2026-10-07T09:45:18.8843948Z",
+      "duration_ms": 3499,
+      "exit_code": 101,
+      "outcome": "expected_red",
+      "output_sha256": "7c1ee4ba9ceeb1da074f7aa7362639c910a55936816aa1c5c4e3e0163d83d04e"
+    },
+    {
+      "schema_version": 1,
+      "release": "0.74",
+      "w_item": "W12",
+      "source_commit": "3f13f1d1a8f8ca0fa5584a8160b53e65f5f77dc3",
+      "dirty_worktree": false,
+      "defect_id": "PERF74-W12",
+      "command_digest": "427b7f59edcdce185d8f225978001243ddbd86201319fe1f5c78f178e392d8ed",
+      "registry_digest": "4ebaea45f9a8f23a4ba356a775a1a692cdd0a900b5817df4ca07efcf8c1e4a44",
+      "expected_failure": "HC-CANARY-RED:PERF74-W12",
+      "started_at": "2026-10-07T09:45:19.5347719Z",
+      "ended_at": "2026-10-07T09:46:13.577333Z",
+      "duration_ms": 54042,
+      "exit_code": 101,
+      "outcome": "expected_red",
+      "output_sha256": "75e48f085d079786edb28b1867973c2da174edfba8bb04af4a1e6d559dcc424e"
+    }
+  ],
+  "not_claimed_or_run": [
+    "D3 comparison or product numeric win",
+    "full workspace verify or full nextest receipt",
+    "hosted CI execution proof, native/timing/RSS-retention qualification",
+    "rented host, service mutations, workflow dispatch or expensive workload",
+    "release admission, merge or tag"
+  ]
+}

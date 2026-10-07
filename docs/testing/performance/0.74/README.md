@@ -1557,3 +1557,9 @@ seal the finite attempt set, A/A controls, at least five counterbalanced pairs,
 20% end-to-end large-GET allocation floor and unchanged live-memory/native guards.
 Accepted proposals stay zero; C74 unresolved. No costly workload or qualification
 manifest change is part of this step.
+
+The local verification follow-up retains clean-`3f13f1d1` W11/W12 ExpectedRed
+receipts and exact scope in `local-runs/get-response-owner-checks-3f13f1d1.json`.
+All 99 targeted xtask, 16 replay and three docs-script tests passed. Local evidence
+aggregation still has zero fast-green/gated-green/ship-ready rows; structural
+mapping is not full workspace/hosted qualification or accepted product changes.
