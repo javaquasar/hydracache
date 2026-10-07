@@ -52,10 +52,16 @@ hc2_client_certificate_required = true
 cross_security_context_numeric_comparison_allowed = false
 
 [resp]
-state = "local-resp2-get-semantic-adapter-only"
+state = "local-resp2-get-set-semantic-adapter-only"
 real_loopback_tcp = true
 production_connection_owner = true
-physical_connections = 1
+default_physical_connections = 1
+supported_physical_connections = [1, 8, 32, 128]
+operations = ["get", "set-same-fixed-value"]
+connection_route = "original-sequence-modulo-physical-connections"
+fifo_scope = "per-connection-not-global"
+shared_store_within_control = true
+cross_connection_total_order_claim_allowed = false
 pipeline_limits = [1, 10, 50]
 pipeline_is_outstanding_ceiling_not_fixed_batch = true
 response_boundary = "complete-frame-observed-before-byte-oracle-and-waiter-wakeup"
@@ -66,6 +72,7 @@ maximum_header_bytes = 128
 maximum_history_records = 10256
 fixture_request_frame_ceiling_bytes = 8388608
 maximum_wire_drain_seconds = 5
+wire_drain_budget_scope = "entire-connection-group"
 single_use_run = true
 retry_allowed = false
 secure_transport_claim_allowed = false

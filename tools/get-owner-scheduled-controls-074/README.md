@@ -33,3 +33,13 @@ time divided by depth. RESP3/mTLS and sealed numerical execution remain absent.
 Native 32/128 fixtures synchronize GET/PUT clients with a barrier, verify real HC2
 connection accounting, exact values and shutdown. They assert no real-clock
 performance threshold or native nonregression.
+
+`start_connections` additionally supports 1/8/32/128 actual accepted TCP sockets
+and GET or SET of the same fixed preloaded payload. Each socket owns its FIFO,
+parser, permits and local wire ordinal; `(connection_id, wire_ordinal)` is the
+wire identity. Sequence modulo socket count fixes the route before any response.
+The fixture store is shared within a control, and setup/final GET byte oracles
+check it through every connection. SET success checks exact `+OK`; final GET
+checks retained bytes. No global socket ordering or conflicting-write oracle is
+claimed. Wire drain has one five-second group budget. This remains semantic-only,
+with no RESP3/mTLS, multi-key adapter, numerical series or B0 retry.

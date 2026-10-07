@@ -1,4 +1,4 @@
-//! Tool-only RESP2 GET pipeline with bounded FIFO owners and response timestamps.
+//! Tool-only RESP2 GET/fixed SET pipelines with bounded FIFO owners and timestamps.
 //! This is not a general Redis client, security-matched cohort, or timing CLI.
 use crate::{
     native::Dataset,
@@ -23,6 +23,14 @@ type Result<T> = std::result::Result<T, String>;
 const MAX_REPLY: usize = 1_048_576;
 const MAX_HEADER: usize = 128;
 const MAX_HISTORY: usize = 10_256;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Operation {
+    Get,
+    /// Write the same preloaded value; no cross-connection last-writer claim.
+    Set,
+}
 
 #[derive(Clone)]
 enum Expected {
@@ -337,9 +345,22 @@ impl Pipeline {
     }
 }
 
+async fn drain_pipelines(pipelines: &[Pipeline]) -> Result<()> {
+    // One group budget; a late socket cannot multiply the allowed drain window.
+    tokio::time::timeout(Duration::from_secs(5), async {
+        for pipeline in pipelines {
+            pipeline.drain().await?;
+        }
+        Ok::<(), String>(())
+    })
+    .await
+    .map_err(|_| "RESP2 connection group wire drain timed out")?
+}
+
 #[derive(Serialize)]
 pub struct WireSample {
     pub sequence: u64,
+    pub connection_id: usize,
     pub wire_ordinal: u64,
     pub scheduled_ns: u64,
     pub accepted_ns: u64,
@@ -357,31 +378,45 @@ pub struct RespObservation {
     pub operations: Observation,
     pub wire_samples: Vec<WireSample>,
     pub pipeline_limit: usize,
+    pub physical_connections: usize,
+    pub operation: Operation,
     pub product_performance_claim: bool,
 }
-/// One real TCP connection, production RESP connection owner, independent store.
+/// Bounded real TCP connections, independent FIFOs, one shared fixture store.
 pub struct RespControl {
-    pipeline: Pipeline,
+    pipelines: Vec<Pipeline>,
     entries: Vec<(Bytes, Bytes)>,
     state: Arc<ClientSurfaceState>,
     server: Arc<RedisRespServer>,
-    listener: Option<JoinHandle<Result<()>>>,
+    listeners: Vec<JoinHandle<Result<()>>>,
     digest: String,
     depth: usize,
+    operation: Operation,
     setup_id: std::sync::atomic::AtomicU64,
     used: std::sync::atomic::AtomicBool,
 }
 impl Drop for RespControl {
     fn drop(&mut self) {
-        if let Some(listener) = self.listener.take() {
+        for listener in &self.listeners {
             listener.abort();
         }
     }
 }
 impl RespControl {
     pub async fn start(dataset: Dataset, depth: usize) -> Result<Self> {
+        Self::start_connections(dataset, depth, 1, Operation::Get).await
+    }
+    pub async fn start_connections(
+        dataset: Dataset,
+        depth: usize,
+        connections: usize,
+        operation: Operation,
+    ) -> Result<Self> {
         if ![1, 10, 50].contains(&depth) {
             return Err("unsupported RESP2 pipeline depth".to_owned());
+        }
+        if ![1, 8, 32, 128].contains(&connections) {
+            return Err("unsupported RESP2 connection count".to_owned());
         }
         let state = Arc::new(
             ClientSurfaceState::new(ClientSurfaceLimits::default()).map_err(|e| e.to_string())?,
@@ -407,34 +442,40 @@ impl RespControl {
         let tcp = tokio::net::TcpListener::bind("127.0.0.1:0")
             .await
             .map_err(|e| e.to_string())?;
-        let stream = tokio::net::TcpStream::connect(tcp.local_addr().map_err(|e| e.to_string())?)
-            .await
-            .map_err(|e| e.to_string())?;
-        stream.set_nodelay(true).map_err(|e| e.to_string())?;
-        let pipeline = Pipeline::new(stream, depth)?;
-        let observed = Arc::clone(&server);
-        let listener = tokio::spawn(async move {
-            let (stream, _) = tcp.accept().await.map_err(|e| e.to_string())?;
-            stream.set_nodelay(true).map_err(|e| e.to_string())?;
-            observed
-                .serve_connection(stream)
-                .await
-                .map_err(|e| e.to_string())
-        });
-        let control = Self {
-            pipeline,
+        // Construct the owner before connecting: every error path drops/aborts
+        // already-created client actors and server tasks instead of detaching them.
+        let mut control = Self {
+            pipelines: Vec::new(),
             entries: dataset.entries(),
             state,
             server,
-            listener: Some(listener),
+            listeners: Vec::new(),
             digest: dataset.digest(),
             depth,
+            operation,
             setup_id: std::sync::atomic::AtomicU64::new(u64::MAX),
             used: std::sync::atomic::AtomicBool::new(false),
         };
+        let address = tcp.local_addr().map_err(|e| e.to_string())?;
+        for _ in 0..connections {
+            let client = tokio::net::TcpStream::connect(address)
+                .await
+                .map_err(|e| e.to_string())?;
+            client.set_nodelay(true).map_err(|e| e.to_string())?;
+            let (stream, _) = tcp.accept().await.map_err(|e| e.to_string())?;
+            stream.set_nodelay(true).map_err(|e| e.to_string())?;
+            control.pipelines.push(Pipeline::new(client, depth)?);
+            let observed = Arc::clone(&control.server);
+            control.listeners.push(tokio::spawn(async move {
+                observed
+                    .serve_connection(stream)
+                    .await
+                    .map_err(|e| e.to_string())
+            }));
+        }
+        // Preload once through TCP, then verify visibility through EVERY socket.
         for (key, value) in &control.entries {
-            if control
-                .pipeline
+            if control.pipelines[0]
                 .submit(
                     control.setup_id(),
                     command(&[b"SET", key, value]),
@@ -449,36 +490,39 @@ impl RespControl {
         control.verify().await?;
         Ok(control)
     }
+    pub fn physical_connections(&self) -> usize {
+        self.pipelines.len()
+    }
     fn setup_id(&self) -> u64 {
         self.setup_id
             .fetch_sub(1, std::sync::atomic::Ordering::Relaxed)
     }
     pub async fn verify(&self) -> Result<String> {
-        for (key, value) in &self.entries {
-            if self
-                .pipeline
+        for pipeline in &self.pipelines {
+            for (key, value) in &self.entries {
+                if pipeline
+                    .submit(
+                        self.setup_id(),
+                        command(&[b"GET", key]),
+                        Expected::Bulk(Some(value.clone())),
+                    )
+                    .await
+                    != TargetOutcome::Success
+                {
+                    return Err("RESP2 final byte oracle failed".to_owned());
+                }
+            }
+            if pipeline
                 .submit(
                     self.setup_id(),
-                    command(&[b"GET", key]),
-                    Expected::Bulk(Some(value.clone())),
+                    command(&[b"GET", b"missing-key"]),
+                    Expected::Bulk(None),
                 )
                 .await
                 != TargetOutcome::Success
             {
-                return Err("RESP2 final byte oracle failed".to_owned());
+                return Err("RESP2 missing GET failed".to_owned());
             }
-        }
-        if self
-            .pipeline
-            .submit(
-                self.setup_id(),
-                command(&[b"GET", b"missing-key"]),
-                Expected::Bulk(None),
-            )
-            .await
-            != TargetOutcome::Success
-        {
-            return Err("RESP2 missing GET failed".to_owned());
         }
         if self.state.profile_metrics() != Default::default()
             || self.server.pipeline_metrics() != Default::default()
@@ -496,7 +540,7 @@ impl RespControl {
         let operations = scheduled::run_at(Arc::clone(self), config, origin).await?;
         // A cancelled waiter is not an aborted TCP request. Await the FIFO
         // tombstones too; an incomplete drain is an error, never a clean receipt.
-        self.pipeline.drain().await?;
+        drain_pipelines(&self.pipelines).await?;
         let elapsed = u64::try_from(origin.elapsed().as_nanos()).map_err(|_| "elapsed overflow")?;
         let operations = scheduled::project(
             config,
@@ -509,56 +553,74 @@ impl RespControl {
         let offset = |at: Instant| {
             u64::try_from(at.saturating_duration_since(origin).as_nanos()).unwrap_or(u64::MAX)
         };
-        let records = self
-            .pipeline
-            .records
-            .lock()
-            .map_err(|_| "record lock poisoned")?;
-        let wire_samples = records
-            .iter()
-            .filter(|r| r.sequence < config.operations)
-            .map(|r| {
-                let scheduled_ns = schedule.scheduled_ns(r.sequence);
-                WireSample {
-                    sequence: r.sequence,
-                    wire_ordinal: r.ordinal,
-                    scheduled_ns,
-                    accepted_ns: offset(r.accepted),
-                    write_completed_ns: r.written.map(offset),
-                    response_complete_ns: r.received.map(offset),
-                    scheduled_frame_latency_ns: r
-                        .received
-                        .map(|at| offset(at).saturating_sub(scheduled_ns)),
-                    frame_kind: r.kind,
-                    byte_oracle_verified: r.verified,
-                    waiting_caller_cancelled: r.cancelled,
-                    transport_failure: r.failure,
-                    operation_outcome: operations.samples[r.sequence as usize].outcome,
-                }
-            })
-            .collect();
+        let mut wire_samples = Vec::new();
+        for (connection_id, pipeline) in self.pipelines.iter().enumerate() {
+            let records = pipeline
+                .records
+                .lock()
+                .map_err(|_| "record lock poisoned")?;
+            wire_samples.extend(
+                records
+                    .iter()
+                    .filter(|r| r.sequence < config.operations)
+                    .map(|r| {
+                        let scheduled_ns = schedule.scheduled_ns(r.sequence);
+                        WireSample {
+                            sequence: r.sequence,
+                            connection_id,
+                            wire_ordinal: r.ordinal,
+                            scheduled_ns,
+                            accepted_ns: offset(r.accepted),
+                            write_completed_ns: r.written.map(offset),
+                            response_complete_ns: r.received.map(offset),
+                            scheduled_frame_latency_ns: r
+                                .received
+                                .map(|at| offset(at).saturating_sub(scheduled_ns)),
+                            frame_kind: r.kind,
+                            byte_oracle_verified: r.verified,
+                            waiting_caller_cancelled: r.cancelled,
+                            transport_failure: r.failure,
+                            operation_outcome: operations.samples[r.sequence as usize].outcome,
+                        }
+                    }),
+            );
+        }
         let result = RespObservation {
             operations,
             wire_samples,
             pipeline_limit: self.depth,
+            physical_connections: self.pipelines.len(),
+            operation: self.operation,
             product_performance_claim: false,
         };
         validate_wire(&result)?;
         Ok(result)
     }
     pub async fn shutdown(mut self) -> Result<()> {
-        let result = self.pipeline.shutdown().await;
-        if let Some(mut listener) = self.listener.take() {
+        let mut failures = Vec::new();
+        for pipeline in &self.pipelines {
+            if let Err(error) = pipeline.shutdown().await {
+                failures.push(error);
+            }
+        }
+        // Visit every owned server task even if an earlier connection failed.
+        for mut listener in self.listeners.drain(..) {
             match tokio::time::timeout(Duration::from_secs(5), &mut listener).await {
-                Ok(joined) => joined.map_err(|e| e.to_string())??,
+                Ok(Ok(Ok(()))) => {}
+                Ok(Ok(Err(error))) => failures.push(error),
+                Ok(Err(error)) => failures.push(error.to_string()),
                 Err(_) => {
                     listener.abort();
                     let _ = listener.await;
-                    return Err("RESP2 connection drain timed out".to_owned());
+                    failures.push("RESP2 connection drain timed out".to_owned());
                 }
             }
         }
-        result
+        if failures.is_empty() {
+            Ok(())
+        } else {
+            Err(failures.join("; "))
+        }
     }
 }
 #[async_trait]
@@ -573,25 +635,39 @@ impl Target for RespControl {
         if request.sequence >= 10_000 {
             return TargetOutcome::Rejected;
         }
-        let (key, value) = &self.entries[request.sequence as usize % self.entries.len()];
-        self.pipeline
-            .submit(
-                request.sequence,
-                command(&[b"GET", key]),
-                Expected::Bulk(Some(value.clone())),
-            )
+        let sequence = request.sequence;
+        let (key, value) = &self.entries[sequence as usize % self.entries.len()];
+        let (frame, expected) = match self.operation {
+            Operation::Get => (command(&[b"GET", key]), Expected::Bulk(Some(value.clone()))),
+            Operation::Set => (command(&[b"SET", key, value]), Expected::Stored),
+        };
+        self.pipelines[sequence as usize % self.pipelines.len()]
+            .submit(sequence, frame, expected)
             .await
     }
 }
 
 /// Reject response reassignment, timestamp rebasing and fabricated wire replies.
 pub fn validate_wire(observation: &RespObservation) -> Result<()> {
+    if ![1, 8, 32, 128].contains(&observation.physical_connections)
+        || ![1, 10, 50].contains(&observation.pipeline_limit)
+        || observation.product_performance_claim
+    {
+        return Err("unsupported RESP2 wire topology or claim".to_owned());
+    }
     let schedule =
         FixedRateSchedule::new(0, observation.operations.config.offered_rate_per_second)?;
     let mut seen = HashSet::new();
-    let mut previous_ordinal = None;
-    let mut previous_response = None;
+    let mut previous_ordinals = vec![None; observation.physical_connections];
+    let mut previous_responses = vec![None; observation.physical_connections];
     for sample in &observation.wire_samples {
+        if sample.connection_id >= observation.physical_connections
+            || sample.sequence as usize % observation.physical_connections != sample.connection_id
+        {
+            return Err("wire connection or deterministic route drift".to_owned());
+        }
+        let previous_ordinal = &mut previous_ordinals[sample.connection_id];
+        let previous_response = &mut previous_responses[sample.connection_id];
         let operation = observation
             .operations
             .samples
@@ -608,7 +684,7 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
         {
             return Err("wire identity, schedule or FIFO drift".to_owned());
         }
-        previous_ordinal = Some(sample.wire_ordinal);
+        *previous_ordinal = Some(sample.wire_ordinal);
         if sample.write_completed_ns.is_some_and(|write| {
             write < sample.accepted_ns || write > observation.operations.elapsed_ns
         }) {
@@ -627,7 +703,7 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
                 {
                     return Err("wire response boundary drift".to_owned());
                 }
-                previous_response = Some(response);
+                *previous_response = Some(response);
             }
             None => {
                 if sample.byte_oracle_verified
@@ -642,6 +718,11 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
         if operation.outcome == scheduled::Outcome::Success
             && (!sample.byte_oracle_verified
                 || sample.waiting_caller_cancelled
+                || sample.frame_kind
+                    != Some(match observation.operation {
+                        Operation::Get => "bulk",
+                        Operation::Set => "simple",
+                    })
                 || sample
                     .response_complete_ns
                     .is_none_or(|time| time > operation.terminal_ns))
@@ -667,6 +748,117 @@ mod tests {
     };
     use tokio::io::{DuplexStream, ReadBuf};
     use tokio::sync::Notify;
+
+    #[tokio::test]
+    async fn one_connection_failure_still_joins_every_owned_task() {
+        let control = Arc::new(
+            RespControl::start_connections(Dataset::new(1, 16).unwrap(), 1, 8, Operation::Get)
+                .await
+                .unwrap(),
+        );
+        let server_tasks = control
+            .listeners
+            .iter()
+            .map(|task| task.abort_handle())
+            .collect::<Vec<_>>();
+        let client_tasks = control
+            .pipelines
+            .iter()
+            .map(|pipeline| {
+                pipeline
+                    .actor
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .unwrap()
+                    .abort_handle()
+            })
+            .collect::<Vec<_>>();
+        // Abort only this fixture-owned server connection, not a process/service.
+        control.listeners[0].abort();
+        let result = control
+            .run(&Config {
+                operations: 8,
+                offered_rate_per_second: 10000,
+                concurrency: 8,
+                maximum_queued: 8,
+                operation_timeout_ns: 5_000_000_000,
+                drain_timeout_ns: 5_000_000_000,
+                slo_ns: 5_000_000_000,
+                highest_trackable_ns: 10_000_000_000,
+            })
+            .await
+            .unwrap();
+        assert_eq!(result.operations.successes, 7);
+        assert_eq!(result.operations.errors, 1);
+        assert_eq!(
+            result.operations.samples[0].outcome,
+            scheduled::Outcome::Error
+        );
+        assert!(result.operations.samples[0].started_ns.is_some());
+        let failed = result
+            .wire_samples
+            .iter()
+            .filter(|s| s.connection_id == 0)
+            .collect::<Vec<_>>();
+        assert!(failed.len() <= 1);
+        // If the actor closes before channel admission there is no FIFO owner.
+        // The driver error remains counted; never invent a wire timestamp.
+        for sample in failed {
+            assert!(sample.transport_failure.is_some());
+            assert!(sample.response_complete_ns.is_none());
+        }
+        let control = Arc::try_unwrap(control).unwrap_or_else(|_| panic!("control still owned"));
+        assert!(control.shutdown().await.is_err());
+        assert!(server_tasks.iter().all(|task| task.is_finished()));
+        assert!(client_tasks.iter().all(|task| task.is_finished()));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn independent_connections_do_not_share_cancelled_owners_or_drain_budget() {
+        let (client_a, mut peer_a) = tokio::io::duplex(64);
+        let (client_b, mut peer_b) = tokio::io::duplex(64);
+        let pipelines = Arc::new(vec![
+            Pipeline::new(client_a, 1).unwrap(),
+            Pipeline::new(client_b, 1).unwrap(),
+        ]);
+        let request = command(&[b"GET", b"x"]);
+        let p = Arc::clone(&pipelines);
+        let bytes = request.clone();
+        let waiter_a = tokio::spawn(async move {
+            p[0].submit(0, bytes, Expected::Bulk(Some(Bytes::from_static(b"x"))))
+                .await
+        });
+        let mut input = vec![0; request.len()];
+        peer_a.read_exact(&mut input).await.unwrap();
+        waiter_a.abort();
+        assert!(waiter_a.await.unwrap_err().is_cancelled());
+        assert_eq!(pipelines[0].slots.available_permits(), 0);
+        assert_eq!(pipelines[1].slots.available_permits(), 1);
+        let p = Arc::clone(&pipelines);
+        let waiter_b = tokio::spawn(async move {
+            p[1].submit(1, request, Expected::Bulk(Some(Bytes::from_static(b"x"))))
+                .await
+        });
+        peer_b.read_exact(&mut input).await.unwrap();
+        peer_b.write_all(b"$1\r\nx\r\n").await.unwrap();
+        assert_eq!(waiter_b.await.unwrap(), TargetOutcome::Success);
+        assert_eq!(pipelines[1].slots.available_permits(), 1);
+        let start = Instant::now();
+        assert!(drain_pipelines(&pipelines).await.is_err());
+        assert_eq!(start.elapsed(), Duration::from_secs(5));
+        assert!(pipelines[0].records.lock().unwrap().is_empty());
+        assert_eq!(pipelines[1].records.lock().unwrap()[0].ordinal, 0);
+        peer_a.write_all(b"$1\r\nx\r\n").await.unwrap();
+        drain_pipelines(&pipelines).await.unwrap();
+        let record = pipelines[0].records.lock().unwrap()[0].clone();
+        assert_eq!(record.ordinal, 0); // Identical ordinal on different sockets is valid.
+        assert!(record.cancelled && record.verified);
+        for pipeline in pipelines.iter() {
+            pipeline.shutdown().await.unwrap();
+            assert_eq!(pipeline.slots.available_permits(), 1);
+        }
+    }
 
     #[test]
     fn fragmented_binary_empty_null_error_and_coalesced_frames_are_distinct() {

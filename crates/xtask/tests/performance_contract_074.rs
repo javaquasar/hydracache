@@ -38,7 +38,7 @@ fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() 
         assert_eq!(resp[flag].as_bool(), Some(false), "{flag}");
     }
     for (field, expected) in [
-        ("physical_connections", 1),
+        ("default_physical_connections", 1),
         ("maximum_reply_payload_bytes", 1048576),
         ("maximum_header_bytes", 128),
         ("maximum_history_records", 10256),
@@ -80,7 +80,7 @@ fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() 
     let source = std::fs::read_to_string(tool.join("src/resp.rs")).unwrap();
     for required in [
         "scheduled::run_at",
-        "self.pipeline.drain().await?",
+        "drain_pipelines(&self.pipelines).await?",
         "validate_wire(&result)?",
         "waiting_caller_cancelled",
         "slow_reader_and_partial_writes_preserve_cancelled_fifo_tombstone",
@@ -93,6 +93,80 @@ fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() 
     let native = std::fs::read_to_string(tool.join("tests/native.rs")).unwrap();
     assert!(native.contains("high_concurrency_native_clients_start_together_and_release_resources"));
     assert!(native.contains("Barrier::new(slots)"));
+}
+
+#[test]
+fn scheduled_resp_connections_keep_local_order_and_do_not_admit_product_changes() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let resp = &c["resp"];
+    assert_eq!(
+        resp["state"].as_str(),
+        Some("local-resp2-get-set-semantic-adapter-only")
+    );
+    assert_eq!(
+        resp["supported_physical_connections"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        vec![1, 8, 32, 128]
+    );
+    assert_eq!(
+        resp["operations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec!["get", "set-same-fixed-value"]
+    );
+    assert_eq!(
+        resp["connection_route"].as_str(),
+        Some("original-sequence-modulo-physical-connections")
+    );
+    assert_eq!(
+        resp["fifo_scope"].as_str(),
+        Some("per-connection-not-global")
+    );
+    assert_eq!(
+        resp["wire_drain_budget_scope"].as_str(),
+        Some("entire-connection-group")
+    );
+    assert_eq!(resp["shared_store_within_control"].as_bool(), Some(true));
+    for flag in [
+        "cross_connection_total_order_claim_allowed",
+        "secure_transport_claim_allowed",
+        "numeric_comparison_allowed",
+    ] {
+        assert_eq!(resp[flag].as_bool(), Some(false));
+    }
+    assert_eq!(
+        c["pending"]["matched_mtls_resp3_required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        c["pending"]["new_sealed_numerical_cohort_required"].as_bool(),
+        Some(true)
+    );
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/resp.rs")).unwrap();
+    for token in [
+        "pub connection_id: usize",
+        "previous_ordinals[sample.connection_id]",
+        "previous_responses[sample.connection_id]",
+        "independent_connections_do_not_share_cancelled_owners_or_drain_budget",
+    ] {
+        assert!(source.contains(token), "{token}");
+    }
+    let tests = std::fs::read_to_string(tool.join("tests/resp.rs")).unwrap();
+    for token in [
+        "multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles",
+        "unsupported_resp_connection_counts_fail_before_transport_setup",
+        "large_fixed_set_checks_acknowledgement_and_final_bytes",
+    ] {
+        assert!(tests.contains(token), "{token}");
+    }
 }
 
 #[test]

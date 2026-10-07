@@ -207,3 +207,46 @@ retains exact source and Git blob identities and the fixture diagnostic. This is
 functional evidence, not numerical nonregression, hosted CI or full workspace
 verification. No benchmark series, B0 retry, host mutation or qualification ran;
 the qualification manifest digest and historical summaries remain unchanged.
+
+## Multiple RESP FIFOs and fixed-value SET extension
+
+The single-connection GET baseline at `a8440175` and its check summary remain
+historical. `start` retains that behavior; `start_connections` explicitly selects
+1/8/32/128 accepted loopback TCP sockets and GET or SET of the preloaded fixed
+value. All sockets in one control use the same production server and independent
+fixture store; separate surface controls still do not share stores. Preload uses
+one real socket, and setup/final GET/miss oracles verify visibility through every
+socket. A 1 MiB SET control checks exact `+OK` and subsequent retained bytes.
+
+Every original sequence routes to `sequence % physical_connections`. The route is
+not reassigned according to response time or idle sockets. Records now include
+`connection_id`: ordinals and response monotonicity are validated independently
+on each socket, and changed routes/out-of-range connections are rejected. Equal
+ordinals on distinct sockets are legal. There is deliberately no global FIFO or
+total order across sockets. GET and fixed-value SET preserve the dataset digest;
+they do not exercise conflicting writes, mixed command order or multi-key
+atomicity. The wire samples remain one per command, never batch averages.
+
+Each socket retains the existing finite queue/owner/parser/history limits. One
+shared five-second wire-drain deadline covers the entire connection group, not
+five seconds multiplied by socket count. A virtual-time fixture cancels a caller
+on one connection, proves the other can complete with its own ordinal zero,
+checks the exact group deadline, then releases the late response and joins both
+actors. Construction owns all tasks before preload, so partial setup errors
+abort owned tasks. Explicit shutdown visits all actors/server tasks even if an
+earlier join fails; Drop abort is still only a fallback, not a clean receipt.
+A connection-failure fixture aborts only one owned server task, confirms seven
+other sockets still complete, and checks that even a failing shutdown joins all
+client/server tasks without inventing a response timestamp for the failed socket.
+If closure precedes actor admission, the driver still counts the operation error
+but no FIFO record exists; the fixture must not require or fabricate one. An
+initial assertion incorrectly assumed every transport error had a wire owner and
+was corrected without changing outcome accounting or any numeric guard.
+
+The functional matrix covers both operations, all four connection counts and
+all three outstanding ceilings, plus invalid counts and 1 MiB SET. These small
+fixtures assert protocol/ownership results, not a saturation knee, CPU/op,
+allocation reduction or native nonregression. Product code, threshold/lock
+identity, sealed B0/D3a artifacts and qualification manifest remain untouched.
+Scheduled RESP3/mTLS, multi-key workloads, representative transitions and
+memory/quiet-host numerical evidence remain separate open steps.

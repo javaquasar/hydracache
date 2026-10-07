@@ -1648,3 +1648,11 @@ formatting, docs/book and 17 governance checks passed. The separate
 [RESP FIFO check summary](local-runs/get-owner-resp-fifo-checks-a8440175.json)
 records exact source identities; this is not a benchmark, B0 retry, full workspace
 verification or hosted receipt. No numerical performance conclusion is added.
+
+The next semantic extension adds real RESP sockets at 1/8/32/128 and fixed-value
+SET alongside GET. Sequence-modulo routing is frozen before responses; FIFO and
+frame timestamps belong to each socket separately. Shared fixture-store bytes
+are verified through every socket, while one group drain deadline prevents
+socket count from multiplying the drain budget. This is still not numerical
+nonregression, secure RESP3 or multi-key qualification; earlier summaries retain
+their exact original scope.

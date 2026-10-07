@@ -3699,3 +3699,34 @@ and resource shutdown. These are semantic and ownership checks, not throughput
 measurements. They do not supply native nonregression, secure RESP3, allocator
 retention, RSS or hosted CI proof. No new numerical series or retry of B0 was
 run, and the private product feature remains default-off.
+
+## More sockets do not create one larger FIFO
+
+The next local extension asks a narrower correctness question before measuring
+concurrency: can the observer preserve request ownership when there are many
+independent streams? The fixture opens 1/8/32/128 real loopback TCP connections
+to one production RESP server and shared fixture store. Each socket keeps its
+own bounded parser, pending owners and ordinal. A record's wire identity is now
+the pair `(connection_id, wire_ordinal)`, not ordinal alone.
+
+Original sequence modulo connection count fixes routing before any response.
+Response arrival cannot choose a faster socket or move work to a different
+queue. The validator checks FIFO and timestamp monotonicity on each socket,
+not across sockets: ordinal zero may legitimately occur on every connection.
+Forged connection ids and changed routes fail. A deterministic cancellation
+fixture shows that holding one socket's late reply does not consume another's
+permit or assign its response to the abandoned caller. The whole group still
+gets only one five-second wire-drain deadline.
+
+SET now complements GET, but deliberately writes the same fixed binary value.
+This lets the oracle check exact acknowledgement and final bytes through every
+socket without pretending that concurrent conflicting writes have a predefined
+total order. The semantic grid spans both operations, all four socket counts
+and pipeline ceilings 1/10/50, with a separate 1 MiB SET check. It does not prove
+mixed-command ordering, MSET atomicity or a throughput improvement.
+
+No product optimization is introduced here. The useful result is a more precise
+observer and ownership oracle for later paired measurements. RESP3/mTLS,
+multi-key workloads, native nonregression and retained/RSS idle-refill evidence
+still precede a full allocation/performance decision; B0 is not retried and
+historical numerical packets are not reinterpreted.
