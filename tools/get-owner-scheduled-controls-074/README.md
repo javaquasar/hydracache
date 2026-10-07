@@ -91,3 +91,11 @@ seven operations and socket/depth boundaries; separate tests cover 1 MiB GET/SET
 mixed HELLO transitions, fragmentation, null/empty/binary/duplicate MGET and
 cancelled array owners. This is not RESP3-wide conformance, TLS, numeric native
 nonregression or release qualification. mTLS remains a separate required step.
+
+Production capability audit: the Redis acceptor currently builds server-auth
+TLS with `with_no_client_auth()`; Redis AUTH supplies the listener-bound identity.
+It does not implement required client-certificate mTLS like HC/2. This tool has
+no secure RESP adapter yet. Adding a tool-only mTLS wrapper would not prove the
+production listener or authorize a matched-security numeric comparison. The
+contract retains the unmet mTLS requirement and calls for a separate product
+security-policy decision before that path can be implemented.

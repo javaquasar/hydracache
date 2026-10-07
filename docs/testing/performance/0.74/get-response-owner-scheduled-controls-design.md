@@ -435,3 +435,46 @@ sync/link checks and mdbook build. The separate
 to source/blob identities and preserves both development diagnostics. It records
 only semantic verification: no numerical series, native floor, full workspace
 or hosted receipt is inferred.
+
+## Security capability audit: TLS plus AUTH is not a matched mTLS cohort
+
+The next prerequisite exposed a product capability gap at clean source
+`2f6db5a4dedeeca423faef8c720d9543db76da4a`, before any secure adapter or numerical
+series was added. `RedisTlsAcceptor::from_tls_config` reads the server certificate
+and key; its PEM factory calls `with_no_client_auth()` and does not consume
+`TlsConfig.ca_path` as client trust. The production HC/2 factory instead reads
+that CA and configures `client_ca_root`. Both can encrypt traffic, but only the
+latter requires the peer's client certificate at this listener boundary.
+
+Existing production lifecycle fixtures connect to rediss with a client configured
+with `with_no_client_auth()` and successfully execute AUTH/cache commands. The
+negative server-CA fixture checks the client's trust of the server; it is not a
+wrong-client-CA rejection. Plaintext and wrong AUTH are separately rejected.
+RESP unit fixtures prove HELLO2/3 AUTH, NOAUTH before dispatch, per-connection
+authentication and credential redaction. These are positive proofs of the
+documented TLS/AUTH surface, not evidence of an undocumented mTLS surface.
+
+`RedisRespServer::apply_auth` installs the listener's configured identity after
+credentials match. An AUTH username is not a tenant selector and a CA-signed
+certificate is not, by itself, an application authorization decision. HC/2's
+foreign-client-CA/tenant fixture remains a separate control; its coverage cannot
+be inherited by RESP. Neither a tool-only TLS wrapper nor a fabricated transport
+label can supply a receipt for the production Redis acceptor.
+
+The contract and enrolled source-aware guard now retain this gap explicitly.
+`matched_mtls_resp3_required` remains true; full D3, the native nonregression
+floors, numerical comparison and release admission remain unchanged. A future
+production TLS change must update this audit and its negative tests rather than
+quietly leaving stale capability metadata. No product code/default/configuration,
+lockfile, qualification manifest or sealed B0/D3a packet changes in this audit.
+
+Adding opt-in required RESP mTLS is a separate product security proposal, not an
+observer extension. It needs an approved trust-root configuration, compatibility
+and rollback behavior, mandatory-versus-optional certificate policy, bounded
+handshake/connection lifecycle and an explicit certificate/credential-to-listener
+identity/tenant authorization rule. Real missing/foreign/expired/EKU/hostname and
+authorization-denied cases must prove zero dispatch and complete cleanup. No
+infrastructure run or new policy is authorized here. Until that decision, existing
+TLS/AUTH controls may be developed under their own honest label and native
+self-baselines remain available; the cross-security RESP/HC2 row stays absent,
+not waived. Expiration/quota/fault/embedded/retention work remains separate.

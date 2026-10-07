@@ -3835,3 +3835,38 @@ formatting, strict lint and local documentation/contract checks. The retained
 summary includes the initial failed order assumption, bounded virtual-time
 handshake timeout and exact source/blob references. Those counts establish
 verification coverage, not a throughput or allocation improvement.
+
+## Encryption does not make two security contexts equivalent
+
+The attempt to add a matched secure RESP control stopped at a capability audit,
+not at a slow benchmark. The production Redis acceptor constructs server-auth
+TLS with `with_no_client_auth()` and server certificate/key material. HC/2's
+factory also consumes a client trust root and requires a client certificate.
+A rediss client without a client certificate can execute AUTH/cache commands in
+the existing production lifecycle fixture. That is the documented TLS plus AUTH
+behavior; it is not an mTLS acceptance receipt or a newly discovered product bug.
+
+The distinction changes what a negative test actually proves. A rediss
+wrong-server-CA failure proves that the client refused the server. It does not
+prove that the server rejected a foreign client certificate. Plaintext rejection,
+wrong-password rejection, NOAUTH before dispatch, HELLO AUTH and connection-local
+authentication are separate established controls. None can be renamed into
+required peer-certificate authentication because their handshake costs and
+authorization boundaries differ.
+
+RESP AUTH installs the listener's configured identity; its username does not
+select another tenant. Certificate trust is also not a substitute for an explicit
+application authorization rule. A tool-only TLS wrapper would test that wrapper,
+not silently upgrade the production acceptor. Source-aware contract guards now
+retain the capability gap and refuse to waive the equally secured comparison.
+Native self-baselines remain valid under their own configuration, while a
+cross-security RESP/HC2 row remains absent.
+
+Required RESP mTLS would therefore be a separate opt-in product security proposal:
+approve trust roots, certificate requirements, identity/tenant binding, connection
+and handshake bounds, compatibility and rollback first; then prove missing and
+invalid certificates and denied principals fail before dispatch. This is not a
+throughput optimization and cannot be smuggled into observer tooling. The audit
+leaves the release's numerical floors, product defaults and qualification identity
+unchanged. TLS/AUTH-only controls and the remaining local semantic/memory work
+can proceed independently, but they do not close the missing mTLS proof.

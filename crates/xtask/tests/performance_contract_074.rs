@@ -460,6 +460,52 @@ fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
 }
 
 #[test]
+fn resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let security = &c["resp"]["security_audit"];
+    assert_eq!(
+        security["state"].as_str(),
+        Some("production-resp-mtls-gap-requires-policy-decision")
+    );
+    for flag in [
+        "production_resp_server_auth_tls_available",
+        "production_resp_auth_available",
+        "hc2_client_certificate_required",
+        "resp_auth_identity_is_listener_bound",
+        "separate_product_security_proposal_required",
+    ] {
+        assert_eq!(security[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "production_resp_mtls_available",
+        "tls_auth_is_mtls",
+        "fixture_tls_wrapper_is_product_receipt",
+        "matched_security_cohort_completed",
+        "cross_surface_hc2_resp_numeric_comparison_allowed",
+        "mtls_requirement_waived",
+        "product_security_mutation_authorized_by_observer",
+    ] {
+        assert_eq!(security[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        c["pending"]["matched_mtls_resp3_required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(c["product_mutation_allowed"].as_bool(), Some(false));
+    assert_eq!(c["numerical_series_started"].as_bool(), Some(false));
+    let resp_tls =
+        std::fs::read_to_string(root().join("crates/hydracache-server/src/redis_tcp.rs")).unwrap();
+    assert!(resp_tls.contains(".with_no_client_auth()"));
+    assert!(!resp_tls.contains(".with_client_cert_verifier("));
+    assert!(!resp_tls.contains(".ca_path"));
+    let hc2 = std::fs::read_to_string(root().join("crates/hydracache-server/src/hc2.rs")).unwrap();
+    assert!(hc2.contains(".client_ca_root(Certificate::from_pem(ca))"));
+    let resp =
+        std::fs::read_to_string(root().join("crates/hydracache-redis-compat/src/lib.rs")).unwrap();
+    assert!(resp.contains("connection.identity = self.identity.clone()"));
+}
+
+#[test]
 fn get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3() {
     let c = contract("get-response-owner-phase-b0-contract.toml");
     assert_eq!(

@@ -1712,3 +1712,14 @@ The [RESP3 check summary](local-runs/get-owner-resp3-checks-fc07bf38.json) retai
 exact source/blob identities, the virtual-time HELLO timeout, 56 RESP3 cells,
 36 RESP2 hit/miss/SET cells and the initial map-order oracle correction.
 No numerical speedup or release admission follows; older summaries stay immutable.
+
+The secure-control capability audit found that production RESP supports
+server-auth rediss TLS plus Redis AUTH, not required client-certificate mTLS.
+`RedisTlsAcceptor` uses `with_no_client_auth()` and reads certificate/key only;
+HC/2 consumes client CA roots. A wrong-server-CA rediss test is not a
+wrong-client-CA proof. AUTH binds the configured listener identity, not a
+username-selected tenant. The new security audit guard records this mismatch
+without lowering any native floor or `matched_mtls_resp3_required` requirement.
+RESP mTLS needs a separate approved product security policy; no fixture wrapper
+or TLS/AUTH label can admit a matched RESP/HC2 numerical row. See the
+[security capability audit](get-response-owner-scheduled-controls-design.md#security-capability-audit-tls-plus-auth-is-not-a-matched-mtls-cohort).

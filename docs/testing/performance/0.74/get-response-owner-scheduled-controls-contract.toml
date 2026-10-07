@@ -134,7 +134,24 @@ secure_transport_claim_allowed = false
 numerical_nonregression_measured = false
 full_qualification_completed = false
 
+[resp.security_audit]
+state = "production-resp-mtls-gap-requires-policy-decision"
+audit_baseline_source_sha = "2f6db5a4dedeeca423faef8c720d9543db76da4a"
+production_resp_server_auth_tls_available = true
+production_resp_auth_available = true
+production_resp_mtls_available = false
+hc2_client_certificate_required = true
+resp_auth_identity_is_listener_bound = true
+tls_auth_is_mtls = false
+fixture_tls_wrapper_is_product_receipt = false
+matched_security_cohort_completed = false
+cross_surface_hc2_resp_numeric_comparison_allowed = false
+mtls_requirement_waived = false
+product_security_mutation_authorized_by_observer = false
+separate_product_security_proposal_required = true
+
 [pending]
+production_resp_mtls_policy_decision_required = true
 new_sealed_numerical_cohort_required = true
 invalidated_b0_retry_allowed = false
 resp_per_response_scheduled_adapter_required = true
