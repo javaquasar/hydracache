@@ -43,3 +43,14 @@ check it through every connection. SET success checks exact `+OK`; final GET
 checks retained bytes. No global socket ordering or conflicting-write oracle is
 claimed. Wire drain has one five-second group budget. This remains semantic-only,
 with no RESP3/mTLS, multi-key adapter, numerical series or B0 retry.
+
+Multi-key controls now support `Mget`, fixed-value `Mset`, live-key `Exists` and
+`DelMissing` at batch sizes 1/8/32/128. One command has one original offer and one
+reply timestamp, including an entire MGET array. `response_items` records actual
+reply shape (array length or one scalar), not an operation-count multiplier.
+Flat bulk/null arrays are borrowed and bounded to 128 items within the unchanged
+1,048,708-byte reply buffer; nested/unknown reply forms fail. Aggregate requests
+above 1,052,672 bytes or unsupported counts fail before connecting/copying payloads.
+The product default 128-entry limit is unchanged: 256 is rejection evidence, not
+a successful workload obtained by changing defaults. Scripted live DEL/duplicate
+and concurrent MSET/MGET fixtures are separate from scheduled missing-key DEL.

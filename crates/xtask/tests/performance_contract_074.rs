@@ -170,6 +170,65 @@ fn scheduled_resp_connections_keep_local_order_and_do_not_admit_product_changes(
 }
 
 #[test]
+fn scheduled_multikey_controls_preserve_command_denominators_and_product_limits() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let batch = &c["resp"]["multikey"];
+    assert_eq!(
+        batch["batch_sizes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        vec![1, 8, 32, 128]
+    );
+    for (field, value) in [
+        ("maximum_flat_array_elements", 128),
+        ("maximum_aggregate_reply_frame_bytes", 1048708),
+        ("maximum_aggregate_request_frame_bytes", 1052672),
+        ("unsupported_requested_batch_size", 256),
+    ] {
+        assert_eq!(batch[field].as_integer(), Some(value));
+    }
+    for flag in [
+        "product_batch_limit_changed",
+        "divide_latency_by_batch_size_allowed",
+        "scheduled_live_delete_claim_allowed",
+        "full_multikey_qualification_completed",
+    ] {
+        assert_eq!(batch[flag].as_bool(), Some(false));
+    }
+    for flag in [
+        "one_sample_per_command",
+        "parser_borrows_array_body",
+        "independent_native_batch_measurements_required",
+    ] {
+        assert_eq!(batch[flag].as_bool(), Some(true));
+    }
+    assert_eq!(c["numerical_series_started"].as_bool(), Some(false));
+    assert_eq!(
+        c["pending"]["matched_mtls_resp3_required"].as_bool(),
+        Some(true)
+    );
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/resp.rs")).unwrap();
+    for token in [
+        "pub response_items: Option<usize>",
+        "pub protocol_error_bytes: Option<Vec<u8>>",
+        "real_batch_duplicate_order_and_oversized_mset_are_atomic",
+        "concurrent_real_mset_mget_never_observes_partial_pair",
+        "cancelled_fragmented_array_keeps_one_command_owner",
+    ] {
+        assert!(source.contains(token), "{token}");
+    }
+    let tests = std::fs::read_to_string(tool.join("tests/resp.rs")).unwrap();
+    assert!(
+        tests.contains("scheduled_multikey_commands_keep_one_original_offer_and_exact_reply_shape")
+    );
+    assert!(tests.contains("unsupported_batch_and_aggregate_payload_fail_before_opening_sockets"));
+}
+
+#[test]
 fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     assert_eq!(

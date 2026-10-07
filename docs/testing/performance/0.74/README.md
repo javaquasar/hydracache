@@ -1663,3 +1663,11 @@ checks. See the separate
 [multiconnection check summary](local-runs/get-owner-resp-multiconnection-checks-83003e92.json).
 No numerical series, host mutation, B0 retry or full workspace/hosted qualification
 was performed; product/default/lock and qualification identities are unchanged.
+
+The subsequent multi-key observer adds MGET/MSET/EXISTS and missing-key DEL at
+1/8/32/128 positions, with bounded flat-array/integer replies and one timestamp
+per command. Actual reply shape is checked separately; key count never multiplies
+goodput or divides latency. Product batch limits remain unchanged, and a real
+oversized-MSET rejection verifies no partial writes. Live duplicate semantics and
+concurrent MSET/MGET use separate TCP fixtures. Full mixed/live-delete, native
+batch, secure RESP3 and numerical memory/nonregression evidence are still open.

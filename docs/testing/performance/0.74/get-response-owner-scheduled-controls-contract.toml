@@ -78,6 +78,22 @@ retry_allowed = false
 secure_transport_claim_allowed = false
 numeric_comparison_allowed = false
 
+[resp.multikey]
+state = "local-scheduled-semantic-controls-only"
+operations = ["mget", "mset-same-fixed-values", "exists-live-duplicates", "del-missing"]
+batch_sizes = [1, 8, 32, 128]
+unsupported_requested_batch_size = 256
+product_batch_limit_changed = false
+maximum_flat_array_elements = 128
+maximum_aggregate_reply_frame_bytes = 1048708
+maximum_aggregate_request_frame_bytes = 1052672
+one_sample_per_command = true
+divide_latency_by_batch_size_allowed = false
+scheduled_live_delete_claim_allowed = false
+parser_borrows_array_body = true
+independent_native_batch_measurements_required = true
+full_multikey_qualification_completed = false
+
 [pending]
 new_sealed_numerical_cohort_required = true
 invalidated_b0_retry_allowed = false

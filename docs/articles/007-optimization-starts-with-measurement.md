@@ -3730,3 +3730,35 @@ observer and ownership oracle for later paired measurements. RESP3/mTLS,
 multi-key workloads, native nonregression and retained/RSS idle-refill evidence
 still precede a full allocation/performance decision; B0 is not retried and
 historical numerical packets are not reinterpreted.
+
+## A multi-key command is not a network pipeline
+
+The next observer extension distinguishes two batching dimensions: outstanding
+commands on a socket and key positions inside one command. MGET with 128 keys
+still has one scheduled offer, one complete-array response and one latency sample.
+Reporting 128 successes or dividing its latency by 128 would silently change the
+denominator. The adapter instead records actual response item count separately
+and rejects drift between the declared batch and the observed reply.
+
+The array parser borrows bulk/null entries and refuses nested or unsupported
+types, excessive item counts, integer overflow and total encoded-byte overflow.
+The old per-connection buffer ceiling is not multiplied by keys. Null and empty
+values remain distinct; positional binary/missing replies and every byte split
+are checked. Cancellation retains the entire unfinished array's FIFO owner.
+All this observer work still costs CPU and allocations, so functional success
+does not itself establish a cheaper product hot path.
+
+The production batch limit is 128, although the plan also names 256-key cells.
+Rather than raise a default to make that cell green, the local fixture sends an
+oversized MSET and verifies that neither existing nor new keys changed. Other
+TCP checks establish last-write-wins for duplicate MSET keys, duplicate-counting
+EXISTS versus deduplicated live DEL, and whole-pair visibility during concurrent
+MSET/MGET. Scheduled DEL only uses an absent key; it is not evidence for live
+removal throughput or a mixed write/delete workload.
+
+The outcome is an observer suitable for further semantic work, not a batch
+optimization or numerical claim. The 48 small scheduled cells and bounded
+concurrent pair test do not replace expiration/quota/event/fault coverage,
+matched native batch measurements, RESP3/mTLS or retained-memory qualification.
+Neither historical rejection nor the requirement for repeated paired evidence
+is weakened by adding more locally passing tests.

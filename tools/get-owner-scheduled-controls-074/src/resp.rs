@@ -1,4 +1,4 @@
-//! Tool-only RESP2 GET/fixed SET pipelines with bounded FIFO owners and timestamps.
+//! Tool-only bounded RESP2 single/multi-key controls with FIFO owners and timestamps.
 //! This is not a general Redis client, security-matched cohort, or timing CLI.
 use crate::{
     native::Dataset,
@@ -23,6 +23,8 @@ type Result<T> = std::result::Result<T, String>;
 const MAX_REPLY: usize = 1_048_576;
 const MAX_HEADER: usize = 128;
 const MAX_HISTORY: usize = 10_256;
+const MAX_ARRAY: usize = 128;
+const MAX_FRAME: usize = MAX_REPLY + MAX_HEADER + 4;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -30,31 +32,106 @@ pub enum Operation {
     Get,
     /// Write the same preloaded value; no cross-connection last-writer claim.
     Set,
+    Mget {
+        batch_size: usize,
+    },
+    Mset {
+        batch_size: usize,
+    },
+    Exists {
+        batch_size: usize,
+    },
+    /// Repeat an absent key: real live-removal semantics use separate fixtures.
+    DelMissing {
+        batch_size: usize,
+    },
+}
+impl Operation {
+    pub fn batch_size(self) -> usize {
+        match self {
+            Self::Get | Self::Set => 1,
+            Self::Mget { batch_size }
+            | Self::Mset { batch_size }
+            | Self::Exists { batch_size }
+            | Self::DelMissing { batch_size } => batch_size,
+        }
+    }
+    pub fn frame_kind(self) -> &'static str {
+        match self {
+            Self::Get => "bulk",
+            Self::Set | Self::Mset { .. } => "simple",
+            Self::Mget { .. } => "array",
+            Self::Exists { .. } | Self::DelMissing { .. } => "integer",
+        }
+    }
 }
 
 #[derive(Clone)]
 enum Expected {
     Bulk(Option<Bytes>),
     Stored,
+    Array(Vec<Option<Bytes>>),
+    Integer(i64),
+    #[cfg(test)]
+    ErrorContaining(&'static [u8]),
+    #[cfg(test)]
+    OneOfArrays(Vec<Vec<Option<Bytes>>>),
 }
 enum Frame<'a> {
     Bulk(Option<&'a [u8]>),
     Simple(&'a [u8]),
-    Error,
+    Error(&'a [u8]),
+    Array { body: &'a [u8], count: usize },
+    Integer(i64),
 }
 impl Frame<'_> {
+    fn items(&self) -> usize {
+        match self {
+            Self::Array { count, .. } => *count,
+            _ => 1,
+        }
+    }
     fn kind(&self) -> &'static str {
         match self {
             Self::Bulk(Some(_)) => "bulk",
             Self::Bulk(None) => "null",
             Self::Simple(_) => "simple",
-            Self::Error => "error",
+            Self::Error(_) => "error",
+            Self::Array { .. } => "array",
+            Self::Integer(_) => "integer",
         }
     }
     fn matches(&self, expected: &Expected) -> bool {
         match (self, expected) {
+            #[cfg(test)]
+            (_, Expected::OneOfArrays(arrays)) => arrays
+                .iter()
+                .any(|values| self.matches(&Expected::Array(values.clone()))),
             (Self::Bulk(actual), Expected::Bulk(value)) => *actual == value.as_deref(),
             (Self::Simple(b"OK"), Expected::Stored) => true,
+            (Self::Integer(actual), Expected::Integer(expected)) => actual == expected,
+            #[cfg(test)]
+            (Self::Error(message), Expected::ErrorContaining(expected)) => {
+                !expected.is_empty()
+                    && message
+                        .windows(expected.len())
+                        .any(|part| part == *expected)
+            }
+            (Self::Array { body, count }, Expected::Array(values)) => {
+                if *count != values.len() {
+                    return false;
+                }
+                let mut remaining = *body;
+                for value in values {
+                    match decode_scalar(remaining, MAX_FRAME) {
+                        Ok(Some((Self::Bulk(actual), consumed))) if actual == value.as_deref() => {
+                            remaining = &remaining[consumed..];
+                        }
+                        _ => return false,
+                    }
+                }
+                remaining.is_empty()
+            }
             _ => false,
         }
     }
@@ -62,12 +139,39 @@ impl Frame<'_> {
 
 /// Incremental bounded parser: only the response types used by this control.
 fn decode(bytes: &[u8]) -> Result<Option<(Frame<'_>, usize)>> {
-    if bytes.is_empty() {
+    if bytes.first() != Some(&b'*') {
+        return decode_scalar(bytes, MAX_FRAME);
+    }
+    let Some(end) = header_end(bytes)? else {
         return Ok(None);
+    };
+    let count = unsigned_length(&bytes[1..end])?;
+    if count > MAX_ARRAY {
+        return Err("RESP2 flat array over budget".to_owned());
     }
-    if ![b'$', b'+', b'-'].contains(&bytes[0]) {
-        return Err("unsupported RESP2 reply type".to_owned());
+    let body_start = end + 2;
+    let mut offset = body_start;
+    for _ in 0..count {
+        if offset >= MAX_FRAME {
+            return Err("RESP2 aggregate reply over budget".to_owned());
+        }
+        if bytes.get(offset).is_some_and(|kind| *kind != b'$') {
+            return Err("RESP2 array requires flat bulk/null items".to_owned());
+        }
+        let Some((_, consumed)) = decode_scalar(&bytes[offset..], MAX_FRAME - offset)? else {
+            return Ok(None);
+        };
+        offset += consumed;
     }
+    Ok(Some((
+        Frame::Array {
+            body: &bytes[body_start..offset],
+            count,
+        },
+        offset,
+    )))
+}
+fn header_end(bytes: &[u8]) -> Result<Option<usize>> {
     let Some(end) = bytes.windows(2).position(|part| part == b"\r\n") else {
         if bytes.len() > MAX_HEADER + 1 {
             return Err("RESP2 reply header over budget".to_owned());
@@ -77,27 +181,60 @@ fn decode(bytes: &[u8]) -> Result<Option<(Frame<'_>, usize)>> {
     if end > MAX_HEADER {
         return Err("RESP2 reply header over budget".to_owned());
     }
+    Ok(Some(end))
+}
+fn unsigned_length(length: &[u8]) -> Result<usize> {
+    if length.is_empty() || !length.iter().all(u8::is_ascii_digit) {
+        return Err("invalid RESP2 length".to_owned());
+    }
+    std::str::from_utf8(length)
+        .map_err(|_| "invalid length")?
+        .parse::<usize>()
+        .map_err(|_| "RESP2 length overflow".to_owned())
+}
+fn decode_scalar(bytes: &[u8], budget: usize) -> Result<Option<(Frame<'_>, usize)>> {
+    if bytes.is_empty() {
+        return Ok(None);
+    }
+    if ![b'$', b'+', b'-', b':'].contains(&bytes[0]) {
+        return Err("unsupported RESP2 reply type".to_owned());
+    }
+    let Some(end) = header_end(bytes)? else {
+        return Ok(None);
+    };
+    if end + 2 > budget {
+        return Err("RESP2 aggregate reply over budget".to_owned());
+    }
+    if bytes[0] == b':' {
+        let integer = &bytes[1..end];
+        let digits = integer.strip_prefix(b"-").unwrap_or(integer);
+        if digits.is_empty() || !digits.iter().all(u8::is_ascii_digit) {
+            return Err("invalid RESP2 integer".to_owned());
+        }
+        let value = std::str::from_utf8(integer)
+            .map_err(|_| "invalid integer")?
+            .parse::<i64>()
+            .map_err(|_| "RESP2 integer overflow")?;
+        return Ok(Some((Frame::Integer(value), end + 2)));
+    }
     if bytes[0] == b'+' {
         return Ok(Some((Frame::Simple(&bytes[1..end]), end + 2)));
     }
     if bytes[0] == b'-' {
-        return Ok(Some((Frame::Error, end + 2)));
+        return Ok(Some((Frame::Error(&bytes[1..end]), end + 2)));
     }
     let length = &bytes[1..end];
     if length == b"-1" {
         return Ok(Some((Frame::Bulk(None), end + 2)));
     }
-    if length.is_empty() || !length.iter().all(u8::is_ascii_digit) {
-        return Err("invalid RESP2 bulk length".to_owned());
-    }
-    let size = std::str::from_utf8(length)
-        .map_err(|_| "invalid length")?
-        .parse::<usize>()
-        .map_err(|_| "bulk length overflow")?;
+    let size = unsigned_length(length)?;
     if size > MAX_REPLY {
         return Err("RESP2 bulk reply over budget".to_owned());
     }
     let total = end + 2 + size + 2;
+    if total > budget {
+        return Err("RESP2 aggregate reply over budget".to_owned());
+    }
     if bytes.len() < total {
         return Ok(None);
     }
@@ -115,6 +252,82 @@ fn command(parts: &[&[u8]]) -> Bytes {
         frame.extend_from_slice(b"\r\n");
     }
     Bytes::from(frame)
+}
+
+fn make_request(
+    entries: &[(Bytes, Bytes)],
+    operation: Operation,
+    sequence: u64,
+) -> Result<(Bytes, Expected)> {
+    let count = operation.batch_size();
+    if entries.is_empty() || ![1, 8, 32, 128].contains(&count) {
+        return Err("unsupported RESP2 batch size".to_owned());
+    }
+    let selected = (0..count)
+        .map(|index| &entries[(sequence as usize + index) % entries.len()])
+        .collect::<Vec<_>>();
+    let mut parts: Vec<&[u8]> = Vec::new();
+    let expected = match operation {
+        Operation::Get => {
+            parts.extend([b"GET".as_slice(), selected[0].0.as_ref()]);
+            Expected::Bulk(Some(selected[0].1.clone()))
+        }
+        Operation::Set => {
+            parts.extend([
+                b"SET".as_slice(),
+                selected[0].0.as_ref(),
+                selected[0].1.as_ref(),
+            ]);
+            Expected::Stored
+        }
+        Operation::Mget { .. } => {
+            let reply_size =
+                selected
+                    .iter()
+                    .fold(format!("*{count}\r\n").len(), |total, (_, value)| {
+                        total
+                            .saturating_add(format!("${}\r\n", value.len()).len() + value.len() + 2)
+                    });
+            if reply_size > MAX_FRAME {
+                return Err("RESP2 aggregate reply over budget".to_owned());
+            }
+            parts.push(b"MGET");
+            parts.extend(selected.iter().map(|(key, _)| key.as_ref()));
+            Expected::Array(
+                selected
+                    .iter()
+                    .map(|(_, value)| Some(value.clone()))
+                    .collect(),
+            )
+        }
+        Operation::Mset { .. } => {
+            parts.push(b"MSET");
+            for (key, value) in &selected {
+                parts.extend([key.as_ref(), value.as_ref()]);
+            }
+            Expected::Stored
+        }
+        Operation::Exists { .. } => {
+            parts.push(b"EXISTS");
+            parts.extend(selected.iter().map(|(key, _)| key.as_ref()));
+            Expected::Integer(count as i64)
+        }
+        Operation::DelMissing { .. } => {
+            parts.push(b"DEL");
+            parts.extend(std::iter::repeat_n(b"missing-key".as_slice(), count));
+            Expected::Integer(0)
+        }
+    };
+    // Size the borrowed parts before copying potentially repeated large payloads.
+    let request_size = parts
+        .iter()
+        .fold(format!("*{}\r\n", parts.len()).len(), |total, part| {
+            total.saturating_add(format!("${}\r\n", part.len()).len() + part.len() + 2)
+        });
+    if request_size > MAX_REPLY + 4096 {
+        return Err("RESP2 aggregate request over budget".to_owned());
+    }
+    Ok((command(&parts), expected))
 }
 struct Submission {
     sequence: u64,
@@ -142,6 +355,8 @@ struct Record {
     written: Option<Instant>,
     received: Option<Instant>,
     kind: Option<&'static str>,
+    items: Option<usize>,
+    error_bytes: Option<Vec<u8>>,
     verified: bool,
     cancelled: bool,
     failure: Option<&'static str>,
@@ -149,11 +364,17 @@ struct Record {
 fn record(
     pending: Pending,
     received: Option<Instant>,
-    kind: Option<&'static str>,
+    frame: Option<&Frame<'_>>,
     verified: bool,
     failure: Option<&'static str>,
     records: &Mutex<Vec<Record>>,
 ) {
+    let kind = frame.map(Frame::kind);
+    let items = frame.map(Frame::items);
+    let error_bytes = frame.and_then(|value| match value {
+        Frame::Error(message) => Some(message.to_vec()),
+        _ => None,
+    });
     let cancelled = pending.submission.reply.is_closed();
     records.lock().expect("tool response records").push(Record {
         sequence: pending.submission.sequence,
@@ -162,6 +383,8 @@ fn record(
         written: pending.written,
         received,
         kind,
+        items,
+        error_bytes,
         verified,
         cancelled,
         failure,
@@ -192,11 +415,11 @@ async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
                 let received = Instant::now();
                 if pending.front().ok_or("unsolicited RESP2 reply")?.written.is_none() { return Err("reply before full request write".to_owned()); }
                 let owner = pending.pop_front().expect("checked FIFO owner");
-                let kind = frame.kind(); let verified = frame.matches(&owner.submission.expected);
-                record(owner, Some(received), Some(kind), verified, None, &records);
+                let verified = frame.matches(&owner.submission.expected);
+                record(owner, Some(received), Some(&frame), verified, None, &records);
                 buffer.drain(..consumed);
             }
-            let available = (MAX_REPLY + MAX_HEADER + 4 - buffer.len()).min(scratch.len());
+            let available = (MAX_FRAME - buffer.len()).min(scratch.len());
             if available == 0 { return Err("RESP2 reply buffer over budget".to_owned()); }
             let write = writes.front().map(|w| w.bytes.slice(w.offset..));
             tokio::select! {
@@ -368,6 +591,8 @@ pub struct WireSample {
     pub response_complete_ns: Option<u64>,
     pub scheduled_frame_latency_ns: Option<u64>,
     pub frame_kind: Option<&'static str>,
+    pub response_items: Option<usize>,
+    pub protocol_error_bytes: Option<Vec<u8>>,
     pub byte_oracle_verified: bool,
     pub waiting_caller_cancelled: bool,
     pub transport_failure: Option<&'static str>,
@@ -380,6 +605,7 @@ pub struct RespObservation {
     pub pipeline_limit: usize,
     pub physical_connections: usize,
     pub operation: Operation,
+    pub batch_size: usize,
     pub product_performance_claim: bool,
 }
 /// Bounded real TCP connections, independent FIFOs, one shared fixture store.
@@ -418,6 +644,8 @@ impl RespControl {
         if ![1, 8, 32, 128].contains(&connections) {
             return Err("unsupported RESP2 connection count".to_owned());
         }
+        // Reject unsupported count/aggregate payload before opening any socket.
+        make_request(&dataset.entries(), operation, 0)?;
         let state = Arc::new(
             ClientSurfaceState::new(ClientSurfaceLimits::default()).map_err(|e| e.to_string())?,
         );
@@ -577,6 +805,8 @@ impl RespControl {
                                 .received
                                 .map(|at| offset(at).saturating_sub(scheduled_ns)),
                             frame_kind: r.kind,
+                            response_items: r.items,
+                            protocol_error_bytes: r.error_bytes.clone(),
                             byte_oracle_verified: r.verified,
                             waiting_caller_cancelled: r.cancelled,
                             transport_failure: r.failure,
@@ -591,6 +821,7 @@ impl RespControl {
             pipeline_limit: self.depth,
             physical_connections: self.pipelines.len(),
             operation: self.operation,
+            batch_size: self.operation.batch_size(),
             product_performance_claim: false,
         };
         validate_wire(&result)?;
@@ -636,10 +867,9 @@ impl Target for RespControl {
             return TargetOutcome::Rejected;
         }
         let sequence = request.sequence;
-        let (key, value) = &self.entries[sequence as usize % self.entries.len()];
-        let (frame, expected) = match self.operation {
-            Operation::Get => (command(&[b"GET", key]), Expected::Bulk(Some(value.clone()))),
-            Operation::Set => (command(&[b"SET", key, value]), Expected::Stored),
+        let (frame, expected) = match make_request(&self.entries, self.operation, sequence) {
+            Ok(request) => request,
+            Err(_) => return TargetOutcome::Rejected,
         };
         self.pipelines[sequence as usize % self.pipelines.len()]
             .submit(sequence, frame, expected)
@@ -652,6 +882,8 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
     if ![1, 8, 32, 128].contains(&observation.physical_connections)
         || ![1, 10, 50].contains(&observation.pipeline_limit)
         || observation.product_performance_claim
+        || ![1, 8, 32, 128].contains(&observation.batch_size)
+        || observation.batch_size != observation.operation.batch_size()
     {
         return Err("unsupported RESP2 wire topology or claim".to_owned());
     }
@@ -698,6 +930,21 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
                     || response > observation.operations.elapsed_ns
                     || previous_response.is_some_and(|prior| prior > response)
                     || sample.frame_kind.is_none()
+                    || sample.response_items.is_none()
+                    || match sample.frame_kind {
+                        Some("array") => {
+                            sample.response_items.is_none_or(|items| items > MAX_ARRAY)
+                        }
+                        Some("bulk" | "null" | "simple" | "integer" | "error") => {
+                            sample.response_items != Some(1)
+                        }
+                        _ => true,
+                    }
+                    || (sample.frame_kind == Some("error")) != sample.protocol_error_bytes.is_some()
+                    || sample
+                        .protocol_error_bytes
+                        .as_ref()
+                        .is_some_and(|bytes| bytes.len() > MAX_HEADER)
                     || sample.transport_failure.is_some()
                     || sample.scheduled_frame_latency_ns != Some(response - sample.scheduled_ns)
                 {
@@ -708,6 +955,8 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
             None => {
                 if sample.byte_oracle_verified
                     || sample.frame_kind.is_some()
+                    || sample.response_items.is_some()
+                    || sample.protocol_error_bytes.is_some()
                     || sample.scheduled_frame_latency_ns.is_some()
                     || sample.transport_failure.is_none()
                 {
@@ -718,10 +967,12 @@ pub fn validate_wire(observation: &RespObservation) -> Result<()> {
         if operation.outcome == scheduled::Outcome::Success
             && (!sample.byte_oracle_verified
                 || sample.waiting_caller_cancelled
-                || sample.frame_kind
-                    != Some(match observation.operation {
-                        Operation::Get => "bulk",
-                        Operation::Set => "simple",
+                || sample.frame_kind != Some(observation.operation.frame_kind())
+                || sample.response_items
+                    != Some(if matches!(observation.operation, Operation::Mget { .. }) {
+                        observation.batch_size
+                    } else {
+                        1
                     })
                 || sample
                     .response_complete_ns
@@ -748,6 +999,389 @@ mod tests {
     };
     use tokio::io::{DuplexStream, ReadBuf};
     use tokio::sync::Notify;
+
+    #[tokio::test]
+    async fn seeded_real_batch_sequence_matches_independent_reference_map() {
+        let seed = crate::native::SEED;
+        eprintln!("RESP batch reference seed={seed}, replay rounds=64");
+        let mut random = seed;
+        let mut next = || {
+            random ^= random << 13;
+            random ^= random >> 7;
+            random ^= random << 17;
+            random
+        };
+        let control = RespControl::start(Dataset::new(1, 16).unwrap(), 10)
+            .await
+            .unwrap();
+        let keys = (0..4)
+            .map(|i| Bytes::from(vec![b'm', 0, 255, i]))
+            .collect::<Vec<_>>();
+        let mut model = std::collections::BTreeMap::<Bytes, Bytes>::new();
+        let mut covered = [false; 4];
+        for round in 0..64 {
+            let operation = next() as usize % 4;
+            covered[operation] = true;
+            let positions = (0..8)
+                .map(|_| next() as usize % keys.len())
+                .collect::<Vec<_>>();
+            let values = (0..8)
+                .map(|_| match next() % 3 {
+                    0 => Bytes::new(),
+                    1 => Bytes::from_static(b"\0\xff\r\n"),
+                    _ => Bytes::from_static(b"value"),
+                })
+                .collect::<Vec<_>>();
+            let mut parts: Vec<&[u8]> = vec![match operation {
+                0 => b"MSET",
+                1 => b"MGET",
+                2 => b"DEL",
+                _ => b"EXISTS",
+            }];
+            let expected = match operation {
+                0 => {
+                    for (index, value) in positions.iter().zip(&values) {
+                        parts.extend([keys[*index].as_ref(), value.as_ref()]);
+                        model.insert(keys[*index].clone(), value.clone());
+                    }
+                    Expected::Stored
+                }
+                1 => {
+                    parts.extend(positions.iter().map(|index| keys[*index].as_ref()));
+                    Expected::Array(
+                        positions
+                            .iter()
+                            .map(|index| model.get(&keys[*index]).cloned())
+                            .collect(),
+                    )
+                }
+                2 => {
+                    parts.extend(positions.iter().map(|index| keys[*index].as_ref()));
+                    let removed = positions
+                        .iter()
+                        .filter(|index| model.remove(&keys[**index]).is_some())
+                        .count();
+                    Expected::Integer(removed as i64)
+                }
+                _ => {
+                    parts.extend(positions.iter().map(|index| keys[*index].as_ref()));
+                    Expected::Integer(
+                        positions
+                            .iter()
+                            .filter(|index| model.contains_key(&keys[**index]))
+                            .count() as i64,
+                    )
+                }
+            };
+            assert_eq!(
+                control.pipelines[0]
+                    .submit(control.setup_id(), command(&parts), expected)
+                    .await,
+                TargetOutcome::Success,
+                "seed={seed}, round={round}, op={operation}"
+            );
+        }
+        assert!(covered.into_iter().all(|value| value));
+        let mut parts = vec![b"MGET".as_slice()];
+        parts.extend(keys.iter().map(Bytes::as_ref));
+        assert_eq!(
+            control.pipelines[0]
+                .submit(
+                    control.setup_id(),
+                    command(&parts),
+                    Expected::Array(keys.iter().map(|key| model.get(key).cloned()).collect())
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        control.verify().await.unwrap();
+        control.shutdown().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn real_batch_duplicate_order_and_oversized_mset_are_atomic() {
+        let control = RespControl::start(Dataset::new(1, 16).unwrap(), 10)
+            .await
+            .unwrap();
+        let pipeline = &control.pipelines[0];
+        let a = b"\0\xffa".as_slice();
+        let b = b"\0\xffb".as_slice();
+        let missing = b"missing-model".as_slice();
+        let binary = Bytes::from_static(b"\0\xff\r\nvalue");
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"MSET", a, b"old", b, &binary, a, b"",]),
+                    Expected::Stored
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"MGET", b, a, missing, b]),
+                    Expected::Array(vec![
+                        Some(binary.clone()),
+                        Some(Bytes::new()),
+                        None,
+                        Some(binary)
+                    ])
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"EXISTS", a, missing, a, b]),
+                    Expected::Integer(3)
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"DEL", a, a, missing, b]),
+                    Expected::Integer(2)
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"MGET", a, b]),
+                    Expected::Array(vec![None, None])
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"SET", a, b"kept"]),
+                    Expected::Stored
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        let mut keys = (0..255)
+            .map(|i| format!("oversized:{i}").into_bytes())
+            .collect::<Vec<_>>();
+        keys.insert(0, a.to_vec());
+        let mut parts = vec![b"MSET".as_slice()];
+        for key in &keys {
+            parts.extend([key.as_slice(), b"changed".as_slice()]);
+        }
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&parts),
+                    Expected::ErrorContaining(b"request too large")
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        for (chunk_index, chunk) in keys.chunks(128).enumerate() {
+            let mut parts = vec![b"MGET".as_slice()];
+            parts.extend(chunk.iter().map(Vec::as_slice));
+            let mut expected = vec![None; chunk.len()];
+            if chunk_index == 0 {
+                expected[0] = Some(Bytes::from_static(b"kept"));
+            }
+            assert_eq!(
+                pipeline
+                    .submit(
+                        control.setup_id(),
+                        command(&parts),
+                        Expected::Array(expected)
+                    )
+                    .await,
+                TargetOutcome::Success
+            );
+        }
+        assert_eq!(
+            pipeline
+                .submit(
+                    control.setup_id(),
+                    command(&[b"DEL", a]),
+                    Expected::Integer(1)
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        control.verify().await.unwrap();
+        control.shutdown().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn concurrent_real_mset_mget_never_observes_partial_pair() {
+        let control =
+            RespControl::start_connections(Dataset::new(1, 16).unwrap(), 10, 8, Operation::Get)
+                .await
+                .unwrap();
+        let a = b"atomic:a".as_slice();
+        let b = b"atomic:b".as_slice();
+        let values = [Bytes::from_static(b"v0"), Bytes::from_static(b"v1")];
+        assert_eq!(
+            control.pipelines[0]
+                .submit(
+                    control.setup_id(),
+                    command(&[b"MSET", a, &values[0], b, &values[0]]),
+                    Expected::Stored
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        for round in 1..=32 {
+            let current = &values[round % 2];
+            let previous = &values[(round - 1) % 2];
+            let allowed = Expected::OneOfArrays(vec![
+                vec![Some(previous.clone()), Some(previous.clone())],
+                vec![Some(current.clone()), Some(current.clone())],
+            ]);
+            let (write, read) = tokio::join!(
+                control.pipelines[0].submit(
+                    control.setup_id(),
+                    command(&[b"MSET", a, current, b, current]),
+                    Expected::Stored
+                ),
+                control.pipelines[1].submit(control.setup_id(), command(&[b"MGET", a, b]), allowed),
+            );
+            assert_eq!(write, TargetOutcome::Success);
+            assert_eq!(read, TargetOutcome::Success, "mixed pair at round={round}");
+        }
+        assert_eq!(
+            control.pipelines[0]
+                .submit(
+                    control.setup_id(),
+                    command(&[b"DEL", a, b]),
+                    Expected::Integer(2)
+                )
+                .await,
+            TargetOutcome::Success
+        );
+        control.verify().await.unwrap();
+        control.shutdown().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn cancelled_fragmented_array_keeps_one_command_owner() {
+        let (client, mut peer) = tokio::io::duplex(128);
+        let pipeline = Arc::new(Pipeline::new(client, 1).unwrap());
+        let request = command(&[b"MGET", b"a", b"b"]);
+        let p = Arc::clone(&pipeline);
+        let first = request.clone();
+        let waiter = tokio::spawn(async move {
+            p.submit(
+                0,
+                first,
+                Expected::Array(vec![Some(Bytes::from_static(b"a")), None]),
+            )
+            .await
+        });
+        let mut input = vec![0; request.len()];
+        peer.read_exact(&mut input).await.unwrap();
+        peer.write_all(b"*2\r\n$1\r\na\r\n$-1\r").await.unwrap();
+        waiter.abort();
+        assert!(waiter.await.unwrap_err().is_cancelled());
+        assert_eq!(pipeline.slots.available_permits(), 0);
+        let p = Arc::clone(&pipeline);
+        let second = command(&[b"EXISTS", b"a", b"a"]);
+        let next_size = second.len();
+        let next = tokio::spawn(async move { p.submit(1, second, Expected::Integer(2)).await });
+        peer.write_all(b"\n").await.unwrap();
+        peer.read_exact(&mut vec![0; next_size]).await.unwrap();
+        peer.write_all(b":2\r\n").await.unwrap();
+        assert_eq!(next.await.unwrap(), TargetOutcome::Success);
+        pipeline.drain().await.unwrap();
+        let records = pipeline.records.lock().unwrap().clone();
+        assert_eq!(records.len(), 2);
+        assert!(records[0].cancelled && records[0].verified);
+        assert_eq!(records[0].items, Some(2));
+        assert_eq!(records[1].items, Some(1));
+        assert_eq!(records[1].sequence, 1);
+        pipeline.shutdown().await.unwrap();
+    }
+
+    #[test]
+    fn flat_array_integer_fragmentation_and_aggregate_budget_are_explicit() {
+        let encoded = b"*4\r\n$1\r\na\r\n$-1\r\n$0\r\n\r\n$3\r\n\0\xffb\r\n";
+        for split in 0..encoded.len() {
+            assert!(
+                decode(&encoded[..split]).unwrap().is_none(),
+                "split={split}"
+            );
+        }
+        let expected = Expected::Array(vec![
+            Some(Bytes::from_static(b"a")),
+            None,
+            Some(Bytes::new()),
+            Some(Bytes::from_static(b"\0\xffb")),
+        ]);
+        let (frame, consumed) = decode(encoded).unwrap().unwrap();
+        assert_eq!(consumed, encoded.len());
+        assert_eq!(frame.kind(), "array");
+        assert!(frame.matches(&expected));
+        assert!(!frame.matches(&Expected::Array(vec![None; 4])));
+        assert!(!frame.matches(&Expected::Array(Vec::new())));
+        assert!(decode(b"*0\r\n")
+            .unwrap()
+            .unwrap()
+            .0
+            .matches(&Expected::Array(Vec::new())));
+        for (bytes, integer) in [
+            (b":0\r\n".as_slice(), 0),
+            (b":-12\r\n", -12),
+            (b":9223372036854775807\r\n", i64::MAX),
+        ] {
+            for split in 0..bytes.len() {
+                assert!(decode(&bytes[..split]).unwrap().is_none());
+            }
+            assert!(decode(bytes)
+                .unwrap()
+                .unwrap()
+                .0
+                .matches(&Expected::Integer(integer)));
+        }
+        for bad in [
+            b"*129\r\n".as_slice(),
+            b"*-1\r\n",
+            b"*1\r\n*0\r\n",
+            b"*1\r\n+OK\r\n",
+            b":+1\r\n",
+            b":-\r\n",
+            b":9223372036854775808\r\n",
+            b"*\r\n",
+        ] {
+            assert!(decode(bad).is_err(), "{bad:?}");
+        }
+        let mut too_large = b"*2\r\n$1048576\r\n".to_vec();
+        too_large.extend(std::iter::repeat_n(b'x', MAX_REPLY));
+        too_large.extend_from_slice(b"\r\n$128\r\n");
+        assert!(decode(&too_large).is_err());
+        let mut maximum = b"*128\r\n".to_vec();
+        for _ in 0..128 {
+            maximum.extend_from_slice(b"$-1\r\n");
+        }
+        maximum.extend_from_slice(b":2\r\n");
+        let (frame, used) = decode(&maximum).unwrap().unwrap();
+        assert!(frame.matches(&Expected::Array(vec![None; 128])));
+        assert!(decode(&maximum[used..])
+            .unwrap()
+            .unwrap()
+            .0
+            .matches(&Expected::Integer(2)));
+    }
 
     #[tokio::test]
     async fn one_connection_failure_still_joins_every_owned_task() {
@@ -898,7 +1532,7 @@ mod tests {
             b"$1048577\r\n",
             b"$999999999999999999999999999\r\n",
             b"$1\r\nxZZ",
-            b"*0\r\n",
+            b"%0\r\n",
         ] {
             assert!(decode(frame).is_err());
         }

@@ -260,3 +260,50 @@ script tests, sync/link checks and mdbook build. The separate
 [multiconnection check summary](local-runs/get-owner-resp-multiconnection-checks-83003e92.json)
 retains source/blob identities, diagnostics and the semantic-only scope. No
 numerical series or native floor is inferred; old summaries are not overwritten.
+
+## Multi-key observer extension, not a batch product candidate
+
+The next bounded adapter supports MGET, same-fixed-value MSET, EXISTS of live
+positions (including duplicates), and DEL of an absent key. Batch sizes are
+1/8/32/128. The production default is 128 entries; 256 is deliberately rejected,
+not enabled by changing defaults. Real TCP oversized-MSET tests check the error
+and every affected key afterward: the preexisting value survives and all new
+positions remain absent. No batch product path or limit is changed.
+Passing the expected-rejection oracle is a fixture result, not a scheduled good
+success; scheduled controls never install an error-as-success expectation.
+
+The reply parser accepts only flat arrays of bulk/null entries and signed i64
+integers in addition to earlier scalar forms. It borrows the array body, caps
+items at 128 and total encoded reply bytes at the unchanged 1,048,708-byte buffer
+ceiling. A large individual value cannot multiply that ceiling by batch count.
+Declared aggregate overflow, nesting, unsupported item types and integer overflow
+fail loud; every prefix, null/empty/binary ordering and coalesced scalar suffix
+are tested. Requests above 1,052,672 bytes are rejected before payload copying or
+socket setup. Observer request construction, expected-value vectors, parsing and
+validation still cost CPU/allocations; no zero-overhead/unprofiled claim follows.
+
+One original offer still means one command, not one key. One complete MGET array
+gets one timestamp and one histogram sample. Actual `response_items` validates
+batch shape independently from the declared operation/count. Bounded protocol
+error bytes are retained separately; errors cannot become scheduled success.
+A cancelled partially received array keeps one FIFO owner until the final byte,
+and its next integer reply cannot be reassigned or split into fake operations.
+
+The scheduled semantic matrix has 48 cells: four operations at batches 1/8/32/128
+on 1/8 sockets at depth 10, plus batch-8 depth-1/50 and 32/128-socket boundaries.
+These are small functional checks, not the full frozen numerical workload grid.
+Dataset bytes are unchanged after scheduled runs. Missing-key DEL is not a live
+removal workload; separate TCP fixtures check deduplicated live DEL, duplicate
+EXISTS, positional MGET with misses/empty/binary values, and MSET duplicate
+last-write-wins. Concurrent MSET/MGET on different sockets accepts only the old
+or new whole pair across 32 joined rounds. This bounded interleaving check is
+not a general linearizability proof or distributed transaction claim.
+A separate 64-command reference-model sequence logs seed 740074 and compares
+actual TCP MGET/MSET/DEL/EXISTS with an independent map, including duplicate
+positions, misses and empty/binary values. It exercises live mutations outside
+the immutable scheduled cohort and is replayable, not numerical evidence.
+
+RESP3/mTLS, expiration/quota/event/fault matrices, representative live-delete and
+mixed workloads, matched native batch controls, allocator retention and repeated
+quiet-host numerical evidence remain required. Historical GET/SET summaries and
+B0/D3a packets retain their exact scopes; no product acceptance is reopened.

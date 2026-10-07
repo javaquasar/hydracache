@@ -6,6 +6,120 @@ use get_owner_scheduled_controls_074::{
 use std::sync::Arc;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn scheduled_multikey_commands_keep_one_original_offer_and_exact_reply_shape() {
+    for connections in [1, 8, 32, 128] {
+        for depth in [1, 10, 50] {
+            for batch_size in [1, 8, 32, 128] {
+                let main_grid = connections <= 8 && depth == 10;
+                let depth_boundary = connections == 8 && batch_size == 8;
+                let concurrency_boundary = connections >= 32 && depth == 10 && batch_size == 8;
+                if !main_grid && !depth_boundary && !concurrency_boundary {
+                    continue;
+                }
+                for operation in [
+                    Operation::Mget { batch_size },
+                    Operation::Mset { batch_size },
+                    Operation::Exists { batch_size },
+                    Operation::DelMissing { batch_size },
+                ] {
+                    let control = Arc::new(
+                        RespControl::start_connections(
+                            Dataset::new(4, 256).unwrap(),
+                            depth,
+                            connections,
+                            operation,
+                        )
+                        .await
+                        .unwrap(),
+                    );
+                    let digest = control.verify().await.unwrap();
+                    let mut result = control
+                        .run(&Config {
+                            operations: (connections * 2) as u64,
+                            offered_rate_per_second: 10000,
+                            concurrency: 128,
+                            maximum_queued: 128,
+                            operation_timeout_ns: 5_000_000_000,
+                            drain_timeout_ns: 5_000_000_000,
+                            slo_ns: 5_000_000_000,
+                            highest_trackable_ns: 10_000_000_000,
+                        })
+                        .await
+                        .unwrap();
+                    assert_eq!(result.operations.offered, (connections * 2) as u64);
+                    assert_eq!(result.operations.successes, result.operations.offered);
+                    assert_eq!(result.wire_samples.len() as u64, result.operations.offered);
+                    assert_eq!(result.batch_size, batch_size);
+                    for sample in &result.wire_samples {
+                        assert_eq!(sample.scheduled_ns, sample.sequence * 100_000);
+                        assert_eq!(sample.frame_kind, Some(operation.frame_kind()));
+                        assert_eq!(
+                            sample.response_items,
+                            Some(if matches!(operation, Operation::Mget { .. }) {
+                                batch_size
+                            } else {
+                                1
+                            })
+                        );
+                        assert!(sample.byte_oracle_verified);
+                        assert!(sample.protocol_error_bytes.is_none());
+                    }
+                    let items = result.wire_samples[0].response_items;
+                    result.wire_samples[0].response_items = Some(batch_size + 1);
+                    assert!(validate_wire(&result).is_err());
+                    result.wire_samples[0].response_items = items;
+                    let kind = result.wire_samples[0].frame_kind;
+                    result.wire_samples[0].frame_kind = Some("unknown-future-type");
+                    assert!(validate_wire(&result).is_err());
+                    result.wire_samples[0].frame_kind = kind;
+                    result.batch_size = 256;
+                    assert!(validate_wire(&result).is_err());
+                    result.batch_size = batch_size;
+                    validate_wire(&result).unwrap();
+                    assert_eq!(control.verify().await.unwrap(), digest);
+                    Arc::try_unwrap(control)
+                        .unwrap_or_else(|_| panic!("control still owned"))
+                        .shutdown()
+                        .await
+                        .unwrap();
+                }
+            }
+        }
+    }
+}
+
+#[tokio::test]
+async fn unsupported_batch_and_aggregate_payload_fail_before_opening_sockets() {
+    for batch_size in [0, 2, 256, usize::MAX] {
+        for operation in [
+            Operation::Mget { batch_size },
+            Operation::Mset { batch_size },
+            Operation::Exists { batch_size },
+            Operation::DelMissing { batch_size },
+        ] {
+            assert!(
+                RespControl::start_connections(Dataset::new(4, 16).unwrap(), 10, 8, operation)
+                    .await
+                    .is_err()
+            );
+        }
+    }
+    for operation in [
+        Operation::Mget { batch_size: 8 },
+        Operation::Mset { batch_size: 8 },
+    ] {
+        assert!(RespControl::start_connections(
+            Dataset::new(1, 1_048_576).unwrap(),
+            10,
+            8,
+            operation
+        )
+        .await
+        .is_err());
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles() {
     for connections in [1, 8, 32, 128] {
         for depth in [1, 10, 50] {
@@ -48,13 +162,7 @@ async fn multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles() {
                     assert!(samples[0].wire_ordinal < samples[1].wire_ordinal);
                     for sample in samples {
                         assert_eq!(sample.sequence as usize % connections, connection);
-                        assert_eq!(
-                            sample.frame_kind,
-                            Some(match operation {
-                                Operation::Get => "bulk",
-                                Operation::Set => "simple",
-                            })
-                        );
+                        assert_eq!(sample.frame_kind, Some(operation.frame_kind()));
                         assert!(sample.byte_oracle_verified);
                     }
                 }
