@@ -318,3 +318,47 @@ tests, sync/link checks and mdbook build. The separate
 binds the clean source and blob identities to these semantic checks, not numerical
 performance or native nonregression. Product/default/lock/qualification identities
 and all older summaries are unchanged; no full workspace or hosted check is claimed.
+
+## Independent native batches expose, rather than erase, semantic differences
+
+The local adapter now issues BatchGet and same-fixed-value BatchPut through
+three independent controls: direct ClientSurfaceState, HC1 HTTP and HC2 gRPC/mTLS.
+The direct control has no socket, listener, certificate or daemon; its validated
+identity invokes the existing `dispatch_verified_request`. It owns a separate
+state/dataset just like each network control. Its tool-only slot mutex, envelope
+construction, canonical hex-key mapping, expected-value vectors and byte oracles
+remain part of the observed operation; this is not a new verified-session fast path.
+
+The same seed, binary key/value corpus and digest remain shared across surface
+fixtures. Supported batch sizes are 1/8/32/128. The local 1 MiB logical batch
+budget includes repeated value bytes and 32-byte canonical hex keys, with checked
+preflight before state/listener/PKI setup and payload-vector construction. That
+bound does not replace the product's separate frame/value/batch limits. A maximum
+single value still belongs to the earlier single-key fixture; batch multiplication
+cannot silently create a many-MiB observer response. No product defaults change.
+
+One batch is one original offer and one terminal observation, including the
+entire ordered result vector. Count, indices/item ids, exact values, null versus
+empty, errors and mutation-applied flags are checked before success. The 48-cell
+scheduled grid covers three surfaces, two operations, four batch sizes and 1/8
+client slots. Another 12 barrier-synchronized cells cover 32/128 slots at batch 8.
+These are small semantic fixtures, not saturation, CPU/op or allocation series.
+
+Source inspection and executable dispatch counts establish an important mismatch:
+HC1 and direct BatchGet/BatchPut enter the client surface once; HC2's existing
+`dispatch_invocation_inner` maps each batch item to a separate single-key request.
+Its batch is ordered item execution, not atomic surface BatchPut/MSET. The SDK's
+default batch cap is 1024: a 256-item GET succeeds with 256 dispatches, while 1025
+items fail before dispatch. HC1/direct 256-entry BatchPut is rejected with no
+partial mutation, and every affected key is checked afterward. An HC2 mixed
+PUT/unapplied-CAS fixture explicitly retains the first write. Neither fixture
+changes production limits or installs rejection/unapplied results as scheduled
+success. No distributed transaction or general linearizability claim follows.
+
+Consequently no pooled native metric or cross-surface MSET-equivalence claim is
+admitted. Direct/HC1 atomic batches may later be compared with equivalent RESP
+traces; HC2 needs its own ordered-item baseline and cannot stand in for that
+atomicity control. A product HC2 batch-engine change would be a separate D1/D2
+proposal, not an instrumentation shortcut. Embedded controls, live DELETE/EXISTS,
+expiration/quota/event/fault matrices, matched RESP3/mTLS, retention/RSS and repeated
+quiet-host measurements remain open. B0 is not retried; full D3/C74 stays closed.

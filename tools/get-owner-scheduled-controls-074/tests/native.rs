@@ -8,7 +8,11 @@ use std::sync::Arc;
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn independent_hc1_hc2_get_put_use_real_transports_and_same_binary_oracle() {
     let mut digest = None;
-    for surface in [Surface::Hc1Http, Surface::Hc2GrpcMtls] {
+    for surface in [
+        Surface::DirectClientSurface,
+        Surface::Hc1Http,
+        Surface::Hc2GrpcMtls,
+    ] {
         for slots in [1, 8] {
             for operation in [Operation::Get, Operation::Put] {
                 let control = Arc::new(
@@ -100,6 +104,116 @@ async fn invalid_slots_fail_before_starting_any_listener() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn native_batches_keep_one_offer_and_separate_dispatch_semantics() {
+    let mut shared_digest = None;
+    for surface in [
+        Surface::DirectClientSurface,
+        Surface::Hc1Http,
+        Surface::Hc2GrpcMtls,
+    ] {
+        for slots in [1, 8] {
+            for batch_size in [1, 8, 32, 128] {
+                for operation in [
+                    Operation::BatchGet { batch_size },
+                    Operation::BatchPut { batch_size },
+                ] {
+                    let control = Arc::new(
+                        NativeControl::start(
+                            surface,
+                            slots,
+                            Dataset::new(4, 256).unwrap(),
+                            operation,
+                        )
+                        .await
+                        .unwrap(),
+                    );
+                    let digest = control.dataset_digest();
+                    if let Some(expected) = &shared_digest {
+                        assert_eq!(expected, &digest);
+                    } else {
+                        shared_digest = Some(digest.clone());
+                    }
+                    let before = control.dispatch_attempts();
+                    let result = run(
+                        Arc::clone(&control),
+                        &Config {
+                            operations: (2 * slots) as u64,
+                            offered_rate_per_second: 10_000,
+                            concurrency: slots,
+                            maximum_queued: slots,
+                            operation_timeout_ns: 5_000_000_000,
+                            drain_timeout_ns: 5_000_000_000,
+                            slo_ns: 5_000_000_000,
+                            highest_trackable_ns: 5_000_000_000,
+                        },
+                    )
+                    .await
+                    .unwrap();
+                    assert_eq!(result.offered, (2 * slots) as u64);
+                    assert_eq!(result.successes, result.offered);
+                    assert_eq!(result.samples.len(), result.offered as usize);
+                    assert_eq!(result.scheduled_response_latency.samples, result.offered);
+                    assert_eq!(result.service_response_latency.samples, result.offered);
+                    for sample in &result.samples {
+                        assert_eq!(sample.scheduled_ns, sample.sequence * 100_000);
+                    }
+                    assert!(!result.promotable);
+                    assert!(!result.product_performance_claim);
+                    let per_command = if matches!(surface, Surface::Hc2GrpcMtls) {
+                        batch_size
+                    } else {
+                        1
+                    };
+                    assert_eq!(
+                        control.dispatch_attempts() - before,
+                        result.offered * per_command as u64
+                    );
+                    assert_eq!(control.verify().await.unwrap(), digest);
+                    Arc::try_unwrap(control)
+                        .unwrap_or_else(|_| panic!("batch control still owned"))
+                        .shutdown()
+                        .await
+                        .unwrap();
+                }
+            }
+        }
+    }
+}
+
+#[tokio::test]
+async fn unsupported_native_batch_size_and_payload_fail_before_setup() {
+    for surface in [
+        Surface::DirectClientSurface,
+        Surface::Hc1Http,
+        Surface::Hc2GrpcMtls,
+    ] {
+        for batch_size in [0, 2, 256, usize::MAX] {
+            assert!(NativeControl::start(
+                surface,
+                1,
+                Dataset::new(1, 256).unwrap(),
+                Operation::BatchGet { batch_size }
+            )
+            .await
+            .is_err());
+        }
+        for operation in [
+            Operation::BatchGet { batch_size: 8 },
+            Operation::BatchPut { batch_size: 8 },
+        ] {
+            assert!(NativeControl::start(
+                surface,
+                1,
+                Dataset::new(1, 1_048_576).unwrap(),
+                operation
+            )
+            .await
+            .is_err());
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn high_concurrency_native_clients_start_together_and_release_resources() {
     for surface in [Surface::Hc1Http, Surface::Hc2GrpcMtls] {
         for slots in [32, 128] {
@@ -136,6 +250,67 @@ async fn high_concurrency_native_clients_start_together_and_release_resources() 
                 control.verify().await.unwrap();
                 Arc::try_unwrap(control)
                     .unwrap_or_else(|_| panic!("native clients still owned"))
+                    .shutdown()
+                    .await
+                    .unwrap();
+            }
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn native_batch_concurrency_boundaries_release_all_owners() {
+    for surface in [
+        Surface::DirectClientSurface,
+        Surface::Hc1Http,
+        Surface::Hc2GrpcMtls,
+    ] {
+        for slots in [32, 128] {
+            for operation in [
+                Operation::BatchGet { batch_size: 8 },
+                Operation::BatchPut { batch_size: 8 },
+            ] {
+                let control = Arc::new(
+                    NativeControl::start(surface, slots, Dataset::new(4, 256).unwrap(), operation)
+                        .await
+                        .unwrap(),
+                );
+                if let Some(active) = control.hc2_active_connections() {
+                    assert_eq!(active, slots as u64);
+                }
+                let before = control.dispatch_attempts();
+                let barrier = Arc::new(tokio::sync::Barrier::new(slots));
+                let mut tasks = tokio::task::JoinSet::new();
+                for sequence in 0..slots {
+                    let control = Arc::clone(&control);
+                    let barrier = Arc::clone(&barrier);
+                    tasks.spawn(async move {
+                        barrier.wait().await;
+                        control
+                            .execute(get_owner_scheduled_controls_074::target::TargetRequest {
+                                sequence: sequence as u64,
+                            })
+                            .await
+                    });
+                }
+                while let Some(result) = tasks.join_next().await {
+                    assert_eq!(
+                        result.unwrap(),
+                        get_owner_scheduled_controls_074::target::TargetOutcome::Success
+                    );
+                }
+                let per_command = if matches!(surface, Surface::Hc2GrpcMtls) {
+                    8
+                } else {
+                    1
+                };
+                assert_eq!(
+                    control.dispatch_attempts() - before,
+                    (slots * per_command) as u64
+                );
+                control.verify().await.unwrap();
+                Arc::try_unwrap(control)
+                    .unwrap_or_else(|_| panic!("batch clients still owned"))
                     .shutdown()
                     .await
                     .unwrap();

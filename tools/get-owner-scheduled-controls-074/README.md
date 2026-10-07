@@ -55,3 +55,21 @@ above 1,052,672 bytes or unsupported counts fail before connecting/copying paylo
 The product default 128-entry limit is unchanged: 256 is rejection evidence, not
 a successful workload obtained by changing defaults. Scripted live DEL/duplicate
 and concurrent MSET/MGET fixtures are separate from scheduled missing-key DEL.
+
+Independent native batch controls use `BatchGet`/same-fixed-value `BatchPut` on
+direct ClientSurfaceState, HC1 HTTP and HC2 gRPC/mTLS. The direct control creates
+no listener; it calls the production verified dispatcher with its own state.
+All use the same binary dataset, batch sizes 1/8/32/128 and client slots 1/8/32/128.
+One batch invocation remains one offer/sample, never latency divided by key count.
+Aggregate logical value plus canonical-key bytes are capped at 1 MiB before setup
+or repeated payload construction; this is a tool bound, not a new product limit.
+
+HC1/direct use one atomic surface BatchPut dispatch. HC2's existing batch iterates
+single-key requests: one dispatch per item, with no batch-wide atomicity claim.
+Its SDK default accepts 256 items, unlike the surface's 128-entry batch limit;
+the scheduled controls deliberately remain capped at 128. Negative HC1/direct
+256-entry mutation checks and HC2 256-success/1025-SDK-rejection checks keep that
+difference visible. A mixed HC2 PUT/unapplied-CAS fixture retains the first write;
+it is not an atomic MSET oracle. No product path is changed to hide these costs
+or semantic differences. Numerical native floors, matched secure RESP controls,
+live DELETE/EXISTS and expiration/quota/event/fault matrices remain open.

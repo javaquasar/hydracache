@@ -3762,3 +3762,36 @@ concurrent pair test do not replace expiration/quota/event/fault coverage,
 matched native batch measurements, RESP3/mTLS or retained-memory qualification.
 Neither historical rejection nor the requirement for repeated paired evidence
 is weakened by adding more locally passing tests.
+
+## Native batch is not automatically an atomic MSET control
+
+The next prerequisite was to observe native batches independently, with the same
+binary dataset, bounded batch sizes and one original offer per invocation. The
+adapter now uses direct ClientSurfaceState, production HC1 HTTP and HC2 gRPC/mTLS
+as three distinct controls. Direct dispatch creates no listener or certificate,
+but still pays the tool's slot mutex, envelope/key construction and result oracle.
+Neither direct dispatch nor a passing functional fixture is a measured native floor.
+
+This work exposed a semantic difference that a pooled throughput chart could hide.
+HC1/direct BatchPut validates a surface batch and commits it under the existing
+atomic path. HC2's existing batch handler instead invokes single-key operations
+in order. Executable counters show one surface dispatch versus one per batch item.
+Its default SDK limit also differs: 256 items are allowed there, while the surface
+batch limit is 128. Raising one limit or silently treating both as atomic MSET
+would make the comparison easier to pass and less meaningful.
+
+The fixtures preserve that distinction. An oversized HC1/direct BatchPut must
+leave the original value and all new keys untouched. HC2 accepts a 256-item read
+batch but rejects 1025 items locally before dispatch; a mixed PUT/unapplied-CAS
+example retains its earlier successful write. Ordered positional results,
+duplicates, missing keys, empty/binary values and per-item mutation flags are
+validated separately. The scheduled control only records success after its entire
+expected result passes; a negative fixture oracle is not goodput.
+
+The outcome is semantic attribution, not a throughput or allocation win: 48 small
+scheduled cells and 12 high-concurrency cells establish what each control means.
+Future native/RESP comparisons must use equivalent traces and atomicity/security
+contexts. A native batch-engine optimization, if justified by profiling, needs its
+own proposal and repeated numerical evidence. It cannot be smuggled into the
+observer to make RESP gains look like native nonregression. Expiration, quota,
+events, faults, secure RESP and retained-memory measurements remain separate work.

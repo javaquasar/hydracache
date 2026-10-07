@@ -293,6 +293,10 @@ function = "scheduled_multikey_controls_preserve_command_denominators_and_produc
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
+function = "independent_native_batches_preserve_denominators_and_expose_hc2_semantic_difference"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
 function = "get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci"
 
 [[work_item.required_tests]]

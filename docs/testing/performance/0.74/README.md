@@ -1679,3 +1679,12 @@ checks. The separate
 retains the 48-cell semantic grid, seed-740074 reference model and negative
 256-entry MSET evidence. No numerical series, native floor, B0 retry, full
 workspace/hosted qualification or product admission follows from these checks.
+
+Independent native BatchGet/fixed-value BatchPut controls now cover direct
+ClientSurfaceState, HC1 and HC2, retaining one offer/sample per batch and a local
+1 MiB logical byte cap. Forty-eight scheduled cells and 12 synchronized
+32/128-slot cells check result shape, values, command denominators and cleanup.
+HC1/direct use one atomic surface dispatch; HC2 executes ordered single-key items
+and has different batch limits. Those semantics are explicitly separate, not an
+atomic-MSET native equivalence claim. No numerical native floor or product change
+is admitted; see the [methodology](get-response-owner-scheduled-controls-design.md).

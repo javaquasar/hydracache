@@ -229,6 +229,66 @@ fn scheduled_multikey_controls_preserve_command_denominators_and_product_limits(
 }
 
 #[test]
+fn independent_native_batches_preserve_denominators_and_expose_hc2_semantic_difference() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let batch = &c["native"]["batch"];
+    assert_eq!(
+        batch["batch_sizes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        vec![1, 8, 32, 128]
+    );
+    assert_eq!(
+        batch["maximum_logical_batch_bytes"].as_integer(),
+        Some(1048576)
+    );
+    assert_eq!(
+        batch["surface_dispatches_per_command"].as_integer(),
+        Some(1)
+    );
+    assert_eq!(
+        batch["hc2_dispatches_per_command"].as_str(),
+        Some("batch-item-count")
+    );
+    assert_eq!(batch["one_sample_per_command"].as_bool(), Some(true));
+    for flag in [
+        "divide_latency_by_batch_size_allowed",
+        "hc2_batch_is_atomic_surface_batch",
+        "cross_surface_mset_equivalence_claim_allowed",
+        "direct_control_uses_listener",
+        "product_limits_changed",
+        "scheduled_live_delete_claim_allowed",
+        "native_batch_nonregression_measured",
+        "full_multikey_qualification_completed",
+    ] {
+        assert_eq!(batch[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(c["numerical_series_started"].as_bool(), Some(false));
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/native.rs")).unwrap();
+    for token in [
+        "operation.validate(&dataset)?",
+        "validate_surface_batch",
+        "validate_hc2_batch",
+        "direct_and_hc1_oversized_batch_put_reject_without_partial_mutation",
+        "hc2_batch_limits_and_unapplied_item_are_not_atomic_surface_batch_semantics",
+    ] {
+        assert!(source.contains(token), "{token}");
+    }
+    let tests = std::fs::read_to_string(tool.join("tests/native.rs")).unwrap();
+    for token in [
+        "native_batches_keep_one_offer_and_separate_dispatch_semantics",
+        "native_batch_concurrency_boundaries_release_all_owners",
+        "unsupported_native_batch_size_and_payload_fail_before_setup",
+    ] {
+        assert!(tests.contains(token), "{token}");
+    }
+}
+
+#[test]
 fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     assert_eq!(

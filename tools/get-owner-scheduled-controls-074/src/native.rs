@@ -5,14 +5,15 @@ use std::time::Duration;
 use async_trait::async_trait;
 use bytes::Bytes;
 use hydracache_client_hc2::{
-    ClientConfig, ClientError, ErrorCode, GrpcMtlsAdapter, GrpcMtlsConfig, Hc2Client,
+    BatchItemResult, BatchOperation, ClientConfig, ClientError, ErrorCode, GrpcMtlsAdapter,
+    GrpcMtlsConfig, Hc2Client,
 };
 use hydracache_client_protocol::{
-    ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse, ClientWireMessage,
-    Namespace, StructuredKey,
+    BatchPutEntry, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
+    ClientWireMessage, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
-    AxumClientSurface, ClientSurfaceLimits, ClientSurfaceState, CLIENT_DATA_PATH,
+    AxumClientSurface, ClientIdentity, ClientSurfaceLimits, ClientSurfaceState, CLIENT_DATA_PATH,
     HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, TlsConfig};
@@ -26,6 +27,7 @@ use tokio::task::JoinHandle;
 use crate::target::{PreloadOutcome, Target, TargetError, TargetOutcome, TargetRequest};
 
 pub const SEED: u64 = 740074;
+const MAX_BATCH_LOGICAL_BYTES: usize = 1_048_576;
 type Result<T> = std::result::Result<T, String>;
 type RequestResult<T> = std::result::Result<T, RequestFailure>;
 #[derive(Debug, thiserror::Error)]
@@ -66,6 +68,7 @@ fn http_failure(error: reqwest::Error) -> RequestFailure {
 
 #[derive(Clone, Copy, Debug)]
 pub enum Surface {
+    DirectClientSurface,
     Hc1Http,
     Hc2GrpcMtls,
 }
@@ -73,6 +76,80 @@ pub enum Surface {
 pub enum Operation {
     Get,
     Put,
+    BatchGet { batch_size: usize },
+    BatchPut { batch_size: usize },
+}
+impl Operation {
+    pub fn batch_size(self) -> usize {
+        match self {
+            Self::Get | Self::Put => 1,
+            Self::BatchGet { batch_size } | Self::BatchPut { batch_size } => batch_size,
+        }
+    }
+    fn validate(self, dataset: &Dataset) -> Result<()> {
+        if matches!(self, Self::BatchGet { .. } | Self::BatchPut { .. }) {
+            let count = self.batch_size();
+            if ![1, 8, 32, 128].contains(&count) {
+                return Err("unsupported native batch size".to_owned());
+            }
+            // Both request PUT bytes and GET reply bytes are bounded before
+            // constructing repeated values, PKI, state or transport owners.
+            // Account for HC1/direct canonical hex keys (32 bytes each).
+            let total = dataset
+                .value
+                .len()
+                .checked_add(32)
+                .and_then(|per_item| per_item.checked_mul(count));
+            if total.is_none_or(|bytes| bytes > MAX_BATCH_LOGICAL_BYTES) {
+                return Err("native batch logical byte budget exceeded".to_owned());
+            }
+        }
+        Ok(())
+    }
+}
+
+fn validate_surface_batch(response: ClientResponse, expected: &[Option<Bytes>]) -> Result<()> {
+    let ClientResponse::Batch { items } = response else {
+        return Err("native batch response kind mismatch".to_owned());
+    };
+    if items.len() != expected.len() {
+        return Err("native batch response count mismatch".to_owned());
+    }
+    for (index, (item, value)) in items.iter().zip(expected).enumerate() {
+        if item.index != index
+            || item
+                .result
+                .as_ref()
+                .ok()
+                .is_none_or(|actual| actual.as_deref() != value.as_deref())
+        {
+            return Err("native batch response position/value/error mismatch".to_owned());
+        }
+    }
+    Ok(())
+}
+
+fn validate_hc2_batch(
+    items: &[BatchItemResult],
+    expected: &[Option<Bytes>],
+    put: bool,
+) -> Result<()> {
+    if items.len() != expected.len() || (put && expected.iter().any(Option::is_some)) {
+        return Err("HC2 batch response count mismatch".to_owned());
+    }
+    for (index, (item, value)) in items.iter().zip(expected).enumerate() {
+        let valid = if put {
+            item.value.is_none() && item.mutation.is_some_and(|mutation| mutation.applied)
+        } else {
+            item.mutation.is_none()
+                && item.value.as_ref().map(|v| &v.value) == value.as_ref()
+                && item.value.as_ref().is_none_or(|v| v.expires_at.is_none())
+        };
+        if item.item_id as usize != index + 1 || !valid {
+            return Err("HC2 batch response position/value/mutation mismatch".to_owned());
+        }
+    }
+    Ok(())
 }
 
 /// Same binary dataset for either transport; security contexts are NOT equivalent.
@@ -168,6 +245,7 @@ fn adapter(endpoint: &str, trust: &Pki, identity: &Pki) -> Result<GrpcMtlsAdapte
 }
 
 enum Client {
+    Direct(ClientIdentity),
     Hc1(reqwest::Client),
     Hc2(Hc2Client),
 }
@@ -207,6 +285,7 @@ impl NativeControl {
         if ![1, 8, 32, 128].contains(&slots) {
             return Err("unsupported client slot count".to_owned());
         }
+        operation.validate(&dataset)?;
         let state = Arc::new(
             ClientSurfaceState::new(ClientSurfaceLimits {
                 max_frame_bytes: 8 * 1024 * 1024,
@@ -215,6 +294,29 @@ impl NativeControl {
             .map_err(|e| e.to_string())?,
         );
         state.set_profile_instrumentation_enabled(false);
+        if matches!(surface, Surface::DirectClientSurface) {
+            let (shutdown, _) = watch::channel(false);
+            let clients = (0..slots)
+                .map(|index| {
+                    ClientIdentity::new(format!("scheduled-{index}"), "tenant-a")
+                        .map(|identity| Mutex::new(Client::Direct(identity)))
+                        .map_err(|e| e.to_string())
+                })
+                .collect::<Result<Vec<_>>>()?;
+            let control = Self {
+                state,
+                endpoint: String::new(),
+                clients,
+                dataset,
+                operation,
+                shutdown,
+                listener: None,
+                hc2: None,
+                _pki_files: None,
+            };
+            control.preload().await.map_err(|e| e.to_string())?;
+            return Ok(control);
+        }
         let tcp = tokio::net::TcpListener::bind("127.0.0.1:0")
             .await
             .map_err(|e| e.to_string())?;
@@ -232,6 +334,7 @@ impl NativeControl {
             _pki_files: None,
         };
         match surface {
+            Surface::DirectClientSurface => unreachable!("direct control creates no listener"),
             Surface::Hc1Http => {
                 control.endpoint = format!("http://{address}{CLIENT_DATA_PATH}");
                 let router = AxumClientSurface::from_state(Arc::clone(&control.state)).routes();
@@ -306,6 +409,101 @@ impl NativeControl {
     pub fn dataset_digest(&self) -> String {
         self.dataset.digest()
     }
+    pub fn dispatch_attempts(&self) -> u64 {
+        self.state.dispatch_attempts()
+    }
+
+    async fn surface_request(
+        &self,
+        client: &Client,
+        sequence: u64,
+        request: ClientRequest,
+    ) -> RequestResult<ClientResponse> {
+        match client {
+            Client::Hc1(client) => self.hc1(client, sequence, "tenant-a", request).await,
+            Client::Direct(identity) => {
+                let envelope = ClientRequestEnvelope::new(sequence.to_string(), request);
+                let version = envelope.protocol_version;
+                let response = self.state.dispatch_verified_request(identity, envelope);
+                if response.request_id != sequence.to_string()
+                    || response.protocol_version != version
+                {
+                    return Err("direct response identity drift".to_owned().into());
+                }
+                response
+                    .result
+                    .map_err(|e| format!("direct error: {e:?}").into())
+            }
+            Client::Hc2(_) => Err("HC2 cannot use HC1/direct envelope".to_owned().into()),
+        }
+    }
+
+    async fn batch(
+        &self,
+        keys: &[Bytes],
+        values: Option<&[Bytes]>,
+        expected: &[Option<Bytes>],
+        sequence: u64,
+    ) -> RequestResult<()> {
+        if keys.is_empty()
+            || keys.len() != expected.len()
+            || values.is_some_and(|values| values.len() != keys.len())
+        {
+            return Err("invalid observer batch shape".to_owned().into());
+        }
+        let client = self.clients[sequence as usize % self.clients.len()]
+            .lock()
+            .await;
+        match &*client {
+            Client::Hc1(_) | Client::Direct(_) => {
+                let ns = Namespace::new("hc2").map_err(|e| e.to_string())?;
+                let keys = keys
+                    .iter()
+                    .map(Self::hc1_key)
+                    .map(|result| result.map(|(_, key)| key))
+                    .collect::<Result<Vec<_>>>()?;
+                let request = if let Some(values) = values {
+                    ClientRequest::BatchPut {
+                        ns,
+                        entries: keys
+                            .into_iter()
+                            .zip(values)
+                            .map(|(key, value)| BatchPutEntry {
+                                key,
+                                value: value.to_vec(),
+                            })
+                            .collect(),
+                    }
+                } else {
+                    ClientRequest::BatchGet { ns, keys }
+                };
+                validate_surface_batch(
+                    self.surface_request(&client, sequence, request).await?,
+                    expected,
+                )
+                .map_err(Into::into)
+            }
+            Client::Hc2(client) => {
+                let operations = keys
+                    .iter()
+                    .enumerate()
+                    .map(|(index, key)| {
+                        if let Some(values) = values {
+                            BatchOperation::Put {
+                                key: key.clone(),
+                                value: values[index].clone(),
+                                ttl: None,
+                            }
+                        } else {
+                            BatchOperation::Get { key: key.clone() }
+                        }
+                    })
+                    .collect();
+                let items = client.batch(operations, None).await.map_err(hc2_failure)?;
+                validate_hc2_batch(&items, expected, values.is_some()).map_err(Into::into)
+            }
+        }
+    }
     pub fn retained_entries(&self) -> usize {
         self.state.retained_state_for_diagnostics().store_entries
     }
@@ -376,10 +574,10 @@ impl NativeControl {
             .lock()
             .await;
         match &*client {
-            Client::Hc1(client) => {
+            Client::Hc1(_) | Client::Direct(_) => {
                 let (ns, key) = Self::hc1_key(key)?;
                 match self
-                    .hc1(client, sequence, "tenant-a", ClientRequest::Get { ns, key })
+                    .surface_request(&client, sequence, ClientRequest::Get { ns, key })
                     .await?
                 {
                     ClientResponse::Value { value } => Ok(value.map(Bytes::from)),
@@ -398,13 +596,12 @@ impl NativeControl {
             .lock()
             .await;
         match &*client {
-            Client::Hc1(client) => {
+            Client::Hc1(_) | Client::Direct(_) => {
                 let (ns, key) = Self::hc1_key(key)?;
                 match self
-                    .hc1(
-                        client,
+                    .surface_request(
+                        &client,
                         sequence,
-                        "tenant-a",
                         ClientRequest::Put {
                             ns,
                             key,
@@ -477,7 +674,9 @@ impl NativeControl {
             }
         }
         self.clients.clear();
-        self.shutdown.send(true).map_err(|e| e.to_string())?;
+        if self.listener.is_some() {
+            self.shutdown.send(true).map_err(|e| e.to_string())?;
+        }
         if let Some(mut listener) = self.listener.take() {
             match tokio::time::timeout(Duration::from_secs(5), &mut listener).await {
                 Ok(result) => result.map_err(|e| e.to_string())??,
@@ -529,6 +728,28 @@ impl Target for NativeControl {
                 }
             }),
             Operation::Put => self.put(key, request.sequence).await,
+            Operation::BatchGet { batch_size } | Operation::BatchPut { batch_size } => {
+                let keys = (0..batch_size)
+                    .map(|position| {
+                        self.dataset.keys[(request.sequence as usize % self.dataset.keys.len()
+                            + position)
+                            % self.dataset.keys.len()]
+                        .clone()
+                    })
+                    .collect::<Vec<_>>();
+                let put = matches!(self.operation, Operation::BatchPut { .. });
+                let values = put.then(|| vec![self.dataset.value.clone(); batch_size]);
+                let expected = vec![
+                    if put {
+                        None
+                    } else {
+                        Some(self.dataset.value.clone())
+                    };
+                    batch_size
+                ];
+                self.batch(&keys, values.as_deref(), &expected, request.sequence)
+                    .await
+            }
         };
         result.map_or_else(|error| error.outcome, |()| TargetOutcome::Success)
     }
@@ -537,6 +758,276 @@ impl Target for NativeControl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hydracache_client_hc2::{CacheValue, MutationResult};
+    use hydracache_client_protocol::{BatchItemStatus, ClientErrorCode, ClientErrorEnvelope};
+
+    #[test]
+    fn batch_oracles_reject_count_order_error_value_and_mutation_drift() {
+        let expected = vec![
+            Some(Bytes::from_static(b"\0\xff")),
+            None,
+            Some(Bytes::new()),
+        ];
+        let items = expected
+            .iter()
+            .enumerate()
+            .map(|(index, value)| BatchItemStatus {
+                index,
+                result: Ok(value.as_ref().map(|v| v.to_vec())),
+            })
+            .collect::<Vec<_>>();
+        assert!(validate_surface_batch(
+            ClientResponse::Batch {
+                items: items.clone()
+            },
+            &expected
+        )
+        .is_ok());
+        assert!(validate_surface_batch(ClientResponse::Stored, &expected).is_err());
+        assert!(
+            validate_surface_batch(ClientResponse::Batch { items: vec![] }, &expected).is_err()
+        );
+        for defect in 0..3 {
+            let mut broken = items.clone();
+            match defect {
+                0 => broken[1].index = 0,
+                1 => broken[1].result = Ok(Some(vec![])),
+                _ => {
+                    broken[1].result = Err(ClientErrorEnvelope::new(
+                        ClientErrorCode::TooLarge,
+                        false,
+                        "fixture-only rejection",
+                    ))
+                }
+            }
+            assert!(
+                validate_surface_batch(ClientResponse::Batch { items: broken }, &expected).is_err()
+            );
+        }
+        let items = expected
+            .iter()
+            .enumerate()
+            .map(|(index, value)| BatchItemResult {
+                item_id: (index + 1) as u32,
+                value: value.as_ref().map(|value| CacheValue {
+                    value: value.clone(),
+                    expires_at: None,
+                }),
+                mutation: None,
+            })
+            .collect::<Vec<_>>();
+        assert!(validate_hc2_batch(&items, &expected, false).is_ok());
+        assert!(validate_hc2_batch(&[], &expected, false).is_err());
+        for defect in 0..4 {
+            let mut broken = items.clone();
+            match defect {
+                0 => broken[0].item_id = 2,
+                1 => broken[0].value.as_mut().unwrap().value = Bytes::new(),
+                2 => broken[0].value.as_mut().unwrap().expires_at = Some(std::time::UNIX_EPOCH),
+                _ => broken[0].mutation = Some(MutationResult { applied: true }),
+            }
+            assert!(validate_hc2_batch(&broken, &expected, false).is_err());
+        }
+        let put = BatchItemResult {
+            item_id: 1,
+            value: None,
+            mutation: Some(MutationResult { applied: true }),
+        };
+        assert!(validate_hc2_batch(std::slice::from_ref(&put), &[None], true).is_ok());
+        assert!(validate_hc2_batch(std::slice::from_ref(&put), &expected[..1], true).is_err());
+        for broken in [
+            BatchItemResult {
+                mutation: None,
+                ..put.clone()
+            },
+            BatchItemResult {
+                mutation: Some(MutationResult { applied: false }),
+                ..put.clone()
+            },
+            BatchItemResult {
+                value: items[0].value.clone(),
+                ..put
+            },
+        ] {
+            assert!(validate_hc2_batch(&[broken], &[None], true).is_err());
+        }
+    }
+
+    #[test]
+    fn native_batch_budget_boundaries_are_checked_without_overflow() {
+        for batch_size in [1, 8, 32, 128] {
+            let ceiling = MAX_BATCH_LOGICAL_BYTES / batch_size - 32;
+            for operation in [
+                Operation::BatchGet { batch_size },
+                Operation::BatchPut { batch_size },
+            ] {
+                assert!(operation
+                    .validate(&Dataset::new(1, ceiling).unwrap())
+                    .is_ok());
+                assert!(operation
+                    .validate(&Dataset::new(1, ceiling + 1).unwrap())
+                    .is_err());
+            }
+        }
+        assert_eq!(Operation::Get.batch_size(), 1);
+        assert_eq!(Operation::Put.batch_size(), 1);
+    }
+
+    #[tokio::test]
+    async fn independent_batch_transports_preserve_duplicates_misses_empty_and_binary_values() {
+        for surface in [
+            Surface::DirectClientSurface,
+            Surface::Hc1Http,
+            Surface::Hc2GrpcMtls,
+        ] {
+            let control =
+                NativeControl::start(surface, 1, Dataset::new(2, 256).unwrap(), Operation::Get)
+                    .await
+                    .unwrap();
+            let a = control.dataset.keys[0].clone();
+            let b = control.dataset.keys[1].clone();
+            let binary = Bytes::from_static(b"\0\xff\r\n");
+            control
+                .batch(
+                    &[a.clone(), b.clone(), a.clone()],
+                    Some(&[Bytes::from_static(b"old"), binary.clone(), Bytes::new()]),
+                    &[None, None, None],
+                    90,
+                )
+                .await
+                .unwrap();
+            control
+                .batch(
+                    &[
+                        a.clone(),
+                        Bytes::from_static(b"absent\0\xff"),
+                        b.clone(),
+                        a.clone(),
+                    ],
+                    None,
+                    &[Some(Bytes::new()), None, Some(binary), Some(Bytes::new())],
+                    91,
+                )
+                .await
+                .unwrap();
+            assert!(control.batch(&[], None, &[], 92).await.is_err());
+            assert!(control
+                .batch(std::slice::from_ref(&a), Some(&[]), &[None], 93)
+                .await
+                .is_err());
+            assert!(control
+                .batch(std::slice::from_ref(&a), None, &[], 94)
+                .await
+                .is_err());
+            control.preload().await.unwrap();
+            control.verify().await.unwrap();
+            control.shutdown().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn direct_and_hc1_oversized_batch_put_reject_without_partial_mutation() {
+        for surface in [Surface::DirectClientSurface, Surface::Hc1Http] {
+            let control =
+                NativeControl::start(surface, 1, Dataset::new(2, 256).unwrap(), Operation::Get)
+                    .await
+                    .unwrap();
+            let keys = (0..256)
+                .map(|index| {
+                    if index == 0 {
+                        control.dataset.keys[0].clone()
+                    } else {
+                        Bytes::from(format!("oversized-native-{index}"))
+                    }
+                })
+                .collect::<Vec<_>>();
+            let values = vec![Bytes::from_static(b"must-not-commit"); 256];
+            let error = control
+                .batch(&keys, Some(&values), &vec![None; 256], 100)
+                .await
+                .unwrap_err();
+            assert!(error.detail.contains("TooLarge"), "{error}");
+            let mut expected = vec![None; 256];
+            expected[0] = Some(control.dataset.value.clone());
+            for (keys, expected) in keys.chunks(128).zip(expected.chunks(128)) {
+                control.batch(keys, None, expected, 101).await.unwrap();
+            }
+            control.verify().await.unwrap();
+            control.shutdown().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn hc2_batch_limits_and_unapplied_item_are_not_atomic_surface_batch_semantics() {
+        let control = NativeControl::start(
+            Surface::Hc2GrpcMtls,
+            1,
+            Dataset::new(2, 256).unwrap(),
+            Operation::Get,
+        )
+        .await
+        .unwrap();
+        let keys = vec![control.dataset.keys[0].clone(); 256];
+        let before = control.dispatch_attempts();
+        control
+            .batch(
+                &keys,
+                None,
+                &vec![Some(control.dataset.value.clone()); 256],
+                100,
+            )
+            .await
+            .unwrap();
+        assert_eq!(control.dispatch_attempts() - before, 256);
+        let before = control.dispatch_attempts();
+        assert!(control
+            .batch(
+                &vec![keys[0].clone(); 1025],
+                None,
+                &vec![Some(control.dataset.value.clone()); 1025],
+                101
+            )
+            .await
+            .is_err());
+        assert_eq!(control.dispatch_attempts(), before);
+        {
+            let slot = control.clients[0].lock().await;
+            let Client::Hc2(client) = &*slot else {
+                unreachable!()
+            };
+            let items = client
+                .batch(
+                    vec![
+                        BatchOperation::Put {
+                            key: control.dataset.keys[0].clone(),
+                            value: Bytes::from_static(b"committed-first"),
+                            ttl: None,
+                        },
+                        BatchOperation::CompareAndSet {
+                            key: control.dataset.keys[1].clone(),
+                            expected: Bytes::from_static(b"does-not-match"),
+                            replacement: Bytes::from_static(b"must-not-apply"),
+                            ttl: None,
+                        },
+                    ],
+                    None,
+                )
+                .await
+                .unwrap();
+            assert!(items[0].mutation.unwrap().applied);
+            assert!(!items[1].mutation.unwrap().applied);
+        }
+        assert_eq!(
+            control.get(&control.dataset.keys[0], 102).await.unwrap(),
+            Some(Bytes::from_static(b"committed-first"))
+        );
+        assert_eq!(
+            control.get(&control.dataset.keys[1], 103).await.unwrap(),
+            Some(control.dataset.value.clone())
+        );
+        control.preload().await.unwrap();
+        control.shutdown().await.unwrap();
+    }
     #[test]
     fn sdk_failure_codes_are_not_retried_or_conflated_with_success() {
         for (code, expected) in [
