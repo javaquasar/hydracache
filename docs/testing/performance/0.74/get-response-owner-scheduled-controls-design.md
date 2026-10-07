@@ -109,3 +109,16 @@ finite cohort, binaries, source-referenced files, dependency lock, host placemen
 offered rates, SLOs, duration and unchanged native regression/noise guards. Preserve
 the invalidated B0 packet; do not retry it under this profile. Only after complete
 paired evidence may the nonregression question be answered.
+
+## Retained focused verification
+
+At clean source `a6047895509f8298f5c9154d9d508bc0eed92f26`, all 19 tool tests
+passed in each default/get-owner build, as did all-target/all-feature check and
+strict clippy. The 51 performance-contract, 13 release-evidence, 23 governance and
+16 doc xtask tests passed, along with xtask check/clippy, local performance/doc
+checks, 17 governance checks, three documentation script tests, link/sync checks
+and mdbook build. See the non-promotable
+[focused check summary](local-runs/get-owner-scheduled-instrumentation-checks-a6047895.json)
+for commands and source-reference/lock Git blob ids. These are functional check
+counts, not a numerical performance result, current-source hosted receipt or full
+workspace verification. Qualification manifest digest remains unchanged.

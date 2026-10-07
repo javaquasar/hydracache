@@ -1627,3 +1627,7 @@ No numerical CLI/series exists; real transport 32/128, scheduled RESP per-respon
 adapter, security-matched cohorts, retention/refill and hosted CI are still open.
 See [methodology and remaining proofs](get-response-owner-scheduled-controls-design.md).
 The private feature remains off and qualification/integrated admission unchanged.
+Focused checks at clean `a6047895`: 19 tool tests per variant and 103 xtask tests,
+strict lint/check, docs/book and 17 governance checks passed. The
+[check summary](local-runs/get-owner-scheduled-instrumentation-checks-a6047895.json)
+is local functional evidence only, not native nonregression or hosted CI.
