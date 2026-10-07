@@ -1,0 +1,32 @@
+{
+  "ordinal": 106,
+  "mode": "ab",
+  "pair": 3,
+  "cell": "get-256-p50",
+  "role": "on",
+  "compiled_feature_enabled": true,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\w9b-d3a-3171d02a-binaries\\on.exe",
+    "--source",
+    "3171d02a8ebb77111d819ebd845516ea797c996d",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\performance-evidence\\0.74\\w9b-d3a-3171d02a\\106-ab-3-get-256-p50-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "256",
+    "--alternate-payload",
+    "256",
+    "--pipeline",
+    "50",
+    "--batches",
+    "40",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get 2000 operations; gross=3655.952 bytes/op; peak-above-start=19903 bytes\n",
+  "stderr": ""
+}

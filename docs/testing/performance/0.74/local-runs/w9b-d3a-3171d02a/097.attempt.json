@@ -1,0 +1,32 @@
+{
+  "ordinal": 97,
+  "mode": "ab",
+  "pair": 2,
+  "cell": "get-4k-fragmented-p10",
+  "role": "on",
+  "compiled_feature_enabled": true,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\w9b-d3a-3171d02a-binaries\\on.exe",
+    "--source",
+    "3171d02a8ebb77111d819ebd845516ea797c996d",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\performance-evidence\\0.74\\w9b-d3a-3171d02a\\097-ab-2-get-4k-fragmented-p10-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "4096",
+    "--alternate-payload",
+    "4096",
+    "--pipeline",
+    "10",
+    "--batches",
+    "100",
+    "--read-chunk",
+    "1"
+  ],
+  "exit_code": 0,
+  "stdout": "get 1000 operations; gross=18775.509 bytes/op; peak-above-start=25134 bytes\n",
+  "stderr": ""
+}

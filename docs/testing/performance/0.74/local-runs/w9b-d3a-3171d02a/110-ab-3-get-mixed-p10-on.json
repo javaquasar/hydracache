@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "profile_id": "w9b-resp-serial-scratch-allocation-memory-screen-074-v1",
+  "tier": "local-d3a-allocation-memory-screen",
+  "promotable": false,
+  "source_commit": "3171d02a8ebb77111d819ebd845516ea797c996d",
+  "source_clean": true,
+  "binary_sha256": "sha256:128d442b467f4127304661963aa48a82bd9fd650faebb0fa877c88daf9c7f4ba",
+  "serial_scratch_enabled": true,
+  "allocator": "System-with-tool-only-requested-layout-accounting",
+  "operation": "get",
+  "payload_bytes": 4096,
+  "alternate_payload_bytes": 256,
+  "pipeline": 10,
+  "batches": 100,
+  "operations": 1000,
+  "warmup_batches": 5,
+  "read_chunk_bytes": 8192,
+  "seed": 740074,
+  "concurrency": 1,
+  "workload_sha256": "sha256:62189fba9cd89bf6a66c0d793aeae77aefd1b82f1d101bba61a7a4e15f7d9a81",
+  "exact_response_validation": true,
+  "exact_final_values_and_cardinality": true,
+  "allocation": {
+    "gross_allocated_bytes": 8081509,
+    "successful_allocation_calls": 30004,
+    "live_before_bytes": 283835,
+    "live_after_bytes": 283835,
+    "peak_live_requested_bytes": 308969,
+    "peak_live_above_start_bytes": 25134
+  },
+  "gross_allocated_bytes_per_operation": 8081.509,
+  "allocation_calls_per_operation": 30.004,
+  "next_read_boundary_live_min_bytes": 300234,
+  "next_read_boundary_live_max_bytes": 300234,
+  "next_read_boundary_samples": 100,
+  "write_calls": 1000,
+  "flush_calls": 1000,
+  "rss_before": {
+    "current_bytes": 5517312,
+    "lifetime_peak_bytes": 5517312
+  },
+  "rss_after_close": {
+    "current_bytes": 5525504,
+    "lifetime_peak_bytes": 5525504
+  },
+  "limitations": [
+    "profiling allocator overhead is not CPU/goodput/p99 evidence",
+    "scripted plaintext RESP2 IO, not real socket or syscall evidence",
+    "live requested layouts are not allocator active/resident/retained bytes",
+    "realloc hidden overlap and allocator metadata are not counted",
+    "RSS peak is lifetime not window; endpoint snapshots do not establish retention",
+    "next-read checkpoint is owner lifetime, not a timed idle/RSS soak",
+    "native HC1 HC2 embedded ClientSurfaceState and secure/concurrent cohorts still require separate D3 controls"
+  ]
+}

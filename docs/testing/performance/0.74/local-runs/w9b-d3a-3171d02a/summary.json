@@ -1,0 +1,436 @@
+{
+  "schema_version": 1,
+  "profile_id": "w9b-resp-serial-scratch-allocation-memory-screen-074-v1",
+  "source_commit": "3171d02a8ebb77111d819ebd845516ea797c996d",
+  "promotable": false,
+  "accepted_product_change": false,
+  "product_performance_claim": false,
+  "classification": "rejected-local-allocation-memory-screen",
+  "red_cells": [
+    "get-4k-p50",
+    "get-1m-p10"
+  ],
+  "attempts_retained": 140,
+  "results": [
+    {
+      "cell": "get-4k-p50",
+      "affected": true,
+      "gross": {
+        "paired_ratios": [
+          0.7403431202786963,
+          0.7403431202786963,
+          0.7403431202786963,
+          0.7403431202786963,
+          0.7403431202786963
+        ],
+        "geometric_mean": 0.7403431202786963,
+        "lower_95": 0.7403431202786963,
+        "upper_95": 0.7403431202786963,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.1633245802498609,
+          1.1633245802498609,
+          1.1633245802498609,
+          1.1633245802498609,
+          1.1633245802498609
+        ],
+        "geometric_mean": 1.1633245802498609,
+        "lower_95": 1.1633245802498609,
+        "upper_95": 1.1633245802498609,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": false,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-1m-p10",
+      "affected": true,
+      "gross": {
+        "paired_ratios": [
+          0.7334676702827718,
+          0.7334676702827718,
+          0.7334676702827718,
+          0.7334676702827718,
+          0.7334676702827718
+        ],
+        "geometric_mean": 0.7334676702827718,
+        "lower_95": 0.7334676702827718,
+        "upper_95": 0.7334676702827718,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.495999462653216,
+          1.495999462653216,
+          1.495999462653216,
+          1.495999462653216,
+          1.495999462653216
+        ],
+        "geometric_mean": 1.495999462653216,
+        "lower_95": 1.495999462653216,
+        "upper_95": 1.495999462653216,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": false,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-4k-p1",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-256-p50",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "set-4k-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-mixed-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-4k-fragmented-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    }
+  ],
+  "pending": [
+    "unprofiled timing and exact per-operation scheduled latency",
+    "embedded ClientSurfaceState HC1 HC2 independent native controls",
+    "real plaintext/mTLS transport and concurrency cohorts",
+    "allocator active/resident/retained and timed idle/RSS proof",
+    "feature-on hosted-CI gate evidence"
+  ]
+}

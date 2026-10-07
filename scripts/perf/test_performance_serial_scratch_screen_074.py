@@ -102,6 +102,19 @@ class ScreenTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "sealed policy changed"):
                 SCREEN.validate_policy(policy)
 
+    def test_retained_complete_real_screen_replays_exact_negative_decision(self):
+        directory = ROOT / "docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a"
+        import json
+        seal = json.loads((directory / "seal.json").read_text(encoding="utf-8"))
+        attempts = []
+        for ordinal, (mode, pair, cell_id, role) in enumerate(SCREEN.schedule(self.policy), 1):
+            attempt = json.loads((directory / f"{ordinal:03d}.attempt.json").read_text(encoding="utf-8"))
+            attempt["receipt"] = json.loads((directory / f"{ordinal:03d}-{mode}-{pair}-{cell_id}-{role}.json").read_text(encoding="utf-8"))
+            attempts.append(attempt)
+        actual = SCREEN.analyse(attempts, self.policy, seal)
+        self.assertEqual(actual, json.loads((directory / "summary.json").read_text(encoding="utf-8")))
+        self.assertEqual(actual["red_cells"], ["get-4k-p50", "get-1m-p10"])
+
 
 if __name__ == "__main__":
     unittest.main()

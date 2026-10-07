@@ -3343,3 +3343,47 @@ feature-only helper; its explicit command needs enrollment and evidence before
 promotion. No numerical candidate comparison, rented-host workload or qualification
 has run in this step. Accepted proposals remain zero and C74 unresolved. We have
 implemented a testable hypothesis, not published a product improvement.
+
+## Fewer allocated bytes can still mean a larger live peak
+
+The subsequent W9b D3a screen turned that memory warning into a measured rejection.
+Instrumentation and policy were committed at `3171d02a` before any candidate
+sample. Two release binaries from the same clean source differed only by the
+serial-scratch feature. Seven fixed cells each ran five independent A/A and five
+counterbalanced A/B pairs: 140 fresh-process attempts, no failures or retries.
+The exact corpus/oracle was prepared outside the measured window; the complete
+canonical decoder, dispatch, reduction, encoder, scripted writer/flush and close
+were inside. This avoids crediting the candidate against temporary allocations
+made merely to construct the benchmark's expected answers.
+
+For 4 KiB GET at pipeline 50, gross bytes/op fell from 15,176.952 to 11,236.152
+(25.97%). For 1 MiB GET at pipeline 10, they fell from 3,147,349.520 to
+2,308,479.120 (26.65%). Both cleared the unchanged 20% allocation floor.
+But the peak of outstanding requested layouts above the starting live owners
+rose from 25,134 to 29,239 bytes in the first cell (16.33%), and from 2,114,091
+to 3,162,679 bytes in the second (49.60%). All five paired values reproduced
+exactly, as did the A/A ratios of 1.00. The five unaffected cells stayed at 1.00.
+
+The incremental peak is exactly one encoded frame: 4,105 or 1,048,588 bytes.
+Keeping that frame buffer alive across the next canonical execution saves a later
+allocation but overlaps the next reduction's transient owners. The buffer still
+drops before the next read, and next-read/post-close owner increments match the
+baseline. This is not a leak. It is a live-memory tradeoff that the preregistered
+zero-increase peak guard explicitly disallowed.
+
+The conclusion is bounded to a requested-layout profiling allocator and
+immediately-ready scripted RESP2 plaintext IO. It is not a socket/RSS, CPU,
+latency or goodput claim. A degenerate interval on deterministic repeated counts
+does not establish certainty on a production scheduler or physical memory.
+RSS endpoints and lifetime peaks remain supplemental, not retention proof.
+Native, real-transport, security/concurrency, unprofiled timing, idle/allocator
+and hosted-feature-CI qualification were not run after this early rejection;
+unchanged native source is not a substitute for a numerical native control.
+
+The candidate is rejected and selectively removed, preserving the full negative
+record in `docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a/` and the
+expanded explanation in `w9b-serial-scratch-d3-result.md`. No threshold was relaxed,
+no outlying pair removed, and no reducer optimization added to rescue it. D1 was
+right about the allocation owner; D2 was right about serial semantics; D3 was
+right to refuse this particular ownership lifetime. Those statements can all
+be true without an accepted product optimization. C74 remains unresolved.

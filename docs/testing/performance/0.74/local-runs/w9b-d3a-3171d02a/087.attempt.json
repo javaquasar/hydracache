@@ -1,0 +1,32 @@
+{
+  "ordinal": 87,
+  "mode": "ab",
+  "pair": 2,
+  "cell": "get-1m-p10",
+  "role": "on",
+  "compiled_feature_enabled": true,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\w9b-d3a-3171d02a-binaries\\on.exe",
+    "--source",
+    "3171d02a8ebb77111d819ebd845516ea797c996d",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\performance-evidence\\0.74\\w9b-d3a-3171d02a\\087-ab-2-get-1m-p10-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "1048576",
+    "--alternate-payload",
+    "1048576",
+    "--pipeline",
+    "10",
+    "--batches",
+    "20",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get 200 operations; gross=2308479.120 bytes/op; peak-above-start=3162679 bytes\n",
+  "stderr": ""
+}

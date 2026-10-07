@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "profile_id": "w9b-resp-serial-scratch-allocation-memory-screen-074-v1",
+  "tier": "local-d3a-allocation-memory-screen",
+  "promotable": false,
+  "source_commit": "3171d02a8ebb77111d819ebd845516ea797c996d",
+  "source_clean": true,
+  "binary_sha256": "sha256:cf996b2d5de857e81001dde3fc67fb0e19d7ed5a9b96bc44a83a11257debdb92",
+  "serial_scratch_enabled": false,
+  "allocator": "System-with-tool-only-requested-layout-accounting",
+  "operation": "get",
+  "payload_bytes": 4096,
+  "alternate_payload_bytes": 4096,
+  "pipeline": 50,
+  "batches": 40,
+  "operations": 2000,
+  "warmup_batches": 5,
+  "read_chunk_bytes": 8192,
+  "seed": 740074,
+  "concurrency": 1,
+  "workload_sha256": "sha256:2e706f4526c3f56d44ad411b7ef7245933ab3dccb331eb3b1a2553707907e3c8",
+  "exact_response_validation": true,
+  "exact_final_values_and_cardinality": true,
+  "allocation": {
+    "gross_allocated_bytes": 30353904,
+    "successful_allocation_calls": 60004,
+    "live_before_bytes": 901233,
+    "live_after_bytes": 901233,
+    "peak_live_requested_bytes": 926367,
+    "peak_live_above_start_bytes": 25134
+  },
+  "gross_allocated_bytes_per_operation": 15176.952,
+  "allocation_calls_per_operation": 30.002,
+  "next_read_boundary_live_min_bytes": 917632,
+  "next_read_boundary_live_max_bytes": 917632,
+  "next_read_boundary_samples": 40,
+  "write_calls": 2000,
+  "flush_calls": 2000,
+  "rss_before": {
+    "current_bytes": 6705152,
+    "lifetime_peak_bytes": 6705152
+  },
+  "rss_after_close": {
+    "current_bytes": 6770688,
+    "lifetime_peak_bytes": 6770688
+  },
+  "limitations": [
+    "profiling allocator overhead is not CPU/goodput/p99 evidence",
+    "scripted plaintext RESP2 IO, not real socket or syscall evidence",
+    "live requested layouts are not allocator active/resident/retained bytes",
+    "realloc hidden overlap and allocator metadata are not counted",
+    "RSS peak is lifetime not window; endpoint snapshots do not establish retention",
+    "next-read checkpoint is owner lifetime, not a timed idle/RSS soak",
+    "native HC1 HC2 embedded ClientSurfaceState and secure/concurrent cohorts still require separate D3 controls"
+  ]
+}

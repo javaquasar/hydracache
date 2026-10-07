@@ -1,0 +1,32 @@
+{
+  "ordinal": 19,
+  "mode": "aa",
+  "pair": 2,
+  "cell": "get-4k-p1",
+  "role": "on",
+  "compiled_feature_enabled": false,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\w9b-d3a-3171d02a-binaries\\off.exe",
+    "--source",
+    "3171d02a8ebb77111d819ebd845516ea797c996d",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\performance-evidence\\0.74\\w9b-d3a-3171d02a\\019-aa-2-get-4k-p1-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "4096",
+    "--alternate-payload",
+    "4096",
+    "--pipeline",
+    "1",
+    "--batches",
+    "1000",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get 1000 operations; gross=13539.954 bytes/op; peak-above-start=25134 bytes\n",
+  "stderr": ""
+}
