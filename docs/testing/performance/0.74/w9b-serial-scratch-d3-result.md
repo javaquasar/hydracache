@@ -51,8 +51,8 @@ risk named before D2/D3, without inventing a new cause from RSS fluctuations.
 Pipeline-one GET, 256-byte GET, 4 KiB SET, alternating 4 KiB/256-byte GET, and
 one-byte fragmented GET controls all have allocation and window-peak ratios 1.00.
 Next-read and post-close live **increments above each process's starting owners**
-have zero candidate increase in every pair. Baseline/feature binary filenames
-have a one-byte outside-window owner difference; absolute process totals must
+have zero candidate increase in every pair. Starting totals differ by one byte
+(the run-specific receipt paths also differ by one byte); absolute process totals must
 not be mistaken for workload increments. Idle owner release passes, but it
 cannot excuse the higher active peak. Every response still emits one write and
 one flush, with exact bytes. No syscall reduction exists here.

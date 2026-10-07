@@ -1,5 +1,12 @@
 # W9b D3a allocation and requested-live-memory screen
 
+**Retired candidate:** the sealed `3171d02a` screen rejected serial scratch on
+window live peak. Its product feature/helper/writer are removed. The tool's
+`serial-scratch` diagnostic flag now fails before workload, rather than silently
+measuring a feature-on no-op. Current default tool builds remain canonical. Use
+exact historical source `3171d02a` to inspect/reproduce the original experiment;
+the sealed archive already contains all 140 attempts and must not be overwritten.
+
 This standalone tool does not change the product allocator or the historical
 pipeline/stage profilers. It is **not** a product CPU, throughput, latency, socket,
 RSS-retention or release qualification lane. Still not distributed transactions.
@@ -17,7 +24,7 @@ hidden System realloc overlap or physical memory. Close/Rust drop does not prove
 return of allocator pages to the OS. RSS endpoint/lifetime-peak snapshots are
 supplemental only. No instrumentation timing is reported as product evidence.
 
-Both binaries are built from the **same clean source**, with feature off/on. The
+Both original binaries were built from the **same clean source**, with feature off/on. The
 off default product path corresponds to the `4d733e31` legacy baseline; it is not
 an old baseline binary relabeled with the new harness. Product implementation is
 `b8cc7c6c`; the source-bound instrumentation commit is recorded by the build script

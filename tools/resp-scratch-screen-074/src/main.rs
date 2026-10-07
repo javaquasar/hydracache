@@ -20,6 +20,14 @@ static ALLOCATOR: memory::Allocator = memory::Allocator;
 const PROFILE_ID: &str = "w9b-resp-serial-scratch-allocation-memory-screen-074-v1";
 const SEED: u64 = 740074;
 
+fn candidate_activation_guard() -> Result<(), &'static str> {
+    if cfg!(feature = "serial-scratch") {
+        Err("serial scratch rejected on live peak and removed; no workload executed; historical reproduction requires exact source 3171d02a")
+    } else {
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug)]
 struct Options {
     source: String,
@@ -349,6 +357,7 @@ struct Receipt {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
+    candidate_activation_guard()?;
     let options = Options::parse()?;
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     if options.source != env!("SCREEN_SOURCE_SHA")
@@ -442,6 +451,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn retired_candidate_cannot_emit_a_noop_feature_on_measurement() {
+        assert_eq!(
+            candidate_activation_guard().is_err(),
+            cfg!(feature = "serial-scratch")
+        );
+    }
     fn options() -> Options {
         Options {
             source: "test".into(),

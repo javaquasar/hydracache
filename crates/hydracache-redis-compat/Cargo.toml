@@ -11,11 +11,6 @@ keywords.workspace = true
 categories.workspace = true
 description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility."
 
-[features]
-default = []
-# Local isolated W9b candidate; not accepted for release/default activation.
-experimental-resp-serial-scratch-074 = []
-
 [dependencies]
 bytes.workspace = true
 hydracache.workspace = true

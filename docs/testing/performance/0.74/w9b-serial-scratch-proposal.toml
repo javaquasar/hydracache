@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.74"
 proposal_id = "p74-w9b-serial-get-scratch-v1"
-state = "implemented-local-semantics-passed-d3-not-started"
+state = "rejected-d3a-live-peak-regression-runtime-removed"
 baseline_source_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
 owner_evidence = "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json"
 accepted_product_change = false
@@ -13,6 +13,9 @@ one_hypothesis = "avoid fresh encoder output allocation for consecutive equal-si
 runtime_files = ["crates/hydracache-redis-compat/src/lib.rs", "crates/hydracache-redis-compat/src/serial_get_scratch_074.rs", "crates/hydracache-redis-compat/Cargo.toml"]
 semantic_tests = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
 existing_terminal_dispositions_reopened = false
+runtime_removed = true
+screen_source_sha = "3171d02a8ebb77111d819ebd845516ea797c996d"
+negative_evidence = "local-runs/w9b-d3a-3171d02a/summary.json"
 expensive_workloads_allowed = false
 qualification_allowed = false
 
@@ -54,7 +57,7 @@ mixed_sizes_and_large_to_small_release = true
 property_exact_codec_bytes = true
 
 [d3_boundary]
-authorization = "not started: pre-register complete paired matrix, baseline binary and per-surface controls before any numerical candidate comparison"
+authorization = "D3a completed and rejected on live peak; broader controls not run; runtime removed; historical preregistration at 4c5b16d7"
 minimum_independent_counterbalanced_pairs = 5
 minimum_affected_end_to_end_gross_allocation_reduction = 0.20
 unaffected_minimum_goodput_ratio = 0.98

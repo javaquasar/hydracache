@@ -1,5 +1,11 @@
 # W9b D2: bounded serial GET encoder scratch
 
+**Historical D2 snapshot:** D3a at `3171d02a` later confirmed gross allocation
+savings but rejected the candidate on requested-live peak. The product feature,
+helper and writer branch have been removed. See
+[the complete D3a decision](w9b-serial-scratch-d3-result.md). The feature-on
+commands and implementation below describe source `b8cc7c6c`, not current HEAD.
+
 ## Decision and identity
 
 The large-GET owner identified in `w9b-response-buffer-attribution.md` supports

@@ -275,8 +275,8 @@ function = "both_orderings_preserve_atomic_increment_count"
 
 [[work_item]]
 id = "W9b"
-required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/w9b-response-buffer-attribution-contract.toml", "tools/resp-stage-profile-074/src/main.rs", "docs/testing/performance/0.74/w9b-serial-scratch-proposal.toml", "crates/hydracache-redis-compat/src/serial_get_scratch_074.rs"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/w9b-response-buffer-attribution.md", "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json", "docs/testing/performance/0.74/w9b-serial-scratch-design.md", "docs/testing/performance/0.74/local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json"]
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/w9b-response-buffer-attribution-contract.toml", "tools/resp-stage-profile-074/src/main.rs", "docs/testing/performance/0.74/w9b-serial-scratch-proposal.toml", "docs/testing/performance/0.74/w9b-serial-scratch-d3-contract.toml", "tools/resp-scratch-screen-074/src/main.rs", "scripts/perf/performance_serial_scratch_screen_074.py"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/w9b-response-buffer-attribution.md", "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json", "docs/testing/performance/0.74/w9b-serial-scratch-design.md", "docs/testing/performance/0.74/local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json", "docs/testing/performance/0.74/w9b-serial-scratch-d3-result.md", "docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a/seal.json", "docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a/summary.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
@@ -296,7 +296,10 @@ source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
-function = "w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default"
+function = "w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers"
 [[work_item.required_tests]]
 source = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
 function = "consecutive_large_get_pending_reply_preserves_native_progress_and_mutation_frontier"

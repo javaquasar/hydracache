@@ -1484,3 +1484,33 @@ Experimental source is now present, but no default activation or release win is
 claimed. No rented-host or expensive workload ran. D3 must first seal source/
 feature/binary identities, counterbalanced pairs, per-native controls and peak/
 idle/RSS guards; feature-on CI proof is still required before promotion.
+
+### W9b D3a: gross allocation win rejected on active requested-live peak
+
+The contract/instrumentation was sealed at `3171d02a` before any numerical sample.
+All 140 fresh-process attempts completed without failure/retry: seven cells,
+five AA and five counterbalanced AB pairs each. Source/feature/binary/tool-lock/
+toolchain/workload identities and exact results/cardinality reconcile. This is
+scripted RESP2 plaintext IO with a tool-only System requested-layout allocator,
+not socket, scheduled-latency, RSS-retention or release qualification evidence.
+
+GET 4 KiB/pipeline 50 reduces gross bytes/op by 25.97% but raises window-live peak
+above start by 16.33% (25,134 to 29,239 bytes). GET 1 MiB/pipeline 10 reduces gross
+by 26.65% but raises peak by 49.60% (2,114,091 to 3,162,679 bytes). All five paired
+values repeat; AA and unaffected allocation/live-peak ratios are 1.00. Extra peak
+equals one encoded frame, retained during the next canonical reduction. Next-read
+and post-close owner increments have no increase; no leak is claimed or needed
+to reject a higher live peak. Gross floor passes, memory ceiling fails.
+
+The candidate is selectively removed: feature/helper/writer no longer exist,
+runtime source/manifest match the legacy default baseline. Adversarial integration
+guards remain. The standalone tool's retired flag fails before workload instead
+of silently benchmarking a feature-on no-op. Historical experimental reproduction
+requires the exact sealed source, not a new attempt presented as the old one.
+
+Full raw/attempt/seal/summary evidence: `local-runs/w9b-d3a-3171d02a/`;
+[decision and scope](w9b-serial-scratch-d3-result.md). Earlier terminal negatives,
+root lock, native/embedded code and qualification/pinned digests are unchanged.
+No rented host or expensive run executed. The broader native/timing/retention/
+secure-concurrent/CI controls were not run for a red candidate, not waived.
+Accepted product proposals remain zero; C74 unresolved and ship admission closed.

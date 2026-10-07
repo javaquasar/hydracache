@@ -1023,7 +1023,7 @@ fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gate
 }
 
 #[test]
-fn w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default() {
+fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     let proposal = contract("w9b-serial-scratch-proposal.toml");
     let registry = contract("proposal-registry.toml");
     let followups = registry["followup_proposals"].as_array().unwrap();
@@ -1034,52 +1034,70 @@ fn w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default() {
         followup["implementation_sha"],
         proposal["candidate_source_sha"]
     );
-    for flag in [
-        "default_enabled",
-        "accepted_product_change",
-        "promotable",
-        "numerical_candidate_comparison_started",
-    ] {
+    for flag in ["default_enabled", "accepted_product_change", "promotable"] {
         assert_eq!(followup[flag].as_bool(), Some(false), "{flag}");
     }
+    assert_eq!(
+        followup["numerical_candidate_comparison_started"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(followup["runtime_removed"].as_bool(), Some(true));
+    assert_eq!(proposal["runtime_removed"].as_bool(), Some(true));
+    assert_eq!(followup["state"], proposal["state"]);
+    assert_eq!(
+        proposal["state"].as_str(),
+        Some("rejected-d3a-live-peak-regression-runtime-removed")
+    );
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("crates/hydracache-redis-compat/Cargo.toml")).unwrap(),
     )
     .unwrap();
     let feature = proposal["feature"].as_str().unwrap();
-    assert!(manifest["features"]["default"]
-        .as_array()
-        .unwrap()
-        .is_empty());
-    assert!(manifest["features"][feature].as_array().unwrap().is_empty());
+    assert!(manifest
+        .get("features")
+        .and_then(|features| features.get(feature))
+        .is_none());
     let source = std::fs::read_to_string(root().join("crates/hydracache-redis-compat/src/lib.rs"))
         .unwrap()
         .replace("\r\n", "\n");
-    assert!(source.contains(&format!(
-        "#[cfg(feature = \"{feature}\")]\nmod serial_get_scratch_074;"
-    )));
-    assert!(!source.contains("pub mod serial_get_scratch_074"));
-    let scratch = std::fs::read_to_string(
-        root().join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs"),
-    )
-    .unwrap();
-    assert!(scratch.contains("const MIN_PAYLOAD_BYTES: usize = 4096;"));
-    assert!(scratch.contains("const MAX_PAYLOAD_BYTES: usize = 1048576;"));
-    assert!(scratch.contains("const MAX_SCRATCH_BYTES: usize = MAX_PAYLOAD_BYTES + 12;"));
-    for forbidden in ["unsafe", "Mutex", "Atomic", "pub struct SerialGetScratch"] {
-        assert!(
-            !scratch.contains(forbidden),
-            "unexpected shared owner: {forbidden}"
+    assert!(!source.contains("serial_get_scratch_074"));
+    assert!(!source.contains("write_serial_scratch_response"));
+    assert!(!root()
+        .join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs")
+        .exists());
+    let baseline = std::process::Command::new("git")
+        .current_dir(root())
+        .args([
+            "show",
+            "4d733e3189bdc777635792795e1bbb58ab00a7cb:crates/hydracache-redis-compat/src/lib.rs",
+        ])
+        .output()
+        .unwrap();
+    assert!(baseline.status.success());
+    assert_eq!(source, String::from_utf8(baseline.stdout).unwrap());
+    let directory = root().join("docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a");
+    let report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(directory.join("summary.json")).unwrap())
+            .unwrap();
+    assert_eq!(
+        report["classification"],
+        "rejected-local-allocation-memory-screen"
+    );
+    assert_eq!(report["attempts_retained"], 140);
+    assert_eq!(report["accepted_product_change"], false);
+    for result in report["results"].as_array().unwrap() {
+        assert_eq!(result["gross_guard_passed"], true);
+        assert_eq!(result["owner_guard_passed"], true);
+        assert_eq!(
+            result["peak_guard_passed"].as_bool(),
+            Some(!result["affected"].as_bool().unwrap())
         );
     }
-    for function in [
-        "first_get_and_out_of_range_responses_never_allocate_scratch",
-        "equal_size_replies_reuse_capacity_and_overwrite_exact_resp2_and_resp3_bytes",
-        "size_error_missing_and_principal_command_boundaries_release_capacity",
-        "binary_get_scratch_matches_canonical_codec",
-    ] {
-        assert!(scratch.contains(&format!("fn {function}(")));
-    }
+    let count = std::fs::read_dir(directory).unwrap().count();
+    assert_eq!(
+        count, 282,
+        "all raw receipts, attempts, seal and summary must remain"
+    );
 }
 
 #[test]
