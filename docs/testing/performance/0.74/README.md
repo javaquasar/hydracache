@@ -1580,3 +1580,9 @@ This is scripted RESP2 plaintext requested-layout evidence, not socket throughpu
 CPU/p99, RSS retention or native numerical nonregression. Phase B needs a separate
 sealed contract; no expensive run is authorized. Feature remains off, accepted
 proposals zero, C74 unresolved and qualification manifest unchanged.
+
+Verification follow-up retains clean-`d32fbb18` W11/W12 ExpectedRed receipts and
+all-362-file committed-blob/raw-byte identity in
+`local-runs/get-owner-d3a-verification-d32fbb18.json`. Local structural aggregation
+still has zero fast-green/gated-green/ship-ready rows; no full qualification is
+implied by archive verification or passing local guards.

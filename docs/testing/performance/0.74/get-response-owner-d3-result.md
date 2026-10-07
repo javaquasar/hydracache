@@ -99,3 +99,9 @@ contract, 17 governance checks, docs registry/sync/links and mdbook passed.
 The corrected post-measurement archive-guard compile diagnostic and exact scope
 are retained in `local-runs/get-owner-d3a-checks-213e9e0a.json`; no measured source
 or numerical attempt was changed. Clean-source canaries are recorded separately.
+
+Clean `d32fbb18` produced W11/W12 ExpectedRed receipts (1,738 / 13,898 ms).
+All 362 committed Git blobs match raw file bytes and the packet replays exactly.
+Local aggregation still reports zero fast-green/gated-green/ship-ready rows;
+28 structural implemented rows are not 28 accepted optimizations. Full receipts
+and scope: `local-runs/get-owner-d3a-verification-d32fbb18.json`.

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "tier": "local-d3a-archive-and-closed-admission-verification",
+  "source_commit": "d32fbb18c6c2dfe59e0dbfa88e09036538016c96",
+  "measurement_source_commit": "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+  "promotable": false,
+  "accepted_product_change": false,
+  "default_enabled": false,
+  "ship_admission": "closed",
+  "checks": {
+    "scope": "clean d32fbb18 source after complete evidence commit; archive/source byte guards, offline replay, ExpectedRed canaries and local structural aggregation; no numerical rerun",
+    "committed_git_blobs_match_raw_file_bytes": 362,
+    "complete_archive_replay": "exact summary match with all attempt raw SHA checks",
+    "numerical_attempts": 180,
+    "failed_attempts": 0,
+    "retries": 0,
+    "qualified_integrated_candidate": "UNRESOLVED",
+    "qualification_manifest_raw_sha256_unchanged": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "local_release_evidence_aggregation": {
+      "planned": 0,
+      "implemented": 28,
+      "fast_green": 0,
+      "gated_green": 0,
+      "ship_ready": 0,
+      "scope": "structural source/test/artifact rows include historical terminal negatives; no fast.workspace-nextest receipt supplied; not 28 accepted optimizations"
+    }
+  },
+  "canary_receipts": [
+    {
+      "schema_version": 1,
+      "release": "0.74",
+      "w_item": "W11",
+      "source_commit": "d32fbb18c6c2dfe59e0dbfa88e09036538016c96",
+      "dirty_worktree": false,
+      "defect_id": "PERF74-W11",
+      "command_digest": "0dc38b1580a229e4b732ed7ceaa1b32fdd434e533ff6453fb823847ed3200ae4",
+      "registry_digest": "4ebaea45f9a8f23a4ba356a775a1a692cdd0a900b5817df4ca07efcf8c1e4a44",
+      "expected_failure": "HC-CANARY-RED:PERF74-W11",
+      "started_at": "2026-10-07T10:39:49.8556003Z",
+      "ended_at": "2026-10-07T10:39:51.5945374Z",
+      "duration_ms": 1738,
+      "exit_code": 101,
+      "outcome": "expected_red",
+      "output_sha256": "2b24f3b16ca09fa6f121b73b0dc90e1115eddc4dc848b5ec524d09bccce90af4"
+    },
+    {
+      "schema_version": 1,
+      "release": "0.74",
+      "w_item": "W12",
+      "source_commit": "d32fbb18c6c2dfe59e0dbfa88e09036538016c96",
+      "dirty_worktree": false,
+      "defect_id": "PERF74-W12",
+      "command_digest": "427b7f59edcdce185d8f225978001243ddbd86201319fe1f5c78f178e392d8ed",
+      "registry_digest": "4ebaea45f9a8f23a4ba356a775a1a692cdd0a900b5817df4ca07efcf8c1e4a44",
+      "expected_failure": "HC-CANARY-RED:PERF74-W12",
+      "started_at": "2026-10-07T10:39:52.2380484Z",
+      "ended_at": "2026-10-07T10:40:06.1369041Z",
+      "duration_ms": 13898,
+      "exit_code": 101,
+      "outcome": "expected_red",
+      "output_sha256": "89776cf7baa944b65904ee3d5b91b67a407103ef69d2c70d2f6181abfc5e0f09"
+    }
+  ],
+  "not_claimed_or_run": [
+    "phase B or product acceptance",
+    "native numerical controls or unprofiled timing/RSS-retention proof",
+    "current-source hosted CI, full workspace verify or nextest receipt",
+    "workflow dispatch, service mutations, rented infrastructure or expensive qualification"
+  ]
+}
