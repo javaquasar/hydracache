@@ -112,3 +112,15 @@ corrected by repository inventory. PowerShell reported an existing empty archive
 directory while copying the completed packet, but all 38 files copied; bytewise
 hash verification and complete replay confirm the archive. Neither diagnostic
 started/retried a workload or changed any measurement.
+
+## Verification receipt
+
+The instrument passed seven serialized Rust tests; owner plus previous scratch
+analyzers passed 16 Python tests including exact complete-packet replay.
+Canonical RESP passed 166 tests (23 existing opt-in cases ignored), Redis server
+lifecycle passed 18, and targeted xtask suites passed 97. Tool/xtask all-target
+check, strict all-feature lint and scoped format pass. Non-promotable performance
+contract, 17 structural governance checks, doc registry, three docs script tests,
+release sync, link check and mdbook pass. Clean `ed1fa280` W11/W12 canaries are
+expected red. Full-workspace/hosted/product qualification is not claimed.
+Scope and diagnostics are retained in `local-runs/response-owner-checks-ed1fa280.json`.
