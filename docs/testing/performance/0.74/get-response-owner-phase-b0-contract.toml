@@ -1,0 +1,158 @@
+schema_version = 1
+release = "0.74"
+profile_id = "get-owner-local-controls-074-v1"
+proposal_id = "p74-get-response-owner-v1"
+purpose = "Local phase B0 early controls, not complete D3 or product admission"
+promotable = false
+product_numeric_claims_allowed = false
+product_mutation_allowed = false
+expensive_workloads_allowed = false
+qualification_allowed = false
+prior_rejections_reopened = false
+
+[screen]
+seed = 740074
+runtime_workers = 2
+os = "windows"
+key_space = 16
+cpu_ids = [0, 1]
+priority = "normal"
+quiet_sample_milliseconds = 500
+maximum_background_cpu_percent = 10.0
+independent_aa_pairs_per_cell_per_lane = 5
+independent_ab_pairs_per_cell_per_lane = 5
+total_fresh_process_attempts = 400
+maximum_attempt_seconds = 60
+maximum_failed_attempts = 0
+minimum_timing_elapsed_seconds = 1.0
+minimum_timing_cpu_seconds = 1.0
+duration_estimator = "identical fixed-work counts; not a fixed-duration qualification"
+order = "timing then allocation; each lane AA then AB, pair-major/cell-major, alternating roles"
+instrumentation = false
+timing_allocator = "platform default; counting allocator not compiled"
+allocation_allocator = "tool-only System requested-layout counting, never timing proof"
+feature = "get-owner"
+product_feature = "experimental-resp-get-owner-074"
+allocation_feature = "allocation-profile"
+source_pair = "same clean sealed instrumentation commit, feature off/on"
+baseline_scope = "canonical off implementation; not frozen B73 or integrated C74 admission"
+latency = "closed-loop per operation at p1; whole batch at p50, never divided by pipeline"
+cpu_scope = "whole colocated client/server process including measured workload task/socket setup"
+store_semantics = "fixed binary values, no TTL, mutation subscribers off, exact bytes and final values"
+invalid_policy = "retain first invalid attempt and stop; no retry or threshold/workload tuning"
+valid_red_policy = "retain and complete finite matrix; no best-pair selection or product claim"
+
+[guards]
+minimum_goodput_ratio = 0.98
+maximum_cpu_ratio = 1.03
+maximum_p99_ratio = 1.03
+maximum_gross_allocation_ratio = 1.05
+maximum_aa_goodput_relative_noise = 0.03
+maximum_aa_cpu_relative_noise = 0.03
+maximum_aa_p99_relative_noise = 0.10
+maximum_aa_gross_relative_noise = 0.01
+estimator = "all five log paired ratios, two-sided 95% t(4) interval; lower bound goodput, upper bound costs"
+
+[pending]
+complete_d3_allowed = false
+accepted_product_change = false
+default_enabled = false
+hc1_hc2_controls_required = true
+matched_mtls_resp3_required = true
+concurrency_32_128_required = true
+scheduled_per_operation_latency_required = true
+miss_error_slow_reader_size_transition_required = true
+allocator_active_resident_retained_idle_refill_required = true
+feature_on_hosted_ci_receipt_required = true
+integrated_c74 = "UNRESOLVED"
+
+[[cell]]
+id = "embedded-get-4k-c1"
+surface = "embedded"
+operation = "get"
+payload = 4096
+concurrency = 1
+pipeline = 1
+operations = 1000000
+warmup = 100000
+[[cell]]
+id = "embedded-get-4k-c8"
+surface = "embedded"
+operation = "get"
+payload = 4096
+concurrency = 8
+pipeline = 1
+operations = 1000000
+warmup = 100000
+[[cell]]
+id = "client-get-4k-c1"
+surface = "client-surface"
+operation = "get"
+payload = 4096
+concurrency = 1
+pipeline = 1
+operations = 500000
+warmup = 50000
+[[cell]]
+id = "client-get-4k-c8"
+surface = "client-surface"
+operation = "get"
+payload = 4096
+concurrency = 8
+pipeline = 1
+operations = 500000
+warmup = 50000
+[[cell]]
+id = "client-set-4k-c1"
+surface = "client-surface"
+operation = "set"
+payload = 4096
+concurrency = 1
+pipeline = 1
+operations = 100000
+warmup = 10000
+[[cell]]
+id = "client-set-4k-c8"
+surface = "client-surface"
+operation = "set"
+payload = 4096
+concurrency = 8
+pipeline = 1
+operations = 100000
+warmup = 10000
+[[cell]]
+id = "resp-get-4k-p1-c1"
+surface = "resp-tcp"
+operation = "get"
+payload = 4096
+concurrency = 1
+pipeline = 1
+operations = 20000
+warmup = 2000
+[[cell]]
+id = "resp-get-4k-p1-c8"
+surface = "resp-tcp"
+operation = "get"
+payload = 4096
+concurrency = 8
+pipeline = 1
+operations = 20000
+warmup = 2000
+[[cell]]
+id = "resp-get-4k-p50-c8"
+surface = "resp-tcp"
+operation = "get"
+payload = 4096
+concurrency = 8
+pipeline = 50
+operations = 80000
+warmup = 8000
+[[cell]]
+id = "resp-get-1m-p1-c1"
+surface = "resp-tcp"
+operation = "get"
+payload = 1048576
+concurrency = 1
+pipeline = 1
+operations = 2000
+warmup = 200

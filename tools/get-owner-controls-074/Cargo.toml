@@ -1,0 +1,27 @@
+[workspace]
+
+[package]
+name = "get-owner-controls-074"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[features]
+default = []
+get-owner = ["hydracache-redis-compat/experimental-resp-get-owner-074"]
+allocation-profile = []
+
+[dependencies]
+bytes = "1"
+hdrhistogram = "7"
+hydracache = { path = "../../crates/hydracache" }
+hydracache-client-protocol = { path = "../../crates/hydracache-client-protocol" }
+hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
+hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Threading"] }

@@ -6,6 +6,99 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
+#[test]
+fn get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3() {
+    let c = contract("get-response-owner-phase-b0-contract.toml");
+    assert_eq!(
+        c["profile_id"].as_str(),
+        Some("get-owner-local-controls-074-v1")
+    );
+    for flag in [
+        "promotable",
+        "product_numeric_claims_allowed",
+        "product_mutation_allowed",
+        "expensive_workloads_allowed",
+        "qualification_allowed",
+        "prior_rejections_reopened",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let s = &c["screen"];
+    for (key, value) in [
+        ("seed", 740074),
+        ("runtime_workers", 2),
+        ("key_space", 16),
+        ("total_fresh_process_attempts", 400),
+        ("independent_aa_pairs_per_cell_per_lane", 5),
+        ("independent_ab_pairs_per_cell_per_lane", 5),
+        ("maximum_attempt_seconds", 60),
+        ("maximum_failed_attempts", 0),
+    ] {
+        assert_eq!(s[key].as_integer(), Some(value), "{key}");
+    }
+    assert_eq!(c["cell"].as_array().unwrap().len(), 10);
+    for (key, value) in [
+        ("minimum_goodput_ratio", 0.98),
+        ("maximum_cpu_ratio", 1.03),
+        ("maximum_p99_ratio", 1.03),
+        ("maximum_gross_allocation_ratio", 1.05),
+    ] {
+        assert_eq!(c["guards"][key].as_float(), Some(value), "{key}");
+    }
+    for flag in [
+        "complete_d3_allowed",
+        "accepted_product_change",
+        "default_enabled",
+    ] {
+        assert_eq!(c["pending"][flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "hc1_hc2_controls_required",
+        "matched_mtls_resp3_required",
+        "concurrency_32_128_required",
+        "scheduled_per_operation_latency_required",
+        "miss_error_slow_reader_size_transition_required",
+        "allocator_active_resident_retained_idle_refill_required",
+        "feature_on_hosted_ci_receipt_required",
+    ] {
+        assert_eq!(c["pending"][flag].as_bool(), Some(true), "{flag}");
+    }
+    let tool = root().join("tools/get-owner-controls-074");
+    let manifest: toml::Value =
+        toml::from_str(&std::fs::read_to_string(tool.join("Cargo.toml")).unwrap()).unwrap();
+    assert!(manifest["features"]["default"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(
+        manifest["features"]["get-owner"][0].as_str(),
+        Some("hydracache-redis-compat/experimental-resp-get-owner-074")
+    );
+    assert!(manifest["dependencies"].get("hydracache-loadgen").is_none());
+    let source = std::fs::read_to_string(tool.join("src/main.rs")).unwrap();
+    assert!(source.contains("#[cfg(feature = \"allocation-profile\")]\n#[global_allocator]"));
+    assert!(!source.contains("ProfiledTcpStream"));
+    assert!(source.contains("\"closed_loop_pipeline_batch\""));
+    assert!(source.contains("create_new(true)"));
+    assert!(source.contains("placement_gate().await?"));
+    let registry = contract("proposal-registry.toml");
+    let proposal = registry["followup_proposals"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["id"].as_str() == Some("p74-get-response-owner-v1"))
+        .unwrap();
+    assert_eq!(
+        proposal["phase_b0_contract"].as_str(),
+        Some("get-response-owner-phase-b0-contract.toml")
+    );
+    assert_eq!(
+        proposal["phase_b0_numerical_started"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(proposal["accepted_product_change"].as_bool(), Some(false));
+}
+
 fn contract(name: &str) -> toml::Value {
     let path = root().join("docs/testing/performance/0.74").join(name);
     toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()

@@ -1586,3 +1586,22 @@ all-362-file committed-blob/raw-byte identity in
 `local-runs/get-owner-d3a-verification-d32fbb18.json`. Local structural aggregation
 still has zero fast-green/gated-green/ship-ready rows; no full qualification is
 implied by archive verification or passing local guards.
+
+### Private GET owner phase B0: independent unprofiled controls
+
+The separately preregistered local B0 contract and `get-owner-controls-074`
+standalone tool separate default-allocator timing from requested-layout counting.
+Old native/RESP profilers cannot certify unprofiled timing merely by turning off
+product instrumentation: their loadgen allocator remains active. They and all
+historical packets are left untouched.
+
+Ten embedded/ClientSurfaceState/real-loopback-TCP cells at logical concurrency
+1/8 run 400 finite fresh processes, with five A/A and counterbalanced A/B pairs
+per lane/cell. Placement precedes warmup via READY/GO. Exact payload/trace/counts,
+closed-loop operation vs whole-batch latency, CPU precision and unchanged native
+floors are enforced; a noisy/invalid attempt is retained without retry/tuning.
+This is a preregistration/instrumentation step, not a numerical result or full D3.
+See [scope, methodology and required follow-ups](get-response-owner-phase-b0-design.md).
+HC1/HC2, matched mTLS/RESP3, higher concurrency, scheduled per-operation latency,
+retention/refill and current-source hosted CI remain required. Feature stays off,
+accepted proposals zero, integrated C74 unresolved, qualification unchanged.

@@ -195,3 +195,14 @@ unresolved. Primary GET gross reductions are 26.8697% and 33.3159%, peak does no
 increase and paired owner deltas are zero. See `get-response-owner-d3-result.md`
 for all controls, denominators and remaining phase B boundaries. This does not
 change the immutable D2 preregistration or accept/default-enable the proposal.
+
+## Phase B0 preregistration and isolated timing controls
+
+The next local boundary is separately sealed in
+`get-response-owner-phase-b0-contract.toml`. The new standalone tooling implements
+unprofiled embedded/ClientSurfaceState and real TCP controls without modifying the
+D3a measurement source, product implementation or historical negative artifacts.
+See `get-response-owner-phase-b0-design.md`: ten cells, 400 fixed attempts across
+timing and allocation lanes, all five pairs retained, strict placement/precision/
+noise guards and no admission. This is not complete phase B; the four-surface,
+secure/concurrent/scheduled-latency/retention/hosted-CI requirements remain open.

@@ -32,3 +32,4 @@ docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
 docs/testing/performance/0.74/local-runs/response-owner-*/** -text
 # Raw Windows runner receipts retain CRLF bytes; recognize CR as line ending.
 docs/testing/performance/0.74/local-runs/get-owner-d3a-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/get-owner-b0-*/** -text whitespace=cr-at-eol

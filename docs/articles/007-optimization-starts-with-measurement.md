@@ -3551,3 +3551,51 @@ an earlier green ancestor or CI enrollment is not one. No phase B or costly
 qualification ran in this step. The feature stays off, accepted proposals remain
 zero and C74 unresolved. The detailed scope and all nine cells are recorded in
 `docs/testing/performance/0.74/get-response-owner-d3-result.md`.
+
+## Turning instrumentation off is not the same as unprofiled timing
+
+The next phase starts with a methodological audit, not a throughput claim. The
+existing native and RESP profilers collect useful attribution, but both depend
+on loadgen's global counting allocator. A product instrumentation switch disables
+stage counters; it does not remove allocator callbacks. The RESP TCP profiler
+also counts socket writes with a wrapper. Comparing those timings could hide or
+distort the very CPU trade-off that allocation reduction needs to pass.
+
+The isolated `get-owner-controls-074` workspace therefore builds four variants
+from the same clean source: owner off/on with the platform default allocator for
+timing, and owner off/on with tool-only requested-layout counting for allocation.
+There is no loadgen dependency or socket counter wrapper in this tool. Timing
+receipts report gross allocation as unavailable, not zero. Allocation timing is
+diagnostic only. Existing measurement tools and their immutable evidence are not
+rewritten to fit a new story; the separate dependency lock is sealed with the new
+comparison, never mixed with historical binaries.
+
+A finite local B0 contract precedes data. Ten cells cover embedded encoded GET,
+ClientSurfaceState GET/SET and unwrapped RESP2 plaintext loopback TCP GET at one
+or eight logical clients. Five A/A and five counterbalanced A/B pairs per lane
+give 400 fresh processes. Fixed keys/values/seed/work counts, two runtime workers,
+warmup, production clocks and exact byte validation are identical across builds.
+READY/GO placement happens before warmup. CPU/goodput includes colocated task/
+connection setup and measured validation, not preload or receipt serialization.
+
+The unchanged native guard floors apply independently; lower confidence bounds
+are used for goodput, upper bounds for CPU/p99/allocation costs. Every pair stays
+in its log-scale interval. Too-short CPU windows, excessive background CPU or
+A/A noise invalidate and stop the series without retries, threshold changes or
+selecting fast pairs. If local precision proves insufficient, that is an honest
+measurement limitation, not permission to pronounce the candidate nonregressing.
+
+The latency label matters just as much as the allocator label. A p1 exchange has
+closed-loop operation latency; p50 measures the whole batch. Dividing that batch
+time by 50 would not recover tail latency for scheduled operations. Exact
+scheduled latency and coordinated-omission analysis remain a separate required
+cohort. Likewise, requested-live layouts are not allocator retention or RSS.
+
+At preregistration this instrumentation has no numerical B0 result. HC1/HC2,
+matched mTLS/RESP3, concurrency 32/128, misses/errors/slow readers/size transitions,
+allocator active/resident/retained and timed idle/refill, plus current-source
+feature-on hosted CI remain mandatory. This local step neither accepts the
+proposal nor enables it by default; it makes the next comparison capable of
+falsifying it without moving the cost into native API or overstating evidence.
+The precise contract and scope live in
+`docs/testing/performance/0.74/get-response-owner-phase-b0-design.md`.
