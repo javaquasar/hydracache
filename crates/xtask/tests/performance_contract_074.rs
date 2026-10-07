@@ -1083,6 +1083,80 @@ fn w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default() {
 }
 
 #[test]
+fn w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers() {
+    let policy = contract("w9b-serial-scratch-d3-contract.toml");
+    for flag in [
+        "promotable",
+        "accepted_product_change",
+        "product_numeric_claims_allowed",
+        "expensive_workloads_allowed",
+        "qualification_allowed",
+    ] {
+        assert_eq!(policy[flag].as_bool(), Some(false), "{flag}");
+    }
+    let screen = &policy["phase_a"];
+    assert_eq!(
+        screen["independent_aa_pairs_per_cell"].as_integer(),
+        Some(5)
+    );
+    assert_eq!(
+        screen["independent_ab_pairs_per_cell"].as_integer(),
+        Some(5)
+    );
+    assert_eq!(
+        screen["minimum_affected_gross_allocation_reduction"].as_float(),
+        Some(0.20)
+    );
+    assert_eq!(
+        screen["maximum_peak_live_above_start_ratio"].as_float(),
+        Some(1.0)
+    );
+    assert_eq!(
+        screen["maximum_next_read_or_post_close_live_increase_bytes"].as_integer(),
+        Some(0)
+    );
+    assert_eq!(
+        screen["counting_allocator_can_certify_cpu_latency_goodput"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        screen["oracle_corpus_precomputed_outside_counting"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(policy["cell"].as_array().unwrap().len(), 7);
+    let broader = &policy["phase_b"];
+    assert_eq!(
+        broader["native_minimum_goodput_ratio"].as_float(),
+        Some(0.98)
+    );
+    assert_eq!(
+        broader["native_maximum_cpu_or_p99_ratio"].as_float(),
+        Some(1.03)
+    );
+    assert_eq!(
+        broader["native_maximum_gross_allocation_ratio"].as_float(),
+        Some(1.05)
+    );
+    assert_eq!(
+        broader["required_separate_native_controls"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["embedded", "ClientSurfaceState", "HC1", "HC2"]
+    );
+    assert_eq!(
+        broader["phase_a_pass_cannot_accept_or_activate_candidate"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        broader["feature_on_hosted_ci_evidence_required_before_promotion"].as_bool(),
+        Some(true)
+    );
+}
+
+#[test]
 fn w12_evidence_skeleton_is_exact_and_fail_closed() {
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("docs/testing/release-evidence/0.74.toml")).unwrap(),

@@ -1,0 +1,123 @@
+schema_version = 1
+release = "0.74"
+proposal_id = "p74-w9b-serial-get-scratch-v1"
+state = "preregistered-before-any-d3-candidate-measurement"
+profile_id = "w9b-resp-serial-scratch-allocation-memory-screen-074-v1"
+accepted_product_change = false
+promotable = false
+product_numeric_claims_allowed = false
+legacy_default_product_baseline_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
+implementation_sha = "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1"
+baseline = "same clean instrumentation source, serial-scratch feature off; default product path corresponding to the legacy baseline"
+candidate = "same clean instrumentation source, serial-scratch feature on; sole D2 hypothesis"
+source_feature_binary_lock_and_toolchain_receipts_required = true
+no_prior_frozen_worktree_mutation = true
+no_candidate_or_threshold_repair_after_observation = true
+expensive_workloads_allowed = false
+qualification_allowed = false
+
+[phase_a]
+purpose = "allocation and requested-live-memory early rejection screen; not performance acceptance"
+runner = "scripts/perf/performance_serial_scratch_screen_074.py"
+tool = "tools/resp-scratch-screen-074"
+seed = 740074
+concurrency = 1
+transport = "scripted RESP2 plaintext, all writes/flushes immediately ready"
+estimator = "all five paired ratios; fixed t(4)=2.7764451051977987 interval on mean log ratio; exponentiate"
+independent_aa_pairs_per_cell = 5
+independent_ab_pairs_per_cell = 5
+order = "AA then AB; alternate off/on and on/off pairs; all cells in registry order per pair; no retries or best-sample selection"
+warmup_batches = 5
+minimum_affected_gross_allocation_reduction = 0.20
+maximum_unaffected_gross_allocation_ratio = 1.05
+maximum_peak_live_above_start_ratio = 1.00
+maximum_next_read_or_post_close_live_increase_bytes = 0
+maximum_aa_allocation_or_live_relative_noise = 0.01
+maximum_attempt_seconds = 30
+counting_allocator_can_certify_cpu_latency_goodput = false
+oracle_corpus_precomputed_outside_counting = true
+window_includes_decode_dispatch_reduce_encode_write_flush_and_close = true
+rss_is_supplemental_lifetime_peak_not_retention_proof = true
+all_failures_retained = true
+on_invalid = "retain attempt and stop; no automated rerun"
+on_valid_red = "finish sealed phase A; preserve all pairs; reject and remove only this candidate; do not run phase B"
+
+[[cell]]
+id = "get-4k-p50"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 50
+batches = 40
+read_chunk = 8192
+affected = true
+[[cell]]
+id = "get-1m-p10"
+operation = "get"
+payload = 1048576
+alternate_payload = 1048576
+pipeline = 10
+batches = 20
+read_chunk = 8192
+affected = true
+[[cell]]
+id = "get-4k-p1"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 1
+batches = 1000
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-256-p50"
+operation = "get"
+payload = 256
+alternate_payload = 256
+pipeline = 50
+batches = 40
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "set-4k-p10"
+operation = "set"
+payload = 4096
+alternate_payload = 4096
+pipeline = 10
+batches = 40
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-mixed-p10"
+operation = "get"
+payload = 4096
+alternate_payload = 256
+pipeline = 10
+batches = 100
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-4k-fragmented-p10"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 10
+batches = 100
+read_chunk = 1
+affected = false
+
+[phase_b]
+state = "not authorized for numerical execution by phase A; separate sealed contract required if A passes"
+required_separate_native_controls = ["embedded", "ClientSurfaceState", "HC1", "HC2"]
+native_minimum_goodput_ratio = 0.98
+native_maximum_cpu_or_p99_ratio = 1.03
+native_maximum_gross_allocation_ratio = 1.05
+unaffected_minimum_goodput_ratio = 0.98
+unaffected_maximum_cpu_or_p99_ratio = 1.03
+minimum_counterbalanced_pairs = 5
+required_cohorts = ["RESP2", "RESP3", "plaintext", "matched-mTLS", "pipeline-one", "small-GET-SET", "4KiB-1MiB-GET", "deep-pipelines", "concurrency-1-8-32-128", "mixed-sizes", "size-transitions", "misses-errors", "slow-readers", "active-peak-memory", "post-read-idle-RSS-retention"]
+unprofiled_timing_lane_required = true
+allocator_active_resident_retained_and_post_idle_proof_required = true
+feature_on_gate_command = "cargo test -p hydracache-redis-compat --features experimental-resp-serial-scratch-074 --locked"
+feature_on_hosted_ci_evidence_required_before_promotion = true
+phase_a_pass_cannot_accept_or_activate_candidate = true
