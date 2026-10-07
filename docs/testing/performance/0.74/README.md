@@ -1688,3 +1688,10 @@ HC1/direct use one atomic surface dispatch; HC2 executes ordered single-key item
 and has different batch limits. Those semantics are explicitly separate, not an
 atomic-MSET native equivalence claim. No numerical native floor or product change
 is admitted; see the [methodology](get-response-owner-scheduled-controls-design.md).
+
+Clean `e1b981c0` verification passed 49 tool tests per feature variant and 107
+focused xtask tests, strict check/clippy, scoped formatting, docs/book and 17
+governance checks. The separate
+[native batch check summary](local-runs/get-owner-native-batch-checks-e1b981c0.json)
+binds semantic results to source/blob identities. Scheduled numerical series remain unstarted;
+product/default/lock/qualification and historical packets remain unchanged.

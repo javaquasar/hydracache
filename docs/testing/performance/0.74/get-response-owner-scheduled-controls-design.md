@@ -362,3 +362,14 @@ atomicity control. A product HC2 batch-engine change would be a separate D1/D2
 proposal, not an instrumentation shortcut. Embedded controls, live DELETE/EXISTS,
 expiration/quota/event/fault matrices, matched RESP3/mTLS, retention/RSS and repeated
 quiet-host measurements remain open. B0 is not retried; full D3/C74 stays closed.
+
+Clean-source verification at `e1b981c094b9040ad902694e2fdded963964335a` passed
+49 tool tests per default/get-owner variant (12 scheduled, 16 native, 21 RESP),
+107 focused xtask tests (55 performance-contract, 13 release-evidence, 23 governance,
+16 doc), strict check/clippy in both package lanes, scoped formatting, local
+performance/doc gates, 17 governance checks, three docs-script tests, sync/link
+checks and mdbook build. The separate
+[native batch check summary](local-runs/get-owner-native-batch-checks-e1b981c0.json)
+retains exact source/blob identities and the dispatch/atomicity distinction.
+No numerical series, native nonregression, full workspace or hosted receipt is
+inferred. Product/default/lock/qualification identities and older evidence stay unchanged.
