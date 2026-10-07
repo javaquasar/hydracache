@@ -12,15 +12,21 @@ and public delete/refill ownership independently. It does not measure speedup or
 native nonregression. Shared certificate fingerprints never imply equal
 application authorization or batch-wide atomicity across surfaces.
 
-The separate embedded scheduled control is now preregistered against `d2252012`:
+The separate embedded scheduled control was preregistered against `d2252012`:
 public HydraCache encoded GET/PUT, no listener, the same binary corpus digest and
 an injective fixture string-key mapping. It must not reuse the invalidated B0
 runner, closed-loop batch latency or its source/workload/receipts.
+`EmbeddedControl` now implements this public API boundary separately from
+ClientSurfaceState, with fixed client-slot routing and exact byte oracles.
+Scheduled and synchronized 32/128-client fixtures, 1 MiB values, unsupported
+batches/slots, value/miss drift and public delete/refill/shutdown are covered.
+This is semantic instrumentation, not measured embedded nonregression.
 
 Before any new full-D3 numerical attempt:
 
-- Implement and verify that independent embedded adapter and an unprofiled
-  executable. The current bounded semantic driver is not a sealed timing CLI.
+- Verify the independent embedded adapter on the exact final instrumentation
+  source and implement an unprofiled executable. The current bounded semantic
+  driver is not a sealed timing CLI.
 - Preregister every cell's original offered calendar, duration/work counts,
   warmup, CPU/affinity scope, finite five-pair A/A and A/B order, noise guards,
   supported memory capability and process deadlines. No unresolved workload

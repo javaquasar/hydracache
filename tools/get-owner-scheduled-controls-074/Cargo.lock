@@ -793,6 +793,7 @@ dependencies = [
  "axum",
  "bytes",
  "hdrhistogram",
+ "hydracache",
  "hydracache-client-hc2",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",

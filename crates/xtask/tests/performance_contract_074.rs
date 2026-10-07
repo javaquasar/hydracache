@@ -106,6 +106,123 @@ fn observer_hosted_ci_is_only_semantics_and_never_a_product_campaign() {
 }
 
 #[test]
+fn embedded_scheduled_control_is_independent_public_api_not_a_b0_retry() {
+    let c = contract("embedded-scheduled-controls-contract.toml");
+    for flag in [
+        "product_changes_allowed",
+        "product_numeric_claims_allowed",
+        "invalidated_b0_retry_allowed",
+        "full_d3_completed",
+        "freeze_c74_allowed",
+        "listeners_created",
+        "counting_allocator_in_library_allowed",
+        "numerical_execution_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        c["same_dataset_digest_as_native_required"].as_bool(),
+        Some(true)
+    );
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/embedded.rs")).unwrap();
+    for required in [
+        "HydraCache::local()",
+        ".get_encoded(",
+        ".put_encoded(",
+        ".remove(",
+        ".flush()",
+        "impl Target for EmbeddedControl",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "ClientSurfaceState",
+        "TcpListener",
+        "global_allocator",
+        "get-owner-controls-074",
+    ] {
+        // Documentation may name the boundary it intentionally excludes.
+        assert!(
+            !source
+                .lines()
+                .filter(|line| !line.trim_start().starts_with("//"))
+                .any(|line| line.contains(forbidden)),
+            "{forbidden}"
+        );
+    }
+}
+
+#[test]
+fn secure_memory_packet_retains_all_attempts_without_allocator_or_timing_admission() {
+    let directory = root().join("docs/testing/performance/0.74/local-runs/secure-memory-d2252012");
+    let summary: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("summary.json")).unwrap()).unwrap();
+    assert_eq!(summary["completed_attempts"].as_u64(), Some(30));
+    assert_eq!(summary["stopped_on_failure"].as_bool(), Some(false));
+    for flag in [
+        "allocator_retention_admission",
+        "product_numeric_claims_allowed",
+        "native_nonregression_measured",
+        "full_d3_completed",
+        "retry_allowed",
+    ] {
+        assert_eq!(summary[flag].as_bool(), Some(false), "{flag}");
+    }
+    let attempts = summary["attempts"].as_array().unwrap();
+    assert_eq!(attempts.len(), 30);
+    let mut seen = std::collections::BTreeSet::new();
+    for attempt in attempts {
+        let id = attempt["id"].as_str().unwrap();
+        assert!(seen.insert(id));
+        assert_eq!(attempt["exit_code"].as_i64(), Some(0));
+        assert!(attempt["error"].is_null());
+        let bytes = std::fs::read(directory.join(format!("{id}.stdout.json"))).unwrap();
+        let digest = Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        assert_eq!(Some(digest.as_str()), attempt["stdout_sha256"].as_str());
+        assert!(std::fs::read(directory.join(format!("{id}.stderr.txt")))
+            .unwrap()
+            .is_empty());
+        let receipt: Value = serde_json::from_slice(&bytes).unwrap();
+        for flag in [
+            "get_owner_feature",
+            "product_numeric_claims_allowed",
+            "cross_surface_numeric_comparison_allowed",
+            "admission_allowed",
+        ] {
+            assert_eq!(receipt[flag].as_bool(), Some(false), "{flag}");
+        }
+        assert!(receipt["allocator_active_resident_retained"].is_null());
+        assert_eq!(
+            receipt["allocator_retention_status"].as_str(),
+            Some("unavailable-not-a-pass")
+        );
+        let payload = receipt["payload_bytes"].as_u64().unwrap();
+        let phases = receipt["phases"].as_array().unwrap();
+        assert_eq!(phases.len(), 7);
+        for (phase, name) in phases.iter().zip([
+            "preload", "get", "set", "idle", "delete", "refill", "shutdown",
+        ]) {
+            assert_eq!(phase["name"].as_str(), Some(name));
+            let entries = if matches!(name, "delete" | "shutdown") {
+                0
+            } else {
+                16
+            };
+            assert_eq!(phase["logical_entries"].as_u64(), Some(entries));
+            assert_eq!(
+                phase["logical_value_bytes"].as_u64(),
+                Some(entries * payload)
+            );
+            assert!(phase["process_rss_bytes"].as_u64().unwrap() > 0);
+        }
+    }
+}
+
+#[test]
 fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     for flag in [

@@ -110,3 +110,11 @@ referenced from the earlier scratch tool, never linked into the timing library.
 RSS is whole-process working set/VmRSS; allocator active/resident/retained stays
 unavailable, not zero or green. See the separate secure-observer-memory-checks
 contract/design; commit and seal source/lock/binary before fresh-process execution.
+
+`EmbeddedControl` separately calls public HydraCache encoded GET/PUT. It creates
+no listener or ClientSurfaceState, has deterministic 1/8/32/128 logical client
+slots, the same raw binary corpus digest and an injective fixture-only hex key
+mapping. It checks byte oracles, public delete/refill and flush/shutdown; the
+cache's approximate entry count is not allocator retention. Batch operations are
+refused rather than relabeled atomic. This closes a semantic adapter gap only;
+there is still no unprofiled timing CLI or full-D3 numerical series.

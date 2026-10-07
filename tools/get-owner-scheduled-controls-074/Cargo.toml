@@ -21,6 +21,7 @@ async-trait = "0.1"
 axum = "0.8"
 bytes = "1"
 hdrhistogram = "7"
+hydracache = { path = "../../crates/hydracache" }
 hydracache-client-hc2 = { path = "../../crates/hydracache-client-hc2" }
 hydracache-client-protocol = { path = "../../crates/hydracache-client-protocol" }
 hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }

@@ -8,6 +8,7 @@ pub mod rate;
 #[path = "../../../crates/hydracache-loadgen/src/target.rs"]
 pub mod target;
 
+pub mod embedded;
 pub mod native;
 pub mod resp;
 pub mod scheduled;
