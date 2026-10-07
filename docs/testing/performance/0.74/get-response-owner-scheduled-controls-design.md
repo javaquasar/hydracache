@@ -626,3 +626,15 @@ cargo xtask release-governance-check --release 0.74
 The observer's isolated normal-parallel repeats use the same two `cargo test`
 commands with `-- --test-threads=1` omitted. No command above executes numerical
 release qualification or operates a rented host.
+
+## Secure observer extension (local instrumentation)
+
+`start_mtls` now exercises the production runtime TLS factory and accept loop;
+every socket completes required-client-certificate TLS and AUTH before HELLO,
+preload or original offers. Shared fixture certificate fingerprints and exact
+dataset digests may be compared with HC2. This is transport-material parity,
+not application-authorization or batch-atomicity parity and not numeric admission.
+Explicit shutdown joins every owner and checks zero production active sockets.
+The separate [memory contract](secure-observer-memory-checks-contract.toml)
+keeps allocation/RSS/logical-retention diagnostics outside the timing library.
+Full D3, native numerical guards, allocator-retained proof and C74 remain open.

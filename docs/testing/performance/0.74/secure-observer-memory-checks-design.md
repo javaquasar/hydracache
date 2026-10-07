@@ -29,3 +29,24 @@ fresh process, three repeats, unchanged phases/bounds. Stop on the first failure
 retain it and do not rerun a failed cohort into a passing receipt. No A/B speedup
 or native nonregression claim follows from this diagnostic series. The existing
 qualification manifest, old contracts and sealed packets remain immutable.
+
+Implementation uses `RespControl::start_mtls` and `NativeControl::start_hc2_mtls`
+with shared certificate material. TLS AUTH failures are redacted; a virtual-time
+test retains the original five-second bound. The FIFO actor now explicitly owns
+write-then-flush completion for buffered transports, retaining read progress and
+cancelled owners. This corrects instrumentation, not product output batching.
+The first dirty-source secure run passed three tests but failed large-payload
+preload. The missing final TLS flush was isolated with a BufWriter/one-byte
+duplex regression; after the actor fix the same large-payload case passed without
+changing payload, seed, limits, deadlines or assertions. That initial failure is
+not discarded or counted as a passing numerical attempt.
+
+`memory-diagnostics-074` is enabled only by `allocation-diagnostics`. Its two
+arguments are a preregistered surface and payload size. The 128-workload-call
+count applies to GET/SET only; preload/delete/refill use the 16-key dataset,
+plus transport-specific read verification. Idle/shutdown have zero workload
+calls. Preload includes ephemeral PKI, runtime/store and transport creation.
+These phase allocation totals are not comparable per-op server costs. JSON and
+RSS queries are outside counting epochs. The 60-second safety bound is an async
+deadline, not an OS kill guarantee against blocking code; the external runner
+must also bound process ownership and stop the finite cohort on first failure.

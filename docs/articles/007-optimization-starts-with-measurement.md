@@ -3944,3 +3944,44 @@ first failure. We retain the local host-pressure/preload stability question and
 exclude that execution from numerical claims instead of silently calling the
 campaign clean. No root/tool lockfile, frozen qualification identity or older
 sealed packet was changed to obtain the subsequent passes.
+
+## Secure observer and isolated memory diagnostics
+
+The next local step closes an instrumentation gap rather than accepting another
+product optimization. The scheduled RESP2/3 observer now connects through the
+production required-client-certificate TLS factory and accept loop. Every socket
+authenticates before HELLO/preload, and shutdown joins its owners and checks zero
+active production connections. A shared ephemeral PKI and exact binary dataset
+can be checked against HC2 using certificate fingerprints. Matching those inputs
+does not erase listener-bound RESP authorization, HC2 identity mapping or their
+different batch atomicity; cross-surface numeric comparison remains forbidden.
+
+Large payload testing exposed a concrete measurement-tool defect. The TLS writer
+could accept plaintext but keep its final record buffered, so a 1 MiB preload
+failed. We added an explicit flush state to the FIFO actor, kept reads and
+cancellation live while flushing, and retained a response arriving between the
+last write and flush completion. A BufWriter over a one-byte duplex transport
+now reproduces the requirement deterministically. The same large-payload secure
+case subsequently passed with unchanged payload, seed, bounds and deadlines.
+The original failure remains evidence; this is not a product batching win or a
+passing A/B attempt recovered by retrying.
+
+Memory diagnostics deliberately use a different executable from timing. Each
+fresh process owns one public surface, one payload and the fixed 16-key corpus.
+It measures preload, 128 GETs, 128 SETs, idle, public DELETE, refill and shutdown.
+Preload includes PKI and transport setup; deletion/refill include their read
+oracles. System counters report successful Rust allocation calls, gross requested
+bytes and outstanding requested layouts, including client/actor/TLS costs.
+They cannot be relabeled server-only allocations/op. Process working set is
+separate from logical entry/value-byte retention and from allocator retained
+memory. Missing allocator active/resident/retained explicitly stays unavailable,
+never zero or a passing admission gate.
+
+The finite diagnostic runner requires a clean committed source and exact binary
+hash before creating its seal, owns each child process, retains stdout/stderr and
+hashes, and stops at the first failure without replacing an old packet. No timing,
+CPU or native nonregression claim follows from those allocation epochs. A separate
+exact-SHA hosted semantic workflow checks the feature-off/on observer and strict
+lint; it does not launch numerical diagnostics or qualification. Full D3 and W10
+still require independent native guards and allocator-retention proof before C74
+can be composed or frozen.
