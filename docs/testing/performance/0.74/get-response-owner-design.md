@@ -18,7 +18,15 @@ response by reference, and transfers a value only if all predicates hold:
 - exactly one initial `ClientRequest::Get`;
 - GET reducer and no followup plan;
 - exactly one actual response;
-- successful `ClientResponse::Value { value: Some(nonempty_vec) }`.
+- successful `ClientResponse::Value { value: Some(nonempty_vec) }`;
+- response Vec capacity equals its length (no extra capacity carried forward).
+
+This final predicate is a pre-implementation tightening of `bf42f776`, not a
+changed numerical floor. Transferring a Vec with spare capacity could keep more
+capacity alive during encoding than the canonical length-sized clone. Such a
+response must fall back. A separate baseline fixture confirms canonical GET
+returns length-sized vectors for the registered local payload sizes. A private
+synthetic spare-capacity test must prove fallback even if a future backend changes.
 
 Every other case calls the existing public borrowed `plan.reduce(&responses)`
 without modifying responses. That includes empty/missing values, errors, wrong

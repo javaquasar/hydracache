@@ -25,6 +25,7 @@ single_initial_get_request = true
 no_followup_plan = true
 single_actual_response = true
 successful_nonempty_value_only = true
+no_spare_response_capacity = true
 payload_bound = "all legal values already returned by canonical dispatch; existing limits unchanged"
 command_decode_translation_and_dispatch_unchanged = true
 public_borrowed_reducer_unchanged = true

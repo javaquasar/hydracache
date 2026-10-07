@@ -115,6 +115,32 @@ fn public_borrowed_get_preserves_original_owner_values_and_error_details() {
 }
 
 #[test]
+fn native_get_response_capacity_matches_payload_len_for_admitted_sizes() {
+    for size in [0, 1, 64, 4096, 1048576] {
+        let (state, server) = fixture();
+        assert_eq!(
+            server.execute_command(set(b"key", &vec![0xff; size])),
+            RespValue::SimpleString("OK")
+        );
+        let context =
+            RedisTranslationContext::new(DEFAULT_REDIS_NAMESPACE, "native-capacity").unwrap();
+        let RedisTranslatedCommand::Execute(plan) =
+            translate_redis_command(get(b"key"), &context).unwrap()
+        else {
+            panic!()
+        };
+        let identity = ClientIdentity::new("redis-resp", DEFAULT_REDIS_NAMESPACE).unwrap();
+        let response =
+            state.dispatch_verified_request(&identity, plan.initial_requests()[0].clone());
+        let Ok(ClientResponse::Value { value: Some(value) }) = response.result else {
+            panic!()
+        };
+        assert_eq!(value.len(), size);
+        assert_eq!(value.capacity(), value.len());
+    }
+}
+
+#[test]
 fn execution_matches_borrowed_oracle_for_binary_empty_missing_and_large_get() {
     for size in [0, 1, 64, 4096, 1048576] {
         let (actual_state, server) = fixture();

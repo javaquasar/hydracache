@@ -1194,6 +1194,7 @@ fn get_response_owner_d2_preserves_one_hypothesis_and_future_guards() {
         "no_followup_plan",
         "single_actual_response",
         "successful_nonempty_value_only",
+        "no_spare_response_capacity",
         "command_decode_translation_and_dispatch_unchanged",
         "public_borrowed_reducer_unchanged",
         "null_empty_error_wrong_shape_and_non_get_use_canonical_reducer",
