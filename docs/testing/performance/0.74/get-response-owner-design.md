@@ -100,3 +100,46 @@ source inspection nor unchanged native source certifies a numerical native
 guard. No costly workflow, rented host, 6-hour/24-hour campaign or qualification
 manifest change is part of this local D2 step. Accepted proposals stay zero and
 C74 unresolved until complete qualifying evidence exists.
+
+## D2 implementation and local semantic result
+
+The preregistration was committed at `bf42f776`, the capacity admission tightened
+before product mutation at `d07c35f0`, and the private helper implemented at
+`2379698d`. CI enrollment/its exact-command guard are separate at `b3f9d2c4`.
+The immutable proposal remains the before-mutation policy; current implementation
+status lives in the proposal registry. `candidate_source_sha` stays unresolved
+until a distinct D3 measurement source is sealed. There were no D3 attempts.
+
+The implementation uses `std::mem::take` only after all eligibility predicates.
+Seven private tests exercise pointer transfer, spare-capacity fallback, every
+client error code, invalid counts/plans, all non-GET reducers, envelope metadata
+and 128 fixed-seed property cases. Five integration fixtures compare execution
+with a separately executed public borrowed-plan oracle and test retained response,
+capacity, expiration and multi-key duplicate/order/count behavior.
+
+The unchanged baseline passed 170 RESP tests before the capacity fixture (and all
+five fixtures after it). Implementation passed 178 tests in each default and
+feature-on build, with 23 existing opt-in tests ignored in each; all 19 adversarial
+transport tests passed in both. Each server build passed 18 Redis lifecycle cases
+(nine unrelated cases filtered). Affected packages/direct server and xtask passed
+all-target check and strict lint. The canonical normalized runtime fingerprint
+remains `c98ab563d4fc9181735d432484118561ad9bf773d32fb2865f4a591dcc50e932`
+after removing only the two enrolled overlay hunks. This is source isolation,
+not native numerical nonregression.
+
+One initial property assertion wrongly presumed every generated Vec had
+length-sized capacity. At seed 740074 the helper correctly fell back for spare
+capacity; the test failed. The oracle was corrected to honor the already sealed
+predicate and explicitly generate both branches. Product logic, seed, numerical
+floors and workload did not change. This development diagnostic is retained in
+the semantic receipt, not omitted or presented as a performance retry.
+
+Pointer identity establishes that an admitted private result owns the original
+payload. It does not establish whole-command gross allocation, lifetime peak,
+RSS, CPU/op or goodput improvement. Next: seal a finite D3 A/A and counterbalanced
+A/B early screen before any sample, keeping the 20% large-GET allocation floor,
+zero peak increase and complete attempt retention. Only if it passes proceed to
+independent native, unprofiled timing, real transport/security/concurrency,
+retention/refill and hosted feature-on evidence. The rejected scratch packet and
+all previous terminal decisions remain intact. Qualification manifest, root lock
+and frozen 0.73 are unchanged; ship admission remains closed.

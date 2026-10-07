@@ -250,14 +250,30 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8c"
-required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml"]
-required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json"]
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/get-response-owner-proposal.toml", "docs/testing/performance/0.74/get-response-owner-design.md", "crates/hydracache-redis-compat/src/get_response_owner_074.rs"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/local-runs/get-response-owner-semantic-2379698d.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "get_response_owner_d2_preserves_one_hypothesis_and_future_guards"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/resp_get_owner_074.rs"
+function = "execution_matches_borrowed_oracle_for_binary_empty_missing_and_large_get"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/get_response_owner_074.rs"
+function = "seeded_property_matches_independent_borrowed_oracle_and_ownership"
 
 [[work_item]]
 id = "W9"

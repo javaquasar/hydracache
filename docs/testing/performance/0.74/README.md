@@ -1536,3 +1536,24 @@ RSS-retention proof or native numerical guard. Full packet:
 `local-runs/response-owner-2562f6f7/`; [method, results and next boundary](response-reduction-attribution-result.md).
 A future private consuming-GET reducer requires a new D2 contract and D3; no
 scratch rescue or earlier rejection is reopened, no accepted proposal is added.
+
+### Separate D2: private GET response owner transfer, default off
+
+The D1 follow-up is now preregistered (`bf42f776`, capacity amendment `d07c35f0`)
+and implemented at `2379698d` as `experimental-resp-get-owner-074`. It transfers
+one successful nonempty, length-sized response Vec in the private executor only;
+every other case uses the unchanged public borrowed reducer. No native/store,
+encoder, pooling, batching or write/flush-frontier change is combined with it.
+
+Both builds passed 178 RESP tests and 18 server lifecycle cases; the seeded
+128-case property oracle explicitly covers transfer and spare-capacity fallback.
+The original failed property assumption and its correction are retained. Ordinary
+feature-on CI is enrolled at `b3f9d2c4`, not claimed hosted-green by enrollment.
+See [implementation, semantic evidence and next boundary](get-response-owner-design.md)
+and `local-runs/get-response-owner-semantic-2379698d.json`.
+
+This is D2 semantic evidence, not a new numerical comparison. D3 must separately
+seal the finite attempt set, A/A controls, at least five counterbalanced pairs,
+20% end-to-end large-GET allocation floor and unchanged live-memory/native guards.
+Accepted proposals stay zero; C74 unresolved. No costly workload or qualification
+manifest change is part of this step.

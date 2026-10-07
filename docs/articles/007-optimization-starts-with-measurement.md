@@ -3442,3 +3442,58 @@ remains rejected, earlier terminal decisions remain intact and C74 stays unresol
 The full reproducible record is
 `docs/testing/performance/0.74/local-runs/response-owner-2562f6f7/`, with the scope
 and next boundary in `response-reduction-attribution-result.md`.
+
+## Transfer the response owner without moving the native boundary
+
+The subsequent D2 step turns that attribution into one isolated experiment,
+not a release claim. Before implementation we committed policy at `bf42f776`
+and canonical integration fixtures. The private executor already owns its vector
+of client responses, whereas the public reducer accepts a borrowed slice. We
+can consume the former without changing the latter. At `2379698d`, an empty,
+default-off `experimental-resp-get-owner-074` feature selects a private reducer.
+Its only admitted shape is one initial GET, no followup, one successful nonempty
+value response, with response Vec capacity exactly equal to length. Everything
+else delegates to the existing borrowed reducer, preserving error details and
+all other command semantics.
+
+The capacity condition matters. A borrowed clone creates a length-sized owner;
+blindly transferring a larger-capacity Vec might keep excess capacity alive
+during encoding. We tightened admission at `d07c35f0`, before product mutation,
+and tested spare-capacity fallback directly. This is a narrower eligibility
+rule, not a relaxed memory threshold. After admission `std::mem::take` moves the
+existing Vec into `RespValue`; the envelope keeps an empty, allocation-free Vec
+and drops normally. There is no cross-command reuse, connection scratch, pool,
+borrow across await, encoder change or deferred write/flush. Native value
+materialization and its stable public protocol owner remain unchanged.
+
+The tests prove mechanism and semantic equivalence separately. Pointer tests
+show that the private result owns the original admitted payload while the public
+borrowed oracle has its own clone. Independently executed plans compare binary,
+empty, missing and large responses, exact RESP2/RESP3 bytes, expiry and retained
+values after replacement/removal, and multi-key ordering/counts. Seven private
+tests include all error codes and malformed plan/result shapes; a 128-case
+seed-740074 property corpus exercises both ownership branches. An initial
+property expectation incorrectly assumed generated Vecs had no spare capacity.
+It failed on a legitimate fallback. We corrected the test oracle to reflect
+the already sealed admission rule, not the implementation or seed, and retained
+that diagnostic instead of hiding it behind a green final count.
+
+Local default and feature-on suites each passed 178 RESP tests, including the
+19 transport-adversarial cases; 23 existing opt-in cases stayed ignored. Both
+server builds passed 18 Redis lifecycle cases. Check/strict lint passed for the
+affected packages and direct dependent. Feature-on ordinary CI is enrolled at
+`b3f9d2c4`, but enrollment is not a hosted execution receipt. The exact runtime
+overlay guard reconstructs the old canonical fingerprint; source isolation is
+not a measured native nonregression claim.
+
+The expected opportunity is removing the attributed reducer copy for admitted
+GETs. Its end-to-end magnitude and lifetime effect are still unmeasured. D3
+needs a separately sealed finite A/A and counterbalanced A/B allocation/live
+screen, including every failed attempt, before any sample. The 20% large-GET
+allocation floor, zero peak increase, owner-release checks and four independent
+native surfaces remain mandatory. Timing, sockets/TLS, concurrent clients and
+RSS/idle/refill retention cannot be inferred from pointer tests or a profiling
+allocator. Unlike rejected encoded scratch, this proposal does not intentionally
+retain one frame during the next command; whether that yields an admissible
+product improvement is for measurements to decide. No D3 gain is claimed yet,
+no earlier rejection is reopened, and C74 remains unresolved.
