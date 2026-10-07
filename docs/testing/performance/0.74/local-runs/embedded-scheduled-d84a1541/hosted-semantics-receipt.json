@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "kind": "exact-source-embedded-and-secure-observer-hosted-semantic-receipt",
+  "github_run": {
+    "conclusion": "success",
+    "created_at": "2026-10-07T22:53:00Z",
+    "head_sha": "d84a1541400fce9e40904c68f9824a91c717c0cc",
+    "html_url": "https://github.com/javaquasar/hydracache/actions/runs/37698947738",
+    "id": 37698947738,
+    "run_attempt": 1,
+    "status": "completed",
+    "updated_at": "2026-10-07T22:59:33Z"
+  },
+  "artifact_sha256": {
+    "check.log": "84cfc40fe80be475f06bd4e7645329a3471f46736ef5d0d8e4f6148f0e0661e8",
+    "clippy.log": "4c7a9157c03ea04e49d7c48cb8837e5728bb38b6396664f5d3807e5ae889c7c5",
+    "default.log": "7f87166c494ba295b874c888b60281269b60c918e050aeb31810e569daea446b",
+    "get-owner.log": "4bb042a5b6fd5b9d8dc2319d2a1262f9de74580f350b1d4d683e20ab4949b263",
+    "identity.txt": "da4bb97b08939506f5fe4e3da80d0657017c0fa38f5cb35810df035c6e823ce3",
+    "locks.txt": "efc02d8eef4c3c9d8aa8afb811d28b2d4573e607dad520df18ab47907a429ba9",
+    "rustc.txt": "b75985398e5509a90a7d5d68f8ec6690675f703c5cfa11893b04fc9c3fceca69"
+  },
+  "platform": "ubuntu-24.04",
+  "rust_toolchain": "1.94.0",
+  "tests_per_feature_variant": 73,
+  "variants": [
+    "allocation-diagnostics",
+    "allocation-diagnostics,get-owner"
+  ],
+  "format_check_strict_clippy": "passed",
+  "numerical_diagnostics_executed": false,
+  "product_performance_claims_allowed": false,
+  "full_workspace_release_ci_claimed": false,
+  "native_nonregression_measured": false,
+  "full_d3_completed": false,
+  "qualification_executed": false
+}

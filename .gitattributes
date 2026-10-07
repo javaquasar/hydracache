@@ -36,3 +36,5 @@ docs/testing/performance/0.74/local-runs/get-owner-b0-*/** -text whitespace=cr-a
 docs/testing/performance/0.74/local-runs/secure-memory-*/** -text whitespace=cr-at-eol
 # Native test logs include a final blank line; preserve the receipt bytes.
 docs/testing/performance/0.74/local-runs/secure-memory-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/embedded-scheduled-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/embedded-scheduled-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

@@ -4017,3 +4017,30 @@ each feature variant on Ubuntu 24.04 with Rust 1.94.0, plus formatting, check an
 strict lint. Raw logs and identity hashes are retained, not just a green status.
 This closes the checked observer's hosted semantic gap, not release CI, native
 performance admission, allocator-retention proof or C74 qualification.
+
+The next instrumentation source, `d84a1541`, adds a genuinely separate embedded
+control: public HydraCache encoded GET/PUT rather than another ClientSurfaceState
+call. Its 16-key binary corpus digest is shared with the native fixtures; only
+the fixture's string-key representation uses an injective hex mapping. Fixed
+logical client slots cover 1/8/32/128, with separate synchronized concurrency,
+1 MiB values, value/miss drift and public delete/refill/flush oracles. It opens
+no listener, refuses unsupported batches and does not claim batch-wide atomicity.
+
+The exact clean source passed 73 serialized observer checks per feature variant,
+five of them specific to embedded behavior, plus strict lint and 62 performance
+contract checks. An automatic guard now verifies all 30 earlier diagnostic
+stdout hashes and their unchanged unsupported-retention/admission flags. The
+embedded cache's approximate entry count remains a semantic sanity check, never
+a heap-retention metric. This closes the missing callable boundary for a later
+native guard; it does not itself measure that guard or accept get-owner.
+Hosted semantic run `37698947738` attempt 1 also passed all 73 checks per variant
+on the exact `d84a1541400fce9e40904c68f9824a91c717c0cc` source; its identity,
+raw logs and hashes are retained separately from the older 68-check receipt.
+
+A read-only local capability check found Ubuntu under WSL2 and the reviewed
+Rust 1.94.0 toolchain plus C/make/CMake tools. The login default is a different
+nightly, so future builds must select the reviewed toolchain explicitly. No
+allocator-provider proof or Linux numerical campaign was performed, and WSL2
+is not an admitted release host. The remaining full-D3 work is an unprofiled,
+bounded numerical runner, a complete preregistered A/A-A/B cohort and a supported
+allocator-retention lane. W10 still has zero accepted candidates to compose.

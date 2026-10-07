@@ -1,0 +1,323 @@
+[1m[92m   Compiling[0m pin-project-lite v0.2.17
+[1m[92m   Compiling[0m futures-core v0.3.34
+[1m[92m   Compiling[0m smallvec v1.16.2
+[1m[92m   Compiling[0m serde_core v1.0.229
+[1m[92m   Compiling[0m errno v0.3.14
+[1m[92m   Compiling[0m signal-hook-registry v1.4.8
+[1m[92m   Compiling[0m socket2 v0.6.5
+[1m[92m   Compiling[0m mio v1.2.4
+[1m[92m   Compiling[0m stable_deref_trait v1.2.1
+[1m[92m   Compiling[0m tokio v1.53.2
+[1m[92m   Compiling[0m once_cell v1.21.4
+[1m[92m   Compiling[0m itoa v1.0.18
+[1m[92m   Compiling[0m slab v0.4.12
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m allocator-api2 v0.2.21
+[1m[92m   Compiling[0m foldhash v0.2.0
+[1m[92m   Compiling[0m hashbrown v0.17.1
+[1m[92m   Compiling[0m tracing-core v0.1.36
+[1m[92m   Compiling[0m futures-sink v0.3.34
+[1m[92m   Compiling[0m futures-task v0.3.34
+[1m[92m   Compiling[0m futures-util v0.3.34
+[1m[92m   Compiling[0m tokio-util v0.7.19
+[1m[92m   Compiling[0m tracing v0.1.44
+[1m[92m   Compiling[0m http v1.5.0
+[1m[92m   Compiling[0m getrandom v0.2.17
+[1m[92m   Compiling[0m scopeguard v1.2.0
+[1m[92m   Compiling[0m lock_api v0.4.14
+[1m[92m   Compiling[0m indexmap v2.14.2
+[1m[92m   Compiling[0m http-body v1.1.0
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m byteorder v1.5.0
+[1m[92m   Compiling[0m zerofrom v0.1.8
+[1m[92m   Compiling[0m tower-service v0.3.3
+[1m[92m   Compiling[0m try-lock v0.2.5
+[1m[92m   Compiling[0m yoke v0.8.3
+[1m[92m   Compiling[0m atomic-waker v1.1.2
+[1m[92m   Compiling[0m rand_core v0.10.1
+[1m[92m   Compiling[0m zeroize v1.9.1
+[1m[92m   Compiling[0m fnv v1.0.7
+[1m[92m   Compiling[0m base64 v0.23.1
+[1m[92m   Compiling[0m h2 v0.4.20
+[1m[92m   Compiling[0m want v0.3.2
+[1m[92m   Compiling[0m crossbeam-utils v0.8.23
+[1m[92m   Compiling[0m httparse v1.10.1
+[1m[92m   Compiling[0m futures-channel v0.3.34
+[1m[92m   Compiling[0m httpdate v1.0.3
+[1m[92m   Compiling[0m thiserror v2.0.21
+[1m[92m   Compiling[0m zerovec v0.11.8
+[1m[92m   Compiling[0m getrandom v0.4.3
+[1m[92m   Compiling[0m rustls-pki-types v1.15.1
+[1m[92m   Compiling[0m ipnet v2.12.2
+[1m[92m   Compiling[0m untrusted v0.9.0
+[1m[92m   Compiling[0m ring v0.17.14
+[1m[92m   Compiling[0m hyper v1.12.0
+[1m[92m   Compiling[0m aws-lc-sys v0.45.0
+[1m[92m   Compiling[0m hash32 v0.2.1
+[1m[92m   Compiling[0m form_urlencoded v1.2.2
+[1m[92m   Compiling[0m spin v0.9.9
+[1m[92m   Compiling[0m sync_wrapper v1.0.2
+[1m[92m   Compiling[0m parking v2.2.1
+[1m[92m   Compiling[0m tower-layer v0.3.3
+[1m[92m   Compiling[0m hyper-util v0.1.21
+[1m[92m   Compiling[0m event-listener v5.4.2
+[1m[92m   Compiling[0m heapless v0.7.17
+[1m[92m   Compiling[0m aws-lc-rs v1.18.1
+[1m[92m   Compiling[0m zmij v1.0.23
+[1m[92m   Compiling[0m cobs v0.3.0
+[1m[92m   Compiling[0m subtle v2.6.1
+[1m[92m   Compiling[0m rustls-webpki v0.103.15
+[1m[92m   Compiling[0m postcard v1.1.3
+[1m[92m   Compiling[0m serde_json v1.0.151
+[1m[92m   Compiling[0m event-listener-strategy v0.5.4
+[1m[92m   Compiling[0m crossbeam-epoch v0.9.21
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m tower v0.5.3
+[1m[92m   Compiling[0m tinystr v0.8.4
+[1m[92m   Compiling[0m crossbeam-channel v0.5.17
+[1m[92m   Compiling[0m http-body-util v0.1.5
+[1m[92m   Compiling[0m litemap v0.8.3
+[1m[92m   Compiling[0m typenum v1.20.1
+[1m[92m   Compiling[0m ryu v1.0.23
+[1m[92m   Compiling[0m writeable v0.6.4
+[1m[92m   Compiling[0m icu_locale_core v2.3.0
+[1m[92m   Compiling[0m serde_urlencoded v0.7.1
+[1m[92m   Compiling[0m parking_lot v0.12.5
+[1m[92m   Compiling[0m async-lock v3.4.2
+[1m[92m   Compiling[0m rustls v0.23.45
+[1m[92m   Compiling[0m portable-atomic v1.15.0
+[1m[92m   Compiling[0m zerotrie v0.2.5
+[1m[92m   Compiling[0m uuid v1.27.0
+[1m[92m   Compiling[0m potential_utf v0.1.6
+[1m[92m   Compiling[0m tagptr v0.2.0
+[1m[92m   Compiling[0m mime v0.3.17
+[1m[92m   Compiling[0m utf8_iter v1.0.4
+[1m[92m   Compiling[0m icu_collections v2.3.0
+[1m[92m   Compiling[0m axum-core v0.5.6
+[1m[92m   Compiling[0m hydra-moka v0.12.15-hydra.1
+[1m[92m   Compiling[0m icu_provider v2.3.1
+[1m[92m   Compiling[0m hydracache-core v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-core)
+[1m[92m   Compiling[0m crossbeam-queue v0.3.12
+[1m[92m   Compiling[0m serde_path_to_error v0.1.20
+[1m[92m   Compiling[0m matchit v0.8.4
+[1m[92m   Compiling[0m axum v0.8.9
+[1m[92m   Compiling[0m hydracache v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache)
+[1m[92m   Compiling[0m tokio-rustls v0.26.6
+[1m[92m   Compiling[0m icu_properties_data v2.3.0
+[1m[92m   Compiling[0m icu_normalizer_data v2.3.0
+[1m[92m   Compiling[0m either v1.19.0
+[1m[92m   Compiling[0m icu_normalizer v2.3.0
+[1m[92m   Compiling[0m icu_properties v2.3.0
+[1m[92m   Compiling[0m idna_adapter v1.2.2
+[1m[92m   Compiling[0m zerocopy v0.8.61
+[1m[92m   Compiling[0m tokio-stream v0.1.19
+[1m[92m   Compiling[0m base64 v0.22.1
+[1m[92m   Compiling[0m cpufeatures v0.3.1
+[1m[92m   Compiling[0m ppv-lite86 v0.2.21
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m crc32fast v1.5.2
+[1m[92m   Compiling[0m zstd-sys v2.1.0+zstd.1.5.7
+[1m[92m   Compiling[0m hybrid-array v0.4.15
+[1m[92m   Compiling[0m rand_core v0.6.4
+[1m[92m   Compiling[0m instant v0.1.13
+[1m[92m   Compiling[0m openssl-probe v0.2.1
+[1m[92m   Compiling[0m rustls-native-certs v0.8.4
+[1m[92m   Compiling[0m parking_lot_core v0.8.6
+[1m[92m   Compiling[0m pin-project v1.1.13
+[1m[92m   Compiling[0m rand_chacha v0.3.1
+[1m[92m   Compiling[0m zstd-safe v7.3.0
+[1m[92m   Compiling[0m generic-array v0.14.7
+[1m[92m   Compiling[0m url v2.5.8
+[1m[92m   Compiling[0m hydracache-observability v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-observability)
+[1m[92m   Compiling[0m protobuf v2.28.0
+[1m[92m   Compiling[0m chacha20 v0.10.2
+[1m[92m   Compiling[0m hyper-timeout v0.5.2
+[1m[92m   Compiling[0m fxhash v0.2.1
+[1m[92m   Compiling[0m erased-serde v0.3.31
+[1m[92m   Compiling[0m minimal-lexical v0.2.1
+[1m[92m   Compiling[0m nom v7.1.3
+[1m[92m   Compiling[0m thiserror v1.0.69
+[1m[92m   Compiling[0m slog v2.8.2
+[1m[92m   Compiling[0m raft-proto v0.7.0
+[1m[92m   Compiling[0m tonic v0.14.6
+[1m[92m   Compiling[0m rand v0.10.3
+[1m[92m   Compiling[0m tower-http v0.6.11
+[1m[92m   Compiling[0m zstd v0.13.3
+[1m[92m   Compiling[0m rand v0.8.8
+[1m[92m   Compiling[0m parking_lot v0.11.2
+[1m[92m   Compiling[0m rustls-platform-verifier v0.7.1
+[1m[92m   Compiling[0m crc16 v0.4.0
+[1m[92m   Compiling[0m crypto-common v0.2.2
+[1m[92m   Compiling[0m block-buffer v0.12.1
+[1m[92m   Compiling[0m itertools v0.14.0
+[1m[92m   Compiling[0m bytes-utils v0.1.4
+[1m[92m   Compiling[0m hyper-rustls v0.27.10
+[1m[92m   Compiling[0m prost v0.14.4
+[1m[92m   Compiling[0m hydracache-client-protocol v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-protocol)
+[1m[92m   Compiling[0m lru v0.17.0
+[1m[92m   Compiling[0m fs2 v0.4.3
+[1m[92m   Compiling[0m deranged v0.5.8
+[1m[92m   Compiling[0m adler2 v2.0.1
+[1m[92m   Compiling[0m time-core v0.1.9
+[1m[92m   Compiling[0m powerfmt v0.2.1
+[1m[92m   Compiling[0m cookie-factory v0.3.2
+[1m[92m   Compiling[0m simd-adler32 v0.3.10
+[1m[92m   Compiling[0m const-oid v0.10.2
+[1m[92m   Compiling[0m winnow v1.0.4
+[1m[92m   Compiling[0m num-conv v0.2.2
+[1m[92m   Compiling[0m time v0.3.55
+[1m[92m   Compiling[0m toml_parser v1.1.3+spec-1.1.0
+[1m[92m   Compiling[0m hydracache-client-transport-axum v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-transport-axum)
+[1m[92m   Compiling[0m digest v0.11.3
+[1m[92m   Compiling[0m miniz_oxide v0.9.1
+[1m[92m   Compiling[0m redis-protocol v6.0.0
+[1m[92m   Compiling[0m sled v0.34.7
+[1m[92m   Compiling[0m raft v0.7.0
+[1m[92m   Compiling[0m chitchat v0.11.2
+[1m[92m   Compiling[0m tonic-prost v0.14.6
+[1m[92m   Compiling[0m reqwest v0.13.5
+[1m[92m   Compiling[0m fs-err v3.3.2
+[1m[92m   Compiling[0m block-buffer v0.10.4
+[1m[92m   Compiling[0m crypto-common v0.1.7
+[1m[92m   Compiling[0m arc-swap v1.9.2
+[1m[92m   Compiling[0m serde_spanned v1.1.1
+[1m[92m   Compiling[0m toml_datetime v1.1.1+spec-1.1.0
+[1m[92m   Compiling[0m toml_writer v1.1.2+spec-1.1.0
+[1m[92m   Compiling[0m toml v1.1.6+spec-1.1.0
+[1m[92m   Compiling[0m axum-server v0.8.0
+[1m[92m   Compiling[0m digest v0.10.7
+[1m[92m   Compiling[0m hydracache-cluster-transport-axum v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-transport-axum)
+[1m[92m   Compiling[0m hydracache-client-hc2 v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-hc2)
+[1m[92m   Compiling[0m num-traits v0.2.19
+[1m[92m   Compiling[0m hydracache-cluster-chitchat v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-chitchat)
+[1m[92m   Compiling[0m hydracache-cluster-raft v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-raft)
+[1m[92m   Compiling[0m hydracache-redis-compat v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-redis-compat)
+[1m[92m   Compiling[0m flate2 v1.1.10
+[1m[92m   Compiling[0m sha2 v0.11.0
+[1m[92m   Compiling[0m yasna v0.6.0
+[1m[92m   Compiling[0m hydracache-actuator-axum v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-actuator-axum)
+[1m[92m   Compiling[0m pem v4.0.0
+[1m[92m   Compiling[0m nom v8.0.0
+[1m[92m   Compiling[0m cpufeatures v0.2.17
+[1m[92m   Compiling[0m sha2 v0.10.9
+[1m[92m   Compiling[0m hydracache-server v0.73.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-server)
+[1m[92m   Compiling[0m hdrhistogram v7.6.0
+[1m[92m   Compiling[0m rcgen v0.14.10
+[1m[92m   Compiling[0m tempfile v3.27.0
+[1m[92m   Compiling[0m get-owner-scheduled-controls-074 v0.0.0 (/home/runner/work/hydracache/hydracache/tools/get-owner-scheduled-controls-074)
+[1m[92m    Finished[0m `test` profile [unoptimized] target(s) in 1m 00s
+[1m[92m     Running[0m unittests src/lib.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/get_owner_scheduled_controls_074-850c530126fe932c)
+
+running 32 tests
+test embedded::tests::changed_or_missing_value_is_not_success_or_a_retried_read ... ok
+test native::tests::batch_oracles_reject_count_order_error_value_and_mutation_drift ... ok
+test native::tests::direct_and_hc1_oversized_batch_put_reject_without_partial_mutation ... ok
+test native::tests::hc1_rejects_anonymous_and_other_tenant_cannot_read_dataset ... ok
+test native::tests::hc2_batch_limits_and_unapplied_item_are_not_atomic_surface_batch_semantics ... ok
+test native::tests::hc2_rejects_foreign_ca_identity_before_dispatch ... ok
+test native::tests::independent_batch_transports_preserve_duplicates_misses_empty_and_binary_values ... ok
+test native::tests::native_batch_budget_boundaries_are_checked_without_overflow ... ok
+test native::tests::sdk_failure_codes_are_not_retried_or_conflated_with_success ... ok
+test resp::tests::auth_stall_has_unchanged_five_second_deadline_without_fallback ... ok
+test resp::tests::buffered_transport_requires_flush_and_keeps_fragmented_reply_owner ... ok
+test resp::tests::cancelled_fragmented_array_keeps_one_command_owner ... ok
+test resp::tests::concurrent_real_mset_mget_never_observes_partial_pair ... ok
+test resp::tests::disconnect_and_malformed_reply_release_owners_without_fake_response_time ... ok
+test resp::tests::duplicates_and_bounds_are_rejected_without_implicit_retry ... ok
+test resp::tests::flat_array_integer_fragmentation_and_aggregate_budget_are_explicit ... ok
+test resp::tests::fragmented_binary_empty_null_error_and_coalesced_frames_are_distinct ... ok
+test resp::tests::hello_negotiation_refuses_error_disconnect_and_unsolicited_tail ... ok
+test resp::tests::hello_negotiation_timeout_drops_socket_without_fallback ... ok
+test resp::tests::independent_connections_do_not_share_cancelled_owners_or_drain_budget ... ok
+test resp::tests::malformed_oversized_and_future_reply_types_fail_loud ... ok
+test resp::tests::one_connection_failure_still_joins_every_owned_task ... ok
+test resp::tests::reads_progress_while_later_pipeline_write_is_backpressured ... ok
+test resp::tests::real_batch_duplicate_order_and_oversized_mset_are_atomic ... ok
+test resp::tests::real_hello_transitions_apply_to_the_next_pipelined_reply ... ok
+test resp::tests::real_resp2_resp3_mget_preserves_null_empty_binary_and_duplicate_positions ... ok
+test resp::tests::rejected_auth_is_redacted_and_sends_no_hello_or_preload ... ok
+test resp::tests::resp3_hello_metadata_is_shallow_bounded_and_map_order_independent ... ok
+test resp::tests::resp3_null_arrays_are_fragmented_without_legacy_null_fallback ... ok
+test resp::tests::seeded_real_batch_sequence_matches_independent_reference_map ... ok
+test resp::tests::slow_reader_and_partial_writes_preserve_cancelled_fifo_tombstone ... ok
+test resp::tests::unresolved_wire_owner_refuses_clean_drain_then_shutdown_releases_it ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+[1m[92m     Running[0m unittests src/bin/memory_diagnostics.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/memory_diagnostics_074-6f6aeb486fb06c68)
+
+running 4 tests
+test memory::tests::allocation_zeroed_reallocation_and_drop_preserve_live_accounting ... ok
+test memory::tests::epoch_counts_gross_calls_peak_and_owner_release_without_oracle_allocation ... ok
+test tests::arguments_refuse_unsealed_shapes_and_unknown_surfaces ... ok
+test tests::rss_has_real_units_and_is_not_reported_as_allocator_retention ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/embedded.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/embedded-8abde4f92252720c)
+
+running 4 tests
+test embedded_high_concurrency_and_public_delete_refill_release_oracles ... ok
+test embedded_large_binary_values_use_the_public_encoded_api ... ok
+test embedded_scheduled_get_put_keep_same_corpus_and_original_offers ... ok
+test embedded_unsupported_slots_and_batches_fail_before_cache_setup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+
+[1m[92m     Running[0m tests/native.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/native-979dbffedfc9ea01)
+
+running 8 tests
+test dataset_and_slot_bounds_are_explicit ... ok
+test high_concurrency_native_clients_start_together_and_release_resources ... ok
+test independent_hc1_hc2_get_put_use_real_transports_and_same_binary_oracle ... ok
+test invalid_slots_fail_before_starting_any_listener ... ok
+test large_binary_payload_crosses_real_native_frames_without_truncation ... ok
+test native_batch_concurrency_boundaries_release_all_owners ... ok
+test native_batches_keep_one_offer_and_separate_dispatch_semantics ... ok
+test unsupported_native_batch_size_and_payload_fail_before_setup ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 59.33s
+
+[1m[92m     Running[0m tests/resp.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/resp-0207195edb0908a6)
+
+running 9 tests
+test large_binary_resp2_frame_has_one_operation_timestamp ... ok
+test large_fixed_set_checks_acknowledgement_and_final_bytes ... ok
+test large_resp3_get_set_keep_one_complete_frame_observation ... ok
+test multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles ... ok
+test real_resp2_pipeline_matches_each_original_offer_not_batch_average ... ok
+test resp3_negotiates_every_socket_and_keeps_command_denominators ... ok
+test scheduled_multikey_commands_keep_one_original_offer_and_exact_reply_shape ... ok
+test unsupported_batch_and_aggregate_payload_fail_before_opening_sockets ... ok
+test unsupported_resp_connection_counts_fail_before_transport_setup ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.00s
+
+[1m[92m     Running[0m tests/scheduled.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/scheduled-c4092caec7fce55a)
+
+running 12 tests
+test bounded_overload_preserves_every_offer_and_never_moves_schedule ... ok
+test bounds_reject_oversized_local_contract ... ok
+test caller_cancellation_aborts_owned_requests ... ok
+test drain_timeout_retains_censored_samples_and_joins_cancelled_owners ... ok
+test histogram_overflow_is_loud_and_all_offers_conserve_across_outcomes ... ok
+test logical_concurrency_grid_stays_bounded_and_keeps_fixed_schedule ... ok
+test on_time_success_uses_all_offer_fraction_and_full_drain_interval ... ok
+test panic_is_loud_and_owned_requests_are_drained_before_error ... ok
+test projection_rejects_fabricated_samples_and_cleanup_claims ... ok
+test result_classification_and_all_offer_denominator_are_not_success_only ... ok
+test stall_is_visible_from_original_schedule_not_only_service_time ... ok
+test timeout_includes_queue_delay_and_does_not_give_each_request_a_fresh_budget ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+[1m[92m     Running[0m tests/secure.rs (tools/get-owner-scheduled-controls-074/target/debug/deps/secure-2d76fd17ee1d2786)
+
+running 4 tests
+test native_delete_refill_uses_each_public_transport_and_leaves_no_values ... ok
+test secure_large_payload_and_multikey_boundaries_preserve_delete_refill_oracles ... ok
+test secure_resp_grid_preserves_wire_owners_auth_and_logical_retention ... ok
+test shared_secure_material_and_dataset_guard_does_not_waive_authorization_differences ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.96s
+

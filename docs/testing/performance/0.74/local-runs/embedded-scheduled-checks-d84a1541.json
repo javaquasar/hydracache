@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "kind": "local-exact-source-embedded-scheduled-semantic-checks",
+  "checked_source_commit": "d84a1541400fce9e40904c68f9824a91c717c0cc",
+  "preregistration_commit": "f6e61140",
+  "baseline_source": "d22520123880a8a67c816c83a7f76448cbf50af9",
+  "baseline_observer_checks_per_variant": 68,
+  "checked_source_clean_before_and_after": true,
+  "source_references_git_blob_ids": {
+    "tools/get-owner-scheduled-controls-074/src/embedded.rs": "1a07fe96456bdd2b105af617357b97723022d08f",
+    "tools/get-owner-scheduled-controls-074/tests/embedded.rs": "90ec6ef4521a4dc281e5b1e3bbe30bdb10c520b8",
+    "tools/get-owner-scheduled-controls-074/Cargo.toml": "b299b868203bdff3a74aef76555fa8fb813aca25",
+    "tools/get-owner-scheduled-controls-074/Cargo.lock": "937a02530ca9deb3fa7bbfe73195ed85fb7d06cc",
+    "crates/xtask/tests/performance_contract_074.rs": "988cff323b54169c4f668ad8d2e4bcba4d4e4c6e"
+  },
+  "checks": {
+    "tool_default_tests": 73,
+    "tool_get_owner_tests": 73,
+    "serialized": true,
+    "embedded_unit_and_integration_checks_per_variant": 5,
+    "all_targets_all_features_check": "passed",
+    "strict_all_features_clippy": "passed",
+    "scoped_fmt": "passed",
+    "xtask_performance_contract_tests": 62,
+    "xtask_all_targets_check": "passed",
+    "xtask_strict_all_features_clippy": "passed",
+    "performance_contract_check": "passed-local-non-promotable",
+    "doc_check": "passed",
+    "git_diff_check": "passed"
+  },
+  "scope": {
+    "api": "public-HydraCache-encoded-GET-PUT-delete-flush",
+    "keyspace": 16,
+    "payload_bytes": [
+      256,
+      4096,
+      1048576
+    ],
+    "client_slots": [
+      1,
+      8,
+      32,
+      128
+    ],
+    "listeners_created": 0,
+    "seed": 740074,
+    "binary_dataset_digest_matched": true,
+    "key_mapping": "injective-fixture-lowercase-hex",
+    "original_offers_preserved": true,
+    "large_values_and_byte_miss_drift_checked": true,
+    "public_delete_refill_shutdown_checked": true,
+    "batch_atomicity_claimed": false,
+    "approximate_entry_count_is_allocator_retention": false
+  },
+  "tool_lock_change": "only add already-resolved hydracache direct dependency name; no package version resolution changed",
+  "retained_build_diagnostic": {
+    "reason": "new direct dependency refused under --locked",
+    "resolution": "offline Cargo metadata refresh; diff verified one dependency-name line; all tests then used --locked",
+    "product_or_frozen_lock_changed": false
+  },
+  "local_linux_probe": {
+    "environment": "WSL2-Ubuntu-Linux-x86_64",
+    "reviewed_rustc": "1.94.0",
+    "default_toolchain": "nightly-2026-07-01",
+    "pinned_toolchain_requires_login_environment": true,
+    "cc_make_cmake_available": true,
+    "system_linker_cache_jemalloc_or_tcmalloc_entries_found": false,
+    "allocator_retention_probe_completed": false,
+    "performance_or_qualification_executed": false
+  },
+  "hosted_semantic_run_id": 37698947738,
+  "hosted_current_source_success_claimed": true,
+  "hosted_scope": "exact d84a1541 observer semantic checks only; not full release CI or native numerical admission",
+  "numerical_series_started": false,
+  "native_nonregression_measured": false,
+  "full_d3_completed": false,
+  "product_numeric_claims_allowed": false,
+  "accepted_candidate": false,
+  "freeze_c74_allowed": false
+}
