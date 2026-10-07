@@ -150,6 +150,27 @@ mtls_requirement_waived = false
 product_security_mutation_authorized_by_observer = false
 separate_product_security_proposal_required = true
 
+[resp.mtls]
+state = "approved-policy-implementation-pending"
+authorization = "explicit-human-approval-2026-10-07"
+configuration = "redis_api.mtls_client_ca_path"
+default_client_ca_path = "none"
+enabled_requires_redis_rediss_tls_and_auth = true
+client_certificate_required = true
+optional_client_certificate_mode = false
+global_tls_ca_inherited = false
+certificate_subject_selects_tenant = false
+auth_and_listener_tenant_binding_preserved = true
+maximum_client_ca_file_bytes = 262144
+maximum_client_ca_certificates = 16
+maximum_handshake_seconds = 5
+maximum_owned_connections = 128
+shutdown_joins_owned_connections = true
+production_implemented = false
+matched_security_cohort_completed = false
+numerical_comparison_allowed = false
+qualification_completed = false
+
 [pending]
 production_resp_mtls_policy_decision_required = true
 new_sealed_numerical_cohort_required = true

@@ -488,3 +488,41 @@ sync/link checks and mdbook build. The
 [security audit receipt](local-runs/get-owner-security-audit-b747502d.json)
 retains exact product/guard blob identities and scope. The entire observer suite,
 full workspace and hosted CI were not rerun or claimed in this audit.
+
+## Approved opt-in RESP mTLS prerequisite (2026-10-07)
+
+The user explicitly approved the product security extension after the capability
+audit. This authorization is separate from a performance candidate or release
+admission. The historical audit and its receipts remain unchanged.
+
+`redis_api.mtls_client_ca_path: Option<PathBuf>` is the sole opt-in switch. `None`
+preserves existing plaintext/server-auth TLS behavior; a configured nonempty path
+requires an enabled Redis listener, rediss, server TLS and required Redis AUTH.
+The daemon rejects incompatible/dormant configuration. No global `tls.ca_path`
+inheritance, optional-certificate mode or silent downgrade is permitted. The
+operator supplies a dedicated inbound client trust bundle, at most 256 KiB and
+16 certificates; malformed/empty/unreadable material fails before serving.
+
+The standard rustls WebPKI client verifier must require a valid client certificate
+with client-auth usage. A trusted certificate is only the transport gate: AUTH
+still installs the listener's existing identity/tenant, and neither certificate
+subject nor AUTH username chooses another tenant. This is not dynamic certificate
+identity mapping or a new multi-tenant ACL system. Server-name/trust validation
+also remains mandatory at the client. No certificate/key/password enters metrics
+or retained evidence.
+
+Only opt-in mTLS connections gain a five-second handshake safety deadline and a
+128-connection owned task group. Completed tasks are reaped, overload is closed
+before protocol dispatch, and listener shutdown cancels/joins remaining owners
+so runtime accounting returns to zero. These are preregistered resource bounds
+for a new security mode, not benchmark acceptance thresholds; legacy task/socket
+behavior is not changed. No numerical series is allowed by this prerequisite.
+
+Required local proofs cover defaults/old TOML, invalid configuration and bounded
+CA startup, valid RESP2/3 plus AUTH, absent/foreign/expired/not-yet-valid/wrong-EKU
+client certificates, wrong server CA/hostname, NOAUTH/WRONGPASS, connection-local
+AUTH, same-state listener tenant isolation, handshake timeout, capacity rejection
+and shutdown/disconnect resource cleanup. TLS 1.3 client-side handshake completion
+alone is not proof of server acceptance; negative cases must prove no RESP
+success and zero client-surface dispatch. Secure scheduled adapters and matched
+native numerical comparisons remain a later stage after these product proofs.
