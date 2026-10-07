@@ -3870,3 +3870,11 @@ throughput optimization and cannot be smuggled into observer tooling. The audit
 leaves the release's numerical floors, product defaults and qualification identity
 unchanged. TLS/AUTH-only controls and the remaining local semantic/memory work
 can proceed independently, but they do not close the missing mTLS proof.
+
+The clean-source audit at `b747502d4b63c4e0cdf1d1ee3857f439367f3545` retained
+12 selected production TLS/AUTH/RESP fixture passes, one HC/2 security/tenant test
+in each default/get-owner variant and 109 focused xtask test passes, with scoped
+lint/documentation checks. Exact product and guard blobs and the unmet policy
+decision are recorded in
+`docs/testing/performance/0.74/local-runs/get-owner-security-audit-b747502d.json`.
+No secure RESP adapter or numerical series was implemented by this audit.

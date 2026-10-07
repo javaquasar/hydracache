@@ -1723,3 +1723,10 @@ without lowering any native floor or `matched_mtls_resp3_required` requirement.
 RESP mTLS needs a separate approved product security policy; no fixture wrapper
 or TLS/AUTH label can admit a matched RESP/HC2 numerical row. See the
 [security capability audit](get-response-owner-scheduled-controls-design.md#security-capability-audit-tls-plus-auth-is-not-a-matched-mtls-cohort).
+
+The [security audit receipt](local-runs/get-owner-security-audit-b747502d.json)
+binds clean source `b747502d4b63c4e0cdf1d1ee3857f439367f3545` to product and
+guard blob identities: 12 selected production fixtures, one actual HC/2 security/
+tenant test per default/get-owner variant, 109 focused xtask tests and scoped
+lint/documentation checks passed. It does not claim a secure RESP adapter, new
+mTLS implementation, full observer/workspace suite or numerical comparison.

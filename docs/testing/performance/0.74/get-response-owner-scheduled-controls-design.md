@@ -478,3 +478,13 @@ infrastructure run or new policy is authorized here. Until that decision, existi
 TLS/AUTH controls may be developed under their own honest label and native
 self-baselines remain available; the cross-security RESP/HC2 row stays absent,
 not waived. Expiration/quota/fault/embedded/retention work remains separate.
+
+Clean-source `b747502d4b63c4e0cdf1d1ee3857f439367f3545` passed the 12 selected
+production TLS/AUTH/RESP fixtures, the HC/2 foreign-client-CA/tenant fixture in
+default and get-owner variants, 109 focused xtask tests (57 performance-contract,
+13 release-evidence, 23 governance, 16 doc), scoped format/check/strict clippy,
+local performance/doc gates, 17 governance checks, three docs-script tests,
+sync/link checks and mdbook build. The
+[security audit receipt](local-runs/get-owner-security-audit-b747502d.json)
+retains exact product/guard blob identities and scope. The entire observer suite,
+full workspace and hosted CI were not rerun or claimed in this audit.
