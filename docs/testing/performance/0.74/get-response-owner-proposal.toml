@@ -1,0 +1,81 @@
+schema_version = 1
+release = "0.74"
+proposal_id = "p74-get-response-owner-v1"
+state = "preregistered-d2-before-product-mutation"
+baseline_source_sha = "36f602658b4ba806a669a329001108cfb0922c2d"
+owner_source_sha = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9"
+owner_evidence = "local-runs/response-owner-2562f6f7/summary.json"
+candidate_source_sha = "UNRESOLVED"
+feature = "experimental-resp-get-owner-074"
+default_enabled = false
+accepted_product_change = false
+promotable = false
+product_numeric_claims_allowed = false
+existing_terminal_dispositions_reopened = false
+product_mutation_allowed = true
+numerical_comparison_allowed_by_this_contract = false
+expensive_workloads_allowed = false
+qualification_allowed = false
+one_hypothesis = "Move the already materialized successful nonempty GET Vec into the private executor's RespValue; eliminate only the borrowed reducer payload clone."
+runtime_files = ["crates/hydracache-redis-compat/Cargo.toml", "crates/hydracache-redis-compat/src/lib.rs", "crates/hydracache-redis-compat/src/get_response_owner_074.rs"]
+canonical_overlay = "Only the exact enrolled cfg module and reduction selection hunk may be stripped to reconstruct the unchanged legacy runtime fingerprint; any other source drift fails."
+
+[activation]
+single_initial_get_request = true
+no_followup_plan = true
+single_actual_response = true
+successful_nonempty_value_only = true
+payload_bound = "all legal values already returned by canonical dispatch; existing limits unchanged"
+command_decode_translation_and_dispatch_unchanged = true
+public_borrowed_reducer_unchanged = true
+null_empty_error_wrong_shape_and_non_get_use_canonical_reducer = true
+no_new_protocol_version_gate_or_response_shape = true
+no_early_execution_or_decode_lookahead = true
+
+[lifetime]
+owned_vec_transfer_not_reuse = true
+no_borrow_across_await = true
+no_server_connection_or_session_retained_owner = true
+no_cross_connection_or_cross_principal_pool = true
+previous_reply_write_and_flush_frontier_unchanged = true
+encoder_and_input_compaction_unchanged = true
+maximum_configured_memory_bounds_unchanged = true
+native_shared_store_durability_sources_unchanged = true
+
+[semantic_gate]
+baseline_test_file = "crates/hydracache-redis-compat/tests/resp_get_owner_074.rs"
+private_unit_property_tests = "crates/hydracache-redis-compat/src/get_response_owner_074.rs"
+adversarial_test_file = "crates/hydracache-redis-compat/tests/resp_transport_adversarial_074.rs"
+public_borrowed_response_owner_and_errors_exact = true
+pointer_transfer_and_borrowed_oracle_distinct_required = true
+seeded_property_seed = 740074
+seeded_property_cases = 128
+resp2_resp3_binary_empty_miss_large_value_goldens_required = true
+fragmentation_partial_write_pending_flush_failure_disconnect_cancel_required = true
+auth_tenant_quota_expiry_and_multi_key_semantics_required = true
+canonical_and_feature_on_package_and_server_checks_required = true
+feature_on_hosted_ci_required_before_promotion = true
+scope = "D2 correctness is not numerical qualification"
+
+[future_d3]
+new_finite_screen_contract_source_feature_binary_lock_toolchain_seal_required = true
+minimum_affected_end_to_end_gross_allocation_reduction = 0.20
+affected_cells = ["GET 4 KiB", "GET 1 MiB"]
+minimum_counterbalanced_independent_pairs_per_cell = 5
+independent_same_binary_aa_controls_required = true
+maximum_unaffected_goodput_regression = 0.02
+maximum_unaffected_cpu_or_p99_regression = 0.03
+maximum_unaffected_gross_allocation_ratio = 1.05
+maximum_peak_live_above_start_ratio = 1.00
+maximum_next_read_or_post_close_live_increase_bytes = 0
+minimum_native_goodput_ratio = 0.98
+maximum_native_cpu_or_p99_ratio = 1.03
+maximum_native_gross_allocation_ratio = 1.05
+native_surfaces = ["embedded", "client-surface", "hc1", "hc2"]
+idle_rss_allocator_retention_and_refill_required_before_acceptance = true
+zero_unexpected_errors_results_mutations_or_owner_leaks = true
+all_attempts_retained_no_automatic_retry_no_best_sample = true
+profiling_counts_cannot_certify_cpu_latency_goodput_or_rss = true
+
+[rollback]
+procedure = "Disable or remove only experimental-resp-get-owner-074 and its two enrolled cfg hunks/private module; retain semantic guards and every negative attempt. Never restore serial scratch or weaken a memory/native threshold."

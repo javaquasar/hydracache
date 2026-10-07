@@ -158,3 +158,21 @@ promotable = false
 contract = "response-reduction-attribution-contract.toml"
 evidence = "local-runs/response-owner-2562f6f7/summary.json"
 result = "response-reduction-attribution-result.md"
+
+[[followup_proposals]]
+id = "p74-get-response-owner-v1"
+owner = "successful nonempty GET borrowed response payload clone"
+state = "preregistered-d2-before-product-mutation"
+baseline_source_sha = "36f602658b4ba806a669a329001108cfb0922c2d"
+owner_source_sha = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9"
+candidate_source_sha = "UNRESOLVED"
+feature = "experimental-resp-get-owner-074"
+default_enabled = false
+runtime_present = false
+accepted_product_change = false
+promotable = false
+numerical_candidate_comparison_started = false
+contract = "get-response-owner-proposal.toml"
+design = "get-response-owner-design.md"
+evidence = "local-runs/response-owner-2562f6f7/summary.json"
+existing_terminal_dispositions_reopened = false

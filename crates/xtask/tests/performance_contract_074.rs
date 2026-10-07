@@ -1146,13 +1146,130 @@ fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gate
     );
 }
 
+// Only the reviewed experiment's exact two source hunks may be removed to
+// reconstruct the same full canonical runtime fingerprint. Unknown edits fail.
+fn without_get_owner_overlay(source: &str) -> String {
+    let module = "#[cfg(any(test, feature = \"experimental-resp-get-owner-074\"))]\nmod get_response_owner_074;\n\n";
+    let selector = concat!(
+        "        #[cfg(feature = \"experimental-resp-get-owner-074\")]\n",
+        "        let reduced = get_response_owner_074::reduce(&plan, responses);\n",
+        "        #[cfg(not(feature = \"experimental-resp-get-owner-074\"))]\n",
+        "        let reduced = plan.reduce(&responses);\n",
+        "        match reduced {\n",
+    );
+    if source.contains("mod get_response_owner_074;") {
+        assert_eq!(source.matches(module).count(), 1);
+        assert_eq!(source.matches(selector).count(), 1);
+        source
+            .replace(module, "")
+            .replace(selector, "        match plan.reduce(&responses) {\n")
+    } else {
+        source.to_owned()
+    }
+}
+
+#[test]
+fn get_response_owner_d2_preserves_one_hypothesis_and_future_guards() {
+    let p = contract("get-response-owner-proposal.toml");
+    assert_eq!(p["proposal_id"].as_str(), Some("p74-get-response-owner-v1"));
+    assert_eq!(
+        p["owner_source_sha"].as_str(),
+        Some("2562f6f7e2ff598741d4fe9a4f38ae635786e8d9")
+    );
+    assert_eq!(p["product_mutation_allowed"].as_bool(), Some(true));
+    for flag in [
+        "default_enabled",
+        "accepted_product_change",
+        "promotable",
+        "product_numeric_claims_allowed",
+        "existing_terminal_dispositions_reopened",
+        "numerical_comparison_allowed_by_this_contract",
+        "expensive_workloads_allowed",
+        "qualification_allowed",
+    ] {
+        assert_eq!(p[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "single_initial_get_request",
+        "no_followup_plan",
+        "single_actual_response",
+        "successful_nonempty_value_only",
+        "command_decode_translation_and_dispatch_unchanged",
+        "public_borrowed_reducer_unchanged",
+        "null_empty_error_wrong_shape_and_non_get_use_canonical_reducer",
+        "no_new_protocol_version_gate_or_response_shape",
+        "no_early_execution_or_decode_lookahead",
+    ] {
+        assert_eq!(p["activation"][flag].as_bool(), Some(true), "{flag}");
+    }
+    let d3 = &p["future_d3"];
+    assert_eq!(
+        d3["minimum_affected_end_to_end_gross_allocation_reduction"].as_float(),
+        Some(0.20)
+    );
+    assert_eq!(
+        d3["minimum_counterbalanced_independent_pairs_per_cell"].as_integer(),
+        Some(5)
+    );
+    assert_eq!(
+        d3["maximum_peak_live_above_start_ratio"].as_float(),
+        Some(1.0)
+    );
+    assert_eq!(
+        d3["maximum_next_read_or_post_close_live_increase_bytes"].as_integer(),
+        Some(0)
+    );
+    assert_eq!(d3["minimum_native_goodput_ratio"].as_float(), Some(0.98));
+    assert_eq!(d3["maximum_native_cpu_or_p99_ratio"].as_float(), Some(1.03));
+    assert_eq!(
+        d3["maximum_native_gross_allocation_ratio"].as_float(),
+        Some(1.05)
+    );
+    assert_eq!(
+        d3["native_surfaces"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec!["embedded", "client-surface", "hc1", "hc2"]
+    );
+    assert_eq!(
+        p["semantic_gate"]["seeded_property_seed"].as_integer(),
+        Some(740074)
+    );
+    assert_eq!(
+        p["semantic_gate"]["seeded_property_cases"].as_integer(),
+        Some(128)
+    );
+    let registry = contract("proposal-registry.toml");
+    let proposals = registry["followup_proposals"].as_array().unwrap();
+    assert_eq!(proposals.len(), 2);
+    let current = proposals
+        .iter()
+        .find(|entry| entry["id"] == p["proposal_id"])
+        .unwrap();
+    for flag in [
+        "default_enabled",
+        "accepted_product_change",
+        "promotable",
+        "numerical_candidate_comparison_started",
+        "existing_terminal_dispositions_reopened",
+    ] {
+        assert_eq!(current[flag].as_bool(), Some(false));
+    }
+}
+
 #[test]
 fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     let proposal = contract("w9b-serial-scratch-proposal.toml");
     let registry = contract("proposal-registry.toml");
     let followups = registry["followup_proposals"].as_array().unwrap();
-    assert_eq!(followups.len(), 1);
-    let followup = &followups[0];
+    assert_eq!(followups.len(), 2);
+    let followup = followups
+        .iter()
+        .find(|entry| entry["id"] == proposal["proposal_id"])
+        .unwrap();
     assert_eq!(followup["id"], proposal["proposal_id"]);
     assert_eq!(
         followup["implementation_sha"],
@@ -1189,10 +1306,12 @@ fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     assert!(!root()
         .join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs")
         .exists());
-    // Exact LF-normalized runtime from 4d733e31; no old Git object is required
-    // in a shallow CI checkout to prove selective restoration.
+    // Exact LF-normalized canonical runtime from 4d733e31 after removing only
+    // the new preregistered experiment's two exact cfg hunks. No old Git object
+    // is required in shallow CI. Scratch stays removed; unknown edits fail.
+    let canonical = without_get_owner_overlay(&source);
     assert_eq!(
-        Sha256::digest(source.as_bytes())
+        Sha256::digest(canonical.as_bytes())
             .iter()
             .map(|byte| format!("{byte:02x}"))
             .collect::<String>(),
