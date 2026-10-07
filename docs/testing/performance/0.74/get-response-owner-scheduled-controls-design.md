@@ -307,3 +307,14 @@ RESP3/mTLS, expiration/quota/event/fault matrices, representative live-delete an
 mixed workloads, matched native batch controls, allocator retention and repeated
 quiet-host numerical evidence remain required. Historical GET/SET summaries and
 B0/D3a packets retain their exact scopes; no product acceptance is reopened.
+
+At clean source `35bbd4b894e4a39ba9d599d45b183bf4bcd17702`, 41 tool tests
+passed in each default/get-owner build (12 scheduled, eight native, 21 RESP).
+All 106 focused xtask tests passed (54 performance-contract, 13 release-evidence,
+23 governance, 16 doc), with scoped formatting, both strict check/clippy lanes,
+local performance/doc checks, 17 governance checks, three documentation-script
+tests, sync/link checks and mdbook build. The separate
+[multi-key check summary](local-runs/get-owner-resp-multikey-checks-35bbd4b8.json)
+binds the clean source and blob identities to these semantic checks, not numerical
+performance or native nonregression. Product/default/lock/qualification identities
+and all older summaries are unchanged; no full workspace or hosted check is claimed.

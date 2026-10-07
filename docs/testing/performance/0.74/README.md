@@ -1671,3 +1671,11 @@ goodput or divides latency. Product batch limits remain unchanged, and a real
 oversized-MSET rejection verifies no partial writes. Live duplicate semantics and
 concurrent MSET/MGET use separate TCP fixtures. Full mixed/live-delete, native
 batch, secure RESP3 and numerical memory/nonregression evidence are still open.
+
+Clean `35bbd4b8` verification passed 41 tool tests per variant and 106 focused
+xtask tests, strict check/clippy, scoped formatting, docs/book and 17 governance
+checks. The separate
+[multi-key check summary](local-runs/get-owner-resp-multikey-checks-35bbd4b8.json)
+retains the 48-cell semantic grid, seed-740074 reference model and negative
+256-entry MSET evidence. No numerical series, native floor, B0 retry, full
+workspace/hosted qualification or product admission follows from these checks.

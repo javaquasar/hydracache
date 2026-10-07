@@ -42,7 +42,8 @@ The fixture store is shared within a control, and setup/final GET byte oracles
 check it through every connection. SET success checks exact `+OK`; final GET
 checks retained bytes. No global socket ordering or conflicting-write oracle is
 claimed. Wire drain has one five-second group budget. This remains semantic-only,
-with no RESP3/mTLS, multi-key adapter, numerical series or B0 retry.
+with no RESP3/mTLS, numerical series or B0 retry. Separate multi-key semantic
+controls are described below; they do not add a global cross-socket order claim.
 
 Multi-key controls now support `Mget`, fixed-value `Mset`, live-key `Exists` and
 `DelMissing` at batch sizes 1/8/32/128. One command has one original offer and one
