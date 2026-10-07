@@ -195,14 +195,16 @@ impl Dataset {
     }
 }
 
-struct Pki {
-    ca: String,
-    server_cert: String,
-    server_key: String,
-    client_cert: String,
-    client_key: String,
+/// Tool-owned ephemeral PKI. Intentionally neither Debug nor Serialize.
+pub struct MtlsFixture {
+    pub(crate) ca: String,
+    pub(crate) server_cert: String,
+    pub(crate) server_key: String,
+    pub(crate) client_cert: String,
+    pub(crate) client_key: String,
 }
-fn pki() -> Result<Pki> {
+type Pki = MtlsFixture;
+pub(crate) fn pki() -> Result<Pki> {
     let generate = || -> std::result::Result<Pki, rcgen::Error> {
         let mut ca_params = CertificateParams::new(Vec::<String>::new())?;
         ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
@@ -261,6 +263,7 @@ pub struct NativeControl {
     listener: Option<JoinHandle<Result<()>>>,
     hc2: Option<Hc2ClientPlaneService>,
     _pki_files: Option<tempfile::TempDir>,
+    transport_security: Option<crate::security::TransportReceipt>,
 }
 impl Drop for NativeControl {
     fn drop(&mut self) {
@@ -281,6 +284,30 @@ impl NativeControl {
         slots: usize,
         dataset: Dataset,
         operation: Operation,
+    ) -> Result<Self> {
+        Self::start_inner(surface, slots, dataset, operation, None).await
+    }
+    pub async fn start_hc2_mtls(
+        slots: usize,
+        dataset: Dataset,
+        operation: Operation,
+        fixture: &MtlsFixture,
+    ) -> Result<Self> {
+        Self::start_inner(
+            Surface::Hc2GrpcMtls,
+            slots,
+            dataset,
+            operation,
+            Some(fixture),
+        )
+        .await
+    }
+    async fn start_inner(
+        surface: Surface,
+        slots: usize,
+        dataset: Dataset,
+        operation: Operation,
+        fixture: Option<&MtlsFixture>,
     ) -> Result<Self> {
         if ![1, 8, 32, 128].contains(&slots) {
             return Err("unsupported client slot count".to_owned());
@@ -313,6 +340,7 @@ impl NativeControl {
                 listener: None,
                 hc2: None,
                 _pki_files: None,
+                transport_security: None,
             };
             control.preload().await.map_err(|e| e.to_string())?;
             return Ok(control);
@@ -332,6 +360,7 @@ impl NativeControl {
             listener: None,
             hc2: None,
             _pki_files: None,
+            transport_security: None,
         };
         match surface {
             Surface::DirectClientSurface => unreachable!("direct control creates no listener"),
@@ -363,7 +392,14 @@ impl NativeControl {
                 }
             }
             Surface::Hc2GrpcMtls => {
-                let material = pki()?;
+                let generated;
+                let material = if let Some(fixture) = fixture {
+                    fixture
+                } else {
+                    generated = pki()?;
+                    &generated
+                };
+                control.transport_security = Some(material.receipt());
                 let files = tempfile::tempdir().map_err(|e| e.to_string())?;
                 let cert = files.path().join("server.pem");
                 let key = files.path().join("server.key");
@@ -393,7 +429,7 @@ impl NativeControl {
                         .await
                         .map_err(|e| e.to_string())
                 }));
-                let adapter = adapter(&control.endpoint, &material, &material)?;
+                let adapter = adapter(&control.endpoint, material, material)?;
                 for index in 0..slots {
                     control.clients.push(Mutex::new(Client::Hc2(
                         Hc2Client::connect(&adapter, client_config(index, "tenant-a"))
@@ -408,6 +444,71 @@ impl NativeControl {
     }
     pub fn dataset_digest(&self) -> String {
         self.dataset.digest()
+    }
+    pub fn transport_security(&self) -> Option<&crate::security::TransportReceipt> {
+        self.transport_security.as_ref()
+    }
+    /// Allocation diagnostic workload, not scheduled latency measurement.
+    pub async fn diagnostic_round(&self, write: bool, sequence: u64) -> Result<()> {
+        let key = &self.dataset.keys[sequence as usize % self.dataset.keys.len()];
+        if write {
+            self.put(key, sequence).await.map_err(|e| e.to_string())
+        } else {
+            let value = self.get(key, sequence).await.map_err(|e| e.to_string())?;
+            if value.as_ref() == Some(&self.dataset.value) {
+                Ok(())
+            } else {
+                Err("diagnostic GET byte drift".to_owned())
+            }
+        }
+    }
+    pub async fn refill_dataset(&self) -> Result<()> {
+        self.preload().await.map(|_| ()).map_err(|e| e.to_string())
+    }
+    pub async fn delete_dataset(&self) -> Result<()> {
+        for (sequence, key) in self.dataset.keys.iter().enumerate() {
+            let client = self.clients[sequence % self.clients.len()].lock().await;
+            match &*client {
+                Client::Direct(_) | Client::Hc1(_) => {
+                    let (ns, key) = Self::hc1_key(key)?;
+                    let response = self
+                        .surface_request(
+                            &client,
+                            sequence as u64,
+                            ClientRequest::Invalidate { ns, key },
+                        )
+                        .await
+                        .map_err(|e| e.to_string())?;
+                    if !matches!(response, ClientResponse::Invalidated) {
+                        return Err("DELETE reply mismatch".to_owned());
+                    }
+                }
+                Client::Hc2(client) => {
+                    if !client
+                        .delete(key.clone(), None)
+                        .await
+                        .map_err(|e| e.to_string())?
+                        .applied
+                    {
+                        return Err("HC2 DELETE was not applied".to_owned());
+                    }
+                }
+            }
+        }
+        for (sequence, key) in self.dataset.keys.iter().enumerate() {
+            if self
+                .get(key, sequence as u64)
+                .await
+                .map_err(|e| e.to_string())?
+                .is_some()
+            {
+                return Err("deleted key remained visible".to_owned());
+            }
+        }
+        if self.retained_entries() != 0 || self.retained_value_bytes() != 0 {
+            return Err("deleted logical values retained".to_owned());
+        }
+        Ok(())
     }
     pub fn dispatch_attempts(&self) -> u64 {
         self.state.dispatch_attempts()

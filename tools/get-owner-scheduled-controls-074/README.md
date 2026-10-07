@@ -1,6 +1,7 @@
 # Local scheduled/native instrumentation only
 
-No numerical CLI, counting allocator, daemon or qualification launcher is provided.
+No timing CLI, daemon or qualification launcher is provided. The opt-in
+`allocation-diagnostics` binary is separate and must never certify timing.
 Use the library's bounded `scheduled::run`, not the source-referenced legacy
 `rate::run_open_loop`. All observations are non-promotable and not product claims.
 
@@ -28,7 +29,8 @@ batches). Cancelled callers retain FIFO tombstones until their reply/close.
 `RespControl::run` is single-use, shares the original calendar with the driver and
 includes wire-owner drain in elapsed goodput accounting. It reports frame-observed
 timestamps separately from byte-validated operation completion; neither is batch
-time divided by depth. RESP3/mTLS and sealed numerical execution remain absent.
+time divided by depth. RESP3/mTLS semantic adapters are now available; sealed
+numerical execution remains absent.
 
 Native 32/128 fixtures synchronize GET/PUT clients with a barrier, verify real HC2
 connection accounting, exact values and shutdown. They assert no real-clock
@@ -42,7 +44,7 @@ The fixture store is shared within a control, and setup/final GET byte oracles
 check it through every connection. SET success checks exact `+OK`; final GET
 checks retained bytes. No global socket ordering or conflicting-write oracle is
 claimed. Wire drain has one five-second group budget. This remains semantic-only,
-with no RESP3/mTLS, numerical series or B0 retry. Separate multi-key semantic
+with no numerical series or B0 retry. Separate multi-key semantic
 controls are described below; they do not add a global cross-socket order claim.
 
 Multi-key controls now support `Mget`, fixed-value `Mset`, live-key `Exists` and
@@ -90,12 +92,21 @@ HELLO metadata is a separate shallow reader. Fifty-six RESP3 scheduled cells cov
 seven operations and socket/depth boundaries; separate tests cover 1 MiB GET/SET,
 mixed HELLO transitions, fragmentation, null/empty/binary/duplicate MGET and
 cancelled array owners. This is not RESP3-wide conformance, TLS, numeric native
-nonregression or release qualification. mTLS remains a separate required step.
+nonregression or release qualification. Secure adapter coverage is described below.
 
-Production capability audit: the Redis acceptor currently builds server-auth
+Historical capability audit at `2f6db5a4`: the Redis acceptor built server-auth
 TLS with `with_no_client_auth()`; Redis AUTH supplies the listener-bound identity.
-It does not implement required client-certificate mTLS like HC/2. This tool has
-no secure RESP adapter yet. Adding a tool-only mTLS wrapper would not prove the
-production listener or authorize a matched-security numeric comparison. The
-contract retains the unmet mTLS requirement and calls for a separate product
-security-policy decision before that path can be implemented.
+The approved opt-in product extension at `8565dbfd` now requires a client
+certificate when an explicit Redis client CA is configured; legacy server-auth
+TLS is unchanged. `RespControl::start_mtls` uses that production runtime factory
+and accept loop, then AUTH on every socket before HELLO/preload. HC2 and RESP
+can share ephemeral fixture PKI; certificate fingerprint equality does not imply
+identical application authorization, batch atomicity, negotiated cipher or
+numeric admission. Explicit shutdown joins owners and checks active connections.
+
+Allocation diagnostics have fixed preload/GET/SET/idle/delete/refill/shutdown
+phases and exact bounded arguments. The System counter implementation is source
+referenced from the earlier scratch tool, never linked into the timing library.
+RSS is whole-process working set/VmRSS; allocator active/resident/retained stays
+unavailable, not zero or green. See the separate secure-observer-memory-checks
+contract/design; commit and seal source/lock/binary before fresh-process execution.

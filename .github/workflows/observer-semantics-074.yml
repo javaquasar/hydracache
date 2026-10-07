@@ -1,0 +1,78 @@
+name: Observer Semantics 0.74
+
+on:
+  push:
+    branches: [feat/0.74-resp-native-throughput]
+    paths:
+      - .github/workflows/observer-semantics-074.yml
+      - tools/get-owner-scheduled-controls-074/**
+      - tools/resp-scratch-screen-074/src/memory.rs
+      - crates/hydracache-server/src/redis_tcp.rs
+      - crates/hydracache-server/src/config.rs
+      - crates/hydracache-server/src/bootstrap.rs
+      - crates/hydracache-redis-compat/src/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: observer-semantics-074-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  semantic:
+    name: Exact-SHA default and get-owner semantic controls (not qualification)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+    steps:
+      - name: Check out exact event source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install reviewed toolchain
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          components: rustfmt, clippy
+      - name: Record exact non-promotable source and toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          mkdir -p target/observer-semantics-074
+          printf 'source_commit=%s\nrun_id=%s\nattempt=%s\npromotable=false\nqualification=false\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > target/observer-semantics-074/identity.txt
+          rustc -Vv > target/observer-semantics-074/rustc.txt
+          sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt
+      - name: Format and strict lint (no numerical executable invocation)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check
+          cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log
+          cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log
+      - name: Default semantic tests with allocation-counter unit tests only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log
+      - name: Get-owner semantic tests (not native numerical nonregression)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log
+          test -z "$(git status --porcelain)"
+      - name: Retain immutable attempt logs even on failure
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/observer-semantics-074/**
+          if-no-files-found: error
+          retention-days: 30

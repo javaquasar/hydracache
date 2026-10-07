@@ -7,6 +7,105 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention() {
+    let c = contract("secure-observer-memory-checks-contract.toml");
+    for flag in [
+        "promotable",
+        "product_numeric_claims_allowed",
+        "qualification_allowed",
+        "invalidated_b0_retry_allowed",
+        "product_changes_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "production_runtime_tls_factory_required",
+        "production_accept_loop_required",
+        "required_client_certificate",
+        "auth_before_hello_and_preload_on_every_socket",
+        "shutdown_checks_zero_active_connections",
+        "shared_ephemeral_pki_between_resp_and_hc2",
+    ] {
+        assert_eq!(c["secure_adapter"][flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "matched_transport_is_matched_application_authorization",
+        "matched_transport_is_matched_batch_atomicity",
+        "cross_surface_numeric_comparison_allowed",
+        "private_keys_or_auth_tokens_in_receipts_allowed",
+    ] {
+        assert_eq!(c["secure_adapter"][flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "rss_is_heap_resident",
+        "requested_live_is_allocator_retained",
+        "logical_retention_is_allocator_retained",
+        "allocator_active_resident_retained_unavailable_means_pass",
+        "timing_metrics_allowed",
+        "cpu_goodput_or_latency_claims_allowed",
+        "retry_failed_attempts",
+    ] {
+        assert_eq!(c["memory"][flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(c["memory"]["runtime"].as_str(), Some("current-thread"));
+    assert_eq!(c["memory"]["repeats"].as_integer(), Some(3));
+    assert_eq!(c["memory"]["failed_attempts_allowed"].as_integer(), Some(0));
+    assert_eq!(
+        c["memory"]["preload_delete_refill_workload_calls"].as_integer(),
+        Some(16)
+    );
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let cargo: toml::Value =
+        toml::from_str(&std::fs::read_to_string(tool.join("Cargo.toml")).unwrap()).unwrap();
+    assert_eq!(cargo["features"]["default"].as_array().unwrap().len(), 0);
+    assert_eq!(
+        cargo["bin"][0]["required-features"][0].as_str(),
+        Some("allocation-diagnostics")
+    );
+    let binary = std::fs::read_to_string(tool.join("src/bin/memory_diagnostics.rs")).unwrap();
+    assert!(binary.contains("#[global_allocator]"));
+    assert!(binary.contains("unavailable-not-a-pass"));
+    assert!(binary.contains("product_numeric_claims_allowed: false"));
+    assert!(!std::fs::read_to_string(tool.join("src/lib.rs"))
+        .unwrap()
+        .contains("global_allocator"));
+    let ledger = contract("composition-ledger.toml");
+    assert_eq!(ledger["accepted_candidate_count"].as_integer(), Some(0));
+    assert_eq!(ledger["freeze_c74_allowed"].as_bool(), Some(false));
+}
+
+#[test]
+fn observer_hosted_ci_is_only_semantics_and_never_a_product_campaign() {
+    let text = std::fs::read_to_string(root().join(".github/workflows/observer-semantics-074.yml"))
+        .unwrap();
+    let workflow: serde_yaml::Value = serde_yaml::from_str(&text).unwrap();
+    assert_eq!(
+        workflow["jobs"]["semantic"]["runs-on"].as_str(),
+        Some("ubuntu-24.04")
+    );
+    assert_eq!(
+        workflow["jobs"]["semantic"]["timeout-minutes"].as_u64(),
+        Some(40)
+    );
+    assert!(text.contains("dtolnay/rust-toolchain@1.94.0"));
+    assert!(text.contains("ref: ${{ github.sha }}"));
+    assert!(text.contains("--all-targets --all-features --locked -- --test-threads=1"));
+    for forbidden in [
+        "self-hosted",
+        "workflow_run:",
+        "workflow_call:",
+        "systemctl",
+        "cargo run",
+        "performance-long-run",
+        "--require-ship",
+        "performance_secure_memory_074.ps1",
+        "redis-benchmark",
+    ] {
+        assert!(!text.contains(forbidden), "{forbidden}");
+    }
+}
+
+#[test]
 fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     for flag in [

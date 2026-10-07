@@ -1,5 +1,6 @@
 //! Tool-only bounded RESP2/RESP3 controls with FIFO owners and timestamps.
 //! This is not a general Redis client, security-matched cohort, or timing CLI.
+use crate::security::{MtlsFixture, TransportReceipt};
 use crate::{
     native::Dataset,
     rate::FixedRateSchedule,
@@ -10,6 +11,9 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
 use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, RespDecodeLimits};
+use hydracache_server::{
+    serve_redis_listener, RedisApiConfig, ServerConfig, ServerRole, ServerRuntime, TlsConfig,
+};
 use serde::Serialize;
 use std::collections::{HashSet, VecDeque};
 use std::sync::{Arc, Mutex};
@@ -402,6 +406,27 @@ fn valid_hello_version(version: &[u8]) -> bool {
             .iter()
             .all(|byte| byte.is_ascii_alphanumeric() || b".-+".contains(byte))
 }
+async fn authenticate<S: AsyncRead + AsyncWrite + Unpin>(stream: &mut S) -> Result<()> {
+    tokio::time::timeout(Duration::from_secs(5), async {
+        stream
+            .write_all(&command(&[b"AUTH", b"scheduled-fixture-token"]))
+            .await
+            .map_err(|_| "AUTH write failed")?;
+        stream.flush().await.map_err(|_| "AUTH flush failed")?;
+        let mut reply = [0u8; 5];
+        stream
+            .read_exact(&mut reply)
+            .await
+            .map_err(|_| "AUTH reply failed")?;
+        if &reply != b"+OK\r\n" {
+            return Err("AUTH failed; no HELLO/preload/fallback".to_owned());
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|_| "AUTH deadline; no fallback")?
+}
+
 async fn negotiate_resp3<S: AsyncRead + AsyncWrite + Unpin>(stream: &mut S) -> Result<String> {
     tokio::time::timeout(Duration::from_secs(5), negotiate_resp3_inner(stream))
         .await
@@ -612,15 +637,24 @@ async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
         loop {
             while let Some((frame, consumed)) = decode_dialect(&buffer, dialect)? {
                 let received = Instant::now();
-                if pending.front().ok_or("unsolicited RESP2 reply")?.written.is_none() { return Err("reply before full request write".to_owned()); }
+                if pending.front().ok_or("unsolicited RESP2 reply")?.written.is_none() {
+                    // TCP can reply after the last write but before a no-op
+                    // flush is polled. Retain that frame until flush completes.
+                    if writes.front().is_some_and(|w| w.offset == w.bytes.len()) { break; }
+                    return Err("reply before full request write".to_owned());
+                }
                 let owner = pending.pop_front().expect("checked FIFO owner");
                 let verified = frame.matches(&owner.submission.expected);
                 record(owner, Some(received), Some(&frame), verified, None, &records);
                 buffer.drain(..consumed);
             }
             let available = (MAX_FRAME - buffer.len()).min(scratch.len());
-            if available == 0 { return Err("RESP2 reply buffer over budget".to_owned()); }
-            let write = writes.front().map(|w| w.bytes.slice(w.offset..));
+            if available == 0 && writes.front().is_none_or(|w| w.offset != w.bytes.len()) { return Err("RESP2 reply buffer over budget".to_owned()); }
+            // TLS may accept plaintext while retaining the final encrypted
+            // record. Own a separate flush state; keep reading/cancellation
+            // live until the entire request has reached the transport.
+            let flush = writes.front().is_some_and(|w| w.offset == w.bytes.len());
+            let write = writes.front().filter(|_| !flush).map(|w| w.bytes.slice(w.offset..));
             tokio::select! {
                 changed = shutdown.changed() => { if changed.is_err() || *shutdown.borrow() { return Ok(()); } }
                 submission = requests.recv() => {
@@ -628,17 +662,21 @@ async fn pump<S: AsyncRead + AsyncWrite + Unpin>(
                     writes.push_back(Write {bytes:submission.request.clone(), offset:0, ordinal});
                     pending.push_back(Pending {submission, ordinal, written:None}); ordinal += 1;
                 }
-                written = async { writer.write(write.as_ref().expect("guarded write")).await }, if write.is_some() => {
-                    let count = written.map_err(|_| "RESP2 write failure")?;
-                    if count == 0 { return Err("RESP2 zero write".to_owned()); }
-                    let front = writes.front_mut().expect("write owner"); front.offset += count;
-                    if front.offset == front.bytes.len() {
-                        let done = writes.pop_front().expect("write owner");
-                        let owner = pending.iter_mut().find(|p| p.ordinal == done.ordinal).ok_or("write owner lost")?;
+                written = async {
+                    if flush { writer.flush().await.map(|_| 0) }
+                    else { writer.write(write.as_ref().expect("guarded write")).await }
+                }, if flush || write.is_some() => {
+                    let count = written.map_err(|_| "RESP2 write/flush failure")?;
+                    if flush {
+                        let done = writes.pop_front().expect("flush owner");
+                        let owner = pending.iter_mut().find(|p| p.ordinal == done.ordinal).ok_or("flush owner lost")?;
                         owner.written = Some(Instant::now());
+                    } else {
+                        if count == 0 { return Err("RESP2 zero write".to_owned()); }
+                        let front = writes.front_mut().expect("write owner"); front.offset += count;
                     }
                 }
-                read = reader.read(&mut scratch[..available]) => {
+                read = reader.read(&mut scratch[..available]), if available != 0 => {
                     let count = read.map_err(|_| "RESP2 read failure")?;
                     if count == 0 { return Err("RESP2 disconnect".to_owned()); }
                     buffer.extend_from_slice(&scratch[..count]);
@@ -825,6 +863,8 @@ pub struct RespObservation {
     pub operation: Operation,
     pub batch_size: usize,
     pub product_performance_claim: bool,
+    pub authenticated_connections: usize,
+    pub transport_security: Option<TransportReceipt>,
 }
 /// Bounded real TCP connections, independent FIFOs, one shared fixture store.
 pub struct RespControl {
@@ -840,9 +880,16 @@ pub struct RespControl {
     operation: Operation,
     setup_id: std::sync::atomic::AtomicU64,
     used: std::sync::atomic::AtomicBool,
+    transport_security: Option<TransportReceipt>,
+    runtime: Option<Arc<Mutex<ServerRuntime>>>,
+    stop: Option<watch::Sender<bool>>,
+    _pki_files: Option<tempfile::TempDir>,
 }
 impl Drop for RespControl {
     fn drop(&mut self) {
+        if let Some(stop) = &self.stop {
+            let _ = stop.send(true);
+        }
         for listener in &self.listeners {
             listener.abort();
         }
@@ -868,6 +915,34 @@ impl RespControl {
         operation: Operation,
         dialect: Dialect,
     ) -> Result<Self> {
+        Self::start_inner(dataset, depth, connections, operation, dialect, None).await
+    }
+    pub async fn start_mtls(
+        dataset: Dataset,
+        depth: usize,
+        connections: usize,
+        operation: Operation,
+        dialect: Dialect,
+        fixture: &MtlsFixture,
+    ) -> Result<Self> {
+        Self::start_inner(
+            dataset,
+            depth,
+            connections,
+            operation,
+            dialect,
+            Some(fixture),
+        )
+        .await
+    }
+    async fn start_inner(
+        dataset: Dataset,
+        depth: usize,
+        connections: usize,
+        operation: Operation,
+        dialect: Dialect,
+        fixture: Option<&MtlsFixture>,
+    ) -> Result<Self> {
         if ![1, 10, 50].contains(&depth) {
             return Err("unsupported RESP2 pipeline depth".to_owned());
         }
@@ -880,21 +955,63 @@ impl RespControl {
             ClientSurfaceState::new(ClientSurfaceLimits::default()).map_err(|e| e.to_string())?,
         );
         state.set_profile_instrumentation_enabled(false);
-        let server = Arc::new(
-            RedisRespServer::new(
-                Arc::clone(&state),
-                RedisListenerConfig {
-                    namespace: "default".to_owned(),
-                    tenant: "scheduled-resp".to_owned(),
-                    client_id: "scheduled-resp".to_owned(),
-                    decode_limits: RespDecodeLimits {
-                        max_frame_bytes: 8 * 1024 * 1024,
-                        ..Default::default()
-                    },
+        let mut runtime = None;
+        let mut files = None;
+        let mut listener_config = RedisListenerConfig {
+            namespace: "default".to_owned(),
+            tenant: "scheduled-resp".to_owned(),
+            client_id: "scheduled-resp".to_owned(),
+            decode_limits: RespDecodeLimits {
+                max_frame_bytes: 8 * 1024 * 1024,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut acceptor = None;
+        if let Some(fixture) = fixture {
+            let directory = fixture.files()?;
+            let path = directory.path();
+            std::fs::write(path.join("auth-token"), b"scheduled-fixture-token\n")
+                .map_err(|e| e.to_string())?;
+            let config = ServerConfig {
+                role: ServerRole::Local,
+                tls: TlsConfig {
+                    enabled: true,
+                    cert_path: Some(path.join("server.pem")),
+                    key_path: Some(path.join("server.key")),
+                    ca_path: Some(path.join("clients.pem")),
+                    acknowledge_insecure: false,
+                },
+                redis_api: RedisApiConfig {
+                    enabled: true,
+                    rediss_enabled: true,
+                    auth_required: true,
+                    auth_token_file: Some(path.join("auth-token")),
+                    mtls_client_ca_path: Some(path.join("clients.pem")),
                     ..Default::default()
                 },
-            )
-            .map_err(|e| e.to_string())?,
+                ..Default::default()
+            };
+            // Use production config AUTH loading and runtime verifier selection.
+            listener_config.auth = config
+                .redis_listener_config()
+                .map_err(|e| e.to_string())?
+                .auth;
+            let owner = ServerRuntime::new(config)
+                .map_err(|e| e.to_string())?
+                .start();
+            acceptor = owner.redis_tls_acceptor().map_err(|e| e.to_string())?;
+            if !acceptor
+                .as_ref()
+                .is_some_and(|a| a.requires_client_certificate())
+            {
+                return Err("production required client verifier absent".to_owned());
+            }
+            runtime = Some(Arc::new(Mutex::new(owner)));
+            files = Some(directory);
+        }
+        let server = Arc::new(
+            RedisRespServer::new(Arc::clone(&state), listener_config).map_err(|e| e.to_string())?,
         );
         server.set_pipeline_instrumentation_enabled(false);
         let tcp = tokio::net::TcpListener::bind("127.0.0.1:0")
@@ -915,37 +1032,58 @@ impl RespControl {
             operation,
             setup_id: std::sync::atomic::AtomicU64::new(u64::MAX),
             used: std::sync::atomic::AtomicBool::new(false),
+            transport_security: fixture.map(MtlsFixture::receipt),
+            runtime,
+            stop: None,
+            _pki_files: files,
         };
         let address = tcp.local_addr().map_err(|e| e.to_string())?;
-        for _ in 0..connections {
-            let mut client = tokio::net::TcpStream::connect(address)
-                .await
-                .map_err(|e| e.to_string())?;
-            client.set_nodelay(true).map_err(|e| e.to_string())?;
-            let (stream, _) = tcp.accept().await.map_err(|e| e.to_string())?;
-            stream.set_nodelay(true).map_err(|e| e.to_string())?;
+        if let Some(fixture) = fixture {
+            let (stop, receiver) = watch::channel(false);
+            control.stop = Some(stop);
             let observed = Arc::clone(&control.server);
+            let owner = Arc::clone(control.runtime.as_ref().ok_or("missing runtime")?);
             control.listeners.push(tokio::spawn(async move {
-                observed
-                    .serve_connection(stream)
+                serve_redis_listener(tcp, observed, owner, acceptor, receiver)
                     .await
                     .map_err(|e| e.to_string())
             }));
-            if dialect == Dialect::Resp3 {
-                let version = negotiate_resp3(&mut client).await?;
-                if control
-                    .hello_server_version
-                    .as_ref()
-                    .is_some_and(|previous| previous != &version)
-                {
-                    return Err("HELLO version differs across sockets".to_owned());
-                }
-                control.hello_server_version = Some(version);
-                control
-                    .pipelines
-                    .push(Pipeline::new_dialect(client, depth, dialect)?);
-            } else {
-                control.pipelines.push(Pipeline::new(client, depth)?);
+            let connector = fixture.connector()?;
+            for _ in 0..connections {
+                let client = tokio::net::TcpStream::connect(address)
+                    .await
+                    .map_err(|e| e.to_string())?;
+                client.set_nodelay(true).map_err(|e| e.to_string())?;
+                let mut client = tokio::time::timeout(
+                    Duration::from_secs(5),
+                    connector.connect(
+                        rustls::pki_types::ServerName::try_from("localhost")
+                            .map_err(|e| e.to_string())?,
+                        client,
+                    ),
+                )
+                .await
+                .map_err(|_| "mTLS handshake deadline")?
+                .map_err(|e| e.to_string())?;
+                authenticate(&mut client).await?;
+                control.attach_client(client).await?;
+            }
+        } else {
+            for _ in 0..connections {
+                let client = tokio::net::TcpStream::connect(address)
+                    .await
+                    .map_err(|e| e.to_string())?;
+                client.set_nodelay(true).map_err(|e| e.to_string())?;
+                let (stream, _) = tcp.accept().await.map_err(|e| e.to_string())?;
+                stream.set_nodelay(true).map_err(|e| e.to_string())?;
+                let observed = Arc::clone(&control.server);
+                control.listeners.push(tokio::spawn(async move {
+                    observed
+                        .serve_connection(stream)
+                        .await
+                        .map_err(|e| e.to_string())
+                }));
+                control.attach_client(client).await?;
             }
         }
         // Preload once through TCP, then verify visibility through EVERY socket.
@@ -964,6 +1102,93 @@ impl RespControl {
         }
         control.verify().await?;
         Ok(control)
+    }
+    async fn attach_client<S: AsyncRead + AsyncWrite + Unpin + Send + 'static>(
+        &mut self,
+        mut client: S,
+    ) -> Result<()> {
+        if self.dialect == Dialect::Resp3 {
+            let version = negotiate_resp3(&mut client).await?;
+            if self
+                .hello_server_version
+                .as_ref()
+                .is_some_and(|previous| previous != &version)
+            {
+                return Err("HELLO version differs across sockets".to_owned());
+            }
+            self.hello_server_version = Some(version);
+        }
+        self.pipelines.push(if self.dialect == Dialect::Resp2 {
+            Pipeline::new(client, self.depth)?
+        } else {
+            Pipeline::new_dialect(client, self.depth, self.dialect)?
+        });
+        Ok(())
+    }
+    pub fn transport_security(&self) -> Option<&TransportReceipt> {
+        self.transport_security.as_ref()
+    }
+    pub fn retained_entries(&self) -> usize {
+        self.state.retained_state_for_diagnostics().store_entries
+    }
+    pub fn retained_value_bytes(&self) -> usize {
+        self.state.retained_state_for_diagnostics().value_bytes
+    }
+    pub async fn diagnostic_round(&self, write: bool, sequence: u64) -> Result<()> {
+        let operation = if write {
+            Operation::Set
+        } else {
+            Operation::Get
+        };
+        let (frame, expected) = make_request(&self.entries, operation, sequence)?;
+        if self.pipelines[sequence as usize % self.pipelines.len()]
+            .submit(self.setup_id(), frame, expected)
+            .await
+            != TargetOutcome::Success
+        {
+            return Err("diagnostic RESP operation failed".to_owned());
+        }
+        Ok(())
+    }
+    pub async fn refill_dataset(&self) -> Result<()> {
+        for sequence in 0..self.entries.len() {
+            self.diagnostic_round(true, sequence as u64).await?;
+        }
+        self.verify().await.map(|_| ())
+    }
+    pub async fn delete_dataset(&self) -> Result<()> {
+        for (key, _) in &self.entries {
+            if self.pipelines[0]
+                .submit(
+                    self.setup_id(),
+                    command(&[b"DEL", key]),
+                    Expected::Integer(1),
+                )
+                .await
+                != TargetOutcome::Success
+            {
+                return Err("diagnostic DEL failed".to_owned());
+            }
+        }
+        for pipeline in &self.pipelines {
+            for (key, _) in &self.entries {
+                if pipeline
+                    .submit(
+                        self.setup_id(),
+                        command(&[b"GET", key]),
+                        Expected::Bulk(None),
+                    )
+                    .await
+                    != TargetOutcome::Success
+                {
+                    return Err("deleted RESP value visible".to_owned());
+                }
+            }
+        }
+        if self.retained_entries() != 0 || self.retained_value_bytes() != 0 {
+            return Err("deleted RESP logical values retained".to_owned());
+        }
+        Ok(())
     }
     pub fn physical_connections(&self) -> usize {
         self.pipelines.len()
@@ -1078,6 +1303,12 @@ impl RespControl {
             operation: self.operation,
             batch_size: self.operation.batch_size(),
             product_performance_claim: false,
+            authenticated_connections: if self.transport_security.is_some() {
+                self.pipelines.len()
+            } else {
+                0
+            },
+            transport_security: self.transport_security.clone(),
         };
         validate_wire(&result)?;
         Ok(result)
@@ -1090,6 +1321,11 @@ impl RespControl {
             }
         }
         // Visit every owned server task even if an earlier connection failed.
+        if let Some(stop) = &self.stop {
+            if stop.send(true).is_err() {
+                failures.push("production listener exited before shutdown".to_owned());
+            }
+        }
         for mut listener in self.listeners.drain(..) {
             match tokio::time::timeout(Duration::from_secs(5), &mut listener).await {
                 Ok(Ok(Ok(()))) => {}
@@ -1100,6 +1336,16 @@ impl RespControl {
                     let _ = listener.await;
                     failures.push("RESP2 connection drain timed out".to_owned());
                 }
+            }
+        }
+        if let Some(runtime) = &self.runtime {
+            if runtime
+                .lock()
+                .map_err(|_| "runtime lock poisoned")?
+                .redis_active_connections()
+                != 0
+            {
+                failures.push("production RESP connections retained".to_owned());
             }
         }
         if failures.is_empty() {
@@ -1134,6 +1380,18 @@ impl Target for RespControl {
 
 /// Reject response reassignment, timestamp rebasing and fabricated wire replies.
 pub fn validate_wire(observation: &RespObservation) -> Result<()> {
+    if observation.transport_security.is_some() {
+        if observation.authenticated_connections != observation.physical_connections {
+            return Err("missing per-socket AUTH receipt".to_owned());
+        }
+        let receipt = observation
+            .transport_security
+            .as_ref()
+            .ok_or("security receipt absent")?;
+        crate::security::validate_transport_material_match(receipt, receipt, "fixture", "fixture")?;
+    } else if observation.authenticated_connections != 0 {
+        return Err("plaintext fixture claims secure AUTH".to_owned());
+    }
     match observation.dialect {
         Dialect::Resp2
             if observation.hello_connections != 0 || observation.hello_server_version.is_some() =>
@@ -2091,6 +2349,74 @@ mod tests {
     struct Gate {
         closed: AtomicBool,
         waker: Mutex<Option<Waker>>,
+    }
+    #[tokio::test]
+    async fn buffered_transport_requires_flush_and_keeps_fragmented_reply_owner() {
+        // BufWriter with capacity above the request models TLS accepting
+        // plaintext without yet sending a final transport record.
+        let (client, mut peer) = tokio::io::duplex(1);
+        let pipeline = Pipeline::new(tokio::io::BufWriter::with_capacity(4096, client), 1).unwrap();
+        let frame = command(&[b"GET", b"k"]);
+        let expected_request = frame.clone();
+        let server = tokio::spawn(async move {
+            let mut request = vec![0; expected_request.len()];
+            peer.read_exact(&mut request).await.unwrap();
+            assert_eq!(request, expected_request);
+            for byte in b"$3\r\nabc\r\n" {
+                peer.write_all(&[*byte]).await.unwrap();
+            }
+            // Keep the peer open until the owner explicitly shuts down.
+            let mut final_byte = [0];
+            assert_eq!(peer.read(&mut final_byte).await.unwrap(), 0);
+        });
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(5),
+                pipeline.submit(0, frame, Expected::Bulk(Some(Bytes::from_static(b"abc"))))
+            )
+            .await
+            .unwrap(),
+            TargetOutcome::Success
+        );
+        pipeline.drain().await.unwrap();
+        {
+            let records = pipeline.records.lock().unwrap();
+            assert!(records[0].received.unwrap() >= records[0].written.unwrap());
+        }
+        pipeline.shutdown().await.unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn rejected_auth_is_redacted_and_sends_no_hello_or_preload() {
+        let (mut client, mut peer) = tokio::io::duplex(1024);
+        let expected = command(&[b"AUTH", b"scheduled-fixture-token"]);
+        let server = tokio::spawn(async move {
+            let mut request = vec![0; expected.len()];
+            peer.read_exact(&mut request).await.unwrap();
+            assert_eq!(request, expected);
+            peer.write_all(b"-WRONGPASS token-secret\r\n")
+                .await
+                .unwrap();
+            let mut extra = Vec::new();
+            peer.read_to_end(&mut extra).await.unwrap();
+            assert!(extra.is_empty());
+        });
+        let error = authenticate(&mut client).await.unwrap_err();
+        assert_eq!(error, "AUTH failed; no HELLO/preload/fallback");
+        drop(client);
+        server.await.unwrap();
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn auth_stall_has_unchanged_five_second_deadline_without_fallback() {
+        let (mut client, _peer) = tokio::io::duplex(1024);
+        let start = Instant::now();
+        assert_eq!(
+            authenticate(&mut client).await.unwrap_err(),
+            "AUTH deadline; no fallback"
+        );
+        assert_eq!(start.elapsed(), Duration::from_secs(5));
     }
     impl Gate {
         fn open(&self) {
