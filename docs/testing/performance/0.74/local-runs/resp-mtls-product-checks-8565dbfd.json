@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "kind": "local-production-resp-mtls-semantic-checks-not-release-admission",
+  "state": "local-production-mtls-semantic-proof-only",
+  "checked_source_commit": "8565dbfd11ae1ce6d8f20146a37058b8bfb77728",
+  "checked_source_clean_before_and_after": true,
+  "baseline_source_commit": "93727e3346269bbce581151b0e2512764bb78236",
+  "policy_preregistration_commit": "11c78c6ddc1a8a1c6342bf5a72db298e72d04e27",
+  "authorization": "explicit-human-approval-2026-10-07",
+  "baseline_checks": {
+    "selected_redis_resp_lifecycle_tests": 6,
+    "config_property_tests": 3,
+    "performance_series": 0
+  },
+  "production_security_extension_implemented": true,
+  "security_mode_default_enabled": false,
+  "legacy_plaintext_server_auth_tls_behavior_changed": false,
+  "redis_auth_and_listener_tenant_binding_preserved": true,
+  "accepted_performance_changes": 0,
+  "product_performance_claim": false,
+  "promotable": false,
+  "secure_scheduled_resp_adapter_implemented": false,
+  "matched_security_cohort_completed": false,
+  "native_performance_nonregression_measured": false,
+  "numerical_series_executed": 0,
+  "full_d3_completed": false,
+  "qualification_completed": false,
+  "full_workspace_verify_claimed": false,
+  "hosted_ci_claimed": false,
+  "get_owner_default_enabled": false,
+  "integrated_c74": "UNRESOLVED",
+  "invalidated_b0_retried": false,
+  "infrastructure_workflows_dispatched": 0,
+  "host_services_operated": 0,
+  "expensive_product_workloads": 0,
+  "source_references_git_blob_ids": {
+    "crates/hydracache-server/src/bootstrap.rs": "84de339513860f9a6f90c7df77675e3f5d6b1f0c",
+    "crates/hydracache-server/src/config.rs": "f66c1ca00d88dbb308968c1f412c2cea64f982cb",
+    "crates/hydracache-server/src/redis_tcp.rs": "b37815cdde6ac37580d484e2c7b3c76414b8ec26",
+    "crates/hydracache-server/tests/config_properties.rs": "cde6cd05716f56e12bf2397370d213b2be5d59da",
+    "crates/hydracache-server/tests/redis_mtls_074.rs": "4310bdf6c38638626fbbeb835932ef9afdf42d23",
+    "crates/hydracache-server/tests/server_lifecycle.rs": "cb2248067eacbe395149b84b71de26b61eb0ad7b",
+    "crates/xtask/tests/performance_contract_074.rs": "ed28e0d28b5acd801b213fd2ca13e880d1704ee6",
+    "docs/COMPAT.md": "fdb201b407696578655c3bb1f35171754dff3e0c",
+    "docs/testing/performance/0.74/get-response-owner-scheduled-controls-contract.toml": "4e0947583d0e4dee11411dc504212a598132c3fb"
+  },
+  "checks": {
+    "server_unit_tests": 87,
+    "server_config_property_tests": 3,
+    "server_lifecycle_tests": 28,
+    "server_mtls_integration_tests_default": 11,
+    "server_mtls_integration_tests_get_owner": 11,
+    "server_tests_serialized": true,
+    "observer_tests_default": 57,
+    "observer_tests_get_owner": 57,
+    "observer_partition_per_variant": {
+      "scheduled": 12,
+      "native": 16,
+      "resp": 29
+    },
+    "observer_serial_repeat_per_variant": "passed",
+    "observer_isolated_normal_parallelism_repeat_per_variant": "passed",
+    "xtask_performance_contract_tests": 58,
+    "xtask_release_evidence_tests": 13,
+    "xtask_governance_tests": 23,
+    "xtask_doc_tests": 16,
+    "server_xtask_all_targets_check": "passed",
+    "server_xtask_all_targets_all_features_strict_clippy": "passed",
+    "observer_all_targets_check": "passed",
+    "observer_all_targets_all_features_strict_clippy": "passed",
+    "scoped_rust_format": "passed",
+    "performance_contract_check": "passed-local-non-promotable",
+    "doc_check": "passed",
+    "release_governance_check": "passed-17-checks",
+    "documentation_script_tests": 3,
+    "documentation_sync_and_local_links": "passed-51-markdown-20-includes",
+    "mdbook_build": "passed",
+    "git_diff_check": "passed"
+  },
+  "proofs": {
+    "configuration": "new explicit Option<PathBuf>; unset omitted from old TOML; requires enabled Redis/rediss/TLS/AUTH and nonempty path; deterministic boolean property; empty env rejects; Windows non-Unicode env retained rather than ignored",
+    "inbound_trust": "mandatory WebPKI client verifier; explicit CA only; valid dedicated CA works independently of unreadable global CA; invalid/missing client bundle never falls back",
+    "client_ca_bounds": {
+      "maximum_file_bytes": 262144,
+      "maximum_certificates": 16,
+      "exact_bound_accepted": true,
+      "one_over_bound_rejected": true,
+      "empty_malformed_invalid_der_unreadable_rejected": true
+    },
+    "tls_clients": "missing, foreign, expired, not-yet-valid and wrong client-auth EKU rejected without application bytes/dispatch; TLS 1.3 client handshake result alone is not server acceptance; fixture deadline is not accepted as a rejection oracle",
+    "server_identity": "client rejects foreign server CA and mismatched hostname",
+    "application_auth": "trusted certificate alone does not bypass NOAUTH; wrong token and wrong username with valid token denied; credentials not echoed; new socket has no inherited AUTH",
+    "tenant_isolation": "two explicitly configured listeners share one backend; authenticated GET observes only its listener tenant; no certificate-subject routing or dynamic ACL system",
+    "wire": "production accept loop/factory with RESP2/3 HELLO AUTH; fixed binary GET/SET, misses and pipeline replies; connection-local dialect/auth; 4 KiB binary disconnect/reconnect fixture, not full 1 MiB default-frame acceptance",
+    "ownership": {
+      "maximum_connections": 128,
+      "connection_129_closed_before_dispatch": true,
+      "freed_slot_reused": true,
+      "handshake_seconds": 5,
+      "handshake_deadline_virtual_time": true,
+      "shutdown_joined_authenticated_fragmented_and_incomplete_tls_owners": true,
+      "active_connections_after_shutdown": 0
+    },
+    "task_failure": "unit proof of explicit join failure and abort/join of remaining owners; not injected accept-loop OS failure"
+  },
+  "retained_development_diagnostics": [
+    {
+      "stage": "tests-before-implementation",
+      "result": "compile-failed",
+      "finding": "missing mTLS config field and validation error variant",
+      "resolution": "implemented preregistered production policy"
+    },
+    {
+      "stage": "initial-PKI-fixture",
+      "result": "1-passed-6-failed",
+      "finding": "fixture omitted existing required global TLS CA path; IncompleteTlsMaterial",
+      "resolution": "fixed fixture only; global TLS validation unchanged"
+    },
+    {
+      "stage": "forced-fragmented-shutdown-oracle",
+      "result": "10-passed-1-failed",
+      "finding": "oracle allowed only TLS truncation, not the close/reset outcome",
+      "resolution": "whitelisted UnexpectedEof/ConnectionReset while retaining empty RESP output and zero dispatch"
+    },
+    {
+      "stage": "strict-lint",
+      "result": "failed",
+      "finding": "test field reassignment after Default",
+      "resolution": "struct initializer; no lint suppression"
+    },
+    {
+      "stage": "first-clean-source-observer-repeat-with-concurrent-builds",
+      "result": "default-observer-resp-7-passed-2-failed",
+      "failed_tests": [
+        "multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles",
+        "resp3_negotiates_every_socket_and_keeps_command_denominators"
+      ],
+      "diagnostic": "RESP2 transport preload failed",
+      "cause_established": false,
+      "resolution": "after build completion, both feature variants passed serialized and then ordinary parallel test invocations on identical source with unchanged workload/deadlines/thresholds",
+      "remaining_risk": "local preload stability under external build/host pressure remains unattributed; not converted into a performance result"
+    }
+  ],
+  "immutability": {
+    "root_and_observer_lockfiles_unchanged": true,
+    "release_073_artifacts_untouched": true,
+    "historical_security_audit_untouched": true,
+    "sealed_b0_d3a_packets_untouched": true,
+    "qualification_manifest_changed": false,
+    "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "remaining_work": [
+    "secure scheduled RESP observer through the production mTLS listener",
+    "matched RESP/HC2 security fingerprints and semantic controls before a new preregistered numerical cohort",
+    "independent native nonregression and allocator/RSS/retained idle/refill measurements",
+    "expiration/quota/fault/embedded controls, hosted feature CI and full D3/qualification",
+    "hot CA rotation and CRL/OCSP revocation are not implemented or claimed"
+  ]
+}

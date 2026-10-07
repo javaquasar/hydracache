@@ -1746,3 +1746,15 @@ scheduled observer or a matched numerical cohort. The historical audit remains
 immutable. Accepted performance changes remain zero, get-owner defaults remain
 off, C74 unresolved and full D3/admission closed. No new numerical benchmark,
 qualification, host operation or workflow dispatch accompanies this extension.
+
+Clean-source `8565dbfd11ae1ce6d8f20146a37058b8bfb77728` passed 87 server unit,
+28 lifecycle, three config-property and 11 mTLS integration tests, plus the same
+11 mTLS tests with get-owner. The observer passed 57 tests per default/get-owner
+variant in both serialized and isolated ordinary-parallel repeats; 110 focused
+xtask tests, strict check/clippy, formatting, local contract/doc/governance and
+book checks passed. The [mTLS product check summary](local-runs/resp-mtls-product-checks-8565dbfd.json)
+retains exact source/blob references and initial fixture/lint/oracle failures.
+A first clean observer repeat alongside builds failed two plaintext preload
+tests; its cause is not established, and subsequent unchanged-source passes do
+not erase it or authorize numerical data from that execution. The qualification
+manifest, lockfiles and sealed historical packets remain unchanged.

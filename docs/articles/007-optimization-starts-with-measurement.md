@@ -3927,3 +3927,20 @@ that cohort, hosted CI and release qualification. No speedup is inferred, native
 floors are not waived, and get-owner is still default-off. Rolling back to an
 older binary requires blocking this listener first: an old binary may ignore the
 new option and cannot safely enforce its certificate policy.
+
+The clean implementation source `8565dbfd11ae1ce6d8f20146a37058b8bfb77728`
+passed 129 scoped server checks, another 11 mTLS checks with get-owner, 57
+observer checks per feature variant and 110 focused xtask checks, with strict
+lint, formatting and local documentation/contracts. These are semantic and
+verification counts, not measured speedup. The
+`docs/testing/performance/0.74/local-runs/resp-mtls-product-checks-8565dbfd.json`
+summary retains the exact blobs and the failures as well as the passes.
+
+One failure deserves particular care: a pinned observer repeat alongside builds
+failed two plaintext preload tests. After builds finished, both feature variants
+passed serialized and then normally parallel on unchanged source and deadlines.
+That is useful reproduction evidence, not a proven causal explanation of the
+first failure. We retain the local host-pressure/preload stability question and
+exclude that execution from numerical claims instead of silently calling the
+campaign clean. No root/tool lockfile, frozen qualification identity or older
+sealed packet was changed to obtain the subsequent passes.

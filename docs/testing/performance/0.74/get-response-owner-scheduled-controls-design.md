@@ -584,3 +584,45 @@ observer support, equally secured RESP/HC2 cohorts,
 expiration/quota/fault/retention controls, hosted CI and release qualification are
 still separate, unfinished work. No numerical series, B0 retry, host service
 operation or expensive infrastructure run is authorized by these checks.
+
+### Clean-source verification receipt
+
+At `8565dbfd11ae1ce6d8f20146a37058b8bfb77728`, 87 server unit tests, 28
+lifecycle tests, three configuration property tests and 11 mTLS integration tests
+passed, with the latter 11 repeated successfully with experimental get-owner.
+The observer suite passed 57 tests in each default/get-owner variant, serialized
+and again with normal test parallelism after builds completed. The focused xtask
+suites passed 58 performance-contract, 13 evidence, 23 governance and 16 doc
+tests. Scoped all-target check, all-feature strict clippy, formatting, local
+performance/doc gates, 17 governance checks, three docs-script tests, sync/links,
+mdbook and diff checks passed. Source was clean before and after these checks.
+The [separate local summary](local-runs/resp-mtls-product-checks-8565dbfd.json)
+binds those results to exact source blobs; it is not a release-admission receipt.
+
+The first pinned observer repeat ran alongside builds and failed two plaintext
+preload tests (`multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles`
+and `resp3_negotiates_every_socket_and_keeps_command_denominators`) with
+`RESP2 transport preload failed`. Their cause remains unattributed. Both repeated
+successfully on the same source, serialized and then normally parallel, without
+changing operation/concurrency grids, timeouts, seeds, workload or thresholds.
+The failed attempt is retained; neither its long execution nor the clean repeats
+are a throughput/CPU/latency claim or proof of robustness under external pressure.
+
+Reproduce the focused product and observer checks locally:
+
+```powershell
+cargo test -p hydracache-server --lib --test redis_mtls_074 --test server_lifecycle --test config_properties --locked -- --test-threads=1
+cargo test -p hydracache-server --test redis_mtls_074 --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked -- --test-threads=1
+cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --locked -- --test-threads=1
+cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --features get-owner --locked -- --test-threads=1
+cargo test -p xtask --test performance_contract_074 --test release_evidence --test release_governance --test doc_check --locked
+cargo check -p hydracache-server -p xtask --all-targets --locked
+cargo clippy -p hydracache-server -p xtask --all-targets --all-features --locked -- -D warnings
+cargo xtask performance-contract-check --release 0.74
+cargo xtask doc-check
+cargo xtask release-governance-check --release 0.74
+```
+
+The observer's isolated normal-parallel repeats use the same two `cargo test`
+commands with `-- --test-threads=1` omitted. No command above executes numerical
+release qualification or operates a rented host.
