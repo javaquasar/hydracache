@@ -11,6 +11,78 @@ fn contract(name: &str) -> toml::Value {
     toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
 }
 
+#[test]
+fn response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate() {
+    let c = contract("response-reduction-attribution-contract.toml");
+    assert_eq!(
+        c["profile_id"].as_str(),
+        Some("response-reduction-owner-d1-074-v1")
+    );
+    for flag in [
+        "product_mutation_allowed",
+        "promotable",
+        "product_numeric_claims_allowed",
+        "prior_rejections_reopened",
+        "expensive_workloads_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let s = &c["screen"];
+    for (key, expected) in [
+        ("seed", 740074),
+        ("fresh_process_repeats", 3),
+        ("maximum_attempts", 18),
+        ("maximum_attempt_seconds", 30),
+        ("warmup_operations_per_dispatch_control", 100),
+        ("concurrency", 1),
+        ("cache_time_ms", 1000000),
+    ] {
+        assert_eq!(s[key].as_integer(), Some(expected), "{key}");
+    }
+    assert_eq!(
+        s["cpu_latency_goodput_native_nonregression_claims_allowed"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        s["decoder_translation_encoder_socket_scheduling_included"].as_bool(),
+        Some(false)
+    );
+    let cells = c["cell"].as_array().unwrap();
+    assert_eq!(cells.len(), 6);
+    let expected = [
+        ("get-empty", "get", true, 0, 10000),
+        ("get-64", "get", true, 64, 10000),
+        ("get-4096", "get", true, 4096, 10000),
+        ("get-1048576", "get", true, 1048576, 500),
+        ("get-miss", "get", false, 4096, 10000),
+        ("set-4096", "set", true, 4096, 10000),
+    ];
+    for (cell, (id, op, hit, bytes, operations)) in cells.iter().zip(expected) {
+        assert_eq!(cell["id"].as_str(), Some(id));
+        assert_eq!(cell["operation"].as_str(), Some(op));
+        assert_eq!(cell["hit"].as_bool(), Some(hit));
+        assert_eq!(cell["payload_bytes"].as_integer(), Some(bytes));
+        assert_eq!(cell["iterations"].as_integer(), Some(operations));
+    }
+    assert_eq!(
+        c["next_boundary"]["candidate_authorized_by_this_contract"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        c["next_boundary"]["four_native_surfaces_and_peak_idle_memory_guards_not_waived"].as_bool(),
+        Some(true)
+    );
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("tools/resp-response-owner-074/Cargo.toml")).unwrap(),
+    )
+    .unwrap();
+    assert!(
+        manifest.get("features").is_none(),
+        "D1 tool must not forward a candidate feature"
+    );
+    assert_eq!(manifest["package"]["publish"].as_bool(), Some(false));
+}
+
 fn trace() -> Value {
     json!({
         "trace_sha256": "trace-a",

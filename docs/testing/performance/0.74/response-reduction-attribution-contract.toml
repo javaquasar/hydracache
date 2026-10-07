@@ -1,0 +1,80 @@
+schema_version = 1
+release = "0.74"
+contract_id = "response-reduction-owner-d1-074-v1"
+profile_id = "response-reduction-owner-d1-074-v1"
+state = "preregistered-local-attribution-only"
+prior_runtime_baseline_sha = "6a00f41c56c2e9e0edb2edac14c0f481fbc95fe9"
+product_mutation_allowed = false
+promotable = false
+product_numeric_claims_allowed = false
+prior_rejections_reopened = false
+expensive_workloads_allowed = false
+hypothesis = "Borrowed GET reduction duplicates a nonempty response Vec while the original response remains live; isolate this owner from dispatch and encoded output before proposing any consuming reducer."
+tool = "tools/resp-response-owner-074"
+runner = "scripts/perf/performance_response_owner_074.py"
+
+[screen]
+seed = 740074
+warmup_operations_per_dispatch_control = 100
+fresh_process_repeats = 3
+maximum_attempts = 18
+maximum_attempt_seconds = 30
+order = "rotate six fixed cells by repeat index; dispatch-only, reducer-only, dispatch-and-reduce within each fresh process; no retries"
+namespace = "default"
+concurrency = 1
+cache_time_ms = 1000000
+fixed_operation_budget_not_duration = true
+decoder_translation_encoder_socket_scheduling_included = false
+request_plan_and_oracle_constructed_outside_windows = true
+request_envelope_clone_and_response_vector_in_dispatch_windows = true
+followup_validation_in_dispatch_windows = true
+original_response_alive_during_reducer_window = true
+independent_identically_initialized_dispatch_controls = true
+exact_results_dispatch_mutations_cardinality_and_final_value_required = true
+allocator = "tool-only System outstanding requested-layout bytes, gross requested bytes and successful allocation/reallocation calls"
+hidden_realloc_overlap_allocator_metadata_rss_not_measured = true
+cpu_latency_goodput_native_nonregression_claims_allowed = false
+summary = "retain every attempt and stage total; report all three repeats and per-cell min/max; no candidate estimator, acceptance floor or best-sample selection"
+
+[[cell]]
+id = "get-empty"
+operation = "get"
+hit = true
+payload_bytes = 0
+iterations = 10000
+[[cell]]
+id = "get-64"
+operation = "get"
+hit = true
+payload_bytes = 64
+iterations = 10000
+[[cell]]
+id = "get-4096"
+operation = "get"
+hit = true
+payload_bytes = 4096
+iterations = 10000
+[[cell]]
+id = "get-1048576"
+operation = "get"
+hit = true
+payload_bytes = 1048576
+iterations = 500
+[[cell]]
+id = "get-miss"
+operation = "get"
+hit = false
+payload_bytes = 4096
+iterations = 10000
+[[cell]]
+id = "set-4096"
+operation = "set"
+hit = true
+payload_bytes = 4096
+iterations = 10000
+
+[next_boundary]
+candidate_authorized_by_this_contract = false
+one_possible_future_hypothesis = "Consume successful GET response ownership in private execution only, with public borrowed reduction unchanged; no scratch reuse, encoder batching or native/store change."
+new_d2_preregistration_semantic_tests_and_d3_pairs_required = true
+four_native_surfaces_and_peak_idle_memory_guards_not_waived = true
