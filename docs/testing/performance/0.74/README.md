@@ -1641,3 +1641,10 @@ reply can become a successful operation. Native GET/PUT controls now also test
 barrier-synchronized 32/128 slots and HC2 live connections/cleanup. These are
 functional prerequisites only; full measured/nonregression requirements remain
 open, and the earlier check summary remains bound to its original source.
+
+Clean-source verification at `a8440175`: 29 tests per tool variant (12 scheduled,
+eight native, nine RESP), 104 focused xtask tests, strict lint/check, scoped
+formatting, docs/book and 17 governance checks passed. The separate
+[RESP FIFO check summary](local-runs/get-owner-resp-fifo-checks-a8440175.json)
+records exact source identities; this is not a benchmark, B0 retry, full workspace
+verification or hosted receipt. No numerical performance conclusion is added.

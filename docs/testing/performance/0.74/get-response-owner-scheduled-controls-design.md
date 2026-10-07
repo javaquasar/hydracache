@@ -190,3 +190,20 @@ remain open. Both `pending` requirement flags stay true: instrumentation and a
 small semantic grid are prerequisites, not the independently repeated admission
 measurements. The existing 19-test `a6047895` check summary is historical and is
 not overwritten to describe this extension.
+
+## Retained extension verification
+
+At clean source `a8440175478133dcea03ef4bdd7ef7114111b534`, all 29 tool tests
+passed in each default/get-owner build: 12 scheduled, eight native and nine RESP
+tests. The 52 performance-contract, 13 release-evidence, 23 governance and 16 doc
+xtask tests passed. Scoped formatting, both strict check/clippy lanes, local
+performance/doc checks, 17 governance checks, three documentation script tests,
+link/sync checks and mdbook build also passed. The deterministic unresolved-wire
+test uses virtual time: drain refuses a held response rather than issuing a
+clean receipt, and explicit shutdown releases its owner.
+
+The [extension check summary](local-runs/get-owner-resp-fifo-checks-a8440175.json)
+retains exact source and Git blob identities and the fixture diagnostic. This is
+functional evidence, not numerical nonregression, hosted CI or full workspace
+verification. No benchmark series, B0 retry, host mutation or qualification ran;
+the qualification manifest digest and historical summaries remain unchanged.
