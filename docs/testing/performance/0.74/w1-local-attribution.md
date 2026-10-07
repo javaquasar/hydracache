@@ -541,3 +541,22 @@ analysis. Affinity and above-normal priority were applied and all ten processes 
 500-ms pre-run samples observed 28.91-69.53% machine CPU against the frozen 20% ceiling. No MDE or
 A/A performance number was accepted, and the threshold was not changed. The compact receipt is
 `local-runs/aa-v1-invalidated-background-20261002.json`.
+
+## Response reduction follow-up after the rejected serial scratch
+
+The separate source `2562f6f7e2ff598741d4fe9a4f38ae635786e8d9` ran 18 successful
+fresh-process D1 attempts from a preregistered six-cell contract. Borrowed GET
+reduction owns exactly one payload-sized allocation per nonempty hit, distinct
+from canonical dispatch and encoded output. Empty hit, miss and SET controls
+have zero reduction allocation. All three repeats agree; dispatch/combined
+subtraction exactly equals isolated reduction, with no unassigned residual.
+
+For large GET values, both response vectors are live together. Their checkpoint
+increment is exactly one payload, whereas whole-window peak depends on transient
+dispatch metadata and must not be inferred by adding stage peaks. Every window
+releases temporary owners. This is requested-layout, fixed-plan, injected-clock
+attribution, not CPU, network goodput, RSS or native nonregression proof.
+See [full method and result](response-reduction-attribution-result.md) and
+`local-runs/response-owner-2562f6f7/`. This new D1 owner may motivate an independently
+preregistered private consuming reducer; it does not authorize mutation or rescue
+the rejected W9b scratch. N6, terminal negatives and C74 admission remain unchanged.

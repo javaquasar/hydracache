@@ -83,6 +83,58 @@ fn response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate() 
     assert_eq!(manifest["package"]["publish"].as_bool(), Some(false));
 }
 
+#[test]
+fn response_reduction_d1_retains_exact_packet_without_reopening_rejected_scratch() {
+    let registry = contract("proposal-registry.toml");
+    let attribution = &registry["followup_attributions"].as_array().unwrap()[0];
+    let source = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9";
+    assert_eq!(attribution["measurement_source_sha"].as_str(), Some(source));
+    for flag in [
+        "product_mutation_allowed",
+        "accepted_product_change",
+        "promotable",
+    ] {
+        assert_eq!(attribution[flag].as_bool(), Some(false));
+    }
+    let directory = root().join("docs/testing/performance/0.74/local-runs/response-owner-2562f6f7");
+    assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 38);
+    let read =
+        |path: &Path| -> Value { serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap() };
+    let seal = read(&directory.join("seal.json"));
+    let summary = read(&directory.join("summary.json"));
+    assert_eq!(seal["source_commit"], source);
+    assert_eq!(summary["source_commit"], source);
+    assert_eq!(summary["attempts"], 18);
+    assert_eq!(summary["candidate_authorized"], false);
+    assert_eq!(summary["promotable"], false);
+    for (index, entry) in seal["order"].as_array().unwrap().iter().enumerate() {
+        let cell = entry["cell_id"].as_str().unwrap();
+        let prefix = format!("{index:02}-{cell}");
+        let attempt = read(&directory.join(format!("{prefix}.attempt.json")));
+        let path = directory.join(format!("{prefix}.raw.json"));
+        let raw = read(&path);
+        assert_eq!(attempt["returncode"], 0);
+        assert_eq!(attempt["failure"], Value::Null);
+        assert_eq!(attempt["index"], index);
+        assert_eq!(raw["source_commit"], source);
+        for key in ["binary_sha256", "tool_lock_sha256", "contract_sha256"] {
+            assert_eq!(raw[key], seal[key]);
+        }
+        let hash = Sha256::digest(std::fs::read(&path).unwrap())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        assert_eq!(attempt["raw_sha256"], format!("sha256:{hash}"));
+    }
+    let scratch = &registry["followup_proposals"].as_array().unwrap()[0];
+    assert_eq!(
+        scratch["state"].as_str(),
+        Some("rejected-d3a-live-peak-regression-runtime-removed")
+    );
+    assert_eq!(scratch["accepted_product_change"].as_bool(), Some(false));
+    assert_eq!(scratch["runtime_removed"].as_bool(), Some(true));
+}
+
 fn trace() -> Value {
     json!({
         "trace_sha256": "trace-a",

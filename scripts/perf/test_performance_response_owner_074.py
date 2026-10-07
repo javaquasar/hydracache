@@ -98,6 +98,11 @@ class OwnerTests(unittest.TestCase):
                 owner.write_new(path, {"second": True})
             self.assertEqual(json.loads(path.read_text()), {"first": True})
 
+    def test_complete_retained_packet_replays_exactly(self):
+        path = ROOT / "docs/testing/performance/0.74/local-runs/response-owner-2562f6f7"
+        self.assertEqual(owner.analyse(path), json.loads((path / "summary.json").read_text()))
+        self.assertEqual(len(list(path.iterdir())), 38)
+
 
 if __name__ == "__main__":
     unittest.main()

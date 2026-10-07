@@ -1514,3 +1514,25 @@ root lock, native/embedded code and qualification/pinned digests are unchanged.
 No rented host or expensive run executed. The broader native/timing/retention/
 secure-concurrent/CI controls were not run for a red candidate, not waived.
 Accepted product proposals remain zero; C74 unresolved and ship admission closed.
+
+### Separate D1: canonical GET response reduction owns another payload copy
+
+After selectively removing serial scratch, a new independent owner screen was
+preregistered at `2562f6f7`. All 18 fresh-process attempts succeeded: six fixed
+cells, three rotating repeats, no retry. The tool measures dispatch, borrowed
+reduction and their combined execution using public canonical APIs, not an
+experimental product branch. Runtime/native/store sources remain unchanged.
+
+Nonempty GET reduction adds one successful allocation and exactly 64 / 4,096 /
+1,048,576 requested bytes per operation; empty hits, misses and SET add zero.
+For 4 KiB GET, dispatch/combined gross bytes are 4,432 / 8,528 and window-live
+peaks are 4,432 / 8,294. For 1 MiB they are 1,048,912 / 2,097,488 gross bytes and
+1,048,912 / 2,097,254 peak bytes. Every repeat agrees and each window releases its
+temporary owners. Checkpoint deltas are one payload; peak deltas are not additive.
+
+This is fixed-plan, injected-clock, requested-layout attribution, excluding
+decode/translation/encoding/IO and timing. It is not an end-to-end candidate gain,
+RSS-retention proof or native numerical guard. Full packet:
+`local-runs/response-owner-2562f6f7/`; [method, results and next boundary](response-reduction-attribution-result.md).
+A future private consuming-GET reducer requires a new D2 contract and D3; no
+scratch rescue or earlier rejection is reopened, no accepted proposal is added.

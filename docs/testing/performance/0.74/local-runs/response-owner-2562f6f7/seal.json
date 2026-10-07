@@ -1,0 +1,101 @@
+{
+  "profile_id": "response-reduction-owner-d1-074-v1",
+  "promotable": false,
+  "source_commit": "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9",
+  "binary_sha256": "sha256:7ba6f151ce67c9073e9b9a5e9a4501377b3f6be1d6122d2cdac0b228f99ee6b4",
+  "tool_lock_sha256": "sha256:93b11f444aa2b8d0a21f083ae4629188b67d84c8d7861c3ea57c8c3161571fd5",
+  "contract_sha256": "sha256:3f09bb4b97d0947d3c7f9e30a838c7b8edef02ff382086271d235647830a8e2e",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-pc-windows-msvc\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "order": [
+    {
+      "index": 0,
+      "repeat": 0,
+      "cell_id": "get-empty"
+    },
+    {
+      "index": 1,
+      "repeat": 0,
+      "cell_id": "get-64"
+    },
+    {
+      "index": 2,
+      "repeat": 0,
+      "cell_id": "get-4096"
+    },
+    {
+      "index": 3,
+      "repeat": 0,
+      "cell_id": "get-1048576"
+    },
+    {
+      "index": 4,
+      "repeat": 0,
+      "cell_id": "get-miss"
+    },
+    {
+      "index": 5,
+      "repeat": 0,
+      "cell_id": "set-4096"
+    },
+    {
+      "index": 6,
+      "repeat": 1,
+      "cell_id": "get-64"
+    },
+    {
+      "index": 7,
+      "repeat": 1,
+      "cell_id": "get-4096"
+    },
+    {
+      "index": 8,
+      "repeat": 1,
+      "cell_id": "get-1048576"
+    },
+    {
+      "index": 9,
+      "repeat": 1,
+      "cell_id": "get-miss"
+    },
+    {
+      "index": 10,
+      "repeat": 1,
+      "cell_id": "set-4096"
+    },
+    {
+      "index": 11,
+      "repeat": 1,
+      "cell_id": "get-empty"
+    },
+    {
+      "index": 12,
+      "repeat": 2,
+      "cell_id": "get-4096"
+    },
+    {
+      "index": 13,
+      "repeat": 2,
+      "cell_id": "get-1048576"
+    },
+    {
+      "index": 14,
+      "repeat": 2,
+      "cell_id": "get-miss"
+    },
+    {
+      "index": 15,
+      "repeat": 2,
+      "cell_id": "set-4096"
+    },
+    {
+      "index": 16,
+      "repeat": 2,
+      "cell_id": "get-empty"
+    },
+    {
+      "index": 17,
+      "repeat": 2,
+      "cell_id": "get-64"
+    }
+  ]
+}

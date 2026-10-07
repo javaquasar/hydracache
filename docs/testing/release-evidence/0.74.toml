@@ -19,14 +19,22 @@ function = "checked_in_w0_contract_is_valid_and_non_promotable"
 
 [[work_item]]
 id = "W1"
-required_sources = ["docs/testing/performance/0.74/w1-local-attribution.md", "tools/resp-stage-profile-074/src/main.rs"]
-required_artifacts = []
+required_sources = ["docs/testing/performance/0.74/w1-local-attribution.md", "tools/resp-stage-profile-074/src/main.rs", "docs/testing/performance/0.74/response-reduction-attribution-contract.toml", "tools/resp-response-owner-074/src/main.rs", "tools/resp-scratch-screen-074/src/memory.rs", "scripts/perf/performance_response_owner_074.py"]
+required_artifacts = ["docs/testing/performance/0.74/local-runs/response-owner-2562f6f7/seal.json", "docs/testing/performance/0.74/local-runs/response-owner-2562f6f7/summary.json", "docs/testing/performance/0.74/response-reduction-attribution-result.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "proposal_admission_requires_w1_attribution_and_evidence"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "response_reduction_d1_retains_exact_packet_without_reopening_rejected_scratch"
 
 [[work_item]]
 id = "W2"

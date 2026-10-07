@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "profile_id": "response-reduction-owner-d1-074-v1",
+  "source_commit": "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9",
+  "classification": "d1-response-reduction-owner-attributed",
+  "promotable": false,
+  "product_numeric_claim": false,
+  "attempts": 18,
+  "all_attempts_retained": true,
+  "candidate_authorized": false,
+  "cells": {
+    "get-empty": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 2
+      }
+    ],
+    "get-64": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 400.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 64.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 64,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 64
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 464.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 230
+        },
+        "reduction_increment_bytes_per_operation": 64.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 400.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 64.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 64,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 64
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 464.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 230
+        },
+        "reduction_increment_bytes_per_operation": 64.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 400.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 64.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 64,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 64
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 464.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 400,
+          "response_live_bytes": 166,
+          "response_and_reduced_live_bytes": 230
+        },
+        "reduction_increment_bytes_per_operation": 64.0,
+        "repeat": 2
+      }
+    ],
+    "get-4096": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 4096.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 4096,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 4096
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 8528.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 8294,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 8294
+        },
+        "reduction_increment_bytes_per_operation": 4096.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 4096.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 4096,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 4096
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 8528.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 8294,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 8294
+        },
+        "reduction_increment_bytes_per_operation": 4096.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 4096.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 4096,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 4096
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 8528.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 8294,
+          "response_live_bytes": 4198,
+          "response_and_reduced_live_bytes": 8294
+        },
+        "reduction_increment_bytes_per_operation": 4096.0,
+        "repeat": 2
+      }
+    ],
+    "get-1048576": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 1048912.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 1048912,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 1048576.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 1048576,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 1048576
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 2097488.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 2097254,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 2097254
+        },
+        "reduction_increment_bytes_per_operation": 1048576.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 1048912.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 1048912,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 1048576.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 1048576,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 1048576
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 2097488.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 2097254,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 2097254
+        },
+        "reduction_increment_bytes_per_operation": 1048576.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 1048912.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 1048912,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 1048576.0,
+          "allocation_calls_per_operation": 1.0,
+          "peak_live_above_start_bytes": 1048576,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 1048576
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 2097488.0,
+          "allocation_calls_per_operation": 12.0,
+          "peak_live_above_start_bytes": 2097254,
+          "response_live_bytes": 1048678,
+          "response_and_reduced_live_bytes": 2097254
+        },
+        "reduction_increment_bytes_per_operation": 1048576.0,
+        "repeat": 2
+      }
+    ],
+    "get-miss": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 336.0,
+          "allocation_calls_per_operation": 10.0,
+          "peak_live_above_start_bytes": 336,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 2
+      }
+    ],
+    "set-4096": [
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 0
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 1
+      },
+      {
+        "dispatch_only": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 0
+        },
+        "reducer_only": {
+          "gross_bytes_per_operation": 0.0,
+          "allocation_calls_per_operation": 0.0,
+          "peak_live_above_start_bytes": 0,
+          "response_live_bytes": 0,
+          "response_and_reduced_live_bytes": 0
+        },
+        "dispatch_and_reduce": {
+          "gross_bytes_per_operation": 4432.0,
+          "allocation_calls_per_operation": 11.0,
+          "peak_live_above_start_bytes": 4432,
+          "response_live_bytes": 102,
+          "response_and_reduced_live_bytes": 102
+        },
+        "reduction_increment_bytes_per_operation": 0.0,
+        "repeat": 2
+      }
+    ]
+  },
+  "limitations": [
+    "not a product candidate or speedup",
+    "fixed operation budget with injected clock",
+    "no encode/IO/concurrency/native/RSS/CPU/latency qualification"
+  ]
+}

@@ -145,3 +145,16 @@ negative_evidence = "local-runs/w9b-d3a-3171d02a/summary.json"
 contract = "w9b-serial-scratch-proposal.toml"
 evidence = "local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json"
 rollback = "disable/remove only the serial GET scratch feature and its candidate-specific guards; retain the D1/D2 records"
+
+# Attribution is not a proposal or a reopening of W4/W8/W9 terminal decisions.
+[[followup_attributions]]
+id = "response-reduction-owner-d1-074-v1"
+owner = "borrowed GET response payload duplication"
+state = "owner-classified-local-d1-only"
+measurement_source_sha = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9"
+product_mutation_allowed = false
+accepted_product_change = false
+promotable = false
+contract = "response-reduction-attribution-contract.toml"
+evidence = "local-runs/response-owner-2562f6f7/summary.json"
+result = "response-reduction-attribution-result.md"

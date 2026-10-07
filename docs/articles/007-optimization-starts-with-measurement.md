@@ -3387,3 +3387,58 @@ no outlying pair removed, and no reducer optimization added to rescue it. D1 was
 right about the allocation owner; D2 was right about serial semantics; D3 was
 right to refuse this particular ownership lifetime. Those statements can all
 be true without an accepted product optimization. C74 remains unresolved.
+
+## Measure the duplicate value, not just the encoded frame
+
+Removing the scratch candidate did not remove the opportunity to investigate
+another owner. The next question was narrower: how much of a large GET is spent
+copying the client response into the Redis response, before encoding even starts?
+The canonical private executor collects client responses and calls a public
+borrowed reducer. That reducer clones `Option<Vec<u8>>` for GET. Its original
+response stays alive while the new bulk value is constructed. This is a different
+hypothesis from retaining encoded output between commands.
+
+We preregistered a new D1 screen at `2562f6f7`, without changing product code.
+Six fixed cells covered empty/64-byte/4-KiB/1-MiB hits, a miss and a SET control.
+Three rotating repeats produced 18 fresh-process attempts, all successful with
+no retries. The request plan, binary key and seed-740074 expected payload were
+prepared outside the windows. Public APIs measured dispatch-only, borrowed
+reducer-only, and dispatch-and-reduce on separately initialized client surfaces.
+Exact byte comparisons and distinct nonempty pointers identify payload duplication;
+dispatch/mutation counts, final value and cardinality reconcile independently.
+
+The repeated result is exact: reduction allocates one payload per nonempty GET,
+with one successful allocation call. That is 64, 4,096 or 1,048,576 additional
+requested bytes/op. Empty hits, misses and SET reduction allocate zero. Combined
+minus dispatch gross totals equal the isolated reducer totals in every sample,
+with no unassigned allocation residual. For 4 KiB, dispatch and combined gross
+are 4,432 and 8,528 bytes/op; for 1 MiB, 1,048,912 and 2,097,488. These fixed-plan
+totals exclude decoding, translating, server request IDs and encoding; they are
+not interchangeable with previous end-to-end RESP measurements.
+
+The lifetime observation is equally important. For 4 KiB GET, the response-live
+checkpoint is 4,198 bytes above the window start; after reduction it is 8,294.
+For 1 MiB it is 1,048,678 then 2,097,254. The extra checkpoint owner is exactly
+one payload. But whole-window peaks increase from 4,432 to 8,294 and from
+1,048,912 to 2,097,254, not by a full payload: earlier dispatch metadata contributes
+234 temporary bytes that are gone at the response checkpoint. For 64-byte values
+the dispatch peak dominates both windows. Adding stage maxima would misdescribe
+the real overlap, even though the extra allocation is perfectly repeatable.
+
+All windows end at their starting requested-live owner counts. This establishes
+temporary-owner release in this tool, not physical RSS return or an idle-retention
+claim. The tool uses an instrumented System allocator, one synchronous client,
+a deterministic injected clock and a prebuilt plan. It does not establish CPU/op,
+goodput, p99, production expiration behavior or native numerical nonregression.
+The native client's own value materialization still exists; no store or protocol
+representation was changed to make this response owner disappear.
+
+The useful next hypothesis is therefore *ownership transfer*, not buffer reuse:
+consume a successful GET response in the private executor while preserving the
+public borrowed reducer and every fallback. It needs a separate D2 contract,
+semantic/property/transport tests and D3 baseline/candidate pairs before any
+product claim. We have not implemented or accepted it in this D1 step. Scratch
+remains rejected, earlier terminal decisions remain intact and C74 stays unresolved.
+The full reproducible record is
+`docs/testing/performance/0.74/local-runs/response-owner-2562f6f7/`, with the scope
+and next boundary in `response-reduction-attribution-result.md`.
