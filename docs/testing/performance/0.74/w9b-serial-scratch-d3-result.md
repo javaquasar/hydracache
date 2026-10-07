@@ -80,3 +80,22 @@ The historical feature-on implementation can be inspected at `b8cc7c6c` and the
 sealed measurement source at `3171d02a`; it is not a current release capability.
 Future owners require separate D1 attribution and a new proposal, not a quiet
 retry of this candidate with looser memory bounds.
+
+## Rollback verification
+
+Rollback source is `6a7df3659eb98b34c53dc0fb54d69677ca511bcc`. Runtime source and
+product manifest match `4d733e31`; a normalized fingerprint guard makes that
+assertion without requiring historical Git objects in shallow CI checkouts.
+The removed helper can be recovered from the historical commits, not enabled
+on current HEAD. Canonical adversarial tests remain executable.
+
+Post-rollback verification passes 166 RESP tests (23 existing opt-in cases ignored),
+18 Redis server lifecycle tests, 95 xtask tests, 14 standalone tool tests and
+10 analyzer/full-archive replay tests. Affected/direct-server/tool checks, strict
+lint, format, performance contract, 17 governance checks, doc registry, three
+documentation script tests, link check and mdbook pass. Clean rollback-source
+W11/W12 canaries remain expected red. The retired diagnostic flag explicitly
+exits before argument parsing or any measurement; it cannot emit a feature-on
+no-op result. Source/check scopes and development diagnostics are retained in
+`local-runs/w9b-d3a-rollback-checks-6a7df365.json`. No hosted/full-workspace milestone
+or native numerical gate is claimed.

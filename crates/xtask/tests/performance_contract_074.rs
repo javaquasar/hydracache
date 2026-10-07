@@ -1065,16 +1065,15 @@ fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     assert!(!root()
         .join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs")
         .exists());
-    let baseline = std::process::Command::new("git")
-        .current_dir(root())
-        .args([
-            "show",
-            "4d733e3189bdc777635792795e1bbb58ab00a7cb:crates/hydracache-redis-compat/src/lib.rs",
-        ])
-        .output()
-        .unwrap();
-    assert!(baseline.status.success());
-    assert_eq!(source, String::from_utf8(baseline.stdout).unwrap());
+    // Exact LF-normalized runtime from 4d733e31; no old Git object is required
+    // in a shallow CI checkout to prove selective restoration.
+    assert_eq!(
+        Sha256::digest(source.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        "c98ab563d4fc9181735d432484118561ad9bf773d32fb2865f4a591dcc50e932"
+    );
     let directory = root().join("docs/testing/performance/0.74/local-runs/w9b-d3a-3171d02a");
     let report: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(directory.join("summary.json")).unwrap())
