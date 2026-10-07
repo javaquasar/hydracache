@@ -223,3 +223,19 @@ contract = "get-response-owner-proposal.toml"
 design = "get-response-owner-design.md"
 evidence = "local-runs/get-response-owner-semantic-2379698d.json"
 existing_terminal_dispositions_reopened = false
+
+# Approved product security prerequisite, never an accepted performance proposal.
+[security_extensions.resp_mtls_074]
+state = "local-production-mtls-semantic-proof-only"
+authorization = "explicit-human-approval-2026-10-07"
+configuration = "redis_api.mtls_client_ca_path"
+policy_preregistration_sha = "11c78c6ddc1a8a1c6342bf5a72db298e72d04e27"
+contract = "get-response-owner-scheduled-controls-contract.toml"
+design = "get-response-owner-scheduled-controls-design.md"
+default_enabled = false
+production_implemented = true
+accepted_performance_change = false
+secure_scheduled_observer_implemented = false
+matched_security_cohort_completed = false
+numerical_series_started = false
+qualification_completed = false

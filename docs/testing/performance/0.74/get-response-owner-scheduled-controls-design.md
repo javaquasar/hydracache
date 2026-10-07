@@ -461,7 +461,10 @@ foreign-client-CA/tenant fixture remains a separate control; its coverage cannot
 be inherited by RESP. Neither a tool-only TLS wrapper nor a fabricated transport
 label can supply a receipt for the production Redis acceptor.
 
-The contract and enrolled source-aware guard now retain this gap explicitly.
+The contract and enrolled guard retain this historical gap explicitly. After the
+separate human authorization below, the guard checks the immutable audit receipt
+and the new opt-in policy rather than requiring current production code to lack
+a client-certificate verifier.
 `matched_mtls_resp3_required` remains true; full D3, the native nonregression
 floors, numerical comparison and release admission remain unchanged. A future
 production TLS change must update this audit and its negative tests rather than
@@ -526,3 +529,58 @@ and shutdown/disconnect resource cleanup. TLS 1.3 client-side handshake completi
 alone is not proof of server acceptance; negative cases must prove no RESP
 success and zero client-surface dispatch. Secure scheduled adapters and matched
 native numerical comparisons remain a later stage after these product proofs.
+
+### Production implementation and local proof boundary
+
+The production daemon now selects `RedisTlsAcceptor::from_tls_config_with_client_ca`
+only when the new option is present. The existing factory still calls
+`with_no_client_auth()`; plaintext and old server-auth TLS defaults are unchanged.
+The new path constructs the standard required WebPKI client verifier, reads no
+global CA as inbound trust, and uses the existing RESP protocol/dispatch path.
+CA input is read through a byte-limited reader and certificate-count-limited
+parser. The pre-existing rule requiring complete global TLS material is not
+weakened; its `ca_path` remains separate from this explicit inbound trust.
+
+The serialized option is additive and omitted when unset. Rust consumers that
+construct an exhaustive `RedisApiConfig` literal must add `mtls_client_ca_path:
+None`; consumers using `..Default::default()` need no change. This is not an
+old-binary enforcement guarantee for the new security mode.
+
+The mTLS accept loop owns a bounded JoinSet rather than detached per-connection
+tasks. Handshake failure, timeout, disconnect and completed owners release the
+runtime guard; capacity refusal closes before dispatch. Shutdown aborts and joins
+all owners, including authenticated sessions with incomplete RESP frames. A peer
+may observe EOF, TLS truncation or TCP reset after this forced close; no partial
+command is acknowledged as successfully dispatched. This is not a promised
+graceful TLS close-notify or indefinite application drain.
+
+`crates/hydracache-server/tests/redis_mtls_074.rs` uses generated local PKI and the
+actual daemon factory/accept loop, not a tool-only TLS wrapper. Its tests cover
+RESP2/3 HELLO AUTH, binary GET/SET and misses, absent/foreign/expired/future/EKU
+certificates, wrong server CA/hostname, credential denial/redaction and
+connection-local AUTH. Two explicitly configured listeners share one backend
+to prove listener tenant separation; this does not create dynamic tenant routing.
+Virtual time proves the five-second timeout, and real sockets prove 128-owner
+capacity, rejection of a 129th socket, freed-slot reuse and shutdown accounting.
+The disconnect fixture uses a 4 KiB binary payload, not a claim that the default
+1 MiB request-frame limit accepts a full 1 MiB value plus framing.
+
+Tests were added before implementation: compilation first failed for the missing
+config field/error. The first PKI fixture omitted the existing global CA path and
+failed `IncompleteTlsMaterial`; fixing the fixture did not relax production
+validation. The forced-shutdown oracle initially accepted only TLS truncation,
+not the observed TCP reset; it now accepts explicit close/reset outcomes while
+still requiring empty RESP output and zero dispatch. Strict lint also required
+a test struct initializer correction. These diagnostics are not suppressed or
+interpreted as candidate performance data.
+
+Rollback must block this listener before using an older binary that cannot
+enforce the new option; removing the client CA switch is a policy downgrade,
+not an automatic recovery. No certificate subject, secret or raw TLS error is
+retained in evidence. The security extension remains opt-in and locally proven
+only. Trust material is loaded at acceptor creation; hot CA rotation and CRL/OCSP
+revocation are not implemented or claimed by this extension. Secure scheduled
+observer support, equally secured RESP/HC2 cohorts,
+expiration/quota/fault/retention controls, hosted CI and release qualification are
+still separate, unfinished work. No numerical series, B0 retry, host service
+operation or expensive infrastructure run is authorized by these checks.

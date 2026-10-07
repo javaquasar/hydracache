@@ -186,6 +186,14 @@ across unlike semantics. In particular, authenticated mTLS HC/2 is compared nume
 the same native transport/configuration and with an equally secured RESP cohort when a cross-surface
 row is reported. No aggregate HydraCache number may hide a harmed native surface.
 
+The separately approved 2026-10-07 prerequisite adds opt-in production RESP mTLS
+through `redis_api.mtls_client_ca_path`, mandatory peer certificates and unchanged
+AUTH/listener-bound tenant authorization. Its policy and local proofs live in
+`docs/testing/performance/0.74/get-response-owner-scheduled-controls-design.md`.
+This security extension is not an accepted throughput candidate: a secure
+scheduled observer, matched security cohorts, numerical native floors and full
+D3 remain required. Historical TLS/AUTH audit receipts remain immutable.
+
 ### Native API optimization ledger
 
 If matched direct-native and RESP results are close, 0.74 treats that as evidence that shared work

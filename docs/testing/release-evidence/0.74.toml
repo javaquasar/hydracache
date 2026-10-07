@@ -250,7 +250,7 @@ function = "w2_through_w9_terminal_dispositions_are_exact_and_non_promotable"
 
 [[work_item]]
 id = "W8c"
-required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/get-response-owner-proposal.toml", "docs/testing/performance/0.74/get-response-owner-design.md", "crates/hydracache-redis-compat/src/get_response_owner_074.rs", "docs/testing/performance/0.74/get-response-owner-d3-contract.toml", "tools/resp-get-owner-screen-074/src/main.rs", "scripts/perf/performance_get_owner_screen_074.py", "docs/testing/performance/0.74/get-response-owner-phase-b0-contract.toml", "docs/testing/performance/0.74/get-response-owner-phase-b0-design.md", "tools/get-owner-controls-074/src/main.rs", "scripts/perf/performance_get_owner_controls_074.py", "docs/testing/performance/0.74/get-response-owner-scheduled-controls-contract.toml", "docs/testing/performance/0.74/get-response-owner-scheduled-controls-design.md", "tools/get-owner-scheduled-controls-074/src/scheduled.rs", "tools/get-owner-scheduled-controls-074/src/native.rs", "tools/get-owner-scheduled-controls-074/src/resp.rs", "tools/get-owner-scheduled-controls-074/tests/resp.rs", "tools/get-owner-scheduled-controls-074/tests/native.rs"]
+required_sources = ["docs/testing/performance/0.74/terminal-disposition-ledger.toml", "docs/testing/performance/0.74/proposal-registry.toml", "docs/testing/performance/0.74/get-response-owner-proposal.toml", "docs/testing/performance/0.74/get-response-owner-design.md", "crates/hydracache-redis-compat/src/get_response_owner_074.rs", "docs/testing/performance/0.74/get-response-owner-d3-contract.toml", "tools/resp-get-owner-screen-074/src/main.rs", "scripts/perf/performance_get_owner_screen_074.py", "docs/testing/performance/0.74/get-response-owner-phase-b0-contract.toml", "docs/testing/performance/0.74/get-response-owner-phase-b0-design.md", "tools/get-owner-controls-074/src/main.rs", "scripts/perf/performance_get_owner_controls_074.py", "docs/testing/performance/0.74/get-response-owner-scheduled-controls-contract.toml", "docs/testing/performance/0.74/get-response-owner-scheduled-controls-design.md", "tools/get-owner-scheduled-controls-074/src/scheduled.rs", "tools/get-owner-scheduled-controls-074/src/native.rs", "tools/get-owner-scheduled-controls-074/src/resp.rs", "tools/get-owner-scheduled-controls-074/tests/resp.rs", "tools/get-owner-scheduled-controls-074/tests/native.rs", "crates/hydracache-server/src/config.rs", "crates/hydracache-server/src/bootstrap.rs", "crates/hydracache-server/src/redis_tcp.rs", "crates/hydracache-server/tests/redis_mtls_074.rs"]
 required_artifacts = ["docs/testing/performance/0.74/local-runs/w2-w9-terminal-dispositions-local-20261006.json", "docs/testing/performance/0.74/local-runs/get-response-owner-semantic-2379698d.json", "docs/testing/performance/0.74/local-runs/get-owner-d3a-213e9e0a/seal.json", "docs/testing/performance/0.74/local-runs/get-owner-d3a-213e9e0a/summary.json", "docs/testing/performance/0.74/get-response-owner-d3-result.md", "docs/testing/performance/0.74/local-runs/get-owner-b0-18ee8cdc/seal.json", "docs/testing/performance/0.74/local-runs/get-owner-b0-18ee8cdc/summary.json", "docs/testing/performance/0.74/get-response-owner-phase-b0-result.md", "docs/testing/performance/0.74/local-runs/get-owner-scheduled-instrumentation-checks-a6047895.json", "docs/testing/performance/0.74/local-runs/get-owner-resp-fifo-checks-a8440175.json", "docs/testing/performance/0.74/local-runs/get-owner-resp-multiconnection-checks-83003e92.json", "docs/testing/performance/0.74/local-runs/get-owner-resp-multikey-checks-35bbd4b8.json", "docs/testing/performance/0.74/local-runs/get-owner-native-batch-checks-e1b981c0.json", "docs/testing/performance/0.74/local-runs/get-owner-resp3-checks-fc07bf38.json", "docs/testing/performance/0.74/local-runs/get-owner-security-audit-b747502d.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -302,6 +302,34 @@ function = "resp3_controls_require_hello_without_waiving_security_or_numeric_gua
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "resp_mtls_extension_is_opt_in_auth_bound_and_non_promotable"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_mtls_074.rs"
+function = "redis_mtls_invalid_clients_never_reach_resp_or_dispatch"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_mtls_074.rs"
+function = "redis_mtls_certificate_does_not_bypass_auth_or_select_tenant"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_mtls_074.rs"
+function = "redis_mtls_connection_cap_and_shutdown_release_incomplete_handshakes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_mtls_074.rs"
+function = "redis_mtls_client_ca_startup_is_bounded_and_has_no_global_ca_fallback"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_mtls_074.rs"
+function = "redis_mtls_shutdown_joins_authenticated_and_fragmented_resp_owners"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/redis_tcp.rs"
+function = "mtls_task_failure_is_explicit_and_remaining_owners_are_joined"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"

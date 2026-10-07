@@ -135,6 +135,7 @@ numerical_nonregression_measured = false
 full_qualification_completed = false
 
 [resp.security_audit]
+historical = true
 state = "production-resp-mtls-gap-requires-policy-decision"
 audit_baseline_source_sha = "2f6db5a4dedeeca423faef8c720d9543db76da4a"
 production_resp_server_auth_tls_available = true
@@ -151,7 +152,7 @@ product_security_mutation_authorized_by_observer = false
 separate_product_security_proposal_required = true
 
 [resp.mtls]
-state = "approved-policy-implementation-pending"
+state = "local-production-mtls-semantic-proof-only"
 authorization = "explicit-human-approval-2026-10-07"
 configuration = "redis_api.mtls_client_ca_path"
 default_client_ca_path = "none"
@@ -166,13 +167,13 @@ maximum_client_ca_certificates = 16
 maximum_handshake_seconds = 5
 maximum_owned_connections = 128
 shutdown_joins_owned_connections = true
-production_implemented = false
+production_implemented = true
 matched_security_cohort_completed = false
 numerical_comparison_allowed = false
 qualification_completed = false
 
 [pending]
-production_resp_mtls_policy_decision_required = true
+production_resp_mtls_policy_decision_required = false
 new_sealed_numerical_cohort_required = true
 invalidated_b0_retry_allowed = false
 resp_per_response_scheduled_adapter_required = true

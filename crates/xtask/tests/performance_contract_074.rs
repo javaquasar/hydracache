@@ -463,6 +463,19 @@ fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
 fn resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     let security = &c["resp"]["security_audit"];
+    assert_eq!(security["historical"].as_bool(), Some(true));
+    let historical: Value = serde_json::from_str(
+        &std::fs::read_to_string(root().join(
+            "docs/testing/performance/0.74/local-runs/get-owner-security-audit-b747502d.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(historical["production_resp_mtls_implemented"], false);
+    assert_eq!(
+        historical["baseline_source_commit"].as_str(),
+        security["audit_baseline_source_sha"].as_str()
+    );
     assert_eq!(
         security["state"].as_str(),
         Some("production-resp-mtls-gap-requires-policy-decision")
@@ -496,13 +509,79 @@ fn resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard() {
     let resp_tls =
         std::fs::read_to_string(root().join("crates/hydracache-server/src/redis_tcp.rs")).unwrap();
     assert!(resp_tls.contains(".with_no_client_auth()"));
-    assert!(!resp_tls.contains(".with_client_cert_verifier("));
     assert!(!resp_tls.contains(".ca_path"));
     let hc2 = std::fs::read_to_string(root().join("crates/hydracache-server/src/hc2.rs")).unwrap();
     assert!(hc2.contains(".client_ca_root(Certificate::from_pem(ca))"));
     let resp =
         std::fs::read_to_string(root().join("crates/hydracache-redis-compat/src/lib.rs")).unwrap();
     assert!(resp.contains("connection.identity = self.identity.clone()"));
+}
+
+#[test]
+fn resp_mtls_extension_is_opt_in_auth_bound_and_non_promotable() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    let mtls = &c["resp"]["mtls"];
+    assert_eq!(
+        mtls["state"].as_str(),
+        Some("local-production-mtls-semantic-proof-only")
+    );
+    assert_eq!(
+        mtls["authorization"].as_str(),
+        Some("explicit-human-approval-2026-10-07")
+    );
+    assert_eq!(
+        mtls["configuration"].as_str(),
+        Some("redis_api.mtls_client_ca_path")
+    );
+    assert_eq!(mtls["default_client_ca_path"].as_str(), Some("none"));
+    for flag in [
+        "enabled_requires_redis_rediss_tls_and_auth",
+        "client_certificate_required",
+        "auth_and_listener_tenant_binding_preserved",
+        "shutdown_joins_owned_connections",
+        "production_implemented",
+    ] {
+        assert_eq!(mtls[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "optional_client_certificate_mode",
+        "global_tls_ca_inherited",
+        "certificate_subject_selects_tenant",
+        "matched_security_cohort_completed",
+        "numerical_comparison_allowed",
+        "qualification_completed",
+    ] {
+        assert_eq!(mtls[flag].as_bool(), Some(false), "{flag}");
+    }
+    for (field, bound) in [
+        ("maximum_client_ca_file_bytes", 262144),
+        ("maximum_client_ca_certificates", 16),
+        ("maximum_handshake_seconds", 5),
+        ("maximum_owned_connections", 128),
+    ] {
+        assert_eq!(mtls[field].as_integer(), Some(bound), "{field}");
+    }
+    assert_eq!(
+        c["pending"]["production_resp_mtls_policy_decision_required"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        c["pending"]["matched_mtls_resp3_required"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(c["accepted_product_change"].as_bool(), Some(false));
+    let source =
+        std::fs::read_to_string(root().join("crates/hydracache-server/src/redis_tcp.rs")).unwrap();
+    assert!(source.contains(".with_client_cert_verifier(verifier)"));
+    assert!(source.contains("WebPkiClientVerifier::builder"));
+    assert!(!source.contains("allow_unauthenticated"));
+    assert!(!source.contains(".ca_path"));
+    assert!(source.contains("MAX_CLIENT_CA_BYTES: u64 = 256 * 1024"));
+    assert!(source.contains("MAX_CLIENT_CA_CERTIFICATES: usize = 16"));
+    assert!(source.contains("MAX_MTLS_CONNECTIONS: usize = 128"));
+    assert!(source.contains("finish_mtls_owners(&mut connections).await"));
+    assert!(source.contains("connections.abort_all()"));
+    assert!(source.contains("while connections.join_next().await.is_some()"));
 }
 
 #[test]

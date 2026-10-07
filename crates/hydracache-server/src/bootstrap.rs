@@ -576,7 +576,13 @@ impl ServerRuntime {
         if !self.config.redis_api.enabled || !self.config.redis_api.rediss_enabled {
             return Ok(None);
         }
-        RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some)
+        match self.config.redis_api.mtls_client_ca_path.as_deref() {
+            Some(client_ca) => {
+                RedisTlsAcceptor::from_tls_config_with_client_ca(&self.config.tls, client_ca)
+                    .map(Some)
+            }
+            None => RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some),
+        }
     }
 
     /// Return the shared verified-dispatch state used by HC/1, RESP, and HC/2.

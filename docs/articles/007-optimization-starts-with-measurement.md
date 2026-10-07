@@ -3878,3 +3878,52 @@ lint/documentation checks. Exact product and guard blobs and the unmet policy
 decision are recorded in
 `docs/testing/performance/0.74/local-runs/get-owner-security-audit-b747502d.json`.
 No secure RESP adapter or numerical series was implemented by this audit.
+
+## Adding the missing security boundary without claiming a speedup
+
+The user subsequently approved a separate production security extension. We
+preregistered the policy before implementation: an explicit inbound client-CA
+option, required certificates, preserved AUTH/listener tenant binding and
+bounded handshake/connection ownership. This is not a performance hypothesis;
+its purpose is to make a future equally secured comparison possible. The earlier
+audit is still correct for its pinned source and remains an immutable receipt.
+
+The daemon now has an opt-in `redis_api.mtls_client_ca_path` path using the
+standard mandatory client-certificate verifier. With no option, the existing
+server-auth TLS/plaintext paths stay unchanged. The new mode refuses dormant or
+authless configuration and invalid CA material at startup; it never inherits
+the global CA implicitly. Trusting a client certificate grants only transport
+access. Redis AUTH is still required before data commands, and neither the
+certificate subject nor the AUTH username chooses another tenant.
+
+We measured no throughput or allocation series in this step. Instead, real
+loopback TLS fixtures use the production factory and accept loop. They exercise
+RESP2/3 HELLO AUTH, binary values and misses; missing, foreign, expired, future
+and wrong-EKU client certificates; wrong server CA/hostname; denied credentials
+with zero dispatch; and two listener tenants over a shared backend. TLS 1.3
+client-side handshake completion is not treated as server acceptance: invalid
+clients must produce no successful RESP reply and no backend dispatch.
+
+Resource ownership is part of that security contract. The CA bundle is bounded
+to 256 KiB and 16 certificates, the handshake to five seconds and the owned task
+group to 128 connections. A 129th connection closes before dispatch; a released
+slot can be reused. Virtual-time deadline tests and real-socket shutdown tests
+verify cleanup even for incomplete handshakes and authenticated fragmented RESP
+frames. Forced shutdown can yield TCP reset or TLS truncation, not a fabricated
+successful response. These are new-mode resource bounds, not adjusted performance
+thresholds or a change to legacy socket scheduling.
+
+The failures sharpened the tests. The initial PKI fixture omitted a global CA
+path required by the existing configuration contract; we fixed the fixture
+rather than weakening validation. A shutdown oracle initially assumed only TLS
+truncation, then admitted the observed TCP reset while retaining the empty-output
+and zero-dispatch checks. A 4 KiB binary fixture does not claim a full 1 MiB value
+fits the production 1 MiB request-frame budget once framing is included.
+
+What this proves is deliberately narrow: opt-in production mTLS semantics and
+bounded local ownership. What remains unproven is equally important: the secure
+scheduled observer, matched native/RESP cost, allocation/retention behavior under
+that cohort, hosted CI and release qualification. No speedup is inferred, native
+floors are not waived, and get-owner is still default-off. Rolling back to an
+older binary requires blocking this listener first: an old binary may ignore the
+new option and cannot safely enforce its certificate policy.

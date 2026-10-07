@@ -1713,7 +1713,7 @@ exact source/blob identities, the virtual-time HELLO timeout, 56 RESP3 cells,
 36 RESP2 hit/miss/SET cells and the initial map-order oracle correction.
 No numerical speedup or release admission follows; older summaries stay immutable.
 
-The secure-control capability audit found that production RESP supports
+The historical secure-control capability audit at `b747502d` found that RESP supports
 server-auth rediss TLS plus Redis AUTH, not required client-certificate mTLS.
 `RedisTlsAcceptor` uses `with_no_client_auth()` and reads certificate/key only;
 HC/2 consumes client CA roots. A wrong-server-CA rediss test is not a
@@ -1730,3 +1730,19 @@ guard blob identities: 12 selected production fixtures, one actual HC/2 security
 tenant test per default/get-owner variant, 109 focused xtask tests and scoped
 lint/documentation checks passed. It does not claim a secure RESP adapter, new
 mTLS implementation, full observer/workspace suite or numerical comparison.
+
+After explicit human approval on 2026-10-07, production RESP gained a separate
+opt-in required mTLS mode: `redis_api.mtls_client_ca_path` (environment:
+`HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH`). It requires enabled rediss/server TLS and
+AUTH, a dedicated client CA, and a valid client certificate. AUTH still binds the
+configured listener tenant. CA input is limited to 256 KiB/16 certificates;
+handshakes to five seconds; owned connections to 128 with abort/join on shutdown.
+None of those bounds changes the legacy TLS/plaintext path. See the
+[approved policy and production proofs](get-response-owner-scheduled-controls-design.md#approved-opt-in-resp-mtls-prerequisite-2026-10-07)
+and [rollback/security compatibility](../../../COMPAT.md).
+
+This resolves the production capability/policy prerequisite, not the secure
+scheduled observer or a matched numerical cohort. The historical audit remains
+immutable. Accepted performance changes remain zero, get-owner defaults remain
+off, C74 unresolved and full D3/admission closed. No new numerical benchmark,
+qualification, host operation or workflow dispatch accompanies this extension.
