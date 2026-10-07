@@ -250,3 +250,13 @@ allocation reduction or native nonregression. Product code, threshold/lock
 identity, sealed B0/D3a artifacts and qualification manifest remain untouched.
 Scheduled RESP3/mTLS, multi-key workloads, representative transitions and
 memory/quiet-host numerical evidence remain separate open steps.
+
+At clean source `83003e92bfe9652f430fd179931a781719679f79`, all 34 tool tests
+passed per default/get-owner build (12 scheduled, eight native, 14 RESP).
+All 105 focused xtask tests passed (53 performance-contract, 13 release-evidence,
+23 governance, 16 doc), along with scoped formatting, both strict check/clippy
+lanes, local performance/doc checks, 17 governance checks, three documentation
+script tests, sync/link checks and mdbook build. The separate
+[multiconnection check summary](local-runs/get-owner-resp-multiconnection-checks-83003e92.json)
+retains source/blob identities, diagnostics and the semantic-only scope. No
+numerical series or native floor is inferred; old summaries are not overwritten.
