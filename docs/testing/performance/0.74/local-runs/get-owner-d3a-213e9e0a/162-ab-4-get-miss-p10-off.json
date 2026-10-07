@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "profile_id": "get-response-owner-allocation-memory-screen-074-v1",
+  "tier": "local-d3a-allocation-memory-screen",
+  "promotable": false,
+  "source_commit": "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+  "source_clean": true,
+  "binary_sha256": "sha256:524eb6f39b535a03c47485a63e799f7706493e46be330fb18daf403959f21872",
+  "get_owner_enabled": false,
+  "allocator": "System-with-tool-only-requested-layout-accounting",
+  "operation": "get-miss",
+  "payload_bytes": 0,
+  "alternate_payload_bytes": 0,
+  "pipeline": 10,
+  "batches": 100,
+  "operations": 1000,
+  "warmup_batches": 5,
+  "read_chunk_bytes": 8192,
+  "seed": 740074,
+  "concurrency": 1,
+  "workload_sha256": "sha256:65991777f35c4f6f79843ca7b4464f179d4b80fd62a9633c7a336b51341bf8df",
+  "exact_response_validation": true,
+  "exact_final_values_and_cardinality": true,
+  "measured_dispatches": 1000,
+  "measured_mutations": 0,
+  "measured_errors": 0,
+  "allocation": {
+    "gross_allocated_bytes": 1579909,
+    "successful_allocation_calls": 28004,
+    "live_before_bytes": 205208,
+    "live_after_bytes": 205208,
+    "peak_live_requested_bytes": 222453,
+    "peak_live_above_start_bytes": 17245
+  },
+  "gross_allocated_bytes_per_operation": 1579.909,
+  "allocation_calls_per_operation": 28.004,
+  "next_read_boundary_live_min_bytes": 221607,
+  "next_read_boundary_live_max_bytes": 221607,
+  "next_read_boundary_samples": 100,
+  "write_calls": 1000,
+  "flush_calls": 1000,
+  "rss_before": {
+    "current_bytes": 5394432,
+    "lifetime_peak_bytes": 5394432
+  },
+  "rss_after_close": {
+    "current_bytes": 5410816,
+    "lifetime_peak_bytes": 5410816
+  },
+  "limitations": [
+    "profiling allocator overhead is not CPU/goodput/p99 evidence",
+    "scripted plaintext RESP2 IO, not real socket or syscall evidence",
+    "live requested layouts are not allocator active/resident/retained bytes",
+    "realloc hidden overlap and allocator metadata are not counted",
+    "RSS peak is lifetime not window; endpoint snapshots do not establish retention",
+    "next-read checkpoint is owner lifetime, not a timed idle/RSS soak",
+    "native HC1 HC2 embedded ClientSurfaceState and secure/concurrent cohorts still require separate D3 controls"
+  ]
+}

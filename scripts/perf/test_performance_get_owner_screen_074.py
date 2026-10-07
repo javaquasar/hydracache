@@ -144,6 +144,20 @@ class ScreenTests(unittest.TestCase):
         self.attempts[0]["compiled_feature_enabled"] = True
         with self.assertRaisesRegex(ValueError, "attempt feature"):
             self.analyse()
+
+    def test_retained_real_packet_replays_every_attempt_without_accepting(self):
+        directory = ROOT / "docs/testing/performance/0.74/local-runs/get-owner-d3a-213e9e0a"
+        actual = SCREEN.replay(directory, self.policy)
+        self.assertEqual(actual["classification"], "screen-passed-full-d3-controls-still-required")
+        self.assertEqual(actual["attempts_retained"], 180)
+        self.assertFalse(actual["accepted_product_change"])
+        self.assertFalse(actual["promotable"])
+        self.assertEqual(actual["red_cells"], [])
+        for result in actual["results"]:
+            self.assertEqual(result["gross"]["aa_ratios"], [1.0] * 5)
+            self.assertEqual(result["peak"]["aa_ratios"], [1.0] * 5)
+            self.assertEqual(result["next_read_live_delta_bytes_per_pair"], [0.0] * 5)
+            self.assertEqual(result["close_live_delta_bytes_per_pair"], [0.0] * 5)
         policy = copy.deepcopy(self.policy)
         policy["phase_a"]["feature"] = "serial-scratch"
         with self.assertRaisesRegex(ValueError, "feature policy"):

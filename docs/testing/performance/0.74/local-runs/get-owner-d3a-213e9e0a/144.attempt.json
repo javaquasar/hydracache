@@ -1,0 +1,33 @@
+{
+  "ordinal": 144,
+  "mode": "ab",
+  "pair": 3,
+  "cell": "get-miss-p10",
+  "role": "on",
+  "compiled_feature_enabled": true,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-on\\release\\resp-get-owner-screen-074.exe",
+    "--source",
+    "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-213e9e0a\\144-ab-3-get-miss-p10-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get-miss",
+    "--payload",
+    "0",
+    "--alternate-payload",
+    "0",
+    "--pipeline",
+    "10",
+    "--batches",
+    "100",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get-miss 1000 operations; gross=1579.909 bytes/op; peak-above-start=17245 bytes\n",
+  "stderr": "",
+  "raw_receipt_sha256": "sha256:f9fdf640b390758f89fa6099f96f3be889d0fb0f6e0f6650a1eeb94391456c12"
+}

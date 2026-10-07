@@ -1,0 +1,551 @@
+{
+  "schema_version": 1,
+  "profile_id": "get-response-owner-allocation-memory-screen-074-v1",
+  "source_commit": "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+  "promotable": false,
+  "accepted_product_change": false,
+  "product_performance_claim": false,
+  "classification": "screen-passed-full-d3-controls-still-required",
+  "red_cells": [],
+  "attempts_retained": 180,
+  "results": [
+    {
+      "cell": "get-4k-p50",
+      "affected": true,
+      "gross": {
+        "paired_ratios": [
+          0.7313032735867969,
+          0.7313032735867969,
+          0.7313032735867969,
+          0.7313032735867969,
+          0.7313032735867969
+        ],
+        "geometric_mean": 0.7313032735867969,
+        "lower_95": 0.7313032735867969,
+        "upper_95": 0.7313032735867969,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125
+        ],
+        "geometric_mean": 0.9785981382767125,
+        "lower_95": 0.9785981382767125,
+        "upper_95": 0.9785981382767125,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-1m-p10",
+      "affected": true,
+      "gross": {
+        "paired_ratios": [
+          0.666841258636574,
+          0.666841258636574,
+          0.666841258636574,
+          0.666841258636574,
+          0.666841258636574
+        ],
+        "geometric_mean": 0.666841258636574,
+        "lower_95": 0.666841258636574,
+        "upper_95": 0.666841258636574,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          0.9997483556793806,
+          0.9997483556793806,
+          0.9997483556793806,
+          0.9997483556793806,
+          0.9997483556793806
+        ],
+        "geometric_mean": 0.9997483556793806,
+        "lower_95": 0.9997483556793806,
+        "upper_95": 0.9997483556793806,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-4k-p1",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          0.6978895193183279,
+          0.6978895193183279,
+          0.6978895193183279,
+          0.6978895193183279,
+          0.6978895193183279
+        ],
+        "geometric_mean": 0.6978895193183279,
+        "lower_95": 0.6978895193183279,
+        "upper_95": 0.6978895193183279,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125
+        ],
+        "geometric_mean": 0.9785981382767125,
+        "lower_95": 0.9785981382767125,
+        "upper_95": 0.9785981382767125,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-256-p50",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          0.9312373621792599,
+          0.9312373621792599,
+          0.9312373621792599,
+          0.9312373621792599,
+          0.9312373621792599
+        ],
+        "geometric_mean": 0.9312373621792599,
+        "lower_95": 0.9312373621792599,
+        "upper_95": 0.9312373621792599,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "set-4k-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-mixed-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          0.7316399352827998,
+          0.7316399352827998,
+          0.7316399352827998,
+          0.7316399352827998,
+          0.7316399352827998
+        ],
+        "geometric_mean": 0.7316399352827998,
+        "lower_95": 0.7316399352827998,
+        "upper_95": 0.7316399352827998,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125
+        ],
+        "geometric_mean": 0.9785981382767125,
+        "lower_95": 0.9785981382767125,
+        "upper_95": 0.9785981382767125,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-4k-fragmented-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          0.7846987798738985,
+          0.7846987798738985,
+          0.7846987798738985,
+          0.7846987798738985,
+          0.7846987798738985
+        ],
+        "geometric_mean": 0.7846987798738985,
+        "lower_95": 0.7846987798738985,
+        "upper_95": 0.7846987798738985,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125,
+          0.9785981382767125
+        ],
+        "geometric_mean": 0.9785981382767125,
+        "lower_95": 0.9785981382767125,
+        "upper_95": 0.9785981382767125,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-empty-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    },
+    {
+      "cell": "get-miss-p10",
+      "affected": false,
+      "gross": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "peak": {
+        "paired_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometric_mean": 1.0,
+        "lower_95": 1.0,
+        "upper_95": 1.0,
+        "aa_ratios": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "gross_guard_passed": true,
+      "peak_guard_passed": true,
+      "next_read_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "close_live_delta_bytes_per_pair": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "owner_guard_passed": true
+    }
+  ],
+  "pending": [
+    "unprofiled timing and exact per-operation scheduled latency",
+    "embedded ClientSurfaceState HC1 HC2 independent native controls",
+    "real plaintext/mTLS transport and concurrency cohorts",
+    "allocator active/resident/retained and timed idle/RSS proof",
+    "feature-on hosted-CI gate evidence"
+  ]
+}

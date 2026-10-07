@@ -1,0 +1,33 @@
+{
+  "ordinal": 20,
+  "mode": "aa",
+  "pair": 2,
+  "cell": "get-4k-p50",
+  "role": "off",
+  "compiled_feature_enabled": false,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-off\\release\\resp-get-owner-screen-074.exe",
+    "--source",
+    "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-213e9e0a\\020-aa-2-get-4k-p50-off.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "4096",
+    "--alternate-payload",
+    "4096",
+    "--pipeline",
+    "50",
+    "--batches",
+    "40",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get 2000 operations; gross=15243.952 bytes/op; peak-above-start=25138 bytes\n",
+  "stderr": "",
+  "raw_receipt_sha256": "sha256:0e70356a8fbf32fb8611243ceafa39ec3408fe51e0a85a331e5ab4b13879afb2"
+}

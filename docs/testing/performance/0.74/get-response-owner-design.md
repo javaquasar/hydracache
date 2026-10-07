@@ -187,3 +187,11 @@ rollback. Passing only permits preparing a separately sealed phase B contract,
 not acceptance. RSS endpoints/lifetime peak, scripted write calls and requested
 layouts cannot establish timed retention, actual syscalls, native CPU/p99/goodput
 or real secure/concurrent transport guards. No costly workload is authorized.
+
+The sealed D3a source is now `213e9e0a`. All 180 attempts completed with no retry;
+all 362 archived files are byte-identical and replayed. The new experimental
+measurement source identity is resolved in the registry; integrated C74 remains
+unresolved. Primary GET gross reductions are 26.8697% and 33.3159%, peak does not
+increase and paired owner deltas are zero. See `get-response-owner-d3-result.md`
+for all controls, denominators and remaining phase B boundaries. This does not
+change the immutable D2 preregistration or accept/default-enable the proposal.

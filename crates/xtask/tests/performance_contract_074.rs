@@ -1371,6 +1371,73 @@ fn get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate() {
 }
 
 #[test]
+fn get_response_owner_d3a_retains_all_raw_hashes_without_acceptance() {
+    let packet = root().join("docs/testing/performance/0.74/local-runs/get-owner-d3a-213e9e0a");
+    assert_eq!(std::fs::read_dir(&packet).unwrap().count(), 362);
+    let seal: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("seal.json")).unwrap()).unwrap();
+    let summary: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("summary.json")).unwrap()).unwrap();
+    assert_eq!(
+        seal["source_commit"],
+        "213e9e0a3c9c50e089e5aed2583913f8c6d10807"
+    );
+    assert_eq!(summary["source_commit"], seal["source_commit"]);
+    assert_eq!(summary["attempts_retained"], 180);
+    assert_eq!(
+        summary["classification"],
+        "screen-passed-full-d3-controls-still-required"
+    );
+    for flag in [
+        "promotable",
+        "accepted_product_change",
+        "product_performance_claim",
+    ] {
+        assert_eq!(summary[flag], false);
+    }
+    let schedule = seal["schedule"].as_array().unwrap();
+    assert_eq!(schedule.len(), 180);
+    for (index, row) in schedule.iter().enumerate() {
+        let ordinal = index + 1;
+        let mode = row[0].as_str().unwrap();
+        let pair = row[1].as_u64().unwrap();
+        let cell = row[2].as_str().unwrap();
+        let role = row[3].as_str().unwrap();
+        let raw =
+            std::fs::read(packet.join(format!("{ordinal:03}-{mode}-{pair}-{cell}-{role}.json")))
+                .unwrap();
+        let attempt: Value = serde_json::from_slice(
+            &std::fs::read(packet.join(format!("{ordinal:03}.attempt.json"))).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(attempt["ordinal"], ordinal);
+        assert_eq!(attempt["exit_code"], 0);
+        assert_eq!(
+            attempt["raw_receipt_sha256"],
+            format!(
+                "sha256:{}",
+                Sha256::digest(&raw)
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            )
+        );
+        let receipt: Value = serde_json::from_slice(&raw).unwrap();
+        let enabled = mode == "ab" && role == "on";
+        assert_eq!(receipt["source_commit"], seal["source_commit"]);
+        assert_eq!(receipt["get_owner_enabled"], enabled);
+        assert_eq!(
+            receipt["binary_sha256"],
+            seal[if enabled {
+                "on_binary_sha256"
+            } else {
+                "off_binary_sha256"
+            }]
+        );
+    }
+}
+
+#[test]
 fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     let proposal = contract("w9b-serial-scratch-proposal.toml");
     let registry = contract("proposal-registry.toml");

@@ -1563,3 +1563,20 @@ receipts and exact scope in `local-runs/get-response-owner-checks-3f13f1d1.json`
 All 99 targeted xtask, 16 replay and three docs-script tests passed. Local evidence
 aggregation still has zero fast-green/gated-green/ship-ready rows; structural
 mapping is not full workspace/hosted qualification or accepted product changes.
+
+### Private GET owner D3a: allocation/memory early screen passed
+
+Source `213e9e0a` seals the separate contract/tool before any sample. All 180
+attempts (nine cells, five A/A and five counterbalanced A/B pairs each) succeeded
+without retry. Full connection-path gross allocation falls 26.8697% for GET
+4 KiB/p50 and 33.3159% for GET 1 MiB/p10, exactly one payload allocation/op.
+Requested-live peak is non-increasing, owner increments match, and SET/empty/miss
+controls are unchanged. Every A/A ratio is 1.00; all five counts repeat.
+
+All 362 raw/attempt/seal/summary files are retained in
+`local-runs/get-owner-d3a-213e9e0a/` and replayed with raw SHA checks. See
+[result, denominators and remaining guards](get-response-owner-d3-result.md).
+This is scripted RESP2 plaintext requested-layout evidence, not socket throughput,
+CPU/p99, RSS retention or native numerical nonregression. Phase B needs a separate
+sealed contract; no expensive run is authorized. Feature remains off, accepted
+proposals zero, C74 unresolved and qualification manifest unchanged.

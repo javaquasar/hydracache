@@ -3497,3 +3497,57 @@ allocator. Unlike rejected encoded scratch, this proposal does not intentionally
 retain one frame during the next command; whether that yields an admissible
 product improvement is for measurements to decide. No D3 gain is claimed yet,
 no earlier rejection is reopened, and C74 remains unresolved.
+
+## A removed payload allocation is not yet a throughput result
+
+D3a subsequently sealed the contract and new instrumentation at `213e9e0a`, before
+any numerical sample. Unlike the old scratch experiment, the wrapper forwards
+only the private GET ownership feature. Release off/on binaries share the exact
+clean source; build/source, compiler, lock, contract, binary and workload hashes
+are checked. Nine fixed cells run five independently started A/A pairs followed
+by five alternating A/B pairs each. Empty hits and misses join SET as genuine
+fallback controls. Every expected byte is checked during scripted writes; final
+values/cardinality and exact dispatch/mutation/error counts reconcile outside
+counting. All 180 attempts succeeded, without invalidation, retry or pair selection.
+
+The complete connection-path window now includes decode, translation, dispatch,
+reduction, encoding, write/flush and close. GET 4 KiB/p50 falls from 15,243.952 to
+11,147.952 gross requested bytes/op: **26.8697% less**. GET 1 MiB/p10 falls from
+3,147,376.520 to 2,098,800.520: **33.3159% less**. Each operation removes exactly
+one successful allocation and one payload-sized requested layout, as predicted
+by the independent D1 owner attribution. Five A/B pairs repeat each count exactly;
+A/A gross/peak ratios are all 1.00. Their preregistered log-scale t(4) intervals
+collapse for these deterministic counts, not for production scheduling uncertainty.
+
+The unchanged 20% primary floor passes. Smaller/fragmented controls also do not
+regress: 4 KiB/p1 saves 30.2110%, 256 B/p50 6.8763%, mixed 4 KiB/256 B 26.8360%,
+and one-byte-read 4 KiB/p10 21.5301%. Payload bytes saved are the same where sizes
+match; the denominator differs because framing/fragmentation costs remain. SET,
+empty hit and miss gross allocation/peak counts are unchanged. These are not
+extra implementation hypotheses or a comparison with historical scratch numbers.
+
+The lifetime guard differs materially from the rejected buffer reuse. Window
+peak above start is 25,138 -> 24,600 bytes for 4 KiB/p50 and 2,114,095 -> 2,113,563
+for 1 MiB/p10: no increase. Every paired next-read and post-close owner delta is
+zero; measured close returns to starting requested-live bytes. The encoder still
+needs an encoded frame while holding the value, so removing one transient reducer
+copy cannot be assumed to remove one whole payload from peak. The tiny peak
+differences are measured, but not independently attributed to specific metadata.
+We do not turn owner release into an OS page-return claim.
+
+The result is useful and bounded: this hypothesis clears the early allocation
+and requested-live screen; the scratch hypothesis did not. The full 362-file
+packet is retained byte-for-byte at `local-runs/get-owner-d3a-213e9e0a/`, with
+raw hashes and exact offline replay. There is no reason to rescue scratch or
+alter its negative decision. There is also no reason yet to default-enable the
+new feature: scripted RESP2 plaintext IO and a profiling System allocator say
+nothing sufficient about native capacity, socket goodput, CPU/op, scheduled p99,
+TLS/concurrent clients or timed RSS/allocator idle-retention/refill.
+
+Those require a separately sealed phase B with all four independent native
+surfaces, unprofiled timing, real transport/security/concurrency and memory cohorts.
+Hosted feature-on semantics still need their own current-source execution receipt;
+an earlier green ancestor or CI enrollment is not one. No phase B or costly
+qualification ran in this step. The feature stays off, accepted proposals remain
+zero and C74 unresolved. The detailed scope and all nine cells are recorded in
+`docs/testing/performance/0.74/get-response-owner-d3-result.md`.

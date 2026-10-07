@@ -1,0 +1,33 @@
+{
+  "ordinal": 21,
+  "mode": "aa",
+  "pair": 2,
+  "cell": "get-1m-p10",
+  "role": "on",
+  "compiled_feature_enabled": false,
+  "command": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-off\\release\\resp-get-owner-screen-074.exe",
+    "--source",
+    "213e9e0a3c9c50e089e5aed2583913f8c6d10807",
+    "--output",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\get-owner-d3a-213e9e0a\\021-aa-2-get-1m-p10-on.json",
+    "--warmup-batches",
+    "5",
+    "--operation",
+    "get",
+    "--payload",
+    "1048576",
+    "--alternate-payload",
+    "1048576",
+    "--pipeline",
+    "10",
+    "--batches",
+    "20",
+    "--read-chunk",
+    "8192"
+  ],
+  "exit_code": 0,
+  "stdout": "get 200 operations; gross=3147376.520 bytes/op; peak-above-start=2114095 bytes\n",
+  "stderr": "",
+  "raw_receipt_sha256": "sha256:e10838111f96674809fb75f0fdd259ca9559683b3442d151169248255752c5cc"
+}

@@ -30,4 +30,5 @@ docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
 
 # D1 response-owner receipts hash raw bytes; never rewrite them on checkout.
 docs/testing/performance/0.74/local-runs/response-owner-*/** -text
-docs/testing/performance/0.74/local-runs/get-owner-d3a-*/** -text
+# Raw Windows runner receipts retain CRLF bytes; recognize CR as line ending.
+docs/testing/performance/0.74/local-runs/get-owner-d3a-*/** -text whitespace=cr-at-eol
