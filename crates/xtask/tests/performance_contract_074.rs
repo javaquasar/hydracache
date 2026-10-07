@@ -1262,6 +1262,48 @@ fn get_response_owner_d2_preserves_one_hypothesis_and_future_guards() {
 }
 
 #[test]
+fn get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci() {
+    let p = contract("get-response-owner-proposal.toml");
+    let feature = p["feature"].as_str().unwrap();
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("crates/hydracache-redis-compat/Cargo.toml")).unwrap(),
+    )
+    .unwrap();
+    assert!(manifest["features"]["default"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert!(manifest["features"][feature].as_array().unwrap().is_empty());
+    let runtime = std::fs::read_to_string(root().join("crates/hydracache-redis-compat/src/lib.rs"))
+        .unwrap()
+        .replace("\r\n", "\n");
+    let canonical = without_get_owner_overlay(&runtime);
+    assert_ne!(
+        canonical, runtime,
+        "the exact two enrolled hunks must exist"
+    );
+    assert!(root()
+        .join("crates/hydracache-redis-compat/src/get_response_owner_074.rs")
+        .is_file());
+    let workflow: serde_yaml::Value = serde_yaml::from_str(
+        &std::fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap(),
+    )
+    .unwrap();
+    let steps = workflow["jobs"]["rust"]["steps"].as_sequence().unwrap();
+    let step = steps
+        .iter()
+        .find(|step| step["name"].as_str() == Some("Release 0.74 GET ownership feature semantics"))
+        .unwrap();
+    assert_eq!(
+        step["if"].as_str(),
+        Some("env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'")
+    );
+    assert_eq!(step["run"].as_str().unwrap().trim(), concat!(
+        "cargo test -p hydracache-redis-compat --features experimental-resp-get-owner-074 --locked\n",
+        "cargo test -p hydracache-server --test server_lifecycle redis --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked"));
+}
+
+#[test]
 fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
     let proposal = contract("w9b-serial-scratch-proposal.toml");
     let registry = contract("proposal-registry.toml");

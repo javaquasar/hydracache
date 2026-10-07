@@ -793,6 +793,12 @@ jobs:
         if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
         run: cargo test -p hydracache-long-run-supervisor-074 --locked
 
+      - name: Release 0.74 GET ownership feature semantics
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
+        run: |
+          cargo test -p hydracache-redis-compat --features experimental-resp-get-owner-074 --locked
+          cargo test -p hydracache-server --test server_lifecycle redis --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked
+
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
 
