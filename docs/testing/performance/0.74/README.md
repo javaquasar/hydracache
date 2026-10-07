@@ -1704,3 +1704,11 @@ bounded, not a general map parser or source/TLS attestation. Large frames, mixed
 HELLO transitions and cancelled fragmented arrays have separate semantic fixtures.
 Matched mTLS, full conformance and numerical nonregression remain open; see the
 [methodology](get-response-owner-scheduled-controls-design.md).
+
+Clean-source `fc07bf382e6f0c481f381c81b4d1e87108f34db4` passed 57 tool tests per
+default/get-owner variant and 108 focused xtask tests, strict check/clippy,
+scoped formatting, local performance/doc/governance checks and docs build.
+The [RESP3 check summary](local-runs/get-owner-resp3-checks-fc07bf38.json) retains
+exact source/blob identities, the virtual-time HELLO timeout, 56 RESP3 cells,
+36 RESP2 hit/miss/SET cells and the initial map-order oracle correction.
+No numerical speedup or release admission follows; older summaries stay immutable.

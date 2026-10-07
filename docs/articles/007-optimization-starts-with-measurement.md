@@ -3827,3 +3827,11 @@ dialect/ownership semantics. They do not replace TLS/authentication parity,
 subscriptions or full RESP3 conformance, expiration/quota/fault coverage,
 native nonregression or retained-memory measurements. No product optimization
 is accepted merely because the observer now understands more correct replies.
+
+Clean-source `fc07bf382e6f0c481f381c81b4d1e87108f34db4` passed 57 observer tests
+in each default/get-owner variant and 108 focused xtask tests, alongside scoped
+formatting, strict lint and local documentation/contract checks. The retained
+`docs/testing/performance/0.74/local-runs/get-owner-resp3-checks-fc07bf38.json`
+summary includes the initial failed order assumption, bounded virtual-time
+handshake timeout and exact source/blob references. Those counts establish
+verification coverage, not a throughput or allocation improvement.

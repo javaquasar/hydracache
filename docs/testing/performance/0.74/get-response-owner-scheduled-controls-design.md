@@ -424,3 +424,14 @@ not close matched mTLS, full RESP3 command/subscription/attribute conformance,
 expiration/quota/events/faults, representative mixed/live-delete traces, native
 nonregression, allocator retained/RSS observations or repeated numerical pairs.
 Product/default/lock/qualification and sealed B0/D3a packets remain unchanged.
+
+Clean-source verification at `fc07bf382e6f0c481f381c81b4d1e87108f34db4`
+passed 57 tool tests per default/get-owner variant (12 scheduled, 16 native,
+29 RESP), 108 focused xtask tests (56 performance-contract, 13 release-evidence,
+23 governance, 16 doc), strict check/clippy in both package lanes, scoped format,
+local performance/doc gates, 17 governance checks, three docs-script tests,
+sync/link checks and mdbook build. The separate
+[RESP3 check summary](local-runs/get-owner-resp3-checks-fc07bf38.json) binds results
+to source/blob identities and preserves both development diagnostics. It records
+only semantic verification: no numerical series, native floor, full workspace
+or hosted receipt is inferred.
