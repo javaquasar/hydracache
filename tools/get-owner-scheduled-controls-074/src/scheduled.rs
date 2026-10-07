@@ -156,9 +156,18 @@ async fn collect_or_drain(
 /// Original timestamps never move to actual send/slot-acquisition time. Offers
 /// do not wait for responses; pending requests have a hard tool-only cap.
 pub async fn run<T: Target>(target: Arc<T>, config: &Config) -> Result<Observation, String> {
+    run_at(target, config, Instant::now()).await
+}
+
+/// Share the original calendar origin with a transport's per-response sidecar.
+/// The caller must use a fresh origin, never an independently rebased send clock.
+pub async fn run_at<T: Target>(
+    target: Arc<T>,
+    config: &Config,
+    origin: Instant,
+) -> Result<Observation, String> {
     config.validate()?;
     let schedule = FixedRateSchedule::new(0, config.offered_rate_per_second)?;
-    let origin = Instant::now();
     let permits = Arc::new(Semaphore::new(config.concurrency));
     let capacity = config.concurrency + config.maximum_queued;
     let mut tasks = JoinSet::new();

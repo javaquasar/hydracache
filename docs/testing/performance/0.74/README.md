@@ -1631,3 +1631,13 @@ Focused checks at clean `a6047895`: 19 tool tests per variant and 103 xtask test
 strict lint/check, docs/book and 17 governance checks passed. The
 [check summary](local-runs/get-owner-scheduled-instrumentation-checks-a6047895.json)
 is local functional evidence only, not native nonregression or hosted CI.
+
+The subsequent semantic extension adds a bounded RESP2 GET per-frame sidecar on
+one real TCP connection at outstanding ceilings 1/10/50. It keeps cancelled FIFO
+owners, supports partial writes while reading replies, validates wire identities
+and timestamps, and includes wire-owner drain in elapsed accounting. Frame
+observation is distinct from verified-operation latency; no batch average or late
+reply can become a successful operation. Native GET/PUT controls now also test
+barrier-synchronized 32/128 slots and HC2 live connections/cleanup. These are
+functional prerequisites only; full measured/nonregression requirements remain
+open, and the earlier check summary remains bound to its original source.

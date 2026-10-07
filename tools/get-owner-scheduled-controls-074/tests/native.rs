@@ -98,3 +98,48 @@ async fn invalid_slots_fail_before_starting_any_listener() {
     .await
     .is_err());
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn high_concurrency_native_clients_start_together_and_release_resources() {
+    for surface in [Surface::Hc1Http, Surface::Hc2GrpcMtls] {
+        for slots in [32, 128] {
+            for operation in [Operation::Get, Operation::Put] {
+                let control = Arc::new(
+                    NativeControl::start(surface, slots, Dataset::new(4, 1024).unwrap(), operation)
+                        .await
+                        .unwrap(),
+                );
+                assert_eq!(control.client_slots(), slots);
+                if let Some(active) = control.hc2_active_connections() {
+                    assert_eq!(active, slots as u64);
+                }
+                let barrier = Arc::new(tokio::sync::Barrier::new(slots));
+                let mut tasks = tokio::task::JoinSet::new();
+                for sequence in 0..slots {
+                    let control = Arc::clone(&control);
+                    let barrier = Arc::clone(&barrier);
+                    tasks.spawn(async move {
+                        barrier.wait().await;
+                        control
+                            .execute(get_owner_scheduled_controls_074::target::TargetRequest {
+                                sequence: sequence as u64,
+                            })
+                            .await
+                    });
+                }
+                while let Some(result) = tasks.join_next().await {
+                    assert_eq!(
+                        result.unwrap(),
+                        get_owner_scheduled_controls_074::target::TargetOutcome::Success
+                    );
+                }
+                control.verify().await.unwrap();
+                Arc::try_unwrap(control)
+                    .unwrap_or_else(|_| panic!("native clients still owned"))
+                    .shutdown()
+                    .await
+                    .unwrap();
+            }
+        }
+    }
+}

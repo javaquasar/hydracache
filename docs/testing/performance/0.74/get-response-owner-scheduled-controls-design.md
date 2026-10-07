@@ -122,3 +122,71 @@ and mdbook build. See the non-promotable
 for commands and source-reference/lock Git blob ids. These are functional check
 counts, not a numerical performance result, current-source hosted receipt or full
 workspace verification. Qualification manifest digest remains unchanged.
+
+## RESP response matching and the high-concurrency semantic extension
+
+The next tool-only extension adds RESP2 GET on one real TCP connection through
+the production `RedisRespServer::serve_connection` owner. It uses the same binary
+Dataset as native controls, but no security-matched cross-surface comparison is
+claimed. Preload SET and final GET/miss oracles use the real transport, not direct
+store injection. The fixture-only request frame ceiling is 8 MiB, because a 1 MiB
+SET value plus envelope exceeds the production default 1 MiB frame ceiling. The
+first large-payload fixture found that limit; only this local fixture config was
+corrected. Product defaults, threshold policy and old B0/D3a tools remain intact.
+
+Each accepted request retains its caller sequence and actual wire FIFO ordinal.
+The single owned I/O actor interleaves partial writes and reads, with bounded
+channel/semaphore ownership, a one-frame reply buffer and at most 10,256 history
+identities (10,000 offers plus a bounded setup allowance). It supports only the
+bulk/null/simple/error RESP2 reply forms used by this control and rejects unknown
+types, malformed lengths, oversized payload/header or unsolicited responses.
+Header-boundary tests also cover CR and LF fragmented exactly at the limit.
+Outstanding ceilings 1/10/50 are NOT fixed batch sizes, connection counts or
+permission to divide a batch duration by depth. Actual wire order is retained;
+concurrent driver wakeups do not guarantee ascending sequence order on the wire.
+
+RESP has no request id. Aborting a waiting caller does not undo bytes already
+written, and deleting its FIFO entry would assign its late reply to another key.
+The actor therefore owns the slot until reply or close, even when the waiting
+future is cancelled. Its tombstone records reply kind, exact-byte verdict and
+whether the receiver was closed. Disconnect/parse failures have no fabricated
+frame timestamp. Distinct scripted replies prove cancellation does not shift
+response association. A logically gated slow reader and partial-write duplex
+fixture prove the bound remains owned; another fixture proves reads progress
+while a later command write is backpressured. These are deterministic I/O
+fixtures, not cluster chaos or wall-clock speed assertions.
+
+`scheduled::run_at` shares the original monotonic origin with the sidecar. Each
+wire sample carries original scheduled time, slot acceptance, full write and
+complete-frame-observed time. The last is a userspace parsing observation, not a
+kernel last-byte-arrival timestamp; coalesced reads are still parsed per frame.
+Byte-oracle validation and waiter wakeup occur afterward. The driver's verified
+operation histogram keeps that later boundary. Frame latency is separate
+attribution and never replaces verified-operation SLO/goodput. Every sidecar
+sample also carries the driver's terminal outcome: a parsed late reply cannot
+turn a timed-out/incomplete caller into success. The validator rejects duplicate
+or orphan identities, changed schedule/FIFO order, absent successful replies,
+inconsistent write/response times and fabricated wire responses.
+
+After driver request-task cleanup, the control drains wire FIFO owners within
+five seconds; inability to drain is a loud error, not a clean receipt. Elapsed
+goodput accounting is extended through this wire drain, so cancelled TCP work
+is not quietly moved outside the denominator. Previously censored driver samples
+remain censored. Run is single-use: no old history may be rebased onto a later
+calendar. Default allocator still has tool task/queue/parser/history/oracle cost;
+this is not zero-overhead instrumentation or unprofiled product CPU evidence.
+
+Native real-transport 32/128 fixtures now create all client slots and synchronize
+GET/PUT invocation with a barrier. HC2 accounting must show the actual connected
+clients, values/retained entry bytes must match and explicit shutdown must release
+server resources. HC1 claims logical client slots, not a verified physical socket
+peak. Passing these tests does not establish native nonregression or saturation.
+
+Scheduled RESP3/mTLS, multiple RESP connections, scheduled SET/multikey workloads,
+representative error/miss/slow-reader load distributions and size transitions are
+not implemented as numerical cohorts here. CPU/allocations/syscalls/copy counts,
+retained/RSS idle-refill, quiet-host preregistration and feature-on hosted CI also
+remain open. Both `pending` requirement flags stay true: instrumentation and a
+small semantic grid are prerequisites, not the independently repeated admission
+measurements. The existing 19-test `a6047895` check summary is historical and is
+not overwritten to describe this extension.

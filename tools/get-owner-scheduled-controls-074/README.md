@@ -21,3 +21,15 @@ cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml -
 
 Tests are semantic/instrumentation fixtures only, not performance evidence. No
 current-source hosted CI or full workspace verification is implied by these checks.
+
+RESP2 GET now has a bounded per-response sidecar on one real loopback TCP
+connection, with outstanding ceilings 1/10/50 (not fixed-size response-paced
+batches). Cancelled callers retain FIFO tombstones until their reply/close.
+`RespControl::run` is single-use, shares the original calendar with the driver and
+includes wire-owner drain in elapsed goodput accounting. It reports frame-observed
+timestamps separately from byte-validated operation completion; neither is batch
+time divided by depth. RESP3/mTLS and sealed numerical execution remain absent.
+
+Native 32/128 fixtures synchronize GET/PUT clients with a barrier, verify real HC2
+connection accounting, exact values and shutdown. They assert no real-clock
+performance threshold or native nonregression.

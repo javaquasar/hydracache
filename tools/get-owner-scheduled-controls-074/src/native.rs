@@ -99,6 +99,12 @@ impl Dataset {
         );
         Ok(Self { keys, value })
     }
+    pub(crate) fn entries(&self) -> Vec<(Bytes, Bytes)> {
+        self.keys
+            .iter()
+            .map(|key| (key.clone(), self.value.clone()))
+            .collect()
+    }
     pub fn digest(&self) -> String {
         let mut hash = Sha256::new();
         hash.update(SEED.to_le_bytes());
@@ -302,6 +308,14 @@ impl NativeControl {
     }
     pub fn retained_entries(&self) -> usize {
         self.state.retained_state_for_diagnostics().store_entries
+    }
+    pub fn client_slots(&self) -> usize {
+        self.clients.len()
+    }
+    pub fn hc2_active_connections(&self) -> Option<u64> {
+        self.hc2
+            .as_ref()
+            .map(|service| service.accounting().active_connections)
     }
     pub fn retained_value_bytes(&self) -> usize {
         self.state.retained_state_for_diagnostics().value_bytes

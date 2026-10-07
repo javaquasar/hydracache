@@ -41,7 +41,7 @@ maximum_key_space = 16
 maximum_payload_bytes = 1048576
 surfaces = ["hc1-http-loopback", "hc2-grpc-mtls-loopback"]
 operations = ["get", "put-same-fixed-value"]
-tested_transport_client_slots = [1, 8]
+tested_transport_client_slots = [1, 8, 32, 128]
 binary_value_oracle = true
 missing_get_oracle = true
 same_dataset_digest_across_surfaces = true
@@ -50,6 +50,26 @@ product_instrumentation_enabled = false
 system_service_used = false
 hc2_client_certificate_required = true
 cross_security_context_numeric_comparison_allowed = false
+
+[resp]
+state = "local-resp2-get-semantic-adapter-only"
+real_loopback_tcp = true
+production_connection_owner = true
+physical_connections = 1
+pipeline_limits = [1, 10, 50]
+pipeline_is_outstanding_ceiling_not_fixed_batch = true
+response_boundary = "complete-frame-observed-before-byte-oracle-and-waiter-wakeup"
+original_calendar_shared = true
+fifo_tombstone_retained_after_waiter_cancel = true
+maximum_reply_payload_bytes = 1048576
+maximum_header_bytes = 128
+maximum_history_records = 10256
+fixture_request_frame_ceiling_bytes = 8388608
+maximum_wire_drain_seconds = 5
+single_use_run = true
+retry_allowed = false
+secure_transport_claim_allowed = false
+numeric_comparison_allowed = false
 
 [pending]
 new_sealed_numerical_cohort_required = true

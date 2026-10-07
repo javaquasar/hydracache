@@ -7,6 +7,95 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance() {
+    let c = contract("get-response-owner-scheduled-controls-contract.toml");
+    for flag in [
+        "promotable",
+        "product_numeric_claims_allowed",
+        "numerical_series_started",
+        "accepted_product_change",
+        "default_enabled",
+        "complete_d3_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let resp = &c["resp"];
+    for flag in [
+        "real_loopback_tcp",
+        "production_connection_owner",
+        "pipeline_is_outstanding_ceiling_not_fixed_batch",
+        "original_calendar_shared",
+        "fifo_tombstone_retained_after_waiter_cancel",
+        "single_use_run",
+    ] {
+        assert_eq!(resp[flag].as_bool(), Some(true), "{flag}");
+    }
+    for flag in [
+        "retry_allowed",
+        "secure_transport_claim_allowed",
+        "numeric_comparison_allowed",
+    ] {
+        assert_eq!(resp[flag].as_bool(), Some(false), "{flag}");
+    }
+    for (field, expected) in [
+        ("physical_connections", 1),
+        ("maximum_reply_payload_bytes", 1048576),
+        ("maximum_header_bytes", 128),
+        ("maximum_history_records", 10256),
+        ("fixture_request_frame_ceiling_bytes", 8388608),
+        ("maximum_wire_drain_seconds", 5),
+    ] {
+        assert_eq!(resp[field].as_integer(), Some(expected), "{field}");
+    }
+    assert_eq!(
+        resp["pipeline_limits"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        vec![1, 10, 50]
+    );
+    assert_eq!(
+        c["native"]["tested_transport_client_slots"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_integer().unwrap())
+            .collect::<Vec<_>>(),
+        vec![1, 8, 32, 128]
+    );
+    for flag in [
+        "new_sealed_numerical_cohort_required",
+        "resp_per_response_scheduled_adapter_required",
+        "hc1_hc2_nonregression_measurements_required",
+        "real_transport_concurrency_32_128_required",
+        "matched_mtls_resp3_required",
+        "allocator_active_resident_retained_idle_refill_required",
+        "feature_on_hosted_ci_receipt_required",
+    ] {
+        assert_eq!(c["pending"][flag].as_bool(), Some(true), "{flag}");
+    }
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let source = std::fs::read_to_string(tool.join("src/resp.rs")).unwrap();
+    for required in [
+        "scheduled::run_at",
+        "self.pipeline.drain().await?",
+        "validate_wire(&result)?",
+        "waiting_caller_cancelled",
+        "slow_reader_and_partial_writes_preserve_cancelled_fifo_tombstone",
+        "reads_progress_while_later_pipeline_write_is_backpressured",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    assert!(!source.contains("unbounded_channel"));
+    assert!(!source.contains("global_allocator"));
+    let native = std::fs::read_to_string(tool.join("tests/native.rs")).unwrap();
+    assert!(native.contains("high_concurrency_native_clients_start_together_and_release_resources"));
+    assert!(native.contains("Barrier::new(slots)"));
+}
+
+#[test]
 fn scheduled_native_controls_preserve_offers_without_admitting_full_d3() {
     let c = contract("get-response-owner-scheduled-controls-contract.toml");
     assert_eq!(

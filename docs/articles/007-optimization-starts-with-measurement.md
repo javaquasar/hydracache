@@ -3663,3 +3663,39 @@ meaning. Scheduled RESP response matching, real 32/128 native concurrency,
 matched-security cohorts, retention/refill and current-source hosted execution
 still precede any full D3 decision. The implementation and remaining limits are
 documented in `get-response-owner-scheduled-controls-design.md`.
+
+## A cancelled RESP waiter is still a wire owner
+
+The next implementation makes scheduled timing concrete for RESP2 GET. One
+real TCP connection retains each request's caller sequence and its actual FIFO
+wire ordinal, then records a complete-frame observation for every parsed reply.
+Pipeline 1/10/50 are outstanding-request ceilings, not batches whose time can be
+divided to manufacture operation latency. The original loadgen calendar remains
+unchanged; frame-observed latency and byte-validated operation completion are
+separate boundaries. Parsing an early reply is useful attribution, not permission
+to exclude validation/wakeup cost from the operation's SLO.
+
+Cancellation is the subtle part. RESP has no response request id. If a caller
+times out after its request was written, removing its pending slot lets the late
+reply satisfy the next caller. The bounded actor therefore retains a FIFO
+tombstone and its permit until reply or connection close. A late parsed reply
+keeps the driver's timeout/incomplete outcome; it cannot become a good success.
+Wire owners are drained before elapsed accounting ends. A drain failure is loud,
+not a successful receipt with hidden background work. A fresh run also needs a
+fresh control, so old response history cannot be rebased into a new sample.
+
+Deterministic fixtures exercise every byte split of binary, empty, null and
+error replies, malformed/oversized lengths, partial writes, a gated slow reader,
+disconnects and read progress while a later write is backpressured. Distinct
+responses verify FIFO association after cancellation. Real loopback fixtures
+check each original offer at pipeline ceilings 1/10/50 and a 1 MiB response.
+The large preload exposed a fixture frame-limit mismatch: a 1 MiB SET value plus
+its envelope does not fit the default 1 MiB request ceiling. Only the local fixture
+ceiling changed; no product setting or performance threshold was relaxed.
+
+Independent native HC1/HC2 GET/PUT fixtures now also cover 32/128 client slots,
+with barrier-synchronized invocation, HC2 connection accounting, byte oracles
+and resource shutdown. These are semantic and ownership checks, not throughput
+measurements. They do not supply native nonregression, secure RESP3, allocator
+retention, RSS or hosted CI proof. No new numerical series or retry of B0 was
+run, and the private product feature remains default-off.
