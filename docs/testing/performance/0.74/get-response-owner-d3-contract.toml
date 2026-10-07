@@ -1,0 +1,146 @@
+schema_version = 1
+release = "0.74"
+proposal_id = "p74-get-response-owner-v1"
+state = "preregistered-before-any-d3-candidate-measurement"
+profile_id = "get-response-owner-allocation-memory-screen-074-v1"
+accepted_product_change = false
+promotable = false
+product_numeric_claims_allowed = false
+legacy_default_product_baseline_sha = "36f602658b4ba806a669a329001108cfb0922c2d"
+implementation_sha = "2379698d6aa61280b6f6054403f4fbd3e4b60641"
+baseline = "same clean sealed instrumentation source, get-owner feature off; canonical private executor and unchanged public borrowed reducer"
+candidate = "same clean sealed instrumentation source, get-owner feature on; only private successful nonempty length-sized GET ownership transfer"
+source_feature_binary_lock_and_toolchain_receipts_required = true
+no_prior_frozen_worktree_mutation = true
+no_candidate_or_threshold_repair_after_observation = true
+expensive_workloads_allowed = false
+qualification_allowed = false
+
+[phase_a]
+purpose = "finite allocation and requested-live-memory early rejection screen; passing cannot accept the candidate"
+runner = "scripts/perf/performance_get_owner_screen_074.py"
+tool = "tools/resp-get-owner-screen-074"
+feature = "get-owner"
+product_feature = "experimental-resp-get-owner-074"
+seed = 740074
+concurrency = 1
+transport = "scripted RESP2 plaintext, immediately ready writes/flushes; no sockets"
+clock = "canonical production clock; no TTL-bearing workload; exact dispatch and mutation counts must match"
+duration = "fixed operation count per cell, identical across variants; not a timed throughput run"
+estimator = "all five paired ratios; fixed t(4)=2.7764451051977987 interval on mean log ratio; exponentiate"
+independent_aa_pairs_per_cell = 5
+independent_ab_pairs_per_cell = 5
+order = "AA then AB; alternating off/on and on/off by pair, cells in registry order; AA on role executes off binary"
+total_fresh_process_attempts = 180
+warmup_batches = 5
+minimum_affected_gross_allocation_reduction = 0.20
+maximum_unaffected_gross_allocation_ratio = 1.05
+maximum_peak_live_above_start_ratio = 1.00
+maximum_next_read_or_post_close_live_increase_bytes = 0
+maximum_aa_allocation_or_live_relative_noise = 0.01
+maximum_attempt_seconds = 30
+counting_allocator_can_certify_cpu_latency_goodput = false
+oracle_corpus_precomputed_outside_counting = true
+window_includes_decode_dispatch_reduce_encode_write_flush_and_close = true
+rss_is_supplemental_lifetime_peak_not_retention_proof = true
+all_failures_retained = true
+on_invalid = "retain failed attempt and partial packet; stop with no automatic rerun"
+on_valid_red = "finish complete sealed A matrix; preserve all pairs; reject and selectively remove only this candidate; no phase B"
+affected_flag_meaning = "20% practical floor cells, not helper activation: other nonempty GET controls can also transfer their payload"
+
+[[cell]]
+id = "get-4k-p50"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 50
+batches = 40
+read_chunk = 8192
+affected = true
+[[cell]]
+id = "get-1m-p10"
+operation = "get"
+payload = 1048576
+alternate_payload = 1048576
+pipeline = 10
+batches = 20
+read_chunk = 8192
+affected = true
+[[cell]]
+id = "get-4k-p1"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 1
+batches = 1000
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-256-p50"
+operation = "get"
+payload = 256
+alternate_payload = 256
+pipeline = 50
+batches = 40
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "set-4k-p10"
+operation = "set"
+payload = 4096
+alternate_payload = 4096
+pipeline = 10
+batches = 40
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-mixed-p10"
+operation = "get"
+payload = 4096
+alternate_payload = 256
+pipeline = 10
+batches = 100
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-4k-fragmented-p10"
+operation = "get"
+payload = 4096
+alternate_payload = 4096
+pipeline = 10
+batches = 100
+read_chunk = 1
+affected = false
+[[cell]]
+id = "get-empty-p10"
+operation = "get"
+payload = 0
+alternate_payload = 0
+pipeline = 10
+batches = 100
+read_chunk = 8192
+affected = false
+[[cell]]
+id = "get-miss-p10"
+operation = "get-miss"
+payload = 0
+alternate_payload = 0
+pipeline = 10
+batches = 100
+read_chunk = 8192
+affected = false
+
+[phase_b]
+state = "not authorized by this screen; separate sealed contract required if A passes"
+required_separate_native_controls = ["embedded", "ClientSurfaceState", "HC1", "HC2"]
+native_minimum_goodput_ratio = 0.98
+native_maximum_cpu_or_p99_ratio = 1.03
+native_maximum_gross_allocation_ratio = 1.05
+unaffected_minimum_goodput_ratio = 0.98
+unaffected_maximum_cpu_or_p99_ratio = 1.03
+minimum_counterbalanced_pairs = 5
+required_cohorts = ["RESP2", "RESP3", "plaintext", "matched-mTLS", "pipeline-one", "small-GET-SET", "4KiB-1MiB-GET", "deep-pipelines", "concurrency-1-8-32-128", "mixed-sizes", "size-transitions", "misses-errors", "slow-readers", "active-peak-memory", "post-read-idle-RSS-retention", "post-idle-refill"]
+unprofiled_timing_lane_required = true
+allocator_active_resident_retained_and_post_idle_proof_required = true
+feature_on_hosted_ci_evidence_required_before_promotion = true
+phase_a_pass_cannot_accept_or_activate_candidate = true

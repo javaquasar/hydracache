@@ -152,3 +152,38 @@ It is not an accepted optimization count or release readiness. Before that
 evidence commit, 99 targeted xtask, 16 replay and three documentation-script tests,
 format, contract, 17 governance checks, docs registry/sync/links and mdbook passed.
 Full workspace verify and hosted CI are not claimed by these local checks.
+
+## D3a preregistered early screen
+
+`get-response-owner-d3-contract.toml` seals nine local cells and 180 fresh-process
+attempts before data: five A/A pairs, then five alternating A/B pairs for each.
+The new standalone `resp-get-owner-screen-074` workspace forwards only the new
+default-off product feature. Both release binaries must be built from the same
+clean instrumentation SHA. The allocator/build receipt are reused by source
+reference; the retired scratch tool, flag, contract and packet are unmodified.
+
+The complete canonical connection path runs against immediately-ready scripted
+RESP2 IO. Precomputed requests/expected replies are outside counting; there is no
+output collection in the window. Every write validates exact bytes. Preload,
+five warmup batches, final value/cardinality validation and receipt serialization
+are outside the epoch. Dispatch/mutation/error counters are read outside the
+window and checked against exact expected counts. The production clock is not
+replaced; these cells have no TTL-bearing workload. Duration is identical fixed
+work, not an elapsed-time throughput estimator.
+
+The 20% gross allocation floor applies to large-GET primary cells; the remaining
+cells enforce at most 5% gross increase. Their `affected=false` labels mean only
+that no 20% floor is demanded, not that eligible small/fragmented GETs cannot
+transfer. Empty hits, misses and SET are actual canonical fallback controls.
+All cells must show no higher peak above start or next-read/post-close owner
+increments. All five paired ratios and their log-scale t(4) intervals survive;
+independent A/A gross/peak noise above 1% invalidates rather than changes policy.
+
+The runner seals binary hashes, source, contract, tool lock, compiler and finite
+schedule. Raw hashes accompany every retained attempt; offline replay requires
+all 362 files, exact order, trace and compiled variant. Invalid attempts stop
+without retry; valid red still completes the sealed matrix before selective
+rollback. Passing only permits preparing a separately sealed phase B contract,
+not acceptance. RSS endpoints/lifetime peak, scripted write calls and requested
+layouts cannot establish timed retention, actual syscalls, native CPU/p99/goodput
+or real secure/concurrent transport guards. No costly workload is authorized.

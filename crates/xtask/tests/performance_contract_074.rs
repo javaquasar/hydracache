@@ -1254,7 +1254,6 @@ fn get_response_owner_d2_preserves_one_hypothesis_and_future_guards() {
         "default_enabled",
         "accepted_product_change",
         "promotable",
-        "numerical_candidate_comparison_started",
         "existing_terminal_dispositions_reopened",
     ] {
         assert_eq!(current[flag].as_bool(), Some(false));
@@ -1301,6 +1300,74 @@ fn get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enroll
     assert_eq!(step["run"].as_str().unwrap().trim(), concat!(
         "cargo test -p hydracache-redis-compat --features experimental-resp-get-owner-074 --locked\n",
         "cargo test -p hydracache-server --test server_lifecycle redis --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked"));
+}
+
+#[test]
+fn get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate() {
+    let p = contract("get-response-owner-d3-contract.toml");
+    assert_eq!(p["proposal_id"].as_str(), Some("p74-get-response-owner-v1"));
+    for flag in [
+        "accepted_product_change",
+        "promotable",
+        "product_numeric_claims_allowed",
+        "expensive_workloads_allowed",
+        "qualification_allowed",
+    ] {
+        assert_eq!(p[flag].as_bool(), Some(false));
+    }
+    let a = &p["phase_a"];
+    for (key, value) in [
+        ("seed", 740074),
+        ("concurrency", 1),
+        ("independent_aa_pairs_per_cell", 5),
+        ("independent_ab_pairs_per_cell", 5),
+        ("total_fresh_process_attempts", 180),
+        ("maximum_next_read_or_post_close_live_increase_bytes", 0),
+    ] {
+        assert_eq!(a[key].as_integer(), Some(value));
+    }
+    for (key, value) in [
+        ("minimum_affected_gross_allocation_reduction", 0.20),
+        ("maximum_unaffected_gross_allocation_ratio", 1.05),
+        ("maximum_peak_live_above_start_ratio", 1.00),
+        ("maximum_aa_allocation_or_live_relative_noise", 0.01),
+    ] {
+        assert_eq!(a[key].as_float(), Some(value));
+    }
+    assert_eq!(p["cell"].as_array().unwrap().len(), 9);
+    assert_eq!(
+        p["phase_b"]["phase_a_pass_cannot_accept_or_activate_candidate"].as_bool(),
+        Some(true)
+    );
+    let manifest: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join("tools/resp-get-owner-screen-074/Cargo.toml"))
+            .unwrap(),
+    )
+    .unwrap();
+    assert!(manifest["features"]["default"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(
+        manifest["features"]["get-owner"].as_array().unwrap()[0].as_str(),
+        Some("hydracache-redis-compat/experimental-resp-get-owner-074")
+    );
+    let registry = contract("proposal-registry.toml");
+    let entry = registry["followup_proposals"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|v| v["id"] == p["proposal_id"])
+        .unwrap();
+    assert!(entry["numerical_candidate_comparison_started"]
+        .as_bool()
+        .is_some());
+    if entry["numerical_candidate_comparison_started"].as_bool() == Some(true) {
+        assert!(root()
+            .join("docs/testing/performance/0.74")
+            .join(entry["screen_evidence"].as_str().unwrap())
+            .is_file());
+    }
 }
 
 #[test]
