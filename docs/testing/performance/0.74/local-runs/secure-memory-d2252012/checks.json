@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "kind": "local-pinned-secure-observer-and-allocation-diagnostic-checks",
+  "checked_source_commit": "d22520123880a8a67c816c83a7f76448cbf50af9",
+  "instrumentation_commit": "263d50758e82e1f7f317450cbbdfb7ab742f980b",
+  "preregistration_commit": "f22c3efff939711d168b2717f4fc667853a15f16",
+  "source_clean_before_seal": true,
+  "tracked_source_unchanged_during_measurements_and_pinned_checks": true,
+  "expected_untracked_output": "secure-memory-d2252012 raw packet and pinned-check logs",
+  "source_references_git_blob_ids": {
+    "tools/get-owner-scheduled-controls-074/src/resp.rs": "440a337a0d66615fe14e5f6342026526a454eef1",
+    "tools/get-owner-scheduled-controls-074/src/native.rs": "ac136556fbf33b16323faec1e990e4621f8a692f",
+    "tools/get-owner-scheduled-controls-074/src/security.rs": "275f835bee46206d1bc0d0e18f7ee94b12e2fef1",
+    "tools/get-owner-scheduled-controls-074/src/bin/memory_diagnostics.rs": "12b2f7c60f40e456090571ffa5acb91197465e1f",
+    "tools/get-owner-scheduled-controls-074/tests/secure.rs": "a64c9124f470e70cdff129f8c127627ad4efde26",
+    "tools/get-owner-scheduled-controls-074/Cargo.lock": "8f85afdb843c09958150b4e62d4b32cc1c1c65de",
+    "scripts/perf/performance_secure_memory_074.ps1": "c8bcaa329da1e8d91a82128f1bef5db2c07a13ee",
+    "crates/xtask/tests/performance_contract_074.rs": "e89f556f48a9e94b8e4e81bff9c8306693f67dbc",
+    ".github/workflows/observer-semantics-074.yml": "b09747f51da3a9864e51ad258fd515ac3acfe9e2"
+  },
+  "pinned_check_log_sha256": {
+    "default-semantic-checks.log": "b7182d10a52a159c2b2b506a477eb093ee8398257133f47c411191e0a3539fae",
+    "get-owner-semantic-checks.log": "de5130684e240011ce301f562227f1b6ae8a9a36c228a3ae625d094ece332dde"
+  },
+  "checks": {
+    "observer_tests_per_variant": 68,
+    "variants": [
+      "allocation-diagnostics",
+      "allocation-diagnostics,get-owner"
+    ],
+    "serialized": true,
+    "observer_all_targets_all_features_check": "passed",
+    "observer_strict_all_features_clippy": "passed",
+    "xtask_performance_contract_tests": 60,
+    "xtask_release_evidence_tests": 13,
+    "xtask_governance_tests": 23,
+    "xtask_doc_check_tests": 16,
+    "xtask_all_targets_check": "passed",
+    "xtask_strict_all_features_clippy": "passed",
+    "scoped_fmt": "passed",
+    "performance_contract_check": "passed-local-non-promotable",
+    "doc_check": "passed",
+    "release_governance_check": "passed-17-checks",
+    "documentation_script_tests": 3,
+    "documentation_sync_links": "passed-51-markdown-20-includes",
+    "mdbook": "passed",
+    "runner_ast": "passed",
+    "runner_wrong_source_preflight": "rejected-before-evidence-creation"
+  },
+  "diagnostics": {
+    "fresh_process_attempts": 30,
+    "repeats_per_cell": 3,
+    "surfaces": 5,
+    "payload_bytes": [
+      256,
+      65536
+    ],
+    "all_exit_zero": true,
+    "retries": 0,
+    "raw_stdout_hashes_verified": 30,
+    "post_delete_logical_entries_and_value_bytes": 0,
+    "post_refill_entries": 16,
+    "allocator_retention_admission": false
+  },
+  "retained_failures": [
+    {
+      "stage": "initial-dirty-source-secure-runtime-check",
+      "source_base": "f22c3efff939711d168b2717f4fc667853a15f16",
+      "exact_dirty_blob_identity_available": false,
+      "tests_passed": 3,
+      "tests_failed": 1,
+      "failed_test": "secure_large_payload_and_multikey_boundaries_preserve_delete_refill_oracles",
+      "error": "RESP2 transport preload failed",
+      "disposition": "tool request needed explicit final flush; regression added; same case passed after implementation correction; no numerical retry",
+      "performance_attempt": false
+    },
+    {
+      "stage": "earlier-link-before-disk-cleanup",
+      "runtime_tests_executed": false,
+      "errors": [
+        "LNK1318 PDB error",
+        "LLVM no space left on device"
+      ],
+      "performance_attempt": false
+    }
+  ],
+  "hosted_semantic_run_id": 37697414775,
+  "hosted_ci_success_claimed": false,
+  "full_workspace_verify_claimed": false,
+  "product_numeric_claims_allowed": false,
+  "native_nonregression_measured": false,
+  "full_d3_completed": false,
+  "qualification_executed": false,
+  "accepted_performance_candidate": false,
+  "integrated_c74": "UNRESOLVED",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+}

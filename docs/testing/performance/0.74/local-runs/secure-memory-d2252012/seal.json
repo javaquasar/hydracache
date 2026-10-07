@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "source_commit": "d22520123880a8a67c816c83a7f76448cbf50af9",
+  "binary_sha256": "4dae12c2788b790b4934c721bf49f22f76fd1743b0ee7f2fbcfccd34f8aae302",
+  "binary_path": "tools/get-owner-scheduled-controls-074/target/debug/memory-diagnostics-074.exe",
+  "build_command": "CARGO_INCREMENTAL=0 cargo build --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --bin memory-diagnostics-074 --features allocation-diagnostics --locked",
+  "build_profile": "dev-unoptimized-with-debug-info",
+  "features": [
+    "allocation-diagnostics"
+  ],
+  "source_hashes": {
+    "Cargo.lock": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+    "tools/get-owner-scheduled-controls-074/Cargo.lock": "a560a7f399c653d50483f376780537bc48dabcd8ecae7bfd3a00fcf2fc7a32c8",
+    "tools/get-owner-scheduled-controls-074/src/bin/memory_diagnostics.rs": "3f0bdabf7e17c1539c28a8fee9e262a83520441abe978d8744fc474ee22e1166",
+    "tools/resp-scratch-screen-074/src/memory.rs": "9a70575b82cd1ad653bf7983f15c993bb9e9a02ae455c893f47dc3a21c762a93",
+    "docs/testing/performance/0.74/secure-observer-memory-checks-contract.toml": "b2b715b606e2faf8a848b47c049a69c18eb016c8f2872240034063063d8847ce",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "scripts/perf/performance_secure_memory_074.ps1": "7d04962b03e3f3686853882ef3d7b3bdf2f67eb7c02c317dc35435663e03a635"
+  },
+  "os": "Microsoft Windows NT 10.0.26200.0",
+  "surfaces": [
+    "direct",
+    "hc1",
+    "hc2-mtls",
+    "resp2-mtls",
+    "resp3-mtls"
+  ],
+  "payload_bytes": [
+    256,
+    65536
+  ],
+  "repeats": 3,
+  "maximum_attempts": 30,
+  "process_timeout_seconds": 65,
+  "failed_attempts_allowed": 0,
+  "retry_allowed": false,
+  "created_at_utc": "2026-10-07T22:37:33.8248475Z",
+  "promotable": false,
+  "product_numeric_claims_allowed": false,
+  "admission_allowed": false
+}

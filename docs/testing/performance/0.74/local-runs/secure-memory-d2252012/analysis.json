@@ -1,0 +1,2603 @@
+{
+  "schema_version": 1,
+  "source_commit": "d22520123880a8a67c816c83a7f76448cbf50af9",
+  "packet": "secure-memory-d2252012",
+  "all_30_raw_receipt_hashes_verified": true,
+  "statistics": "min-max of three independent diagnostic processes; no A/B estimator",
+  "cross_surface_numeric_comparison_allowed": false,
+  "product_numeric_claims_allowed": false,
+  "allocator_retention_admission": false,
+  "full_d3_completed": false,
+  "cells": [
+    {
+      "surface": "direct",
+      "payload_bytes": 256,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 8765440,
+            "maximum": 8798208
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 170318,
+              "maximum": 170318
+            },
+            "successful_allocation_calls": {
+              "minimum": 982,
+              "maximum": 982
+            },
+            "live_before_bytes": {
+              "minimum": 64143,
+              "maximum": 64143
+            },
+            "live_after_bytes": {
+              "minimum": 220127,
+              "maximum": 220127
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 222244,
+              "maximum": 222244
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 158101,
+              "maximum": 158101
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 8859648,
+            "maximum": 8892416
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 65526,
+              "maximum": 65526
+            },
+            "successful_allocation_calls": {
+              "minimum": 3585,
+              "maximum": 3585
+            },
+            "live_before_bytes": {
+              "minimum": 220127,
+              "maximum": 220127
+            },
+            "live_after_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 220558,
+              "maximum": 220558
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 431,
+              "maximum": 431
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 8871936,
+            "maximum": 8904704
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 65462,
+              "maximum": 65462
+            },
+            "successful_allocation_calls": {
+              "minimum": 3584,
+              "maximum": 3584
+            },
+            "live_before_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "live_after_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 220558,
+              "maximum": 220558
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 367,
+              "maximum": 367
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 8884224,
+            "maximum": 24371200
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "live_after_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 8908800,
+            "maximum": 24371200
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 8100,
+              "maximum": 8100
+            },
+            "successful_allocation_calls": {
+              "minimum": 864,
+              "maximum": 864
+            },
+            "live_before_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "live_after_bytes": {
+              "minimum": 212815,
+              "maximum": 212815
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 220298,
+              "maximum": 220298
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 107,
+              "maximum": 107
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 8908800,
+            "maximum": 24371200
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 21198,
+              "maximum": 21198
+            },
+            "successful_allocation_calls": {
+              "minimum": 922,
+              "maximum": 922
+            },
+            "live_before_bytes": {
+              "minimum": 212815,
+              "maximum": 212815
+            },
+            "live_after_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 222604,
+              "maximum": 222604
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 9789,
+              "maximum": 9789
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 8921088,
+            "maximum": 24264704
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "live_after_bytes": {
+              "minimum": 64207,
+              "maximum": 64207
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 220191,
+              "maximum": 220191
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "direct",
+      "payload_bytes": 65536,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 9969664,
+            "maximum": 9994240
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 2324558,
+              "maximum": 2324558
+            },
+            "successful_allocation_calls": {
+              "minimum": 982,
+              "maximum": 982
+            },
+            "live_before_bytes": {
+              "minimum": 64145,
+              "maximum": 64145
+            },
+            "live_after_bytes": {
+              "minimum": 1329889,
+              "maximum": 1329889
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1397286,
+              "maximum": 1397286
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1333141,
+              "maximum": 1333141
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 10063872,
+            "maximum": 10088448
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 8421366,
+              "maximum": 8421366
+            },
+            "successful_allocation_calls": {
+              "minimum": 3585,
+              "maximum": 3585
+            },
+            "live_before_bytes": {
+              "minimum": 1329889,
+              "maximum": 1329889
+            },
+            "live_after_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1395600,
+              "maximum": 1395600
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 65711,
+              "maximum": 65711
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 10076160,
+            "maximum": 10100736
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 8421302,
+              "maximum": 8421302
+            },
+            "successful_allocation_calls": {
+              "minimum": 3584,
+              "maximum": 3584
+            },
+            "live_before_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "live_after_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1395600,
+              "maximum": 1395600
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 65647,
+              "maximum": 65647
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 10080256,
+            "maximum": 10104832
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "live_after_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 8998912,
+            "maximum": 9023488
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 8100,
+              "maximum": 8100
+            },
+            "successful_allocation_calls": {
+              "minimum": 864,
+              "maximum": 864
+            },
+            "live_before_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "live_after_bytes": {
+              "minimum": 278097,
+              "maximum": 278097
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1330060,
+              "maximum": 1330060
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 107,
+              "maximum": 107
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 10108928,
+            "maximum": 10133504
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 2110158,
+              "maximum": 2110158
+            },
+            "successful_allocation_calls": {
+              "minimum": 922,
+              "maximum": 922
+            },
+            "live_before_bytes": {
+              "minimum": 278097,
+              "maximum": 278097
+            },
+            "live_after_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1397646,
+              "maximum": 1397646
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1119549,
+              "maximum": 1119549
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 8925184,
+            "maximum": 8966144
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "live_after_bytes": {
+              "minimum": 64209,
+              "maximum": 64209
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1329953,
+              "maximum": 1329953
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "hc1",
+      "payload_bytes": 256,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 14589952,
+            "maximum": 14667776
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 1756106,
+              "maximum": 1756106
+            },
+            "successful_allocation_calls": {
+              "minimum": 5224,
+              "maximum": 5224
+            },
+            "live_before_bytes": {
+              "minimum": 64137,
+              "maximum": 64137
+            },
+            "live_after_bytes": {
+              "minimum": 858443,
+              "maximum": 858443
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 878067,
+              "maximum": 878067
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 813930,
+              "maximum": 813930
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 14622720,
+            "maximum": 14692352
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 3204550,
+              "maximum": 3204550
+            },
+            "successful_allocation_calls": {
+              "minimum": 17280,
+              "maximum": 17280
+            },
+            "live_before_bytes": {
+              "minimum": 858443,
+              "maximum": 858443
+            },
+            "live_after_bytes": {
+              "minimum": 858443,
+              "maximum": 858443
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 875798,
+              "maximum": 875798
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 17355,
+              "maximum": 17355
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 14741504,
+            "maximum": 14790656
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 3862350,
+              "maximum": 3862379
+            },
+            "successful_allocation_calls": {
+              "minimum": 17014,
+              "maximum": 17015
+            },
+            "live_before_bytes": {
+              "minimum": 858443,
+              "maximum": 858443
+            },
+            "live_after_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 883983,
+              "maximum": 883983
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 25540,
+              "maximum": 25540
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 14745600,
+            "maximum": 14794752
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "live_after_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 14770176,
+            "maximum": 14823424
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 990660,
+              "maximum": 990689
+            },
+            "successful_allocation_calls": {
+              "minimum": 4122,
+              "maximum": 4123
+            },
+            "live_before_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "live_after_bytes": {
+              "minimum": 857147,
+              "maximum": 857147
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 883457,
+              "maximum": 883457
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 18934,
+              "maximum": 18934
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 14778368,
+            "maximum": 14835712
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 1098106,
+              "maximum": 1098106
+            },
+            "successful_allocation_calls": {
+              "minimum": 4464,
+              "maximum": 4464
+            },
+            "live_before_bytes": {
+              "minimum": 857147,
+              "maximum": 857147
+            },
+            "live_after_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 885729,
+              "maximum": 885729
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 28582,
+              "maximum": 28582
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 14585856,
+            "maximum": 14602240
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 256,
+              "maximum": 256
+            },
+            "successful_allocation_calls": {
+              "minimum": 1,
+              "maximum": 1
+            },
+            "live_before_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "live_after_bytes": {
+              "minimum": 64102,
+              "maximum": 64102
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 864523,
+              "maximum": 864523
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "hc1",
+      "payload_bytes": 65536,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 16285696,
+            "maximum": 16945152
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 29273406,
+              "maximum": 29404438
+            },
+            "successful_allocation_calls": {
+              "minimum": 5704,
+              "maximum": 5706
+            },
+            "live_before_bytes": {
+              "minimum": 64139,
+              "maximum": 64139
+            },
+            "live_after_bytes": {
+              "minimum": 3672181,
+              "maximum": 3737717
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3945569,
+              "maximum": 4011105
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 3881430,
+              "maximum": 3946966
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 16973824,
+            "maximum": 17289216
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 95056624,
+              "maximum": 96108301
+            },
+            "successful_allocation_calls": {
+              "minimum": 18339,
+              "maximum": 18381
+            },
+            "live_before_bytes": {
+              "minimum": 3672181,
+              "maximum": 3737717
+            },
+            "live_after_bytes": {
+              "minimum": 3803213,
+              "maximum": 3868749
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4140505,
+              "maximum": 4206041
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 402788,
+              "maximum": 468330
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 17616896,
+            "maximum": 18378752
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 96292921,
+              "maximum": 96424072
+            },
+            "successful_allocation_calls": {
+              "minimum": 17973,
+              "maximum": 17977
+            },
+            "live_before_bytes": {
+              "minimum": 3803213,
+              "maximum": 3868749
+            },
+            "live_after_bytes": {
+              "minimum": 3940685,
+              "maximum": 3940685
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4343544,
+              "maximum": 4343544
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 474795,
+              "maximum": 540331
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 17620992,
+            "maximum": 18382848
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 3940685,
+              "maximum": 3940685
+            },
+            "live_after_bytes": {
+              "minimum": 3940685,
+              "maximum": 3940685
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3940685,
+              "maximum": 3940685
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 16470016,
+            "maximum": 17006592
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 1513028,
+              "maximum": 1513028
+            },
+            "successful_allocation_calls": {
+              "minimum": 4018,
+              "maximum": 4018
+            },
+            "live_before_bytes": {
+              "minimum": 3940685,
+              "maximum": 3940685
+            },
+            "live_after_bytes": {
+              "minimum": 2889149,
+              "maximum": 2889149
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4082499,
+              "maximum": 4082499
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 141814,
+              "maximum": 141814
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 16162816,
+            "maximum": 16834560
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 23553819,
+              "maximum": 23685419
+            },
+            "successful_allocation_calls": {
+              "minimum": 4694,
+              "maximum": 4700
+            },
+            "live_before_bytes": {
+              "minimum": 2889149,
+              "maximum": 2889149
+            },
+            "live_after_bytes": {
+              "minimum": 3154293,
+              "maximum": 3154293
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4280259,
+              "maximum": 4280259
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1391110,
+              "maximum": 1391110
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 14675968,
+            "maximum": 14692352
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 256,
+              "maximum": 256
+            },
+            "successful_allocation_calls": {
+              "minimum": 1,
+              "maximum": 1
+            },
+            "live_before_bytes": {
+              "minimum": 3154293,
+              "maximum": 3154293
+            },
+            "live_after_bytes": {
+              "minimum": 64104,
+              "maximum": 64104
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3154293,
+              "maximum": 3154293
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "hc2-mtls",
+      "payload_bytes": 256,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 19640320,
+            "maximum": 19648512
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 2597484,
+              "maximum": 2597546
+            },
+            "successful_allocation_calls": {
+              "minimum": 5233,
+              "maximum": 5233
+            },
+            "live_before_bytes": {
+              "minimum": 64147,
+              "maximum": 64147
+            },
+            "live_after_bytes": {
+              "minimum": 1616987,
+              "maximum": 1617011
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1630842,
+              "maximum": 1630866
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1566695,
+              "maximum": 1566719
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 19714048,
+            "maximum": 19750912
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 182338,
+              "maximum": 182338
+            },
+            "successful_allocation_calls": {
+              "minimum": 2688,
+              "maximum": 2688
+            },
+            "live_before_bytes": {
+              "minimum": 1617179,
+              "maximum": 1617203
+            },
+            "live_after_bytes": {
+              "minimum": 1617179,
+              "maximum": 1617203
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1617780,
+              "maximum": 1617804
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 601,
+              "maximum": 601
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 19853312,
+            "maximum": 19918848
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 298880,
+              "maximum": 298880
+            },
+            "successful_allocation_calls": {
+              "minimum": 2584,
+              "maximum": 2584
+            },
+            "live_before_bytes": {
+              "minimum": 1617179,
+              "maximum": 1617203
+            },
+            "live_after_bytes": {
+              "minimum": 1736731,
+              "maximum": 1736755
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1737332,
+              "maximum": 1737356
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 120153,
+              "maximum": 120153
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 19853312,
+            "maximum": 19918848
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 1736731,
+              "maximum": 1736755
+            },
+            "live_after_bytes": {
+              "minimum": 1736731,
+              "maximum": 1736755
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1736731,
+              "maximum": 1736755
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 19894272,
+            "maximum": 19955712
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 18848,
+              "maximum": 18848
+            },
+            "successful_allocation_calls": {
+              "minimum": 576,
+              "maximum": 576
+            },
+            "live_before_bytes": {
+              "minimum": 1736731,
+              "maximum": 1736755
+            },
+            "live_after_bytes": {
+              "minimum": 1729355,
+              "maximum": 1729379
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1737076,
+              "maximum": 1737100
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 345,
+              "maximum": 345
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 19894272,
+            "maximum": 19963904
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 107821,
+              "maximum": 107821
+            },
+            "successful_allocation_calls": {
+              "minimum": 685,
+              "maximum": 685
+            },
+            "live_before_bytes": {
+              "minimum": 1729355,
+              "maximum": 1729379
+            },
+            "live_after_bytes": {
+              "minimum": 1736451,
+              "maximum": 1736475
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1747115,
+              "maximum": 1747139
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 17760,
+              "maximum": 17760
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 19320832,
+            "maximum": 19353600
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 18384,
+              "maximum": 18384
+            },
+            "successful_allocation_calls": {
+              "minimum": 254,
+              "maximum": 254
+            },
+            "live_before_bytes": {
+              "minimum": 1736451,
+              "maximum": 1736475
+            },
+            "live_after_bytes": {
+              "minimum": 64872,
+              "maximum": 64872
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1736451,
+              "maximum": 1736475
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "hc2-mtls",
+      "payload_bytes": 65536,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 23658496,
+            "maximum": 23728128
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 16721238,
+              "maximum": 16721411
+            },
+            "successful_allocation_calls": {
+              "minimum": 6417,
+              "maximum": 6417
+            },
+            "live_before_bytes": {
+              "minimum": 64149,
+              "maximum": 64149
+            },
+            "live_after_bytes": {
+              "minimum": 4843448,
+              "maximum": 4843520
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4950929,
+              "maximum": 4951001
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 4886780,
+              "maximum": 4886852
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 23916544,
+            "maximum": 23945216
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 45772770,
+              "maximum": 45772770
+            },
+            "successful_allocation_calls": {
+              "minimum": 7184,
+              "maximum": 7184
+            },
+            "live_before_bytes": {
+              "minimum": 4843640,
+              "maximum": 4843712
+            },
+            "live_after_bytes": {
+              "minimum": 4843640,
+              "maximum": 4843712
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4946425,
+              "maximum": 4946497
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 102785,
+              "maximum": 102785
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 24154112,
+            "maximum": 24223744
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 45904146,
+              "maximum": 45904146
+            },
+            "successful_allocation_calls": {
+              "minimum": 7160,
+              "maximum": 7160
+            },
+            "live_before_bytes": {
+              "minimum": 4843640,
+              "maximum": 4843712
+            },
+            "live_after_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 5066003,
+              "maximum": 5066075
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 222363,
+              "maximum": 222363
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 24154112,
+            "maximum": 24223744
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "live_after_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 22913024,
+            "maximum": 22958080
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 18848,
+              "maximum": 18848
+            },
+            "successful_allocation_calls": {
+              "minimum": 576,
+              "maximum": 576
+            },
+            "live_before_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "live_after_bytes": {
+              "minimum": 3911336,
+              "maximum": 3911408
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4963537,
+              "maximum": 4963609
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 345,
+              "maximum": 345
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 24002560,
+            "maximum": 24076288
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 11457037,
+              "maximum": 11457037
+            },
+            "successful_allocation_calls": {
+              "minimum": 1798,
+              "maximum": 1798
+            },
+            "live_before_bytes": {
+              "minimum": 3911336,
+              "maximum": 3911408
+            },
+            "live_after_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 5068815,
+              "maximum": 5068887
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1157479,
+              "maximum": 1157479
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 19267584,
+            "maximum": 19521536
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 18104,
+              "maximum": 18104
+            },
+            "successful_allocation_calls": {
+              "minimum": 247,
+              "maximum": 247
+            },
+            "live_before_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "live_after_bytes": {
+              "minimum": 64874,
+              "maximum": 64874
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4963192,
+              "maximum": 4963264
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "resp2-mtls",
+      "payload_bytes": 256,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17276928,
+            "maximum": 17297408
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 2136470,
+              "maximum": 2137322
+            },
+            "successful_allocation_calls": {
+              "minimum": 9462,
+              "maximum": 9464
+            },
+            "live_before_bytes": {
+              "minimum": 64151,
+              "maximum": 64151
+            },
+            "live_after_bytes": {
+              "minimum": 1244704,
+              "maximum": 1244749
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1248016,
+              "maximum": 1248061
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1183865,
+              "maximum": 1183910
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17354752,
+            "maximum": 17371136
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 437136,
+              "maximum": 437136
+            },
+            "successful_allocation_calls": {
+              "minimum": 6037,
+              "maximum": 6037
+            },
+            "live_before_bytes": {
+              "minimum": 1244896,
+              "maximum": 1244941
+            },
+            "live_after_bytes": {
+              "minimum": 1306272,
+              "maximum": 1306317
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1306408,
+              "maximum": 1306453
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 61512,
+              "maximum": 61512
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17379328,
+            "maximum": 17395712
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 510992,
+              "maximum": 510992
+            },
+            "successful_allocation_calls": {
+              "minimum": 6530,
+              "maximum": 6530
+            },
+            "live_before_bytes": {
+              "minimum": 1306272,
+              "maximum": 1306317
+            },
+            "live_after_bytes": {
+              "minimum": 1316064,
+              "maximum": 1316109
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1317915,
+              "maximum": 1317960
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 11643,
+              "maximum": 11643
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17383424,
+            "maximum": 17399808
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 1316064,
+              "maximum": 1316109
+            },
+            "live_after_bytes": {
+              "minimum": 1316064,
+              "maximum": 1316109
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1316064,
+              "maximum": 1316109
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 17506304,
+            "maximum": 17514496
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 369648,
+              "maximum": 369648
+            },
+            "successful_allocation_calls": {
+              "minimum": 6270,
+              "maximum": 6270
+            },
+            "live_before_bytes": {
+              "minimum": 1316064,
+              "maximum": 1316109
+            },
+            "live_after_bytes": {
+              "minimum": 1376816,
+              "maximum": 1376861
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1376952,
+              "maximum": 1376997
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 60888,
+              "maximum": 60888
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17514496,
+            "maximum": 17522688
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 406144,
+              "maximum": 406144
+            },
+            "successful_allocation_calls": {
+              "minimum": 6516,
+              "maximum": 6516
+            },
+            "live_before_bytes": {
+              "minimum": 1376816,
+              "maximum": 1376861
+            },
+            "live_after_bytes": {
+              "minimum": 1385760,
+              "maximum": 1385805
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1387000,
+              "maximum": 1387045
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 10184,
+              "maximum": 10184
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 16920576,
+            "maximum": 16953344
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 7880,
+              "maximum": 7880
+            },
+            "successful_allocation_calls": {
+              "minimum": 39,
+              "maximum": 39
+            },
+            "live_before_bytes": {
+              "minimum": 1385760,
+              "maximum": 1385805
+            },
+            "live_after_bytes": {
+              "minimum": 69663,
+              "maximum": 69663
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1385760,
+              "maximum": 1385805
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "resp2-mtls",
+      "payload_bytes": 65536,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 19750912,
+            "maximum": 20221952
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 69277004,
+              "maximum": 69281412
+            },
+            "successful_allocation_calls": {
+              "minimum": 11503,
+              "maximum": 11512
+            },
+            "live_before_bytes": {
+              "minimum": 64153,
+              "maximum": 64153
+            },
+            "live_after_bytes": {
+              "minimum": 3523839,
+              "maximum": 3523874
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3656401,
+              "maximum": 3656436
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 3592248,
+              "maximum": 3592283
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 20054016,
+            "maximum": 20303872
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 50092688,
+              "maximum": 50092688
+            },
+            "successful_allocation_calls": {
+              "minimum": 7573,
+              "maximum": 7573
+            },
+            "live_before_bytes": {
+              "minimum": 3524031,
+              "maximum": 3524066
+            },
+            "live_after_bytes": {
+              "minimum": 3585407,
+              "maximum": 3585442
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3712489,
+              "maximum": 3712524
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 188458,
+              "maximum": 188458
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21110784,
+            "maximum": 21655552
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 123136528,
+              "maximum": 123136528
+            },
+            "successful_allocation_calls": {
+              "minimum": 10398,
+              "maximum": 10398
+            },
+            "live_before_bytes": {
+              "minimum": 3585407,
+              "maximum": 3585442
+            },
+            "live_after_bytes": {
+              "minimum": 4455359,
+              "maximum": 4455394
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4718334,
+              "maximum": 4718369
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1132927,
+              "maximum": 1132927
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21114880,
+            "maximum": 21659648
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 4455359,
+              "maximum": 4455394
+            },
+            "live_after_bytes": {
+              "minimum": 4455359,
+              "maximum": 4455394
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4455359,
+              "maximum": 4455394
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 19603456,
+            "maximum": 20156416
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 3503088,
+              "maximum": 3503088
+            },
+            "successful_allocation_calls": {
+              "minimum": 6270,
+              "maximum": 6270
+            },
+            "live_before_bytes": {
+              "minimum": 4455359,
+              "maximum": 4455394
+            },
+            "live_after_bytes": {
+              "minimum": 3471631,
+              "maximum": 3471666
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4587518,
+              "maximum": 4587553
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 132159,
+              "maximum": 132159
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21012480,
+            "maximum": 21372928
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 65174848,
+              "maximum": 65174848
+            },
+            "successful_allocation_calls": {
+              "minimum": 8532,
+              "maximum": 8532
+            },
+            "live_before_bytes": {
+              "minimum": 3471631,
+              "maximum": 3471666
+            },
+            "live_after_bytes": {
+              "minimum": 4525055,
+              "maximum": 4525090
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4721273,
+              "maximum": 4721308
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1249642,
+              "maximum": 1249642
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 17305600,
+            "maximum": 17346560
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 7872,
+              "maximum": 7880
+            },
+            "successful_allocation_calls": {
+              "minimum": 38,
+              "maximum": 39
+            },
+            "live_before_bytes": {
+              "minimum": 4525055,
+              "maximum": 4525090
+            },
+            "live_after_bytes": {
+              "minimum": 69665,
+              "maximum": 69665
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4525055,
+              "maximum": 4525090
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "resp3-mtls",
+      "payload_bytes": 256,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17489920,
+            "maximum": 17575936
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 2296424,
+              "maximum": 2297321
+            },
+            "successful_allocation_calls": {
+              "minimum": 9671,
+              "maximum": 9674
+            },
+            "live_before_bytes": {
+              "minimum": 64151,
+              "maximum": 64151
+            },
+            "live_after_bytes": {
+              "minimum": 1244739,
+              "maximum": 1244755
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1248051,
+              "maximum": 1248067
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1183900,
+              "maximum": 1183916
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17580032,
+            "maximum": 17670144
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 543632,
+              "maximum": 543632
+            },
+            "successful_allocation_calls": {
+              "minimum": 6037,
+              "maximum": 6037
+            },
+            "live_before_bytes": {
+              "minimum": 1244931,
+              "maximum": 1244947
+            },
+            "live_after_bytes": {
+              "minimum": 1306307,
+              "maximum": 1306323
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1306443,
+              "maximum": 1306459
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 61512,
+              "maximum": 61512
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17592320,
+            "maximum": 17690624
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 631824,
+              "maximum": 631824
+            },
+            "successful_allocation_calls": {
+              "minimum": 6658,
+              "maximum": 6658
+            },
+            "live_before_bytes": {
+              "minimum": 1306307,
+              "maximum": 1306323
+            },
+            "live_after_bytes": {
+              "minimum": 1316099,
+              "maximum": 1316115
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1317950,
+              "maximum": 1317966
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 11643,
+              "maximum": 11643
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17596416,
+            "maximum": 17694720
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 1316099,
+              "maximum": 1316115
+            },
+            "live_after_bytes": {
+              "minimum": 1316099,
+              "maximum": 1316115
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1316099,
+              "maximum": 1316115
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 17715200,
+            "maximum": 17805312
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 488944,
+              "maximum": 488944
+            },
+            "successful_allocation_calls": {
+              "minimum": 6270,
+              "maximum": 6270
+            },
+            "live_before_bytes": {
+              "minimum": 1316099,
+              "maximum": 1316115
+            },
+            "live_after_bytes": {
+              "minimum": 1376851,
+              "maximum": 1376867
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1376987,
+              "maximum": 1377003
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 60888,
+              "maximum": 60888
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 4096,
+          "process_rss_bytes": {
+            "minimum": 17723392,
+            "maximum": 17813504
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 534368,
+              "maximum": 534368
+            },
+            "successful_allocation_calls": {
+              "minimum": 6532,
+              "maximum": 6532
+            },
+            "live_before_bytes": {
+              "minimum": 1376851,
+              "maximum": 1376867
+            },
+            "live_after_bytes": {
+              "minimum": 1385795,
+              "maximum": 1385811
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1387035,
+              "maximum": 1387051
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 10184,
+              "maximum": 10184
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 17084416,
+            "maximum": 17235968
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 7872,
+              "maximum": 7880
+            },
+            "successful_allocation_calls": {
+              "minimum": 38,
+              "maximum": 39
+            },
+            "live_before_bytes": {
+              "minimum": 1385795,
+              "maximum": 1385811
+            },
+            "live_after_bytes": {
+              "minimum": 69663,
+              "maximum": 69663
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 1385795,
+              "maximum": 1385811
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "surface": "resp3-mtls",
+      "payload_bytes": 65536,
+      "repeats": 3,
+      "phases": [
+        {
+          "name": "preload",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 20320256,
+            "maximum": 20471808
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 69468220,
+              "maximum": 69470491
+            },
+            "successful_allocation_calls": {
+              "minimum": 11714,
+              "maximum": 11719
+            },
+            "live_before_bytes": {
+              "minimum": 64153,
+              "maximum": 64153
+            },
+            "live_after_bytes": {
+              "minimum": 3523816,
+              "maximum": 3523887
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3656378,
+              "maximum": 3656449
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 3592225,
+              "maximum": 3592296
+            }
+          }
+        },
+        {
+          "name": "get",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 20439040,
+            "maximum": 20598784
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 50199184,
+              "maximum": 50199184
+            },
+            "successful_allocation_calls": {
+              "minimum": 7573,
+              "maximum": 7573
+            },
+            "live_before_bytes": {
+              "minimum": 3524008,
+              "maximum": 3524079
+            },
+            "live_after_bytes": {
+              "minimum": 3585384,
+              "maximum": 3585455
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 3712466,
+              "maximum": 3712537
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 188458,
+              "maximum": 188458
+            }
+          }
+        },
+        {
+          "name": "set",
+          "workload_calls": 128,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21540864,
+            "maximum": 21958656
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 123503120,
+              "maximum": 123503120
+            },
+            "successful_allocation_calls": {
+              "minimum": 10526,
+              "maximum": 10526
+            },
+            "live_before_bytes": {
+              "minimum": 3585384,
+              "maximum": 3585455
+            },
+            "live_after_bytes": {
+              "minimum": 4455336,
+              "maximum": 4455407
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4718311,
+              "maximum": 4718382
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1132927,
+              "maximum": 1132927
+            }
+          }
+        },
+        {
+          "name": "idle",
+          "workload_calls": 0,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21544960,
+            "maximum": 21962752
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "successful_allocation_calls": {
+              "minimum": 0,
+              "maximum": 0
+            },
+            "live_before_bytes": {
+              "minimum": 4455336,
+              "maximum": 4455407
+            },
+            "live_after_bytes": {
+              "minimum": 4455336,
+              "maximum": 4455407
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4455336,
+              "maximum": 4455407
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        },
+        {
+          "name": "delete",
+          "workload_calls": 16,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 20094976,
+            "maximum": 20439040
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 3622384,
+              "maximum": 3622384
+            },
+            "successful_allocation_calls": {
+              "minimum": 6270,
+              "maximum": 6270
+            },
+            "live_before_bytes": {
+              "minimum": 4455336,
+              "maximum": 4455407
+            },
+            "live_after_bytes": {
+              "minimum": 3471608,
+              "maximum": 3471679
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4587495,
+              "maximum": 4587566
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 132159,
+              "maximum": 132159
+            }
+          }
+        },
+        {
+          "name": "refill",
+          "workload_calls": 16,
+          "logical_entries": 16,
+          "logical_value_bytes": 1048576,
+          "process_rss_bytes": {
+            "minimum": 21295104,
+            "maximum": 21753856
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 65333792,
+              "maximum": 65333792
+            },
+            "successful_allocation_calls": {
+              "minimum": 8548,
+              "maximum": 8548
+            },
+            "live_before_bytes": {
+              "minimum": 3471608,
+              "maximum": 3471679
+            },
+            "live_after_bytes": {
+              "minimum": 4525032,
+              "maximum": 4525103
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4721250,
+              "maximum": 4721321
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 1249642,
+              "maximum": 1249642
+            }
+          }
+        },
+        {
+          "name": "shutdown",
+          "workload_calls": 0,
+          "logical_entries": 0,
+          "logical_value_bytes": 0,
+          "process_rss_bytes": {
+            "minimum": 17465344,
+            "maximum": 17514496
+          },
+          "allocations": {
+            "gross_allocated_bytes": {
+              "minimum": 7872,
+              "maximum": 7880
+            },
+            "successful_allocation_calls": {
+              "minimum": 38,
+              "maximum": 39
+            },
+            "live_before_bytes": {
+              "minimum": 4525032,
+              "maximum": 4525103
+            },
+            "live_after_bytes": {
+              "minimum": 69665,
+              "maximum": 69665
+            },
+            "peak_live_requested_bytes": {
+              "minimum": 4525032,
+              "maximum": 4525103
+            },
+            "peak_live_above_start_bytes": {
+              "minimum": 0,
+              "maximum": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

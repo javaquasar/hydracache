@@ -33,3 +33,6 @@ docs/testing/performance/0.74/local-runs/response-owner-*/** -text
 # Raw Windows runner receipts retain CRLF bytes; recognize CR as line ending.
 docs/testing/performance/0.74/local-runs/get-owner-d3a-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/get-owner-b0-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/secure-memory-*/** -text whitespace=cr-at-eol
+# Native test logs include a final blank line; preserve the receipt bytes.
+docs/testing/performance/0.74/local-runs/secure-memory-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

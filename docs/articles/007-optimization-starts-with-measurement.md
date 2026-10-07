@@ -3985,3 +3985,35 @@ exact-SHA hosted semantic workflow checks the feature-off/on observer and strict
 lint; it does not launch numerical diagnostics or qualification. Full D3 and W10
 still require independent native guards and allocator-retention proof before C74
 can be composed or frozen.
+
+The committed diagnostic source `d2252012` completed all 30 fresh-process
+attempts (five independent surfaces, two payload sizes, three repeats) without
+retry. All public DELETE oracles found zero logical entries/value bytes; all
+refills restored 16 entries. The full packet, exact binary/source seal, min/max
+analysis and feature-off/on semantic logs are retained under
+`docs/testing/performance/0.74/local-runs/secure-memory-d2252012/`.
+
+For example, the independent RESP3/mTLS 64 KiB cell records 50,199,184 gross
+requested bytes and 7,573 allocation calls over its 128 GET workload calls in
+each repeat. Those totals include both endpoints and TLS/actor work, not just
+the response reducer. Idle working set ranges 21,544,960–21,962,752 bytes;
+post-shutdown requested-live remains 69,665 bytes. Runtime/report/global owners
+are still in scope, so neither value is a zero-retention assertion. The
+direct/256 working-set range is much wider, 8,884,224–24,371,200 bytes, despite
+identical requested allocation totals. We retain the variation without inventing
+a causal attribution or treating OS RSS as allocator resident memory.
+
+Thus the useful confirmed result is measurement readiness and checked
+delete/refill/shutdown ownership, not an allocation improvement: this finite
+packet is feature-off only, has no A/B estimate, and cannot establish native
+nonregression. Allocator active/resident/retained remains explicitly unavailable.
+The next full-D3 prerequisites are a separate embedded scheduled control,
+unprofiled timing executable and a supported retention lane, with unchanged
+admission floors and an entirely new sealed finite contract. W10 remains closed.
+
+Hosted semantic run `37697414775` attempt 1 subsequently passed on the exact
+`d22520123880a8a67c816c83a7f76448cbf50af9` source: 68 serialized checks in
+each feature variant on Ubuntu 24.04 with Rust 1.94.0, plus formatting, check and
+strict lint. Raw logs and identity hashes are retained, not just a green status.
+This closes the checked observer's hosted semantic gap, not release CI, native
+performance admission, allocator-retention proof or C74 qualification.

@@ -1,0 +1,106 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\get-owner-scheduled-controls-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.22s
+     Running unittests src\lib.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\get_owner_scheduled_controls_074-ced2045057f09901.exe)
+
+running 31 tests
+test native::tests::batch_oracles_reject_count_order_error_value_and_mutation_drift ... ok
+test native::tests::direct_and_hc1_oversized_batch_put_reject_without_partial_mutation ... ok
+test native::tests::hc1_rejects_anonymous_and_other_tenant_cannot_read_dataset ... ok
+test native::tests::hc2_batch_limits_and_unapplied_item_are_not_atomic_surface_batch_semantics ... ok
+test native::tests::hc2_rejects_foreign_ca_identity_before_dispatch ... ok
+test native::tests::independent_batch_transports_preserve_duplicates_misses_empty_and_binary_values ... ok
+test native::tests::native_batch_budget_boundaries_are_checked_without_overflow ... ok
+test native::tests::sdk_failure_codes_are_not_retried_or_conflated_with_success ... ok
+test resp::tests::auth_stall_has_unchanged_five_second_deadline_without_fallback ... ok
+test resp::tests::buffered_transport_requires_flush_and_keeps_fragmented_reply_owner ... ok
+test resp::tests::cancelled_fragmented_array_keeps_one_command_owner ... ok
+test resp::tests::concurrent_real_mset_mget_never_observes_partial_pair ... ok
+test resp::tests::disconnect_and_malformed_reply_release_owners_without_fake_response_time ... ok
+test resp::tests::duplicates_and_bounds_are_rejected_without_implicit_retry ... ok
+test resp::tests::flat_array_integer_fragmentation_and_aggregate_budget_are_explicit ... ok
+test resp::tests::fragmented_binary_empty_null_error_and_coalesced_frames_are_distinct ... ok
+test resp::tests::hello_negotiation_refuses_error_disconnect_and_unsolicited_tail ... ok
+test resp::tests::hello_negotiation_timeout_drops_socket_without_fallback ... ok
+test resp::tests::independent_connections_do_not_share_cancelled_owners_or_drain_budget ... ok
+test resp::tests::malformed_oversized_and_future_reply_types_fail_loud ... ok
+test resp::tests::one_connection_failure_still_joins_every_owned_task ... ok
+test resp::tests::reads_progress_while_later_pipeline_write_is_backpressured ... ok
+test resp::tests::real_batch_duplicate_order_and_oversized_mset_are_atomic ... ok
+test resp::tests::real_hello_transitions_apply_to_the_next_pipelined_reply ... ok
+test resp::tests::real_resp2_resp3_mget_preserves_null_empty_binary_and_duplicate_positions ... ok
+test resp::tests::rejected_auth_is_redacted_and_sends_no_hello_or_preload ... ok
+test resp::tests::resp3_hello_metadata_is_shallow_bounded_and_map_order_independent ... ok
+test resp::tests::resp3_null_arrays_are_fragmented_without_legacy_null_fallback ... ok
+test resp::tests::seeded_real_batch_sequence_matches_independent_reference_map ... ok
+test resp::tests::slow_reader_and_partial_writes_preserve_cancelled_fifo_tombstone ... ok
+test resp::tests::unresolved_wire_owner_refuses_clean_drain_then_shutdown_releases_it ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running unittests src\bin\memory_diagnostics.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\memory_diagnostics_074-6553efdadc26cf08.exe)
+
+running 4 tests
+test memory::tests::allocation_zeroed_reallocation_and_drop_preserve_live_accounting ... ok
+test memory::tests::epoch_counts_gross_calls_peak_and_owner_release_without_oracle_allocation ... ok
+test tests::arguments_refuse_unsealed_shapes_and_unknown_surfaces ... ok
+test tests::rss_has_real_units_and_is_not_reported_as_allocator_retention ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\native.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\native-3c99d5b3e2b75800.exe)
+
+running 8 tests
+test dataset_and_slot_bounds_are_explicit ... ok
+test high_concurrency_native_clients_start_together_and_release_resources ... ok
+test independent_hc1_hc2_get_put_use_real_transports_and_same_binary_oracle ... ok
+test invalid_slots_fail_before_starting_any_listener ... ok
+test large_binary_payload_crosses_real_native_frames_without_truncation ... ok
+test native_batch_concurrency_boundaries_release_all_owners ... ok
+test native_batches_keep_one_offer_and_separate_dispatch_semantics ... ok
+test unsupported_native_batch_size_and_payload_fail_before_setup ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.25s
+
+     Running tests\resp.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\resp-46ea726a4a5cedb7.exe)
+
+running 9 tests
+test large_binary_resp2_frame_has_one_operation_timestamp ... ok
+test large_fixed_set_checks_acknowledgement_and_final_bytes ... ok
+test large_resp3_get_set_keep_one_complete_frame_observation ... ok
+test multiple_resp_connections_keep_local_fifo_and_fixed_set_oracles ... ok
+test real_resp2_pipeline_matches_each_original_offer_not_batch_average ... ok
+test resp3_negotiates_every_socket_and_keeps_command_denominators ... ok
+test scheduled_multikey_commands_keep_one_original_offer_and_exact_reply_shape ... ok
+test unsupported_batch_and_aggregate_payload_fail_before_opening_sockets ... ok
+test unsupported_resp_connection_counts_fail_before_transport_setup ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.93s
+
+     Running tests\scheduled.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\scheduled-52970b6d0979567f.exe)
+
+running 12 tests
+test bounded_overload_preserves_every_offer_and_never_moves_schedule ... ok
+test bounds_reject_oversized_local_contract ... ok
+test caller_cancellation_aborts_owned_requests ... ok
+test drain_timeout_retains_censored_samples_and_joins_cancelled_owners ... ok
+test histogram_overflow_is_loud_and_all_offers_conserve_across_outcomes ... ok
+test logical_concurrency_grid_stays_bounded_and_keeps_fixed_schedule ... ok
+test on_time_success_uses_all_offer_fraction_and_full_drain_interval ... ok
+test panic_is_loud_and_owned_requests_are_drained_before_error ... ok
+test projection_rejects_fabricated_samples_and_cleanup_claims ... ok
+test result_classification_and_all_offer_denominator_are_not_success_only ... ok
+test stall_is_visible_from_original_schedule_not_only_service_time ... ok
+test timeout_includes_queue_delay_and_does_not_give_each_request_a_fresh_budget ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\secure.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\secure-4ec38a475d65410c.exe)
+
+running 4 tests
+test native_delete_refill_uses_each_public_transport_and_leaves_no_values ... ok
+test secure_large_payload_and_multikey_boundaries_preserve_delete_refill_oracles ... ok
+test secure_resp_grid_preserves_wire_owners_auth_and_logical_retention ... ok
+test shared_secure_material_and_dataset_guard_does_not_waive_authorization_differences ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.81s
+
