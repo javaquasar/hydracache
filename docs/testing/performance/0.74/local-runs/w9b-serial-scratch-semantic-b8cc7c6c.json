@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "work_item": "W9b",
+  "proposal_id": "p74-w9b-serial-get-scratch-v1",
+  "tier": "local-d2-semantic-and-ownership-proof",
+  "baseline_source_commit": "4d733e3189bdc777635792795e1bbb58ab00a7cb",
+  "preregistration_commit": "4c5b16d77adf77a5c857ef5b04002dbdcf894bac",
+  "source_commit": "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1",
+  "source_clean_during_final_source_bound_checks": true,
+  "feature": "experimental-resp-serial-scratch-074",
+  "default_enabled": false,
+  "product_mutation_present": true,
+  "accepted_product_change": false,
+  "promotable": false,
+  "candidate_source_commit": "UNRESOLVED",
+  "isolated_proposal_source_commit": "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1",
+  "numeric_candidate_comparison_started": false,
+  "product_performance_claim": false,
+  "ownership": {
+    "private_connection_read_iteration_only": true,
+    "payload_range_bytes": [
+      4096,
+      1048576
+    ],
+    "equal_consecutive_get_sizes_required": true,
+    "first_response_canonical": true,
+    "second_equal_get_allocates_scratch": true,
+    "third_and_later_equal_gets_reuse_address": true,
+    "maximum_scratch_capacity_bytes": 1048588,
+    "shape_size_error_non_get_barriers_drop_capacity": true,
+    "release_before_next_read": "Rust lexical loop-body ownership; no server/global owner or borrowed value surviving the read iteration",
+    "cancel_error_eof_quit": "owned BytesMut drops with the connection future/read iteration",
+    "cross_connection_or_cross_principal_pool": false,
+    "retention_rss_or_peak_live_memory_improvement_proven": false
+  },
+  "correctness": {
+    "resp2_resp3_goldens": true,
+    "binary_payload_property_cases": 32,
+    "large_payloads_bytes": [
+      4096,
+      1048576
+    ],
+    "third_reused_reply_cuts": "0,1,midpoint,last byte,complete write with pending flush",
+    "native_put_progress_while_third_reply_pending": true,
+    "following_set_waits_for_complete_write_and_flush": true,
+    "flush_failure_and_disconnect_preserve_mutation_frontier": true,
+    "cancellation_does_not_execute_queued_set": true,
+    "exact_injected_expiry_changes_following_get_to_miss": true,
+    "native_put_consumes_quota_before_following_set": true,
+    "quota_rejection_audit_count": 1,
+    "auth_subscription_malformed_quit_barriers": true,
+    "fragmented_read_chunk_bytes": [
+      1,
+      17,
+      53,
+      "entire pipeline"
+    ],
+    "hello_map_guard": "RESP3 HELLO has unspecified existing hash-map entry order; decoded map equality, exact GET/miss/QUIT prefix/suffix bytes",
+    "write_flush_calls_per_response": 1,
+    "metrics_fixture_frames_and_write_flush_calls": 5,
+    "codec_public_functions_unchanged": true,
+    "input_compaction_unchanged": true,
+    "store_reducer_native_authorization_time_and_durability_unchanged": true
+  },
+  "checks": {
+    "preregistration_baseline_adversarial_tests_passed": 13,
+    "feature_off_resp_tests_passed": 166,
+    "feature_on_resp_tests_passed": 171,
+    "ignored_per_resp_build": 23,
+    "ignored_scope": "21 opt-in real external client cases plus two resource soaks; none counted as executed",
+    "feature_on_adversarial_tests_passed": 19,
+    "feature_only_scratch_tests_passed": 5,
+    "server_redis_lifecycle_tests_passed": 18,
+    "server_tests_filtered": 9,
+    "performance_contract_tests_passed": 42,
+    "release_evidence_tests_passed": 13,
+    "release_governance_tests_passed": 23,
+    "doc_check_tests_passed": 16,
+    "affected_and_direct_server_dependent_all_target_check": "passed",
+    "affected_and_direct_server_dependent_strict_all_target_all_feature_clippy": "passed",
+    "format": "passed",
+    "pipeline_profiler_all_target_candidate_feature_check": "passed; no numerical run",
+    "performance_contract": "passed-local-non-promotable",
+    "governance_cli_checks": 17,
+    "doc_registry": "passed",
+    "source_bound_canaries": {
+      "W11": "ExpectedRed",
+      "W12": "ExpectedRed"
+    },
+    "hosted_ci_for_this_source": "not claimed",
+    "full_workspace_gate": "not run; no release milestone, merge or tag"
+  },
+  "evidence_working_tree_checks": {
+    "scope": "D2 documentation, registry and policy binding; separate from clean implementation source receipt",
+    "targeted_xtask_tests_passed": 94,
+    "xtask_all_target_check_and_strict_lint": "passed",
+    "format": "passed",
+    "performance_contract": "passed-local-non-promotable",
+    "governance_cli_checks": 17,
+    "doc_registry": "passed",
+    "docs_release_node_tests_passed": 3,
+    "docs_release_check": "synchronized",
+    "docs_link_check_markdown_files": 51,
+    "docs_link_check_includes": 20,
+    "mdbook_build": "passed",
+    "git_diff_check": "passed"
+  },
+  "commands": [
+    "cargo test -p hydracache-redis-compat --locked -- --quiet",
+    "cargo test -p hydracache-redis-compat --features experimental-resp-serial-scratch-074 --locked -- --quiet",
+    "cargo test -p hydracache-server --test server_lifecycle --features hydracache-redis-compat/experimental-resp-serial-scratch-074 --locked redis -- --quiet",
+    "cargo test -p xtask --test performance_contract_074 --test release_evidence --test release_governance --test doc_check --locked -- --quiet",
+    "cargo check -p hydracache-redis-compat --all-targets --all-features --locked",
+    "cargo clippy -p hydracache-redis-compat -p xtask --all-targets --all-features --locked -- -D warnings",
+    "cargo check -p hydracache-server --all-targets --features hydracache-redis-compat/experimental-resp-serial-scratch-074 --locked",
+    "cargo clippy -p hydracache-server --all-targets --all-features --features hydracache-redis-compat/experimental-resp-serial-scratch-074 --locked -- -D warnings",
+    "cargo check --manifest-path tools/resp-pipeline-profile-074/Cargo.toml --all-targets --features hydracache-redis-compat/experimental-resp-serial-scratch-074 --locked",
+    "cargo xtask performance-contract-check --release 0.74",
+    "cargo xtask canary-sweep --release 0.74 --tier fast"
+  ],
+  "normalized_lf_file_hashes": [
+    {
+      "path": "crates/hydracache-redis-compat/src/lib.rs",
+      "normalized_lf_sha256": "1de4ee8d420cde78d56ff9f523d42c56360e8aef5c6e6e43447f531e7e11bc68"
+    },
+    {
+      "path": "crates/hydracache-redis-compat/src/serial_get_scratch_074.rs",
+      "normalized_lf_sha256": "606f638989c4871345ce948581c50ce46fe6aa630cf12f8c05b83ffe090614bc"
+    },
+    {
+      "path": "crates/hydracache-client-transport-axum/src/lib.rs",
+      "normalized_lf_sha256": "98dea1b2c299825669fc0ab0e75891f25de4fa796cb6f313f0a49f00deff58e1"
+    },
+    {
+      "path": "crates/hydracache/src/cache.rs",
+      "normalized_lf_sha256": "ad41b6bf78b94fb6100844c8b0f12ff40ece36024933e8b574a4c3f753d2e44a"
+    },
+    {
+      "path": "Cargo.lock",
+      "normalized_lf_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "normalized_lf_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "retained_development_diagnostics": [
+    "Initial baseline fixtures: 11 passed, two failed. Gate incorrectly stopped the first flush at the zero-byte cut of reply two; explicit completed-flush gating corrected the fixture. HELLO hash-map wire order was incorrectly assumed stable; only that existing map is compared structurally.",
+    "Strict baseline lint rejected two redundant operand references; fixed without lint waiver.",
+    "Initial focused cargo invocation filtered the integration target to zero tests while five helper tests ran; zero filtered integration tests were not counted as proof. Both complete suites later executed all 19 transport guards.",
+    "Parallel clean-source validation failed to relink xtask.exe while the canary process still held it on Windows (exit 101). Canary completed normally with expected red; all 94 xtask tests and server guards then ran sequentially from the same clean source. No performance sample retry or process/workload restart occurred."
+  ],
+  "restrictions": {
+    "expensive_workloads": false,
+    "rented_host": false,
+    "qualification": false,
+    "automatic_retry": false,
+    "frozen_073_modified": false,
+    "root_lockfile_changed": false,
+    "native_shared_or_embedded_source_changed": false,
+    "qualification_manifest_or_pinned_input_changed": false,
+    "thresholds_changed": false,
+    "previous_terminal_negative_results_reclassified": false
+  },
+  "assessment": {
+    "accepted_product_proposals": 0,
+    "release_candidate_source": "UNRESOLVED",
+    "ship_admission": "closed",
+    "next": "D3 preregistration: exact source/feature/binary receipt identity, paired feature-off/on matrix with AA controls, at least five counterbalanced pairs, separate native surfaces, end-to-end allocation and peak/idle/RSS guards.",
+    "minimum_affected_end_to_end_allocation_reduction": 0.2,
+    "unaffected_minimum_goodput_ratio": 0.98,
+    "unaffected_maximum_cpu_or_p99_ratio": 1.03,
+    "peak_memory_risk": "Scratch remains live during later canonical execution/reduction, so instantaneous live allocation may rise even if gross allocations fall. No memory regression is waived.",
+    "ci_feature_proof_pending": "Ordinary fast workspace tests are feature-off; the explicit feature-on candidate command must be enrolled and evidenced before promotion.",
+    "potential_not_measurement": "Repeated encoder output allocation can be avoided after two equal GETs; payload copies, per-command writes/flushes, final goodput and latency remain unproven."
+  }
+}

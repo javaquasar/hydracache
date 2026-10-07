@@ -1449,3 +1449,38 @@ canaries remained expected red. Validator isolation retains the original failed
 Runtime, root dependencies, qualification manifest/pinned digests, frozen 0.73 and
 thresholds are unchanged. No rented-host or expensive workload ran; C74 remains
 unresolved with zero accepted product proposals.
+
+### W9b D2: serial GET scratch implemented, feature off, D3 not started
+
+The new large-response follow-up is preregistered at `4c5b16d7` and implemented
+at `b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1` under the default-off feature
+`experimental-resp-serial-scratch-074`. This is not W3 batching or a reopened
+negative candidate. Only consecutive equal-sized successful GET bulk replies
+from 4 KiB to 1 MiB within one received read are eligible. First reply is
+canonical, second allocates scratch, third/later reuse its address. Every reply
+still completes one separate write and flush before the next command executes.
+
+Capacity is bounded at 1,048,588 bytes and dropped on class/command/error boundaries
+and before another read. Unit/property checks prove exact RESP2/RESP3 output and
+pointer reuse; this is not an end-to-end allocation or RSS measurement. Scratch
+overlap with the next reducer may increase peak-live memory; no memory regression
+is waived. AUTH/subscription/malformed/QUIT/cancellation and native progress,
+exact expiry and quota interleavings are explicitly exercised after actual reuse.
+
+Clean source passed 166 feature-off and 171 feature-on RESP tests (23 existing
+opt-in cases ignored per build), 18 feature-on server lifecycle cases and 94
+xtask tests. Format, affected/direct-server check and strict lint, non-promotable
+contract, governance and W11/W12 expected-red canaries pass. A Windows executable
+lock during parallel validation is retained; the affected checks subsequently
+passed sequentially from the same clean source, with no performance attempt retry.
+
+See [the design and remaining gates](w9b-serial-scratch-design.md),
+`w9b-serial-scratch-proposal.toml` and
+`local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json`. The registry lists the new
+follow-up separately; terminal negatives and qualification/pinned input digests
+remain unchanged. Default runtime path, public codecs, native/shared/embedded
+sources, root lockfile, time/expiry/reducer and durability are unchanged.
+Experimental source is now present, but no default activation or release win is
+claimed. No rented-host or expensive workload ran. D3 must first seal source/
+feature/binary identities, counterbalanced pairs, per-native controls and peak/
+idle/RSS guards; feature-on CI proof is still required before promotion.

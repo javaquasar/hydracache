@@ -3276,3 +3276,70 @@ Accepted proposals remain zero and C74 unresolved. The justified conclusion is
 not “scratch reuse made the release faster.” It is narrower and useful: large
 GET encoding is now a repeatably measured owner, and a single bounded hypothesis
 can be tested without retrying the rejected batching architecture.
+
+## Implementing one bounded hypothesis is not accepting a release win
+
+That D1 owner now has a local D2 implementation. The preregistered guard/policy
+commit is `4c5b16d7`; the isolated implementation is `b8cc7c6c`. It is compiled
+only by the default-off `experimental-resp-serial-scratch-074` feature, not
+silently installed as a production default. No store, reducer, native path,
+public codec, input compaction or acknowledgement policy was optimized alongside it.
+
+The mechanism is narrower than a general output cache. A private buffer belongs
+to one received-read iteration. Only actual successful GET bulk replies between
+4 KiB and 1 MiB qualify, and only at the same consecutive payload size. The first
+GET uses the original writer. The second allocates scratch; the third and later
+reuse that capacity. We intentionally give up the first two allocation savings
+to avoid duplicate decoding, lookahead or changed pipeline-one output ownership.
+Each response still finishes its own write and flush before the next command.
+
+Size/shape changes release the buffer. AUTH, HELLO, subscriptions, mutations and
+QUIT release it before execution; malformed input releases it before its error
+reply. The read-iteration owner drops before another read or event/idle wait,
+and drops with the connection future on cancellation/error/close. There is no
+global pool or principal-shared buffer. With the pinned encoder, capacity stays
+within 1,048,588 bytes; repeated binary response tests confirm the same address
+and exact output for RESP2 and RESP3, including overwriting prior contents.
+
+The transport tests must exercise reuse, not just the new branch's first
+allocation. They therefore block the third large GET at partial-write and
+pending-flush boundaries. Native PUT continues during that pause, but the queued
+SET does not execute. Disconnect, failed flush and cancellation leave that SET
+absent. Exact injected expiry while GET 3 is blocked makes GET 4 a miss rather
+than a stale reused reply. Another native PUT occupies remaining quota during
+the pause; the later SET receives the exact error and one rejection audit.
+One-byte-read controls never activate scratch and provide an actual canonical
+writer comparison for AUTH, subscription, malformed input and QUIT transitions.
+
+The same care applies to the oracle. Existing RESP3 HELLO encoding uses a hash
+map with unspecified entry wire order. An initial byte-order assertion failed
+on the baseline; the corrected test decodes that map and compares its contents,
+while GET/miss/QUIT bytes remain exact. We did not stabilize HELLO encoding as an
+extra product hypothesis. A separate fixture correction made the gate distinguish
+the first completed flush from the later blocked flush. Both diagnostics remain
+in the record rather than being counted as candidate failures or hidden passes.
+
+Clean source passed 166 default and 171 feature-on RESP tests, with 23 existing
+opt-in cases ignored in each build, plus 18 feature-on server lifecycle tests and
+94 targeted xtask tests. Scoped check, strict lint, format, contract/governance
+and expected-red canaries pass. Windows once refused to relink an executable
+held by the concurrent canary; after its normal completion the checks ran
+sequentially on the same source. This was a validation conflict, not a restarted
+performance sample. The retained evidence is
+`docs/testing/performance/0.74/local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json`.
+
+The main unresolved tradeoff is memory. A saved scratch buffer remains alive
+during the next canonical request and response reduction. That can lower gross
+allocation while increasing instantaneous live memory. Bounded capacity and
+Rust-owner drop are not proof that RSS, allocator retention or peak memory got
+better. Likewise, a stable pointer is not a measured allocation percentage;
+payload copies and per-command writes/flushes are still present.
+
+D3 must now preregister exact source/feature/binary identities, matched feature-off
+and feature-on runs, independent AA controls, at least five counterbalanced
+pairs, the unchanged 20% affected end-to-end allocation floor, separate native
+surfaces and peak/idle/RSS checks. Ordinary feature-off CI does not certify the
+feature-only helper; its explicit command needs enrollment and evidence before
+promotion. No numerical candidate comparison, rented-host workload or qualification
+has run in this step. Accepted proposals remain zero and C74 unresolved. We have
+implemented a testable hypothesis, not published a product improvement.

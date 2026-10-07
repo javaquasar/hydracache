@@ -125,3 +125,20 @@ evidence = "local-runs/native-owners-v6-expired-get-c8.json"
 id = "N10"
 owner = "embedded-cache-stages"
 decision = "preliminary-local-separated"
+
+# A new measured large-response owner; earlier terminal attempts are unchanged.
+[[followup_proposals]]
+id = "p74-w9b-serial-get-scratch-v1"
+owner = "canonical large GET encoder output allocation"
+state = "implemented-local-semantics-passed-d3-not-started"
+baseline_source_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
+preregistration_sha = "4c5b16d77adf77a5c857ef5b04002dbdcf894bac"
+implementation_sha = "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1"
+feature = "experimental-resp-serial-scratch-074"
+default_enabled = false
+accepted_product_change = false
+promotable = false
+numerical_candidate_comparison_started = false
+contract = "w9b-serial-scratch-proposal.toml"
+evidence = "local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json"
+rollback = "disable/remove only the serial GET scratch feature and its candidate-specific guards; retain the D1/D2 records"

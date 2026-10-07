@@ -163,3 +163,15 @@ planned node-local sentinels wired:
 - `client_matrix_runs_hydracache_tag_extension_scenario`
 - `mainstream_redis_client_can_talk_to_the_facade`
 - `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`
+
+## Experimental 0.74 serial GET scratch
+
+`experimental-resp-serial-scratch-074` is a default-off local performance candidate,
+not an accepted production/release feature. It reuses an encoder scratch buffer
+only for consecutive equal-sized successful 4 KiB–1 MiB GET responses within one
+received read. The first response stays canonical; each response still completes
+its separate write and flush. No pool, native API or durability change is present.
+`--all-features` enables the experiment and is not production activation guidance.
+
+Policy, semantic results and remaining end-to-end allocation/native/peak-memory
+gates: [W9b design](../../docs/testing/performance/0.74/w9b-serial-scratch-design.md).

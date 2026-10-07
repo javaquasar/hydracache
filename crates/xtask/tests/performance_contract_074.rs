@@ -1025,6 +1025,23 @@ fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gate
 #[test]
 fn w9b_unaccepted_serial_scratch_is_private_and_disabled_by_default() {
     let proposal = contract("w9b-serial-scratch-proposal.toml");
+    let registry = contract("proposal-registry.toml");
+    let followups = registry["followup_proposals"].as_array().unwrap();
+    assert_eq!(followups.len(), 1);
+    let followup = &followups[0];
+    assert_eq!(followup["id"], proposal["proposal_id"]);
+    assert_eq!(
+        followup["implementation_sha"],
+        proposal["candidate_source_sha"]
+    );
+    for flag in [
+        "default_enabled",
+        "accepted_product_change",
+        "promotable",
+        "numerical_candidate_comparison_started",
+    ] {
+        assert_eq!(followup[flag].as_bool(), Some(false), "{flag}");
+    }
     let manifest: toml::Value = toml::from_str(
         &std::fs::read_to_string(root().join("crates/hydracache-redis-compat/Cargo.toml")).unwrap(),
     )

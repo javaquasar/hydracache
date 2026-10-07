@@ -1,12 +1,12 @@
 schema_version = 1
 release = "0.74"
 proposal_id = "p74-w9b-serial-get-scratch-v1"
-state = "d2-authorized-for-local-isolated-implementation-only"
+state = "implemented-local-semantics-passed-d3-not-started"
 baseline_source_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
 owner_evidence = "docs/testing/performance/0.74/local-runs/w9b-serial-encoder-owner-cc0b2fbf.json"
 accepted_product_change = false
 promotable = false
-candidate_source_sha = "UNRESOLVED"
+candidate_source_sha = "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1"
 feature = "experimental-resp-serial-scratch-074"
 default_enabled = false
 one_hypothesis = "avoid fresh encoder output allocation for consecutive equal-sized large GET responses within one already received read; preserve separate write_all and flush for every response"
