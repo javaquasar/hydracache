@@ -24,9 +24,11 @@ This is semantic instrumentation, not measured embedded nonregression.
 
 Before any new full-D3 numerical attempt:
 
-- Verify the independent embedded adapter on the exact final instrumentation
-  source and implement an unprofiled executable. The current bounded semantic
-  driver is not a sealed timing CLI.
+- Verify the independent embedded adapter and unprofiled executable on the exact
+  final instrumentation source. The new `timing-controls-074` CLI preserves the
+  bounded driver and refuses profiled builds, but is not a sealed finite cohort.
+  See `unprofiled-timing-controls-design.md`; 10k offers may be insufficient for
+  native CPU quality, and fresh secure processes still generate different PKI.
 - Preregister every cell's original offered calendar, duration/work counts,
   warmup, CPU/affinity scope, finite five-pair A/A and A/B order, noise guards,
   supported memory capability and process deadlines. No unresolved workload

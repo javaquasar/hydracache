@@ -4044,3 +4044,45 @@ allocator-provider proof or Linux numerical campaign was performed, and WSL2
 is not an admitted release host. The remaining full-D3 work is an unprofiled,
 bounded numerical runner, a complete preregistered A/A-A/B cohort and a supported
 allocator-retention lane. W10 still has zero accepted candidates to compose.
+
+The next local instrumentation step introduces `timing-controls-074`, a separate
+unprofiled executable for eight independent scalar GET/PUT boundaries. It has no
+counting allocator and refuses allocation-diagnostic builds. A fully specified,
+strict JSON input binds the corpus, original offer calendar, concurrency/queue,
+deadlines, histogram/SLO bounds and warmup; the executable checks its raw binary
+hash before creating any fixture and reports both compiled lock hashes. Its
+source SHA remains a coordinator-supplied identity, not an independently verified
+Git seal. This distinction prevents a binary-shaped receipt from pretending to
+prove clean source or reviewed placement/toolchain.
+
+Warmup uses the same operation and fixed bytes outside the measured calendar.
+RESP warmup reserves separate setup IDs, so measured sequence zero is still the
+first original offer. Whole-process CPU covers the colocated driver/client/server,
+byte oracles, wire/task drain and observation projection; it is not server CPU.
+GetProcessTimes and Linux process CPU clocks report their units without claiming
+that nanosecond representation implies nanosecond accuracy. Driver goodput and
+the slightly wider CPU/projection interval remain separately named.
+
+The useful implemented guard is honesty about short measurements: below one
+second of CPU or measurement wall, a CPU ratio is explicitly unusable, including
+zero CPU from a coarse clock. Errors, undrained tasks and histogram overflow also
+prevent usability. These floors were preregistered before implementation; they
+are not lowered to make the 10k semantic driver pass. Successful instrumentation
+or even CPU usability is still not an A/A noise pass, A/B benefit or admission.
+
+Semantic tests exercise every boundary's GET/PUT, exact corpus and original
+samples, warmup-ID separation, binary/config drift and owner shutdown. Deleted
+pre-warmup data and an extra leaked owner are negative fixtures, not successful
+cleanup claims. During development a synthetic histogram fixture used an invalid
+one-unit maximum and failed; the fixture was corrected and the new input boundary
+now rejects that shape before setup. Strict lint also required boxing the report
+enum. Neither repair changes a product path or historical benchmark threshold.
+
+The numerical campaign remains unexecuted. Two limitations are explicit: 10k
+offers may not accumulate enough native CPU at the unchanged quality floor, and
+fresh secure processes still generate different private PKI. A separately
+preregistered bounded/streaming driver and fixed private certificate inputs are
+needed where those limits prevent a valid cohort. Complete miss/error/slow-reader,
+size-transition, independent native and supported allocator-retention proofs also
+remain open. No speedup or new accepted candidate is inferred, old D3a/B0 evidence
+is not retried, and W10/C74 admission stays closed.
