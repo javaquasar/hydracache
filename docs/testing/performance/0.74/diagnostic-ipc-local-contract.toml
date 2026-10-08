@@ -1,0 +1,33 @@
+schema_version = 1
+contract_id = "diagnostic-ipc-local-074-v1"
+baseline_source = "872788f4aae30583ae32d7522ad06c68cc7b6e43"
+state = "preregistered-local-implementation-only"
+production_route_enabled = false
+host_install_allowed = false
+host_pilot_execution_allowed = false
+qualification_allowed = false
+promotable = false
+admission_allowed = false
+signature_domain = "hydracache-diagnostic-request-074-v1"
+preset = "baseline-get-four-cells-p0-v1"
+packet_bytes = 16384
+authorization_seconds = 60
+future_clock_skew_seconds = 0
+ledger_bytes = 262144
+ledger_entries = 128
+ledger_eviction_allowed = false
+pending_request_reexecution_allowed = false
+replayed_heartbeat_extends_lease = false
+revision_check_and_mutation_share_host_fence = true
+operations = ["reserve", "heartbeat", "status", "cancel"]
+arbitrary_paths_argv_or_workload_allowed = false
+old_campaign_protocol_changed = false
+backend = "existing deterministic model only; no live systemd or product"
+transport = "temporary local Linux SOCK_SEQPACKET fixture; no production listener enrollment"
+
+[required_tests]
+signature = "signature_binds_every_request_field_and_rejects_campaign_domain"
+replay = "completed_replay_is_cached_without_extending_heartbeat"
+crash = "pending_intent_blocks_reexecution_and_new_requests"
+revision = "stale_revision_and_controller_takeover_are_refused_before_mutation"
+transport = "local_seqpacket_uses_kernel_peer_credentials_without_production_route"
