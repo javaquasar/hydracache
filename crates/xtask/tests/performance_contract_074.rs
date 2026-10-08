@@ -7,6 +7,58 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
+    let c = contract("diagnostic-process-local-contract.toml");
+    for field in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "systemd_identity_authenticated",
+        "tree_membership_authenticated",
+        "writer_revocation_proven",
+        "host_release_allowed",
+        "watchdog_implemented",
+        "automatic_pid_recapture",
+        "signals_allowed",
+        "exit_status_proven",
+        "exec_identity_proven",
+        "fixture_can_claim_kernel_origin",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    assert_eq!(c["maximum_document_bytes"].as_integer(), Some(65536));
+    assert_eq!(c["pidfd_poll_timeout_ms"].as_integer(), Some(0));
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process.rs"),
+    )
+    .unwrap();
+    let production = code.split("#[cfg(test)]").next().unwrap();
+    for forbidden in [
+        "Command::",
+        "pidfd_send_signal",
+        "libc::kill",
+        "waitpid",
+        "waitid",
+        "impl DiagnosticBackend",
+        "release_host",
+        "zbus::",
+    ] {
+        assert!(!production.contains(forbidden), "{forbidden}");
+    }
+    assert!(production.contains("SYS_pidfd_open"));
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        assert!(!std::fs::read_to_string(
+            root().join("tools/long-run-supervisor-074/src").join(name)
+        )
+        .unwrap()
+        .contains("diagnostic_process"));
+    }
+}
+
+#[test]
 fn diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution() {
     let c = contract("diagnostic-tree-local-contract.toml");
     assert_eq!(

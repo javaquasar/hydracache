@@ -58,6 +58,9 @@ impl DiagnosticTreeScope {
     pub fn path(&self) -> &Path {
         &self.path
     }
+    pub(crate) fn boot_id(&self) -> &str {
+        &self.boot_id
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

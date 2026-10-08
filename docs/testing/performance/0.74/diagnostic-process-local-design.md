@@ -37,3 +37,19 @@ Linux tests may observe their own test process and a non-product test helper
 that exits on pipe closure; they never create/move a cgroup or touch systemd.
 The public diagnostic positive path still needs a separately authorized real
 unit rehearsal. No performance/qualification claim follows from this slice.
+
+Preparation review added an explicit pidfd/procfs namespace binding before the
+clean-source repeat: the kernel's
+[pidfd fdinfo implementation](https://raw.githubusercontent.com/torvalds/linux/v6.18/fs/pidfs.c)
+reports Pid in the namespace of the procfs mount. The retained pidfd's Pid must
+match the pinned proc directory's numeric PID. The sole intentional magic-link
+read is the retained procfs root's own `self`, to locate this reader's fdinfo;
+it is a bounded readlink, not an arbitrary path traversal. Missing/dead/zero or
+ambiguous mapping refuses admission. No PID namespace is created or switched
+in local tests, and this guard still does not authenticate the host namespace.
+
+Runtime types only: no new durable/wire artifact, serialization or compatibility
+window is introduced. Local preparation retained the expected missing-source
+root-guard failure and an initial strict-clippy rejection of two unnecessary
+test vectors; both were corrected before the clean-source repeat. Review also
+replaced shared-offset reads with positional reads for parallel revalidation.
