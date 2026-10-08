@@ -7,6 +7,85 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed() {
+    let c = contract("diagnostic-artifacts-local-contract.toml");
+    for field in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "real_product_build_allowed_by_this_slice",
+        "real_trusted_builder_enrolled",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "fixture_root_is_production_root",
+        "synthetic_signature_is_real_compilation_proof",
+        "path_revalidation_is_exec_race_closure",
+        "old_inspection_seal_or_packets_mutable",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    assert_eq!(
+        c["signature_domain"].as_str(),
+        Some("hydracache-diagnostic-build-074-v1")
+    );
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
+    assert_eq!(
+        c["source_tree"].as_str(),
+        Some("a9f059d752f5497c8dc5f07fbee4db6b22a366f4")
+    );
+    assert_eq!(c["preset"].as_str(), Some("baseline-get-four-cells-p0-v1"));
+    assert_eq!(
+        c["install_root"].as_str(),
+        Some("/opt/hydracache-performance/0.74/diagnostic-pilot")
+    );
+    for (field, value) in [
+        ("binary_bytes", 134217728),
+        ("receipt_bytes", 65536),
+        ("config_bytes", 65536),
+        ("build_log_bytes", 16777216),
+        ("lock_bytes", 1048576),
+        ("production_uid", 0),
+        ("production_gid", 0),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value), "{field}");
+    }
+    for (field, value) in [
+        ("binary_mode", "0555"),
+        ("data_mode", "0444"),
+        ("bundle_mode", "0555"),
+    ] {
+        assert_eq!(c[field].as_str(), Some(value));
+    }
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        let code =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
+                .unwrap();
+        for enrollment in [
+            "diagnostic_artifacts",
+            "inspect_fixed_install",
+            "BuildTrust",
+        ] {
+            assert!(!code.contains(enrollment), "{name}: {enrollment}");
+        }
+    }
+    let digest: String = Sha256::digest(
+        std::fs::read(root().join("docs/testing/performance/0.74/qualification-manifest.toml"))
+            .unwrap(),
+    )
+    .iter()
+    .map(|b| format!("{b:02x}"))
+    .collect();
+    assert_eq!(
+        digest,
+        "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    );
+}
+
+#[test]
 fn local_diagnostic_ipc_keeps_production_and_numerical_admission_closed() {
     let c = contract("diagnostic-ipc-local-contract.toml");
     for flag in [

@@ -23,8 +23,8 @@ const NS: u64 = 1_000_000_000;
 pub const SOURCE_COMMIT: &str = "62114be0f5da3218706e30d7424acfb5d0579d07";
 pub const BINARY_PATH: &str =
     "/opt/hydracache-performance/0.74/diagnostic-pilot/timing-controls-074";
-const SURFACES: [&str; 4] = ["embedded", "direct", "resp2", "resp3"];
-const CONFIG_HASHES: [&str; 4] = [
+pub(crate) const SURFACES: [&str; 4] = ["embedded", "direct", "resp2", "resp3"];
+pub(crate) const CONFIG_HASHES: [&str; 4] = [
     "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
     "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
     "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
