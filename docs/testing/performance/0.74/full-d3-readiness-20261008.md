@@ -125,3 +125,12 @@ diagnostic unit/cgroup. Empty snapshots cannot release a reservation.
 Process-generation/unit authentication, manager deadline handling, writer
 revocation, watchdog and uncertain-ledger recovery remain. Full D3 and numerical
 admission are still closed; no host or product workload was run.
+
+The [read-only process-generation slice](diagnostic-process-local-design.md)
+adds local proc/pidfd binding on `b8c626cf` (62 Windows, 130 Linux/WSL, 86 root,
+23 governance tests). Thirteen Linux checks include real local self/helper exit
+observation, not a diagnostic-unit rehearsal or actual recycled-PID test.
+Original start/executable/unit authentication, pinned-tree membership, bounded
+manager calls, first-failure ledger, writer revocation and watchdog remain.
+No uninterrupted lifetime after supervisor restart, cleanup authority, full D3,
+C74 identity, numerical admission or qualification is proved by this reader.

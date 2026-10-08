@@ -1221,3 +1221,14 @@ check/lint/docs gates green and ship expected-red. Real diagnostic cgroup
 observation, original PID generations, unit-policy authentication, bounded manager
 calls, writer revocation/watchdog and ledger reconciliation are not proven.
 Existing campaign readers, routes, state formats and installed service stay unchanged.
+
+The [local process-generation slice](diagnostic-process-local-design.md) adds
+retained proc/pidfd observation with boot/start ticks/group/path revalidation
+and an explicit pidfd/procfs numeric namespace mapping. Clean `b8c626cf` passed
+62 Windows, 130 Linux/WSL, 86 root and 23 governance tests, including 13 new Linux
+checks and real local test/helper pidfds. No live diagnostic unit or owned kernel
+tree was observed; reuse/migration/reboot are logical injected cases. Expected
+start/executable/unit authentication, pinned-tree binding, bounded manager calls,
+durable first-failure retention and supervisor-restart continuity are not proved.
+Writer fencing/revocation, watchdog and uncertain-ledger reconciliation remain;
+no production backend, service mutation, workload or qualification is enrolled.

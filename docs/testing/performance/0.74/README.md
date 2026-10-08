@@ -1864,3 +1864,17 @@ not live diagnostic cgroup proof. Process generation, authenticated unit policy,
 bounded manager calls, writer revocation, independent watchdog and uncertain
 ledger reconciliation remain before backend enrollment. No server/product/
 qualification or frozen-input change follows from these local checks.
+
+The [process-generation guard](diagnostic-process-local-design.md) now retains
+read-only proc descriptors and pidfds, checks boot/start ticks/group/cgroup and
+pidfd/procfs namespace mapping, and refuses terminal/drifting/uncertain reads.
+Clean `b8c626cf` passed 62 Windows, 130 Linux/WSL, 86 root and 23 governance
+tests; [captured evidence](local-runs/diagnostic-process-b8c626cf/manifest.json)
+includes 13 new Linux process checks and normal self/helper pidfd observation.
+Actual PID recycling/migration/reboot remain logical fixtures, and no real
+diagnostic unit/cgroup was observed. Check/clippy/fmt/docs passed; ship stayed red.
+Authentication of the original start/executable/unit, pinned-tree membership,
+bounded manager calls, first-failure persistence, writer revocation and watchdog
+remain before backend enrollment. Pidfds do not prove continuity after supervisor
+restart. No installed service, host/product workload, qualification or numerical
+claim changed.

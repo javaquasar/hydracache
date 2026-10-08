@@ -53,3 +53,40 @@ window is introduced. Local preparation retained the expected missing-source
 root-guard failure and an initial strict-clippy rejection of two unnecessary
 test vectors; both were corrected before the clean-source repeat. Review also
 replaced shared-offset reads with positional reads for parallel revalidation.
+
+## Exact-source local repeat
+
+Clean implementation `b8c626cf52c84bc3ea2899ce33acde894bf02556`, tree
+`da1c32a17d01be69e096fb20f767c894cda164a6`, passed
+[the captured repeat](local-runs/diagnostic-process-b8c626cf/manifest.json):
+62 Windows checks (zero Linux process/tree/spool tests), 130 Linux/WSL checks,
+86 root contract/evidence and 23 governance tests. The Linux count includes
+13 new process checks, eight tree integration and four tree unit/property
+checks. All-target check and strict all-feature clippy for supervisor on both
+OSes and xtask on Windows passed; scoped fmt, doc/local-contract, 17 governance
+CLI checks, links and mdbook passed. Require-ship remained expected-red (exit 1).
+Source was clean before and after capture; subsequent packet guards/docs were
+checked separately. The byte-preserved Tee logs are not workload receipts.
+
+Private Linux tests observed actual pidfds for their own test process and a
+`/bin/cat` helper; stdin EOF ended the helper without a signal. Revalidation
+then refused the original handle, retained proc reads and another pin attempt.
+This proves that local exit case, not actual PID-number recycling. Reuse,
+migration, reboot and read/poll failures are logical injections, not induced
+host events. Namespace mapping has parser and normal-runtime checks, not a
+created/switched namespace rehearsal. No live diagnostic unit/cgroup was used.
+
+The reader compares a caller-asserted original start identity. It does not
+authenticate that assertion, the executable (exec can keep the same generation),
+unit policy, recursive membership or cgroup inode. A cgroup path read is not a
+retained cgroup identity. Results are point-in-time observations, not an atomic
+snapshot or durable terminal ledger: the backend must persist the first failure
+and never let a later matching observation revive it. Pidfds are runtime-only;
+this slice proves no uninterrupted lifetime across supervisor restart.
+
+Next: authenticated bounded manager observation, binding each expected process
+to the pinned owned tree, writer revocation/fencing, independent watchdog and
+uncertain-intent reconciliation. No signals, cgroup or installed service changes,
+SSH, product build/workload, pilot or qualification ran. Frozen lock/P0/observer/
+qualification inputs and prior packets remain unchanged. No CPU/latency/allocation
+measurement or numerical admission is claimed; full workspace verify was not run.

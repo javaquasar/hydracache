@@ -4490,3 +4490,50 @@ exit status or an autonomous deadline. Those need process-generation binding,
 bounded manager operations, writer revocation, an independent watchdog and explicit
 uncertain-intent reconciliation before backend enrollment. No CPU, allocation,
 latency or product improvement was measured, and ship admission remains closed.
+
+## Retain a process reference, not only its PID
+
+The next W11 prerequisite separates a reusable number from an original process.
+The existing campaign reader collects several proc documents separately; we did
+not replace that path or claim an observed campaign failure. A new diagnostic
+reader pins proc descriptors, compares expected boot/PID/start ticks and cgroup,
+then retains a pidfd and rechecks the original descriptors before returning.
+
+The [Linux proc documentation](https://docs.kernel.org/filesystems/proc.html)
+explains why retained proc descriptors do not redirect to a recycled PID. The
+[pidfd API](https://man7.org/linux/man-pages/man2/pidfd_open.2.html) adds a retained
+task reference and exit notification. Neither alone authenticates the original
+start. We use both with bounded positional reads and zero-timeout polling;
+malformed, terminal, changed or uncertain observations fail without PID-only
+fallback. Counters and runnable/sleeping state may change, but identity fields
+must remain exact. The diagnostic namespace accepts only its fixed root and
+bounded descendants, not a prefix-matching foreign unit.
+
+Review found another boundary worth making explicit: pidfd_open and a procfs
+mount can interpret numbers in different PID namespaces. We compare the retained
+pidfd's fdinfo Pid, as defined by the
+[kernel implementation](https://raw.githubusercontent.com/torvalds/linux/v6.18/fs/pidfs.c),
+with the pinned proc directory's PID. The bounded readlink of procfs `self` is
+used only to locate this reader's own fdinfo. This is a mapping check, not host
+namespace authentication or a namespace-creation rehearsal.
+
+Clean `b8c626cf` passed 62 Windows, 130 Linux/WSL, 86 root and 23 governance tests,
+with check/clippy/fmt/documentation gates green and ship expected-red.
+[Exact evidence](../testing/performance/0.74/local-runs/diagnostic-process-b8c626cf/manifest.json)
+retains source/tree and three byte-preserved test/check captures. Thirteen new
+Linux tests include seeded parser checks (740074), injected identity/boot/group/
+migration/read/poll failures, unsafe document substitution, parallel positional
+reads, and real local self/helper pidfds. Closing a non-product cat helper's
+stdin ended it; the original handle then refused revalidation and recapture.
+Actual PID recycling, migration and reboot were not induced. Windows ran zero
+Linux process tests; a strict-clippy preparation failure was fixed and retained
+as an observation before the clean repeat.
+
+This justifies the local generation guard, not a live backend. Expected start
+identity, executable and systemd policy still require authentication; an exec
+can preserve the generation. A matching cgroup path is not a pinned tree inode.
+Observations do not persist a terminal failure or survive supervisor restart as
+an uninterrupted-lifetime proof: the backend must retain the first rejection.
+Bounded manager/tree binding, writer revocation, watchdog and uncertain-ledger
+recovery remain. No host service, product workload or performance measurement
+ran, and no throughput/allocation win or release admission follows from this step.

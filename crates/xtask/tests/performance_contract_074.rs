@@ -9,6 +9,15 @@ fn root() -> PathBuf {
 #[test]
 fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
     let c = contract("diagnostic-process-local-contract.toml");
+    assert_eq!(c["schema_version"].as_integer(), Some(1));
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-process-local-074-v1")
+    );
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
     for field in [
         "production_route_enabled",
         "host_install_allowed",
@@ -30,6 +39,8 @@ fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
         assert_eq!(c[field].as_bool(), Some(false), "{field}");
     }
     assert_eq!(c["maximum_document_bytes"].as_integer(), Some(65536));
+    assert_eq!(c["maximum_cgroup_depth"].as_integer(), Some(8));
+    assert_eq!(c["maximum_cgroup_component_bytes"].as_integer(), Some(128));
     assert_eq!(c["pidfd_poll_timeout_ms"].as_integer(), Some(0));
     let code = std::fs::read_to_string(
         root().join("tools/long-run-supervisor-074/src/diagnostic_process.rs"),
@@ -49,6 +60,155 @@ fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
         assert!(!production.contains(forbidden), "{forbidden}");
     }
     assert!(production.contains("SYS_pidfd_open"));
+    assert!(production.contains("const DOCUMENT_BYTES: usize = 65_536;"));
+    assert!(production.contains("const MAX_DEPTH: usize = 8;"));
+    assert!(production.contains("const MAX_COMPONENT: usize = 128;"));
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-process-b8c626cf");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["schema_version"],
+        "diagnostic-process-local-evidence-074-v1"
+    );
+    assert_eq!(
+        m["implementation_source_commit"],
+        "b8c626cf52c84bc3ea2899ce33acde894bf02556"
+    );
+    assert_eq!(
+        m["implementation_source_tree"],
+        "da1c32a17d01be69e096fb20f767c894cda164a6"
+    );
+    assert_eq!(
+        m["preregistered_contract_commit"],
+        "5b5cd52fdb409d0a88c105a6d1b1dc9d3c4d4c13"
+    );
+    for field in [
+        "public_diagnostic_positive_path_observed",
+        "live_diagnostic_kernel_tree_observed",
+        "real_pid_reuse_induced",
+        "real_process_migration_induced",
+        "host_reboot_induced",
+        "pid_namespace_created_or_switched",
+        "original_start_identity_authenticated",
+        "systemd_identity_authenticated",
+        "tree_membership_authenticated",
+        "cgroup_inode_binding_proven",
+        "writer_revocation_proven",
+        "exec_identity_proven",
+        "exit_status_proven",
+        "reader_latches_terminal_failures",
+        "uninterrupted_lifetime_after_supervisor_restart_proven",
+        "host_release_allowed",
+        "watchdog_implemented",
+        "pending_intent_reconciliation_implemented",
+        "production_route_enabled",
+        "signals_sent",
+        "host_ssh_performed",
+        "installed_service_operations_performed",
+        "cgroup_operations_performed",
+        "real_product_binary_built",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "performance_measured",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    for field in [
+        "source_clean_before",
+        "source_clean_after",
+        "local_self_pidfd_observed",
+        "nonproduct_helper_started",
+        "helper_exited_on_stdin_eof",
+        "parallel_positional_revalidation_checked",
+        "seeded_stat_property_checked",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for (field, count) in [
+        ("windows_passed", 62),
+        ("linux_passed", 130),
+        ("root_passed", 86),
+        ("release_governance_tests_passed", 23),
+        ("release_governance_cli_checks", 17),
+        ("ship_check_expected_exit", 1),
+    ] {
+        assert_eq!(m[field], count);
+    }
+    assert_eq!(m["windows_checks"]["process_library"], 0);
+    assert_eq!(m["linux_checks"]["process_library"], 13);
+    assert_eq!(
+        m["qualification_manifest_sha256"],
+        "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    );
+    assert_eq!(
+        m["root_cargo_lock_sha256"],
+        "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    );
+    assert_eq!(
+        m["observer_cargo_lock_sha256"],
+        "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    );
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (index, (name, size, digest, blob, passed)) in [
+        (
+            "windows.log",
+            7502u64,
+            "102d0cd615ce7f4f8cdfc3760894416be75ced99ab40f979f70c69685af3e8cf",
+            "c5d9b3937ede68f0222f11d08c3992a78dc641af",
+            62u64,
+        ),
+        (
+            "linux.log",
+            21466,
+            "13ef01da02c9f610c9f04927c8ad9ae0d9dc6a93cc6b20c01016bd16a0c7277f",
+            "423b11478c7c01fe9da3d1e6be973c7d2b29c3a1",
+            130,
+        ),
+        (
+            "root.log",
+            11180,
+            "9af40cafff88853c234773093185572013b4040d4e14d81b03121cb29e841bda",
+            "dd8bf842ea747e66dc21235dd8bc1628917972a4",
+            109,
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(entry["path"], name);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(entry["passed"], passed);
+        assert_eq!(raw.len() as u64, size);
+        let actual: String = Sha256::digest(&raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+        let text = String::from_utf8(raw).unwrap();
+        assert!(!text.contains("test result: FAILED"));
+        let total: u64 = text
+            .lines()
+            .filter_map(|line| line.strip_prefix("test result: ok. "))
+            .map(|tail| {
+                tail.split_whitespace()
+                    .next()
+                    .unwrap()
+                    .parse::<u64>()
+                    .unwrap()
+            })
+            .sum();
+        assert_eq!(total, passed);
+    }
     for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
         assert!(!std::fs::read_to_string(
             root().join("tools/long-run-supervisor-074/src").join(name)

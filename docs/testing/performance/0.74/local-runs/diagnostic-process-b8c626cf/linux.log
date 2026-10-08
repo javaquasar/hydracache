@@ -1,0 +1,420 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.46
+   Compiling libc v0.2.186
+   Compiling syn v2.0.118
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling winnow v1.0.3
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.20.1
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling indexmap v2.14.0
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling syn v3.0.6
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling enumflags2_derive v0.7.12
+   Compiling pin-project-lite v0.2.17
+   Compiling cfg-if v1.0.4
+   Compiling proc-macro-crate v3.5.0
+   Compiling zvariant_utils v4.2.0
+   Compiling jobserver v0.1.34
+   Compiling crossbeam-utils v0.8.21
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.9
+   Compiling cc v1.2.65
+   Compiling zvariant_derive v5.15.0
+   Compiling endi v1.1.1
+   Compiling pkg-config v0.3.33
+   Compiling rustix v1.1.4
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling semver v1.0.28
+   Compiling parking v2.2.1
+   Compiling bitflags v2.13.0
+   Compiling linux-raw-sys v0.12.1
+   Compiling concurrent-queue v2.5.0
+   Compiling rustc_version v0.4.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling enumflags2 v0.7.12
+   Compiling zcheapstr v1.1.0
+   Compiling hybrid-array v0.4.13
+   Compiling once_cell v1.21.4
+   Compiling futures-core v0.3.32
+   Compiling zvariant v5.15.0
+   Compiling digest v0.10.7
+   Compiling curve25519-dalek v4.1.3
+   Compiling event-listener v5.4.1
+   Compiling errno v0.3.14
+   Compiling zmij v1.0.21
+   Compiling cpufeatures v0.2.17
+   Compiling zstd-safe v7.2.4
+   Compiling fastrand v2.4.1
+   Compiling zbus_names v4.3.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling event-listener-strategy v0.5.4
+   Compiling tracing-core v0.1.36
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling socket2 v0.6.4
+   Compiling mio v1.2.1
+   Compiling tracing-attributes v0.1.31
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling const-oid v0.10.2
+   Compiling thiserror v2.0.18
+   Compiling signature v2.2.0
+   Compiling futures-io v0.3.32
+   Compiling subtle v2.6.1
+   Compiling serde_json v1.0.150
+   Compiling zeroize v1.9.0
+   Compiling bytes v1.12.0
+   Compiling tokio v1.52.3
+   Compiling futures-lite v2.6.1
+   Compiling ed25519 v2.2.3
+   Compiling digest v0.11.3
+   Compiling tracing v0.1.44
+   Compiling async-broadcast v0.7.2
+   Compiling zbus_macros v5.19.0
+   Compiling sha2 v0.10.9
+   Compiling ordered-stream v0.2.0
+   Compiling xattr v1.6.1
+   Compiling filetime v0.2.29
+   Compiling async-recursion v1.2.0
+   Compiling uuid v1.23.4
+   Compiling serde_spanned v1.1.1
+   Compiling async-trait v0.1.89
+   Compiling serde_repr v0.1.20
+   Compiling thiserror-impl v2.0.18
+   Compiling toml_writer v1.1.1+spec-1.1.0
+   Compiling hex v0.4.3
+   Compiling getrandom v0.4.3
+   Compiling cpufeatures v0.3.0
+   Compiling memchr v2.8.2
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.11.0
+   Compiling zbus v5.19.0
+   Compiling toml v1.1.2+spec-1.1.0
+   Compiling tar v0.4.46
+   Compiling ed25519-dalek v2.2.0
+   Compiling zstd v0.13.3
+   Compiling fs2 v0.4.3
+   Compiling tempfile v3.27.0
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 10s
+     Running tests/diagnostic_artifacts.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_artifacts-b72f3d644b2ad18d)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+     Running tests/diagnostic_ipc.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_ipc-f0903a7bbd388478)
+
+running 22 tests
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test local_seqpacket_denies_non_allowlisted_kernel_peer_without_marker ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test linked_ledger_is_refused_and_mode_is_private ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test local_seqpacket_uses_kernel_peer_credentials_without_production_route ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.99s
+
+     Running tests/diagnostic_lease.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_lease-16ddc86eeaf27c87)
+
+running 20 tests
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test diagnostic_unit_properties_are_fixed_bounded_and_never_dispatch_a_process ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test linked_marker_and_pending_crash_file_are_not_silently_recovered ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+     Running tests/diagnostic_receipts.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_receipts-39b9822f7de2e03c)
+
+running 9 tests
+test concurrent_offline_readers_return_identical_non_promotable_packets ... ok
+test malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed ... ok
+test failed_incomplete_and_cpu_unusable_attempts_remain_distinct ... ok
+test synthetic_valid_report_survives_readonly_spool_and_offline_verification ... ok
+test packet_replay_recomputes_decision_and_binds_original_bytes ... ok
+test claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass ... ok
+test sample_accounting_latency_and_cpu_are_recomputed ... ok
+test resp_wire_requires_fifo_routing_and_byte_verified_success ... ok
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 53.44s
+
+     Running tests/diagnostic_spool.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_spool-e854c99aa91970ed)
+
+running 7 tests
+test linux::spool_refuses_links_special_files_wrong_modes_owners_and_extra_entries ... ok
+test linux::pinned_spool_detects_replacement_and_in_place_drift ... ok
+test linux::concurrent_publication_has_one_generation_and_no_replacement ... ok
+test linux::fixture_publication_is_byte_exact_and_replay_never_overwrites ... ok
+test linux::every_crash_window_retains_pending_or_reverifies_same_published_packet ... ok
+test linux::offline_verification_requires_external_digest_and_reconciles_content ... ok
+test linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+     Running tests/diagnostic_tree.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/diagnostic_tree-63c4bfe896003936)
+
+running 8 tests
+test linux::recursive_child_membership_survives_empty_leader_list ... ok
+test linux::independent_parallel_readers_keep_identical_fixture_snapshots ... ok
+test linux::empty_and_populated_without_pids_are_distinct_observations ... ok
+test linux::contradictory_recursive_events_and_duplicate_pids_fail_closed ... ok
+test linux::unsafe_paths_links_special_files_ownership_and_modes_are_refused ... ok
+test linux::retained_root_child_and_document_descriptors_detect_drift ... ok
+test linux::strict_documents_refuse_missing_unknown_duplicate_and_numeric_drift ... ok
+test linux::node_depth_pid_entry_and_document_bounds_are_enforced ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/host_execution.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/host_execution-986eaa0177957c3b)
+
+running 6 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test symlink_and_hardlink_markers_are_rejected ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/server.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/server-b7a3989e6eac2030)
+
+running 19 tests
+test host_observation_rejects_an_active_campaign_before_collecting ... ok
+test host_observation_failure_is_bounded_and_does_not_poison_the_next_request ... ok
+test host_observation_returns_digest_bound_receipt_without_campaign_mutation ... ok
+test diagnostic_only_reservation_skips_campaign_maintenance_without_busy_or_backend_calls ... ok
+test attach_guard_rejection_is_durable_and_exactly_replayed ... ok
+test disconnected_partial_upload_does_not_kill_the_next_start_request ... ok
+test maintenance_fails_startup_that_never_publishes_a_first_checkpoint ... ok
+test measurement_maintenance_distinguishes_healthy_terminal_and_lost_processes ... ok
+test maintenance_expires_the_active_campaign_without_a_controller_request ... ok
+test revision_zero_upload_rejects_tampered_receipt_before_staging_or_spawn ... ok
+test maintenance_fails_stalled_progress_from_the_live_checkpoint_chain ... ok
+test seal_dispatch_fails_closed_before_dbus_or_host_claim_on_missing_evidence ... ok
+test measurement_maintenance_recovers_committed_intent_before_lease_expiry ... ok
+test abort_dispatch_reports_committed_intent_and_identical_retry_completes ... ok
+test authorized_role_starts_import_evidence_execute_once_and_replay_exact_responses ... ok
+test status_round_trips_exact_durable_state_and_rejects_stale_revision ... ok
+test new_start_revalidates_host_before_claim_while_exact_replay_skips_live_observation ... ok
+test revision_zero_start_uploads_evidence_through_the_privileged_supervisor ... ok
+test seal_dispatch_composes_observation_inventory_and_durable_lifecycle ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+
+     Running tests/service.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/service-f85ab4962c954f8c)
+
+running 3 tests
+test read_only_host_observation_has_no_signature_but_keeps_peer_admission ... ok
+test read_only_status_has_no_signed_document_but_still_checks_peer_and_principal ... ok
+test exact_peer_principal_and_signature_are_required_together ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.70s
+     Running unittests src/lib.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 3 tests
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.26s
+     Running unittests src/lib.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 1 test
+test diagnostic_spool::tests::exclusive_write_and_rename_primitives_never_replace_existing_names ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 61 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.52s
+     Running unittests src/lib.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 4 tests
+test diagnostic_tree::tests::scope_is_fixed_and_rejects_untrusted_namespace_inputs ... ok
+test diagnostic_tree::tests::aggregate_document_budget_and_parser_boundaries_are_exact ... ok
+test diagnostic_tree::tests::temporary_filesystem_cannot_pass_kernel_gate ... ok
+test diagnostic_tree::tests::seeded_unordered_pid_sets_reconcile_without_deduplicating_ambiguity ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 58 filtered out; finished in 0.06s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.54s
+     Running unittests src/lib.rs (/tmp/hydracache-074-diagnostic-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 13 tests
+test diagnostic_process::tests::every_read_poll_failure_and_terminal_state_refuses_without_retry ... ok
+test diagnostic_process::tests::diagnostic_scope_refuses_foreign_prefix_boot_and_depth ... ok
+test diagnostic_process::tests::pidfd_namespace_mapping_is_exact_and_missing_or_dead_is_refused ... ok
+test diagnostic_process::tests::original_generation_group_cgroup_and_boot_drift_never_refresh ... ok
+test diagnostic_process::tests::stat_dead_unknown_malformed_and_overflow_documents_fail_closed ... ok
+test diagnostic_process::tests::local_self_pidfd_and_original_proc_descriptors_revalidate ... ok
+test diagnostic_process::tests::bounded_document_reads_accept_limit_and_refuse_overflow_or_empty ... ok
+test diagnostic_process::tests::unified_cgroup_is_single_canonical_and_bounded ... ok
+test diagnostic_process::tests::stat_identity_handles_comm_bytes_and_ignores_changing_counters ... ok
+test diagnostic_process::tests::synthetic_documents_cannot_pass_procfs_gate_and_substitution_is_detected ... ok
+test diagnostic_process::tests::seeded_stat_generations_keep_identity_fields_exact ... ok
+test diagnostic_process::tests::local_nonproduct_helper_exit_cannot_recapture_original_generation ... ok
+test diagnostic_process::tests::parallel_readonly_revalidation_has_no_shared_seek_offset ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 49 filtered out; finished in 0.03s
+
+   Compiling unicode-ident v1.0.24
+    Checking serde_core v1.0.228
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.46
+   Compiling syn v2.0.118
+    Checking typenum v1.20.1
+    Checking libc v0.2.186
+   Compiling winnow v1.0.3
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling syn v3.0.6
+   Compiling serde_derive v1.0.228
+   Compiling serde v1.0.228
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling enumflags2_derive v0.7.12
+    Checking pin-project-lite v0.2.17
+    Checking cfg-if v1.0.4
+   Compiling jobserver v0.1.34
+   Compiling proc-macro-crate v3.5.0
+   Compiling zvariant_utils v4.2.0
+   Compiling cc v1.2.65
+   Compiling zvariant_derive v5.15.0
+    Checking generic-array v0.14.7
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+    Checking crossbeam-utils v0.8.21
+    Checking parking v2.2.1
+    Checking bitflags v2.13.0
+    Checking linux-raw-sys v0.12.1
+    Checking concurrent-queue v2.5.0
+    Checking rustix v1.1.4
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+   Compiling enumflags2 v0.7.12
+   Compiling zcheapstr v1.1.0
+    Checking hybrid-array v0.4.13
+    Checking futures-core v0.3.32
+   Compiling endi v1.1.1
+    Checking once_cell v1.21.4
+   Compiling zvariant v5.15.0
+    Checking digest v0.10.7
+    Checking event-listener v5.4.1
+    Checking errno v0.3.14
+    Checking cpufeatures v0.2.17
+    Checking fastrand v2.4.1
+    Checking signal-hook-registry v1.4.8
+    Checking event-listener-strategy v0.5.4
+   Compiling zbus_names v4.3.4
+    Checking tracing-core v0.1.36
+    Checking crypto-common v0.2.2
+    Checking block-buffer v0.12.1
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling tracing-attributes v0.1.31
+    Checking socket2 v0.6.4
+    Checking mio v1.2.1
+    Checking bytes v1.12.0
+    Checking const-oid v0.10.2
+   Compiling zstd-safe v7.2.4
+    Checking zeroize v1.9.0
+    Checking subtle v2.6.1
+    Checking signature v2.2.0
+    Checking futures-io v0.3.32
+    Checking ed25519 v2.2.3
+    Checking futures-lite v2.6.1
+    Checking curve25519-dalek v4.1.3
+    Checking digest v0.11.3
+    Checking tokio v1.52.3
+    Checking tracing v0.1.44
+   Compiling zbus_macros v5.19.0
+    Checking async-broadcast v0.7.2
+    Checking zmij v1.0.21
+    Checking sha2 v0.10.9
+    Checking ordered-stream v0.2.0
+    Checking xattr v1.6.1
+    Checking filetime v0.2.29
+   Compiling async-recursion v1.2.0
+   Compiling async-trait v0.1.89
+   Compiling serde_repr v0.1.20
+   Compiling thiserror-impl v2.0.18
+    Checking toml_datetime v1.1.1+spec-1.1.0
+    Checking serde_spanned v1.1.1
+    Checking uuid v1.23.4
+    Checking itoa v1.0.18
+    Checking toml_writer v1.1.1+spec-1.1.0
+    Checking memchr v2.8.2
+    Checking cpufeatures v0.3.0
+    Checking hex v0.4.3
+    Checking serde_json v1.0.150
+    Checking zbus v5.19.0
+    Checking sha2 v0.11.0
+    Checking thiserror v2.0.18
+    Checking toml v1.1.2+spec-1.1.0
+    Checking tar v0.4.46
+    Checking ed25519-dalek v2.2.0
+    Checking zstd v0.13.3
+    Checking fs2 v0.4.3
+    Checking getrandom v0.4.3
+    Checking tempfile v3.27.0
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 58.31s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.61s
