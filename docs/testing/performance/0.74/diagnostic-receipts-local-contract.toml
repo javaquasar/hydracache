@@ -1,0 +1,31 @@
+schema_version = 1
+contract_id = "diagnostic-receipts-local-074-v1"
+baseline_source = "fa4173b8c760de2581b78eccfa574c1a42e3e027"
+state = "preregistered-local-byte-verification-only"
+production_route_enabled = false
+host_install_allowed = false
+host_pilot_execution_allowed = false
+real_product_build_allowed_by_this_slice = false
+qualification_allowed = false
+promotable = false
+admission_allowed = false
+source_commit = "62114be0f5da3218706e30d7424acfb5d0579d07"
+preset = "baseline-get-four-cells-p0-v1"
+stream_bytes = 8388608
+combined_bytes = 16777216
+minimum_usable_cpu_ns = 1000000000
+minimum_usable_measurement_wall_ns = 1000000000
+samples = 10000
+sample_calendar_step_ns = 200000
+packet_is_durable_spool_proof = false
+caller_terminal_claim_is_live_cgroup_proof = false
+synthetic_report_is_measurement = false
+retry_allowed = false
+old_inputs_or_packets_mutable = false
+
+[required_tests]
+identity = "all_four_p0_surfaces_bind_identity_and_reject_input_drift"
+accounting = "sample_accounting_latency_and_cpu_are_recomputed"
+wire = "resp_wire_requires_fifo_routing_and_byte_verified_success"
+failure = "failed_incomplete_and_cpu_unusable_attempts_remain_distinct"
+packet = "packet_replay_recomputes_decision_and_binds_original_bytes"
