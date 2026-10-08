@@ -7,6 +7,54 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn unprofiled_timing_instrumentation_preserves_closed_cohort_and_memory_admission() {
+    let c = contract("unprofiled-timing-controls-contract.toml");
+    for flag in [
+        "product_changes_allowed",
+        "numerical_cohort_execution_allowed",
+        "product_numeric_claims_allowed",
+        "admission_allowed",
+        "invalidated_b0_retry_allowed",
+        "full_d3_completed",
+        "freeze_c74_allowed",
+        "counting_allocator_allowed",
+        "short_measurement_is_a_pass",
+        "secure_fresh_process_material_parity_proven",
+        "cross_surface_numeric_comparison_allowed",
+        "allocation_or_retention_claims_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(c["minimum_usable_cpu_ns"].as_integer(), Some(1_000_000_000));
+    assert_eq!(
+        c["minimum_usable_measurement_wall_ns"].as_integer(),
+        Some(1_000_000_000)
+    );
+    assert_eq!(c["maximum_operations"].as_integer(), Some(10_000));
+    let tool = root().join("tools/get-owner-scheduled-controls-074");
+    let binary = std::fs::read_to_string(tool.join("src/bin/timing_controls.rs")).unwrap();
+    assert!(binary.contains("timing executable refuses allocation-diagnostics builds"));
+    assert!(binary.contains("timing binary seal mismatch before fixture"));
+    assert!(binary.contains("source_git_identity_verified_by_binary: false"));
+    for path in [
+        "src/lib.rs",
+        "src/timing.rs",
+        "src/timing/cpu.rs",
+        "src/bin/timing_controls.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(tool.join(path))
+                .unwrap()
+                .contains("#[global_allocator]"),
+            "{path}"
+        );
+    }
+    let ledger = contract("composition-ledger.toml");
+    assert_eq!(ledger["accepted_candidate_count"].as_integer(), Some(0));
+    assert_eq!(ledger["freeze_c74_allowed"].as_bool(), Some(false));
+}
+
+#[test]
 fn secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention() {
     let c = contract("secure-observer-memory-checks-contract.toml");
     for flag in [

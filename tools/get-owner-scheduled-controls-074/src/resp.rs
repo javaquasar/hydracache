@@ -1,5 +1,5 @@
 //! Tool-only bounded RESP2/RESP3 controls with FIFO owners and timestamps.
-//! This is not a general Redis client, security-matched cohort, or timing CLI.
+//! This is not a general Redis client or security-matched numerical cohort.
 use crate::security::{MtlsFixture, TransportReceipt};
 use crate::{
     native::Dataset,
@@ -879,6 +879,8 @@ pub struct RespControl {
     depth: usize,
     operation: Operation,
     setup_id: std::sync::atomic::AtomicU64,
+    warmup_used: std::sync::atomic::AtomicBool,
+    timing_phase: tokio::sync::Mutex<()>,
     used: std::sync::atomic::AtomicBool,
     transport_security: Option<TransportReceipt>,
     runtime: Option<Arc<Mutex<ServerRuntime>>>,
@@ -1031,6 +1033,8 @@ impl RespControl {
             depth,
             operation,
             setup_id: std::sync::atomic::AtomicU64::new(u64::MAX),
+            warmup_used: std::sync::atomic::AtomicBool::new(false),
+            timing_phase: tokio::sync::Mutex::new(()),
             used: std::sync::atomic::AtomicBool::new(false),
             transport_security: fixture.map(MtlsFixture::receipt),
             runtime,
@@ -1150,6 +1154,34 @@ impl RespControl {
         }
         Ok(())
     }
+    /// Setup-only same-operation warmup. Never reserve measured sequence IDs or
+    /// rebase their original calendar. The bound leaves room for all 10k offers,
+    /// setup/final byte oracles and single-use history even on one connection.
+    pub async fn warmup(&self, calls: u64) -> Result<()> {
+        let _phase = self
+            .timing_phase
+            .try_lock()
+            .map_err(|_| "RESP warmup/measurement already in progress")?;
+        if calls > 64
+            || self.used.load(std::sync::atomic::Ordering::SeqCst)
+            || self
+                .warmup_used
+                .swap(true, std::sync::atomic::Ordering::SeqCst)
+        {
+            return Err("RESP warmup is bounded, single-use and before measured offers".to_owned());
+        }
+        for sequence in 0..calls {
+            let (frame, expected) = make_request(&self.entries, self.operation, sequence)?;
+            if self.pipelines[sequence as usize % self.pipelines.len()]
+                .submit(self.setup_id(), frame, expected)
+                .await
+                != TargetOutcome::Success
+            {
+                return Err("RESP warmup failed; no retry".to_owned());
+            }
+        }
+        drain_pipelines(&self.pipelines).await
+    }
     pub async fn refill_dataset(&self) -> Result<()> {
         for sequence in 0..self.entries.len() {
             self.diagnostic_round(true, sequence as u64).await?;
@@ -1232,6 +1264,10 @@ impl RespControl {
         Ok(self.digest.clone())
     }
     pub async fn run(self: &Arc<Self>, config: &Config) -> Result<RespObservation> {
+        let _phase = self
+            .timing_phase
+            .try_lock()
+            .map_err(|_| "RESP warmup/measurement already in progress")?;
         config.validate()?;
         if self.used.swap(true, std::sync::atomic::Ordering::SeqCst) {
             return Err("RESP2 control is single-use; no retry or history rebasing".to_owned());
@@ -1530,6 +1566,47 @@ mod tests {
     };
     use tokio::io::{DuplexStream, ReadBuf};
     use tokio::sync::Notify;
+
+    #[tokio::test]
+    async fn overlapping_warmup_and_measurement_fail_before_reserving_ids() {
+        let control = Arc::new(
+            RespControl::start(Dataset::new(1, 256).unwrap(), 1)
+                .await
+                .unwrap(),
+        );
+        let phase = control.timing_phase.try_lock().unwrap();
+        assert!(control
+            .warmup(1)
+            .await
+            .unwrap_err()
+            .contains("already in progress"));
+        let config = Config {
+            operations: 1,
+            offered_rate_per_second: 1,
+            concurrency: 1,
+            maximum_queued: 0,
+            operation_timeout_ns: 5_000_000_000,
+            drain_timeout_ns: 5_000_000_000,
+            slo_ns: 5_000_000_000,
+            highest_trackable_ns: 10_000_000_000,
+        };
+        assert!(control
+            .run(&config)
+            .await
+            .err()
+            .unwrap()
+            .contains("already in progress"));
+        assert!(!control.warmup_used.load(Ordering::SeqCst));
+        assert!(!control.used.load(Ordering::SeqCst));
+        drop(phase);
+        control.warmup(1).await.unwrap();
+        control.run(&config).await.unwrap();
+        Arc::try_unwrap(control)
+            .unwrap_or_else(|_| panic!("phase owner leaked"))
+            .shutdown()
+            .await
+            .unwrap();
+    }
 
     fn hello3_fixture(rotation: usize) -> Vec<u8> {
         let fields = [

@@ -16,6 +16,10 @@ name = "memory-diagnostics-074"
 path = "src/bin/memory_diagnostics.rs"
 required-features = ["allocation-diagnostics"]
 
+[[bin]]
+name = "timing-controls-074"
+path = "src/bin/timing_controls.rs"
+
 [dependencies]
 async-trait = "0.1"
 axum = "0.8"

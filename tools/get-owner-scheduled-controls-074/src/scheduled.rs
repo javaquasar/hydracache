@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use hdrhistogram::Histogram;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio::sync::Semaphore;
 use tokio::task::JoinSet;
 use tokio::time::Instant;
@@ -11,7 +11,8 @@ use tokio::time::Instant;
 use crate::rate::FixedRateSchedule;
 use crate::target::{Target, TargetOutcome, TargetRequest};
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     pub operations: u64,
     pub offered_rate_per_second: u64,

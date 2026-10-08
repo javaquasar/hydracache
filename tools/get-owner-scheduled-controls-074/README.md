@@ -1,7 +1,14 @@
 # Local scheduled/native instrumentation only
 
-No timing CLI, daemon or qualification launcher is provided. The opt-in
-`allocation-diagnostics` binary is separate and must never certify timing.
+The bounded `timing-controls-074` executable now exists; it is instrumentation,
+not a cohort coordinator, daemon or qualification launcher. Its `--validate`
+mode starts no fixture. `--run` requires an exact binary hash/full source SHA,
+refuses `allocation-diagnostics` builds and reports whole-process CPU quality
+separately from admission. Do not run a numerical cohort until its new finite
+contract and clean-source/lock/toolchain/placement/binary seal are complete.
+See `docs/testing/performance/0.74/unprofiled-timing-controls-design.md`.
+The opt-in `allocation-diagnostics` binary is separate and must never certify
+timing.
 Use the library's bounded `scheduled::run`, not the source-referenced legacy
 `rate::run_open_loop`. All observations are non-promotable and not product claims.
 
@@ -100,7 +107,8 @@ The approved opt-in product extension at `8565dbfd` now requires a client
 certificate when an explicit Redis client CA is configured; legacy server-auth
 TLS is unchanged. `RespControl::start_mtls` uses that production runtime factory
 and accept loop, then AUTH on every socket before HELLO/preload. HC2 and RESP
-can share ephemeral fixture PKI; certificate fingerprint equality does not imply
+can share ephemeral fixture PKI within a process; certificate fingerprint equality
+does not imply
 identical application authorization, batch atomicity, negotiated cipher or
 numeric admission. Explicit shutdown joins owners and checks active connections.
 
@@ -117,4 +125,4 @@ slots, the same raw binary corpus digest and an injective fixture-only hex key
 mapping. It checks byte oracles, public delete/refill and flush/shutdown; the
 cache's approximate entry count is not allocator retention. Batch operations are
 refused rather than relabeled atomic. This closes a semantic adapter gap only;
-there is still no unprofiled timing CLI or full-D3 numerical series.
+the unprofiled CLI is separately tested; there is still no full-D3 numerical series.

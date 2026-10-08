@@ -68,6 +68,13 @@ jobs:
           set -euo pipefail
           cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log
           test -z "$(git status --porcelain)"
+      - name: Unprofiled executable entry-point correctness (one offer, not a cohort)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log
+          cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log
+          test -z "$(git status --porcelain)"
       - name: Retain immutable attempt logs even on failure
         if: always()
         uses: actions/upload-artifact@v6
