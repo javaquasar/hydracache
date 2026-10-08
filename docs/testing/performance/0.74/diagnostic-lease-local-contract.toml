@@ -1,0 +1,51 @@
+schema_version = 1
+contract_id = "diagnostic-lease-local-074-v1"
+state = "preregistered-local-implementation-only"
+baseline_source = "8a1f4ab33bb26830111381fbb9202ffde7bb5655"
+local_implementation_authorized = true
+production_cli_or_ipc_enabled = false
+host_install_allowed = false
+host_pilot_execution_allowed = false
+qualification_allowed = false
+promotable = false
+admission_allowed = false
+external_flock_allowed = false
+old_sealed_packets_mutable = false
+source_commit = "62114be0f5da3218706e30d7424acfb5d0579d07"
+preset = "baseline-get-four-cells-p0-v1"
+surfaces = ["embedded", "direct", "resp2", "resp3"]
+cell_seconds = 60
+total_seconds = 300
+controller_loss_seconds = 10
+receipt_bytes = 16777216
+automatic_retry_allowed = false
+restart_start_intent_allowed = false
+cleanup_failure_releases_reservation = false
+pid_only_exit_is_empty_cgroup = false
+deployment_or_live_cgroup_rehearsal_complete = false
+
+[reservation]
+lock = ".host-execution.lock"
+marker = "active-diagnostic.json"
+campaign_marker = "active-campaign"
+fixture_contexts = ["campaign-lifecycle-smoke-v1.json", "controller-loss-smoke-v1.json"]
+same_lock_for_campaign_and_diagnostic_transactions = true
+lock_held_for_workload_lifetime = false
+malformed_marker_is_busy_success = false
+ambiguous_both_markers_allowed = false
+terminal_receipt_durable_before_release = true
+incomplete_cleanup_keeps_marker = true
+
+[local_test_scope]
+backend = "deterministic in-memory cgroup/receipt observations; no live systemd or product"
+clock = "explicit boot identity and monotonic nanoseconds; no sleeps or wall-clock correctness"
+windows = "portable reservation/coordinator tests"
+linux = "same tests plus fixed transient-unit property construction and campaign maintenance integration"
+live_backend_or_authentication_proven = false
+
+[required_tests]
+reservation = "diagnostic_and_campaign_reservations_share_one_short_transaction_lock"
+coordinator = "four_fixed_cells_finish_once_and_terminal_evidence_precedes_release"
+loss = "controller_loss_and_deadlines_stop_tree_before_release"
+crash = "durable_start_intent_is_never_replayed_as_a_second_spawn"
+quarantine = "cleanup_failure_and_identity_drift_keep_host_claimed"
