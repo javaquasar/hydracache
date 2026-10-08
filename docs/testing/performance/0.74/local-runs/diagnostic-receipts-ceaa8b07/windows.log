@@ -1,0 +1,109 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.16s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-9f109fc3e51befe8.exe)
+
+running 9 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests\diagnostic_ipc.rs (target\debug\deps\diagnostic_ipc-70601f217f4cb6d9.exe)
+
+running 19 tests
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.90s
+
+     Running tests\diagnostic_lease.rs (target\debug\deps\diagnostic_lease-becd0769b901f6b0.exe)
+
+running 18 tests
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests\diagnostic_receipts.rs (target\debug\deps\diagnostic_receipts-5d4fce1a208d2eb3.exe)
+
+running 8 tests
+test concurrent_offline_readers_return_identical_non_promotable_packets ... ok
+test failed_incomplete_and_cpu_unusable_attempts_remain_distinct ... ok
+test malformed_duplicate_unknown_missing_and_oversized_bytes_fail_closed ... ok
+test packet_replay_recomputes_decision_and_binds_original_bytes ... ok
+test claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass ... ok
+test sample_accounting_latency_and_cpu_are_recomputed ... ok
+test resp_wire_requires_fifo_routing_and_byte_verified_success ... ok
+test all_four_p0_surfaces_bind_identity_and_reject_input_drift ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 53.21s
+
+     Running tests\host_execution.rs (target\debug\deps\host_execution-72c79a1e52b11b24.exe)
+
+running 5 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.79s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 3 tests
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.37s
+    Blocking waiting for file lock on build directory
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 21.71s

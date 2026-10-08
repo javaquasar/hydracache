@@ -65,6 +65,106 @@ fn local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution() {
             "byte-only verifier: {prohibited}"
         );
     }
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-receipts-ceaa8b07");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["schema_version"],
+        "diagnostic-receipts-local-evidence-074-v1"
+    );
+    assert_eq!(
+        m["implementation_source_commit"],
+        "ceaa8b07ffef714fe9b3662791941c565aa65e93"
+    );
+    assert_eq!(
+        m["implementation_source_tree"],
+        "b565b47562154123593c6517cbb90abf70aec20a"
+    );
+    assert_eq!(
+        m["preregistered_contract_commit"],
+        "db2219e7b7751b1b12fde4774ebb3e7afeb4cf41"
+    );
+    for field in [
+        "packet_is_durable_spool_proof",
+        "caller_terminal_claim_is_live_cgroup_proof",
+        "real_builder_enrolled",
+        "production_route_enabled",
+        "real_product_binary_built",
+        "raw_workload_receipt_packet_sealed",
+        "pending_intent_reconciliation_implemented",
+        "live_cgroup_cleanup_proven",
+        "autonomous_watchdog_proven",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    for field in [
+        "source_clean_before",
+        "source_clean_after",
+        "synthetic_positive_fixture",
+        "local_raw_receipt_verifier_checked",
+        "packet_byte_reconciliation_checked",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for (field, count) in [
+        ("windows_passed", 62),
+        ("linux_passed", 96),
+        ("root_passed", 83),
+        ("release_governance_checks_passed", 23),
+        ("ship_check_expected_exit", 1),
+    ] {
+        assert_eq!(m[field], count);
+    }
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (index, (name, size, digest, blob)) in [
+        (
+            "windows.log",
+            6850u64,
+            "648cb8fe2a4175ff9a28455f4777279e58a6405eb483b4126f8c4e0515d57d83",
+            "2b663a617f3f6d274c13d2edaefc0b4aa42cdb25",
+        ),
+        (
+            "linux.log",
+            16837,
+            "82bd768ca8369d65469f73b1e678ef862f9c88f0cfcd671866f287ab625753ad",
+            "34f62dd29df2bab2022f11e359df1214e9f39f46",
+        ),
+        (
+            "root.log",
+            11570,
+            "7b8e800b4c82b5de4ffe53c0424c648b2dce3d98cb8529a063bdf25782f1f3ee",
+            "bdf4da05bafebaf081c0ea663d997d81d78643d1",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(entry["path"], name);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(raw.len() as u64, size);
+        let actual: String = Sha256::digest(&raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+        let text = String::from_utf8(raw).unwrap();
+        assert!(!text.contains("test result: FAILED"));
+        assert!(text.contains("test result: ok."));
+    }
 }
 
 #[test]

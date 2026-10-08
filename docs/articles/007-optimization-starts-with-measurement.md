@@ -4309,3 +4309,77 @@ host install was enrolled, and no throughput/allocation workload ran. Raw timing
 receipt sealing and live owned-tree/watchdog loss fixtures remain next. Keeping
 these boundaries explicit prevents preparation correctness from being mistaken
 for an accepted allocation hypothesis, native nonregression or full-D3 result.
+
+### An exit-zero report is not a verified receipt
+
+The next hypothesis concerned measurement integrity, not a faster hot path:
+could we reconstruct a diagnostic result from its original samples instead of
+trusting a convenient success flag or summary? We preregistered a byte-only
+verifier before touching the implementation. Its inputs are an externally
+checked build attestation, the exact fixed P0 cell, a terminal summary and the
+original stdout/stderr. It does not start a workload, inspect the rented host
+or change the observer binary.
+
+The envelope's source SHA is coordinator provenance, not independent Git proof.
+Likewise, a caller's assertion that a cgroup is empty is not live recursive-tree
+evidence. Keeping these statements separate matters: a perfectly consistent
+JSON document can still describe a process that never ran. All positive fixtures
+in this slice deliberately invent the reports, CPU values and terminal claims.
+They test a verifier; they cannot supply throughput or allocation results.
+
+For successful content we require the original four configurations, 10,000
+offers and their 200,000-ns calendar. We reconstruct every outcome count, start/
+terminal latency boundary, good-success denominator, goodput and good fraction.
+We reproduce the pinned three-significant-digit HDR projection rather than
+mistaking a sorted raw quantile for the histogram's upper-equivalent bucket.
+Overflow counts are independently derived. CPU provider/scope, per-offer and
+per-success division, quality reasons and the unchanged one-second floors are
+reconciled separately. Scheduler high-water is only range-checked: final samples
+cannot independently reconstruct every queue event.
+
+RESP needs another layer. Every successful offer must have a unique matching
+wire record, correct deterministic connection, increasing connection-local wire
+ordinal, consistent write/response timestamps, the expected GET frame and a
+verified byte oracle. HELLO and topology must match RESP2 or RESP3. A cancelled
+waiter or invented response cannot become success through aggregate counts.
+Failed reports remain retained failures; their partial observations are not
+promoted into validated numerical results.
+
+We also separated outcomes that a single green/red bit would conflate. Content
+can be valid yet CPU-unusable because it misses the frozen quality floor. The
+right response is to record that result, not add offers, pad CPU or retry. A
+process failure, report failure, malformed/inconsistent output and unproven
+terminal tree are different reasons. Neither an exit-zero report nor a valid
+CPU projection authorizes a performance claim.
+
+Original bytes are capped at 8 MiB per stream. A canonical packet binds their
+hashes/sizes, build identity, cell, terminal summary, recomputed decision and
+closed admission flags. Offline replay recreates the packet from independent
+inputs; changing a decision, stderr, cgroup identity or even harmless leading
+whitespace in stdout breaks the original packet binding. Duplicate JSON keys,
+missing nullable fields, unknown fields and truncated output are refused without
+repair. Stderr is opaque retained data, not assumed empty. An oversized stream
+cannot be represented as a complete packet; bounded prefix plus overflow evidence
+belongs to the next spool implementation.
+
+The local checks exposed preparation mistakes too: a missing `CellIntent`
+serializer, a filtered command that ran zero integration tests, and a negative
+test incorrectly demanding rejection when CPU wall time increased by one ns.
+We corrected the latter to an impossible wall time shorter than observation;
+the verifier and quality floors were not loosened. These are retained development
+observations, not product attempts or negative performance measurements.
+
+Clean implementation `ceaa8b07` passed 62 Windows and 96 local Linux checks,
+83 focused root contract/evidence checks and 23 governance checks, with scoped
+formatting, all-target check, strict clippy and documentation gates. The
+[captured evidence](../testing/performance/0.74/local-runs/diagnostic-receipts-ceaa8b07/manifest.json)
+binds the exact source/tree and three raw test/check logs. Ship admission remains
+expected-red. What justified itself is sample-level, byte-bound reconciliation;
+what is still unproved is real measurement provenance and durable retention.
+
+Next come pinned spool descriptors, crash-safe no-overwrite publication and
+overflow-prefix receipts, followed by live owned-tree/watchdog loss fixtures.
+Only later, separately authorized real builds and diagnostic runs can investigate
+CPU feasibility, allocation hypotheses and native nonregression. A canonical
+in-memory packet is not fsync, filesystem immutability, process cleanup or a
+confirmed optimization. No server, product workload or qualification ran here.

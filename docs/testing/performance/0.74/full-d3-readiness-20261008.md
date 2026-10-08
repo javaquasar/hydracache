@@ -94,3 +94,14 @@ are synthetic, no real builder key is enrolled, and production installation is
 not inspected. This closes the local verifier implementation, not real build
 provenance, a later pathname-exec race, raw timing packet sealing, live cgroup/
 watchdog or fault-rehearsal prerequisites. Numerical admission remains closed.
+
+The [byte-only raw receipt slice](diagnostic-receipts-local-design.md) now
+reconciles fixed P0 identity, original samples/calendar, derived counts/HDR/CPU
+quality and RESP wire evidence, and binds raw stream hashes to a canonical
+offline-verifiable packet. Clean `ceaa8b07` passed 62 Windows, 96 local Linux,
+83 focused root and 23 governance checks. Positive reports and terminal/build
+claims are synthetic. This is not real timing or authenticated process evidence;
+durable bounded spool/overflow retention, no-overwrite crash recovery, live
+owned-tree/watchdog, real trusted build/install coordination and uncertain-intent
+reconciliation remain before a separately authorized host pilot. Full D3,
+allocator retention, C74 freeze and qualification stay unresolved/closed.

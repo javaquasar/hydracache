@@ -61,3 +61,35 @@ run passed five but failed one incorrect negative assertion: adding one ns to
 CPU wall time can be valid. The test now uses wall time shorter than observation;
 the verifier and floors were not weakened. A documentation patch context failed
 without changing files. These are preparation failures, not product attempts.
+
+## Clean-source repeat and remaining boundary
+
+Implementation `ceaa8b07ffef714fe9b3662791941c565aa65e93` was clean before/after
+[the captured repeat](local-runs/diagnostic-receipts-ceaa8b07/manifest.json).
+Windows passed 62 checks, local Linux 96, root contract/evidence 83 and separate
+governance 23. Eight new integration checks and three library checks passed on
+both OSes. All-target check and strict all-feature clippy passed for supervisor
+on both OSes and xtask on Windows. Scoped fmt, doc/local-contract, links/book
+passed. Require-ship remained expected-red, exit 1: C74/qualification incomplete.
+The packet retains three exact combined Tee captures and their SHA/Git blobs;
+none is observer timing output. This is focused, not full workspace verification.
+
+Floating projection reconciliation allows only four machine epsilons relative
+to max(1, expected), for JSON round-trip precision, not performance regression
+tolerance. HDR checks include pinned bucket edges and seeded rank/overflow
+properties. The terminal summary and synthetic reports do not independently
+prove a real CPU provider, event sequence, byte oracle or process lifecycle.
+No product performance or allocations were measured. Old packets, observer
+source, P0 files, lockfiles and qualification manifest remain unchanged.
+
+Next: pinned bounded spool reads and crash-safe no-overwrite durable publication,
+including overflow-prefix receipts; then live owned-tree/backend/watchdog and
+non-product loss fixtures. Actual clean baseline build, real builder trust,
+immutable install/start coordination and explicit uncertain-ledger reconciliation
+remain separate prerequisites. This byte-only packet cannot release a host
+reservation or enable installation, pilot, full D3 or release admission.
+
+The later packet guard initially failed E0277: xtask uses SHA-256 0.11 whose
+digest array lacks LowerHex. Per-byte hex encoding fixed that guard without a
+dependency change. This post-capture preparation error does not alter the clean
+implementation repeat or its raw logs; the packet guard is checked separately.

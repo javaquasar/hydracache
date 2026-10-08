@@ -1187,3 +1187,14 @@ Production key enrollment, real clean build, immutable install/start coordinatio
 raw timing receipts, live owned-tree backend/watchdog and non-product loss
 rehearsals remain before separately authorized diagnostic installation/pilot.
 No product qualification or release admission follows from this local slice.
+
+The subsequent [raw diagnostic receipt contract](diagnostic-receipts-local-contract.toml)
+and [byte verification evidence](diagnostic-receipts-local-design.md) add a
+separate schema-1 canonical packet. Exact raw stream digests, checked build,
+fixed cell and caller terminal summary are bound; P0 accounting/HDR/CPU/wire
+content is reconciled and failures retained without retry. Clean `ceaa8b07`
+passed 62 Windows, 96 local Linux, 83 focused root and 23 governance checks.
+It has no filesystem or production caller and cannot prove durable spool or
+live cgroup cleanup. Existing observer/campaign formats, frozen inputs and
+installation remain unchanged. Spool publication, live backend/watchdog and
+loss fixtures remain next; no diagnostic numerical or release admission opens.

@@ -1814,3 +1814,20 @@ Old packets, workloads, qualification manifest and lockfiles stay unchanged.
 Raw timing receipt/spool sealing, live cgroup/watchdog, real trusted build,
 install/start coordination and loss fixtures remain; no allocation or throughput
 measurement, product pilot, host operation or qualification was run by this slice.
+
+The subsequent [local raw receipt verifier](diagnostic-receipts-local-design.md)
+now binds original stdout/stderr to the externally checked build and exact cell,
+refuses duplicate/unknown/missing or torn JSON, reconstructs P0 sample accounting,
+goodput, HDR quantiles/overflow and CPU quality, and reconciles RESP wire/FIFO/byte
+oracle evidence. Valid but CPU-unusable, failed and invalid outcomes remain
+distinct. Offline packet replay recomputes decisions rather than trusting them.
+
+Clean `ceaa8b07` passed 62 Windows and 96 local Linux checks, 83 focused root checks
+and 23 governance tests; check/clippy, scoped fmt, doc/local-contract, links/book
+passed. [Exact captures and negative preparation notes](local-runs/diagnostic-receipts-ceaa8b07/manifest.json)
+are non-promotable test evidence. Positive reports/CPU/build/terminal fixtures
+are invented, not measurements. The packet is a byte envelope, not durable spool
+or live cgroup cleanup proof. Next: pinned bounded spool reads, crash-safe
+no-overwrite publication and overflow-prefix retention, then owned-tree/backend/
+watchdog loss fixtures. No host, workload, pilot, qualification or frozen input
+changed; release admission stays closed.
