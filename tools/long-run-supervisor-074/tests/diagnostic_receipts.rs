@@ -515,3 +515,42 @@ fn claim_flags_wrong_boundaries_and_uncertain_terminal_never_pass() {
     oversized.unit_name = "x".repeat(257);
     assert!(packet(&b, &i, &oversized, &bytes(&v), b"").is_err());
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn synthetic_valid_report_survives_readonly_spool_and_offline_verification() {
+    use hydracache_long_run_supervisor_074::diagnostic_spool::{
+        inspect_fixture_spool, verify_fixture_packet,
+    };
+    use std::os::unix::fs::PermissionsExt;
+    let (b, i, t, v) = fixture(0);
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("source");
+    let output = temp.path().join("output");
+    std::fs::create_dir(&source).unwrap();
+    std::fs::create_dir(&output).unwrap();
+    for dir in [&source, &output] {
+        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+    }
+    let raw = bytes(&v);
+    std::fs::write(source.join("stdout.json"), &raw).unwrap();
+    std::fs::write(source.join("stderr.log"), b"opaque").unwrap();
+    for name in ["stdout.json", "stderr.log"] {
+        std::fs::set_permissions(source.join(name), std::fs::Permissions::from_mode(0o600))
+            .unwrap();
+    }
+    // SAFETY: effective local fixture identity only.
+    let (uid, gid) = unsafe { (libc::geteuid(), libc::getegid()) };
+    let mut spool = inspect_fixture_spool(&source, uid, gid).unwrap();
+    let p = spool.publish_fixture(&output, &b, &i, &t, None).unwrap();
+    assert_eq!(
+        p.manifest().packet.as_ref().unwrap().decision,
+        Decision::ValidCpuUsable
+    );
+    let checked =
+        verify_fixture_packet(p.path(), uid, gid, &b, &i, &t, p.manifest_digest()).unwrap();
+    assert_eq!(&checked, p.manifest());
+    assert_eq!(std::fs::read(p.path().join("stdout.prefix")).unwrap(), raw);
+    assert!(!checked.live_cgroup_proven && !checked.admission_allowed && checked.fixture_only);
+    std::fs::set_permissions(p.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
+}

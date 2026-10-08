@@ -49,3 +49,27 @@ not physical power-loss durability or production ancestry. Live backend,
 watchdog, writer-revocation/host-fence integration, uncertain-ledger reconciliation
 and non-product process-loss fixtures remain later prerequisites. None of this
 authorizes installation, numerical admission, full D3 or release qualification.
+
+## Implementation and preparation observations
+
+The Linux-only module exposes explicit fixture snapshot, publication and offline
+verification APIs; it has no production caller, process backend or host-marker
+release. Portable receipt verification remains unchanged. Canonical manifests
+are recomputed rather than accepted on their own asserted decision. Forged
+admission/schema/size/unknown fields remain refused even with a matching externally
+supplied digest. A synthetic valid-report fixture exercises the complete path;
+its signer, build assertions, CPU numbers and terminal summary are invented.
+
+The test-first Linux compile failed E0432 (the module did not exist) with
+downstream E0282 inference errors. The first formatting check printed diffs;
+scoped formatting was applied. These are preparation observations, not product
+attempts. Initial seven integration tests, all-target check and strict all-feature
+lint passed; the expanded exact-source repeat is retained separately. Review
+also tightened end-of-read stamp checks and post-publication parent identity
+validation; earlier runs must not be cited as verification of those later edits.
+
+The first governance run refused an unregistered file-level Linux cfg target.
+The test target now compiles on all OSes with its Linux tests inside a gated
+module, matching the existing artifact fixture pattern; Windows runs zero spool
+filesystem tests. The frozen gated-test registry is unchanged. One documentation
+patch context mismatch made no documentation change.

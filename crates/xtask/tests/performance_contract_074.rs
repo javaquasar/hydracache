@@ -7,6 +7,77 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof() {
+    let c = contract("diagnostic-spool-local-contract.toml");
+    for field in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "real_product_build_allowed_by_this_slice",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "live_cgroup_cleanup_proven",
+        "fixture_is_production_spool",
+        "power_loss_durability_proven",
+        "automatic_pending_recovery_allowed",
+        "workload_retry_allowed",
+        "old_inputs_or_packets_mutable",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    for (field, value) in [
+        ("stream_prefix_bytes", 8388608),
+        ("combined_prefix_bytes", 16777216),
+        ("manifest_bytes", 65536),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value));
+    }
+    for (field, value) in [
+        ("source_directory_mode", "0700"),
+        ("source_file_mode", "0600"),
+        ("sealed_directory_mode", "0500"),
+        ("sealed_file_mode", "0400"),
+    ] {
+        assert_eq!(c[field].as_str(), Some(value));
+    }
+    assert_eq!(c["fault_points"].as_array().unwrap().len(), 6);
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        let code =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
+                .unwrap();
+        assert!(
+            !code.contains("diagnostic_spool"),
+            "production enrollment: {name}"
+        );
+    }
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_spool.rs"),
+    )
+    .unwrap();
+    for prohibited in [
+        "std::process::Command",
+        "Command::new",
+        "zbus::",
+        "tokio::",
+        "release_host",
+        "remove_dir_all",
+    ] {
+        assert!(
+            !code.contains(prohibited),
+            "fixture-only spool: {prohibited}"
+        );
+    }
+    for required in ["RENAME_NOREPLACE", "O_NOFOLLOW", "O_EXCL", "sync_all"] {
+        assert!(code.contains(required));
+    }
+}
+
+#[test]
 fn local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution() {
     let c = contract("diagnostic-receipts-local-contract.toml");
     for field in [
