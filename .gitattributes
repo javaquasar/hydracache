@@ -51,3 +51,5 @@ docs/testing/performance/0.74/rental-pilot-draft/*.json text eol=lf
 # Preparation receipts preserve exact local capture bytes, not performance proof.
 docs/testing/performance/0.74/local-runs/rental-prepare-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/rental-prepare-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-lease-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-lease-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

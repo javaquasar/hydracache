@@ -66,6 +66,72 @@ fn local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0() {
         p0["p0_cpu_feasibility"]["minimum_usable_cpu_ns"].as_integer(),
         Some(1_000_000_000)
     );
+    let packet = root().join("docs/testing/performance/0.74/local-runs/diagnostic-lease-f4f68ad7");
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        manifest["implementation_source_commit"],
+        "f4f68ad734bcfb454f4a5531c68d3af5fc25a7d5"
+    );
+    for flag in ["source_clean_before", "source_clean_after"] {
+        assert_eq!(manifest[flag], true);
+    }
+    for flag in [
+        "live_cgroup_cleanup_proven",
+        "authentication_or_build_provenance_proven",
+        "raw_workload_receipt_packet_sealed",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(manifest[flag], false, "{flag}");
+    }
+    let hex = |bytes: &[u8]| {
+        Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    };
+    assert_eq!(
+        manifest["qualification_manifest_sha256"].as_str().unwrap(),
+        hex(&std::fs::read(
+            root().join("docs/testing/performance/0.74/qualification-manifest.toml")
+        )
+        .unwrap())
+    );
+    assert_eq!(manifest["files"].as_array().unwrap().len(), 2);
+    for file in manifest["files"].as_array().unwrap() {
+        let name = file["path"].as_str().unwrap();
+        assert!(["windows.log", "linux.log"].contains(&name));
+        let bytes = std::fs::read(packet.join(name)).unwrap();
+        assert_eq!(bytes.len() as u64, file["bytes"].as_u64().unwrap());
+        assert_eq!(hex(&bytes), file["sha256"].as_str().unwrap());
+    }
+    for (name, expected) in [("windows.log", 23), ("linux.log", 45)] {
+        let log = std::fs::read_to_string(packet.join(name)).unwrap();
+        assert_eq!(
+            log.lines()
+                .filter(|line| line.starts_with("test ") && line.trim_end().ends_with(" ... ok"))
+                .count(),
+            expected
+        );
+        let summaries: Vec<_> = log
+            .lines()
+            .filter(|line| line.starts_with("test result:"))
+            .collect();
+        assert_eq!(summaries.len(), if name == "windows.log" { 2 } else { 3 });
+        assert!(
+            summaries
+                .iter()
+                .all(|line| line.contains("test result: ok.")
+                    && line.contains("0 failed; 0 ignored;"))
+        );
+    }
 }
 
 #[test]

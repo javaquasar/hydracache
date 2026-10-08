@@ -68,3 +68,9 @@ performed. A supervisor-owned diagnostic lease or an explicitly approved
 maintenance procedure must be reviewed before implementing host execution.
 The child-tree/cgroup coordinator and real Linux build/provenance are still
 missing. This does not open numerical pilot or qualification authorization.
+
+The next human approval permits local lease/coordinator implementation only.
+Its first [model and fixed unit policy](diagnostic-lease-local-design.md) now
+pass Windows/Linux reservation, restart-gap, deadline and maintenance fixtures;
+live cgroup cleanup, authenticated IPC and trusted raw receipts remain missing.
+No host deployment, numerical execution or full-D3 prerequisite is admitted.

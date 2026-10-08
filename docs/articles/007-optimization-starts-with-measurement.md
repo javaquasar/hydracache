@@ -4176,3 +4176,35 @@ finding, **not a speedup**. It prevented infrastructure interference from being
 mistaken for a product regression. No pilot, A/A-A/B cohort, retention claim or
 qualification was admitted. The exact packet and remaining decision are in
 [the coordinator design](../testing/performance/0.74/rental-pilot-coordinator-design.md).
+
+### Reserve through the supervisor, not around it
+
+After explicit approval for local control-plane development, we implemented the
+first diagnostic lease/coordinator model. Campaign and diagnostic admissions
+share the existing lock only during short transactions; a typed durable
+diagnostic marker owns the longer reservation. The campaign maintenance paths
+recognize that marker instead of encountering a lock held throughout a workload.
+Corruption, ambiguous markers and lifecycle fixtures refuse admission. This
+does not make an external flock safe, nor does it change the installed host.
+
+The fixed four-cell sequence persists its start intent before calling a backend.
+Recovery after an interrupted start never issues a second spawn. Logical boot
+and monotonic time bind controller loss, cell and total deadlines. Invalid or
+oversized receipts stop the sequence; a changed cgroup inode, remaining child
+or failed cleanup keeps the host reserved. A terminal state receipt must become
+durable before reservation release. An exited leader alone is never cleanup proof.
+
+On the clean implementation commit, Windows passed 18 diagnostic and five
+existing host-lock tests; Linux passed 20 diagnostic, six host-lock and 19 server
+tests. Linux also checks fixed unit-property construction, and a real temporary
+supervisor socket fixture exercises all three maintenance paths with no campaign
+backend calls. The diagnostic execution/cleanup backend remains a mock: these
+are state-machine and integration results, not live cgroup or performance proof.
+
+This distinction prevents a new kind of overclaim. A property list containing
+control-group kill and runtime limits is not a deployed, fault-rehearsed
+coordinator. Authentication/replay fencing, live identity verification, bounded
+DBus calls, raw spool/receipt sealing and controller/supervisor-loss fixtures
+still need implementation and verification. No workload was started, no speedup
+was measured and no qualification was enabled. See
+[the exact-source evidence and remaining boundary](../testing/performance/0.74/diagnostic-lease-local-design.md).

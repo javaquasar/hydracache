@@ -1,0 +1,36 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.56s
+     Running tests\diagnostic_lease.rs (target\debug\deps\diagnostic_lease-becd0769b901f6b0.exe)
+
+running 18 tests
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests\host_execution.rs (target\debug\deps\host_execution-72c79a1e52b11b24.exe)
+
+running 5 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

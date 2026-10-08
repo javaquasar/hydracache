@@ -79,3 +79,31 @@ found a missing exhaustive error-code arm for `DiagnosticConflict` (now the
 existing conflict code 5). One Linux invocation used a shell without Cargo in
 PATH and did not execute tests; the corrected login-shell command pins 1.94.0.
 No numerical attempt, workload, CPU floor or qualification threshold changed.
+
+## Exact-source evidence and remaining boundary
+
+Implementation `f4f68ad734bcfb454f4a5531c68d3af5fc25a7d5` was clean before and
+after the repeat captured in `local-runs/diagnostic-lease-f4f68ad7/manifest.json`.
+Windows passed 18 diagnostic and five existing host-execution checks. Local
+WSL/Ubuntu on Rust 1.94.0 passed 20 diagnostic, six existing host-execution and
+19 server checks. Raw log hashes and sizes are independently guarded; command
+output was captured by PowerShell, not asserted to be native Linux stdout bytes.
+
+Both OS package all-target checks/strict clippy and formatting passed; the root
+passed 67 performance-contract and 13 release-evidence tests. Doc-check, local
+performance-contract, 17 governance checks, documentation links and mdbook were
+green. Ship admission is expected-red for unresolved C74 and qualification.
+These are focused gates, not full workspace/release verification or numerical
+observations. All 0.73/frozen qualification files and historical packets remain
+untouched.
+
+Still required locally: authenticated diagnostic IPC with replay/nonce/revision
+fencing, the bounded live backend, independent binary/config/build-receipt
+verification, strict timing-receipt parsing and raw packet sealing, recursive
+cgroup/proc identity checks, bounded DBus operations and empty-tree observations,
+plus non-product controller/supervisor-loss fixtures. A manually advanced model
+does not itself schedule a watchdog or autonomously kill a real workload.
+The property builder's runtime/stop ceilings likewise are not a rehearsed hard
+tree deadline. A later deployment needs separate permission and renewed exact
+provisioning/lifecycle/overhead evidence; old installed receipts cannot certify
+this changed supervisor. Product candidates and qualification remain closed.

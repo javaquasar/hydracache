@@ -17,9 +17,14 @@ The [closed preparation tool and reservation finding](rental-pilot-coordinator-d
 bind the four configs and inspect future Linux build metadata without launching
 anything. External ownership of the existing host lock can propagate Busy out
 of supervisor maintenance and trigger its restart policy; it is prohibited.
-A reviewed control-plane/service decision is required before a safe reservation
-or workload coordinator can be implemented. Local metadata timeouts are not
-workload-tree deadline proof. No real Linux pilot binary has been inspected.
+The human subsequently approved local control-plane implementation. The
+[first diagnostic lease/coordinator model](diagnostic-lease-local-design.md)
+shares short host transactions, persists start intents and refuses release
+without exact empty-cgroup/retained-receipt observations. Its backend is mocked,
+and its Linux unit builder does not dispatch. Authenticated IPC, live cleanup,
+artifact/receipt validation and fault fixtures remain incomplete. Neither this
+model nor local metadata timeouts are workload-tree deadline proof. The installed
+host remains unchanged; no real Linux pilot binary has been inspected.
 
 The scenario matrix keeps RESP, HC/1, HC/2, direct `ClientSurfaceState`, raw embedded
 `HydraCache`, and typed embedded `HydraCache` results separate. The three execution tiers are
