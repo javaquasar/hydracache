@@ -105,3 +105,13 @@ durable bounded spool/overflow retention, no-overwrite crash recovery, live
 owned-tree/watchdog, real trusted build/install coordination and uncertain-intent
 reconciliation remain before a separately authorized host pilot. Full D3,
 allocator retention, C74 freeze and qualification stay unresolved/closed.
+
+The subsequent [local spool implementation](diagnostic-spool-local-design.md)
+now retains bounded prefixes/original observed sizes, checks pinned descriptors
+and uses exclusive staging/no-replace publication with sync barriers. Six logical
+crash windows and exact offline replay passed on clean `88b9b835` (62 Windows,
+105 local Linux, 84 root, 23 governance tests). These are temporary/synthetic
+fixtures, not production spool, physical power-loss, live cgroup or watchdog proof.
+Live owned-tree/backend, writer revocation/fencing, uncertain-ledger reconciliation,
+real trusted build and immutable install/start coordination remain. No numerical
+admission, full D3, C74 freeze, qualification or host operation is enabled.

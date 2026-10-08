@@ -75,6 +75,127 @@ fn local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof()
     for required in ["RENAME_NOREPLACE", "O_NOFOLLOW", "O_EXCL", "sync_all"] {
         assert!(code.contains(required));
     }
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-spool-88b9b835");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    for (field, expected) in [
+        ("schema_version", "diagnostic-spool-local-evidence-074-v1"),
+        (
+            "implementation_source_commit",
+            "88b9b8356b44669a49a52f7dfabb8bc2c4a892a1",
+        ),
+        (
+            "implementation_source_tree",
+            "a19041f8eea17cb1b34e98b8e0e96559a17471db",
+        ),
+        (
+            "preregistered_contract_commit",
+            "5aab718e37d3f6cc02c38556570eadfa4f181b73",
+        ),
+        (
+            "qualification_manifest_sha256",
+            "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+        ),
+        (
+            "root_cargo_lock_sha256",
+            "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+        ),
+        (
+            "observer_cargo_lock_sha256",
+            "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+        ),
+    ] {
+        assert_eq!(m[field], expected, "{field}");
+    }
+    for field in [
+        "fixture_is_production_spool",
+        "power_loss_durability_proven",
+        "live_cgroup_cleanup_proven",
+        "autonomous_watchdog_proven",
+        "real_builder_enrolled",
+        "production_route_enabled",
+        "real_product_binary_built",
+        "raw_workload_receipt_packet_sealed",
+        "pending_intent_reconciliation_implemented",
+        "automatic_pending_recovery_allowed",
+        "workload_retry_allowed",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    for field in [
+        "source_clean_before",
+        "source_clean_after",
+        "synthetic_positive_fixture",
+        "local_fixture_spool_publication_checked",
+        "bounded_overflow_prefix_checked",
+        "no_replace_publication_checked",
+        "six_logical_crash_windows_checked",
+        "offline_external_digest_reconciliation_checked",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for (field, count) in [
+        ("windows_passed", 62),
+        ("linux_passed", 105),
+        ("root_passed", 84),
+        ("release_governance_checks_passed", 23),
+        ("release_governance_cli_checks", 17),
+        ("ship_check_expected_exit", 1),
+    ] {
+        assert_eq!(m[field], count);
+    }
+    assert_eq!(m["windows_checks"]["diagnostic_spool"], 0);
+    assert_eq!(m["linux_checks"]["diagnostic_spool"], 7);
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (index, (name, size, digest, blob)) in [
+        (
+            "windows.log",
+            6875u64,
+            "a47119963e80750fdd6a38d1ab3d8f0e5128963736239ed1ebf2eb8834f34893",
+            "82212184d8179a472a40b5f691606cda54f5444a",
+        ),
+        (
+            "linux.log",
+            18249,
+            "9066a14e928d7788bdcdee675c730a53799ac35d0240698132d6bcb45b327ae4",
+            "32e3d26ca3ef1bdc0567370cf562e0f25389c822",
+        ),
+        (
+            "root.log",
+            10987,
+            "7b418f99865a4135757e92fa77d393ca48c7d547349109b06ae72294727f304a",
+            "d2ec793d937680a56d3b2d47f1870187f2d7c7b8",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(entry["path"], name);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(raw.len() as u64, size);
+        let actual: String = Sha256::digest(&raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+        let text = String::from_utf8(raw).unwrap();
+        assert!(!text.contains("test result: FAILED"));
+        assert!(text.contains("test result: ok."));
+    }
 }
 
 #[test]

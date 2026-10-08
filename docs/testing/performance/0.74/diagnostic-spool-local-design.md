@@ -44,7 +44,7 @@ Tests cover empty/malformed streams, bounded overflow prefixes, unsafe paths,
 special files/links/ownership/modes/extra entries, retained-descriptor drift,
 all six logical crash windows, conflicting/tampered/future manifests, read-only
 content, external digest binding and concurrent publishers. Real syscalls on
-local ext4-like WSL storage prove software barriers and fail-closed behavior,
+local WSL temporary storage prove software barriers and fail-closed behavior,
 not physical power-loss durability or production ancestry. Live backend,
 watchdog, writer-revocation/host-fence integration, uncertain-ledger reconciliation
 and non-product process-loss fixtures remain later prerequisites. None of this
@@ -73,3 +73,29 @@ The test target now compiles on all OSes with its Linux tests inside a gated
 module, matching the existing artifact fixture pattern; Windows runs zero spool
 filesystem tests. The frozen gated-test registry is unchanged. One documentation
 patch context mismatch made no documentation change.
+
+## Exact-source repeat and remaining boundary
+
+Clean implementation `88b9b8356b44669a49a52f7dfabb8bc2c4a892a1`, tree
+`a19041f8eea17cb1b34e98b8e0e96559a17471db`, passed 62 Windows checks,
+105 local Linux checks, 84 focused root contract/evidence and 23 governance tests.
+The CLI structural governance check completed 17 checks. Linux filesystem tests
+ran in local temporary WSL storage (`stat -f` reported `ext2/ext3`); Windows ran
+zero spool filesystem tests, not a portability proof. All-target check, strict
+all-feature clippy, scoped fmt, doc/local-contract, links and mdbook passed.
+Require-ship stayed expected-red, exit 1: C74 and qualification incomplete.
+
+[The immutable packet](local-runs/diagnostic-spool-88b9b835/manifest.json) binds
+source/tree/blobs and three byte-preserved Tee captures. They are test/check
+logs, not workload stdout or physical durability evidence. The subsequent packet
+guard/documentation edits are checked separately, not included in the clean
+implementation capture. Full workspace verification was not run in this slice.
+
+Only the local fixture retention/publication layer is implemented. No production
+spool, real exit or cgroup tree, watchdog, builder enrollment, build/install/start
+coordination or explicit uncertain-ledger reconciliation is proven. Six
+deterministic error returns are logical crash windows, not abrupt process kills
+or power cuts. Pre-rename staging is intentionally retained with no automatic
+recovery. Host reservation release is not connected to this API. Old packets,
+observer/P0 inputs, locks, frozen gated-test registry and qualification manifest
+are unchanged; no server operation, product workload or numerical claim occurred.

@@ -1198,3 +1198,14 @@ It has no filesystem or production caller and cannot prove durable spool or
 live cgroup cleanup. Existing observer/campaign formats, frozen inputs and
 installation remain unchanged. Spool publication, live backend/watchdog and
 loss fixtures remain next; no diagnostic numerical or release admission opens.
+
+The subsequent [local Linux spool contract](diagnostic-spool-local-contract.toml)
+and [implementation evidence](diagnostic-spool-local-design.md) separate bounded
+prefix retention from complete packet verification. Linux descriptors and
+original stamps detect drift; exclusive files, readonly staging, no-replace
+rename and file/directory/parent sync prevent silent overwrite. Exact replay
+reverifies; partial pending remains blocked. Clean `88b9b835` passed 62 Windows,
+105 local Linux, 84 root and 23 governance checks. W11 registers the sources/tests
+and captured packet, not a host enrollment or a qualification result. Caller
+terminal claims still do not prove live owned-tree cleanup; physical durability,
+watchdog, writer-revocation/fence and uncertain journal reconciliation remain.

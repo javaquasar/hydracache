@@ -4383,3 +4383,62 @@ Only later, separately authorized real builds and diagnostic runs can investigat
 CPU feasibility, allocation hypotheses and native nonregression. A canonical
 in-memory packet is not fsync, filesystem immutability, process cleanup or a
 confirmed optimization. No server, product workload or qualification ran here.
+
+## Retaining a receipt without silently replacing its history
+
+The next local W11 slice tested a different hypothesis: a byte-correct receipt
+is useful only if publication cannot silently replace an earlier attempt or
+repair an interrupted one into an apparent success. This is evidence tooling,
+not a performance optimization. We preregistered the filesystem rules and six
+fault boundaries before implementation; the observer, P0 inputs, lockfiles,
+qualification manifest and earlier packets stayed frozen.
+
+The Linux fixture reader opens absolute paths component by component without
+following links. Exactly two private, single-link regular files are allowed.
+It retains directory/file descriptors and compares identity, ownership, mode,
+size, timestamps and prefix bytes again before publication. A same-length edit
+or replaced pathname is not accepted merely because the new file looks plausible.
+The fixture owner remains trusted; these checks are not production ancestry or
+proof that all real process writers have stopped.
+
+Each stream is read only up to 8 MiB. Overflow retains the original stat-observed
+size and a digest of the bounded prefix, never a claimed digest of the unseen
+tail. It has no complete inner receipt. Empty stderr, opaque binary stderr,
+malformed stdout and failed process claims remain distinguishable and retained,
+not retried or converted into valid timing by aggregate counters.
+
+Publication owns one deterministic pending directory per lease and surface.
+Files are created exclusively, written, made readonly and synced. The staging
+directory is synced before Linux no-replace rename; its parent is synced after.
+There is no overwriting-rename fallback. Independent verification checks the
+exact three files against an externally retained manifest digest and recreates
+the manifest's decision. Even a matching digest does not authorize forged
+admission flags, schema or observed-size fields.
+
+We injected deterministic returns after pending creation, each stream, manifest,
+readonly staging and rename. Before rename, staging remains and blocks another
+publication; it is not automatically deleted or promoted. After rename, exact
+replay verifies the same bytes and repeats sync barriers without rewriting or
+starting work. Competing publishers produce only one generation. Separate
+primitive tests verify that exclusive writes and no-replace rename preserve
+existing file/link/directory names.
+
+Clean `88b9b835` passed 62 Windows checks, 105 local Linux checks, 84 focused
+root contract/evidence and 23 governance tests. Windows ran zero spool filesystem
+tests; Linux exercised real temporary-file syscalls. Formatting, all-target check,
+strict clippy and documentation/local-contract gates passed. The
+[exact packet](../testing/performance/0.74/local-runs/diagnostic-spool-88b9b835/manifest.json)
+retains the three test/check captures, source/tree and hashes. Test-first missing
+module errors, formatting and a cfg-target governance refusal are recorded as
+preparation observations, not product attempts.
+
+What justified itself is keeping complete reports, bounded overflow and
+interrupted publication separate, with no silent overwrite or workload retry.
+What these tests do not prove is equally important: logical error returns are
+not abrupt process kills or power cuts; successful sync calls are not physical
+power-loss validation; a synthetic valid report does not establish real CPU,
+latency or allocation provenance. The module has no production caller or host
+release authority. Live owned-tree cleanup, independent watchdog, writer
+revocation/fencing, uncertain-intent reconciliation and real trusted build/install
+coordination remain prerequisites. No host, product workload, allocation
+measurement or qualification ran. Ship admission remains expected-red.

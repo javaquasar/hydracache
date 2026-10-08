@@ -1831,3 +1831,20 @@ or live cgroup cleanup proof. Next: pinned bounded spool reads, crash-safe
 no-overwrite publication and overflow-prefix retention, then owned-tree/backend/
 watchdog loss fixtures. No host, workload, pilot, qualification or frozen input
 changed; release admission stays closed.
+
+The next [local Linux spool slice](diagnostic-spool-local-design.md) adds retained
+descriptors and metadata/byte revalidation, 8 MiB stream-prefix caps, separate
+overflow receipts, exclusive pending publication and no-replace rename with
+file/directory/parent sync. Pending before rename blocks replay; an exact sealed
+replay verifies and syncs without rewriting or executing work. Offline verification
+requires an external manifest digest and reconstructs the inner byte decision.
+
+Clean `88b9b835` passed 62 Windows, 105 local Linux, 84 focused root and 23
+governance tests; scoped check/clippy/fmt/doc/local-contract/links/book passed.
+[Captured evidence](local-runs/diagnostic-spool-88b9b835/manifest.json) labels the
+positive fixture synthetic and the six injected failures logical, not physical
+power loss. Windows ran zero Linux filesystem tests. Ship remains expected-red.
+Next: live owned-tree/backend/watchdog, writer revocation/host fence and explicit
+uncertain-ledger reconciliation before separately authorized build/install/pilot.
+No production route, server operation, workload, timing/allocation claim, accepted
+candidate or qualification status changed.
