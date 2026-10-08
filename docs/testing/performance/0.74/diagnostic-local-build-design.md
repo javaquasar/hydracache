@@ -26,3 +26,24 @@ This reduces build-readiness uncertainty. A local developer build and raw Cargo
 log are not trusted builder attestation or independently reproduced compilation.
 Signed enrollment, live backend, policy/process/tree/artifact binding, writer
 revocation, watchdog and uncertain-intent reconciliation still precede launch.
+
+## Read-only content audit boundary
+
+The local audit will expose only bounded content inspection: ELF structure,
+native Cargo JSON, lock bytes and the four frozen P0 config hashes. Its result
+must be explicitly unsigned, source identity not proved by the result, and
+admission false. It cannot construct VerifiedBuild or issue a build signature;
+the authenticated verifier and production policy remain separate.
+
+Cargo's [package-ID grammar](https://doc.rust-lang.org/cargo/reference/pkgid-spec.html)
+allows a version-only fragment for a local path whose last component names the
+package. Existing invented logs use a name@version fragment. The content parser
+must accept both exact 0.0.0 forms only under the fixed local tool path, while
+rejecting wrong paths, source kinds, names and versions. Tests first cover that
+distinction; all other profile/feature/artifact/final-event checks remain strict.
+
+P0 configs postdate the frozen observer checkout and are supplied separately
+from the current repository by their unchanged hashes, not silently added to
+that checkout. Git identity/cleanliness is checked with native Windows Git; the
+initial WSL preflight did not reach compilation. Native Cargo stdout remains
+separate from stderr regardless of this coordinator choice.

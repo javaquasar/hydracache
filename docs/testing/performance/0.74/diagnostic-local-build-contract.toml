@@ -21,3 +21,6 @@ raw_cargo_stdout_retained = true
 stderr_captured_separately = true
 source_must_be_clean_before_and_after = true
 inputs_must_match_git_blob_bytes = true
+unsigned_content_audit = true
+audit_can_construct_verified_build = false
+audit_can_execute_binary = false
