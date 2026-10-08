@@ -226,6 +226,150 @@ pub struct ArtifactContents<'a> {
     pub configs: BTreeMap<String, &'a [u8]>,
 }
 
+/// Content inspection only. Private fields and no Deserialize/conversion to
+/// VerifiedBuild prevent this unsigned result from becoming build authority.
+#[derive(Debug, Serialize)]
+pub struct UnsignedContentInspection {
+    schema_version: &'static str,
+    binary: ArtifactDigest,
+    build_log: ArtifactDigest,
+    configs: BTreeMap<String, ArtifactDigest>,
+    attestation_verified: bool,
+    source_git_identity_verified: bool,
+    installed_paths_verified: bool,
+    execution_authorized: bool,
+    admission_allowed: bool,
+}
+
+pub fn inspect_unsigned_contents(
+    contents: &ArtifactContents<'_>,
+) -> Result<UnsignedContentInspection, ArtifactError> {
+    for (bytes, limit) in [
+        (contents.binary, MAX_BINARY_BYTES),
+        (contents.root_lock, MAX_LOCK_BYTES),
+        (contents.observer_lock, MAX_LOCK_BYTES),
+        (contents.build_log, MAX_LOG_BYTES),
+    ] {
+        if bytes.is_empty() || bytes.len() as u64 > limit {
+            return Err(ArtifactError::Contents);
+        }
+    }
+    if sha256_hex(contents.root_lock) != ROOT_LOCK_SHA256
+        || sha256_hex(contents.observer_lock) != OBSERVER_LOCK_SHA256
+        || contents.configs.len() != SURFACES.len()
+    {
+        return Err(ArtifactError::Contents);
+    }
+    for (surface, digest) in SURFACES.iter().zip(CONFIG_HASHES) {
+        let bytes = contents
+            .configs
+            .get(*surface)
+            .ok_or(ArtifactError::Contents)?;
+        if bytes.is_empty() || bytes.len() as u64 > MAX_CONFIG_BYTES || sha256_hex(bytes) != digest
+        {
+            return Err(ArtifactError::Contents);
+        }
+    }
+    check_elf(contents.binary, contents.binary.len() as u64)?;
+    check_cargo_log(contents.build_log)?;
+    Ok(UnsignedContentInspection {
+        schema_version: "diagnostic-unsigned-content-inspection-074-v1",
+        binary: ArtifactDigest::of(contents.binary),
+        build_log: ArtifactDigest::of(contents.build_log),
+        configs: contents
+            .configs
+            .iter()
+            .map(|(name, bytes)| (name.clone(), ArtifactDigest::of(bytes)))
+            .collect(),
+        attestation_verified: false,
+        source_git_identity_verified: false,
+        installed_paths_verified: false,
+        execution_authorized: false,
+        admission_allowed: false,
+    })
+}
+
+/// Operator-only local file inspection. Does not execute a binary, pin installed
+/// paths, authenticate the coordinator's Git identity or enroll builder trust.
+pub fn inspect_unsigned_files(
+    binary: &std::path::Path,
+    log: &std::path::Path,
+    root_lock: &std::path::Path,
+    observer_lock: &std::path::Path,
+    configs: &std::path::Path,
+) -> Result<UnsignedContentInspection, ArtifactError> {
+    let binary = read_local_file(binary, MAX_BINARY_BYTES)?;
+    let log = read_local_file(log, MAX_LOG_BYTES)?;
+    let root_lock = read_local_file(root_lock, MAX_LOCK_BYTES)?;
+    let observer_lock = read_local_file(observer_lock, MAX_LOCK_BYTES)?;
+    let configs: BTreeMap<String, Vec<u8>> = SURFACES
+        .iter()
+        .map(|surface| {
+            Ok((
+                surface.to_string(),
+                read_local_file(&configs.join(format!("{surface}.json")), MAX_CONFIG_BYTES)?,
+            ))
+        })
+        .collect::<Result<_, ArtifactError>>()?;
+    inspect_unsigned_contents(&ArtifactContents {
+        binary: &binary,
+        build_log: &log,
+        root_lock: &root_lock,
+        observer_lock: &observer_lock,
+        configs: configs
+            .iter()
+            .map(|(name, bytes)| (name.clone(), bytes.as_slice()))
+            .collect(),
+    })
+}
+
+fn read_local_file(path: &std::path::Path, limit: u64) -> Result<Vec<u8>, ArtifactError> {
+    use std::io::Read;
+    if !std::fs::symlink_metadata(path)?.is_file() {
+        return Err(ArtifactError::Contents);
+    }
+    let mut options = std::fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC);
+    }
+    let mut file = options.open(path)?;
+    let before = file.metadata()?;
+    if !before.is_file() || before.len() == 0 || before.len() > limit {
+        return Err(ArtifactError::Contents);
+    }
+    let mut bytes = vec![];
+    file.by_ref().take(limit + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 != before.len() || file.metadata()?.len() != before.len() {
+        return Err(ArtifactError::Contents);
+    }
+    Ok(bytes)
+}
+
+#[cfg(test)]
+mod local_audit_tests {
+    use super::*;
+    #[test]
+    fn local_file_reader_enforces_exact_budget_and_regular_leaf() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("document");
+        std::fs::write(&path, b"abcd").unwrap();
+        assert_eq!(read_local_file(&path, 4).unwrap(), b"abcd");
+        assert!(read_local_file(&path, 3).is_err());
+        assert!(read_local_file(directory.path(), 4).is_err());
+        std::fs::write(&path, b"").unwrap();
+        assert!(read_local_file(&path, 4).is_err());
+        #[cfg(unix)]
+        {
+            let linked = directory.path().join("link");
+            std::os::unix::fs::symlink(&path, &linked).unwrap();
+            assert!(read_local_file(&linked, 4).is_err());
+        }
+    }
+}
+
 impl VerifiedBuild {
     /// Identity of the externally checked attestation, not installed-file proof.
     pub fn identity(&self) -> &DiagnosticIdentity {
@@ -343,6 +487,15 @@ struct CargoMessage {
     level: String,
 }
 
+fn local_observer_package_id(package: &str) -> bool {
+    let Some((path, fragment)) = package.rsplit_once('#') else {
+        return false;
+    };
+    path.starts_with("path+file:///")
+        && path.ends_with("/tools/get-owner-scheduled-controls-074")
+        && matches!(fragment, "0.0.0" | "get-owner-scheduled-controls-074@0.0.0")
+}
+
 pub(crate) fn check_cargo_log(bytes: &[u8]) -> Result<(), ArtifactError> {
     if bytes.is_empty() || bytes.len() as u64 > MAX_LOG_BYTES || bytes.last() != Some(&b'\n') {
         return Err(ArtifactError::Contents);
@@ -361,7 +514,7 @@ pub(crate) fn check_cargo_log(bytes: &[u8]) -> Result<(), ArtifactError> {
                     let profile = event.profile.ok_or(ArtifactError::Contents)?;
                     if target.kind != ["bin"] || target.crate_types != ["bin"]
                         || !target.src_path.ends_with("/tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs")
-                        || !event.package_id.is_some_and(|p| p.ends_with("#get-owner-scheduled-controls-074@0.0.0"))
+                        || !event.package_id.is_some_and(|p| local_observer_package_id(&p))
                         || profile.opt_level != "3" || profile.debug_assertions || profile.test
                         || event.features != Some(vec![])
                         || !event.executable.is_some_and(|p| p.ends_with("/tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074"))

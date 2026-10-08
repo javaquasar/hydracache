@@ -177,6 +177,124 @@ impl Synthetic {
 }
 
 #[test]
+fn unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs() {
+    let f = Synthetic::new();
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    for (name, bytes) in [
+        ("binary", f.binary.as_slice()),
+        ("cargo.jsonl", f.log.as_slice()),
+        ("root.lock", ROOT_LOCK),
+        ("observer.lock", OBSERVER_LOCK),
+    ] {
+        std::fs::write(root.join(name), bytes).unwrap();
+    }
+    for (name, bytes) in &f.configs {
+        std::fs::write(root.join(format!("{name}.json")), bytes).unwrap();
+    }
+    let command = || {
+        let mut command =
+            std::process::Command::new(env!("CARGO_BIN_EXE_hydracache-long-run-supervisor-074"));
+        command
+            .arg("audit-local-build")
+            .arg(root.join("binary"))
+            .arg(root.join("cargo.jsonl"))
+            .arg(root.join("root.lock"))
+            .arg(root.join("observer.lock"))
+            .arg(root);
+        command
+    };
+    let output = command().output().unwrap();
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["attestation_verified"], false);
+    assert_eq!(value["execution_authorized"], false);
+    assert_eq!(value["admission_allowed"], false);
+    assert_eq!(std::fs::read(root.join("binary")).unwrap(), f.binary);
+    std::fs::write(root.join("direct.json"), b"changed").unwrap();
+    let output = command().output().unwrap();
+    assert_eq!(output.status.code(), Some(9));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap().trim(),
+        "unsigned local build content audit refused"
+    );
+    std::fs::write(root.join("binary"), b"").unwrap();
+    assert!(inspect_unsigned_files(
+        &root.join("binary"),
+        &root.join("cargo.jsonl"),
+        &root.join("root.lock"),
+        &root.join("observer.lock"),
+        root
+    )
+    .is_err());
+}
+
+#[test]
+fn unsigned_content_inspection_never_becomes_build_or_execution_authority() {
+    let f = Synthetic::new();
+    let inspection = inspect_unsigned_contents(&f.contents()).unwrap();
+    let value = serde_json::to_value(inspection).unwrap();
+    assert_eq!(
+        value["schema_version"],
+        "diagnostic-unsigned-content-inspection-074-v1"
+    );
+    assert_eq!(value["binary"]["sha256"], f.statement.binary.sha256);
+    assert_eq!(value["build_log"]["sha256"], f.statement.build_log.sha256);
+    for flag in [
+        "attestation_verified",
+        "source_git_identity_verified",
+        "installed_paths_verified",
+        "execution_authorized",
+        "admission_allowed",
+    ] {
+        assert_eq!(value[flag], false, "{flag}");
+    }
+    let mut contents = f.contents();
+    contents.binary = b"";
+    assert!(inspect_unsigned_contents(&contents).is_err());
+    contents = f.contents();
+    contents.root_lock = b"changed";
+    assert!(inspect_unsigned_contents(&contents).is_err());
+    contents = f.contents();
+    contents.observer_lock = b"changed";
+    assert!(inspect_unsigned_contents(&contents).is_err());
+    contents = f.contents();
+    contents.configs.remove("direct");
+    assert!(inspect_unsigned_contents(&contents).is_err());
+    contents = f.contents();
+    contents.configs.insert("direct".into(), b"changed");
+    assert!(inspect_unsigned_contents(&contents).is_err());
+    contents = f.contents();
+    contents.build_log = b"{\"reason\":\"build-finished\",\"success\":true}\n";
+    assert!(inspect_unsigned_contents(&contents).is_err());
+}
+
+#[test]
+fn cargo_local_path_accepts_exact_version_fragment_not_foreign_sources() {
+    let mut f = Synthetic::new();
+    let mut event = artifact_event();
+    event["package_id"] =
+        "path+file:///synthetic/tools/get-owner-scheduled-controls-074#0.0.0".into();
+    f.log = log(&[event.clone(), final_event()]);
+    f.statement.build_log = ArtifactDigest::of(&f.log);
+    f.verified().verify_contents(&f.contents()).unwrap();
+    for invalid in [
+        "path+file:///synthetic/tools/get-owner-scheduled-controls-074#0.0.1",
+        "path+file:///synthetic/tools/foreign#0.0.0",
+        "registry+https://crates.io/get-owner-scheduled-controls-074#0.0.0",
+        "git+file:///synthetic/tools/get-owner-scheduled-controls-074#get-owner-scheduled-controls-074@0.0.0",
+        "path+file:///synthetic/tools/foreign#get-owner-scheduled-controls-074@0.0.0",
+    ] {
+        event["package_id"] = invalid.into();
+        f.log = log(&[event.clone(), final_event()]);
+        f.statement.build_log = ArtifactDigest::of(&f.log);
+        assert!(f.verified().verify_contents(&f.contents()).is_err(), "{invalid}");
+    }
+}
+
+#[test]
 fn diagnostic_build_attestation_has_a_separate_domain() {
     assert_eq!(SIGNATURE_DOMAIN, b"hydracache-diagnostic-build-074-v1");
 }

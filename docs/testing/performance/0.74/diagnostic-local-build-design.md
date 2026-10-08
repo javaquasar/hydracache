@@ -47,3 +47,20 @@ from the current repository by their unchanged hashes, not silently added to
 that checkout. Git identity/cleanliness is checked with native Windows Git; the
 initial WSL preflight did not reach compilation. Native Cargo stdout remains
 separate from stderr regardless of this coordinator choice.
+
+The implemented operator command is `hydracache-long-run-supervisor-074
+audit-local-build BINARY CARGO_JSON ROOT_LOCK OBSERVER_LOCK P0_DIRECTORY`. It
+reads bounded regular leaves, refuses empty/oversized/linked Unix leaves and
+length drift, and produces hashes plus hard-coded false trust/execution flags.
+It does not prove an atomic file snapshot, safe ancestry or installed inode
+continuity; the root-owned authenticated bundle reader is still required by a
+future backend. The result has private fields, no Deserialize and no conversion
+to VerifiedBuild. Tests cover the valid synthetic content/CLI path, changed
+locks/configs/logs/binary, regular-leaf budgets and local Cargo ID variants.
+
+The historical no-artifact-enrollment root guard initially refused the new CLI
+module reference. It now allows exactly one inspect_unsigned_files call in the
+operator CLI; every other artifact-module reference in production entry paths,
+inspect_fixed_install and BuildTrust remain forbidden. A separate guard checks
+the unsigned reader's limits and inability to execute/sign/create VerifiedBuild.
+No production key policy, signed diagnostic route or installation is enrolled.

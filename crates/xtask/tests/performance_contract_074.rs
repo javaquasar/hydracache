@@ -7,6 +7,79 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch() {
+    let c = contract("diagnostic-local-build-contract.toml");
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
+    assert_eq!(
+        c["source_tree"].as_str(),
+        Some("a9f059d752f5497c8dc5f07fbee4db6b22a366f4")
+    );
+    assert_eq!(
+        c["real_local_build_allowed_by_this_slice"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(c["validation_only"].as_bool(), Some(true));
+    assert_eq!(c["features"].as_array().unwrap().len(), 0);
+    for flag in [
+        "counting_allocator",
+        "trusted_builder_enrolled",
+        "production_artifact_enrolled",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "audit_can_construct_verified_build",
+        "audit_can_execute_binary",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_artifacts.rs"),
+    )
+    .unwrap();
+    let audit = source
+        .split("pub struct UnsignedContentInspection")
+        .nth(1)
+        .unwrap()
+        .split("impl VerifiedBuild")
+        .next()
+        .unwrap();
+    for required in [
+        "attestation_verified: false",
+        "source_git_identity_verified: false",
+        "execution_authorized: false",
+        "admission_allowed: false",
+        "MAX_BINARY_BYTES",
+        "MAX_LOCK_BYTES",
+        "MAX_CONFIG_BYTES",
+        "MAX_LOG_BYTES",
+        "check_cargo_log(contents.build_log)?",
+        "read_local_file",
+        "O_NOFOLLOW",
+        "O_NONBLOCK",
+    ] {
+        assert!(audit.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Command::",
+        "VerifiedBuild {",
+        "SigningKey",
+        "write_all",
+        "remove_file",
+        "StartTransientUnit",
+    ] {
+        assert!(!audit.contains(forbidden), "{forbidden}");
+    }
+    assert!(!source.contains("impl From<UnsignedContentInspection"));
+    assert!(source.contains("path.starts_with(\"path+file:///\")"));
+    assert!(source.contains("path.ends_with(\"/tools/get-owner-scheduled-controls-074\")"));
+}
+
+#[test]
 fn proc_documents_use_one_bounded_read_without_retry_or_parser_relaxation() {
     let c = contract("diagnostic-proc-document-contract.toml");
     assert_eq!(c["maximum_document_bytes"].as_integer(), Some(65536));
@@ -1176,9 +1249,17 @@ fn local_diagnostic_artifact_verification_keeps_execution_and_build_claims_close
         assert_eq!(c[field].as_str(), Some(value));
     }
     for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
-        let code =
+        let mut code =
             std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
                 .unwrap();
+        if name == "main.rs" {
+            // The separately preregistered operator-only unsigned audit is not
+            // installed bundle/BuildTrust enrollment. Admit this exact read
+            // function once, not the artifacts module in other production paths.
+            let audit = "diagnostic_artifacts::inspect_unsigned_files(";
+            assert_eq!(code.matches(audit).count(), 1);
+            code = code.replace(audit, "unsigned_operator_content_audit(");
+        }
         for enrollment in [
             "diagnostic_artifacts",
             "inspect_fixed_install",
