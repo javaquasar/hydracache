@@ -1,0 +1,41 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.91s
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-b72f3d644b2ad18d)
+
+running 18 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.81s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 1 test
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 78 filtered out; finished in 0.01s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.91s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.60s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 39.05s
+2a497dfcf8c5ec8ab32d55fe620ef96c554d55e1e31437f31c6474d2aa6625eb  /mnt/c/Workspace/prj/jq/cashe/hydracache-074-observer-build/tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074
+Unsigned actual-byte content audit completed; no execution authority.

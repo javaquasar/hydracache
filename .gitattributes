@@ -67,3 +67,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-process-*/** -text whitespac
 docs/testing/performance/0.74/local-runs/diagnostic-process-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-manager-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-manager-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-local-build-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-local-build-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

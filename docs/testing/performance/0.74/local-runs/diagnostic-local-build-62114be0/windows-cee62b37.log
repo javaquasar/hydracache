@@ -1,0 +1,35 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.84s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-9f109fc3e51befe8.exe)
+
+running 12 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.61s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 1 test
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.01s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.87s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.70s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.80s

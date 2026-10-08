@@ -77,6 +77,309 @@ fn unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch() {
     assert!(!source.contains("impl From<UnsignedContentInspection"));
     assert!(source.contains("path.starts_with(\"path+file:///\")"));
     assert!(source.contains("path.ends_with(\"/tools/get-owner-scheduled-controls-074\")"));
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-local-build-62114be0");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["schema_version"],
+        "diagnostic-unsigned-local-build-evidence-074-v1"
+    );
+    assert_eq!(
+        m["build_source_commit"],
+        "62114be0f5da3218706e30d7424acfb5d0579d07"
+    );
+    assert_eq!(
+        m["build_source_tree"],
+        "a9f059d752f5497c8dc5f07fbee4db6b22a366f4"
+    );
+    assert_eq!(
+        m["audit_source_commit"],
+        "cee62b37e978fa29277f58e14a3051eaeaa24c7d"
+    );
+    assert_eq!(
+        m["audit_source_tree"],
+        "63bb3c2e4451b1755e53c14f4d914bde651b38ad"
+    );
+    for field in [
+        "build_source_clean_before",
+        "build_source_clean_after",
+        "audit_source_clean_before",
+        "audit_source_clean_after",
+        "native_cargo_stdout_retained",
+        "compiler_stderr_separate",
+        "local_real_linux_release_build_completed",
+        "real_elf_content_audit_passed_on_windows",
+        "real_elf_content_audit_passed_on_linux",
+        "validation_only",
+        "formatting_checked",
+        "doc_check_passed",
+        "local_contract_passed",
+        "links_passed",
+        "mdbook_passed",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for field in [
+        "attestation_verified",
+        "trusted_builder_enrolled",
+        "production_artifact_enrolled",
+        "independent_compilation_reproduced",
+        "installed_paths_verified",
+        "execution_authorized",
+        "unit_mutation_performed",
+        "writer_revocation_proven",
+        "watchdog_implemented",
+        "pending_intent_reconciliation_implemented",
+        "production_route_enabled",
+        "host_install_performed",
+        "host_ssh_performed",
+        "fixture_started",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "performance_measured",
+        "numerical_performance_claim_allowed",
+        "full_workspace_verify_run",
+        "promotable",
+        "admission_allowed",
+        "counting_allocator",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    assert_eq!(m["features"].as_array().unwrap().len(), 0);
+    let expected = [
+        (
+            "audit-linux.json",
+            838u64,
+            "b644f82e61699aef9eb918f87e4d5e18d171a73eff93a72d5444ba1b64b67102",
+            "127033dae7e120955d3ccec5f3c1bbe356107abe",
+        ),
+        (
+            "audit-windows.json",
+            839u64,
+            "3ec2b73b436eaa6ea24850f28bf6e0c50f1bfbbfe9224374e68d461dd5bfa07e",
+            "4875dfc641acd5db3d6d1eff838153b6c2ff4784",
+        ),
+        (
+            "binary.sha256",
+            165u64,
+            "970699e0b74df528dc5f2a6bbec5d4d12eb259224d9dc5c22cf858dea247e748",
+            "beba2a4c451c09f896d3eee3a38facc3199074e7",
+        ),
+        (
+            "cargo.jsonl",
+            357108u64,
+            "6210e77ba735a0c79eb9056706174d0de28bcab6b052516e2e20226ded5028cb",
+            "dda187beaa3f606871a6f9e51df73a918b4c133c",
+        ),
+        (
+            "cargo.stderr.log",
+            12037u64,
+            "88a6d81c86ea87a70d21429007488f46f08cd591b6afc8ab0e7f874dab205296",
+            "111524215c8212836e89aa170fd849271c7f2753",
+        ),
+        (
+            "elf-header.bin",
+            64u64,
+            "0010fbadccb2360e3bb8197f7a43b16d2266497d75a318aa97aa2a1de55cde58",
+            "ebdc7cfc9c25d4290a1ba21797bf6521db36fc1c",
+        ),
+        (
+            "inputs-after.sha256",
+            881u64,
+            "20ae55f0f598409be2aab9b45be98e901e6694522c7e24d88c4c6b81c60723b2",
+            "e540582abf4e52a9d43cd9f1c376fc8961225ac8",
+        ),
+        (
+            "inputs-before.sha256",
+            881u64,
+            "20ae55f0f598409be2aab9b45be98e901e6694522c7e24d88c4c6b81c60723b2",
+            "e540582abf4e52a9d43cd9f1c376fc8961225ac8",
+        ),
+        (
+            "linux-cee62b37.log",
+            3182u64,
+            "ad327f20377d35dec4162bda72967457570913e4329d1e11ff316d3bf680df63",
+            "aa011159062b20edf59bf09c2aa0c6334e0785a2",
+        ),
+        (
+            "package-id-test-first.log",
+            1109u64,
+            "a1512fcb6c5492f3d3add383d4225d7a2070c47e0f120705a9830d717bedf1fe",
+            "611b36c22d618090f4cd3a55775330df4ed1e339",
+        ),
+        (
+            "root-cee62b37.log",
+            11711u64,
+            "aef1f1ed01b393ac98774c200b1863b817bae8f5235ea6ca2327ceef081fb1f7",
+            "e4dca51e54c53527a773f7f246fcecb7f3d182ea",
+        ),
+        (
+            "source-after.log",
+            84u64,
+            "f86ebfbd50e1a7dc8913633b62b64aa7afc306bcbdd0b084b995a2cea4201fd7",
+            "14a687cd181e6bcddd217f32f5fb208d573a8f18",
+        ),
+        (
+            "source-before.log",
+            84u64,
+            "f86ebfbd50e1a7dc8913633b62b64aa7afc306bcbdd0b084b995a2cea4201fd7",
+            "14a687cd181e6bcddd217f32f5fb208d573a8f18",
+        ),
+        (
+            "toolchain.log",
+            72u64,
+            "413557cd8449617eac0f2dd4d9af0fdf007b2353eb6b683a87630841bb26528c",
+            "67ffa857d61e1276d5b035fc8feafb8f9a7cb203",
+        ),
+        (
+            "unsigned-audit-test-first.log",
+            2423u64,
+            "ffd94d78978ac0f6eca74e9abbff2f33aaa56427fb00c12438bf241674ffe6dd",
+            "a31034bda5a7afeb0a9add806c43b1ade1e98e6f",
+        ),
+        (
+            "validate-direct.json",
+            150u64,
+            "614f09d348dc3c08a18306bce4d3672722db28cb16bf89c2c311bf6c83706805",
+            "366f5a80e7298535d9c1cf6b5289486e76c0412a",
+        ),
+        (
+            "validate-embedded.json",
+            150u64,
+            "81dab3616b9d7e288a04db8d9706d29561a5e2d2099275621cd9b29fe5485aaa",
+            "f425b91bcf37d846426cc3cf48af06c1b1fac00c",
+        ),
+        (
+            "validate-resp2.json",
+            150u64,
+            "cb300bbb75c28866a64bbd83d402aa9c3e26e0a612ace4fcd6cdd0001e811135",
+            "ef1ebd4e33a54b5f063c5fd009b6847614ebcee4",
+        ),
+        (
+            "validate-resp3.json",
+            150u64,
+            "74dffa0adf6f0de4cf4c0db4bc08cda95f49371864b8accec5eca9eda2525170",
+            "f505649dd4a67445434bf4b62652c2c17de9fa72",
+        ),
+        (
+            "windows-cee62b37.log",
+            2273u64,
+            "176158eb8ff7ad6d613fd338f5f791e1eba29d2eafdd5103fe05c97886dbbd93",
+            "0c250db5282490a3b6f066ae9b8ccb401e2558c2",
+        ),
+    ];
+    assert_eq!(m["files"].as_array().unwrap().len(), expected.len());
+    for (index, (path, size, digest, blob)) in expected.into_iter().enumerate() {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(path)).unwrap();
+        assert_eq!(entry["path"], path);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(raw.len() as u64, size);
+        let hash: String = Sha256::digest(raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(hash, digest);
+    }
+    let windows: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("audit-windows.json")).unwrap())
+            .unwrap();
+    let linux: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("audit-linux.json")).unwrap())
+            .unwrap();
+    assert_eq!(windows, linux);
+    assert_eq!(
+        linux["binary"]["sha256"],
+        "2a497dfcf8c5ec8ab32d55fe620ef96c554d55e1e31437f31c6474d2aa6625eb"
+    );
+    assert_eq!(linux["binary"]["bytes"], 26492624);
+    assert_eq!(
+        linux["build_log"]["sha256"],
+        "6210e77ba735a0c79eb9056706174d0de28bcab6b052516e2e20226ded5028cb"
+    );
+    for flag in [
+        "attestation_verified",
+        "source_git_identity_verified",
+        "installed_paths_verified",
+        "execution_authorized",
+        "admission_allowed",
+    ] {
+        assert_eq!(linux[flag], false, "{flag}");
+    }
+    assert_eq!(
+        std::fs::read(directory.join("inputs-before.sha256")).unwrap(),
+        std::fs::read(directory.join("inputs-after.sha256")).unwrap()
+    );
+    assert_eq!(
+        std::fs::read(directory.join("source-before.log")).unwrap(),
+        std::fs::read(directory.join("source-after.log")).unwrap()
+    );
+    let cargo = std::fs::read_to_string(directory.join("cargo.jsonl")).unwrap();
+    let events: Vec<Value> = cargo
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(
+        events.last().unwrap(),
+        &json!({"reason":"build-finished","success":true})
+    );
+    let artifacts: Vec<&Value> = events
+        .iter()
+        .filter(|event| event["target"]["name"] == "timing-controls-074")
+        .collect();
+    assert_eq!(artifacts.len(), 1);
+    assert_eq!(artifacts[0]["features"], json!([]));
+    assert_eq!(artifacts[0]["profile"]["opt_level"], "3");
+    assert_eq!(artifacts[0]["profile"]["debug_assertions"], false);
+    assert_eq!(artifacts[0]["profile"]["test"], false);
+    assert!(artifacts[0]["package_id"]
+        .as_str()
+        .unwrap()
+        .ends_with("/tools/get-owner-scheduled-controls-074#0.0.0"));
+    for surface in ["embedded", "direct", "resp2", "resp3"] {
+        let value: Value = serde_json::from_slice(
+            &std::fs::read(directory.join(format!("validate-{surface}.json"))).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(value["valid"], true);
+        assert_eq!(value["fixture_started"], false);
+        assert_eq!(value["admission_allowed"], false);
+        assert_eq!(
+            value["workload_sha256"],
+            m["validation_workload_sha256"][surface]
+        );
+    }
+    for (path, count) in [
+        ("windows-cee62b37.log", 13),
+        ("linux-cee62b37.log", 19),
+        ("root-cee62b37.log", 112),
+    ] {
+        let text = std::fs::read_to_string(directory.join(path)).unwrap();
+        assert!(!text.contains("test result: FAILED"));
+        let total: u64 = text
+            .lines()
+            .filter_map(|l| l.strip_prefix("test result: ok. "))
+            .map(|l| l.split_whitespace().next().unwrap().parse::<u64>().unwrap())
+            .sum();
+        assert_eq!(total, count);
+    }
+    let header = std::fs::read(directory.join("elf-header.bin")).unwrap();
+    assert_eq!(&header[..7], b"\x7fELF\x02\x01\x01");
+    assert_eq!(u16::from_le_bytes(header[18..20].try_into().unwrap()), 62);
+    assert!(
+        std::fs::read_to_string(directory.join("package-id-test-first.log"))
+            .unwrap()
+            .contains("test result: FAILED. 0 passed; 1 failed")
+    );
+    assert!(
+        std::fs::read_to_string(directory.join("unsigned-audit-test-first.log"))
+            .unwrap()
+            .contains("cannot find function")
+    );
 }
 
 #[test]

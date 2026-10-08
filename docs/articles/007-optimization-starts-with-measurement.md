@@ -4603,3 +4603,40 @@ retains these failures and the final clean-source result: 62 Windows, 154 Linux,
 Four local systemd absence reads and wrong-boot refusal were observed separately
 from synthetic loaded properties. Complete live backend, writer fencing,
 watchdog and uncertain-intent recovery are still launch gates, not inferred wins.
+
+### Replace invented build fixtures with actual bytes, without inventing trust
+
+The next step compiled the exact frozen observer `62114be0` for Linux release
+with Rust 1.94.0, locked dependencies, no features and no counting allocator.
+A dedicated checkout exposed a practical identity risk first: Windows newline
+conversion changed lock bytes even though Git reported a clean checkout. That
+new, unused checkout was replaced with LF before compiling; existing product and
+qualification worktrees were untouched. Frozen locks/configs were checked before
+and after. P0 configs are separate hash-pinned inputs, not modifications to the
+older frozen observer tree.
+
+Native Cargo JSON stdout was retained separately from compiler stderr. An actual
+artifact uncovered a blind spot in the invented build-log fixtures: Cargo used
+a valid version-only local package ID, while the verifier accepted only its
+name@version spelling. The deterministic grammar test failed before correction.
+The parser now accepts those two exact local forms and additionally rejects
+foreign source kinds and tool paths; profile, empty features, one artifact and
+final-success requirements were not relaxed. See the
+[Cargo package-ID specification](https://doc.rust-lang.org/cargo/reference/pkgid-spec.html).
+
+A new bounded, read-only audit inspects the real ELF, native Cargo log, locks and
+four P0 configs. Its private result cannot become VerifiedBuild and explicitly
+reports false attestation, source/install trust, execution and admission flags.
+Windows and Linux inspectors agreed on the actual byte digests. Four invocations
+of the compiled observer used --validate only: valid=true, fixture_started=false,
+admission_allowed=false. The [sealed build packet](../testing/performance/0.74/local-runs/diagnostic-local-build-62114be0/manifest.json)
+retains these outputs, test-first failures and clean-source checks (13 Windows,
+19 Linux artifact/reader checks, 89 root and 23 governance tests).
+
+This replaces compilation assumptions with one actual local build and structural
+content verification, not independently reproduced or trusted compilation. It
+does not produce CPU, allocation, latency, retained-memory or native-regression
+evidence. A reviewed trusted builder policy and the safe live backend, original
+tree/process binding, writer revocation, watchdog and uncertain-intent recovery
+still precede a signed, baseline-only numerical pilot. No default test signature
+or unsigned local output may be promoted into that execution authority.

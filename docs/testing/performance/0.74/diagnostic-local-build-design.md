@@ -64,3 +64,32 @@ operator CLI; every other artifact-module reference in production entry paths,
 inspect_fixed_install and BuildTrust remain forbidden. A separate guard checks
 the unsigned reader's limits and inability to execute/sign/create VerifiedBuild.
 No production key policy, signed diagnostic route or installation is enrolled.
+
+## Actual build and clean audit-source repeat
+
+[The sealed local packet](local-runs/diagnostic-local-build-62114be0/manifest.json)
+retains native Cargo JSON/stderr, Git identity and lock/config hashes before and
+after, a 64-byte ELF header, the original four validation outputs, both OS audit
+outputs, red test-first logs and clean `cee62b37` test/check logs. Observer source
+`62114be0` / tree `a9f059d7` remained clean. The actual Linux release binary is
+26,492,624 bytes, SHA-256
+`2a497dfcf8c5ec8ab32d55fe620ef96c554d55e1e31437f31c6474d2aa6625eb`;
+it is retained locally in the dedicated build worktree, not committed to Git.
+It was built once, not independently reproduced or enrolled as trusted.
+
+Four --validate calls passed with fixture_started=false and admission_allowed=false.
+Real Cargo emitted the version-only local ID anticipated by the red grammar test.
+Windows/Linux unsigned audits agree on binary, log and fixed config digests.
+Clean audit implementation `cee62b37e978fa29277f58e14a3051eaeaa24c7d`, tree
+`63bb3c2e4451b1755e53c14f4d914bde651b38ad`, passed 12+1 Windows and 18+1 Linux
+artifact/reader tests, 76 root contracts, 13 evidence and 23 governance tests.
+Check/clippy/fmt/docs/local-contract/17 governance CLI checks/links/book passed;
+require-ship remained expected-red (exit 1). Packet guards/docs follow separately.
+
+This is build/content readiness only. It proves no workload quality, CPU/op,
+latency, retained memory, A/A calibration, native nonregression, full D3 or C74
+admission. The next architectural enrollment choice is an explicitly reviewed
+trusted Linux builder/key versus reviewed reuse of the provisioning signer's
+build domain. No default/test key will be promoted. Backend, policy/tree/process
+binding, writer revocation, watchdog/reconciliation and non-product loss rehearsal
+still precede signed installation and a baseline-only pilot.

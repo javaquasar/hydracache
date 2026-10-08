@@ -1,0 +1,247 @@
+{
+  "schema_version": "diagnostic-unsigned-local-build-evidence-074-v1",
+  "build_source_commit": "62114be0f5da3218706e30d7424acfb5d0579d07",
+  "build_source_tree": "a9f059d752f5497c8dc5f07fbee4db6b22a366f4",
+  "build_source_clean_before": true,
+  "build_source_clean_after": true,
+  "build_identity_checked_by_native_windows_git": true,
+  "preregistered_build_contract_commit": "74409a285aaf04538b38bdce4b8a2a25a449b9f7",
+  "preregistered_audit_contract_commit": "acc0aab37eb02c0e175871a1d42fafff51b12e96",
+  "audit_source_commit": "cee62b37e978fa29277f58e14a3051eaeaa24c7d",
+  "audit_source_tree": "63bb3c2e4451b1755e53c14f4d914bde651b38ad",
+  "audit_source_clean_before": true,
+  "audit_source_clean_after": true,
+  "audit_source_blobs": {
+    "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs": "67eafd825b94c70d887c69b221b854d16964ad25",
+    "tools/long-run-supervisor-074/src/main.rs": "e5db559cf82feccf977c1c6019c09badc1abe789",
+    "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs": "39cf8be62b3721aa2874b848229b377d6fa21291",
+    "docs/testing/performance/0.74/diagnostic-local-build-contract.toml": "b13c662a3ca542284b05b4a46dccfb6586d9e5ae",
+    "crates/xtask/tests/performance_contract_074.rs": "b8674c68e1cb750255b47df4c95dbf865c4fc85e"
+  },
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "release",
+  "features": [],
+  "allocator": "System",
+  "counting_allocator": false,
+  "rustc_version": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "cargo_version": "cargo 1.94.0 (85eff7c80 2026-01-15)",
+  "binary": {
+    "sha256": "2a497dfcf8c5ec8ab32d55fe620ef96c554d55e1e31437f31c6474d2aa6625eb",
+    "bytes": 26492624,
+    "retained_locally_at": "C:/Workspace/prj/jq/cashe/hydracache-074-observer-build/tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074",
+    "stored_in_repository": false
+  },
+  "native_cargo_stdout_retained": true,
+  "compiler_stderr_separate": true,
+  "build_capture": "Native Linux Cargo JSON stdout and stderr redirected separately; source Git logs are native Windows Git via PowerShell; test/check logs are combined PowerShell Tee, not workload receipts",
+  "build_coordinator_command": "New-Item -ItemType Directory -Path target/diagnostic-local-build-62114be0-native -Force | Out-Null; $taskBuildRoot = 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-observer-build'; $taskStatus = git -c core.autocrlf=false -C $taskBuildRoot status --porcelain; if ($LASTEXITCODE -ne 0 -or $taskStatus) { throw 'Build source not clean' }; git -C $taskBuildRoot rev-parse HEAD 'HEAD^{tree}' | Tee-Object target/diagnostic-local-build-62114be0-native/source-before.log; if ($LASTEXITCODE -ne 0) { throw 'Git source identity failed' }; $taskExpected = @('5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149','5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9','f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae','b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7'); $taskSurfaces = @('embedded','direct','resp2','resp3'); for ($taskIndex=0; $taskIndex -lt 4; $taskIndex++) { $taskHash = (Get-FileHash -LiteralPath \"docs/testing/performance/0.74/rental-pilot-draft/$($taskSurfaces[$taskIndex]).json\" -Algorithm SHA256).Hash.ToLowerInvariant(); if ($taskHash -ne $taskExpected[$taskIndex]) { throw 'P0 bytes drifted before build' } }; wsl -d Ubuntu --exec bash -lc 'set -eu; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074-observer-build; test -z \"${CARGO_TARGET_DIR-}${RUSTFLAGS-}${CARGO_ENCODED_RUSTFLAGS-}${CARGO_PROFILE_RELEASE_OPT_LEVEL-}${CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS-}\"; task_capture=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/diagnostic-local-build-62114be0-native; task_configs=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/rental-pilot-draft; rustc +1.94.0 --version > \"$task_capture/toolchain.log\"; cargo +1.94.0 --version >> \"$task_capture/toolchain.log\"; sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock \"$task_configs\"/{embedded,direct,resp2,resp3}.json > \"$task_capture/inputs-before.sha256\"; cargo +1.94.0 build --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --release --locked --no-default-features --bin timing-controls-074 --target x86_64-unknown-linux-gnu --message-format=json > \"$task_capture/cargo.jsonl\" 2> \"$task_capture/cargo.stderr.log\"; sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock \"$task_configs\"/{embedded,direct,resp2,resp3}.json > \"$task_capture/inputs-after.sha256\"; cmp \"$task_capture/inputs-before.sha256\" \"$task_capture/inputs-after.sha256\"; task_binary=tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074; sha256sum \"$task_binary\" > \"$task_capture/binary.sha256\"; for surface in embedded direct resp2 resp3; do \"$task_binary\" --validate \"$task_configs/$surface.json\" > \"$task_capture/validate-$surface.json\"; done; printf \"Frozen build and four validation-only calls complete; no workload.\\n\"'; if ($LASTEXITCODE -ne 0) { throw 'Frozen build or validate-only check failed' }; $taskStatus = git -c core.autocrlf=false -C $taskBuildRoot status --porcelain; if ($LASTEXITCODE -ne 0 -or $taskStatus) { throw 'Build source drifted' }; git -C $taskBuildRoot rev-parse HEAD 'HEAD^{tree}' | Tee-Object target/diagnostic-local-build-62114be0-native/source-after.log; if ($LASTEXITCODE -ne 0) { throw 'Git source identity failed after build' }",
+  "audit_commands": {
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts -j2 2>&1 | Tee-Object target/diagnostic-local-build-62114be0-native/windows-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Windows artifact tests failed' }; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib local_audit_tests 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/windows-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Windows file-reader tests failed' }; cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/windows-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Windows check failed' }; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/windows-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Windows lint failed' }; cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/windows-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Windows audit binary build failed' }; target/debug/hydracache-long-run-supervisor-074.exe audit-local-build 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-observer-build\\tools\\get-owner-scheduled-controls-074\\target\\x86_64-unknown-linux-gnu\\release\\timing-controls-074' target/diagnostic-local-build-62114be0-native/cargo.jsonl 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-observer-build\\Cargo.lock' 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-observer-build\\tools\\get-owner-scheduled-controls-074\\Cargo.lock' docs/testing/performance/0.74/rental-pilot-draft | Tee-Object target/diagnostic-local-build-62114be0-native/audit-windows.json; if ($LASTEXITCODE -ne 0) { throw 'Real ELF content audit failed on Windows' }",
+    "linux": "wsl -d Ubuntu --exec bash -lc 'set -eu; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib local_audit_tests; cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings; cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked; task_build=/mnt/c/Workspace/prj/jq/cashe/hydracache-074-observer-build; task_capture=target/diagnostic-local-build-62114be0-native; task_binary=$task_build/tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074; /home/artur/.cache/hydracache-074-manager-local-target/debug/hydracache-long-run-supervisor-074 audit-local-build \"$task_binary\" \"$task_capture/cargo.jsonl\" \"$task_build/Cargo.lock\" \"$task_build/tools/get-owner-scheduled-controls-074/Cargo.lock\" docs/testing/performance/0.74/rental-pilot-draft > \"$task_capture/audit-linux.json\"; head -c 64 \"$task_binary\" > \"$task_capture/elf-header.bin\"; sha256sum \"$task_binary\"; printf \"Unsigned actual-byte content audit completed; no execution authority.\\n\"' 2>&1 | Tee-Object target/diagnostic-local-build-62114be0-native/linux-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'Linux audit gates failed' }",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance -j 2 2>&1 | Tee-Object target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'root focused gate failed' }; cargo +1.94.0 check -p xtask --all-targets --locked 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'xtask check failed' }; cargo +1.94.0 clippy -p xtask --all-targets --all-features --locked -- -D warnings 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'xtask lint failed' }; cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'fmt failed' }; foreach ($taskGate in @('doc-check','performance-contract-check','release-governance-check')) { if ($taskGate -eq 'doc-check') { cargo +1.94.0 xtask $taskGate 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log } else { cargo +1.94.0 xtask $taskGate --release 0.74 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log }; if ($LASTEXITCODE -ne 0) { throw \"$taskGate failed\" } }; node scripts/docs-link-check.mjs 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'links failed' }; mdbook build docs-site 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 0) { throw 'book failed' }; cargo +1.94.0 xtask performance-contract-check --release 0.74 --require-ship 2>&1 | Tee-Object -Append target/diagnostic-local-build-62114be0-native/root-cee62b37.log; if ($LASTEXITCODE -ne 1) { throw 'ship gate must remain red' }; exit 0"
+  },
+  "local_real_linux_release_build_completed": true,
+  "real_elf_content_audit_passed_on_windows": true,
+  "real_elf_content_audit_passed_on_linux": true,
+  "validation_only": true,
+  "validation_surfaces": [
+    "embedded",
+    "direct",
+    "resp2",
+    "resp3"
+  ],
+  "validation_calls": 4,
+  "validation_workload_sha256": {
+    "embedded": "06d84110ec8fe56f986ef5cbef75b3e9df559449fdf32cb2c42680b683363a3c",
+    "direct": "ee3dde1ca3322617ac08b6609bca5d151e9d49a8595a1743b3b3c321b22a1bc4",
+    "resp2": "e2ead8f4d1e61f1a1ab4246bb308ce7b00a2532bed52dc2c5ea1effb236fc11d",
+    "resp3": "642dd2671bdfb92c7d0d9400b10b9bd37dbbdd5b40ec2d0a50e8c4c1ea66c938"
+  },
+  "windows_artifact_tests_passed": 12,
+  "windows_reader_tests_passed": 1,
+  "linux_artifact_tests_passed": 18,
+  "linux_reader_tests_passed": 1,
+  "root_contract_tests_passed": 76,
+  "release_evidence_tests_passed": 13,
+  "release_governance_tests_passed": 23,
+  "release_governance_cli_checks": 17,
+  "package_checks": "supervisor Windows/Linux and xtask Windows all-target check and strict all-feature clippy",
+  "formatting_checked": true,
+  "doc_check_passed": true,
+  "local_contract_passed": true,
+  "links_passed": true,
+  "mdbook_passed": true,
+  "ship_check_expected_exit": 1,
+  "attestation_verified": false,
+  "trusted_builder_enrolled": false,
+  "production_artifact_enrolled": false,
+  "independent_compilation_reproduced": false,
+  "installed_paths_verified": false,
+  "execution_authorized": false,
+  "unit_mutation_performed": false,
+  "writer_revocation_proven": false,
+  "watchdog_implemented": false,
+  "pending_intent_reconciliation_implemented": false,
+  "production_route_enabled": false,
+  "host_install_performed": false,
+  "host_ssh_performed": false,
+  "fixture_started": false,
+  "product_workload_started": false,
+  "pilot_executed": false,
+  "qualification_started": false,
+  "performance_measured": false,
+  "numerical_performance_claim_allowed": false,
+  "full_workspace_verify_run": false,
+  "promotable": false,
+  "admission_allowed": false,
+  "root_cargo_lock_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "observer_cargo_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "development_observations_summary_not_raw": [
+    "The first newly created clean checkout converted locks to CRLF; replaced only that worktree with LF before building",
+    "Windows registered worktree .git absolute path is not directly usable by WSL Git; a mapped metadata preflight did not reach compilation. Actual build used native Windows Git identity/clean checks and external hash-pinned P0 configs",
+    "The historical no-enrollment root guard refused the new unsigned CLI reference; allowed exactly one explicit read-only inspection call, preserving installation/trust/server/protocol/config bans"
+  ],
+  "retained_test_first_failures": [
+    {
+      "file": "package-id-test-first.log",
+      "kind": "behavioral regression: valid Cargo version-only local package ID was refused",
+      "exit": 101
+    },
+    {
+      "file": "unsigned-audit-test-first.log",
+      "kind": "compile failure: unsigned audit implementation absent",
+      "exit": 101
+    }
+  ],
+  "post_capture_preparation": "This packet and independent hash/claim/byte guard are checked separately after the clean audit-source repeat; previous signed/synthetic packets and frozen P0/observer/qualification inputs unchanged",
+  "remaining_launch_gates": [
+    "reviewed trusted builder and dedicated build-domain enrollment",
+    "bounded authenticated live backend with durable intent/failure ownership",
+    "exact policy/artifact/process/original-tree binding and writer revocation",
+    "autonomous watchdog and explicit uncertain-intent reconciliation",
+    "nonproduct loss/cleanup rehearsals before signed installation and baseline-only pilot"
+  ],
+  "files": [
+    {
+      "path": "audit-linux.json",
+      "bytes": 838,
+      "sha256": "b644f82e61699aef9eb918f87e4d5e18d171a73eff93a72d5444ba1b64b67102",
+      "git_blob": "127033dae7e120955d3ccec5f3c1bbe356107abe"
+    },
+    {
+      "path": "audit-windows.json",
+      "bytes": 839,
+      "sha256": "3ec2b73b436eaa6ea24850f28bf6e0c50f1bfbbfe9224374e68d461dd5bfa07e",
+      "git_blob": "4875dfc641acd5db3d6d1eff838153b6c2ff4784"
+    },
+    {
+      "path": "binary.sha256",
+      "bytes": 165,
+      "sha256": "970699e0b74df528dc5f2a6bbec5d4d12eb259224d9dc5c22cf858dea247e748",
+      "git_blob": "beba2a4c451c09f896d3eee3a38facc3199074e7"
+    },
+    {
+      "path": "cargo.jsonl",
+      "bytes": 357108,
+      "sha256": "6210e77ba735a0c79eb9056706174d0de28bcab6b052516e2e20226ded5028cb",
+      "git_blob": "dda187beaa3f606871a6f9e51df73a918b4c133c"
+    },
+    {
+      "path": "cargo.stderr.log",
+      "bytes": 12037,
+      "sha256": "88a6d81c86ea87a70d21429007488f46f08cd591b6afc8ab0e7f874dab205296",
+      "git_blob": "111524215c8212836e89aa170fd849271c7f2753"
+    },
+    {
+      "path": "elf-header.bin",
+      "bytes": 64,
+      "sha256": "0010fbadccb2360e3bb8197f7a43b16d2266497d75a318aa97aa2a1de55cde58",
+      "git_blob": "ebdc7cfc9c25d4290a1ba21797bf6521db36fc1c"
+    },
+    {
+      "path": "inputs-after.sha256",
+      "bytes": 881,
+      "sha256": "20ae55f0f598409be2aab9b45be98e901e6694522c7e24d88c4c6b81c60723b2",
+      "git_blob": "e540582abf4e52a9d43cd9f1c376fc8961225ac8"
+    },
+    {
+      "path": "inputs-before.sha256",
+      "bytes": 881,
+      "sha256": "20ae55f0f598409be2aab9b45be98e901e6694522c7e24d88c4c6b81c60723b2",
+      "git_blob": "e540582abf4e52a9d43cd9f1c376fc8961225ac8"
+    },
+    {
+      "path": "linux-cee62b37.log",
+      "bytes": 3182,
+      "sha256": "ad327f20377d35dec4162bda72967457570913e4329d1e11ff316d3bf680df63",
+      "git_blob": "aa011159062b20edf59bf09c2aa0c6334e0785a2"
+    },
+    {
+      "path": "package-id-test-first.log",
+      "bytes": 1109,
+      "sha256": "a1512fcb6c5492f3d3add383d4225d7a2070c47e0f120705a9830d717bedf1fe",
+      "git_blob": "611b36c22d618090f4cd3a55775330df4ed1e339"
+    },
+    {
+      "path": "root-cee62b37.log",
+      "bytes": 11711,
+      "sha256": "aef1f1ed01b393ac98774c200b1863b817bae8f5235ea6ca2327ceef081fb1f7",
+      "git_blob": "e4dca51e54c53527a773f7f246fcecb7f3d182ea"
+    },
+    {
+      "path": "source-after.log",
+      "bytes": 84,
+      "sha256": "f86ebfbd50e1a7dc8913633b62b64aa7afc306bcbdd0b084b995a2cea4201fd7",
+      "git_blob": "14a687cd181e6bcddd217f32f5fb208d573a8f18"
+    },
+    {
+      "path": "source-before.log",
+      "bytes": 84,
+      "sha256": "f86ebfbd50e1a7dc8913633b62b64aa7afc306bcbdd0b084b995a2cea4201fd7",
+      "git_blob": "14a687cd181e6bcddd217f32f5fb208d573a8f18"
+    },
+    {
+      "path": "toolchain.log",
+      "bytes": 72,
+      "sha256": "413557cd8449617eac0f2dd4d9af0fdf007b2353eb6b683a87630841bb26528c",
+      "git_blob": "67ffa857d61e1276d5b035fc8feafb8f9a7cb203"
+    },
+    {
+      "path": "unsigned-audit-test-first.log",
+      "bytes": 2423,
+      "sha256": "ffd94d78978ac0f6eca74e9abbff2f33aaa56427fb00c12438bf241674ffe6dd",
+      "git_blob": "a31034bda5a7afeb0a9add806c43b1ade1e98e6f"
+    },
+    {
+      "path": "validate-direct.json",
+      "bytes": 150,
+      "sha256": "614f09d348dc3c08a18306bce4d3672722db28cb16bf89c2c311bf6c83706805",
+      "git_blob": "366f5a80e7298535d9c1cf6b5289486e76c0412a"
+    },
+    {
+      "path": "validate-embedded.json",
+      "bytes": 150,
+      "sha256": "81dab3616b9d7e288a04db8d9706d29561a5e2d2099275621cd9b29fe5485aaa",
+      "git_blob": "f425b91bcf37d846426cc3cf48af06c1b1fac00c"
+    },
+    {
+      "path": "validate-resp2.json",
+      "bytes": 150,
+      "sha256": "cb300bbb75c28866a64bbd83d402aa9c3e26e0a612ace4fcd6cdd0001e811135",
+      "git_blob": "ef1ebd4e33a54b5f063c5fd009b6847614ebcee4"
+    },
+    {
+      "path": "validate-resp3.json",
+      "bytes": 150,
+      "sha256": "74dffa0adf6f0de4cf4c0db4bc08cda95f49371864b8accec5eca9eda2525170",
+      "git_blob": "f505649dd4a67445434bf4b62652c2c17de9fa72"
+    },
+    {
+      "path": "windows-cee62b37.log",
+      "bytes": 2273,
+      "sha256": "176158eb8ff7ad6d613fd338f5f791e1eba29d2eafdd5103fe05c97886dbbd93",
+      "git_blob": "0c250db5282490a3b6f066ae9b8ccb401e2558c2"
+    }
+  ]
+}

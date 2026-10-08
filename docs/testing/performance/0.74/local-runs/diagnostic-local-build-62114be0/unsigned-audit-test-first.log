@@ -1,0 +1,45 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:182:22
+    |
+182 |     let inspection = inspect_unsigned_contents(&f.contents()).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:192:13
+    |
+192 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:195:13
+    |
+195 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:198:13
+    |
+198 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:201:13
+    |
+201 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:204:13
+    |
+204 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `inspect_unsigned_contents` in this scope
+   --> tools\long-run-supervisor-074\tests\diagnostic_artifacts.rs:207:13
+    |
+207 |     assert!(inspect_unsigned_contents(&contents).is_err());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_artifacts") due to 7 previous errors

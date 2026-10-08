@@ -1898,3 +1898,13 @@ concurrency and strict identity checks remain. Four real local systemd absence
 lookups passed; no diagnostic unit/workload was started. Ship admission stays red.
 The separately preregistered [unsigned local build](diagnostic-local-build-design.md)
 uses the exact frozen observer and validation-only calls, not trusted enrollment.
+
+The [actual local Linux build packet](local-runs/diagnostic-local-build-62114be0/manifest.json)
+now records a release binary from exact observer `62114be0`, unchanged locks/P0
+hashes, native Cargo JSON and separate stderr, four successful validation-only
+calls and matching Windows/Linux unsigned content audits. Clean `cee62b37`
+passed 13 Windows and 19 Linux artifact/reader tests plus 89 root and 23 governance
+tests; lint/check/fmt/docs passed, ship stayed red. The binary remains local, not
+an enrolled/signed product artifact. Trusted builder policy, safe live backend,
+writer revocation, watchdog and uncertain-intent reconciliation remain before
+real pilot execution. No product workload, host install or qualification ran.
