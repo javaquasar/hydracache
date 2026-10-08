@@ -61,3 +61,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-receipts-*/** -text whitespa
 docs/testing/performance/0.74/local-runs/diagnostic-receipts-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-spool-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-spool-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-tree-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-tree-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

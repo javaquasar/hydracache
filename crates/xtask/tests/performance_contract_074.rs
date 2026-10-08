@@ -9,6 +9,10 @@ fn root() -> PathBuf {
 #[test]
 fn diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution() {
     let c = contract("diagnostic-tree-local-contract.toml");
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
     for field in [
         "production_route_enabled",
         "host_install_allowed",
@@ -60,6 +64,128 @@ fn diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution() {
         )
         .unwrap()
         .contains("diagnostic_tree"));
+    }
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-tree-f555f32a");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(m["schema_version"], "diagnostic-tree-local-evidence-074-v1");
+    assert_eq!(
+        m["implementation_source_commit"],
+        "f555f32a49c940304f11e1154ace6ddbcc72c2f9"
+    );
+    assert_eq!(
+        m["implementation_source_tree"],
+        "8dc9543bc81b655c50f9b1e1320e72f41a6e3699"
+    );
+    assert_eq!(
+        m["preregistered_contract_commit"],
+        "57ed62552031ba1f33ae37d1de947d5db9f8d678"
+    );
+    for (field, digest) in [
+        (
+            "qualification_manifest_sha256",
+            "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+        ),
+        (
+            "root_cargo_lock_sha256",
+            "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+        ),
+        (
+            "observer_cargo_lock_sha256",
+            "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+        ),
+    ] {
+        assert_eq!(m[field], digest);
+    }
+    for field in [
+        "live_diagnostic_kernel_tree_observed",
+        "systemd_identity_authenticated",
+        "process_generation_proven",
+        "writer_revocation_proven",
+        "empty_snapshot_is_cleanup_authority",
+        "host_release_allowed",
+        "watchdog_implemented",
+        "pending_intent_reconciliation_implemented",
+        "production_route_enabled",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "cgroup_operations_performed",
+        "real_product_binary_built",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "performance_measured",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    for field in [
+        "source_clean_before",
+        "source_clean_after",
+        "synthetic_positive_fixture",
+        "recursive_fixture_tree_checked",
+        "retained_descriptor_revalidation_checked",
+        "aggregate_bounds_checked",
+        "seeded_pid_property_checked",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for (field, count) in [
+        ("windows_passed", 62),
+        ("linux_passed", 117),
+        ("root_passed", 85),
+        ("release_governance_tests_passed", 23),
+        ("release_governance_cli_checks", 17),
+        ("ship_check_expected_exit", 1),
+    ] {
+        assert_eq!(m[field], count);
+    }
+    assert_eq!(m["windows_checks"]["diagnostic_tree"], 0);
+    assert_eq!(m["linux_checks"]["diagnostic_tree"], 8);
+    assert_eq!(m["linux_checks"]["tree_library"], 4);
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (index, (name, size, digest, blob)) in [
+        (
+            "windows.log",
+            7348u64,
+            "1dadbe36353e48fd516579cfd3e20c354606891457198d6ec93f31dd0fc58c4d",
+            "d277fe24a8e056f0831e525a7304e106446690e0",
+        ),
+        (
+            "linux.log",
+            19818,
+            "3231e2e59a1e95e2e85e1d79d1d1167265d7fdeb15ac5b355f298270957c1521",
+            "8d93cdc053034dd309d32debf542ff1f40b64d01",
+        ),
+        (
+            "root.log",
+            11063,
+            "3db26fd5153cda4823006f5153e6a19c6068bac67afc410f8b45392595e231d6",
+            "7b0bfc4ae875ab15c76cc588022bd399872f6eb0",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(entry["path"], name);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(raw.len() as u64, size);
+        let actual: String = Sha256::digest(&raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+        let text = String::from_utf8(raw).unwrap();
+        assert!(!text.contains("test result: FAILED"));
+        assert!(text.contains("test result: ok."));
     }
 }
 

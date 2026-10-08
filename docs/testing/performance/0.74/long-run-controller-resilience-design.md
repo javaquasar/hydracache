@@ -1209,3 +1209,15 @@ reverifies; partial pending remains blocked. Clean `88b9b835` passed 62 Windows,
 and captured packet, not a host enrollment or a qualification result. Caller
 terminal claims still do not prove live owned-tree cleanup; physical durability,
 watchdog, writer-revocation/fence and uncertain journal reconciliation remain.
+
+The next [read-only recursive tree contract](diagnostic-tree-local-contract.toml)
+and [evidence](diagnostic-tree-local-design.md) add a separate bounded Linux
+reader instead of reusing the campaign top-level process list or MainPID shortcut.
+Private snapshot construction distinguishes kernel origin from temporary fixtures.
+Revalidation compares recursive node/document identity and content; neither an
+empty list nor a matching empty snapshot can release the host. Clean `f555f32a`
+passed 62 Windows, 117 local Linux, 85 root and 23 governance checks, with scoped
+check/lint/docs gates green and ship expected-red. Real diagnostic cgroup
+observation, original PID generations, unit-policy authentication, bounded manager
+calls, writer revocation/watchdog and ledger reconciliation are not proven.
+Existing campaign readers, routes, state formats and installed service stay unchanged.

@@ -1848,3 +1848,19 @@ Next: live owned-tree/backend/watchdog, writer revocation/host fence and explici
 uncertain-ledger reconciliation before separately authorized build/install/pilot.
 No production route, server operation, workload, timing/allocation claim, accepted
 candidate or qualification status changed.
+
+The following [recursive diagnostic tree reader](diagnostic-tree-local-design.md)
+adds bounded child/grandchild inventory independent of the leader PID, strict
+domain/events/procs parsing, descriptor/inode/owner/content revalidation and
+cross-tree duplicate/budget refusal. An empty snapshot is not cleanup authority.
+The fixed kernel entry point is read-only and has no production caller or
+conversion to authoritative coordinator observations.
+
+Clean `f555f32a` passed 62 Windows, 117 local Linux, 85 root and 23 governance
+tests; [exact captures](local-runs/diagnostic-tree-f555f32a/manifest.json) retain
+source/tree and hashes. Check/clippy/fmt/doc/local-contract/links/book passed,
+ship stayed expected-red. Positive tree fixtures are invented temporary files,
+not live diagnostic cgroup proof. Process generation, authenticated unit policy,
+bounded manager calls, writer revocation, independent watchdog and uncertain
+ledger reconciliation remain before backend enrollment. No server/product/
+qualification or frozen-input change follows from these local checks.

@@ -16,7 +16,7 @@ as live procs. Reader policy conservatively refuses duplicate PIDs or threaded/
 invalid cgroup types; it does not normalize ambiguity into a successful snapshot.
 
 The kernel entry point is read-only and restricted to the exact fixed diagnostic
-unit/cgroup derived from a validated lease/surface/boot identity. Require the
+unit/cgroup derived from a structurally validated lease/surface/boot identity. Require the
 current boot, cgroup2 filesystem magic, root-owned safe ancestors and expected
 nonzero device/inode. The expected identity still comes from a caller: this
 slice does not authenticate DBus/systemd or authorize a later destructive action.
@@ -70,3 +70,35 @@ exist. Eight initial Linux integration tests passed before the final seeded
 property/aggregate PID boundary expansion. Review tightened unknown entry
 metadata and repeated directory device/inode checks before the clean repeat.
 These are preparation observations, not product or real diagnostic unit attempts.
+
+## Exact-source repeat and remaining work
+
+Implementation `f555f32a49c940304f11e1154ace6ddbcc72c2f9`, tree
+`8dc9543bc81b655c50f9b1e1320e72f41a6e3699`, was clean before and after
+[the captured repeat](local-runs/diagnostic-tree-f555f32a/manifest.json).
+Windows passed 62 portable checks and zero Linux tree/spool filesystem tests.
+Local Linux passed 117 checks, including eight tree integration and four
+unit/property checks. Root contract/evidence passed 85 and governance tests 23;
+CLI structural governance passed 17. All-target check and strict all-feature
+clippy, scoped fmt, doc/local-contract, links and mdbook passed. Require-ship
+remained expected-red, exit 1: C74 and qualification incomplete.
+
+The immutable packet binds exact source/tree/blobs, three byte-preserved Tee
+captures and preparation observations. Captures are test/check logs, not real
+workload receipts. A separately checked subsequent packet guard/documentation
+update is outside that clean implementation repeat. Full workspace verification
+was not run for this focused slice.
+
+Post-capture preparation placed packet hash/count/claim assertions in the
+dedicated recursive-tree guard rather than the unrelated lease guard. This
+organization correction was checked separately; neither implementation source
+nor the captured logs changed.
+
+All positive tree fixtures are temporary invented documents. The kernel entry
+point was compiled/linted, its fixed scope/invalid identity and filesystem
+rejection seams checked, but no real diagnostic unit/cgroup was observed. Runtime
+positive boot/mount/unit ownership, process-generation identity, authenticated
+manager observations, bounded manager calls, writer revocation, watchdog and
+uncertain-intent reconciliation remain unproved. No process/cgroup mutation,
+server operation, product build/workload, timing/allocation measurement or
+qualification ran. Frozen inputs and all previous packets are unchanged.

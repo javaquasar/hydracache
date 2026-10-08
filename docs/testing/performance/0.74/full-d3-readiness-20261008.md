@@ -115,3 +115,13 @@ fixtures, not production spool, physical power-loss, live cgroup or watchdog pro
 Live owned-tree/backend, writer revocation/fencing, uncertain-ledger reconciliation,
 real trusted build and immutable install/start coordination remain. No numerical
 admission, full D3, C74 freeze, qualification or host operation is enabled.
+
+The next [read-only recursive tree slice](diagnostic-tree-local-design.md)
+checks bounded recursive membership, populated contradictions and retained
+descriptor/content drift on clean `f555f32a` (62 Windows, 117 local Linux,
+85 root, 23 governance tests). Kernel observation entry points exist but have
+no production caller; positive fixtures are invented files, not an actual
+diagnostic unit/cgroup. Empty snapshots cannot release a reservation.
+Process-generation/unit authentication, manager deadline handling, writer
+revocation, watchdog and uncertain-ledger recovery remain. Full D3 and numerical
+admission are still closed; no host or product workload was run.

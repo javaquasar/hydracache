@@ -4442,3 +4442,51 @@ release authority. Live owned-tree cleanup, independent watchdog, writer
 revocation/fencing, uncertain-intent reconciliation and real trusted build/install
 coordination remain prerequisites. No host, product workload, allocation
 measurement or qualification ran. Ship admission remains expected-red.
+
+## An empty leader list is not an empty owned tree
+
+The next local W11 prerequisite addressed observation rather than termination.
+Source audit showed that the existing campaign reader inspects only its root
+process list and that its manager may skip process inspection when MainPID is
+zero. We did not alter that campaign path or induce a host failure; we built a
+separate read-only diagnostic reader with a preregistered contract.
+
+The [Linux cgroup-v2 specification](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+defines populated state across a subtree, while a process list may be unordered
+and repeat a PID during concurrent movement/reuse. Accordingly, an empty leader
+list is not accepted as recursive emptiness. Threaded/invalid groups, duplicate
+PIDs and contradictory documents are refused rather than normalized into success.
+
+The reader walks child and grandchild directory descriptors without following
+links. It retains original root/node/file identities and documents, inventories
+twice and later refuses changed content or replaced names. Budgets cover nodes,
+depth, entries, PIDs and document bytes; boundary tests accept 32 nodes/256 PIDs
+and reject overflow. The total document budget describes retained inventory,
+not total I/O: descriptor revalidation also rereads bounded files. A populated
+tree with no visible PIDs remains busy/uncertain.
+
+The kernel entry point is restricted to the diagnostic unit namespace and checks
+boot, filesystem type, safe ownership and caller-supplied root device/inode.
+That caller is not authenticated here. Temporary fixtures have a separate entry
+point and cannot claim kernel origin. Private result construction also prevents
+mistaking the read result for the coordinator's authoritative cleanup observation.
+No start, stop, signal, cgroup migration, production route or reservation release
+was added.
+
+Clean `f555f32a` passed 62 Windows, 117 local Linux, 85 focused root and 23
+governance checks, with check/clippy/fmt and documentation gates green. Eight tree
+integration and four unit/property checks covered recursive membership, malformed
+and conflicting documents, limits, inode/content drift, unsafe filesystem objects,
+fixed scope and seeded unordered PID sets (seed 740074). Windows ran zero Linux
+tree tests. [Captured evidence](../testing/performance/0.74/local-runs/diagnostic-tree-f555f32a/manifest.json)
+binds source/tree and three raw test/check logs; the initial missing-source
+test-first failure is retained as a preparation observation.
+
+This justified the recursive observation layer, not live cleanup. Positive tree
+documents and PIDs are invented fixtures; no diagnostic kernel cgroup was observed.
+A twice-matching empty snapshot is not atomic against a later fork/migration,
+original process-generation proof, stopped writers, authenticated unit policy,
+exit status or an autonomous deadline. Those need process-generation binding,
+bounded manager operations, writer revocation, an independent watchdog and explicit
+uncertain-intent reconciliation before backend enrollment. No CPU, allocation,
+latency or product improvement was measured, and ship admission remains closed.
