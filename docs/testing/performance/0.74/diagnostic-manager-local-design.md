@@ -77,3 +77,11 @@ properties. No diagnostic unit was created. The live backend still needs exact
 policy/artifact/start binding, controlled mutation, original tree/process
 references, writer revocation, durable failure, autonomous watchdog and explicit
 uncertain-ledger reconciliation before deployment or numerical execution.
+
+The clean `097ab6fa` repeat preserved a negative manager fixture result:
+`failed_exit_and_unexpected_stderr_are_not_success` observed `Io` rather than
+`Exit`. Its child could exit before accepting stdin, so the parent correctly
+refused the broken pipe before reaching exit classification. Output/exit/limit
+fixtures now consume the fixed request and EOF before their intended action.
+Production IO refusal, deadlines, budgets and cleanup behavior are unchanged;
+this isolates test causality rather than accepting either failure category.

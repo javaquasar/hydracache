@@ -795,14 +795,22 @@ mod tests {
         let Ok(mode) = std::env::var("HC_DIAGNOSTIC_WORKER_FIXTURE") else {
             return;
         };
+        if mode == "retained" {
+            // This child is adopted directly with null stdin, not run(request).
+            std::thread::sleep(Duration::from_secs(10));
+            return;
+        }
+        // Isolate output/exit scenarios from a broken-input-pipe race. The
+        // parent closes stdin after sending; a fixture must accept that request
+        // before exercising its intended failure. Production still refuses IO.
+        let mut bytes = vec![];
+        std::io::stdin().read_to_end(&mut bytes).unwrap();
+        assert_eq!(bytes, b"scope");
         match mode.as_str() {
             "ok" => {
                 assert_eq!(std::env::var("TOKIO_WORKER_THREADS").unwrap(), "1");
                 assert!(std::env::var_os("DBUS_SYSTEM_BUS_ADDRESS").is_none());
                 assert!(std::env::var_os("LD_PRELOAD").is_none());
-                let mut bytes = vec![];
-                std::io::stdin().read_to_end(&mut bytes).unwrap();
-                assert_eq!(bytes, b"scope");
             }
             "exit" => {
                 print!("partial-failed");
@@ -906,7 +914,7 @@ mod tests {
     #[test]
     fn retained_live_helper_refuses_second_operation() {
         let mut client = ManagerClient::default();
-        let mut command = fixture("stall");
+        let mut command = fixture("retained");
         command
             .stdin(Stdio::null())
             .stdout(Stdio::null())
