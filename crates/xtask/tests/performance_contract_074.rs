@@ -7,6 +7,63 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution() {
+    let c = contract("diagnostic-tree-local-contract.toml");
+    for field in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "process_generation_proven",
+        "systemd_identity_authenticated",
+        "writer_revocation_proven",
+        "host_release_allowed",
+        "watchdog_implemented",
+        "pending_intent_reconciliation_implemented",
+        "fixture_is_kernel_cgroup",
+        "empty_snapshot_is_cleanup_authority",
+        "old_inputs_or_packets_mutable",
+        "automatic_observation_retry",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    for (field, n) in [
+        ("maximum_nodes", 32),
+        ("maximum_depth", 8),
+        ("maximum_processes", 256),
+        ("maximum_entries_per_node", 256),
+        ("document_bytes", 65536),
+        ("total_document_bytes", 4194304),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(n), "{field}");
+    }
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_tree.rs"),
+    )
+    .unwrap();
+    for forbidden in [
+        "Command::new",
+        "std::process::",
+        "zbus::",
+        "libc::kill",
+        "release_host",
+        "impl DiagnosticBackend",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        assert!(!std::fs::read_to_string(
+            root().join("tools/long-run-supervisor-074/src").join(name)
+        )
+        .unwrap()
+        .contains("diagnostic_tree"));
+    }
+}
+
+#[test]
 fn local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof() {
     let c = contract("diagnostic-spool-local-contract.toml");
     for field in [

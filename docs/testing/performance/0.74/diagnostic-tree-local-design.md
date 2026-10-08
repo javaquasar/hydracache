@@ -53,3 +53,20 @@ parallel independent readers and fixture-versus-kernel separation. No systemd
 unit, cgroup creation/migration/kill, product process or host operation is needed.
 Process-generation readers, bounded manager calls, authenticated unit policy,
 writer revocation, watchdog and uncertain-start ledger recovery remain later.
+
+## Implementation and development observations
+
+The Linux-only `diagnostic_tree` module implements the read-only fixed-scope
+kernel entry point and explicitly separate temporary-fixture reader. Results
+cannot become the existing coordinator's authoritative TreeObservation. No new
+durable/wire runtime schema is introduced; current campaign readers are untouched.
+All nodes/documents remain descriptor-pinned, inventories compare between passes,
+and later revalidation refuses drift rather than refreshing the original read.
+Each retained inventory pass has the document budget; descriptor revalidation
+also rereads bounded documents, so this is not a 4-MiB total-I/O claim.
+
+The test-first root guard failed because the implementation source did not yet
+exist. Eight initial Linux integration tests passed before the final seeded
+property/aggregate PID boundary expansion. Review tightened unknown entry
+metadata and repeated directory device/inode checks before the clean repeat.
+These are preparation observations, not product or real diagnostic unit attempts.

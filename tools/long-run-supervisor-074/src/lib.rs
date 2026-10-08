@@ -27,6 +27,8 @@ pub mod diagnostic_receipts;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_spool;
 #[cfg(target_os = "linux")]
+pub mod diagnostic_tree;
+#[cfg(target_os = "linux")]
 pub mod diagnostic_unit;
 pub mod event;
 pub mod host_execution;
