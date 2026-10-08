@@ -4537,3 +4537,39 @@ an uninterrupted-lifetime proof: the backend must retain the first rejection.
 Bounded manager/tree binding, writer revocation, watchdog and uncertain-ledger
 recovery remain. No host service, product workload or performance measurement
 ran, and no throughput/allocation win or release admission follows from this step.
+
+## A timeout must bound the operation, not only its caller
+
+The next diagnostic launch prerequisite is control-plane liveness. The existing
+campaign dispatcher was left unchanged. Its blocking manager calls cannot gain
+an end-to-end deadline merely by setting a method timeout: connection setup and
+teardown remain separate operations. Returning from a waiting thread would also
+leave the underlying operation alive. This is a design finding, not a measured
+campaign failure or a product performance result.
+
+The new diagnostic reader runs inside a fixed helper mode of the same Rust
+supervisor binary. The parent sends only a canonical lease/boot/four-surface
+scope, clears inherited environment, polls both output pipes under one byte and
+time budget, and terminates only its own unreaped helper on failure. It never
+executes a supplied command or systemctl. Helper address space, CPU, core dumps
+and runtime thread count have separate fixed limits; an unconfirmed helper
+blocks another operation in the same client. These are safety ceilings, not
+adjusted throughput thresholds or a guarantee against kernel/scheduler stalls.
+
+The [systemd interface](https://raw.githubusercontent.com/systemd/systemd/v257/man/org.freedesktop.systemd1.xml)
+and [D-Bus specification](https://dbus.freedesktop.org/doc/dbus-specification.html)
+provide the protocol foundation. The implementation uses a fixed root-owned
+system-bus endpoint, pins the manager's unique owner with UID 0 / PID 1, checks
+each reply's exact sender, and refuses owner or boot drift. Only that owner's
+specific NoSuchUnit reply means absent. Two loaded-unit reads must agree;
+property caches and foreign cgroup-prefix matches are not accepted.
+
+Local invented properties and non-product child failures test the parsing,
+deadline, output and cleanup boundaries. Real system-bus absence checks are a
+separate observation: they do not create a diagnostic unit, verify its complete
+hardening, authenticate a binary, revoke writers or release a reservation.
+Partial helper output remains runtime evidence until the backend durably seals
+it. Parent restart also loses the runtime child reference. Controlled start/stop,
+live tree/process/artifact binding, first-failure persistence, autonomous
+watchdog and uncertain-ledger reconciliation still precede the numerical pilot.
+No latency, CPU/op, allocation or throughput improvement follows from this step.

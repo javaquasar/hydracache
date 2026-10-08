@@ -9,6 +9,41 @@ fn main() -> ExitCode {
 fn run() -> u8 {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     match args.as_slice() {
+        #[cfg(target_os = "linux")]
+        [command] if command == "diagnostic-manager-worker" => {
+            hydracache_long_run_supervisor_074::diagnostic_manager::worker_main()
+        }
+        #[cfg(target_os = "linux")]
+        [command, lease, boot, surface] if command == "diagnostic-manager-inspect" => {
+            use hydracache_long_run_supervisor_074::diagnostic_manager::{
+                ManagerClient, ManagerScope,
+            };
+            match ManagerScope::new(lease, boot, surface) {
+                Ok(scope) => match ManagerClient::default().inspect(&scope) {
+                    Ok(snapshot) => match serde_json::to_string(&snapshot) {
+                        Ok(json) => {
+                            println!("{json}");
+                            0
+                        }
+                        Err(_) => {
+                            eprintln!("manager observation encoding refused");
+                            9
+                        }
+                    },
+                    Err(error) => {
+                        eprintln!(
+                            "manager observation refused: {:?}; helper cleanup={}",
+                            error.kind, error.cleanup_confirmed
+                        );
+                        9
+                    }
+                },
+                Err(_) => {
+                    eprintln!("invalid diagnostic manager scope");
+                    9
+                }
+            }
+        }
         [command, path] if command == "verify" => {
             match verify_journal(&PathBuf::from(path))
                 .and_then(|report| serde_json::to_string(&report).map_err(Into::into))
@@ -103,7 +138,7 @@ fn run() -> u8 {
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | diagnostic-manager-inspect <lease-id> <boot-id> <embedded|direct|resp2|resp3> (Linux read-only) | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
         }

@@ -1878,3 +1878,13 @@ bounded manager calls, first-failure persistence, writer revocation and watchdog
 remain before backend enrollment. Pidfds do not prove continuity after supervisor
 restart. No installed service, host/product workload, qualification or numerical
 claim changed.
+
+The [bounded manager layer](diagnostic-manager-local-design.md) adds a fixed
+read-only Linux helper and operator inspection route. Connection/authentication,
+property reads and exit share a two-second parent budget, with bounded combined
+output and owned-child cleanup; helper memory/CPU/runtime threads are separately
+capped. Exact unique reply sender, root/PID-1 owner, boot and two matching unit
+observations are required. This is not start/stop, unit-policy verification,
+tree/writer cleanup, durable failure publication, watchdog or production IPC.
+Those integration gates still precede the baseline-only real pilot; product
+candidates and qualification remain closed.

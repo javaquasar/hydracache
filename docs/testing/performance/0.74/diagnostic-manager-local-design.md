@@ -38,6 +38,13 @@ drift are errors. Loaded unit ID, invocation ID and cgroup path are bounded and
 scope checked. A snapshot is not verified unit hardening, artifact identity,
 recursive emptiness, writer revocation or release authority.
 
+Every successful reply and named-error reply also requires the exact pinned
+sender header (the bus daemon itself for owner/credential queries). A familiar
+error name alone cannot establish absence. Two complete unit observations must
+match, including invocation identity and cgroup; observations are not atomic
+with a later unit operation. The local socket's root owner and safe ancestors
+are the trust anchor, not a claim of protection against malicious host root.
+
 Local checks will cover canonical scope/response binding, foreign principals,
 drift, malformed/oversized output, stderr overflow, stalled input/output/exit,
 nonzero exit, bounded failure capture and cleanup ownership. Synthetic children
@@ -49,3 +56,24 @@ live tree/process/artifact binding, writer revocation before spool publication,
 autonomous watchdog and explicit pending-request reconciliation, non-product
 loss rehearsals, then reviewed signed installation and a baseline-only pilot.
 No candidate, six-hour or 24-hour qualification is opened by this helper.
+
+## Implemented boundary
+
+`diagnostic_manager.rs` implements the fixed worker, canonical scope/snapshot,
+bounded child client and read-only manager lookup. The Linux-only operator route
+is `diagnostic-manager-inspect LEASE BOOT SURFACE`; the worker route is internal
+and accepts its canonical scope only on stdin. Neither is a signed diagnostic
+request route, lease reservation, workload start, stop or host release.
+
+The client retains partial stdout/stderr in typed failures. Those runtime bytes
+are **not** a durable raw workload packet; the future backend must publish them
+with its first-failure record. A retained helper prevents a second operation in
+the same client. Parent restart does not preserve that runtime handle or prove
+continuity. Scheduler/kernel stalls, hostile root and physical crash durability
+are not proved by polling and local tests.
+
+Positive local system-bus lookup is kept separate from typed invented loaded-unit
+properties. No diagnostic unit was created. The live backend still needs exact
+policy/artifact/start binding, controlled mutation, original tree/process
+references, writer revocation, durable failure, autonomous watchdog and explicit
+uncertain-ledger reconciliation before deployment or numerical execution.

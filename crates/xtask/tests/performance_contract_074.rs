@@ -7,6 +7,93 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
+    let c = contract("diagnostic-manager-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-manager-local-074-v1")
+    );
+    for flag in [
+        "automatic_retry",
+        "arbitrary_commands_allowed",
+        "unit_mutation_allowed",
+        "production_diagnostic_route_enabled",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "snapshot_is_cleanup_authority",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        c["pending_helper_blocks_new_operation"].as_bool(),
+        Some(true)
+    );
+    for (name, value) in [
+        ("request_bytes", 4096),
+        ("combined_output_bytes", 65536),
+        ("operation_timeout_ms", 2000),
+        ("cleanup_timeout_ms", 1000),
+        ("method_timeout_ms", 250),
+        ("manager_uid", 0),
+        ("manager_pid", 1),
+        ("helper_tokio_threads", 1),
+        ("helper_address_space_bytes", 536870912),
+        ("helper_cpu_seconds", 2),
+        ("helper_core_bytes", 0),
+    ] {
+        assert_eq!(c[name].as_integer(), Some(value), "{name}");
+    }
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_manager.rs"),
+    )
+    .unwrap();
+    let production = code.split("#[cfg(test)]\nmod tests").next().unwrap();
+    for forbidden in [
+        "StartTransientUnit",
+        "StopUnit",
+        "KillUnit",
+        "ResetFailed",
+        ".wait()",
+        "Command::new(\"sh\"",
+        "Command::new(\"systemctl\"",
+        "fs::remove_file",
+        "fs::rename",
+        "HostExecutionClaim",
+        "DiagnosticBackend",
+    ] {
+        assert!(!production.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        "Command::new(\"/proc/self/exe\")",
+        "env_clear()",
+        "SYS_close_range",
+        "CLOSE_RANGE_CLOEXEC",
+        "poll_pending_cleanup",
+        "GetNameOwner",
+        "GetConnectionUnixUser",
+        "GetConnectionUnixProcessID",
+        "CacheProperties::No",
+        "org.freedesktop.systemd1.NoSuchUnit",
+        "unix:path=/run/dbus/system_bus_socket",
+        "OUTPUT_BYTES.saturating_sub",
+        "RLIMIT_AS",
+        "RLIMIT_CPU",
+        "RLIMIT_CORE",
+        "restrict_worker_resources()?",
+        "TOKIO_WORKER_THREADS",
+    ] {
+        assert!(production.contains(required), "{required}");
+    }
+    let campaign =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/systemd_unit.rs"))
+            .unwrap();
+    assert!(!campaign.contains("hydracache-diagnostic-074-"));
+}
+
+#[test]
 fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
     let c = contract("diagnostic-process-local-contract.toml");
     assert_eq!(c["schema_version"].as_integer(), Some(1));
