@@ -4208,3 +4208,52 @@ DBus calls, raw spool/receipt sealing and controller/supervisor-loss fixtures
 still need implementation and verification. No workload was started, no speedup
 was measured and no qualification was enabled. See
 [the exact-source evidence and remaining boundary](../testing/performance/0.74/diagnostic-lease-local-design.md).
+
+### A retried heartbeat is not a new lease
+
+The next local hypothesis concerned control-plane correctness, not cache speed:
+could a lost reply cause a controller to repeat a heartbeat or destructive stop,
+extend a lease, or act on a state revision that had already changed? We added a
+separate diagnostic request family and tested it without launching a product
+process. Ed25519 covers the entire strict request, including nonce, revision,
+boot/binary/build-receipt identity, fixed source/preset and repository/run/attempt/
+actor. Campaign signatures cannot authorize this new family; arbitrary paths,
+commands, durations and workload overrides are not fields of the protocol.
+
+Authentication alone did not answer the replay question. A bounded durable
+journal records intent under the same host fence that validates and mutates the
+lease state. Completed requests return the original receipt byte-equivalent at
+the typed/canonical response boundary, without another heartbeat or stop.
+Changed request-id bodies and reused nonces are refused, as are controller
+takeover and stale revisions. A crash between mutation and response publication
+is explicitly uncertain: neither replay nor a fresh request executes until a
+future reconciliation procedure proves the outcome. The journal is not evicted
+to make a test pass; exhaustion fails closed. Its digest detects corruption, not
+tampering by the trusted journal owner, and responses are unsigned local receipts,
+not remote attestations or fresh status observations on replay.
+
+The tests confirmed those local invariants. Eight concurrent requests sharing a
+revision produced one mutation. Cached heartbeat replay left the controller time
+unchanged. Cancel replay after terminal release did not stop the tree again.
+Injected loss during stop retained the intent and reservation; a separate fixture
+modeled the heartbeat/response crash gap. Wrong signatures, future/expired
+authorization, unknown fields, corrupt or linked journals and capacity exhaustion
+were rejected. Real temporary Linux SOCK_SEQPACKET fixtures checked kernel peer
+acceptance and denial. All execution/cleanup observations still came from the
+mock backend, so these tests do not prove real recursive cgroup cleanup.
+
+Clean source `403696a7` passed 42 Windows and 70 local Linux checks, plus 68
+performance-contract and 13 release-evidence checks. Focused check/clippy,
+formatting and documentation gates passed; ship admission remained expected-red.
+The first development lint caught three redundant borrows after extracting
+fenced methods; fixing them did not change any measurement floor or workload.
+The [exact packet and remaining boundaries](../testing/performance/0.74/diagnostic-ipc-local-design.md)
+retain the source, raw capture hashes, limitations and negative preparation notes.
+
+This step justified a replay-safe local control boundary, **not a performance
+improvement**. No allocations or throughput were measured, no live unit or rented
+host was touched, and no production route was enabled. The next useful work is
+independent build/config trust, bounded raw receipt handling, the live owned-tree
+backend and autonomous watchdog/loss fixtures. Those prerequisites keep eventual
+performance attribution separate from an unsafe or ambiguous execution attempt;
+they do not replace matched A/A-A/B, native floors or supported retention proof.

@@ -67,6 +67,81 @@ fn local_diagnostic_ipc_keeps_production_and_numerical_admission_closed() {
         digest,
         "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
     );
+    let packet = root().join("docs/testing/performance/0.74/local-runs/diagnostic-ipc-403696a7");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["implementation_source_commit"],
+        "403696a7ab3e61870e5346592e5aa7cc9ed08b88"
+    );
+    assert_eq!(
+        m["preregistered_contract_commit"],
+        "cf110eda1702c2db01adc438762394514ef52930"
+    );
+    for flag in [
+        "source_clean_before",
+        "source_clean_after",
+        "local_authenticated_ipc_checked",
+    ] {
+        assert_eq!(m[flag], true, "{flag}");
+    }
+    for flag in [
+        "production_route_enabled",
+        "pending_intent_reconciliation_implemented",
+        "ledger_eviction_allowed",
+        "live_cgroup_cleanup_proven",
+        "autonomous_watchdog_proven",
+        "build_provenance_proven",
+        "raw_workload_receipt_packet_sealed",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[flag], false, "{flag}");
+    }
+    assert_eq!(m["qualification_manifest_sha256"], digest);
+    assert_eq!(m["ship_check_expected_exit"], 1);
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (name, passed, summaries) in [
+        ("windows.log", 42, 3),
+        ("linux.log", 70, 5),
+        ("root.log", 81, 2),
+    ] {
+        let file = m["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|f| f["path"] == name)
+            .unwrap();
+        let bytes = std::fs::read(packet.join(name)).unwrap();
+        assert_eq!(bytes.len() as u64, file["bytes"].as_u64().unwrap());
+        let hex: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(hex, file["sha256"].as_str().unwrap());
+        let log = String::from_utf8(bytes).unwrap();
+        assert_eq!(
+            log.lines()
+                .filter(|s| s.starts_with("test ") && s.trim_end().ends_with(" ... ok"))
+                .count(),
+            passed
+        );
+        let rows: Vec<_> = log
+            .lines()
+            .filter(|s| s.starts_with("test result:"))
+            .collect();
+        assert_eq!(rows.len(), summaries);
+        assert!(rows.iter().all(|s| s.contains("0 failed; 0 ignored;")));
+    }
+    let root_log = std::fs::read_to_string(packet.join("root.log")).unwrap();
+    assert!(root_log.contains("ship admission is closed while candidate identity and release qualification are incomplete"));
 }
 
 #[test]

@@ -1777,3 +1777,21 @@ A first clean observer repeat alongside builds failed two plaintext preload
 tests; its cause is not established, and subsequent unchanged-source passes do
 not erase it or authorize numerical data from that execution. The qualification
 manifest, lockfiles and sealed historical packets remain unchanged.
+
+The subsequent local control-plane slice implements
+[authenticated diagnostic IPC and durable replay fencing](diagnostic-ipc-local-design.md)
+against the existing model, without enrolling a production route. The complete
+request is signed in a separate domain, including nonce, expected revision and
+run attempt. Original controller/lease ownership, durable intent-before-mutation
+and cached completed responses share the short host fence. Repeated heartbeat
+does not extend liveness; uncertain intent, corruption or exhausted ledger
+capacity refuses execution without eviction/retry.
+
+Clean implementation `403696a7` passed 42 Windows, 70 local Linux and 81 focused
+root checks, including real temporary Linux socket peer acceptance/denial.
+[Raw captures and exact-source identities](local-runs/diagnostic-ipc-403696a7/manifest.json)
+retain this preparation evidence. Check/clippy, formatting, documentation and
+local structural gates passed; ship admission remains expected-red. Production
+key/route enrollment, live cgroup/watchdog, trusted builds, raw measurement
+receipts and reconciliation are not proved. No host operation, product pilot,
+qualification or numerical claim was authorized or performed by this step.

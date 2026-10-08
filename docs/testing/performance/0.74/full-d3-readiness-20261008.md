@@ -74,3 +74,13 @@ Its first [model and fixed unit policy](diagnostic-lease-local-design.md) now
 pass Windows/Linux reservation, restart-gap, deadline and maintenance fixtures;
 live cgroup cleanup, authenticated IPC and trusted raw receipts remain missing.
 No host deployment, numerical execution or full-D3 prerequisite is admitted.
+
+The next [local authenticated IPC slice](diagnostic-ipc-local-design.md) now
+checks signed request binding, nonce/revision/controller fences, cached replay,
+uncertain-intent refusal and real local socket peer credentials. It passed 42
+Windows and 70 Linux model/integration checks plus 81 focused root checks on
+clean `403696a7`; this is not production authentication enrollment or live
+cgroup/watchdog evidence. Fixed build/config verification, raw receipt/spool
+sealing, explicit journal reconciliation and non-product process-loss fixtures
+remain before any separately approved installation/pilot. No allocation/timing,
+System-retention, full D3, accepted candidate or qualification status changed.

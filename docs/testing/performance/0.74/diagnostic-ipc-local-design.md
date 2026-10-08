@@ -68,3 +68,29 @@ fenced methods; these were corrected without changing any workload or threshold.
 This is preparation/security evidence, not allocation attribution or performance
 measurement. No live unit/cgroup, watchdog, production key enrollment, binary
 build trust, raw workload packet or host admission follows from these tests.
+
+## Clean-source repeat
+
+Implementation `403696a7ab3e61870e5346592e5aa7cc9ed08b88` was clean before and
+after the captured repeat in
+[`local-runs/diagnostic-ipc-403696a7/manifest.json`](local-runs/diagnostic-ipc-403696a7/manifest.json).
+Windows passed 19 IPC, 18 lease and five host-lock tests (42 total); local Linux
+passed 22 IPC, 20 lease, six host-lock, 19 server and three campaign-auth tests
+(70 total). The root passed 68 performance-contract and 13 release-evidence
+tests. Supervisor check/strict clippy passed on both OSes; xtask check/strict
+clippy and scoped formatting passed on Windows. Doc/local-contract/governance,
+link and book checks passed. Ship admission remains expected-red, exit 1.
+
+Three combined PowerShell capture files retain their byte counts, raw SHA-256
+and Git blob identities; Linux captures are not asserted to be native stdout
+byte provenance. This is focused local evidence, not full workspace/release
+verification. Qualification manifest and both relevant lockfile digests remain
+unchanged. Previous packets were not rewritten.
+
+Next: independently verify fixed binary/config/build receipts, bounded raw spool
+and timing receipts; implement the owned live cgroup/process-generation backend
+and autonomous monotonic watchdog, then non-product loss/cleanup fixtures.
+Ledger uncertainty/capacity need an explicit retained-evidence reconciliation
+design before production enrollment. Server installation and numerical pilot
+still require separate permission; no existing host receipt certifies this
+changed supervisor, and cached IPC responses are not fresh host observations.

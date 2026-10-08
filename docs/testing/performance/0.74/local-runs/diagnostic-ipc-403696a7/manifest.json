@@ -1,0 +1,91 @@
+{
+  "schema_version": "diagnostic-ipc-local-evidence-074-v1",
+  "implementation_source_commit": "403696a7ab3e61870e5346592e5aa7cc9ed08b88",
+  "preregistered_contract_commit": "cf110eda1702c2db01adc438762394514ef52930",
+  "source_clean_before": true,
+  "source_clean_after": true,
+  "toolchain": "Rust 1.94.0; PowerShell 7.6.5; Linux is local WSL/Ubuntu, not rented host",
+  "capture": "combined stdout/stderr captured by PowerShell Tee; retained exact capture bytes, not native Linux stdout byte provenance",
+  "windows_command": "cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_ipc --test diagnostic_lease --test host_execution --locked -j 2",
+  "linux_command": "local WSL login shell, CARGO_TARGET_DIR=/tmp/hydracache-074-diagnostic-local-target: cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_ipc --test diagnostic_lease --test host_execution --test service --test server --locked -j 2",
+  "root_command": "cargo test -p xtask --test performance_contract_074 --test release_evidence --locked -j 2",
+  "windows_checks": {
+    "diagnostic_ipc": 19,
+    "diagnostic_lease": 18,
+    "host_execution": 5
+  },
+  "linux_checks": {
+    "diagnostic_ipc": 22,
+    "diagnostic_lease": 20,
+    "host_execution": 6,
+    "server": 19,
+    "service": 3
+  },
+  "root_checks": {
+    "performance_contract_074": 68,
+    "release_evidence": 13
+  },
+  "windows_passed": 42,
+  "linux_passed": 70,
+  "root_passed": 81,
+  "package_checks": "all-target check and strict all-feature clippy: supervisor on Windows/Linux, xtask on Windows",
+  "formatting_checked": true,
+  "doc_check_passed": true,
+  "local_performance_contract_passed": true,
+  "release_governance_checks_passed": 17,
+  "documentation_links_passed": true,
+  "mdbook_passed": true,
+  "ship_check_expected_exit": 1,
+  "ship_check_reason": "C74 candidate identity and release qualification incomplete",
+  "local_authenticated_ipc_checked": true,
+  "production_route_enabled": false,
+  "pending_intent_reconciliation_implemented": false,
+  "ledger_eviction_allowed": false,
+  "live_cgroup_cleanup_proven": false,
+  "autonomous_watchdog_proven": false,
+  "build_provenance_proven": false,
+  "raw_workload_receipt_packet_sealed": false,
+  "host_ssh_performed": false,
+  "service_operations_performed": false,
+  "product_workload_started": false,
+  "pilot_executed": false,
+  "qualification_started": false,
+  "full_workspace_verify_run": false,
+  "numerical_performance_claim_allowed": false,
+  "promotable": false,
+  "admission_allowed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "root_cargo_lock_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "observer_cargo_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+  "source_blobs": {
+    "tools/long-run-supervisor-074/src/diagnostic_ipc.rs": "d91168b45295d789d1edb5696b44aed469519ff7",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "4e8a3b8bea65afbfb025c9528e74ae8c1adb9adc",
+    "tools/long-run-supervisor-074/tests/diagnostic_ipc.rs": "f5534b0640c6a7616c41c9ba3c8f2babd0354436",
+    "crates/xtask/tests/performance_contract_074.rs": "65b1e5aae0fbfc40c22850accc229b952963b846",
+    "docs/testing/performance/0.74/diagnostic-ipc-local-contract.toml": "6b8cf30991a99acb9a531f0a8bb1145d27fff35d"
+  },
+  "development_observations_summary_not_raw": [
+    "preimplementation target failed E0432: diagnostic_ipc module absent",
+    "first strict Windows lint refused three redundant borrows in extracted fenced methods; corrected before implementation commit; subsequent Windows/Linux gates passed"
+  ],
+  "files": [
+    {
+      "path": "windows.log",
+      "bytes": 3920,
+      "sha256": "76ea187387ad3581ab3f7d10667b1156b22953ae31a72d41bf9402f2acb85d68",
+      "git_blob": "4a3b0ecfea886948a7da7d05eb34242c6baca2bd"
+    },
+    {
+      "path": "linux.log",
+      "bytes": 13734,
+      "sha256": "e8dcd8cbb95d4532ad556656f2b62ee0636c136a811816d52f64568ebe46267b",
+      "git_blob": "5a574a79040ba7146b392ec100939eb90fbd963d"
+    },
+    {
+      "path": "root.log",
+      "bytes": 8580,
+      "sha256": "df28938b7965cc38a864361ebf903db7c4b440e5ef0db27ab50ceb421cdb7c07",
+      "git_blob": "cea2fc154c2404b5420f562b8b001393b7e5845f"
+    }
+  ]
+}
