@@ -28,3 +28,17 @@ existing malformed/drift cases and the unchanged eight-by-sixteen real parallel
 reader. The fcntl test must also check a nonnegative return before asserting the
 CLOEXEC bit. No observer source, locks, P0 inputs, quality floor, qualification,
 installed service or product workload changes belong to this correction.
+
+The test-first capture reproduces prefix/tail assembly deterministically before
+the implementation. The corrected reader uses a stack buffer of 65,537 bytes
+and copies only the returned prefix into its result; it does not retain a full
+buffer allocation for each small proc document. Exact-limit, over-limit, empty,
+Interrupted IO and oversized metadata are fail-closed, with no partial retry.
+This is control-plane correctness, not a product allocation/throughput claim.
+The original Linux process group of 15 tests (including the two new tests) passed
+after the correction. A clean-source cross-platform repeat is still required.
+
+The kernel [seq_file documentation](https://docs.kernel.org/filesystems/seq_file.html)
+describes stateful generation across read sessions. That supports investigation
+of the multi-syscall assembly hypothesis, not identification of the exact
+uncaptured kernel document that caused the earlier parallel test failure.

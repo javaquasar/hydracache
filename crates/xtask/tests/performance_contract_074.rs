@@ -7,6 +7,53 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn proc_documents_use_one_bounded_read_without_retry_or_parser_relaxation() {
+    let c = contract("diagnostic-proc-document-contract.toml");
+    assert_eq!(c["maximum_document_bytes"].as_integer(), Some(65536));
+    assert_eq!(
+        c["maximum_positional_reads_per_document"].as_integer(),
+        Some(1)
+    );
+    assert_eq!(c["offset"].as_integer(), Some(0));
+    assert_eq!(c["original_parallel_readers"].as_integer(), Some(8));
+    assert_eq!(c["original_parallel_iterations"].as_integer(), Some(16));
+    for flag in [
+        "partial_document_retry_allowed",
+        "new_pid_capture_allowed",
+        "parser_or_identity_checks_weakened",
+        "production_backend_enrolled",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process.rs"),
+    )
+    .unwrap();
+    let reader = code
+        .split("fn bounded_from(")
+        .nth(1)
+        .unwrap()
+        .split("fn child(")
+        .next()
+        .unwrap();
+    assert!(reader.contains("let mut buffer = [0; DOCUMENT_BYTES + 1];"));
+    assert!(reader.contains("let n = read(&mut buffer, 0)?;"));
+    assert_eq!(reader.matches("read(&mut").count(), 1);
+    for forbidden in ["while ", "loop {", "\n    for ", ".seek(", "read_to_end"] {
+        assert!(!reader.contains(forbidden), "{forbidden}");
+    }
+    assert!(code.contains("fn one_positional_read_never_splices_a_regenerated_document_tail()"));
+    assert!(code.contains("fn single_read_budget_empty_error_and_declared_size_fail_closed()"));
+    assert!(code.contains("for _ in 0..8"));
+    assert!(code.contains("for _ in 0..16"));
+}
+
+#[test]
 fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
     let c = contract("diagnostic-manager-local-contract.toml");
     assert_eq!(

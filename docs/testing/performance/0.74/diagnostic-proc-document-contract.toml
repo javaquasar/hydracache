@@ -17,4 +17,3 @@ admission_allowed = false
 original_parallel_readers = 8
 original_parallel_iterations = 16
 deterministic_regression = "one_positional_read_never_splices_a_regenerated_document_tail"
-

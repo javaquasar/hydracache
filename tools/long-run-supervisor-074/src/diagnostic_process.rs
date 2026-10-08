@@ -397,26 +397,29 @@ fn parse_cgroup(bytes: &[u8]) -> Result<String, ProcessError> {
     Ok(path.into())
 }
 fn bounded(file: &File) -> Result<Vec<u8>, ProcessError> {
-    if file.metadata()?.len() > DOCUMENT_BYTES as u64 {
+    bounded_from(file.metadata()?.len(), |buffer, offset| {
+        file.read_at(buffer, offset)
+    })
+}
+fn bounded_from(
+    size: u64,
+    mut read: impl FnMut(&mut [u8], u64) -> std::io::Result<usize>,
+) -> Result<Vec<u8>, ProcessError> {
+    if size > DOCUMENT_BYTES as u64 {
         return Err(ProcessError::Budget);
     }
-    let mut bytes = Vec::new();
-    let mut chunk = [0; 4096];
-    while bytes.len() <= DOCUMENT_BYTES {
-        let limit = chunk.len().min(DOCUMENT_BYTES + 1 - bytes.len());
-        let n = file.read_at(&mut chunk[..limit], bytes.len() as u64)?;
-        if n == 0 {
-            break;
-        }
-        bytes.extend_from_slice(&chunk[..n]);
-    }
-    if bytes.len() > DOCUMENT_BYTES {
+    // A proc seq_file may regenerate between positional reads on the same
+    // descriptor. Do not combine a captured prefix with a later generation's
+    // tail, even for an EOF probe. A short/error read is never retried.
+    let mut buffer = [0; DOCUMENT_BYTES + 1];
+    let n = read(&mut buffer, 0)?;
+    if n > DOCUMENT_BYTES {
         return Err(ProcessError::Budget);
     }
-    if bytes.is_empty() {
+    if n == 0 {
         return Err(ProcessError::Invalid);
     }
-    Ok(bytes)
+    Ok(buffer[..n].to_vec())
 }
 fn child(directory: &File, name: &str, is_dir: bool) -> Result<File, ProcessError> {
     let name = CString::new(name).map_err(|_| ProcessError::Invalid)?;
@@ -836,6 +839,7 @@ mod tests {
         assert!(ProcFiles::open(0).is_err());
         assert!(ProcFiles::open(u32::MAX).is_err());
         let flags = unsafe { libc::fcntl(r.probe.pidfd.as_raw_fd(), libc::F_GETFD) };
+        assert!(flags >= 0, "F_GETFD must succeed before checking CLOEXEC");
         assert_ne!(flags & libc::FD_CLOEXEC, 0);
     }
     struct Helper(Child);
@@ -885,5 +889,66 @@ mod tests {
                 });
             }
         });
+    }
+    #[test]
+    fn one_positional_read_never_splices_a_regenerated_document_tail() {
+        let original = stat(17, 19, 31, "S");
+        let mut reads = 0;
+        let bytes = bounded_from(0, |buffer, offset| {
+            reads += 1;
+            let part: &[u8] = match reads {
+                1 => {
+                    assert_eq!(offset, 0);
+                    &original
+                }
+                2 => {
+                    assert_eq!(offset, original.len() as u64);
+                    b"extra\n"
+                }
+                _ => b"",
+            };
+            buffer[..part.len()].copy_from_slice(part);
+            Ok(part.len())
+        })
+        .unwrap();
+        assert_eq!(
+            bytes, original,
+            "an EOF probe must not splice a regenerated seq_file tail"
+        );
+        assert_eq!(reads, 1);
+        assert!(parse_stat(&bytes).is_ok());
+    }
+
+    #[test]
+    fn single_read_budget_empty_error_and_declared_size_fail_closed() {
+        let mut calls = 0;
+        let bytes = bounded_from(0, |buffer, offset| {
+            calls += 1;
+            assert_eq!(offset, 0);
+            assert_eq!(buffer.len(), DOCUMENT_BYTES + 1);
+            buffer[..DOCUMENT_BYTES].fill(b'a');
+            Ok(DOCUMENT_BYTES)
+        })
+        .unwrap();
+        assert_eq!(bytes.len(), DOCUMENT_BYTES);
+        assert_eq!(calls, 1);
+        assert!(matches!(
+            bounded_from(0, |_, _| Ok(DOCUMENT_BYTES + 1)),
+            Err(ProcessError::Budget)
+        ));
+        assert!(matches!(
+            bounded_from(0, |_, _| Ok(0)),
+            Err(ProcessError::Invalid)
+        ));
+        assert!(matches!(
+            bounded_from(0, |_, _| Err(std::io::ErrorKind::Interrupted.into())),
+            Err(ProcessError::Io(_))
+        ));
+        assert!(matches!(
+            bounded_from((DOCUMENT_BYTES + 1) as u64, |_, _| panic!(
+                "oversized document must not be read"
+            )),
+            Err(ProcessError::Budget)
+        ));
     }
 }
