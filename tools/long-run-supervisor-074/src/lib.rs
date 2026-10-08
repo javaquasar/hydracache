@@ -23,6 +23,7 @@ pub mod config;
 pub mod diagnostic_artifacts;
 pub mod diagnostic_ipc;
 pub mod diagnostic_lease;
+pub mod diagnostic_receipts;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_unit;
 pub mod event;

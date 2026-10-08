@@ -88,7 +88,8 @@ pub struct DiagnosticState {
     pub admission_allowed: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CellIntent {
     pub lease_id: String,
     pub boot_id: String,

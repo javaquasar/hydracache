@@ -227,6 +227,11 @@ pub struct ArtifactContents<'a> {
 }
 
 impl VerifiedBuild {
+    /// Identity of the externally checked attestation, not installed-file proof.
+    pub fn identity(&self) -> &DiagnosticIdentity {
+        &self.identity
+    }
+
     pub fn statement(&self) -> &BuildStatement {
         &self.statement
     }

@@ -7,6 +7,67 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution() {
+    let c = contract("diagnostic-receipts-local-contract.toml");
+    for field in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "real_product_build_allowed_by_this_slice",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "packet_is_durable_spool_proof",
+        "caller_terminal_claim_is_live_cgroup_proof",
+        "synthetic_report_is_measurement",
+        "retry_allowed",
+        "old_inputs_or_packets_mutable",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    for (field, value) in [
+        ("stream_bytes", 8388608),
+        ("combined_bytes", 16777216),
+        ("minimum_usable_cpu_ns", 1000000000),
+        ("minimum_usable_measurement_wall_ns", 1000000000),
+        ("samples", 10000),
+        ("sample_calendar_step_ns", 200000),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value), "{field}");
+    }
+    assert_eq!(
+        c["source_commit"].as_str(),
+        Some("62114be0f5da3218706e30d7424acfb5d0579d07")
+    );
+    assert_eq!(c["preset"].as_str(), Some("baseline-get-four-cells-p0-v1"));
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        let code =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
+                .unwrap();
+        assert!(
+            !code.contains("diagnostic_receipts"),
+            "production enrollment: {name}"
+        );
+    }
+    let code = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_receipts.rs"),
+    )
+    .unwrap();
+    for prohibited in [
+        "std::process::Command",
+        "Command::new",
+        "std::fs::",
+        "zbus::",
+        "tokio::",
+    ] {
+        assert!(
+            !code.contains(prohibited),
+            "byte-only verifier: {prohibited}"
+        );
+    }
+}
+
+#[test]
 fn local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed() {
     let c = contract("diagnostic-artifacts-local-contract.toml");
     for field in [

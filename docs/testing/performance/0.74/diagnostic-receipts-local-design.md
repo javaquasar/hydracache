@@ -45,3 +45,19 @@ authenticated process exit or live recursive cgroup cleanup proof. Filesystem
 spool pinning, crash-safe no-overwrite publication, bounded live backend and
 controller-loss fixtures are separate subsequent slices. No production caller
 is added; synthetic positive fixtures are explicitly not real measurements.
+
+## Implementation and negative preparation observations
+
+`diagnostic_receipts.rs` provides strict recursive duplicate detection, typed
+report mirrors, fixed-input/sample/CPU/HDR/wire reconciliation and canonical
+packet replay. `CellIntent` gains strict serde solely for this packet; no field,
+existing lease document or IPC schema changes. The build capability exposes
+its checked identity read-only. No dependency or observer source changes.
+
+The first compile failed E0277 because `CellIntent` had no serializer. After
+adding it, an initial filtered command ran only one histogram unit test and
+zero integration tests; it is not six-test evidence. The unfiltered integration
+run passed five but failed one incorrect negative assertion: adding one ns to
+CPU wall time can be valid. The test now uses wall time shorter than observation;
+the verifier and floors were not weakened. A documentation patch context failed
+without changing files. These are preparation failures, not product attempts.
