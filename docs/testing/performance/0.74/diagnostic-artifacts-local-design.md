@@ -44,3 +44,57 @@ Windows proves portable parsing/crypto/content guards only; Linux adds actual
 temporary-filesystem descriptor/mode/owner tests. No subprocess is spawned by
 the verifier. Live cgroup backend/watchdog, raw timing output sealing and loss
 fixtures remain subsequent work; host admission stays closed.
+
+## Implementation and negative preparation observations
+
+`diagnostic_artifacts.rs` implements strict canonical signed receipts, external
+repository/builder policy, fixed-input checks, borrowed-byte content validation
+and exact deterministic `CellIntent` binding. A checked statement alone does not
+certify installed files. `diagnostic_artifacts_linux.rs` separately opens the
+exact nine-file bundle through directory descriptors. Binary hashing streams
+64-KiB chunks; dev/inode/owner/mode/link count/size/mtime/ctime are reconciled
+before/after reading. The returned snapshot retains all descriptors and reopens
+names for revalidation. Procfs enumeration refers to an owned directory FD;
+data files are opened only with `openat`. No verifier executes a binary.
+
+Cargo JSON is a projection, not validation of every Cargo field. Duplicate known
+fields, invalid root target/profile/features/executable, compiler errors,
+missing/duplicate/failed terminal records and tail junk are refused. Unrelated
+fields remain opaque and signed by their raw-log digest. A trusted signer still
+needs a separately reviewed real build procedure/environment: clean-source and
+System-allocator assertions are not reconstructed from synthetic ELF bytes.
+
+The initial red test failed E0432 because the module did not exist. An initial
+fixture compile failed E0282 until its config map had an explicit String key.
+The first root run passed 67 tests but failed two because W11 registration used
+unknown `claims.tests` instead of `work_item.required_tests`. These errors were
+fixed before implementation commit. Documentation patch-context refusals later
+changed no files; patches were reapplied against verified contexts. These are
+preparation observations, not numerical attempts; no floor changed.
+
+## Clean-source repeat and remaining boundary
+
+Implementation `70ca60eb3f2f75a326e9f6430467749b76440a04` was clean before and
+after [the captured repeat](local-runs/diagnostic-artifacts-70ca60eb/manifest.json).
+Windows passed nine artifact plus 42 IPC/lease/host-lock checks (51); local Linux
+passed 15 artifact plus 70 IPC/lease/host/server/service checks (85). The root
+passed 69 contract and 13 release-evidence tests (82). All-target check and
+strict all-feature clippy passed for the supervisor on both OSes and xtask on
+Windows. Formatting, doc/local-contract, 17 governance checks, links and book
+passed. Ship check remains expected-red, exit 1, for unresolved C74/qualification.
+This is focused evidence, not full workspace/release verification or timing.
+
+Positive fixtures use a non-runnable fake ELF, invented Cargo log and test key;
+only pinned raw config/lock bytes are real inputs. Linux exercises temporary
+descriptors/modes, sparse size bounds and parallel inspectors; Windows proves
+portable content/crypto policy only. Three PowerShell Tee captures retain exact
+bytes/hashes/Git blobs, not native Linux stdout-byte provenance. Old packets,
+both lockfiles and qualification manifest are unchanged. The frozen contract
+stays preregistered; the separate packet records implementation completion.
+
+Next local slice: bounded raw timing receipt/spool validation and sealing, then
+live owned-tree backend, bounded DBus/watchdog and non-product loss fixtures.
+Real clean Linux compilation, reviewed builder trust, immutable install/start
+coordination, uncertain-ledger reconciliation and host installation/pilot remain
+separate prerequisites. Neither signature nor snapshot opens full D3, supported
+allocator retention, production execution or numerical admission.

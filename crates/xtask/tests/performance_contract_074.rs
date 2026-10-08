@@ -83,6 +83,134 @@ fn local_diagnostic_artifact_verification_keeps_execution_and_build_claims_close
         digest,
         "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
     );
+    let packet =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-artifacts-70ca60eb");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["schema_version"],
+        "diagnostic-artifacts-local-evidence-074-v1"
+    );
+    assert_eq!(
+        m["implementation_source_commit"],
+        "70ca60eb3f2f75a326e9f6430467749b76440a04"
+    );
+    assert_eq!(
+        m["implementation_source_tree"],
+        "4ab1648c5cdf09e6a7fc0a425e884028b300bad2"
+    );
+    assert_eq!(
+        m["preregistered_contract_commit"],
+        "127405fc3300d2e8e6274c546c7132426cab12b2"
+    );
+    assert_eq!(m["qualification_manifest_sha256"], digest);
+    assert_eq!(m["ship_check_expected_exit"], 1);
+    for flag in [
+        "source_clean_before",
+        "source_clean_after",
+        "local_attestation_verifier_checked",
+        "synthetic_positive_fixture",
+        "linux_temporary_descriptor_checks_passed",
+    ] {
+        assert_eq!(m[flag], true, "{flag}");
+    }
+    for flag in [
+        "production_fixed_root_inspected",
+        "production_route_enabled",
+        "real_trusted_builder_enrolled",
+        "real_product_binary_built",
+        "build_provenance_proven",
+        "path_revalidation_is_exec_race_closure",
+        "pending_intent_reconciliation_implemented",
+        "live_cgroup_cleanup_proven",
+        "autonomous_watchdog_proven",
+        "raw_workload_receipt_packet_sealed",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[flag], false, "{flag}");
+    }
+    for (path, field, expected) in [
+        (
+            "Cargo.lock",
+            "root_cargo_lock_sha256",
+            "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+        ),
+        (
+            "tools/get-owner-scheduled-controls-074/Cargo.lock",
+            "observer_cargo_lock_sha256",
+            "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+        ),
+    ] {
+        let actual: String = Sha256::digest(std::fs::read(root().join(path)).unwrap())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, expected);
+        assert_eq!(m[field], expected);
+    }
+    assert_eq!(m["files"].as_array().unwrap().len(), 3);
+    for (name, bytes_expected, hash, passed, summaries) in [
+        (
+            "windows.log",
+            4923,
+            "2a4432c3b029d320231392af8000bcfd7970136ff1a7cdd70127eafdf33fc8a3",
+            51,
+            4,
+        ),
+        (
+            "linux.log",
+            15211,
+            "e0e804026e015b3ed2b50dd5b3b0329e256e8ef81151099a2c663bbd606c80cb",
+            85,
+            6,
+        ),
+        (
+            "root.log",
+            8632,
+            "a3d317a3c82bc486cb99e932ace4f2010f47265912e17cd3d97b61de8efb7594",
+            82,
+            2,
+        ),
+    ] {
+        let entry = m["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|f| f["path"] == name)
+            .unwrap();
+        let bytes = std::fs::read(packet.join(name)).unwrap();
+        assert_eq!(bytes.len(), bytes_expected);
+        assert_eq!(entry["bytes"], bytes_expected);
+        let actual: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, hash);
+        assert_eq!(entry["sha256"], hash);
+        let text = String::from_utf8(bytes).unwrap();
+        assert_eq!(
+            text.lines()
+                .filter(|s| s.starts_with("test ") && s.trim_end().ends_with(" ... ok"))
+                .count(),
+            passed
+        );
+        let rows: Vec<_> = text
+            .lines()
+            .filter(|s| s.starts_with("test result:"))
+            .collect();
+        assert_eq!(rows.len(), summaries);
+        assert!(rows.iter().all(|s| s.contains("0 failed; 0 ignored;")));
+    }
+    let log = std::fs::read_to_string(packet.join("root.log")).unwrap();
+    assert!(log.contains("ship admission is closed while candidate identity and release qualification are incomplete"));
 }
 
 #[test]

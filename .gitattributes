@@ -55,3 +55,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-lease-*/** -text whitespace=
 docs/testing/performance/0.74/local-runs/diagnostic-lease-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-ipc-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-ipc-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-artifacts-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-artifacts-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

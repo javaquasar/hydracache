@@ -1172,3 +1172,18 @@ remains.
   versions and filenames.
 - No 0.74 candidate measurement begins until this design, W0 contract and expected-red suite are
   reviewed and frozen.
+
+## Local diagnostic artifact trust is not campaign admission
+
+The separate [diagnostic artifact contract](diagnostic-artifacts-local-contract.toml)
+and [verification design/evidence](diagnostic-artifacts-local-design.md) add
+schema-1 independently keyed build attestations, fixed P0 content checks and
+Linux descriptor snapshots. W11 registers these sources and negative fixtures.
+Clean `70ca60eb` passed 51 Windows, 85 local Linux and 82 focused root tests.
+Only temporary local fixtures were inspected; their ELF/log/build signatures
+are synthetic. Existing controller/campaign schemas, sealed packets, frozen
+qualification manifest, installed service and rollout order are unchanged.
+Production key enrollment, real clean build, immutable install/start coordination,
+raw timing receipts, live owned-tree backend/watchdog and non-product loss
+rehearsals remain before separately authorized diagnostic installation/pilot.
+No product qualification or release admission follows from this local slice.

@@ -21,8 +21,10 @@ The human subsequently approved local control-plane implementation. The
 [first diagnostic lease/coordinator model](diagnostic-lease-local-design.md)
 shares short host transactions, persists start intents and refuses release
 without exact empty-cgroup/retained-receipt observations. Its backend is mocked,
-and its Linux unit builder does not dispatch. Authenticated IPC, live cleanup,
-artifact/receipt validation and fault fixtures remain incomplete. Neither this
+and its Linux unit builder does not dispatch. Local authenticated IPC and signed
+artifact/content verification have separate fixture evidence; production
+enrollment, live cleanup, real builder trust, raw timing receipt sealing and loss
+fixtures remain incomplete. Neither this
 model nor local metadata timeouts are workload-tree deadline proof. The installed
 host remains unchanged; no real Linux pilot binary has been inspected.
 
@@ -1795,3 +1797,20 @@ local structural gates passed; ship admission remains expected-red. Production
 key/route enrollment, live cgroup/watchdog, trusted builds, raw measurement
 receipts and reconciliation are not proved. No host operation, product pilot,
 qualification or numerical claim was authorized or performed by this step.
+
+The next [local diagnostic artifact verifier](diagnostic-artifacts-local-design.md)
+checks an independently keyed build statement, fixed source/tree/toolchain/
+features/locks and all four P0 raw configs. Linux snapshots retain read-only
+directory/file descriptors and refuse unsafe links/modes/owners, special files,
+size overflow, extra entries, replacements and in-place drift. No production
+route or builder key is enrolled. The positive ELF/log/signature are synthetic;
+this is not a real compilation receipt or future pathname-exec race closure.
+
+Clean `70ca60eb` passed 51 Windows, 85 local Linux and 82 focused root checks,
+plus check/clippy/format/doc/local-contract/governance/link/book checks. The
+[raw packet](local-runs/diagnostic-artifacts-70ca60eb/manifest.json) retains exact
+source and capture hashes, negative preparation notes and closed admission.
+Old packets, workloads, qualification manifest and lockfiles stay unchanged.
+Raw timing receipt/spool sealing, live cgroup/watchdog, real trusted build,
+install/start coordination and loss fixtures remain; no allocation or throughput
+measurement, product pilot, host operation or qualification was run by this slice.

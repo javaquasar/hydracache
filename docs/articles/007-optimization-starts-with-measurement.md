@@ -4257,3 +4257,55 @@ independent build/config trust, bounded raw receipt handling, the live owned-tre
 backend and autonomous watchdog/loss fixtures. Those prerequisites keep eventual
 performance attribution separate from an unsafe or ambiguous execution attempt;
 they do not replace matched A/A-A/B, native floors or supported retention proof.
+
+### A valid hash is not a trusted build
+
+The next hypothesis was again about attribution integrity, not a faster cache:
+could a diagnostic controller accept the right source label but the wrong binary,
+profile, allocator or config? The previous Python inspection intentionally proved
+only metadata/hash consistency. We left its sealed results unchanged and added
+a separate local verifier. This avoids retroactively treating an old unsigned
+inspection seal as proof that a particular compiler produced particular bytes.
+
+A strict schema-1 build statement now signs source commit/tree, clean-before/
+after assertions, Rust/Cargo target/profile, empty baseline features, System/no
+counting allocator, exact command and binary/log/lock/four P0 config hashes and
+sizes. Its Ed25519 domain is distinct from controller and provisioning requests;
+the builder key, builder identity and repository policy must come from outside
+the receipt. Both raw receipt and binary digests must match the diagnostic lease.
+Changing a signed field fails verification, while re-signing a disallowed source,
+feature, command or config does not bypass the fixed-input policy. The Cargo JSON
+projection also requires one matching unprofiled release executable and a final
+successful build record; missing/duplicate completion, errors and trailing junk
+are rejected. Opaque Cargo fields remain covered by the raw-log digest.
+
+The file boundary needed separate tests. A pathname can change between checking
+metadata and opening bytes. Linux therefore walks directories without following
+links and opens the exact nine-file bundle relative to a retained directory FD.
+It refuses writable/special modes, wrong owner, hardlinks, symlinks, special files,
+missing/empty/oversized files and extra entries. Binary hashing streams 64-KiB
+chunks and compares metadata before/after reading. The returned snapshot owns
+the file descriptors; revalidation compares both named inode identity and pinned
+bytes. Temporary fixtures confirmed replacement of a file or entire bundle,
+in-place mutation and mode/entry drift are refused. A FIFO fixture did not hang;
+independent parallel inspections retained separate descriptors.
+
+Clean implementation `70ca60eb` passed nine new portable tests on Windows and
+15 on local Linux, together with 42/70 existing integration checks respectively.
+The root passed 69 contract and 13 release-evidence tests. Focused check/clippy,
+formatting, doc/local-contract/governance/link/book checks passed; ship admission
+stayed expected-red. Development failures are retained: missing-module E0432,
+ambiguous fixture map type E0282 and two root test failures caused by an unknown
+TOML registration table. They were fixed before sealing, without changing a
+workload, floor or prior packet. See [exact evidence and limitations](../testing/performance/0.74/diagnostic-artifacts-local-design.md).
+
+The justified result is a tested local attestation/content verifier. It is **not
+compilation or performance proof**: positive fixtures deliberately use a fake,
+non-runnable ELF, invented Cargo log and test key. A real trusted build procedure
+and environment still need review. Read-only descriptor verification also does
+not close a later systemd pathname-exec race; immutable installation/start must
+be coordinated under the host fence. No real builder key, production route or
+host install was enrolled, and no throughput/allocation workload ran. Raw timing
+receipt sealing and live owned-tree/watchdog loss fixtures remain next. Keeping
+these boundaries explicit prevents preparation correctness from being mistaken
+for an accepted allocation hypothesis, native nonregression or full-D3 result.

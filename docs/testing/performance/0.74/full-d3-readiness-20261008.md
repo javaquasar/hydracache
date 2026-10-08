@@ -84,3 +84,13 @@ cgroup/watchdog evidence. Fixed build/config verification, raw receipt/spool
 sealing, explicit journal reconciliation and non-product process-loss fixtures
 remain before any separately approved installation/pilot. No allocation/timing,
 System-retention, full D3, accepted candidate or qualification status changed.
+
+The subsequent [local artifact verification slice](diagnostic-artifacts-local-design.md)
+now checks signed build statements and fixed binary/config/lock/log contents,
+including retained Linux descriptors and replacement/in-place-drift refusal.
+Clean `70ca60eb` passed 51 Windows, 85 local Linux and 82 focused root tests;
+check/clippy, formatting and documentation gates passed. Positive build fixtures
+are synthetic, no real builder key is enrolled, and production installation is
+not inspected. This closes the local verifier implementation, not real build
+provenance, a later pathname-exec race, raw timing packet sealing, live cgroup/
+watchdog or fault-rehearsal prerequisites. Numerical admission remains closed.
