@@ -173,10 +173,23 @@ impl DiagnosticCoordinator {
             return Err(DiagnosticError::Clock);
         }
         let (root, _fence) = lock_host_root(root)?;
+        Self::reserve_fenced(&root, identity, now)
+    }
+
+    /// Caller must hold the shared host fence throughout this transaction.
+    pub(crate) fn reserve_fenced(
+        root: &Path,
+        identity: DiagnosticIdentity,
+        now: &DiagnosticClock,
+    ) -> Result<Self, DiagnosticError> {
+        validate_identity(&identity)?;
+        if now.boot_id != identity.boot_id {
+            return Err(DiagnosticError::Clock);
+        }
         ensure_absent(&root.join(ACTIVE_CAMPAIGN_NAME))?;
         ensure_absent(&root.join(ACTIVE_DIAGNOSTIC_NAME))?;
         ensure_absent(&root.join(PENDING_NAME))?;
-        ensure_absent(&terminal_path(&root, &identity.lease_id))?;
+        ensure_absent(&terminal_path(root, &identity.lease_id))?;
         let parent = root.parent().ok_or(DiagnosticError::Invalid)?;
         for name in [
             "campaign-lifecycle-smoke-v1.json",
@@ -199,9 +212,9 @@ impl DiagnosticCoordinator {
             promotable: false,
             admission_allowed: false,
         };
-        publish(&root, &state)?;
+        publish(root, &state)?;
         Ok(Self {
-            root,
+            root: root.to_owned(),
             lease_id: identity.lease_id,
         })
     }
@@ -211,12 +224,16 @@ impl DiagnosticCoordinator {
             return Err(DiagnosticError::Invalid);
         }
         let (root, _fence) = lock_host_root(root)?;
-        let state = read_active(&root)?.ok_or(DiagnosticError::Invalid)?;
+        Self::recover_fenced(&root, lease_id)
+    }
+
+    pub(crate) fn recover_fenced(root: &Path, lease_id: &str) -> Result<Self, DiagnosticError> {
+        let state = read_active(root)?.ok_or(DiagnosticError::Invalid)?;
         if state.identity.lease_id != lease_id {
             return Err(DiagnosticError::Invalid);
         }
         Ok(Self {
-            root,
+            root: root.to_owned(),
             lease_id: lease_id.to_owned(),
         })
     }
@@ -238,9 +255,17 @@ impl DiagnosticCoordinator {
         Ok(state)
     }
 
-    /// Future IPC must authenticate this operation. This library is local-only.
+    /// Direct local model API. The separate local IPC handler authenticates and
+    /// journals requests before calling the fenced form; no production route.
     pub fn heartbeat(&self, now: &DiagnosticClock) -> Result<(), DiagnosticError> {
         let (_root, _fence) = lock_host_root(&self.root)?;
+        self.heartbeat_fenced(now).map(|_| ())
+    }
+
+    pub(crate) fn heartbeat_fenced(
+        &self,
+        now: &DiagnosticClock,
+    ) -> Result<DiagnosticState, DiagnosticError> {
         let mut state = self.load()?;
         check_clock(&state, now)?;
         // A lost controller cannot resurrect its lease by arriving late.
@@ -251,7 +276,8 @@ impl DiagnosticCoordinator {
         }
         state.controller_monotonic_ns = now.monotonic_ns;
         state.last_observed_monotonic_ns = now.monotonic_ns;
-        bump_publish(&self.root, &mut state)
+        bump_publish(&self.root, &mut state)?;
+        Ok(state)
     }
 
     pub fn cancel<B: DiagnosticBackend>(
@@ -277,6 +303,15 @@ impl DiagnosticCoordinator {
         cancel: bool,
     ) -> Result<DiagnosticState, DiagnosticError> {
         let (_root, _fence) = lock_host_root(&self.root)?;
+        self.drive_fenced(now, backend, cancel)
+    }
+
+    pub(crate) fn drive_fenced<B: DiagnosticBackend>(
+        &self,
+        now: &DiagnosticClock,
+        backend: &mut B,
+        cancel: bool,
+    ) -> Result<DiagnosticState, DiagnosticError> {
         let mut state = self.load()?;
         check_clock(&state, now)?;
         if state.stage == DiagnosticStage::Terminal {
@@ -493,7 +528,7 @@ fn check_clock(state: &DiagnosticState, now: &DiagnosticClock) -> Result<(), Dia
     }
 }
 
-fn validate_identity(identity: &DiagnosticIdentity) -> Result<(), DiagnosticError> {
+pub(crate) fn validate_identity(identity: &DiagnosticIdentity) -> Result<(), DiagnosticError> {
     if !is_hash(&identity.lease_id)
         || !is_hash(&identity.binary_sha256)
         || !is_hash(&identity.build_provenance_sha256)
@@ -511,7 +546,7 @@ fn validate_identity(identity: &DiagnosticIdentity) -> Result<(), DiagnosticErro
     Ok(())
 }
 
-fn validate_state(state: &DiagnosticState) -> Result<(), DiagnosticError> {
+pub(crate) fn validate_state(state: &DiagnosticState) -> Result<(), DiagnosticError> {
     validate_identity(&state.identity)?;
     if state.revision == 0
         || state.completed_cells > 4
@@ -610,12 +645,13 @@ fn terminal_path(root: &Path, id: &str) -> PathBuf {
     root.join(format!("diagnostic-{id}.terminal.json"))
 }
 
-fn read_document(path: &Path) -> Result<Vec<u8>, DiagnosticError> {
+pub(crate) fn read_document(path: &Path) -> Result<Vec<u8>, DiagnosticError> {
+    read_bounded_document(path, MAX_DOCUMENT_BYTES)
+}
+
+pub(crate) fn read_bounded_document(path: &Path, maximum: u64) -> Result<Vec<u8>, DiagnosticError> {
     let metadata = fs::symlink_metadata(path)?;
-    if !metadata.is_file()
-        || metadata.file_type().is_symlink()
-        || metadata.len() > MAX_DOCUMENT_BYTES
-    {
+    if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() > maximum {
         return Err(DiagnosticError::Invalid);
     }
     #[cfg(unix)]
@@ -634,7 +670,7 @@ fn read_document(path: &Path) -> Result<Vec<u8>, DiagnosticError> {
     }
     let file = options.open(path)?;
     let opened = file.metadata()?;
-    if !opened.is_file() || opened.len() > MAX_DOCUMENT_BYTES {
+    if !opened.is_file() || opened.len() > maximum {
         return Err(DiagnosticError::Invalid);
     }
     #[cfg(unix)]
@@ -645,14 +681,14 @@ fn read_document(path: &Path) -> Result<Vec<u8>, DiagnosticError> {
         }
     }
     let mut bytes = Vec::new();
-    file.take(MAX_DOCUMENT_BYTES + 1).read_to_end(&mut bytes)?;
-    if bytes.len() as u64 > MAX_DOCUMENT_BYTES {
+    file.take(maximum + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > maximum {
         return Err(DiagnosticError::Invalid);
     }
     Ok(bytes)
 }
 
-fn write_new(path: &Path, bytes: &[u8]) -> Result<(), DiagnosticError> {
+pub(crate) fn write_new(path: &Path, bytes: &[u8]) -> Result<(), DiagnosticError> {
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
     #[cfg(unix)]
@@ -667,11 +703,11 @@ fn write_new(path: &Path, bytes: &[u8]) -> Result<(), DiagnosticError> {
 }
 
 #[cfg(unix)]
-fn sync_directory(root: &Path) -> Result<(), DiagnosticError> {
+pub(crate) fn sync_directory(root: &Path) -> Result<(), DiagnosticError> {
     File::open(root)?.sync_all()?;
     Ok(())
 }
 #[cfg(not(unix))]
-fn sync_directory(_root: &Path) -> Result<(), DiagnosticError> {
+pub(crate) fn sync_directory(_root: &Path) -> Result<(), DiagnosticError> {
     Ok(())
 }

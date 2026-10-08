@@ -27,6 +27,11 @@ explicit reconciliation procedure proves the outcome. No automatic recovery,
 eviction, retry or implicit lease extension is allowed. A pending file, malformed
 or noncanonical ledger, future version, linked file or exhausted capacity fails
 closed. The ledger is integrity checked, not tamper-proof against its owner.
+Responses are unsigned local receipts, not independently authenticated remote
+attestations or fresh status reports on replay. The 128-entry cap is global to
+the host root; exhaustion intentionally stops admission. Archive/reconciliation
+and key provisioning are not implemented by this slice. Direct coordinator
+library calls remain a local test seam, not an authenticated public service.
 
 Local tests must cover signature tampering/cross-domain/time bounds, malformed
 packets, peer/principal denial, cached replay, nonce conflicts, revision races,
@@ -36,3 +41,30 @@ backend; no real unit is created or stopped. Production main/config/server
 dispatch remains unchanged. Build trust, real recursive cgroup cleanup,
 autonomous watchdog scheduling, raw receipt validation/sealing and separately
 approved deployment remain later requirements.
+
+## Implemented local boundary
+
+`diagnostic_ipc.rs` implements signed reserve, heartbeat, status and cancel against
+the local model, with a private canonical request ledger. Authentication precedes
+lease/ledger filesystem access; revision validation, durable intent, state mutation and cached
+completion share one host fence. Internal fenced coordinator methods avoid a
+nested lock acquisition or a revision-check/unlock/mutate race. Production main,
+server/config and campaign protocol are unchanged, as checked by the root guard.
+
+Tests cover every signed field, campaign-domain refusal, exact expiry, malformed
+or oversized packets, unknown fields, denied UID/group/principal, original actor
+and run-attempt ownership, nonce conflicts, eight concurrent same-revision
+requests, replay after terminal release and non-refreshing status/replay.
+Injected loss inside tree stop retains the already durable intent and refuses
+both replay and fresh requests; an explicit fixture models the heartbeat
+mutation/response-publication crash gap. Corrupt, future, noncanonical, linked,
+pending and capacity-exhausted journals fail closed. Backend error text never
+enters the bounded response. Linux fixtures use real temporary sockets for both
+kernel-peer acceptance and denial, with zero product starts.
+
+The initial pre-implementation test failed with missing-module E0432. The first
+strict Windows lint found three redundant borrows introduced by extracting the
+fenced methods; these were corrected without changing any workload or threshold.
+This is preparation/security evidence, not allocation attribution or performance
+measurement. No live unit/cgroup, watchdog, production key enrollment, binary
+build trust, raw workload packet or host admission follows from these tests.

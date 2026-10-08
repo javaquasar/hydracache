@@ -20,6 +20,7 @@ pub mod checkpoint_evidence;
 pub mod client;
 #[cfg(target_os = "linux")]
 pub mod config;
+pub mod diagnostic_ipc;
 pub mod diagnostic_lease;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_unit;

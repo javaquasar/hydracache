@@ -7,6 +7,69 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn local_diagnostic_ipc_keeps_production_and_numerical_admission_closed() {
+    let c = contract("diagnostic-ipc-local-contract.toml");
+    for flag in [
+        "production_route_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "ledger_eviction_allowed",
+        "pending_request_reexecution_allowed",
+        "replayed_heartbeat_extends_lease",
+        "arbitrary_paths_argv_or_workload_allowed",
+        "old_campaign_protocol_changed",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        c["revision_check_and_mutation_share_host_fence"].as_bool(),
+        Some(true)
+    );
+    for (field, value) in [
+        ("packet_bytes", 16384),
+        ("authorization_seconds", 60),
+        ("future_clock_skew_seconds", 0),
+        ("ledger_bytes", 262144),
+        ("ledger_entries", 128),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value), "{field}");
+    }
+    assert_eq!(
+        c["signature_domain"].as_str(),
+        Some("hydracache-diagnostic-request-074-v1")
+    );
+    assert_eq!(c["preset"].as_str(), Some("baseline-get-four-cells-p0-v1"));
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        let code =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
+                .unwrap();
+        for enrollment in [
+            "diagnostic_ipc",
+            "handle_local_connection",
+            "SignedDiagnosticRequest",
+        ] {
+            assert!(!code.contains(enrollment), "{name}: {enrollment}");
+        }
+    }
+    let p0 = contract("rental-diagnostic-pilot-contract.toml");
+    assert_eq!(p0["numerical_execution_allowed"].as_bool(), Some(false));
+    let digest: String = Sha256::digest(
+        std::fs::read(root().join("docs/testing/performance/0.74/qualification-manifest.toml"))
+            .unwrap(),
+    )
+    .iter()
+    .map(|b| format!("{b:02x}"))
+    .collect();
+    assert_eq!(
+        digest,
+        "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    );
+}
+
+#[test]
 fn local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0() {
     let c = contract("diagnostic-lease-local-contract.toml");
     assert_eq!(c["local_implementation_authorized"].as_bool(), Some(true));
