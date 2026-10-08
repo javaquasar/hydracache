@@ -23,6 +23,11 @@ allowed. This is helper lifetime control, not workload-tree cleanup proof.
 Scheduler suspension and an uninterruptible kernel task can exceed wall time;
 those cases fail closed rather than claim a hard physical deadline.
 
+The helper's Tokio worker count is fixed to one. Before parsing input or opening
+DBus, its address space is capped at 512 MiB, CPU time at two seconds and core
+dumps disabled. These are helper resource ceilings, not product thresholds.
+Unsupported kernel/resource operations refuse rather than silently downgrade.
+
 The worker accepts only a lease/boot/four-surface scope, never a unit name, path,
 argv or method. It uses the fixed system-bus socket under root-owned,
 non-symlink, non-writable ancestor directories, pins systemd's unique bus owner,
