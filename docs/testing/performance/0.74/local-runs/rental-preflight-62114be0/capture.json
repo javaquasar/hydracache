@@ -1,0 +1,403 @@
+{
+  "admission_allowed": false,
+  "allocator_libraries": {
+    "exit_code": 0,
+    "status": "available",
+    "stderr_present": false,
+    "stdout": ""
+  },
+  "allocator_native_active_resident_retained_proven": false,
+  "architecture": "x86_64",
+  "boot_id_sha256": "52196e29c76b8804406c4a94fc1de7fa062e7e5ac60ae6e76001c77a94ae5ed7",
+  "build_user_toolchain": {
+    "cargo": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "cargo 1.94.0 (85eff7c80 2026-01-15)"
+    },
+    "rustc": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8"
+    },
+    "toolchains": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "stable-x86_64-unknown-linux-gnu (active, default)\n1.94.0-x86_64-unknown-linux-gnu"
+    }
+  },
+  "captured_at_unix_seconds": 1791454007,
+  "cpu_sample": {
+    "interval_ns": 2000187048,
+    "noise_gate_pass_claimed": false,
+    "per_cpu": {
+      "cpu": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          1600,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 1600
+      },
+      "cpu0": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu1": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu2": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu3": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu4": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu5": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu6": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      },
+      "cpu7": {
+        "busy_fraction": 0.0,
+        "delta_ticks": [
+          0,
+          0,
+          0,
+          200,
+          0,
+          0,
+          0,
+          0
+        ],
+        "iowait_fraction": 0.0,
+        "steal_fraction": 0.0,
+        "total_ticks": 200
+      }
+    },
+    "ticks_per_second": 100
+  },
+  "disk": {
+    "free_bytes": 421734981632
+  },
+  "effective_uid": 0,
+  "elapsed_ns": 2029649406,
+  "governors": {
+    "policy0": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy1": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy2": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy3": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy4": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy5": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy6": {
+      "status": "available",
+      "value": "performance"
+    },
+    "policy7": {
+      "status": "available",
+      "value": "performance"
+    }
+  },
+  "installed_binary_hashes": {
+    "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074": {
+      "bytes": 8630248,
+      "sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "status": "available"
+    },
+    "/opt/hydracache-performance/0.74/campaign-lifecycle-fixture": {
+      "bytes": 8630248,
+      "sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "status": "available"
+    }
+  },
+  "kernel": "6.8.0-138-generic",
+  "libc": {
+    "exit_code": 0,
+    "status": "available",
+    "stderr_present": false,
+    "stdout": "glibc 2.39"
+  },
+  "lifecycle_after": {
+    "markers": [
+      {
+        "path": "/var/lib/hydracache-performance/campaigns/active-campaign",
+        "status": "absent"
+      },
+      {
+        "path": "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json",
+        "status": "absent"
+      },
+      {
+        "path": "/run/hydracache-perf/controller-loss-smoke-v1.json",
+        "status": "absent"
+      }
+    ],
+    "processes": {
+      "complete": true,
+      "disappeared_during_snapshot": 0,
+      "matched": [
+        {
+          "cgroup": "0::/system.slice/hydracache-performance-supervisor-074.service",
+          "comm": "hydracache-long",
+          "pid": 8839
+        }
+      ],
+      "unknown_processes": 0
+    },
+    "supervisor": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "MainPID=8839\nNRestarts=0\nControlGroup=/system.slice/hydracache-performance-supervisor-074.service\nActiveState=active\nSubState=running"
+    },
+    "units": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "actions.runner.javaquasar-hydracache.hydracache-perf-v1.service loaded inactive dead    GitHub Actions Runner (javaquasar-hydracache.hydracache-perf-v1)\nhydracache-perf-idle-policy.service                             loaded active   exited  HydraCache reference CPU idle-state policy\nhydracache-performance-supervisor-074.service                   loaded active   running HydraCache 0.74 performance campaign supervisor"
+    }
+  },
+  "lifecycle_before": {
+    "markers": [
+      {
+        "path": "/var/lib/hydracache-performance/campaigns/active-campaign",
+        "status": "absent"
+      },
+      {
+        "path": "/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json",
+        "status": "absent"
+      },
+      {
+        "path": "/run/hydracache-perf/controller-loss-smoke-v1.json",
+        "status": "absent"
+      }
+    ],
+    "processes": {
+      "complete": true,
+      "disappeared_during_snapshot": 0,
+      "matched": [
+        {
+          "cgroup": "0::/system.slice/hydracache-performance-supervisor-074.service",
+          "comm": "hydracache-long",
+          "pid": 8839
+        }
+      ],
+      "unknown_processes": 0
+    },
+    "supervisor": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "MainPID=8839\nNRestarts=0\nControlGroup=/system.slice/hydracache-performance-supervisor-074.service\nActiveState=active\nSubState=running"
+    },
+    "units": {
+      "exit_code": 0,
+      "status": "available",
+      "stderr_present": false,
+      "stdout": "actions.runner.javaquasar-hydracache.hydracache-perf-v1.service loaded inactive dead    GitHub Actions Runner (javaquasar-hydracache.hydracache-perf-v1)\nhydracache-perf-idle-policy.service                             loaded active   exited  HydraCache reference CPU idle-state policy\nhydracache-performance-supervisor-074.service                   loaded active   running HydraCache 0.74 performance campaign supervisor"
+    }
+  },
+  "limitations": [
+    "two snapshots do not reserve the host or prevent a concurrent start",
+    "two-second CPU inventory is not finite A/A noise calibration",
+    "library discovery is not telemetry capability proof or System allocator retention",
+    "root audit PATH is not the future measured build-user toolchain"
+  ],
+  "memory_bytes": {
+    "MemAvailable": 65503191040,
+    "MemTotal": 66490490880,
+    "SwapFree": 33268166656,
+    "SwapTotal": 33268166656
+  },
+  "numa_online": {
+    "status": "available",
+    "value": "0"
+  },
+  "perf_event_paranoid": {
+    "status": "available",
+    "value": "4"
+  },
+  "placement": {
+    "isolated": {
+      "status": "available",
+      "value": "1-4"
+    },
+    "nohz_full": {
+      "status": "available",
+      "value": "1-4"
+    },
+    "offline": {
+      "status": "available",
+      "value": "8-15"
+    },
+    "online": {
+      "status": "available",
+      "value": "0-7"
+    },
+    "smt/control": {
+      "status": "available",
+      "value": "off"
+    }
+  },
+  "pressure": {
+    "cpu": {
+      "status": "available",
+      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=3511253\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0"
+    },
+    "io": {
+      "status": "available",
+      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=84435584\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=83889691"
+    },
+    "memory": {
+      "status": "available",
+      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=40284\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=40115"
+    }
+  },
+  "product_process_started": false,
+  "promotable": false,
+  "provisioning": {
+    "fields": {
+      "binary_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "fixture_binary_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "source_commit": "543108f1ccd206ae670803c2617f07e7fa91ae62"
+    },
+    "raw_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525",
+    "status": "available"
+  },
+  "qualification_started": false,
+  "read_only": true,
+  "schema_version": "hydracache-rental-readonly-preflight-074-v1",
+  "service_operations_performed": false,
+  "tool_paths": {
+    "cargo": null,
+    "cc": "/usr/bin/cc",
+    "cmake": "/usr/bin/cmake",
+    "make": "/usr/bin/make",
+    "perf": "/usr/bin/perf",
+    "python3": "/usr/bin/python3",
+    "rustc": null,
+    "taskset": "/usr/bin/taskset"
+  }
+}

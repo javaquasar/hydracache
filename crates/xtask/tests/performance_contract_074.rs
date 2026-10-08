@@ -7,6 +7,190 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission() {
+    let c = contract("rental-diagnostic-pilot-contract.toml");
+    for flag in [
+        "host_audit_is_host_reservation",
+        "numerical_execution_allowed",
+        "service_mutation_allowed",
+        "product_changes_allowed",
+        "product_candidate_execution_allowed",
+        "allocator_change_allowed",
+        "qualification_allowed",
+        "same_box_redis_allowed",
+        "invalidated_b0_retry_allowed",
+        "promotable",
+        "admission_allowed",
+        "full_d3_completed",
+        "freeze_c74_allowed",
+        "supported_system_retention_proven",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(c["state"].as_str(), Some("prepared-not-executable"));
+    let p0 = &c["p0_cpu_feasibility"];
+    assert_eq!(p0["maximum_fresh_processes"].as_integer(), Some(4));
+    assert_eq!(
+        p0["maximum_total_execution_wall_seconds"].as_integer(),
+        Some(300)
+    );
+    assert_eq!(
+        p0["minimum_usable_cpu_ns"].as_integer(),
+        Some(1_000_000_000)
+    );
+    assert_eq!(
+        p0["minimum_usable_measurement_wall_ns"].as_integer(),
+        Some(1_000_000_000)
+    );
+    for flag in [
+        "secure_cells_allowed",
+        "automatic_retry_allowed",
+        "aa_noise_calibration_claim_allowed",
+        "ab_comparison_allowed",
+        "cross_surface_numeric_comparison_allowed",
+        "allocation_or_retention_claim_allowed",
+        "padding_cpu_or_lowering_quality_floors_allowed",
+    ] {
+        assert_eq!(p0[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "stop_first_invalid",
+        "retain_every_attempt",
+        "exclusive_host_reservation_required",
+        "binary_and_clean_source_seal_required_before_first_process",
+        "child_process_tree_deadline_owner_required",
+    ] {
+        assert_eq!(p0[flag].as_bool(), Some(true), "{flag}");
+    }
+    let cells = p0["cells"].as_array().unwrap();
+    assert_eq!(cells.len(), 4);
+    for (index, surface) in ["embedded", "direct", "resp2", "resp3"].iter().enumerate() {
+        let cell = &cells[index];
+        assert_eq!(cell["order"].as_integer(), Some((index + 1) as i64));
+        assert_eq!(cell["surface"].as_str(), Some(*surface));
+        let input: Value = serde_json::from_slice(
+            &std::fs::read(
+                root()
+                    .join("docs/testing/performance/0.74")
+                    .join(cell["config"].as_str().unwrap()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(input["surface"], *surface);
+        assert_eq!(input["operation"], "get");
+        for field in [
+            "seed",
+            "keyspace",
+            "payload_bytes",
+            "warmup_calls",
+            "slots",
+            "minimum_usable_cpu_ns",
+            "minimum_usable_measurement_wall_ns",
+        ] {
+            assert_eq!(input[field].as_i64(), p0[field].as_integer(), "{field}");
+        }
+        assert_eq!(
+            input["dataset_sha256"].as_str(),
+            p0["dataset_sha256"].as_str()
+        );
+        assert_eq!(input["schedule"]["operations"], 10_000);
+        assert_eq!(input["schedule"]["offered_rate_per_second"], 5_000);
+        assert_eq!(input["schedule"]["concurrency"], 8);
+        for field in [
+            "maximum_queued",
+            "operation_timeout_ns",
+            "drain_timeout_ns",
+            "slo_ns",
+            "highest_trackable_ns",
+        ] {
+            assert_eq!(
+                input["schedule"][field].as_i64(),
+                p0[field].as_integer(),
+                "{field}"
+            );
+        }
+        assert_eq!(
+            input["pipeline_depth"].as_i64(),
+            cell["pipeline_depth"].as_integer()
+        );
+    }
+    let packet = root().join("docs/testing/performance/0.74/local-runs/rental-preflight-62114be0");
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        manifest["collector_source_commit"],
+        "62114be0f5da3218706e30d7424acfb5d0579d07"
+    );
+    for flag in [
+        "service_operations_performed",
+        "product_process_started",
+        "pilot_executed",
+        "aa_noise_gate_pass_claimed",
+        "allocator_native_active_resident_retained_proven",
+        "qualification_started",
+        "promotable",
+        "admission_allowed",
+        "signed_host_admission_claimed",
+    ] {
+        assert_eq!(manifest[flag], false, "{flag}");
+    }
+    let capture = std::fs::read(packet.join("capture.json")).unwrap();
+    assert_eq!(
+        capture.len() as u64,
+        manifest["raw_capture"]["bytes"].as_u64().unwrap()
+    );
+    let hex = |bytes: &[u8]| {
+        Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    };
+    assert_eq!(
+        hex(&capture),
+        manifest["raw_capture"]["sha256"].as_str().unwrap()
+    );
+    assert_eq!(
+        hex(&std::fs::read(root().join(manifest["collector_path"].as_str().unwrap())).unwrap()),
+        manifest["collector_sha256"].as_str().unwrap()
+    );
+    assert_eq!(
+        hex(&std::fs::read(
+            root().join("docs/testing/performance/0.74/qualification-manifest.toml")
+        )
+        .unwrap()),
+        manifest["qualification_manifest_sha256"].as_str().unwrap()
+    );
+    let observed: Value = serde_json::from_slice(&capture).unwrap();
+    for phase in ["lifecycle_before", "lifecycle_after"] {
+        assert_eq!(observed[phase]["processes"]["complete"], true);
+        assert_eq!(observed[phase]["markers"].as_array().unwrap().len(), 3);
+        for marker in observed[phase]["markers"].as_array().unwrap() {
+            assert_eq!(marker["status"], "absent");
+        }
+        assert!(observed[phase]["supervisor"]["stdout"]
+            .as_str()
+            .unwrap()
+            .contains("MainPID=8839\nNRestarts=0"));
+    }
+    assert_eq!(
+        observed["provisioning"]["fields"]["source_commit"],
+        "543108f1ccd206ae670803c2617f07e7fa91ae62"
+    );
+    for (_, binary) in observed["installed_binary_hashes"].as_object().unwrap() {
+        assert_eq!(
+            binary["sha256"],
+            observed["provisioning"]["fields"]["binary_sha256"]
+        );
+    }
+    assert_eq!(
+        observed["allocator_native_active_resident_retained_proven"],
+        false
+    );
+    assert_eq!(observed["cpu_sample"]["noise_gate_pass_claimed"], false);
+}
+
+#[test]
 fn unprofiled_timing_instrumentation_preserves_closed_cohort_and_memory_admission() {
     let c = contract("unprofiled-timing-controls-contract.toml");
     for flag in [

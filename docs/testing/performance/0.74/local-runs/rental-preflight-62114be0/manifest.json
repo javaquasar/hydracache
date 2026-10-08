@@ -1,0 +1,33 @@
+{
+  "schema_version": "hydracache-rental-preflight-packet-074-v1",
+  "collector_source_commit": "62114be0f5da3218706e30d7424acfb5d0579d07",
+  "collector_path": "scripts/perf/performance_rental_preflight_074.py",
+  "collector_sha256": "aa42747877eb06b96f6ea940d9c30790d79d8892f71e83081e8eb6a566b06d00",
+  "source_clean_before_and_after_capture": true,
+  "capture_transport": "ordinary SSH; reviewed collector over stdin to sudo -n python3; Windows Start-Process redirected stdout without PowerShell text-pipeline reformatting",
+  "collector_exit_code": 0,
+  "stderr_bytes": 0,
+  "captured_at_unix_seconds": 1791454007,
+  "raw_capture": {
+    "path": "capture.json",
+    "bytes": 10703,
+    "sha256": "a543e3026dc5ef89ffce41dd1a367b4d63cf3da9b2e2c644543e46b49d355631"
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "collector_unit_checks": {
+    "windows_passed": 9,
+    "local_wsl_ubuntu_passed": 9,
+    "linux_dangling_symlink_fixture_executed": true,
+    "full_workspace_verify_claimed": false
+  },
+  "read_only": true,
+  "service_operations_performed": false,
+  "product_process_started": false,
+  "pilot_executed": false,
+  "aa_noise_gate_pass_claimed": false,
+  "allocator_native_active_resident_retained_proven": false,
+  "qualification_started": false,
+  "promotable": false,
+  "admission_allowed": false,
+  "signed_host_admission_claimed": false
+}

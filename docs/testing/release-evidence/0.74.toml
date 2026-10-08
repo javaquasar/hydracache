@@ -352,6 +352,14 @@ source = "crates/xtask/tests/performance_contract_074.rs"
 function = "timing_instrumentation_receipts_bind_raw_logs_without_admitting_a_cohort"
 
 [[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission"
+
+[[work_item.required_tests]]
+source = "tools/get-owner-scheduled-controls-074/tests/timing.rs"
+function = "rental_pilot_draft_inputs_validate_without_starting_a_fixture"
+
+[[work_item.required_tests]]
 source = "tools/get-owner-scheduled-controls-074/tests/timing.rs"
 function = "every_surface_get_put_warmup_keeps_original_offers_and_closes_owners"
 

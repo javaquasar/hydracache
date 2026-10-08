@@ -7,6 +7,12 @@ verified unchanged from the measured candidate. `B73` deliberately pins both ide
 immutable confirmation archive commit `570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`; W0 is closed,
 but local 0.74 numbers remain non-promotable.
 
+The [2026-10-08 read-only rented-host inventory](rental-preflight-20261008.md)
+confirms a quiet observed host and the reviewed Linux toolchain, without
+changing services or starting workloads. Four baseline-only CPU-feasibility
+configs are prepared; their execution, finite A/A-A/B cohort, fixed secure PKI,
+supported System-retention lane and qualification remain separate prerequisites.
+
 The scenario matrix keeps RESP, HC/1, HC/2, direct `ClientSurfaceState`, raw embedded
 `HydraCache`, and typed embedded `HydraCache` results separate. The three execution tiers are
 also separate: `local-quick` is a developer smoke, `local-attribution` is non-promotable D1

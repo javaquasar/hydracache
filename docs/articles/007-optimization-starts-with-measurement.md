@@ -4099,3 +4099,47 @@ instrumentation proofs, not a new numerical series or performance claim.
 The later receipt guard verifies all 23 retained file hashes/sizes and real test
 counts; the local contract suite now has 64 checks. It does not relabel the
 earlier source-bound receipts as a passing gate for a newer candidate.
+
+## An idle rented host is useful, but is not a measurement gate
+
+On 2026-10-08 the next decision was whether to use the already rented Linux
+host while local instrumentation was being completed. The approved first step
+was deliberately bounded: read-only inventory and preparation of a short pilot,
+not a performance campaign. The source-bound inventory is retained at
+`docs/testing/performance/0.74/local-runs/rental-preflight-62114be0/`; the exact
+collector commit is `62114be0f5da3218706e30d7424acfb5d0579d07`.
+
+The practical opportunity was confirmed: eight online CPUs, isolated CPUs 1–4,
+performance governors, SMT off, about 61 GiB available RAM and Rust 1.94.0 for
+the existing build account. Both protected lifecycle snapshots found no active
+campaign marker or fixture context. Only the stable supervisor matched the
+cache/build/runner process inventory; the runner was inactive. Installed binary
+hashes matched the existing provisioning receipt. No service was stopped,
+restarted, reprovisioned or updated, and no product workload was launched.
+
+This checks availability **at the observed instants**, not host reservation,
+IRQ isolation, future process placement or a finite A/A noise pass. The fixed
+two-second CPU sample cannot demonstrate repeatable latency or CPU precision.
+Similarly, glibc and an empty dynamic allocator-library inventory do not supply
+allocator active/resident/retained telemetry. Hardware/stack profiling access
+also remains unresolved with `perf_event_paranoid=4`; changing that policy was
+not part of this audit. The System-retention prerequisite remains red rather
+than borrowing jemalloc's differently scoped counters or calling RSS retention.
+
+The prepared first pilot asks only whether the existing bounded observer can
+accumulate the already frozen one-second CPU and measurement-wall minima.
+It has four baseline-only fresh-process cells: embedded, direct client surface,
+RESP2 and RESP3 GET, with identical 16-key/4-KiB corpus, seed, 10k original offers
+at 5k/s, eight slots and 64 excluded warmup calls. The strict configs are checked
+against the real Rust input and corpus code without constructing a fixture.
+One invalid observation stops the probe and is retained; a too-short native
+sample would motivate a separately preregistered larger bounded driver, not
+padding, changed floors, an automatic retry or a product regression verdict.
+
+Execution is still closed until its Linux source/binary/lock/features,
+coordinator tree deadlines, host reservation and placement/noise contract are
+sealed and the pilot itself is authorized. Secure A/A-A/B additionally needs
+fixed private PKI across fresh processes. The later complete five-pair cohort
+and supported System-retention lane remain separate work. This is a useful
+way to exploit the host without mistaking sunk rental cost for evidence or
+reopening the already closed allocator-replacement/purge experiments.

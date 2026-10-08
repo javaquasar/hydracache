@@ -52,3 +52,9 @@ No cross-surface score or unchanged native source replaces those guards.
 W10 is still correctly closed: zero accepted performance candidates, no
 composition attempt and unresolved C74. Hosted qualification, same-box Redis,
 six-hour/24-hour workloads and rented-host use are not authorized by this audit.
+
+The subsequent human request authorizes only a read-only rented-host inventory
+and preparation of a short pilot. See [the host findings and execution blockers](rental-preflight-20261008.md)
+and `rental-diagnostic-pilot-contract.toml`. That inventory is not host
+reservation, numerical execution authorization, supported retention, an A/A
+noise pass or a change to any inherited gate.

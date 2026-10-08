@@ -4,6 +4,48 @@ use get_owner_scheduled_controls_074::{
     timing::{run, Input, TimedObservation},
 };
 
+#[test]
+fn rental_pilot_draft_inputs_validate_without_starting_a_fixture() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../docs/testing/performance/0.74/rental-pilot-draft");
+    let mut digests = std::collections::BTreeSet::new();
+    for (surface, expected) in [
+        (
+            "embedded",
+            "06d84110ec8fe56f986ef5cbef75b3e9df559449fdf32cb2c42680b683363a3c",
+        ),
+        (
+            "direct",
+            "ee3dde1ca3322617ac08b6609bca5d151e9d49a8595a1743b3b3c321b22a1bc4",
+        ),
+        (
+            "resp2",
+            "e2ead8f4d1e61f1a1ab4246bb308ce7b00a2532bed52dc2c5ea1effb236fc11d",
+        ),
+        (
+            "resp3",
+            "642dd2671bdfb92c7d0d9400b10b9bd37dbbdd5b40ec2d0a50e8c4c1ea66c938",
+        ),
+    ] {
+        let data = std::fs::read(root.join(format!("{surface}.json"))).unwrap();
+        let config: Input = serde_json::from_slice(&data).unwrap();
+        config.validate().unwrap();
+        assert_eq!(
+            config.dataset_sha256,
+            Dataset::new(16, 4096).unwrap().digest()
+        );
+        assert_eq!(config.schedule.operations, 10_000);
+        assert_eq!(config.schedule.offered_rate_per_second, 5_000);
+        assert_eq!(config.slots, 8);
+        assert_eq!(config.warmup_calls, 64);
+        assert_eq!(config.minimum_usable_cpu_ns, 1_000_000_000);
+        assert_eq!(config.minimum_usable_measurement_wall_ns, 1_000_000_000);
+        assert_eq!(config.workload_sha256(), expected);
+        assert!(digests.insert(config.workload_sha256()));
+    }
+    assert_eq!(digests.len(), 4); // Surface identity is intentionally not pooled away.
+}
+
 fn input(surface: &str, operation: &str) -> Input {
     serde_json::from_value(serde_json::json!({
         "schema_version": 1,

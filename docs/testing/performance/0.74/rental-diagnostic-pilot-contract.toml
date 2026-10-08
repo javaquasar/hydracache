@@ -1,0 +1,119 @@
+schema_version = 1
+contract_id = "rental-diagnostic-pilot-074-draft-v1"
+state = "prepared-not-executable"
+authorization_scope = "read-only host audit and preparation of a short diagnostic pilot"
+read_only_audit_source = "62114be0f5da3218706e30d7424acfb5d0579d07"
+intended_observer_source = "62114be0f5da3218706e30d7424acfb5d0579d07"
+host_audit_is_host_reservation = false
+numerical_execution_allowed = false
+service_mutation_allowed = false
+product_changes_allowed = false
+product_candidate_execution_allowed = false
+allocator_change_allowed = false
+qualification_allowed = false
+same_box_redis_allowed = false
+invalidated_b0_retry_allowed = false
+promotable = false
+admission_allowed = false
+full_d3_completed = false
+freeze_c74_allowed = false
+supported_system_retention_proven = false
+
+[p0_cpu_feasibility]
+purpose = "Determine whether the existing 10k-offer baseline observer meets the unchanged CPU quality floors. No speedup, noise pass, native floor or candidate admission."
+features = []
+counting_allocator = false
+allocator = "System"
+target = "x86_64-unknown-linux-gnu"
+rust_toolchain = "1.94.0"
+build_profile = "release"
+runtime = "current-thread; colocated driver/client/server"
+cpu_scope = "whole process, including driver/oracles/drain/projection, not server-only"
+planned_measured_cpu = "1"
+planned_housekeeping_cpus = "0,5-7"
+placement_is_already_verified = false
+processes_run_serially = true
+maximum_fresh_processes = 4
+maximum_invocation_wall_seconds = 60
+maximum_total_execution_wall_seconds = 300
+maximum_receipt_bytes_per_process = 16777216
+binary_and_clean_source_seal_required_before_first_process = true
+child_process_tree_deadline_owner_required = true
+kernel_boot_governor_cpuset_revalidation_required = true
+exclusive_host_reservation_required = true
+builds_during_measurement_allowed = false
+stop_first_invalid = true
+retain_every_attempt = true
+automatic_retry_allowed = false
+same_probe_with_more_operations_allowed = false
+padding_cpu_or_lowering_quality_floors_allowed = false
+minimum_usable_cpu_ns = 1000000000
+minimum_usable_measurement_wall_ns = 1000000000
+offered_operations_per_process = 10000
+offered_rate_per_second = 5000
+original_last_offer_ns = 1999800000
+seed = 740074
+keyspace = 16
+payload_bytes = 4096
+dataset_sha256 = "d1f7bca83840d79ebea94a65bfe9389bf2465a5ca2ac3d74535bca3600663498"
+warmup_calls = 64
+slots = 8
+maximum_queued = 32
+operation_timeout_ns = 2000000000
+drain_timeout_ns = 5000000000
+slo_ns = 10000000
+highest_trackable_ns = 10000000000
+slo_is_product_acceptance_floor = false
+secure_cells_allowed = false
+aa_noise_calibration_claim_allowed = false
+ab_comparison_allowed = false
+cross_surface_numeric_comparison_allowed = false
+allocation_or_retention_claim_allowed = false
+
+[[p0_cpu_feasibility.cells]]
+order = 1
+config = "rental-pilot-draft/embedded.json"
+workload_sha256 = "06d84110ec8fe56f986ef5cbef75b3e9df559449fdf32cb2c42680b683363a3c"
+surface = "embedded"
+operation = "get"
+pipeline_depth = 0
+
+[[p0_cpu_feasibility.cells]]
+order = 2
+config = "rental-pilot-draft/direct.json"
+workload_sha256 = "ee3dde1ca3322617ac08b6609bca5d151e9d49a8595a1743b3b3c321b22a1bc4"
+surface = "direct"
+operation = "get"
+pipeline_depth = 0
+
+[[p0_cpu_feasibility.cells]]
+order = 3
+config = "rental-pilot-draft/resp2.json"
+workload_sha256 = "e2ead8f4d1e61f1a1ab4246bb308ce7b00a2532bed52dc2c5ea1effb236fc11d"
+surface = "resp2"
+operation = "get"
+pipeline_depth = 10
+
+[[p0_cpu_feasibility.cells]]
+order = 4
+config = "rental-pilot-draft/resp3.json"
+workload_sha256 = "642dd2671bdfb92c7d0d9400b10b9bd37dbbdd5b40ec2d0a50e8c4c1ea66c938"
+surface = "resp3"
+operation = "get"
+pipeline_depth = 10
+
+[unresolved_before_execution]
+explicit_pilot_execution_authorization = true
+coordinator_review_and_hard_deadlines = true
+exclusive_host_reservation_without_changing_existing_supervisor = true
+exact_linux_release_binary_and_feature_lock_source_seal = true
+placement_and_background_cpu_contract = true
+all_attempt_raw_packet_and_failure_sealing = true
+
+[later_separate_contracts]
+larger_bounded_or_streaming_driver_if_cpu_window_unusable = true
+fixed_private_pki_for_fresh_secure_processes = true
+finite_five_independent_counterbalanced_aa_ab_pairs_per_cell = true
+supported_allocator_telemetry_for_shipping_system_allocator = true
+complete_native_resp_security_size_miss_error_slow_reader_matrix = true
+closed_w9e_allocator_replacement_or_purge_is_not_reopened = true

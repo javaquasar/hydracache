@@ -41,3 +41,6 @@ docs/testing/performance/0.74/local-runs/embedded-scheduled-*/**/*.log -text whi
 # Timing instrumentation/semantic receipts also bind raw log bytes, not speedup.
 docs/testing/performance/0.74/local-runs/timing-instrumentation-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/timing-instrumentation-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+# Read-only host inventory receipts bind captured bytes, not admission.
+scripts/perf/performance_rental_preflight_074.py text eol=lf
+docs/testing/performance/0.74/local-runs/rental-preflight-*/** -text whitespace=cr-at-eol
