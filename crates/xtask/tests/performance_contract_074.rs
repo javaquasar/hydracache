@@ -7,6 +7,189 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution() {
+    let c = contract("rental-pilot-coordinator-contract.toml");
+    assert_eq!(c["state"].as_str(), Some("preregistered-preparation-only"));
+    for flag in [
+        "counting_allocator_allowed",
+        "product_or_fixture_execution_allowed",
+        "host_reservation_allowed",
+        "remote_build_or_upload_allowed",
+        "service_mutation_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "require_ship",
+        "metadata_timeout_is_workload_tree_proof",
+        "hash_valid_seal_is_compilation_provenance",
+        "verified_build_is_pilot_authorization",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    let reservation = &c["reservation_finding"];
+    for flag in [
+        "external_flock_allowed",
+        "external_active_marker_allowed",
+        "private_uncoordinated_lock_allowed",
+        "finding_is_live_fault_rehearsal",
+    ] {
+        assert_eq!(reservation[flag].as_bool(), Some(false), "{flag}");
+    }
+    assert_eq!(
+        reservation["resolution_requires_explicit_service_or_control_plane_review"].as_bool(),
+        Some(true)
+    );
+    let deadline = &c["future_workload_deadline"];
+    for (field, value) in [
+        ("process_seconds", 60),
+        ("total_seconds", 300),
+        ("receipt_bytes", 16_777_216),
+    ] {
+        assert_eq!(deadline[field].as_integer(), Some(value));
+    }
+    for flag in [
+        "implementation_and_host_rehearsal_complete",
+        "process_group_alone_certifies_arbitrary_tree",
+        "automatic_retry_allowed",
+    ] {
+        assert_eq!(deadline[flag].as_bool(), Some(false), "{flag}");
+    }
+    for flag in [
+        "owned_cgroup_and_child_tree_required",
+        "controller_loss_must_not_orphan_workload",
+        "partial_stdout_stderr_retained",
+        "timeout_or_overflow_is_invalid",
+    ] {
+        assert_eq!(deadline[flag].as_bool(), Some(true), "{flag}");
+    }
+    let packet = root().join("docs/testing/performance/0.74/local-runs/rental-prepare-f0030b50");
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        manifest["preparation_source_commit"],
+        "f0030b50edb9886992dc232d33f7146055fd3d33"
+    );
+    for flag in ["source_clean_before", "source_clean_after"] {
+        assert_eq!(manifest[flag], true);
+    }
+    for flag in [
+        "metadata_timeout_is_workload_tree_proof",
+        "compilation_provenance_proven",
+        "real_linux_binary_inspected",
+        "host_ssh_performed",
+        "service_operations_performed",
+        "product_process_started",
+        "pilot_executed",
+        "qualification_started",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(manifest[flag], false, "{flag}");
+    }
+    let hex = |bytes: &[u8]| {
+        Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    };
+    for file in manifest["files"].as_array().unwrap() {
+        let name = file["path"].as_str().unwrap();
+        assert!(["windows.log", "linux.log", "plan.json"].contains(&name));
+        let bytes = std::fs::read(packet.join(name)).unwrap();
+        assert_eq!(bytes.len() as u64, file["bytes"].as_u64().unwrap());
+        assert_eq!(hex(&bytes), file["sha256"].as_str().unwrap());
+    }
+    assert_eq!(manifest["files"].as_array().unwrap().len(), 3);
+    assert_eq!(
+        hex(&std::fs::read(root().join(manifest["preparation_path"].as_str().unwrap())).unwrap()),
+        manifest["preparation_sha256"].as_str().unwrap()
+    );
+    assert_eq!(
+        hex(&std::fs::read(
+            root().join("docs/testing/performance/0.74/qualification-manifest.toml")
+        )
+        .unwrap()),
+        manifest["qualification_manifest_sha256"].as_str().unwrap()
+    );
+    for (name, field) in [
+        ("windows.log", "windows_checks"),
+        ("linux.log", "local_wsl_linux_checks"),
+    ] {
+        assert_eq!(manifest[field], 11);
+        let log = std::fs::read_to_string(packet.join(name)).unwrap();
+        assert_eq!(
+            log.lines()
+                .filter(|line| line.trim_end().ends_with(" ... ok"))
+                .count(),
+            11
+        );
+        assert!(log.contains("Ran 11 tests"));
+        assert_eq!(
+            log.lines()
+                .rfind(|line| !line.trim().is_empty())
+                .unwrap()
+                .trim(),
+            "OK"
+        );
+    }
+    let plan: Value =
+        serde_json::from_slice(&std::fs::read(packet.join("plan.json")).unwrap()).unwrap();
+    assert_eq!(plan["state"], "PREPARATION_ONLY");
+    assert_eq!(plan["host_reservation"], "BLOCKED_EXTERNAL_FLOCK_UNSAFE");
+    for flag in [
+        "metadata_commands_started",
+        "build_started",
+        "linux_binary_verified",
+        "workload_started",
+        "workload_child_tree_deadline_implemented",
+        "pilot_execution_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(plan[flag], false, "{flag}");
+    }
+    for (field, name) in [
+        (
+            "coordinator_contract_sha256",
+            "rental-pilot-coordinator-contract.toml",
+        ),
+        (
+            "pilot_contract_sha256",
+            "rental-diagnostic-pilot-contract.toml",
+        ),
+    ] {
+        assert_eq!(
+            plan[field].as_str().unwrap(),
+            hex(&std::fs::read(root().join("docs/testing/performance/0.74").join(name)).unwrap())
+        );
+    }
+    let p0 = contract("rental-diagnostic-pilot-contract.toml");
+    for (index, cell) in p0["p0_cpu_feasibility"]["cells"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+    {
+        let receipt = &plan["configs"][index];
+        assert_eq!(receipt["surface"].as_str(), cell["surface"].as_str());
+        assert_eq!(
+            receipt["workload_sha256_from_contract"].as_str(),
+            cell["workload_sha256"].as_str()
+        );
+        assert_eq!(
+            receipt["raw_config_sha256"].as_str().unwrap(),
+            hex(&std::fs::read(
+                root()
+                    .join("docs/testing/performance/0.74")
+                    .join(cell["config"].as_str().unwrap())
+            )
+            .unwrap())
+        );
+    }
+    assert_eq!(plan["configs"].as_array().unwrap().len(), 4);
+}
+
+#[test]
 fn rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission() {
     let c = contract("rental-diagnostic-pilot-contract.toml");
     for flag in [

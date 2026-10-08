@@ -94,3 +94,14 @@ not certify a full observer/workspace suite or a numerical host cohort.
 Two initial Cargo invocations used a nonexistent release-evidence target and
 then an irrelevant zero-test lib filter. Neither is counted as a passing suite;
 the corrected `--test release_evidence` invocation executed all 13 checks.
+
+## Subsequent local preparation, still no host execution
+
+The [preparation implementation and exact-source packet](rental-pilot-coordinator-design.md)
+add strict four-cell identity validation and metadata-only Linux build inspection.
+The successful inspection fixture is fake, not a real Linux release binary.
+Eleven tests passed per local OS. The external host-lock reservation idea was
+rejected before a live attempt: Busy propagates out of installed-source
+maintenance and can invoke the service's restart policy. Supervisor changes or
+a controlled pause need explicit scope. No additional host SSH, build, fixture,
+service operation or numerical attempt was made in this preparation step.

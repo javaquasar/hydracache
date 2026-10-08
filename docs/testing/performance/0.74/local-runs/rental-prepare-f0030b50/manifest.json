@@ -1,0 +1,40 @@
+{
+  "schema_version": "rental-pilot-preparation-evidence-074-v1",
+  "preparation_source_commit": "f0030b50edb9886992dc232d33f7146055fd3d33",
+  "source_clean_before": true,
+  "source_clean_after": true,
+  "preparation_path": "scripts/perf/performance_rental_pilot_prepare_074.py",
+  "preparation_sha256": "a96d13f277f542e3d65b3113d3f7341f2a100deea4fe0352827dd8e1a4530187",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "windows_checks": 11,
+  "local_wsl_linux_checks": 11,
+  "linux_log_capture": "local WSL/Ubuntu unittest output captured by PowerShell Tee; not native stdout byte provenance",
+  "positive_build_inspection_fixture": "fake ELF and fake build log with mocked Git/toolchain; not a compiled product binary",
+  "metadata_timeout_is_workload_tree_proof": false,
+  "compilation_provenance_proven": false,
+  "real_linux_binary_inspected": false,
+  "host_ssh_performed": false,
+  "service_operations_performed": false,
+  "product_process_started": false,
+  "pilot_executed": false,
+  "qualification_started": false,
+  "promotable": false,
+  "admission_allowed": false,
+  "files": [
+    {
+      "path": "windows.log",
+      "bytes": 2445,
+      "sha256": "b5ac033d211577ed098caa4a342d77a2142cd460b2a3383ee68cafa28b794bfe"
+    },
+    {
+      "path": "linux.log",
+      "bytes": 2445,
+      "sha256": "37e1d67eadb486013adbdb5368a4bbbbf59702fd2e6bbef9fa77c264fdb5ce24"
+    },
+    {
+      "path": "plan.json",
+      "bytes": 2504,
+      "sha256": "c25e69e16e363599bf0b4e7ff17532dbbe6f99aa217c7dcb7f6a582da0e0f701"
+    }
+  ]
+}

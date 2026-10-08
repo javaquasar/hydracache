@@ -4143,3 +4143,36 @@ fixed private PKI across fresh processes. The later complete five-pair cohort
 and supported System-retention lane remain separate work. This is a useful
 way to exploit the host without mistaking sunk rental cost for evidence or
 reopening the already closed allocator-replacement/purge experiments.
+
+### A quiet host is not an exclusive host
+
+The next preparation step found a control-plane hazard before running a
+benchmark. The proposed external host-lock reservation was not compatible with
+the installed supervisor: its maintenance first acquires that same lock,
+propagates Busy as an error, and the service restarts on failure. This chain
+was checked in repository source, including the last observed installed commit;
+we did not induce a failure on the host. An absent campaign marker and idle CPU
+therefore do not justify holding the lock. A private lock or forged marker would
+not provide coordinated ownership either.
+
+We implemented a deliberately closed preparation tool instead. It checks the
+complete four-cell input identity, corpus and typed workload hashes; a separate
+metadata-only path inspects exact source/tree, cleanliness, lockfiles, declared
+features, target, toolchain, ELF and raw binary/build-log hashes. A fixed build
+command is printed as data, not run. Eleven offline tests passed on Windows and
+eleven on Linux. Their positive binary fixture is fake: a hash-valid inspection
+does not prove compilation provenance, and no real Linux release artifact was
+built or inspected in this step.
+
+The limits matter as much as the checks. Killing a timed-out metadata command's
+leader does not prove cleanup of an arbitrary workload tree after controller
+loss. The workload coordinator still needs owned cgroups, hard deadlines and
+sealed partial failures. Safe reservation needs an explicitly reviewed
+supervisor-owned diagnostic lifecycle, or a separately approved maintenance
+procedure; neither is silently implemented by a benchmark script.
+
+This step produced a confirmed preparation result and a source-based safety
+finding, **not a speedup**. It prevented infrastructure interference from being
+mistaken for a product regression. No pilot, A/A-A/B cohort, retention claim or
+qualification was admitted. The exact packet and remaining decision are in
+[the coordinator design](../testing/performance/0.74/rental-pilot-coordinator-design.md).

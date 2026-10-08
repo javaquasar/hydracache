@@ -13,6 +13,14 @@ changing services or starting workloads. Four baseline-only CPU-feasibility
 configs are prepared; their execution, finite A/A-A/B cohort, fixed secure PKI,
 supported System-retention lane and qualification remain separate prerequisites.
 
+The [closed preparation tool and reservation finding](rental-pilot-coordinator-design.md)
+bind the four configs and inspect future Linux build metadata without launching
+anything. External ownership of the existing host lock can propagate Busy out
+of supervisor maintenance and trigger its restart policy; it is prohibited.
+A reviewed control-plane/service decision is required before a safe reservation
+or workload coordinator can be implemented. Local metadata timeouts are not
+workload-tree deadline proof. No real Linux pilot binary has been inspected.
+
 The scenario matrix keeps RESP, HC/1, HC/2, direct `ClientSurfaceState`, raw embedded
 `HydraCache`, and typed embedded `HydraCache` results separate. The three execution tiers are
 also separate: `local-quick` is a developer smoke, `local-attribution` is non-promotable D1

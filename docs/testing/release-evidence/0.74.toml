@@ -356,6 +356,10 @@ source = "crates/xtask/tests/performance_contract_074.rs"
 function = "rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission"
 
 [[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution"
+
+[[work_item.required_tests]]
 source = "tools/get-owner-scheduled-controls-074/tests/timing.rs"
 function = "rental_pilot_draft_inputs_validate_without_starting_a_fixture"
 

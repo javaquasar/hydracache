@@ -1,0 +1,63 @@
+{
+  "admission_allowed": false,
+  "binary_relative_path": "tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074",
+  "build_command": [
+    "cargo",
+    "+1.94.0",
+    "build",
+    "--manifest-path",
+    "tools/get-owner-scheduled-controls-074/Cargo.toml",
+    "--release",
+    "--locked",
+    "--no-default-features",
+    "--bin",
+    "timing-controls-074",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "--message-format=json"
+  ],
+  "build_started": false,
+  "configs": [
+    {
+      "config": "rental-pilot-draft/embedded.json",
+      "order": 1,
+      "raw_config_sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+      "surface": "embedded",
+      "workload_sha256_from_contract": "06d84110ec8fe56f986ef5cbef75b3e9df559449fdf32cb2c42680b683363a3c"
+    },
+    {
+      "config": "rental-pilot-draft/direct.json",
+      "order": 2,
+      "raw_config_sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+      "surface": "direct",
+      "workload_sha256_from_contract": "ee3dde1ca3322617ac08b6609bca5d151e9d49a8595a1743b3b3c321b22a1bc4"
+    },
+    {
+      "config": "rental-pilot-draft/resp2.json",
+      "order": 3,
+      "raw_config_sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+      "surface": "resp2",
+      "workload_sha256_from_contract": "e2ead8f4d1e61f1a1ab4246bb308ce7b00a2532bed52dc2c5ea1effb236fc11d"
+    },
+    {
+      "config": "rental-pilot-draft/resp3.json",
+      "order": 4,
+      "raw_config_sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+      "surface": "resp3",
+      "workload_sha256_from_contract": "642dd2671bdfb92c7d0d9400b10b9bd37dbbdd5b40ec2d0a50e8c4c1ea66c938"
+    }
+  ],
+  "coordinator_contract_sha256": "d7f85bddd272e95d4517a1e4eb0b397ec41667ec30749ca8e77b76acbe4f15d4",
+  "host_reservation": "BLOCKED_EXTERNAL_FLOCK_UNSAFE",
+  "intended_source_commit": "62114be0f5da3218706e30d7424acfb5d0579d07",
+  "linux_binary_verified": false,
+  "metadata_commands_started": false,
+  "pilot_contract_sha256": "686e60d6d06d6935df7da60cf13adcfe01820eeab6b64c06f8b020d2297f2702",
+  "pilot_execution_allowed": false,
+  "promotable": false,
+  "schema_version": "rental-pilot-preparation-074-v1",
+  "source_clean_before_after_build_required": true,
+  "state": "PREPARATION_ONLY",
+  "workload_child_tree_deadline_implemented": false,
+  "workload_started": false
+}

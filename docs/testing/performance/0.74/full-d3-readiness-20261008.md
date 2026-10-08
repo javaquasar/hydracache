@@ -58,3 +58,13 @@ and preparation of a short pilot. See [the host findings and execution blockers]
 and `rental-diagnostic-pilot-contract.toml`. That inventory is not host
 reservation, numerical execution authorization, supported retention, an A/A
 noise pass or a change to any inherited gate.
+
+Preparation now has a strict four-config/hash validator and metadata-only Linux
+artifact inspection; 11 checks per local OS are sealed at `f0030b50`. See
+[the coordinator boundary and reservation blocker](rental-pilot-coordinator-design.md).
+The last observed supervisor source propagates external host-lock Busy out of
+maintenance; holding that lock is not safe reservation. No live fault probe was
+performed. A supervisor-owned diagnostic lease or an explicitly approved
+maintenance procedure must be reviewed before implementing host execution.
+The child-tree/cgroup coordinator and real Linux build/provenance are still
+missing. This does not open numerical pilot or qualification authorization.
