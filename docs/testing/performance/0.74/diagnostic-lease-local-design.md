@@ -36,3 +36,46 @@ local security/integration work before any separate host permission. The new
 durable marker is registered in `docs/COMPAT.md`; an older supervisor cannot
 be used concurrently with a diagnostic marker because it does not know that
 reservation. Cleanup and empty-cgroup proof precede any rollback.
+
+## Implemented local slice
+
+`diagnostic_lease.rs` now owns the portable reservation, canonical bounded
+schema-1 marker with state digest, crash-pending refusal, monotonic heartbeat and
+four-cell state machine. `host_execution.rs` checks this marker in acquisition,
+recovery and absence observation. A valid diagnostic-only marker returns no
+active *campaign* to campaign maintenance, not a swallowed lock error. Other
+Busy/corruption behavior is unchanged. Reservations expire at the exact
+preregistered boundary; a late heartbeat cannot revive the controller lease.
+
+Cell intent fixes source, config hash, binary identity and deterministic unit
+name. Runtime is at most 60 seconds and capped by the remaining total budget at
+start. Overflow and invalid receipt stop the sequence; cleanup failure or
+changed cgroup inode never frees the host. Terminal archival is durable before
+marker removal, same-id reuse is refused, and recovery after the archive/marker
+crash gap reuses byte-identical terminal evidence without a second spawn.
+This terminal file is a local state receipt, **not** a sealed raw measurement
+packet. Raw spool retention is an explicit backend obligation, simulated in tests.
+
+`diagnostic_unit.rs` builds Linux property data only: exact preset argv, CPU 1,
+control-group kill, no restart/delegation, runtime and stop ceilings, fixed spool
+paths, 8-MiB per-file size, memory/task/FD ceilings and confinement. It does not
+invoke DBus or verify deployed systemd support. Its diagnostic unit namespace
+is intentionally not enrolled in the existing production unit dispatcher.
+Loopback-only network policy, authoritative unit/process/cgroup observation,
+bounded DBus calls, read-only build/config verification and raw receipt parsing
+remain requirements of the future live backend, not properties proved by this
+constructor. No partial file or exited leader is treated as empty-cgroup proof.
+
+The portable tests use logical clocks and a mock backend, including eight
+concurrent campaign/diagnostic admission races. Linux adds linked/pending path
+refusal, fixed property construction and an actual supervisor socket fixture
+whose three maintenance methods skip a diagnostic-only lease with zero backend
+calls. No test needs a product workload, live systemd unit or rented host.
+
+Development failures are retained as negative preparation observations: the
+pre-implementation target failed with a missing module; the first deadline
+test tried a late heartbeat and failed correctly; the first Linux compile
+found a missing exhaustive error-code arm for `DiagnosticConflict` (now the
+existing conflict code 5). One Linux invocation used a shell without Cargo in
+PATH and did not execute tests; the corrected login-shell command pins 1.94.0.
+No numerical attempt, workload, CPU floor or qualification threshold changed.

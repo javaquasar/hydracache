@@ -16,6 +16,9 @@ pub fn active_campaign_absent(campaign_root: &Path) -> Result<bool, HostExecutio
         return Err(HostExecutionError::Path);
     }
     let root = fs::canonicalize(campaign_root)?;
+    if diagnostic_present(&root)? {
+        return Ok(false);
+    }
     let marker = root.join(ACTIVE_CAMPAIGN_NAME);
     match fs::symlink_metadata(&marker) {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
@@ -41,6 +44,8 @@ pub enum HostExecutionError {
     Busy,
     #[error("host is already claimed by campaign {campaign_id}")]
     Conflict { campaign_id: String },
+    #[error("host is reserved by a diagnostic lease")]
+    DiagnosticConflict,
     #[error("host execution I/O failed: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -70,6 +75,12 @@ impl HostExecutionClaim {
         let root = fs::canonicalize(campaign_root)?;
         let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
+        if diagnostic_present(&root)? {
+            if fs::symlink_metadata(root.join(ACTIVE_CAMPAIGN_NAME)).is_ok() {
+                return Err(HostExecutionError::Path);
+            }
+            return Ok(None);
+        }
         let marker = root.join(ACTIVE_CAMPAIGN_NAME);
         let campaign_id = match fs::symlink_metadata(&marker) {
             Ok(_) => read_marker(&marker)?,
@@ -100,6 +111,9 @@ impl HostExecutionClaim {
         let lock_path = root.join(HOST_EXECUTION_LOCK_NAME);
         let lock = open_lock(&lock_path)?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
+        if diagnostic_present(&root)? {
+            return Err(HostExecutionError::DiagnosticConflict);
+        }
 
         let marker = root.join(ACTIVE_CAMPAIGN_NAME);
         let disposition = match fs::symlink_metadata(&marker) {
@@ -184,6 +198,25 @@ impl HostExecutionClaim {
         }
         Ok(())
     }
+}
+
+/// Only supervisor-owned diagnostic transactions use this fence. It must not
+/// be retained while a workload runs; the durable typed marker owns that lease.
+pub(crate) fn lock_host_root(campaign_root: &Path) -> Result<(PathBuf, File), HostExecutionError> {
+    let metadata = fs::symlink_metadata(campaign_root)?;
+    if !metadata.is_dir() || metadata.file_type().is_symlink() {
+        return Err(HostExecutionError::Path);
+    }
+    let root = fs::canonicalize(campaign_root)?;
+    let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
+    FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
+    Ok((root, lock))
+}
+
+fn diagnostic_present(root: &Path) -> Result<bool, HostExecutionError> {
+    crate::diagnostic_lease::read_active(root)
+        .map(|state| state.is_some())
+        .map_err(|_| HostExecutionError::Path)
 }
 
 impl Drop for HostExecutionClaim {

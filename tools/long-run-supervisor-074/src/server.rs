@@ -1410,7 +1410,7 @@ fn start_evidence_error_code(error: &StartEvidenceError) -> u32 {
 fn host_execution_error_code(error: &HostExecutionError) -> u32 {
     match error {
         HostExecutionError::Busy => 10,
-        HostExecutionError::Conflict { .. } => 5,
+        HostExecutionError::Conflict { .. } | HostExecutionError::DiagnosticConflict => 5,
         HostExecutionError::Path => 4,
         HostExecutionError::Io(_) => 11,
     }

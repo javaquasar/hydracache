@@ -360,6 +360,10 @@ source = "crates/xtask/tests/performance_contract_074.rs"
 function = "rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution"
 
 [[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0"
+
+[[work_item.required_tests]]
 source = "tools/get-owner-scheduled-controls-074/tests/timing.rs"
 function = "rental_pilot_draft_inputs_validate_without_starting_a_fixture"
 
@@ -480,7 +484,7 @@ function = "w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal"
 
 [[work_item]]
 id = "W11"
-required_sources = ["tools/long-run-supervisor-074/src/state.rs", "tools/long-run-supervisor-074/src/measurement_loss.rs", "tools/long-run-supervisor-074/src/server.rs", "tools/long-run-supervisor-074/src/systemd_spawn.rs", "tools/long-run-supervisor-074/src/campaign_smoke.rs", "tools/long-run-supervisor-074/src/systemd_unit.rs", "tools/long-run-supervisor-074/src/host_receipt.rs", "scripts/ci/monitor-long-run-campaign-074.py", "crates/xtask/src/long_run_campaign.rs", "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"]
+required_sources = ["tools/long-run-supervisor-074/src/state.rs", "tools/long-run-supervisor-074/src/measurement_loss.rs", "tools/long-run-supervisor-074/src/server.rs", "tools/long-run-supervisor-074/src/systemd_spawn.rs", "tools/long-run-supervisor-074/src/campaign_smoke.rs", "tools/long-run-supervisor-074/src/systemd_unit.rs", "tools/long-run-supervisor-074/src/host_receipt.rs", "tools/long-run-supervisor-074/src/diagnostic_lease.rs", "tools/long-run-supervisor-074/src/diagnostic_unit.rs", "scripts/ci/monitor-long-run-campaign-074.py", "crates/xtask/src/long_run_campaign.rs", "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml"]
 required_artifacts = ["docs/testing/canary-registry-0.74.json", "docs/testing/performance/0.74/local-runs/w11-controller-canaries-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-measurement-loss-maintenance-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-campaign-progress-loss-smoke-1de46cac.json", "docs/testing/performance/0.74/local-runs/w11-campaign-measurement-loss-smoke-8d786d8f.json", "docs/testing/performance/0.74/local-runs/w11-campaign-lease-expiry-smoke-187b63fb.json", "docs/testing/performance/0.74/local-runs/w11-windows-canary-guard-compile-rejected-ae32f62c.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -491,6 +495,22 @@ function = "attach_fails_closed_for_host_process_checkpoint_lease_and_failure_dr
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/tests/state_machine.rs"
 function = "controller_resilience_expected_red_canary"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+function = "diagnostic_and_campaign_reservations_share_one_short_transaction_lock"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+function = "controller_loss_and_deadlines_stop_tree_before_release"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+function = "durable_start_intent_is_never_replayed_as_a_second_spawn"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+function = "cleanup_failure_and_identity_drift_keep_host_claimed"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/server.rs"
+function = "diagnostic_only_reservation_skips_campaign_maintenance_without_busy_or_backend_calls"
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/tests/measurement_loss.rs"
 function = "interrupted_backend_recovers_exact_measurement_cause_once"

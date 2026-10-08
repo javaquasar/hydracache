@@ -7,6 +7,68 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0() {
+    let c = contract("diagnostic-lease-local-contract.toml");
+    assert_eq!(c["local_implementation_authorized"].as_bool(), Some(true));
+    for flag in [
+        "production_cli_or_ipc_enabled",
+        "host_install_allowed",
+        "host_pilot_execution_allowed",
+        "qualification_allowed",
+        "promotable",
+        "admission_allowed",
+        "external_flock_allowed",
+        "automatic_retry_allowed",
+        "restart_start_intent_allowed",
+        "cleanup_failure_releases_reservation",
+        "pid_only_exit_is_empty_cgroup",
+        "deployment_or_live_cgroup_rehearsal_complete",
+        "old_sealed_packets_mutable",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    for (field, value) in [
+        ("cell_seconds", 60),
+        ("total_seconds", 300),
+        ("controller_loss_seconds", 10),
+        ("receipt_bytes", 16_777_216),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value), "{field}");
+    }
+    assert_eq!(
+        c["reservation"]["lock"].as_str(),
+        Some(".host-execution.lock")
+    );
+    assert_eq!(
+        c["reservation"]["marker"].as_str(),
+        Some("active-diagnostic.json")
+    );
+    assert_eq!(
+        c["reservation"]["lock_held_for_workload_lifetime"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(
+        c["local_test_scope"]["live_backend_or_authentication_proven"].as_bool(),
+        Some(false)
+    );
+    let protocol =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/protocol.rs"))
+            .unwrap();
+    let cli =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/main.rs")).unwrap();
+    for code in [protocol, cli] {
+        assert!(!code.contains("DiagnosticCoordinator"));
+        assert!(!code.contains("DiagnosticStart"));
+    }
+    let p0 = contract("rental-diagnostic-pilot-contract.toml");
+    assert_eq!(p0["numerical_execution_allowed"].as_bool(), Some(false));
+    assert_eq!(
+        p0["p0_cpu_feasibility"]["minimum_usable_cpu_ns"].as_integer(),
+        Some(1_000_000_000)
+    );
+}
+
+#[test]
 fn rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution() {
     let c = contract("rental-pilot-coordinator-contract.toml");
     assert_eq!(c["state"].as_str(), Some("preregistered-preparation-only"));

@@ -230,6 +230,63 @@ fn server_config(socket: &Path, campaign_root: &Path) -> ServerConfig {
     ServerConfig::parse(document.as_bytes(), false).unwrap()
 }
 
+#[test]
+fn diagnostic_only_reservation_skips_campaign_maintenance_without_busy_or_backend_calls() {
+    use hydracache_long_run_supervisor_074::diagnostic_lease::{
+        DiagnosticClock, DiagnosticCoordinator, DiagnosticIdentity,
+    };
+    let temporary = tempfile::tempdir().unwrap();
+    let root = temporary.path().join("campaigns");
+    fs::create_dir(&root).unwrap();
+    fs::create_dir(temporary.path().join("staging")).unwrap();
+    fs::create_dir(temporary.path().join("seals")).unwrap();
+    let boot = "00000000-0000-4000-8000-000000000074";
+    let _lease = DiagnosticCoordinator::reserve(
+        &root,
+        DiagnosticIdentity {
+            lease_id: "a".repeat(64),
+            boot_id: boot.into(),
+            binary_sha256: "b".repeat(64),
+            build_provenance_sha256: "c".repeat(64),
+        },
+        &DiagnosticClock {
+            boot_id: boot.into(),
+            monotonic_ns: 0,
+        },
+    )
+    .unwrap();
+    let server = SupervisorServer::bind(server_config(
+        &temporary.path().join("diagnostic.sock"),
+        &root,
+    ))
+    .unwrap();
+    let mut expiry = FakeLeaseExpiryBackend::default();
+    let mut progress = FakeProgressLossBackend::default();
+    let mut measurement = FakeMeasurementLossBackend::new(MeasurementObservation::Healthy);
+    assert!(server
+        .maintain_lease_expiry_with_backend(1, &mut expiry)
+        .unwrap()
+        .is_none());
+    assert!(server
+        .maintain_measurement_loss_with_backend(1, &mut measurement)
+        .unwrap()
+        .is_none());
+    assert!(server
+        .maintain_progress_loss_with_backend(1, &mut progress)
+        .unwrap()
+        .is_none());
+    assert_eq!(
+        expiry.host_checks
+            + expiry.stop_calls
+            + progress.host_checks
+            + progress.stop_calls
+            + measurement.prepare_calls
+            + measurement.observe_calls
+            + measurement.stop_calls,
+        0
+    );
+}
+
 fn exchange_once(
     server: &SupervisorServer,
     socket: &Path,
