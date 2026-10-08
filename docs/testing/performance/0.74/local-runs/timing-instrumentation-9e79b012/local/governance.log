@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.11s
+     Running `target\debug\xtask.exe release-governance-check --release 0.74`
+release-governance-check: OK (17 checks, 0 explicit TODOs)

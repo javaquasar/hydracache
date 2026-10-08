@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "hosted-observer-semantics-not-qualification",
+  "checked_source_commit": "9e79b012a6046db9946da1bb972750d83b966d5b",
+  "run_id": 37742392078,
+  "attempt": 1,
+  "url": "https://github.com/javaquasar/hydracache/actions/runs/37742392078",
+  "conclusion": "success",
+  "toolchain": "rustc 1.94.0, x86_64-unknown-linux-gnu, Ubuntu 24.04",
+  "default_checks": 88,
+  "get_owner_checks": 88,
+  "unprofiled_cli_checks_per_variant": 2,
+  "check_fmt_strict_clippy_passed": true,
+  "raw_log_receipts": [
+    {
+      "name": "check.log",
+      "bytes": 27462,
+      "sha256": "c4d8ef5ce2d35bf4d812b780ef8934dd97c2b81bcb26f8ca341b63fb961c4390",
+      "passed_tests": 0,
+      "path": "hosted-semantics/check.log"
+    },
+    {
+      "name": "clippy.log",
+      "bytes": 220,
+      "sha256": "7345a1619d69b427bca73ea510a88055cc34e537d1fb376a5f5a4fee5dec5b91",
+      "passed_tests": 0,
+      "path": "hosted-semantics/clippy.log"
+    },
+    {
+      "name": "default.log",
+      "bytes": 20005,
+      "sha256": "edff2b318ece566d06213d4c62a83392e546701c7251598b0103895a81d0e7e0",
+      "passed_tests": 88,
+      "path": "hosted-semantics/default.log"
+    },
+    {
+      "name": "get-owner.log",
+      "bytes": 10121,
+      "sha256": "62015e5f16c39c10d38fc45a1d2439dd96d945924d9c1d9f50f0d021fbb1b055",
+      "passed_tests": 88,
+      "path": "hosted-semantics/get-owner.log"
+    },
+    {
+      "name": "identity.txt",
+      "bytes": 121,
+      "sha256": "48c41b3421a4a90aa846e90a5a2f4693d71798ae75fed0e383992e8b1b8304d7",
+      "passed_tests": 0,
+      "path": "hosted-semantics/identity.txt"
+    },
+    {
+      "name": "locks.txt",
+      "bytes": 317,
+      "sha256": "efc02d8eef4c3c9d8aa8afb811d28b2d4573e607dad520df18ab47907a429ba9",
+      "passed_tests": 0,
+      "path": "hosted-semantics/locks.txt"
+    },
+    {
+      "name": "rustc.txt",
+      "bytes": 196,
+      "sha256": "b75985398e5509a90a7d5d68f8ec6690675f703c5cfa11893b04fc9c3fceca69",
+      "passed_tests": 0,
+      "path": "hosted-semantics/rustc.txt"
+    },
+    {
+      "name": "timing-cli-default.log",
+      "bytes": 638,
+      "sha256": "00375d8e52074803b8cc47e9eefd690853f2d319c43dda72bab2e73967a5c2d1",
+      "passed_tests": 2,
+      "path": "hosted-semantics/timing-cli-default.log"
+    },
+    {
+      "name": "timing-cli-get-owner.log",
+      "bytes": 638,
+      "sha256": "a7e99fe4136b23d10fb841016ee76f3737a3bf1d767ec1debc242e2c0d3a187c",
+      "passed_tests": 2,
+      "path": "hosted-semantics/timing-cli-get-owner.log"
+    }
+  ],
+  "promotable": false,
+  "qualification": false,
+  "full_d3_completed": false,
+  "native_numeric_admission": false
+}

@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "kind": "exact-source-timing-instrumentation-semantic-checks-not-numerical-cohort",
+  "checked_source_commit": "9e79b012a6046db9946da1bb972750d83b966d5b",
+  "implementation_commit": "a8004c928f8f7cd5fc013589ea98a5e465470394",
+  "baseline_source": "cd72e5e16f21b9f41757ca4597146840250bb5d8",
+  "baseline_checks_per_variant": 73,
+  "checked_source_clean_before_and_after_checks": true,
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02), x86_64-pc-windows-msvc",
+  "checked_at": "2026-10-08T09:23:44.3815412+02:00",
+  "source_references_git_blob_ids": {
+    "tools/get-owner-scheduled-controls-074/src/timing.rs": "62a41e8c708a6ad14a3eda0b7d092a11eff51502",
+    "tools/get-owner-scheduled-controls-074/src/timing/cpu.rs": "9427dd96390ab03677f52f96286d29178eca5ed1",
+    "tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs": "55d0c94806b6627079925a3d77658874d327a39b",
+    "tools/get-owner-scheduled-controls-074/src/resp.rs": "e170558f3e0b391d5936f4bce721e6d6b12fa59c",
+    "tools/get-owner-scheduled-controls-074/src/scheduled.rs": "89bc4a500428a200e7c8ae30f9d1bd1d552293aa",
+    "tools/get-owner-scheduled-controls-074/tests/timing.rs": "5251d6a9646eaeaf9ff0bfae796fcb37f3c6f07c",
+    "tools/get-owner-scheduled-controls-074/tests/timing_cli.rs": "02b452bd87e1633d056398aef6110aa19b220369",
+    "tools/get-owner-scheduled-controls-074/Cargo.toml": "af4d8a34dbbae65693b326211ac781002b01bdc0",
+    "tools/get-owner-scheduled-controls-074/Cargo.lock": "937a02530ca9deb3fa7bbfe73195ed85fb7d06cc",
+    ".github/workflows/observer-semantics-074.yml": "f93a21de33525cbea197f2f4fd9d604c0163edb6",
+    "docs/testing/performance/0.74/unprofiled-timing-controls-contract.toml": "049babb174eb0418a39a195db5f8a36de55fd957"
+  },
+  "checks": {
+    "default_serialized_tests": 88,
+    "get_owner_serialized_tests": 88,
+    "unprofiled_cli_tests_per_variant": 2,
+    "new_observer_checks_per_variant": 15,
+    "performance_contract_tests": 63,
+    "release_evidence_tests": 13,
+    "fmt": "passed-empty-output",
+    "all_targets_all_features_check": "passed",
+    "strict_all_features_clippy": "passed",
+    "xtask_check_clippy": "passed",
+    "doc_check": "passed",
+    "governance_checks": 17,
+    "governance_todos": 0,
+    "local_contract": "passed-non-promotable",
+    "ship_gate": "expected-red-exit-1-candidate-and-qualification-incomplete"
+  },
+  "scope": {
+    "boundaries": [
+      "embedded",
+      "direct",
+      "hc1",
+      "hc2-mtls",
+      "resp2",
+      "resp3",
+      "resp2-mtls",
+      "resp3-mtls"
+    ],
+    "operations": [
+      "get",
+      "put-same-fixed-value"
+    ],
+    "new_timing_grid_semantic_cells": 16,
+    "minimum_usable_cpu_ns": 1000000000,
+    "minimum_usable_measurement_wall_ns": 1000000000,
+    "source_git_identity_verified_by_binary": false,
+    "binary_self_hash_checked_before_fixture": true,
+    "warmup_and_original_ids_separate": true,
+    "warmup_measurement_overlap_refused": true,
+    "failed_fixture_attempts_explicit_shutdown": true,
+    "leaked_owner_not_clean_shutdown": true,
+    "independent_native_performance_floor_measured": false,
+    "secure_fresh_process_pki_parity_proven": false,
+    "allocator_retention_supported": false
+  },
+  "retained_development_failures": [
+    {
+      "stage": "test-first-compilation",
+      "error": "E0432 unresolved timing module before implementation",
+      "source_identity": "uncommitted working test fixture; no exact dirty-source claim",
+      "numerical_attempt": false
+    },
+    {
+      "stage": "synthetic-unit-fixture",
+      "error": "HDR histogram highest=1 refused; 34 passed and 1 failed",
+      "resolution": "correct synthetic highest to 2 and reject that invalid input before fixture creation",
+      "thresholds_changed": false,
+      "numerical_attempt": false
+    },
+    {
+      "stage": "strict-lint",
+      "error": "large enum variant",
+      "resolution": "box both observation variants",
+      "product_path_changed": false,
+      "numerical_attempt": false
+    }
+  ],
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "old_d3a_b0_or_locks_modified": false,
+  "hosted_run_id": 37742392078,
+  "hosted_attempt": 1,
+  "hosted_semantic_success": true,
+  "raw_log_receipts": [
+    {
+      "name": "contract-tests.log",
+      "bytes": 5319,
+      "sha256": "15781e49ba75d6daea68d9b6094c44444f567df50d05dcee5ef5c1cc849928ec",
+      "passed_tests": 63,
+      "path": "local/contract-tests.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "default.log",
+      "bytes": 9917,
+      "sha256": "c0f0f0dcdf5b6eacd855773008dc1cbf3c2666ad3f99812b605542760595740d",
+      "passed_tests": 88,
+      "path": "local/default.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "doc-check.log",
+      "bytes": 251,
+      "sha256": "866c4e694fe25720a613c56e01373758abe7c8a4530eccbfb06c1891cac506ce",
+      "passed_tests": 0,
+      "path": "local/doc-check.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "get-owner.log",
+      "bytes": 9916,
+      "sha256": "a169c65807ba9d50b38b7700b06b1f683ae19ebe16774d6bef80d6957eb92c12",
+      "passed_tests": 88,
+      "path": "local/get-owner.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "governance.log",
+      "bytes": 212,
+      "sha256": "b49338d7aa0698fcd5957541f5941bf2127c3e1ec410f67b2eb0a9eef295bbcd",
+      "passed_tests": 0,
+      "path": "local/governance.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "local-contract.log",
+      "bytes": 215,
+      "sha256": "49f8a787f8b1d725ade6029578a5b7de40e4ed73a0b4ef928227a3d07a21a654",
+      "passed_tests": 0,
+      "path": "local/local-contract.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "release-evidence-tests.log",
+      "bytes": 1368,
+      "sha256": "c738122a953a6ba4f3e7133de068e0e595c63046110266b2a9c1d14c02293c68",
+      "passed_tests": 13,
+      "path": "local/release-evidence-tests.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "ship-expected-red.log",
+      "bytes": 499,
+      "sha256": "413ab75ed0fbaa19f65c437da1a9970631b72348f7fe635f3fb79e9e80de1e0f",
+      "passed_tests": 0,
+      "path": "local/ship-expected-red.log",
+      "expected_exit": 1
+    },
+    {
+      "name": "timing-cli-default.log",
+      "bytes": 627,
+      "sha256": "e4aacd2ba2ab39f15cdbc752b38b6a132e132844f30996dd131fd0bec0c4f014",
+      "passed_tests": 2,
+      "path": "local/timing-cli-default.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "timing-cli-get-owner.log",
+      "bytes": 627,
+      "sha256": "db9bd72621c68a4b878c3a29daef0cbdb2cb734a54691e6fa7f7bbf66eaed20d",
+      "passed_tests": 2,
+      "path": "local/timing-cli-get-owner.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "tool-check.log",
+      "bytes": 73,
+      "sha256": "2e85c1345965bc8ff43c14c75d6f34b2edb6532d52f9d4585470c43462e729d1",
+      "passed_tests": 0,
+      "path": "local/tool-check.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "tool-clippy.log",
+      "bytes": 73,
+      "sha256": "1d54fa60589a5ba69d50af4affe32f7b86886565156291d63b66727ecf063481",
+      "passed_tests": 0,
+      "path": "local/tool-clippy.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "xtask-check.log",
+      "bytes": 73,
+      "sha256": "28738cd53b98ea3a855c7281085e7fc172fa83d05fb61785e1c797aa4bcf0e07",
+      "passed_tests": 0,
+      "path": "local/xtask-check.log",
+      "expected_exit": 0
+    },
+    {
+      "name": "xtask-clippy.log",
+      "bytes": 73,
+      "sha256": "babc315c6f33a678de5ac0a21c5002a397cff8f30cb6922c22ad6340871e1894",
+      "passed_tests": 0,
+      "path": "local/xtask-clippy.log",
+      "expected_exit": 0
+    }
+  ],
+  "numerical_series_started": false,
+  "full_d3_completed": false,
+  "accepted_candidate": false,
+  "product_numeric_claims_allowed": false,
+  "admission_allowed": false,
+  "freeze_c74_allowed": false,
+  "full_workspace_verify_claimed": false
+}

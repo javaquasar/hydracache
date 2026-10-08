@@ -123,6 +123,92 @@ fn secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention() 
 }
 
 #[test]
+fn timing_instrumentation_receipts_bind_raw_logs_without_admitting_a_cohort() {
+    let packet =
+        root().join("docs/testing/performance/0.74/local-runs/timing-instrumentation-9e79b012");
+    let source = "9e79b012a6046db9946da1bb972750d83b966d5b";
+    for name in ["checks.json", "hosted-semantics-receipt.json"] {
+        let receipt: Value =
+            serde_json::from_slice(&std::fs::read(packet.join(name)).unwrap()).unwrap();
+        assert_eq!(receipt["checked_source_commit"], source);
+        assert_eq!(receipt["full_d3_completed"], false);
+        if name == "checks.json" {
+            for flag in [
+                "numerical_series_started",
+                "accepted_candidate",
+                "admission_allowed",
+                "product_numeric_claims_allowed",
+                "freeze_c74_allowed",
+                "full_workspace_verify_claimed",
+            ] {
+                assert_eq!(receipt[flag], false, "{flag}");
+            }
+            assert_eq!(receipt["scope"]["minimum_usable_cpu_ns"], 1_000_000_000_u64);
+            assert_eq!(
+                receipt["scope"]["minimum_usable_measurement_wall_ns"],
+                1_000_000_000_u64
+            );
+            assert_eq!(
+                receipt["scope"]["secure_fresh_process_pki_parity_proven"],
+                false
+            );
+            assert_eq!(
+                receipt["scope"]["independent_native_performance_floor_measured"],
+                false
+            );
+            assert_eq!(receipt["scope"]["allocator_retention_supported"], false);
+            assert_eq!(receipt["raw_log_receipts"].as_array().unwrap().len(), 14);
+        } else {
+            assert_eq!(receipt["promotable"], false);
+            assert_eq!(receipt["qualification"], false);
+            assert_eq!(receipt["native_numeric_admission"], false);
+            assert_eq!(receipt["run_id"], 37742392078_u64);
+            assert_eq!(receipt["attempt"], 1);
+            assert_eq!(receipt["raw_log_receipts"].as_array().unwrap().len(), 9);
+            let identity =
+                std::fs::read_to_string(packet.join("hosted-semantics/identity.txt")).unwrap();
+            assert!(identity.contains(&format!("source_commit={source}")));
+            assert!(identity
+                .contains("run_id=37742392078\nattempt=1\npromotable=false\nqualification=false"));
+        }
+        for file in receipt["raw_log_receipts"].as_array().unwrap() {
+            let path = Path::new(file["path"].as_str().unwrap());
+            assert_eq!(path.components().count(), 2);
+            assert!(path
+                .components()
+                .all(|part| matches!(part, std::path::Component::Normal(_))));
+            let bytes = std::fs::read(packet.join(path)).unwrap();
+            assert_eq!(bytes.len() as u64, file["bytes"].as_u64().unwrap());
+            assert_eq!(
+                Sha256::digest(&bytes)
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>(),
+                file["sha256"].as_str().unwrap()
+            );
+            let actual_tests: u64 = String::from_utf8(bytes)
+                .unwrap()
+                .lines()
+                .filter_map(|line| {
+                    line.strip_prefix("test result: ok. ")
+                        .and_then(|value| value.split_once(" passed; 0 failed;"))
+                        .map(|(count, _)| count.parse::<u64>().unwrap())
+                })
+                .sum();
+            assert_eq!(actual_tests, file["passed_tests"].as_u64().unwrap());
+            if file["name"] == "default.log" || file["name"] == "get-owner.log" {
+                assert_eq!(actual_tests, 88);
+            }
+            if file["name"] == "ship-expected-red.log" {
+                assert_eq!(file["expected_exit"], 1);
+                let text = std::fs::read_to_string(packet.join(path)).unwrap();
+                assert!(text.contains("ship admission is closed"));
+            }
+        }
+    }
+}
+
+#[test]
 fn observer_hosted_ci_is_only_semantics_and_never_a_product_campaign() {
     let text = std::fs::read_to_string(root().join(".github/workflows/observer-semantics-074.yml"))
         .unwrap();

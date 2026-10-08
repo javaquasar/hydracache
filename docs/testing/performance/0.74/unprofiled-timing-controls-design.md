@@ -113,3 +113,27 @@ No new numerical result, allocation improvement, native nonregression or full-D3
 pass follows from this implementation. W10 remains closed, C74 unresolved. Old
 D3a/B0 packets and the qualification manifest are unchanged. Rented-host use,
 same-box Redis and six-hour/24-hour qualification are not launched or authorized.
+
+## Exact-source verification receipt
+
+Clean source `9e79b012a6046db9946da1bb972750d83b966d5b` passed 88 serialized
+observer checks per feature variant and two separate unprofiled CLI checks per
+variant on Windows/Rust 1.94.0. Tool check/strict lint/fmt, 63 contract tests,
+13 release-evidence tests, xtask check/strict lint, doc-check and 17 governance
+checks passed. The local non-promotable contract check passed; `--require-ship`
+returned expected exit 1 for incomplete candidate identity/qualification.
+
+Hosted semantic run `37742392078` attempt 1 passed on the same exact source:
+Ubuntu 24.04/Rust 1.94.0, 88 checks per variant and two independent unprofiled CLI
+checks per variant, plus formatting/check/strict lint. The packet at
+`local-runs/timing-instrumentation-9e79b012/` retains local/hosted logs and hashes.
+An empty successful local fmt output has no generated Tee log; it is recorded
+explicitly instead of inventing nonempty output. Source was checked clean before
+and after the complete local sequence; only then was the evidence packet created.
+These receipts do not certify full workspace verification, noise, a native floor,
+allocator retention, full D3 or a new evidence/documentation HEAD.
+
+The subsequent receipt regression guard verifies all 23 local/hosted raw file
+hashes, sizes, actual test counts and closed admission flags. It raises the local
+contract suite to 64 tests without relabeling the older exact-source 63-test log
+or the hosted receipt as verification of this later evidence HEAD.

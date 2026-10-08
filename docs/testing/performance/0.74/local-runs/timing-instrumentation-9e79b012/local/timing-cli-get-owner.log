@@ -1,0 +1,10 @@
+   Compiling get-owner-scheduled-controls-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\get-owner-scheduled-controls-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.80s
+     Running tests\timing_cli.rs (tools\get-owner-scheduled-controls-074\target\debug\deps\timing_cli-34dbdec41e16cb28.exe)
+
+running 2 tests
+test single_offer_executable_preserves_identity_and_non_admission_or_refuses_profiled_build ... ok
+test validation_starts_no_fixture_and_bad_binary_seal_never_runs ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.98s
+

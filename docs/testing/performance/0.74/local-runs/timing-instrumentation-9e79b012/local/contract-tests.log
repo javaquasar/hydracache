@@ -1,0 +1,71 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.21s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 63 tests
+test checked_in_w0_contract_is_valid_and_non_promotable ... ok
+test embedded_scheduled_control_is_independent_public_api_not_a_b0_retry ... ok
+test get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3 ... ok
+test get_response_owner_d2_preserves_one_hypothesis_and_future_guards ... ok
+test get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate ... ok
+test get_response_owner_d3a_retains_all_raw_hashes_without_acceptance ... ok
+test get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci ... ok
+test host_observation_workflow_is_read_only_fixed_scope_and_socket_bound ... ok
+test independent_native_batches_preserve_denominators_and_expose_hc2_semantic_difference ... ok
+test local_harness_freezes_placement_abba_and_noise_policy ... ok
+test long_run_controller_workflow_is_manual_serialized_and_signs_off_host ... ok
+test matched_receipt_is_accepted ... ok
+test missing_outcomes_final_sample_and_nonfinite_metric_are_rejected ... ok
+test non_product_start_bundle_workflow_is_observation_bound_and_does_not_start ... ok
+test observer_hosted_ci_is_only_semantics_and_never_a_product_campaign ... ok
+test pooled_or_missing_native_surface_is_rejected ... ok
+test proposal_admission_requires_w1_attribution_and_evidence ... ok
+test published_b73_requires_exact_tag_archive_and_runtime_relationship ... ok
+test redis_tool_mismatch_and_mixed_binary_are_rejected ... ok
+test release_admission_expected_red_canary ... ok
+test reordered_blocks_and_candidate_thresholds_are_rejected ... ok
+test resp3_controls_require_hello_without_waiving_security_or_numeric_guards ... ok
+test resp_mtls_extension_is_opt_in_auth_bound_and_non_promotable ... ok
+test resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard ... ok
+test response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate ... ok
+test response_reduction_d1_retains_exact_packet_without_reopening_rejected_scratch ... ok
+test scheduled_multikey_controls_preserve_command_denominators_and_product_limits ... ok
+test scheduled_native_controls_preserve_offers_without_admitting_full_d3 ... ok
+test scheduled_resp_connections_keep_local_order_and_do_not_admit_product_changes ... ok
+test scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance ... ok
+test secure_memory_packet_retains_all_attempts_without_allocator_or_timing_admission ... ok
+test secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention ... ok
+test socket_boundary_attribution_keeps_local_product_work_admitted ... ok
+test trace_workload_security_and_persistence_drift_are_rejected ... ok
+test unmatched_surface_trace_and_three_percent_native_regression_are_rejected ... ok
+test unprofiled_timing_instrumentation_preserves_closed_cohort_and_memory_admission ... ok
+test w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal ... ok
+test w11_host_capability_probe_is_read_only_and_serialized ... ok
+test w11_host_observation_evidence_is_exact_non_mutating_and_non_promotable ... ok
+test w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable ... ok
+test w11_linux_fixture_harness_cli_is_platform_gated ... ok
+test w11_live_role_reboot_is_fail_closed_and_non_promotable ... ok
+test w11_non_product_role_rehearsal_is_complete_but_role_budget_stays_closed ... ok
+test w11_schema_hashes_and_local_completion_flags_are_exact ... ok
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+test w12_generic_evidence_report_retains_closed_ship_admission ... ok
+test w12_internal_workspace_tools_inherit_reviewed_license ... ok
+test w12_live_registries_preserve_frozen_baseline_inputs ... ok
+test w12_ordinary_ci_preserves_explicit_infrastructure_boundary ... ok
+test w12_release_admission_contract_is_fail_closed ... ok
+test w12_release_note_retains_draft_claim_rollback_and_gate_boundaries ... ok
+test w12_workspace_fast_gate_covers_every_work_item_without_budget_drift ... ok
+test w2_through_w9_terminal_dispositions_are_exact_and_non_promotable ... ok
+test w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds ... ok
+test w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate ... ok
+test w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes ... ok
+test w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers ... ok
+test w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates ... ok
+test w9b_owner_receipts_preserve_all_registered_cells_without_product_claims ... ok
+test w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained ... ok
+test w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates ... ok
+test w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable ... ok
+test w9e_allocator_attribution_is_linux_only_complete_and_non_promotable ... ok
+
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.78s
+

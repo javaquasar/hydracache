@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.03s
+     Running tests\release_evidence.rs (target\debug\deps\release_evidence-8493515415a974a6.exe)
+
+running 13 tests
+test active_ship_blocker_artifact_is_preserved_by_the_manifest_schema ... ok
+test cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes ... ok
+test explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry ... ok
+test fast_receipts_reject_one_millisecond_over_the_unchanged_cadence_budget ... ok
+test final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes ... ok
+test release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green ... ok
+test release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release ... ok
+test release_evidence_rejects_dirty_receipts_and_path_traversal ... ok
+test release_evidence_rejects_handwritten_green_status_and_tampered_artifact_hash ... ok
+test release_evidence_reports_every_manifest_work_item_exactly_once ... ok
+test release_evidence_template_cannot_borrow_equal_w_ids_from_the_0_64_registry ... ok
+test release_evidence_template_preserves_dynamic_canary_selection ... ok
+test release_evidence_template_rejects_a_mislabeled_release_registry ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.04s
+

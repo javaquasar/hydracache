@@ -4086,3 +4086,16 @@ needed where those limits prevent a valid cohort. Complete miss/error/slow-reade
 size-transition, independent native and supported allocator-retention proofs also
 remain open. No speedup or new accepted candidate is inferred, old D3a/B0 evidence
 is not retried, and W10/C74 admission stays closed.
+
+Exact clean source `9e79b012a6046db9946da1bb972750d83b966d5b` passed 88
+serialized observer checks per feature variant locally, plus two truly unprofiled
+CLI checks per variant, 63 contract checks and 13 release-evidence checks. Hosted
+semantic run `37742392078` attempt 1 also passed on that exact source under Linux
+with Rust 1.94.0, including the separate unprofiled executable entry points. All
+local/hosted logs and their byte hashes are retained in the
+`local-runs/timing-instrumentation-9e79b012/` packet. Ship admission still fails
+explicitly because C74 and release qualification are incomplete. These are
+instrumentation proofs, not a new numerical series or performance claim.
+The later receipt guard verifies all 23 retained file hashes/sizes and real test
+counts; the local contract suite now has 64 checks. It does not relabel the
+earlier source-bound receipts as a passing gate for a newer candidate.
