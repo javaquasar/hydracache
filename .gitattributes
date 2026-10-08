@@ -44,3 +44,7 @@ docs/testing/performance/0.74/local-runs/timing-instrumentation-*/**/*.log -text
 # Read-only host inventory receipts bind captured bytes, not admission.
 scripts/perf/performance_rental_preflight_074.py text eol=lf
 docs/testing/performance/0.74/local-runs/rental-preflight-*/** -text whitespace=cr-at-eol
+scripts/perf/performance_rental_pilot_prepare_074.py text eol=lf
+scripts/perf/test_performance_rental_pilot_prepare_074.py text eol=lf
+docs/testing/performance/0.74/rental*-contract.toml text eol=lf
+docs/testing/performance/0.74/rental-pilot-draft/*.json text eol=lf

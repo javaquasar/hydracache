@@ -1,0 +1,60 @@
+schema_version = 1
+contract_id = "rental-pilot-coordinator-074-preparation-v1"
+state = "preregistered-preparation-only"
+baseline_preparation_source = "a24ea7e45759db1dd8bb7ca3cf6fc2cd401e638d"
+pilot_contract = "rental-diagnostic-pilot-contract.toml"
+source_commit = "62114be0f5da3218706e30d7424acfb5d0579d07"
+target = "x86_64-unknown-linux-gnu"
+toolchain = "1.94.0"
+build_profile = "release"
+features = []
+counting_allocator_allowed = false
+product_or_fixture_execution_allowed = false
+host_reservation_allowed = false
+remote_build_or_upload_allowed = false
+service_mutation_allowed = false
+qualification_allowed = false
+promotable = false
+admission_allowed = false
+require_ship = false
+maximum_input_bytes = 65536
+maximum_git_or_version_output_bytes = 65536
+maximum_metadata_command_seconds = 10
+maximum_metadata_cleanup_seconds = 1
+metadata_timeout_is_workload_tree_proof = false
+maximum_binary_bytes = 134217728
+maximum_build_log_bytes = 16777216
+duplicate_json_keys_allowed = false
+unknown_json_fields_allowed = false
+symlink_or_hardlink_seals_allowed = false
+hash_valid_seal_is_compilation_provenance = false
+verified_build_is_pilot_authorization = false
+
+[reservation_finding]
+source = "tools/long-run-supervisor-074/src/server.rs"
+installed_source = "543108f1ccd206ae670803c2617f07e7fa91ae62"
+existing_lock = "/var/lib/hydracache-performance/campaigns/.host-execution.lock"
+external_flock_allowed = false
+external_active_marker_allowed = false
+private_uncoordinated_lock_allowed = false
+maintenance_busy_is_success = false
+finding_is_live_fault_rehearsal = false
+decision = "Current source propagates HostExecutionClaim::recover_active Busy through maintenance and serve; installed service Restart=on-failure can restart. Never probe by holding that lock on the host. No safe reservation is admitted."
+resolution_requires_explicit_service_or_control_plane_review = true
+
+[future_workload_deadline]
+process_seconds = 60
+total_seconds = 300
+receipt_bytes = 16777216
+owned_cgroup_and_child_tree_required = true
+process_group_alone_certifies_arbitrary_tree = false
+controller_loss_must_not_orphan_workload = true
+partial_stdout_stderr_retained = true
+timeout_or_overflow_is_invalid = true
+automatic_retry_allowed = false
+implementation_and_host_rehearsal_complete = false
+
+[tests]
+python = "python -m unittest scripts/perf/test_performance_rental_pilot_prepare_074.py -v"
+linux = "local WSL/Ubuntu: same preparation tests; no product fixtures"
+root_guard = "rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution"
