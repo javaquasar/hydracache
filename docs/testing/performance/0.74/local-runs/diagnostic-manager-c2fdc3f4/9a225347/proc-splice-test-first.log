@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.24s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 1 test
+test diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail ... FAILED
+
+failures:
+
+---- diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail stdout ----
+
+thread 'diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail' (657) panicked at tools/long-run-supervisor-074/src/diagnostic_process.rs:918:9:
+assertion `left == right` failed: an EOF probe must not splice a regenerated seq_file tail
+  left: [49, 55, 32, 40, 119, 111, 114, 107, 101, 114, 32, 41, 32, 119, 105, 116, 104, 32, 115, 112, 97, 99, 101, 115, 41, 32, 83, 32, 48, 32, 49, 57, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 51, 49, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 10, 101, 120, 116, 114, 97, 10]
+ right: [49, 55, 32, 40, 119, 111, 114, 107, 101, 114, 32, 41, 32, 119, 105, 116, 104, 32, 115, 112, 97, 99, 101, 115, 41, 32, 83, 32, 48, 32, 49, 57, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 51, 49, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 32, 48, 10]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 76 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

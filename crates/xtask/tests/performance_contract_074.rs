@@ -138,6 +138,239 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
         std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/systemd_unit.rs"))
             .unwrap();
     assert!(!campaign.contains("hydracache-diagnostic-074-"));
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-manager-c2fdc3f4");
+    let m: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        m["schema_version"],
+        "diagnostic-manager-local-evidence-074-v1"
+    );
+    assert_eq!(
+        m["implementation_source_commit"],
+        "c2fdc3f48878bd931788218fec3573b137def3ba"
+    );
+    assert_eq!(
+        m["implementation_source_tree"],
+        "f61e80525d4742b2d2fa3ab1f6f91507ddcdf44d"
+    );
+    for field in [
+        "source_clean_before",
+        "source_clean_after",
+        "formatting_checked",
+        "doc_check_passed",
+        "local_performance_contract_passed",
+        "documentation_links_passed",
+        "mdbook_passed",
+    ] {
+        assert_eq!(m[field], true, "{field}");
+    }
+    for field in [
+        "snapshot_is_cleanup_authority",
+        "loaded_unit_policy_authenticated",
+        "original_start_authenticated",
+        "exec_identity_proven",
+        "tree_membership_authenticated",
+        "writer_revocation_proven",
+        "durable_first_failure_implemented",
+        "watchdog_implemented",
+        "pending_intent_reconciliation_implemented",
+        "production_route_enabled",
+        "host_install_allowed",
+        "unit_mutation_performed",
+        "host_ssh_performed",
+        "installed_service_operations_performed",
+        "cgroup_operations_performed",
+        "observer_build_proof_in_this_packet",
+        "product_workload_started",
+        "pilot_executed",
+        "qualification_started",
+        "full_workspace_verify_run",
+        "performance_measured",
+        "numerical_performance_claim_allowed",
+        "promotable",
+        "admission_allowed",
+    ] {
+        assert_eq!(m[field], false, "{field}");
+    }
+    for (field, count) in [
+        ("windows_passed", 62),
+        ("linux_passed", 154),
+        ("root_passed", 88),
+        ("release_governance_tests_passed", 23),
+        ("release_governance_cli_checks", 17),
+        ("ship_check_expected_exit", 1),
+        ("local_real_manager_absence_checks", 4),
+        ("wrong_boot_refused_exit", 9),
+    ] {
+        assert_eq!(m[field], count);
+    }
+    let expected = [
+        (
+            "224f6ed3/linux.log",
+            17328u64,
+            "c963ae72b5157c4c3faa3ddd4636723bf651ca7f9e88dee023e43da2a140fb67",
+            "ffc7f203beb87a5c5033c808ff7562e05bcae760",
+            152u64,
+            0u64,
+        ),
+        (
+            "224f6ed3/root.log",
+            11920u64,
+            "4550c535b1d70a18092ab0f791ebdba245bd8044ed608359d1a9fa1d12eede96",
+            "cba18941be7d648dff830f87796f0333b6a46888",
+            106u64,
+            4u64,
+        ),
+        (
+            "224f6ed3/windows.log",
+            7726u64,
+            "7477619933fb7a60625cb4597351c643898f149fc9f8ea2f716dd1bf6892a5e0",
+            "5bdc7a74d463e479935ada77687b670063ed7f8b",
+            62u64,
+            0u64,
+        ),
+        (
+            "9a225347/linux.log",
+            16440u64,
+            "1589e1736a72e36fde81a33c68acd058be6fe56223a981944792ab75cba053a8",
+            "dee9717abfb133497c2a95d433d87ba0eaf5a435",
+            151u64,
+            1u64,
+        ),
+        (
+            "9a225347/proc-splice-test-first.log",
+            2356u64,
+            "ec363d999d0ae4d5e921ac3a302bda83a9c6ca187be8de803485618397c060fb",
+            "5fc05e116ba5ba5e7b6bf9ed8e0453ffb956dc0c",
+            0u64,
+            1u64,
+        ),
+        (
+            "9a225347/root.log",
+            11015u64,
+            "4ffa86fd1dadf0c0fd38431703d93ce59497cdcae7f5e2f6fab8f067939c5dec",
+            "67d70cddb3fa4531391c15313b53b9093d2c4321",
+            110u64,
+            0u64,
+        ),
+        (
+            "9a225347/windows.log",
+            7253u64,
+            "6c7e5cfb25f9b9b2b0ebb3f6b1e878db2735508cc19a632ace7452bbac48d672",
+            "e22afce941c279c6a8ef1a497742afb219d1e68a",
+            62u64,
+            0u64,
+        ),
+        (
+            "097ab6fa/linux.log",
+            16633u64,
+            "80c036ebfb3c0eb20b32c3e874ee160d7612923922bbf517b9e7d67b1c0cab2d",
+            "9ee80532711424a304d62a90d325a53690d8c23c",
+            153u64,
+            1u64,
+        ),
+        (
+            "097ab6fa/root.log",
+            11373u64,
+            "534e792ba816c402e8624407f12fc1439ffd7d5054ecf9c3c82f06e5b313426c",
+            "e5812b2e891785ed259c6093732ed1474b2bd3ca",
+            111u64,
+            0u64,
+        ),
+        (
+            "097ab6fa/windows.log",
+            7217u64,
+            "bee4ca825d9b8445f27fe7aef4fe635e717e6403afac737f1e8377fca086cb67",
+            "c0314ae8553ab504197011c7fbe37cc216a79e40",
+            62u64,
+            0u64,
+        ),
+        (
+            "c2fdc3f4/linux.log",
+            17679u64,
+            "897d5fa0a336a4c7e4d7210953517b97831b2dfbe1f45d7fd9936205651f0d6e",
+            "3038456cd5e888c89f590055e45163731e63c7a8",
+            154u64,
+            0u64,
+        ),
+        (
+            "c2fdc3f4/root.log",
+            11289u64,
+            "49590042d5a6f79d58da6585a0d537be0b3c902fb5710b21f878af90151c57db",
+            "f6390b64ce381a439a5738b127a1026b0c43275d",
+            111u64,
+            0u64,
+        ),
+        (
+            "c2fdc3f4/windows.log",
+            7217u64,
+            "674e64b20199dce82148e305e7cfed1b9ce9960277d347e854aeeba4d64dc54c",
+            "f67a68e79ba8b0a6486d6ac99fa638ef91dfdff3",
+            62u64,
+            0u64,
+        ),
+    ];
+    assert_eq!(m["files"].as_array().unwrap().len(), expected.len());
+    for (index, (path, size, digest, blob, passed, failed)) in expected.into_iter().enumerate() {
+        let entry = &m["files"][index];
+        let raw = std::fs::read(directory.join(path)).unwrap();
+        assert_eq!(entry["path"], path);
+        assert_eq!(entry["bytes"], size);
+        assert_eq!(entry["sha256"], digest);
+        assert_eq!(entry["git_blob"], blob);
+        assert_eq!(entry["passed"], passed);
+        assert_eq!(entry["failed"], failed);
+        assert_eq!(raw.len() as u64, size);
+        let actual: String = Sha256::digest(&raw)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+        let text = String::from_utf8(raw).unwrap();
+        let mut counts = (0u64, 0u64);
+        for tail in text.lines().filter_map(|l| l.strip_prefix("test result: ")) {
+            let (_, numbers) = tail.split_once(". ").unwrap();
+            let mut parts = numbers.split(';');
+            counts.0 += parts
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .next()
+                .unwrap()
+                .parse::<u64>()
+                .unwrap();
+            counts.1 += parts
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .next()
+                .unwrap()
+                .parse::<u64>()
+                .unwrap();
+        }
+        assert_eq!(counts, (passed, failed));
+    }
+    let linux = std::fs::read_to_string(directory.join("c2fdc3f4/linux.log")).unwrap();
+    let snapshots: Vec<Value> = linux
+        .lines()
+        .filter(|l| l.starts_with("{\"schema_version\":1,\"scope\":"))
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect();
+    assert_eq!(snapshots.len(), 4);
+    for (snapshot, surface) in snapshots
+        .iter()
+        .zip(["embedded", "direct", "resp2", "resp3"])
+    {
+        assert_eq!(snapshot["scope"]["surface"], surface);
+        assert_eq!(snapshot["scope"]["boot_id"], m["local_boot_id"]);
+        assert_eq!(snapshot["manager_owner"], m["local_manager_unique_owner"]);
+        assert_eq!(snapshot["manager_uid"], 0);
+        assert_eq!(snapshot["manager_pid"], 1);
+        assert!(snapshot["unit"].is_null());
+    }
+    assert!(linux.contains("expected wrong-boot refusal: exit 9; no unit mutation"));
+    assert!(linux.contains("manager observation refused: Exit; helper cleanup=true"));
 }
 
 #[test]

@@ -85,3 +85,24 @@ refused the broken pipe before reaching exit classification. Output/exit/limit
 fixtures now consume the fixed request and EOF before their intended action.
 Production IO refusal, deadlines, budgets and cleanup behavior are unchanged;
 this isolates test causality rather than accepting either failure category.
+
+## Exact-source repeat and retained negatives
+
+Clean `c2fdc3f48878bd931788218fec3573b137def3ba`, tree
+`f61e80525d4742b2d2fa3ab1f6f91507ddcdf44d`, passed 62 Windows, 154 Linux/WSL,
+88 root contract/evidence and 23 governance tests. All-target check, strict
+all-feature clippy, scoped fmt, docs/local contract, 17 governance CLI checks,
+links and mdbook passed. Require-ship remains expected-red (exit 1).
+[The packet](local-runs/diagnostic-manager-c2fdc3f4/manifest.json) retains all
+three preparation repeats and the deterministic red proc-reader test, not only
+the final green result. Source was clean before and after the final capture;
+packet sealing and its independent hash/count/claim guard follow separately.
+
+Linux includes 14 manager unit/helper tests, two manager integration tests,
+15 process tests and six pre-existing abort-backend diagnostic tests selected
+by the diagnostic_ substring. Windows runs zero Linux manager/process/tree/spool
+tests; it is not Linux coverage. Four actual local system-bus absence reads
+authenticated a unique owner with UID 0 / PID 1 under one boot, and the wrong
+boot was refused with helper cleanup confirmed. No unit was loaded or created.
+This is an authenticated absent-unit observation, not complete loaded-unit
+policy, exec identity, writer revocation, durable failure or cleanup proof.

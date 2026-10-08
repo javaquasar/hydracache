@@ -4573,3 +4573,33 @@ it. Parent restart also loses the runtime child reference. Controlled start/stop
 live tree/process/artifact binding, first-failure persistence, autonomous
 watchdog and uncertain-ledger reconciliation still precede the numerical pilot.
 No latency, CPU/op, allocation or throughput improvement follows from this step.
+
+### A green process check was not the end of concurrency analysis
+
+The manager repeat exposed an earlier process-reader weakness: one parallel
+revalidation returned Invalid. The positional reader avoided shared seek offsets,
+but still assembled a proc document through several syscalls. Source inspection
+suggested that a regenerated seq_file document could supply a new tail after an
+older prefix. We did not retain the offending kernel document, so that exact
+cause remains a hypothesis, not a traced kernel event.
+
+A deterministic test supplied an old complete document followed by a regenerated
+tail. It failed before the correction. The reader now performs exactly one read
+at offset zero, using 65,537 bytes to detect the unchanged 64-KiB limit, and copies
+only the returned prefix. Empty, oversized, Interrupted and malformed results
+remain refusals, never partial-document retries or a new PID capture. The strict
+parser and original eight-reader, sixteen-iteration test were not relaxed.
+This prevents multi-syscall prefix/tail assembly; it is not general atomic-file
+or whole-process observation proof. It is control-plane correctness, not a
+measured allocation or throughput improvement in either product API.
+
+Another repeat found a fixture ordering race: a test helper could exit before
+receiving stdin, making the parent's correct IO refusal precede the exit category
+the test intended to check. Fixtures now receive request and EOF first; the
+separately adopted retained child has its own mode. Production refusal behavior
+is unchanged. The final [byte-preserved packet](../testing/performance/0.74/local-runs/diagnostic-manager-c2fdc3f4/manifest.json)
+retains these failures and the final clean-source result: 62 Windows, 154 Linux,
+88 root and 23 governance tests, check/lint/fmt/docs green, require-ship red.
+Four local systemd absence reads and wrong-boot refusal were observed separately
+from synthetic loaded properties. Complete live backend, writer fencing,
+watchdog and uncertain-intent recovery are still launch gates, not inferred wins.

@@ -1888,3 +1888,13 @@ observations are required. This is not start/stop, unit-policy verification,
 tree/writer cleanup, durable failure publication, watchdog or production IPC.
 Those integration gates still precede the baseline-only real pilot; product
 candidates and qualification remain closed.
+
+The [clean manager/process repeat](local-runs/diagnostic-manager-c2fdc3f4/manifest.json)
+passed 62 Windows, 154 Linux, 88 root and 23 governance tests. It retains the
+portable-target preparation failure, parallel proc Invalid failure, deterministic
+test-first red result and worker-fixture input race. The proc reader now uses
+one bounded positional read without a retry or EOF-probe tail; original 8x16
+concurrency and strict identity checks remain. Four real local systemd absence
+lookups passed; no diagnostic unit/workload was started. Ship admission stays red.
+The separately preregistered [unsigned local build](diagnostic-local-build-design.md)
+uses the exact frozen observer and validation-only calls, not trusted enrollment.

@@ -42,3 +42,9 @@ The kernel [seq_file documentation](https://docs.kernel.org/filesystems/seq_file
 describes stateful generation across read sessions. That supports investigation
 of the multi-syscall assembly hypothesis, not identification of the exact
 uncaptured kernel document that caused the earlier parallel test failure.
+
+Clean `c2fdc3f4` passed all 15 process tests within the complete 154-test Linux
+repeat; [the manager packet](local-runs/diagnostic-manager-c2fdc3f4/manifest.json)
+retains the earlier Invalid failure and the deterministic test-first red log.
+No concurrency, parser, identity or budget was weakened. A successful repeat
+does not prove the precise uncaptured kernel cause or all possible interleavings.

@@ -1,0 +1,249 @@
+{
+  "schema_version": "diagnostic-manager-local-evidence-074-v1",
+  "baseline_source_commit": "550663255306b6cd089cecdd9ae6b7629be993b3",
+  "preregistered_manager_contract_commit": "0ae233f6b9aa766eceee10d401a3eff06e1125dd",
+  "resource_contract_commit": "160e0f400347e29fff3290af71d46f3ce9d9c9bc",
+  "preregistered_proc_correction_commit": "949bbc770c1dc60ed291bf8b5b8f0bc437ab1200",
+  "implementation_source_commit": "c2fdc3f48878bd931788218fec3573b137def3ba",
+  "implementation_source_tree": "f61e80525d4742b2d2fa3ab1f6f91507ddcdf44d",
+  "source_clean_before": true,
+  "source_clean_after": true,
+  "capture": "PowerShell Tee combined stdout/stderr; byte-preserved test/check logs, not native Linux stdout provenance, build attestation or workload receipts",
+  "toolchain": "Rust 1.94.0; PowerShell 7.6.5; local WSL Ubuntu, not rented host",
+  "commands": {
+    "windows": "New-Item -ItemType Directory -Path target/diagnostic-manager-capture-c2fdc3f4 -Force | Out-Null; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_manager --test diagnostic_tree --test diagnostic_spool --test diagnostic_receipts --test diagnostic_artifacts --test diagnostic_ipc --test diagnostic_lease --test host_execution -j 2 2>&1 | Tee-Object target/diagnostic-manager-capture-c2fdc3f4/windows.log; if ($LASTEXITCODE -ne 0) { throw 'Windows integration gate failed' }; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_ 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/windows.log; if ($LASTEXITCODE -ne 0) { throw 'Windows library gate failed' }; cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/windows.log; if ($LASTEXITCODE -ne 0) { throw 'Windows check failed' }; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/windows.log; if ($LASTEXITCODE -ne 0) { throw 'Windows lint failed' }",
+    "linux": "wsl -d Ubuntu --exec bash -lc 'cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 && export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target && cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_manager --test diagnostic_tree --test diagnostic_spool --test diagnostic_receipts --test diagnostic_artifacts --test diagnostic_ipc --test diagnostic_lease --test host_execution --test server --test service -j2 && cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_ && cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked && cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked && cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings' 2>&1 | Tee-Object target/diagnostic-manager-capture-c2fdc3f4/linux.log; if ($LASTEXITCODE -ne 0) { throw 'Linux focused gates failed' }; $taskBoot = (wsl -d Ubuntu --exec cat /proc/sys/kernel/random/boot_id).Trim(); foreach ($taskSurface in @('embedded','direct','resp2','resp3')) { wsl -d Ubuntu --exec /home/artur/.cache/hydracache-074-manager-local-target/debug/hydracache-long-run-supervisor-074 diagnostic-manager-inspect ('a' * 64) $taskBoot $taskSurface 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/linux.log; if ($LASTEXITCODE -ne 0) { throw 'real manager inspection failed' } }; wsl -d Ubuntu --exec /home/artur/.cache/hydracache-074-manager-local-target/debug/hydracache-long-run-supervisor-074 diagnostic-manager-inspect ('a' * 64) 00000000-0000-0000-0000-000000000000 resp2 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/linux.log; if ($LASTEXITCODE -ne 9) { throw 'wrong boot was not refused' }; 'expected wrong-boot refusal: exit 9; no unit mutation' | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/linux.log; exit 0",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance -j 2 2>&1 | Tee-Object target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'root focused gate failed' }; cargo +1.94.0 check -p xtask --all-targets --locked 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'xtask check failed' }; cargo +1.94.0 clippy -p xtask --all-targets --all-features --locked -- -D warnings 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'xtask lint failed' }; cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'fmt failed' }; foreach ($taskGate in @('doc-check','performance-contract-check','release-governance-check')) { if ($taskGate -eq 'doc-check') { cargo +1.94.0 xtask $taskGate 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log } else { cargo +1.94.0 xtask $taskGate --release 0.74 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log }; if ($LASTEXITCODE -ne 0) { throw \"$taskGate failed\" } }; node scripts/docs-link-check.mjs 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'links failed' }; mdbook build docs-site 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 0) { throw 'book failed' }; cargo +1.94.0 xtask performance-contract-check --release 0.74 --require-ship 2>&1 | Tee-Object -Append target/diagnostic-manager-capture-c2fdc3f4/root.log; if ($LASTEXITCODE -ne 1) { throw 'ship gate must remain red' }; exit 0"
+  },
+  "windows_checks": {
+    "diagnostic_manager": 0,
+    "diagnostic_tree": 0,
+    "diagnostic_spool": 0,
+    "diagnostic_receipts": 8,
+    "diagnostic_artifacts": 9,
+    "diagnostic_ipc": 19,
+    "diagnostic_lease": 18,
+    "host_execution": 5,
+    "receipt_library": 3
+  },
+  "linux_checks": {
+    "diagnostic_manager": 2,
+    "diagnostic_tree": 8,
+    "diagnostic_spool": 7,
+    "diagnostic_receipts": 9,
+    "diagnostic_artifacts": 15,
+    "diagnostic_ipc": 22,
+    "diagnostic_lease": 20,
+    "host_execution": 6,
+    "server": 19,
+    "service": 3,
+    "manager_library": 14,
+    "process_library": 15,
+    "receipt_library": 3,
+    "tree_library": 4,
+    "spool_library": 1,
+    "existing_abort_backend_diagnostic_library": 6
+  },
+  "root_checks": {
+    "performance_contract_074": 75,
+    "release_evidence": 13
+  },
+  "windows_passed": 62,
+  "linux_passed": 154,
+  "root_passed": 88,
+  "release_governance_tests_passed": 23,
+  "release_governance_cli_checks": 17,
+  "ship_check_expected_exit": 1,
+  "ship_check_reason": "C74 candidate identity and release qualification incomplete",
+  "package_checks": "supervisor Windows/Linux and xtask Windows: all-target check, strict all-feature clippy",
+  "formatting_checked": true,
+  "doc_check_passed": true,
+  "local_performance_contract_passed": true,
+  "documentation_links_passed": true,
+  "mdbook_passed": true,
+  "local_real_manager_absence_checks": 4,
+  "local_manager_uid": 0,
+  "local_manager_pid": 1,
+  "local_manager_unique_owner": ":1.2",
+  "local_boot_id": "631ebe47-f6c5-42c0-958c-2e77f79cbb34",
+  "wrong_boot_refused_exit": 9,
+  "owned_nonproduct_helpers_killed_and_reaped": true,
+  "observation_is_atomic_unit_operation": false,
+  "snapshot_is_cleanup_authority": false,
+  "loaded_unit_policy_authenticated": false,
+  "original_start_authenticated": false,
+  "exec_identity_proven": false,
+  "tree_membership_authenticated": false,
+  "writer_revocation_proven": false,
+  "durable_first_failure_implemented": false,
+  "watchdog_implemented": false,
+  "pending_intent_reconciliation_implemented": false,
+  "production_route_enabled": false,
+  "host_install_allowed": false,
+  "unit_mutation_performed": false,
+  "host_ssh_performed": false,
+  "installed_service_operations_performed": false,
+  "cgroup_operations_performed": false,
+  "observer_build_proof_in_this_packet": false,
+  "product_workload_started": false,
+  "pilot_executed": false,
+  "qualification_started": false,
+  "full_workspace_verify_run": false,
+  "performance_measured": false,
+  "numerical_performance_claim_allowed": false,
+  "promotable": false,
+  "admission_allowed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "root_cargo_lock_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "observer_cargo_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+  "observer_source_commit": "62114be0f5da3218706e30d7424acfb5d0579d07",
+  "source_blobs": {
+    "tools/long-run-supervisor-074/src/diagnostic_manager.rs": "fc76b007c7dbe60babd4d36a679e0c24b2599de9",
+    "tools/long-run-supervisor-074/src/diagnostic_process.rs": "8848fe1a8587789ceed87b22a9bcbca635a8bf9b",
+    "tools/long-run-supervisor-074/src/main.rs": "a8258e47fc38a03fe45b9405fbeeccd68314a2ec",
+    "tools/long-run-supervisor-074/src/lib.rs": "dff1dfdc5b153a53ccea573be4be33730fb55d73",
+    "tools/long-run-supervisor-074/tests/diagnostic_manager.rs": "01e26c026765066c56f69059adeedc7b6787a314",
+    "docs/testing/performance/0.74/diagnostic-manager-local-contract.toml": "2782d4f4dac751c125d5c2e8d25c0d345f367170",
+    "docs/testing/performance/0.74/diagnostic-proc-document-contract.toml": "36c3dfb3d70e5226146fa49d0afa3a3e1b93db67",
+    "crates/xtask/tests/performance_contract_074.rs": "f5e0dbfd2b14ab42421776897dfb8afebf8ebed7"
+  },
+  "retained_negative_results": [
+    {
+      "source": "224f6ed3aad2e729b2d9f7a9e77857af53791902",
+      "clean_repeat": true,
+      "issue": "root governance: file-level Linux cfg hid diagnostic_manager integration target from portable inventory; changed to existing module-level pattern, no registry weakening",
+      "root_test_failures": 4
+    },
+    {
+      "source": "9a225347bfb97d3583c7314c6b8d885bd2f355eb",
+      "clean_repeat": true,
+      "issue": "parallel proc reader returned Invalid; raw offending document absent, multi-syscall seq_file assembly remains source-based cause hypothesis",
+      "linux_test_failures": 1
+    },
+    {
+      "capture": "9a225347/proc-splice-test-first.log",
+      "clean_repeat": false,
+      "issue": "new deterministic test with original multi-read implementation; prefix/next-generation-tail assembly reproduced before correction",
+      "linux_test_failures": 1
+    },
+    {
+      "source": "097ab6faa1126dff3217dad07979efcd84fe0448",
+      "clean_repeat": true,
+      "issue": "nonproduct exit fixture did not consume stdin; parent could correctly refuse IO before expected Exit. Fixture now accepts request/EOF; production refusal unchanged",
+      "linux_test_failures": 1
+    }
+  ],
+  "development_observations_summary_not_raw": [
+    "initial missing-module test was red",
+    "root single-read source guard initially matched 'for' in a comment; narrowed to loop syntax",
+    "first fixture-consumption edit broke null-stdin retained child; separated its explicit retained mode before green repeat",
+    "three additional unchanged 8x16 proc tests passed, outside exact-source packet"
+  ],
+  "post_capture_preparation": "packet sealing/guards/docs checked separately; earlier packets immutable; unsigned observer compilation is a separate preregistered slice",
+  "files": [
+    {
+      "path": "224f6ed3/linux.log",
+      "bytes": 17328,
+      "sha256": "c963ae72b5157c4c3faa3ddd4636723bf651ca7f9e88dee023e43da2a140fb67",
+      "git_blob": "ffc7f203beb87a5c5033c808ff7562e05bcae760",
+      "passed": 152,
+      "failed": 0
+    },
+    {
+      "path": "224f6ed3/root.log",
+      "bytes": 11920,
+      "sha256": "4550c535b1d70a18092ab0f791ebdba245bd8044ed608359d1a9fa1d12eede96",
+      "git_blob": "cba18941be7d648dff830f87796f0333b6a46888",
+      "passed": 106,
+      "failed": 4
+    },
+    {
+      "path": "224f6ed3/windows.log",
+      "bytes": 7726,
+      "sha256": "7477619933fb7a60625cb4597351c643898f149fc9f8ea2f716dd1bf6892a5e0",
+      "git_blob": "5bdc7a74d463e479935ada77687b670063ed7f8b",
+      "passed": 62,
+      "failed": 0
+    },
+    {
+      "path": "9a225347/linux.log",
+      "bytes": 16440,
+      "sha256": "1589e1736a72e36fde81a33c68acd058be6fe56223a981944792ab75cba053a8",
+      "git_blob": "dee9717abfb133497c2a95d433d87ba0eaf5a435",
+      "passed": 151,
+      "failed": 1
+    },
+    {
+      "path": "9a225347/proc-splice-test-first.log",
+      "bytes": 2356,
+      "sha256": "ec363d999d0ae4d5e921ac3a302bda83a9c6ca187be8de803485618397c060fb",
+      "git_blob": "5fc05e116ba5ba5e7b6bf9ed8e0453ffb956dc0c",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "path": "9a225347/root.log",
+      "bytes": 11015,
+      "sha256": "4ffa86fd1dadf0c0fd38431703d93ce59497cdcae7f5e2f6fab8f067939c5dec",
+      "git_blob": "67d70cddb3fa4531391c15313b53b9093d2c4321",
+      "passed": 110,
+      "failed": 0
+    },
+    {
+      "path": "9a225347/windows.log",
+      "bytes": 7253,
+      "sha256": "6c7e5cfb25f9b9b2b0ebb3f6b1e878db2735508cc19a632ace7452bbac48d672",
+      "git_blob": "e22afce941c279c6a8ef1a497742afb219d1e68a",
+      "passed": 62,
+      "failed": 0
+    },
+    {
+      "path": "097ab6fa/linux.log",
+      "bytes": 16633,
+      "sha256": "80c036ebfb3c0eb20b32c3e874ee160d7612923922bbf517b9e7d67b1c0cab2d",
+      "git_blob": "9ee80532711424a304d62a90d325a53690d8c23c",
+      "passed": 153,
+      "failed": 1
+    },
+    {
+      "path": "097ab6fa/root.log",
+      "bytes": 11373,
+      "sha256": "534e792ba816c402e8624407f12fc1439ffd7d5054ecf9c3c82f06e5b313426c",
+      "git_blob": "e5812b2e891785ed259c6093732ed1474b2bd3ca",
+      "passed": 111,
+      "failed": 0
+    },
+    {
+      "path": "097ab6fa/windows.log",
+      "bytes": 7217,
+      "sha256": "bee4ca825d9b8445f27fe7aef4fe635e717e6403afac737f1e8377fca086cb67",
+      "git_blob": "c0314ae8553ab504197011c7fbe37cc216a79e40",
+      "passed": 62,
+      "failed": 0
+    },
+    {
+      "path": "c2fdc3f4/linux.log",
+      "bytes": 17679,
+      "sha256": "897d5fa0a336a4c7e4d7210953517b97831b2dfbe1f45d7fd9936205651f0d6e",
+      "git_blob": "3038456cd5e888c89f590055e45163731e63c7a8",
+      "passed": 154,
+      "failed": 0
+    },
+    {
+      "path": "c2fdc3f4/root.log",
+      "bytes": 11289,
+      "sha256": "49590042d5a6f79d58da6585a0d537be0b3c902fb5710b21f878af90151c57db",
+      "git_blob": "f6390b64ce381a439a5738b127a1026b0c43275d",
+      "passed": 111,
+      "failed": 0
+    },
+    {
+      "path": "c2fdc3f4/windows.log",
+      "bytes": 7217,
+      "sha256": "674e64b20199dce82148e305e7cfed1b9ce9960277d347e854aeeba4d64dc54c",
+      "git_blob": "f67a68e79ba8b0a6486d6ac99fa638ef91dfdff3",
+      "passed": 62,
+      "failed": 0
+    }
+  ]
+}
