@@ -1,0 +1,37 @@
+schema_version = 1
+contract_id = "diagnostic-spool-local-074-v1"
+baseline_source = "b98be0d67d10dbe040201d1d704608e56da6c3a9"
+state = "preregistered-local-linux-filesystem-fixtures-only"
+production_route_enabled = false
+host_install_allowed = false
+host_pilot_execution_allowed = false
+real_product_build_allowed_by_this_slice = false
+qualification_allowed = false
+promotable = false
+admission_allowed = false
+live_cgroup_cleanup_proven = false
+fixture_is_production_spool = false
+power_loss_durability_proven = false
+automatic_pending_recovery_allowed = false
+workload_retry_allowed = false
+old_inputs_or_packets_mutable = false
+source_commit = "62114be0f5da3218706e30d7424acfb5d0579d07"
+stream_prefix_bytes = 8388608
+combined_prefix_bytes = 16777216
+manifest_bytes = 65536
+source_directory_mode = "0700"
+source_file_mode = "0600"
+sealed_directory_mode = "0500"
+sealed_file_mode = "0400"
+source_files = ["stdout.json", "stderr.log"]
+sealed_files = ["stdout.prefix", "stderr.prefix", "manifest.json"]
+fault_points = ["after-pending", "after-stdout", "after-stderr", "after-manifest", "after-readonly", "after-rename"]
+
+[required_tests]
+publication = "fixture_publication_is_byte_exact_and_replay_never_overwrites"
+overflow = "overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim"
+paths = "spool_refuses_links_special_files_wrong_modes_owners_and_extra_entries"
+drift = "pinned_spool_detects_replacement_and_in_place_drift"
+crash = "every_crash_window_retains_pending_or_reverifies_same_published_packet"
+offline = "offline_verification_requires_external_digest_and_reconciles_content"
+concurrency = "concurrent_publication_has_one_generation_and_no_replacement"
