@@ -1928,7 +1928,13 @@ distinguishes this account-delegated review from independent human review.
 
 Review also added a fail-closed guard against administrator bypass being true,
 absent, null or numeric zero. The real build/sign lane remains unrun: its manual
-workflow is absent from main and unregistered in Actions (404). Registering only
-that workflow on the default branch requires separate permission; no automatic
-trigger or qualification workflow is used as a workaround. No host route or
-workload was enabled, and the earlier unsigned build stays unsigned.
+workflow is absent from main and unregistered in Actions (404). Permission for
+one-file registration was subsequently granted, and [PR 216](https://github.com/javaquasar/hydracache/pull/216)
+adds only the exact reviewed workflow. The [registration attempt](local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
+remains blocked: local and CI topology checks reject the unregistered inventory
+entry, and full local verify refuses the existing Linux all-features allocator
+union. All three branch-protection-required CI checks passed, but neither red
+gate is waived by that result. Further permission is needed to register CI inventory and repair the
+verification orchestration with separate allocator feature sets, not weaken
+product guards. Main is unchanged; no build/sign job, host route or workload was
+enabled, and the earlier unsigned build stays unsigned.

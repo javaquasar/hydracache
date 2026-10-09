@@ -4703,7 +4703,24 @@ checks. Registration itself does not prove that the stored secret can produce a
 valid real build signature: that evidence must come from the protected build/sign
 lane and independent verification of its receipt. That lane is still blocked on
 workflow registration: GitHub requires a workflow_dispatch file on the default
-branch before first manual execution, and this file currently exists only on
-the feature branch. We have not merged product code or added automatic triggers
-to work around it. This closes key-enrollment preparation, not backend,
+branch before first manual execution. We have not merged product code or added
+automatic triggers to work around it. This closes key-enrollment preparation, not backend,
 writer-fencing, watchdog, recovery, installed pilot or performance admission.
+
+The authorized one-file registration became a separate PR based on released
+main, not a merge of the 0.74 product branch. Its local and CI attempts exposed
+two different barriers. The CI topology contract requires an exact workflow
+inventory and correctly rejected the new, undeclared file. Full local verify
+then exposed an inherited orchestration defect: its Linux workspace clippy step
+passes --all-features, enabling mutually exclusive allocator implementations
+together. The product refused that union, including multiple global allocators;
+this is not a reason to weaken allocator isolation. The correction belongs in
+verification tooling, using separate feature sets and retaining the existing
+coverage, not changing product semantics or acceptance thresholds.
+
+The [registration evidence](../testing/performance/0.74/local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
+retains both original failure logs. Seven coordinator tests passed, but focused
+green tests do not make the full gate green. The PR remains unmerged until the
+scope includes CI inventory registration and the feature-safe verification
+command. No signed build, installation, qualification or new performance claim
+follows from this attempt.

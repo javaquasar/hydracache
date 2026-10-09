@@ -132,6 +132,19 @@ automatic push trigger, or repurpose an existing qualification workflow to work
 around registration. Until registration and exact protected job approvals, no
 actual trusted CI build/sign receipt exists.
 
+The user subsequently authorized only the workflow file's default-branch
+registration. A separate branch from main at 5f0259da adds the identical reviewed
+workflow blob in [PR 216](https://github.com/javaquasar/hydracache/pull/216); it does
+not import product or signing code. The [retained attempt](local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
+shows two red gates. CI and a local topology replay reject the extra workflow
+because main's exact inventory lives in docs/testing/memory/0.71/ci-topology.json.
+Full local verify also selects the existing Linux --all-features workspace
+clippy command, which combines mutually exclusive allocators and is refused by
+the product's compile-time guards. Neither failure permits bypassing protection,
+removing an allocator guard, or treating focused Python tests as full verification.
+The PR remains unmerged pending explicit scope for CI inventory and feature-safe
+verification tooling/tests. No workflow dispatch or build/sign approval occurred.
+
 The [enrollment packet](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
 records the new environment, required reviewer and exact branch, can_admins_bypass=false,
 one newly registered environment secret and three public variables. The fresh

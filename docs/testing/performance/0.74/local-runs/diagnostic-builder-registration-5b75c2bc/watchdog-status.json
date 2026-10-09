@@ -1,0 +1,22 @@
+{
+  "attempt_id": "1",
+  "classification": "product-failure",
+  "command": [
+    "cargo",
+    "run",
+    "-p",
+    "xtask",
+    "--locked",
+    "--",
+    "ci-topology-check",
+    "--release",
+    "0.71"
+  ],
+  "detail": "child exited with code 1",
+  "elapsed_seconds": 99.473,
+  "exit_code": 1,
+  "finished_at": "2026-10-09T09:50:23.863694Z",
+  "log_file": "target/ci-topology/command.log",
+  "schema_version": 1,
+  "started_at": "2026-10-09T09:48:44.390784Z"
+}
