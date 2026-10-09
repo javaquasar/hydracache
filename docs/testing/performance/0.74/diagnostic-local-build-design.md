@@ -93,3 +93,8 @@ trusted Linux builder/key versus reviewed reuse of the provisioning signer's
 build domain. No default/test key will be promoted. Backend, policy/tree/process
 binding, writer revocation, watchdog/reconciliation and non-product loss rehearsal
 still precede signed installation and a baseline-only pilot.
+
+The user subsequently selected the separate-key architecture. Its implementation
+and still-closed real enrollment are tracked in the
+[builder design](diagnostic-builder-local-design.md). This does not retroactively
+sign or promote the original developer build or amend its sealed packet.

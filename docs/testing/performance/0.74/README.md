@@ -1908,3 +1908,15 @@ tests; lint/check/fmt/docs passed, ship stayed red. The binary remains local, no
 an enrolled/signed product artifact. Trusted builder policy, safe live backend,
 writer revocation, watchdog and uncertain-intent reconciliation remain before
 real pilot execution. No product workload, host install or qualification ran.
+
+The selected [separate builder authority](diagnostic-builder-local-design.md)
+now has an externally pinned canonical policy, dedicated Linux signer and
+manual two-job build/sign lane. Build scripts receive no signing secret; the
+signer checks source/toolchain observations and actual artifact bytes before
+emitting the existing receipt format. Human review and exact branch protection
+are checked before preparation, and unsafe keys/paths or duplicate publication
+fail closed. Local [evidence](local-runs/diagnostic-builder-6118219f/manifest.json)
+uses synthetic signatures, not enrolled production provenance. The proposed
+GitHub environment returned 404; reviewer selection and fresh key/public-pin
+registration remain before the real build/sign lane. No host route or workload
+was enabled, and the earlier unsigned build stays unsigned.

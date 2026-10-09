@@ -4640,3 +4640,42 @@ evidence. A reviewed trusted builder policy and the safe live backend, original
 tree/process binding, writer revocation, watchdog and uncertain-intent recovery
 still precede a signed, baseline-only numerical pilot. No default test signature
 or unsigned local output may be promoted into that execution authority.
+
+### Build provenance needs its own authority, not just another signature domain
+
+The next question was architectural: reuse the provisioning signer or give the
+trusted Linux builder a separate key. The user chose separation. Provisioning
+authorizes installation tooling; a builder attests which exact source, compiler,
+configuration and artifact bytes produced a binary. Separate message prefixes
+prevent accidental protocol reuse, but do not isolate compromise of a shared
+private key. Separate keys permit independent revocation and narrower policies.
+This benefit depends on a genuinely separate secret boundary, not two files
+available to the same arbitrary build script.
+
+We implemented an externally pinned canonical public policy with fixed
+repository/builder identity and an independently supplied controller key.
+Shared, weak or mismatched keys and altered/noncanonical policies are refused.
+A dedicated Linux signing executable checks fixed build observations, ELF/Cargo
+content and every lock/config digest before deriving and signing a schema-1
+receipt. It does not expose arbitrary statement signing or join the installed
+supervisor's execution routes. Private key files require private owned parents,
+descriptor-based no-symlink traversal, single links and strict mode; output is
+create-new with file/directory synchronization, never replacement.
+
+The manual CI lane separates compilation from signing across hosted runners.
+The build coordinator removes credentials and Rust/Cargo/loader overrides from
+its subprocess environment, uses a fresh fixed-source checkout, retains native
+Cargo output separately from stderr and executes --validate only. The signing
+job compiles reviewed tooling before obtaining the separate secret, then checks
+this run/attempt's bundle against the external public pin. Human review and the
+exact branch restriction are prerequisites, not assumptions inferred from an
+environment name. No private builder key belongs on the performance host.
+
+Local synthetic positive/negative tests validate the policy, signing round trip,
+content/source drift, private paths and refusal to overwrite. They do not prove
+that a trusted production builder ran, establish reproducible compilation, or
+measure CPU/allocation/latency. See the [design and retained evidence](../testing/performance/0.74/diagnostic-builder-local-design.md).
+The new environment returned 404 in a read-only check; the legacy environment's
+empty protection settings were deliberately not copied. Real reviewer/key/pin
+enrollment remains open. This removes a code-level provenance gap but does not
+close backend, writer-fencing, watchdog, recovery or performance admission gates.

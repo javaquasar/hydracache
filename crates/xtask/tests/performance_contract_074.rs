@@ -76,6 +76,82 @@ fn separate_diagnostic_builder_does_not_enroll_host_execution() {
     let manifest =
         std::fs::read_to_string(root().join("tools/long-run-supervisor-074/Cargo.toml")).unwrap();
     assert!(manifest.contains("default-run = \"hydracache-long-run-supervisor-074\""));
+    let directory =
+        root().join("docs/testing/performance/0.74/local-runs/diagnostic-builder-6118219f");
+    let packet: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        packet["schema_version"],
+        "diagnostic-builder-local-evidence-074-v1"
+    );
+    assert_eq!(
+        packet["implementation_source_commit"],
+        "6118219fb39353ca9007f0581423e965b0e11cf9"
+    );
+    assert_eq!(
+        packet["implementation_source_tree"],
+        "d78bf6b3406ec834a469626d8deb789a39fe78e0"
+    );
+    for flag in [
+        "real_builder_key_generated",
+        "real_builder_key_enrolled",
+        "real_signed_build_produced",
+        "workflow_dispatched",
+        "host_install_allowed",
+        "product_workload_run",
+        "qualification_run",
+        "admission_allowed",
+        "full_workspace_verify_run",
+    ] {
+        assert_eq!(packet[flag], false, "{flag}");
+    }
+    assert_eq!(packet["windows_rust_tests"], 23);
+    assert_eq!(packet["linux_rust_tests"], 31);
+    assert_eq!(packet["python_tests_per_os"], 7);
+    assert_eq!(packet["ship_check_expected_exit"], 1);
+    let expected = [
+        (
+            "linux-format-preparation.log",
+            "08c5046690afc08044c6d47823da0877136c965186f692a9220433b47ce0948e",
+        ),
+        (
+            "linux.log",
+            "e8e4916e17b97dd8146c616359d71e066829159c75ecf0d7e6a9738b2d06684d",
+        ),
+        (
+            "root.log",
+            "6d5cbddf256c8e6fcbb7cb9370de25d60a0bb060f84079b152ad5e40a5be2b4c",
+        ),
+        (
+            "test-first.log",
+            "1e01a76f24b823ac110d788ca19938e2c899cc496dc912522f4409e400a751c5",
+        ),
+        (
+            "windows.log",
+            "bb1917048b546522bf44bcd2908695622ed5c45dfea1e704e66c65b3beb918c9",
+        ),
+    ];
+    let rows = packet["raw_files"].as_array().unwrap();
+    assert_eq!(rows.len(), expected.len());
+    for (name, digest) in expected {
+        let row = rows.iter().find(|r| r["name"] == name).unwrap();
+        let bytes = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(row["bytes"].as_u64(), Some(bytes.len() as u64));
+        assert_eq!(row["sha256"], digest);
+        let actual: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(actual, digest);
+    }
+    assert!(std::fs::read_to_string(directory.join("test-first.log"))
+        .unwrap()
+        .contains("E0432"));
+    assert!(
+        std::fs::read_to_string(directory.join("linux-format-preparation.log"))
+            .unwrap()
+            .contains("cargo-fmt' is not installed")
+    );
 }
 
 #[test]

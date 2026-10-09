@@ -1,0 +1,51 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-5ccfd66c67cb3498.exe)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests\provisioning.rs (target\debug\deps\provisioning-09fb782bdc626a7b.exe)
+
+running 4 tests
+test sudo_boundary_exposes_only_the_fixed_signed_bundle_installer ... ok
+test accounts_directories_and_unresolved_key_fail_closed ... ok
+test service_is_detached_confined_and_exposes_no_workflow_shell ... ok
+test role_overhead_does_not_expand_the_fixed_root_entrypoint ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\request_builder.rs (target\debug\deps\request_builder-99b25ee389dd1f74.exe)
+
+running 4 tests
+test derives_only_the_public_verification_key_from_a_private_seed ... ok
+test rejects_non_mutating_requests_time_drift_and_unsafe_key_files ... ok
+test provisioning_manifest_signature_binds_every_digest_byte ... ok
+test builds_a_create_new_packet_bound_to_the_request_and_time_window ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.039s
+
+OK
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.78s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.02s

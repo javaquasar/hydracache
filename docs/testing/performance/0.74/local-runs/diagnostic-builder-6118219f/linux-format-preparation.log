@@ -1,0 +1,64 @@
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.145s
+
+OK
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.20s
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-55c5e7491790c879)
+
+running 21 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/provisioning.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/provisioning-cae2af7bdd4bdbf5)
+
+running 4 tests
+test sudo_boundary_exposes_only_the_fixed_signed_bundle_installer ... ok
+test role_overhead_does_not_expand_the_fixed_root_entrypoint ... ok
+test service_is_detached_confined_and_exposes_no_workflow_shell ... ok
+test accounts_directories_and_unresolved_key_fail_closed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/request_builder.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/request_builder-5d595aadaec898fc)
+
+running 4 tests
+test rejects_non_mutating_requests_time_drift_and_unsafe_key_files ... ok
+test derives_only_the_public_verification_key_from_a_private_seed ... ok
+test provisioning_manifest_signature_binds_every_digest_byte ... ok
+test builds_a_create_new_packet_bound_to_the_request_and_time_window ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.79s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+
+running 1 test
+test diagnostic_builder::linux::tests::builder_cli_refuses_unprotected_key_files_and_existing_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 79 filtered out; finished in 0.01s
+
+error: 'cargo-fmt' is not installed for the toolchain '1.94.0-x86_64-unknown-linux-gnu'.
+help: run `rustup component add --toolchain 1.94.0-x86_64-unknown-linux-gnu rustfmt` to install it

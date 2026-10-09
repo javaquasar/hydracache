@@ -1,0 +1,109 @@
+{
+  "schema_version": "diagnostic-builder-local-evidence-074-v1",
+  "implementation_source_commit": "6118219fb39353ca9007f0581423e965b0e11cf9",
+  "implementation_source_tree": "d78bf6b3406ec834a469626d8deb789a39fe78e0",
+  "preregistered_contract_commit": "21d75651676fca4053e697216b4d6017b7e0d056",
+  "source_clean_before": true,
+  "source_clean_after": true,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "root_lock_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+  "observer_lock_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+  "separate_policy_and_signer_checked": true,
+  "linux_synthetic_cli_signature_round_trip": true,
+  "synthetic_keys_and_elf_only": true,
+  "real_builder_key_generated": false,
+  "real_builder_key_enrolled": false,
+  "real_signed_build_produced": false,
+  "workflow_dispatched": false,
+  "host_install_allowed": false,
+  "product_workload_run": false,
+  "qualification_run": false,
+  "admission_allowed": false,
+  "windows_rust_tests": 23,
+  "linux_rust_tests": 31,
+  "python_tests_per_os": 7,
+  "root_contract_and_evidence_tests": 90,
+  "governance_tests": 23,
+  "check_clippy_fmt_passed_on_windows_and_linux": true,
+  "xtask_check_clippy_passed_on_windows": true,
+  "doc_check_passed": true,
+  "local_performance_contract_passed": true,
+  "governance_cli_checks": 17,
+  "ship_check_expected_exit": 1,
+  "full_workspace_verify_run": false,
+  "capture_format": "Combined PowerShell Tee captures of native commands; no native Linux build/workload byte provenance claimed.",
+  "github_read_only_observations": {
+    "new_environment": "performance-diagnostic-builder-074",
+    "new_environment_http_status": 404,
+    "existing_environment": "performance-reference-074",
+    "existing_environment_protection_rules": [],
+    "existing_environment_deployment_branch_policy": null,
+    "settings_changed": false,
+    "reviewer_selection_pending": true
+  },
+  "remaining_gates": [
+    "human reviewer and protected environment configuration",
+    "fresh separate builder key and independently reviewed public policy pin",
+    "actual protected build/sign lane and independent artifact verification",
+    "live backend and immutable install/start binding",
+    "writer fencing, watchdog, uncertain-intent reconciliation and non-product loss rehearsal"
+  ],
+  "preparation_observations": [
+    {
+      "kind": "test-first missing module E0432",
+      "raw_capture": "test-first.log"
+    },
+    {
+      "kind": "Linux Read/Write by_ref ambiguity E0034 corrected",
+      "raw_capture": null
+    },
+    {
+      "kind": "Windows short/long tempfile path fixture comparison corrected",
+      "raw_capture": null
+    },
+    {
+      "kind": "Linux rustfmt initially absent; exact-toolchain component installed locally; clean repeat passed",
+      "raw_capture": "linux-format-preparation.log"
+    }
+  ],
+  "source_blobs": {
+    ".github/workflows/diagnostic-builder-074.yml": "4a08cf0a277006ad528a237d2d54f58ac8f365b2",
+    "scripts/perf/diagnostic_builder_074.py": "535df08bb6c247e93eb5a62e908df0fe06a18b28",
+    "scripts/perf/test_diagnostic_builder_074.py": "6d77d96cbaad3949cac6a86ab373257ea28e6f88",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs": "2c7cb5970b461b22a6e5811ec5aada29ea31085a",
+    "tools/long-run-supervisor-074/src/diagnostic_builder.rs": "0d353279293a996581f13ffa7fc34489f8360cac",
+    "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs": "b0084160de0b2650050f35be73589c651add82d8"
+  },
+  "raw_files": [
+    {
+      "name": "linux-format-preparation.log",
+      "bytes": 4026,
+      "sha256": "08c5046690afc08044c6d47823da0877136c965186f692a9220433b47ce0948e",
+      "git_blob": "6765bfaf85e2f3828222bc6b94dcf488878b0815"
+    },
+    {
+      "name": "linux.log",
+      "bytes": 4317,
+      "sha256": "e8e4916e17b97dd8146c616359d71e066829159c75ecf0d7e6a9738b2d06684d",
+      "git_blob": "d21ced9d3e3b5c0a300a51b7ea9f02467ff1f548"
+    },
+    {
+      "name": "root.log",
+      "bytes": 11325,
+      "sha256": "6d5cbddf256c8e6fcbb7cb9370de25d60a0bb060f84079b152ad5e40a5be2b4c",
+      "git_blob": "45d9725d5a0b1db8dbc67d27d02c29d8202168f1"
+    },
+    {
+      "name": "test-first.log",
+      "bytes": 1104,
+      "sha256": "1e01a76f24b823ac110d788ca19938e2c899cc496dc912522f4409e400a751c5",
+      "git_blob": "ffdf6ddc43cca74f81ff14f4d17a4f50ec7927a7"
+    },
+    {
+      "name": "windows.log",
+      "bytes": 2949,
+      "sha256": "bb1917048b546522bf44bcd2908695622ed5c45dfea1e704e66c65b3beb918c9",
+      "git_blob": "7ce87f0916aae84f7c4111a87a87c25b73ee6a89"
+    }
+  ]
+}
