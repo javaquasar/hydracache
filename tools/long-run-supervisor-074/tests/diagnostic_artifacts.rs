@@ -987,6 +987,28 @@ mod linux_tests {
     }
 
     #[test]
+    fn pinned_start_material_caps_starting_runtime_at_observed_lease_boundary() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let mut state = f.start_state();
+        state.stage = DiagnosticStage::Starting;
+        state.cell_started_monotonic_ns = Some(state.reserved_monotonic_ns);
+        state.cleanup_confirmed = false;
+        state.last_observed_monotonic_ns += 283_000_000_000;
+        let material = f.prepare(&state, &policy).unwrap();
+        assert_eq!(material.intent().maximum_runtime_seconds, 17);
+        assert!(material
+            .spec()
+            .properties
+            .contains(&("RuntimeMaxUSec", UnitProperty::Unsigned(17_000_000))));
+        state.last_observed_monotonic_ns += 17_000_000_000;
+        assert!(matches!(
+            linux::prepare_fixed_start_material(&state, &policy),
+            Err(ArtifactError::Invalid)
+        ));
+    }
+
+    #[test]
     fn pinned_start_material_refuses_wrong_builder_and_identity() {
         let mut f = Fixture::new();
         let policy = f.checked_policy();

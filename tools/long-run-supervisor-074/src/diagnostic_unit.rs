@@ -1,12 +1,23 @@
 //! Construction only. Never starts a transient unit; no live backend enrolled.
 use crate::diagnostic_lease::{
-    cell_intent, CellIntent, DiagnosticState, CELL_SECONDS, MAX_RECEIPT_BYTES,
+    cell_intent, CellIntent, DiagnosticState, CELL_SECONDS, MAX_RECEIPT_BYTES, TOTAL_SECONDS,
 };
 use crate::systemd_unit::{ExecCommand, TransientUnitSpec, UnitProperty};
 
 /// Build only from validated persisted state, not caller-supplied argv or paths.
 pub fn build_diagnostic_unit_spec(state: &DiagnosticState) -> Result<TransientUnitSpec, String> {
-    let intent = cell_intent(state).map_err(|error| error.to_string())?;
+    Ok(spec(&diagnostic_start_intent(state)?))
+}
+
+/// A start specification must use the latest validated observation, not extend
+/// its runtime using the older persisted Starting timestamp. The running-state
+/// model intent is unchanged; no clock or execution authority is inferred here.
+pub(crate) fn diagnostic_start_intent(state: &DiagnosticState) -> Result<CellIntent, String> {
+    let mut intent = cell_intent(state).map_err(|error| error.to_string())?;
+    let remaining_seconds = (TOTAL_SECONDS * 1_000_000_000)
+        .saturating_sub(state.last_observed_monotonic_ns - state.reserved_monotonic_ns)
+        / 1_000_000_000;
+    intent.maximum_runtime_seconds = intent.maximum_runtime_seconds.min(remaining_seconds);
     if !matches!(
         state.stage,
         crate::diagnostic_lease::DiagnosticStage::Reserved
@@ -16,7 +27,7 @@ pub fn build_diagnostic_unit_spec(state: &DiagnosticState) -> Result<TransientUn
     {
         return Err("diagnostic unit cannot start in this state or past its budget".into());
     }
-    Ok(spec(&intent))
+    Ok(intent)
 }
 
 fn spec(intent: &CellIntent) -> TransientUnitSpec {

@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::diagnostic_builder::CheckedBuilderPolicy;
-use crate::diagnostic_lease::{cell_intent, DiagnosticState};
-use crate::diagnostic_unit::build_diagnostic_unit_spec;
+use crate::diagnostic_lease::DiagnosticState;
+use crate::diagnostic_unit::{build_diagnostic_unit_spec, diagnostic_start_intent};
 use crate::systemd_unit::TransientUnitSpec;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
@@ -149,7 +149,7 @@ fn prepare_material(
     state: &DiagnosticState,
     spec: TransientUnitSpec,
 ) -> Result<PinnedStartMaterial, ArtifactError> {
-    let intent = cell_intent(state).map_err(|_| ArtifactError::Invalid)?;
+    let intent = diagnostic_start_intent(state).map_err(|_| ArtifactError::Invalid)?;
     bundle.build().bind_intent(&intent)?;
     bundle.revalidate()?;
     Ok(PinnedStartMaterial {

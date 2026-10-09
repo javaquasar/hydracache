@@ -806,6 +806,9 @@ function = "pinned_start_material_keeps_original_descriptors_and_refuses_replace
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs"
 function = "independent_parallel_start_materials_remain_fixture_only"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs"
+function = "pinned_start_material_caps_starting_runtime_at_observed_lease_boundary"
 
 [[work_item]]
 id = "W12"
