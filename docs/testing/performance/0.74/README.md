@@ -1927,14 +1927,39 @@ The [enrollment evidence](local-runs/diagnostic-builder-enrollment-20261009/mani
 distinguishes this account-delegated review from independent human review.
 
 Review also added a fail-closed guard against administrator bypass being true,
-absent, null or numeric zero. The real build/sign lane remains unrun: its manual
-workflow is absent from main and unregistered in Actions (404). Permission for
+absent, null or numeric zero. The real build/sign lane initially remained unrun:
+its workflow was absent from main and unregistered in Actions (404). Permission for
 one-file registration was subsequently granted, and [PR 216](https://github.com/javaquasar/hydracache/pull/216)
-adds only the exact reviewed workflow. The [registration attempt](local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
-remains blocked: local and CI topology checks reject the unregistered inventory
+initially added only the exact reviewed workflow. The [registration attempt](local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
+retains the original failures: local and CI topology checks reject the unregistered inventory
 entry, and full local verify refuses the existing Linux all-features allocator
 union. All three branch-protection-required CI checks passed, but neither red
-gate is waived by that result. Further permission is needed to register CI inventory and repair the
-verification orchestration with separate allocator feature sets, not weaken
-product guards. Main is unchanged; no build/sign job, host route or workload was
-enabled, and the earlier unsigned build stays unsigned.
+gate is waived by that result. The user then authorized CI inventory and verification tooling/tests.
+The updated PR adds the manual-protected inventory entry, SHA/run/attempt artifact
+names and bounded compiler installation. It replaces the invalid allocator union
+with workspace-default lint while retaining the other all-feature and separate
+allocator lanes. Regression tests first failed on the old orchestration/name and
+then passed; 13 verify and 12 CI-reliability checks, xtask check and strict lint
+passed locally on the registration branch. The first inventory correction then
+passed topology CI but failed memory baseline 0.71 because main reused its frozen
+snapshot for live CI. The correction restores the exact snapshot and moves live
+validation to docs/testing/ci-topology.json without updating any baseline digest.
+A new regression checks the preserved digest and live builder classification.
+Full local verify and refreshed CI subsequently passed on c7cba271; PR 216 merged
+as 2b3c5794 without admin bypass. The [registration result](local-runs/diagnostic-builder-registration-c7cba271/manifest.json)
+retains the successful complete log, CI snapshot and earlier failures. The
+workflow is registered; run 37923423889 starts the separate protected build/sign
+review on exact tooling 33596da7. No host route or workload is enabled, and the
+earlier unsigned build stays unsigned.
+
+The clean 33596da7 Linux repeat passed 211 Rust checks (113 library, 12 CI,
+8 baseline, 78 performance contracts), seven Python checks, check/clippy/fmt,
+docs, local 0.74 contract and live topology. The superseded and storage-interrupted attempts retain complete
+logs; the compact-build repeat uses unchanged test commands and thresholds,
+not a product-performance workload. The removed registration build cache is
+reproducible and contains no source, retained evidence or qualification artifact.
+The compact repeat first failed because WSL lacked the python executable expected
+by an API-inventory test. A task-local alias to the existing Python 3.12.3 enabled
+a successful full repeat without test changes. The optional console gate reports
+SKIP (node not found); this is not browser proof. Qualification inputs remain
+unchanged; no cache performance measurement follows from these checks.

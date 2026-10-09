@@ -4720,7 +4720,44 @@ coverage, not changing product semantics or acceptance thresholds.
 
 The [registration evidence](../testing/performance/0.74/local-runs/diagnostic-builder-registration-5b75c2bc/manifest.json)
 retains both original failure logs. Seven coordinator tests passed, but focused
-green tests do not make the full gate green. The PR remains unmerged until the
-scope includes CI inventory registration and the feature-safe verification
-command. No signed build, installation, qualification or new performance claim
-follows from this attempt.
+green tests do not make the full gate green. The user subsequently authorized
+the CI inventory and verification-tooling correction. Both builder jobs are now
+declared manual-protected without new exemptions. Artifact upload and download
+names carry source SHA as well as run and attempt, and compiler installation has
+its own bounded deadline. The Linux workspace lint now uses default features;
+all-feature lint still covers the rest of the workspace, while HydraCache keeps
+separate common, System, mimalloc and Linux jemalloc checks. Its compile-time
+allocator guards are unchanged.
+
+New regression tests first failed against the old union and missing artifact
+SHA, then passed after correction. The registration branch passed 13 verification
+orchestration tests, 12 CI-reliability tests, package check and strict lint. The
+first CI inventory correction passed topology validation but triggered the
+memory baseline canary: the supposedly live inventory was also a digest-pinned
+measurement input. Changing its pin would erase the very drift the canary
+detected. Instead, the registration branch restores the exact snapshot and
+uses a separate live inventory, following the split already made in 0.74. A new
+regression checks both the frozen digest and manual-protected builder entry.
+Full local verification and refreshed CI subsequently passed. PR 216 merged as
+2b3c5794 without admin bypass, and the manual workflow became registered. The
+[registration result](../testing/performance/0.74/local-runs/diagnostic-builder-registration-c7cba271/manifest.json)
+retains the complete successful log as well as the earlier refusals. This repairs
+the path to collecting trustworthy build evidence, not cache throughput. The
+separate build/sign review starts on exact tooling 33596da7; installation,
+qualification and performance claims remain outside this registration result.
+
+A clean Linux repeat of the 0.74 tooling passed 211 Rust tests and seven Python
+tests, with format, package check/strict lint, docs and local contracts green.
+Two incomplete full-verification logs are also retained. One candidate was
+superseded after the frozen-input canary rejected it. The next debug build grew
+its reproducible target cache to about 37 GiB and threatened local disk capacity;
+only that cache was discarded before repeating the same tests without debug
+symbols or incremental artifacts, with two build jobs as in ordinary CI. Neither
+interruption is a cache regression, a performance measurement or a green full
+gate. Keeping these classifications distinct prevents an operational preparation
+problem from silently changing a baseline, acceptance threshold or release claim.
+The compact repeat first hit another environment precondition: an inventory test
+calls python, while WSL only provided python3. A dedicated task-tool alias to the
+existing Python 3.12.3 allowed the unchanged full gate to pass. The optional console
+gate explicitly skipped without Node; successful Rust verification is not browser
+evidence. These operational details are retained, not hidden by the green repeat.

@@ -1,0 +1,90 @@
+{
+  "schema_version": "diagnostic-builder-registration-result-074-v1",
+  "registration_commit": "c7cba271748394cc86a1fefc6a3eebcbefb6b6a4",
+  "registration_tree": "35193d14556ea2f63188ba309265bfe919bab8a2",
+  "base_main_commit": "5f0259da9e8b16d192004becb9881f54b548dbef",
+  "feature_tooling_commit": "33596da76b5f31fdd27eea51ec219aefe805180c",
+  "feature_tooling_tree": "1e21de3405202f449732db88dc5f943f9d586253",
+  "workflow_git_blob": "2dd2458b718d371731f6958b3e2559e554f6f731",
+  "authorized_expansion": "CI inventory, verification tooling and regression tests; no product code, allocator guards or frozen qualification changes",
+  "changed_main_files": [
+    ".github/workflows/diagnostic-builder-074.yml",
+    "crates/xtask/src/ci_topology.rs",
+    "crates/xtask/src/verify.rs",
+    "crates/xtask/tests/ci_reliability_071.rs",
+    "docs/testing/ci-topology.json"
+  ],
+  "frozen_memory_snapshot_git_blob": "d8b3ababd1596bebfc296b221fc9be0d38467526",
+  "frozen_memory_snapshot_normalized_sha256": "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0",
+  "frozen_snapshot_diff_from_main": false,
+  "baseline_pin_changed": false,
+  "pull_request": "https://github.com/javaquasar/hydracache/pull/216",
+  "merged_at": "2026-10-09T11:23:07Z",
+  "merge_commit": "2b3c5794a3a75566a02c4479db1663a0d448854e",
+  "merge_method": "merge with match-head-commit; no admin bypass",
+  "branch_protection": {
+    "enforce_admins": true,
+    "strict": true,
+    "required_checks": ["HC/2 Linux Required", "HC/2 Docker Interop", "Memory Regression Fast"],
+    "required_pull_request_reviews": null
+  },
+  "ci": {
+    "source_commit": "c7cba271748394cc86a1fefc6a3eebcbefb6b6a4",
+    "run_id": 37919196691,
+    "attempt": 1,
+    "conclusion": "success",
+    "hc2_run_id": 37919196533,
+    "hc2_attempt": 1,
+    "hc2_conclusion": "success",
+    "rust_job_id": 113782742916,
+    "memory_contract_job_id": 113782742763,
+    "topology_job_id": 113782742995,
+    "msrv_job_id": 113782743392,
+    "release_only_or_nightly_skips_are_not_release_proof": true
+  },
+  "local_full_verify": {
+    "source_commit": "c7cba271748394cc86a1fefc6a3eebcbefb6b6a4",
+    "checkout": "separate clean native Linux shared-object clone, not a qualification worktree",
+    "command": "cargo run -p xtask --locked -- verify",
+    "rust_toolchain": "1.94.0",
+    "cargo_deny": "0.19.8",
+    "cargo_deny_archive_sha256": "70e769ae3872e34d45132b17040859175e11401dc12dddb0303e0b8c7d088f3f",
+    "python": "3.12.3; dedicated task-tool alias python -> /usr/bin/python3",
+    "exit": 0,
+    "terminal_result": "verify: all gates passed",
+    "checkout_clean_before_and_after": true,
+    "build_environment": {"CARGO_PROFILE_DEV_DEBUG":"0", "CARGO_PROFILE_TEST_DEBUG":"0", "CARGO_INCREMENTAL":"0", "CARGO_BUILD_JOBS":"2"},
+    "console_gate": "SKIP (node not found); not browser verification",
+    "test_commands_thresholds_and_frozen_inputs_changed": false
+  },
+  "feature_checks": {
+    "source_commit": "33596da76b5f31fdd27eea51ec219aefe805180c",
+    "exit": 0,
+    "rust_tests_passed": {"library":113,"ci_reliability":12,"memory_baseline":8,"performance_contract":78,"total":211},
+    "python_tests_passed": 7,
+    "other_passed": ["xtask check all-targets locked", "xtask clippy all-targets all-features locked -D warnings", "workspace fmt check", "doc-check", "local performance-contract-check 0.74", "live ci-topology-check 0.71"],
+    "checkout_clean_before_and_after": true
+  },
+  "retained_negative_and_incomplete_attempts": [
+    {"source":"e3b37577129787d23e905d56e80cb83595f9e619", "ci_run_id":37917793197, "job_id":113778120218, "result":"frozen memory input digest drift refused", "capture":"excerpt, not full CI job log", "resolution":"restore exact frozen snapshot; separate live inventory; never regenerate baseline pin"},
+    {"source":"e3b37577129787d23e905d56e80cb83595f9e619", "result":"local full verify deliberately interrupted after CI superseded candidate; not a completed gate"},
+    {"source":"c7cba271748394cc86a1fefc6a3eebcbefb6b6a4", "result":"local full verify deliberately interrupted during compilation for disk-capacity risk; only reproducible task target cache removed"},
+    {"source":"c7cba271748394cc86a1fefc6a3eebcbefb6b6a4", "result":"compact full verify failed tests gate because python executable absent in WSL; python3 existed", "resolution":"task-local alias; full gate repeated successfully, no test changes"}
+  ],
+  "workflow_registration": {"id":379545618,"state":"active"},
+  "next_separate_stage": {"run_id":37923423889,"attempt":1,"tooling_commit":"33596da76b5f31fdd27eea51ec219aefe805180c","scope":"protected build/sign and independent receipt/content audit only; results retained separately"},
+  "host_modified": false,
+  "product_workload_run": false,
+  "qualification_run": false,
+  "admission_allowed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_files": [
+    {"name":"github-registration.json","bytes":15348,"sha256":"42b4d0c3233339aac2e4748fd3d7a06885e69ce4c452d91918171e235f7d925c"},
+    {"name":"feature-checks-33596da7.log","bytes":30894,"sha256":"866a54dbba72c21d0e67faffc3178f80a6fabbcf9d9f2084df24d56ef89335e0"},
+    {"name":"linux-verify-c7cba271-pass.log","bytes":1691426,"sha256":"51ba7eeac707d870222af23cf5237176ae71be747210d0c00f09fe760f152681"},
+    {"name":"linux-verify-c7cba271-python-missing.log","bytes":1699330,"sha256":"02c6fc56b0fd9d6cd14b6cff9dab3a66f214d8bc08ce98d8659e2a690be3611f"},
+    {"name":"linux-verify-c7cba271-storage-aborted.log","bytes":1283752,"sha256":"dfa7566f26ac0fcbcf4435e20ecaff6c28a629b7a11a4400b721ca7633a34244"},
+    {"name":"linux-verify-e3b37577-superseded.log","bytes":1307346,"sha256":"cc0360774d39c6b2889a2d8546c584ae032dbb35bc26eb961634a154330ab590"},
+    {"name":"memory-contract-e3b37577-excerpt.log","bytes":5557,"sha256":"923316a0a8cef8565dc8c829fe3343b555265d112b1e8d2066cae3364cc0a53e"}
+  ]
+}

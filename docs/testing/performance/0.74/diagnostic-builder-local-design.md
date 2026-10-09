@@ -123,7 +123,7 @@ generated independently outside Git and sent only to the new environment secret;
 public policy bytes and their digest are retained separately. Enrollment is not
 host installation, artifact admission, or approval of a measured run.
 
-The manual workflow is currently absent from main and unregistered in Actions.
+The manual workflow was initially absent from main and unregistered in Actions.
 GitHub requires its workflow_dispatch file on the default branch before first
 manual execution; see [the documented trigger rule](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch).
 Registering only that workflow on main requires separate permission and a
@@ -142,8 +142,44 @@ Full local verify also selects the existing Linux --all-features workspace
 clippy command, which combines mutually exclusive allocators and is refused by
 the product's compile-time guards. Neither failure permits bypassing protection,
 removing an allocator guard, or treating focused Python tests as full verification.
-The PR remains unmerged pending explicit scope for CI inventory and feature-safe
-verification tooling/tests. No workflow dispatch or build/sign approval occurred.
+The user then authorized CI inventory and verification tooling/tests. PR 216
+now declares both jobs as manual-protected, preserves artifact budgets without
+identity exemptions, binds upload/download names to SHA/run/attempt and bounds
+compiler installation to ten minutes. Workspace-default lint replaces only the
+invalid allocator union; all-feature lint outside HydraCache and independent
+common/System/mimalloc/Linux jemalloc lanes remain. Test-first regressions
+reproduced the union and missing artifact SHA, then passed after correction.
+The first inventory correction exposed a second binding: memory baseline 0.71
+pins that file's digest. CI's memory canary correctly refused the changed input.
+The registration branch therefore restores the exact frozen snapshot and routes
+current topology validation to docs/testing/ci-topology.json, matching the
+separation already established in 0.74. A regression pins the unchanged snapshot
+digest and the new manual-protected entry. No baseline pin is regenerated.
+The 0.74 branch updates its separate live inventory, not the frozen inventory.
+Full local verification and refreshed PR checks subsequently passed on c7cba271.
+PR 216 merged as 2b3c5794 without bypass, registering workflow 379545618. The
+[registration result](local-runs/diagnostic-builder-registration-c7cba271/manifest.json)
+retains the complete successful log and preceding refusals. A single run
+37923423889 uses exact reviewed tooling 33596da7; build approval is delegated
+technical review through the configured account. Signing requires separate
+review of the original build evidence; dispatch is not signature or admission.
+
+The clean Linux repeat at 33596da7 passed 113 xtask library, 12 CI-reliability,
+8 baseline and 78 performance-contract tests, seven coordinator Python tests,
+package check/strict lint, workspace format, docs, local 0.74 contract and live
+topology validation. These focused checks do not substitute for full verify.
+Two full local attempts were deliberately interrupted: e3b37577 was superseded
+after the memory-input canary rejected it; c7cba271 reached workspace compilation
+but its debug cache threatened local disk capacity. Only the reproducible
+registration target cache was removed; source and complete logs were retained.
+The same c7cba271 full gate is repeated without debug symbols/incremental and
+with two build jobs, as ordinary CI does. No test, threshold or frozen input
+changes with that build-cache preparation, and neither interruption is a product
+measurement or completed verification result. The compact repeat then refused
+the missing python executable required by an API-inventory test. A task-local
+alias to existing Python 3.12.3 resolved that environment precondition; the full
+gate passed unchanged. Optional console verification explicitly skipped because
+WSL lacks Node. This result does not assert browser coverage.
 
 The [enrollment packet](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
 records the new environment, required reviewer and exact branch, can_admins_bypass=false,

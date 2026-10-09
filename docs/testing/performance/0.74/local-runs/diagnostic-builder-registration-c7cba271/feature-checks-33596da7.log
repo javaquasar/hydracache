@@ -1,0 +1,520 @@
+    Finished `test` profile [unoptimized] target(s) in 0.53s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/xtask-40743ca98399e39a)
+
+running 113 tests
+test canary_sweep::platform_program_tests::command_line_package_managers_use_windows_batch_shims ... ok
+test ci_admission::tests::admission_status_accepts_only_all_success_and_exact_shas ... ok
+test ci_topology::tests::release_expiration_is_numeric ... ok
+test ci_admission::tests::admission_status_is_fail_loud_for_failed_or_skipped_lanes ... ok
+test client_package::tests::frozen_manifest_names_all_four_preview_packages ... ok
+test ci_admission::tests::downloaded_lane_status_must_be_an_exact_consistent_pass ... ok
+test client_plane_bakeoff::tests::accepted_bakeoff_manifest_is_complete ... ok
+test client_plane_ci::tests::admission_discovers_receipts_in_download_artifact_subtrees ... ok
+test client_conformance::tests::cross_sdk_manifest_is_complete_and_source_bound ... ok
+test client_plane_ci::tests::workflow_provenance_bindings_are_fail_closed ... ok
+test client_plane_compat::tests::reachability_requires_an_exact_commit_line ... ok
+test client_plane_compat::tests::bounded_retry_is_scoped_only_to_maven_executables ... ok
+test client_plane_compat::tests::retained_maven_pom_identity_is_stable_across_checkout_line_endings ... ok
+test client_package::tests::rust_api_manifest_tracks_the_workspace_release_version ... ok
+test client_plane_compat::tests::traversal_and_skip_status_are_not_accepted ... ok
+test client_plane_ci::tests::checked_in_contract_matches_workflow ... ok
+test client_plane_ci::tests::receipt_validation_is_bounded_and_lane_specific ... ok
+test client_plane_ci::tests::admission_rejects_missing_or_mixed_lane_receipts ... ok
+test client_plane_fault::tests::h20_lifecycle_plans_have_distinct_terminal_actions ... ok
+test client_plane_generation::tests::compare_reports_changed_generated_files ... ok
+test client_plane_fault::tests::retained_plan_is_valid_and_bounded ... ok
+test client_plane_generation::tests::generation_paths_are_present ... ok
+test client_plane_fault::tests::h03_candidate_plans_are_retained_and_bounded ... ok
+test client_plane_java::tests::sdk_and_consumer_are_independent_maven_projects ... ok
+test client_plane_fault::tests::h11_reconnect_and_repair_plans_are_distinct_and_bounded ... ok
+test client_plane_rust::tests::production_sdk_owns_the_contract_and_hc1_remains_separate ... ok
+test compat_check::tests::compat_preflight_rejects_a_branch_without_v063_ancestry_or_with_stale_internal_versions ... ok
+test client_plane_spike::tests::fixture_paths_are_workspace_relative_and_present ... ok
+test doc_check::tests::parses_status_header_trimming_trailing_period ... ok
+test doc_check::tests::prose_status_and_missing_header_return_none ... ok
+test doc_check::tests::takes_only_the_leading_token_from_an_annotated_header ... ok
+test evidence_run::registry_digest_tests::registry_digest_is_stable_across_checkout_line_endings ... ok
+test doc_check::tests::parses_in_progress_value ... ok
+test feature_leak::tests::clean_release_tree_has_no_leaks ... ok
+test feature_leak::tests::detects_testkit_and_test_support_leaks ... ok
+test feature_leak::tests::detects_failpoint_feature_and_dependency_leaks ... ok
+test host_attestation::tests::measurement_host_probes_are_dispatched_on_housekeeping_cpus ... ok
+test client_schema::tests::schema_manifests_and_sdk_generations_agree ... ok
+test host_attestation::tests::protected_provisioning_digest_replaces_raw_host_identity ... ok
+test host_attestation::tests::raw_host_and_storage_identity_are_hashed_and_never_serialized ... ok
+test host_attestation::tests::raw_lsblk_identity_ignores_nvme_name_swaps_across_reboots ... ok
+test host_attestation::tests::identity_omission_and_placeholder_values_fail_closed ... ok
+test host_attestation::tests::raw_lsblk_identity_captures_every_raid_leaf_independent_of_order ... ok
+test memory_baseline::line_ending_tests::frozen_text_identity_is_stable_across_checkout_line_endings ... ok
+test host_attestation::tests::vm_sibling_and_non_nvme_inputs_are_rejected ... ok
+test management_center::claim_receipt_persistence_tests::prepared_claim_batch_is_invisible_until_persisted ... ok
+test management_center::claim_receipt_persistence_tests::failed_complete_batch_preparation_writes_no_partial_receipts ... ok
+test memory_campaign::tests::missing_campaigns_are_allowed_before_ship_and_rejected_for_ship ... ok
+test memory_campaign::tests::sha_identity_is_exact_and_lowercase ... ok
+test memory_ownership::additions_tests::additions_reject_identity_drift_malformed_input_and_replacement ... ok
+test memory_contracts::calibration_tests::summary_records_discarded_warmup_and_measured_spread ... ok
+test memory_ownership::option_tests::inventory_check_is_read_only_and_excludes_output ... ok
+test migration_conformance::tests::current_manifests_are_structurally_valid ... ok
+test memory_ownership::additions_tests::merged_reviews_still_reject_stale_expired_and_unreviewed_candidates ... ok
+test client_plane_python::tests::checked_in_python_generation_is_clean ... ok
+test migration_conformance::tests::non_pass_outcome_requires_a_reason ... ok
+test migration_conformance::tests::pinned_upstream_selector_must_resolve_in_the_exact_source ... ok
+test migration_conformance::tests::legacy_execution_must_cover_every_manifest_row ... ok
+test migration_conformance::tests::postgres_canary_requires_both_failure_and_the_semantic_marker ... ok
+test perf::preflight_tests::amd_pstate_active_turbo_requires_cpb_and_equal_positive_maxima ... ok
+test perf::preflight_tests::cgroup_quota_parser_uses_the_effective_v2_membership ... ok
+test perf::preflight_tests::cgroup_quota_rejects_a_hierarchy_without_the_cpu_controller ... ok
+test perf::preflight_tests::cgroup_quota_walks_ancestors_when_the_leaf_controller_is_not_enabled ... ok
+test migration_conformance::tests::unknown_outcome_fails_closed ... ok
+test perf::preflight_tests::reference_affinity_rejects_untrusted_mode_or_cpuset_drift ... ok
+test perf::preflight_tests::preflight_rejects_noise_or_any_attempt_to_shorten_the_sample_set ... ok
+test perf::preflight_tests::reference_affinity_accepts_measurement_child_and_exact_housekeeping_controller ... ok
+test perf::preflight_tests::tmpfs_prebuild_publication_requires_the_exact_commit_bound_contract ... ok
+test perf_budget::semantic_tests::archived_source_identity_still_requires_safe_shape ... ok
+test perf::preflight_tests::preflight_retains_all_fixed_samples_and_accepts_stable_runner ... ok
+test perf_budget::semantic_tests::bootstrap_rejects_unstable_reviewed_report_before_sealing_sample ... ok
+test perf_budget::semantic_tests::capacity_aggregate_units_are_normalized_for_budget_rules ... ok
+test perf::preflight_tests::turbo_policy_parsers_cover_generic_and_intel_backends ... ok
+test perf_budget::semantic_tests::frozen_threshold_uses_the_larger_of_relative_tolerance_and_robust_mad ... ok
+test perf_budget::semantic_tests::archived_source_identity_does_not_require_the_live_file ... ok
+test perf_budget::semantic_tests::grid_model_checker_keeps_spread_scoped_to_the_budget_metric ... ok
+test perf_budget::semantic_tests::legacy_surface_capability_methodology_has_an_exact_normalization_bridge ... ok
+test perf_budget::semantic_tests::overload_reference_contract_uses_published_surface_and_window_shape ... ok
+test perf_budget::semantic_tests::methodology_projection_excludes_per_run_runtime_identity ... ok
+test perf_budget::semantic_tests::perf_knee_metric_is_recomputed_from_raw_repeats ... ok
+test perf_budget::semantic_tests::w1_path_cost_window_bridge_is_exact_and_one_way ... ok
+test perf_budget::semantic_tests::w5c_sampling_window_bridge_is_exact_and_one_way ... ok
+test perf_budget::semantic_tests::resp_stall_probe_uses_its_reviewed_three_repeat_contract ... ok
+test perf_reference::tests::generated_contracts_have_exactly_one_trailing_newline ... ok
+test performance_overhead::tests::pair_order_is_deterministic_and_counterbalanced ... ok
+test release_evidence::language_selector_tests::java_selector_requires_a_junit_annotation ... ok
+test release_evidence::language_selector_tests::management_mixed_artifact_requires_distinct_binaries_and_all_scenarios ... ok
+test perf_budget::semantic_tests::w5c_summary_recomputes_with_the_ten_thousand_iteration_window ... ok
+test release_evidence::language_selector_tests::evidence_only_0671_dependency_rejects_missing_receipt ... ok
+test release_evidence::language_selector_tests::python_selector_requires_test_prefix_and_definition ... ok
+test release_evidence::language_selector_tests::rust_selector_still_requires_a_test_attribute ... ok
+test release_evidence::pre_candidate_stage_tests::closed_admission_caps_even_all_green_receipts_at_fast_green ... ok
+test release_evidence::report_output_tests::markdown_without_release_wide_reasons_preserves_legacy_layout ... ok
+test verify::tests::allocator_clippy_lanes_keep_common_features_and_one_allocator ... ok
+test verify::tests::non_windows_uses_single_workspace_test_gate ... ok
+test verify::tests::verify_enforces_full_dependency_policy ... ok
+test verify::tests::verify_has_optional_management_console_gate_contract ... ok
+test verify::tests::verify_includes_dst_fast_budget_gate ... ok
+test verify::tests::verify_includes_raft_failpoint_crash_safety_gate ... ok
+test verify::tests::verify_includes_soak_fast_budget_gate ... ok
+test release_evidence::report_output_tests::markdown_preserves_every_release_wide_reason_before_work_item_rows ... ok
+test verify::tests::windows_clippy_uses_only_supported_allocator_matrix ... ok
+test verify::tests::windows_isolates_all_xtask_test_gates ... ok
+test verify::tests::windows_test_gates_avoid_rebuilding_running_xtask_binary ... ok
+test verify::tests::windows_verify_target_dir_is_inside_repo_target ... ok
+test verify::tests::workspace_clippy_never_unifies_exclusive_allocators ... ok
+test verify::tests::windows_clippy_uses_only_supported_allocator_features ... ok
+test release_evidence::language_selector_tests::management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds ... ok
+test management_center::baseline_receipt_tests::baseline_receipt_rejects_invalid_json_and_empty_measurement_claims ... ok
+test client_plane_python::tests::wheelhouse_is_exact_and_hash_verified ... ok
+test perf::preflight_tests::fingerprint_accepts_only_bounded_page_aligned_memtotal_boot_drift ... ok
+test release_evidence::language_selector_tests::evidence_only_0671_dependency_accepts_the_committed_closure ... ok
+test client_plane_compat::tests::retained_manifest_is_structurally_valid ... ok
+
+test result: ok. 113 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.81s
+
+     Running tests/ci_reliability_071.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/ci_reliability_071-e4ff49860594cf68)
+
+running 12 tests
+test topology_rejects_missing_timeout_and_duplicate_branch_tag_execution ... ok
+test topology_rejects_install_step_without_a_bounded_timeout ... ok
+test diagnostic_builder_is_manual_protected_and_sha_bound ... ok
+test rust_canaries_install_locked_console_dependencies_first ... ok
+test topology_rejects_two_crate_publishers ... ok
+test default_manual_dispatch_runs_core_ci_jobs ... ok
+test topology_rejects_mixed_artifact_identity ... ok
+test checked_in_topology_is_closed_and_valid ... ok
+test live_builder_inventory_preserves_the_frozen_memory_input ... ok
+test watchdog_classifies_missing_provisioning_tool ... ok
+test watchdog_classifies_silent_success_and_product_failure ... ok
+test watchdog_times_out_and_kills_descendant_processes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
+
+     Running tests/memory_baseline_071.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/memory_baseline_071-9ea71ca0f0f40ce4)
+
+running 8 tests
+test dirty_identity_and_reused_process_are_rejected ... ok
+test corrected_ttl_requires_final_checkpoint ... ok
+test archive_commit_and_restored_mirror_mismatch_are_rejected ... ok
+test typed_report_rejects_identity_unique_key_allocator_and_unavailable_lies ... ok
+test diagnostic_source_override_cannot_promote_evidence ... ok
+test typed_report_requires_executor_instrumentation_and_request_fields ... ok
+test b0_b1_are_distinct_cohorts ... ok
+test d0_admission_fails_closed_without_external_receipts ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+     Running tests/performance_contract_074.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/performance_contract_074-a26b883cc8170f60)
+
+running 78 tests
+test enrolled_public_builder_policy_keeps_execution_admission_closed ... ok
+test embedded_scheduled_control_is_independent_public_api_not_a_b0_retry ... ok
+test diagnostic_process_binding_cannot_signal_recapture_or_release_host ... ok
+test diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution ... ok
+test get_response_owner_d2_preserves_one_hypothesis_and_future_guards ... ok
+test get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3 ... ok
+test independent_native_batches_preserve_denominators_and_expose_hc2_semantic_difference ... ok
+test get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate ... ok
+test host_observation_workflow_is_read_only_fixed_scope_and_socket_bound ... ok
+test bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations ... ok
+test local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0 ... ok
+test local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof ... ok
+test checked_in_w0_contract_is_valid_and_non_promotable ... ok
+test long_run_controller_workflow_is_manual_serialized_and_signs_off_host ... ok
+test matched_receipt_is_accepted ... ok
+test missing_outcomes_final_sample_and_nonfinite_metric_are_rejected ... ok
+test local_harness_freezes_placement_abba_and_noise_policy ... ok
+test non_product_start_bundle_workflow_is_observation_bound_and_does_not_start ... ok
+test pooled_or_missing_native_surface_is_rejected ... ok
+test local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution ... ok
+test proc_documents_use_one_bounded_read_without_retry_or_parser_relaxation ... ok
+test observer_hosted_ci_is_only_semantics_and_never_a_product_campaign ... ok
+test redis_tool_mismatch_and_mixed_binary_are_rejected ... ok
+test release_admission_expected_red_canary ... ok
+test published_b73_requires_exact_tag_archive_and_runtime_relationship ... ok
+test local_diagnostic_ipc_keeps_production_and_numerical_admission_closed ... ok
+test rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission ... ok
+test proposal_admission_requires_w1_attribution_and_evidence ... ok
+test rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution ... ok
+test reordered_blocks_and_candidate_thresholds_are_rejected ... ok
+test local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed ... ok
+test response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate ... ok
+test resp_mtls_extension_is_opt_in_auth_bound_and_non_promotable ... ok
+test resp3_controls_require_hello_without_waiving_security_or_numeric_guards ... ok
+test resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard ... ok
+test scheduled_multikey_controls_preserve_command_denominators_and_product_limits ... ok
+test response_reduction_d1_retains_exact_packet_without_reopening_rejected_scratch ... ok
+test scheduled_native_controls_preserve_offers_without_admitting_full_d3 ... ok
+test scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance ... ok
+test scheduled_resp_connections_keep_local_order_and_do_not_admit_product_changes ... ok
+test secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention ... ok
+test socket_boundary_attribution_keeps_local_product_work_admitted ... ok
+test get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci ... ok
+test separate_diagnostic_builder_does_not_enroll_host_execution ... ok
+test unmatched_surface_trace_and_three_percent_native_regression_are_rejected ... ok
+test timing_instrumentation_receipts_bind_raw_logs_without_admitting_a_cohort ... ok
+test secure_memory_packet_retains_all_attempts_without_allocator_or_timing_admission ... ok
+test w11_host_observation_evidence_is_exact_non_mutating_and_non_promotable ... ok
+test unprofiled_timing_instrumentation_preserves_closed_cohort_and_memory_admission ... ok
+test w11_linux_fixture_harness_cli_is_platform_gated ... ok
+test trace_workload_security_and_persistence_drift_are_rejected ... ok
+test w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable ... ok
+test w11_live_role_reboot_is_fail_closed_and_non_promotable ... ok
+test w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal ... ok
+test w11_non_product_role_rehearsal_is_complete_but_role_budget_stays_closed ... ok
+test w11_host_capability_probe_is_read_only_and_serialized ... ok
+test w12_internal_workspace_tools_inherit_reviewed_license ... ok
+test w11_schema_hashes_and_local_completion_flags_are_exact ... ok
+test get_response_owner_d3a_retains_all_raw_hashes_without_acceptance ... ok
+test w12_live_registries_preserve_frozen_baseline_inputs ... ok
+test w12_release_admission_contract_is_fail_closed ... ok
+test w12_release_note_retains_draft_claim_rollback_and_gate_boundaries ... ok
+test w2_through_w9_terminal_dispositions_are_exact_and_non_promotable ... ok
+test w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate ... ok
+test w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds ... ok
+test w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes ... ok
+test w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers ... ok
+test w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates ... ok
+test w12_workspace_fast_gate_covers_every_work_item_without_budget_drift ... ok
+test w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates ... ok
+test w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable ... ok
+test w9e_allocator_attribution_is_linux_only_complete_and_non_promotable ... ok
+test unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch ... ok
+test w9b_owner_receipts_preserve_all_registered_cells_without_product_claims ... ok
+test w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained ... ok
+test w12_ordinary_ci_preserves_explicit_infrastructure_boundary ... ok
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+test w12_generic_evidence_report_retains_closed_ship_admission ... ok
+
+test result: ok. 78 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.31s
+
+    Checking libc v0.2.186
+    Checking cfg-if v1.0.4
+    Checking serde_core v1.0.228
+    Checking pin-project-lite v0.2.17
+    Checking bytes v1.12.0
+    Checking futures-core v0.3.32
+    Checking once_cell v1.21.4
+    Checking smallvec v1.15.2
+    Checking itoa v1.0.18
+    Checking log v0.4.33
+    Checking errno v0.3.14
+    Checking serde v1.0.228
+    Checking stable_deref_trait v1.2.1
+    Checking signal-hook-registry v1.4.8
+    Checking mio v1.2.1
+    Checking socket2 v0.6.4
+    Checking equivalent v1.0.2
+    Checking memchr v2.8.2
+    Checking tokio v1.52.3
+    Checking allocator-api2 v0.2.21
+    Checking foldhash v0.2.0
+    Checking hashbrown v0.17.1
+    Checking crossbeam-utils v0.8.21
+    Checking tracing-core v0.1.36
+    Checking slab v0.4.12
+    Checking scopeguard v1.2.0
+    Checking lock_api v0.4.14
+    Checking tracing v0.1.44
+    Checking typenum v1.20.1
+    Checking http v1.4.2
+    Checking futures-task v0.3.32
+    Checking futures-util v0.3.32
+    Checking zerofrom v0.1.8
+    Checking indexmap v2.14.0
+    Checking futures-sink v0.3.32
+    Checking tokio-util v0.7.18
+    Checking yoke v0.8.3
+    Checking http-body v1.0.1
+    Checking parking v2.2.1
+    Checking zeroize v1.9.0
+    Checking byteorder v1.5.0
+    Checking thiserror v2.0.18
+    Checking zmij v1.0.21
+    Checking concurrent-queue v2.5.0
+    Checking percent-encoding v2.3.2
+    Checking try-lock v0.2.5
+    Checking fnv v1.0.7
+    Checking atomic-waker v1.1.2
+    Checking tower-service v0.3.3
+    Checking h2 v0.4.19
+    Checking want v0.3.1
+    Checking serde_json v1.0.150
+    Checking zerovec v0.11.6
+    Checking event-listener v5.4.1
+    Checking httparse v1.10.1
+    Checking futures-channel v0.3.32
+    Checking subtle v2.6.1
+    Checking httpdate v1.0.3
+    Checking num-traits v0.2.19
+    Checking event-listener-strategy v0.5.4
+    Checking getrandom v0.4.3
+    Checking getrandom v0.2.17
+    Checking ryu v1.0.23
+    Checking tower-layer v0.3.3
+    Checking untrusted v0.9.0
+    Checking sync_wrapper v1.0.2
+    Checking ring v0.17.14
+    Checking hyper v1.10.1
+    Checking parking_lot_core v0.9.12
+    Checking hyper-util v0.1.20
+    Checking form_urlencoded v1.2.2
+    Checking hash32 v0.2.1
+    Checking rustls-pki-types v1.15.0
+    Checking http-body-util v0.1.3
+    Checking spin v0.9.9
+    Checking mime v0.3.17
+    Checking unicode-ident v1.0.24
+    Checking proc-macro2 v1.0.106
+    Checking axum-core v0.5.6
+    Checking heapless v0.7.17
+    Checking serde_urlencoded v0.7.1
+    Checking parking_lot v0.12.5
+    Checking generic-array v0.14.7
+    Checking tower v0.5.3
+    Checking uuid v1.23.4
+    Checking tinystr v0.8.3
+    Checking cobs v0.3.0
+    Checking hybrid-array v0.4.13
+    Checking serde_path_to_error v0.1.20
+    Checking instant v0.1.13
+    Checking litemap v0.8.2
+    Checking writeable v0.6.3
+    Checking winnow v1.0.3
+    Checking matchit v0.8.4
+    Checking axum v0.8.9
+    Checking icu_locale_core v2.2.0
+    Checking parking_lot_core v0.8.6
+    Checking postcard v1.1.3
+    Checking crossbeam-epoch v0.9.20
+    Checking crc32fast v1.5.0
+    Checking quote v1.0.46
+    Checking rustls-webpki v0.103.15
+    Checking num-integer v0.1.46
+    Checking zerotrie v0.2.4
+    Checking potential_utf v0.1.5
+    Checking fs2 v0.4.3
+    Checking base64 v0.22.1
+    Checking utf8_iter v1.0.4
+    Checking icu_provider v2.2.0
+    Checking icu_collections v2.2.0
+    Checking rustls v0.23.45
+    Checking parking_lot v0.11.2
+    Checking portable-atomic v1.13.1
+    Checking block-buffer v0.12.1
+    Checking crypto-common v0.2.2
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking async-lock v3.4.2
+    Checking fxhash v0.2.1
+    Checking crossbeam-channel v0.5.15
+    Checking bitflags v2.13.0
+    Checking linux-raw-sys v0.12.1
+    Checking tagptr v0.2.0
+    Checking const-oid v0.10.2
+    Checking regex-syntax v0.8.11
+    Checking rustix v1.1.4
+    Checking digest v0.11.3
+    Checking hydra-moka v0.12.15-hydra.1
+    Checking tokio-rustls v0.26.4
+    Checking pin-project v1.1.13
+    Checking sled v0.34.7
+    Checking digest v0.10.7
+    Checking icu_properties_data v2.2.0
+    Checking icu_normalizer_data v2.2.0
+    Checking num-bigint v0.4.8
+    Checking hydracache-core v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-core)
+    Checking hyper-timeout v0.5.2
+    Checking prost v0.14.4
+    Checking tokio-stream v0.1.18
+    Checking crossbeam-queue v0.3.12
+    Checking aho-corasick v1.1.4
+    Checking cpufeatures v0.2.17
+    Checking deranged v0.5.8
+    Checking cpufeatures v0.3.0
+    Checking time-core v0.1.9
+    Checking powerfmt v0.2.0
+    Checking num-conv v0.2.2
+    Checking sha2 v0.11.0
+    Checking time v0.3.53
+    Checking regex-automata v0.4.14
+    Checking ref-cast v1.0.25
+    Checking tonic v0.14.6
+    Checking hydracache v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache)
+    Checking num-rational v0.4.2
+    Checking icu_normalizer v2.2.0
+    Checking icu_properties v2.2.0
+    Checking zerocopy v0.8.52
+    Checking getrandom v0.3.4
+    Checking num-iter v0.1.45
+    Checking num-complex v0.4.6
+    Checking signature v2.2.0
+    Checking bit-vec v0.8.0
+    Checking borrow-or-share v0.2.4
+    Checking either v1.16.0
+    Checking minimal-lexical v0.2.1
+    Checking nom v7.1.3
+    Checking bytes-utils v0.1.4
+    Checking fluent-uri v0.4.1
+    Checking bit-set v0.8.0
+    Checking ed25519 v2.2.3
+    Checking curve25519-dalek v4.1.3
+    Checking num v0.4.3
+    Checking ahash v0.8.12
+    Checking idna_adapter v1.2.2
+    Checking tonic-prost v0.14.6
+    Checking yasna v0.6.0
+    Checking hydracache-observability v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-observability)
+    Checking crc16 v0.4.0
+    Checking sha2 v0.10.9
+    Checking pem v3.0.6
+    Checking syn v3.0.6
+    Checking hydracache-client-protocol v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-protocol)
+    Checking toml_parser v1.1.2+spec-1.1.0
+    Checking serde_spanned v1.1.1
+    Checking toml_datetime v1.1.1+spec-1.1.0
+    Checking outref v0.5.2
+    Checking micromap v0.3.0
+    Checking cookie-factory v0.3.2
+    Checking vsimd v0.8.0
+    Checking lazy_static v1.5.0
+    Checking toml_writer v1.1.1+spec-1.1.0
+    Checking fraction v0.15.4
+    Checking toml v1.1.2+spec-1.1.0
+    Checking hydracache-client-transport-axum v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-transport-axum)
+    Checking uuid-simd v0.8.0
+    Checking redis-protocol v6.0.0
+    Checking referencing v0.48.1
+    Checking zvariant_utils v4.2.0
+    Checking rcgen v0.14.8
+    Checking ed25519-dalek v2.2.0
+    Checking idna v1.1.0
+    Checking unicode-general-category v1.1.0
+    Checking fancy-regex v0.18.0
+    Checking regex v1.12.4
+    Checking xattr v1.6.1
+    Checking jsonschema-regex v0.48.1
+    Checking enumflags2 v0.7.12
+    Checking zcheapstr v1.1.0
+    Checking email_address v0.2.9
+    Checking filetime v0.2.29
+    Checking num-cmp v0.1.0
+    Checking adler2 v2.0.1
+    Checking fastrand v2.4.1
+    Checking endi v1.1.1
+    Checking bytecount v0.6.9
+    Checking data-encoding v2.11.0
+    Checking simd-adler32 v0.3.9
+    Checking miniz_oxide v0.8.9
+    Checking jsonschema v0.48.1
+    Checking zvariant v5.15.0
+    Checking tar v0.4.46
+    Checking hydracache-client-hc2 v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-hc2)
+    Checking hydracache-redis-compat v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-redis-compat)
+    Checking zstd-sys v2.0.16+zstd.1.5.7
+    Checking hydracache-cache-sim v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-cache-sim)
+    Checking hdrhistogram v7.5.4
+    Checking protoc-bin-vendored-linux-aarch_64 v3.2.0
+    Checking protoc-bin-vendored-linux-ppcle_64 v3.2.0
+    Checking protoc-bin-vendored-macos-x86_64 v3.2.0
+    Checking protoc-bin-vendored-linux-x86_32 v3.2.0
+    Checking futures-io v0.3.32
+    Checking protoc-bin-vendored-linux-s390_64 v3.2.0
+    Checking protoc-bin-vendored-macos-aarch_64 v3.2.0
+    Checking protoc-bin-vendored-linux-x86_64 v3.2.0
+    Checking unsafe-libyaml v0.2.11
+    Checking protoc-bin-vendored-win32 v3.2.0
+    Checking protoc-bin-vendored v3.2.0
+    Checking futures-lite v2.6.1
+    Checking serde_yaml v0.9.34+deprecated
+    Checking hydracache-loadgen v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-loadgen)
+    Checking zstd-safe v7.2.4
+    Checking hydracache-client-plane-spike v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-plane-spike)
+    Checking zbus_names v4.3.4
+    Checking flate2 v1.1.9
+    Checking prost-types v0.14.4
+    Checking syn v2.0.118
+    Checking async-broadcast v0.7.2
+    Checking ordered-stream v0.2.0
+    Checking hex v0.4.3
+    Checking zbus v5.19.0
+    Checking zstd v0.13.3
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/tools/long-run-supervisor-074)
+    Checking tempfile v3.27.0
+    Checking xtask v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1m 05s
+    Checking hydracache-core v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-core)
+   Compiling hydracache-macros v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-macros)
+    Checking hydracache-client-protocol v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-protocol)
+    Checking hydracache v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache)
+   Compiling hydracache-client-hc2 v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-hc2)
+   Compiling hydracache-client-plane-spike v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-plane-spike)
+    Checking hydracache-cache-sim v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-cache-sim)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/tools/long-run-supervisor-074)
+    Checking hydracache-observability v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/hydracache-loadgen)
+    Checking xtask v0.73.0 (/home/artur/.cache/hydracache-074-builder-feature-checkout/crates/xtask)
+    Finished `dev` profile [unoptimized] target(s) in 55.95s
+    Blocking waiting for file lock on artifact directory
+    Finished `dev` profile [unoptimized] target(s) in 24.98s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask doc-check`
+doc-check: OK (releases.toml is consistent)
+    Finished `dev` profile [unoptimized] target(s) in 0.27s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)
+    Finished `dev` profile [unoptimized] target(s) in 0.30s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask ci-topology-check --release 0.71`
+CI topology contract for release 0.71 is valid (/home/artur/.cache/hydracache-074-builder-feature-checkout/docs/testing/ci-topology.json)
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.006s
+
+OK

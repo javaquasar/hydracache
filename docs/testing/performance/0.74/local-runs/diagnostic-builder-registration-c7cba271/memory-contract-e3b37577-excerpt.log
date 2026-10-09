@@ -1,0 +1,76 @@
+2026-10-09T10:30:11.0069423Z     Finished `test` profile [unoptimized] target(s) in 0.59s
+2026-10-09T10:30:11.0237839Z      Running tests/memory_profile_071.rs (target/debug/deps/memory_profile_071-531dc2cd202918d5)
+2026-10-09T10:30:11.0250211Z 
+2026-10-09T10:30:11.0250457Z running 5 tests
+2026-10-09T10:30:11.0257873Z test loadgen_declares_the_exact_phase_order_and_epoch_fields ... ok
+2026-10-09T10:30:11.0258965Z test every_admitted_allocator_has_the_complete_provider_protocol ... ok
+2026-10-09T10:30:11.0259799Z test profile_output_is_excluded_from_production_sizing ... ok
+2026-10-09T10:30:11.0260686Z test host_fingerprint_excludes_volatile_admission_observations ... ok
+2026-10-09T10:30:11.1699014Z test provider_fixture_proves_ordering_classification_and_redaction ... ok
+2026-10-09T10:30:11.1699452Z 
+2026-10-09T10:30:11.1699661Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+2026-10-09T10:30:11.1699930Z 
+2026-10-09T10:30:11.3772107Z    Compiling xtask v0.73.0 (/home/runner/work/hydracache/hydracache/crates/xtask)
+2026-10-09T10:30:11.8599908Z     Finished `test` profile [unoptimized] target(s) in 0.67s
+2026-10-09T10:30:11.8766435Z      Running tests/memory_baseline_071.rs (target/debug/deps/memory_baseline_071-bfc24a155d1caa2f)
+2026-10-09T10:30:11.8783315Z 
+2026-10-09T10:30:11.8783488Z running 8 tests
+2026-10-09T10:30:11.8836773Z test corrected_ttl_requires_final_checkpoint ... ok
+2026-10-09T10:30:11.8948143Z test archive_commit_and_restored_mirror_mismatch_are_rejected ... ok
+2026-10-09T10:30:11.8990870Z test dirty_identity_and_reused_process_are_rejected ... ok
+2026-10-09T10:30:11.9050950Z test diagnostic_source_override_cannot_promote_evidence ... ok
+2026-10-09T10:30:11.9071558Z test b0_b1_are_distinct_cohorts ... FAILED
+2026-10-09T10:30:11.9111122Z test typed_report_rejects_identity_unique_key_allocator_and_unavailable_lies ... ok
+2026-10-09T10:30:11.9284340Z test typed_report_requires_executor_instrumentation_and_request_fields ... ok
+2026-10-09T10:30:12.0123813Z test d0_admission_fails_closed_without_external_receipts ... ok
+2026-10-09T10:30:12.0124201Z 
+2026-10-09T10:30:12.0124290Z failures:
+2026-10-09T10:30:12.0124427Z 
+2026-10-09T10:30:12.0124571Z ---- b0_b1_are_distinct_cohorts stdout ----
+2026-10-09T10:30:12.0124820Z 
+2026-10-09T10:30:12.0125178Z thread 'b0_b1_are_distinct_cohorts' (6777) panicked at crates/xtask/tests/memory_baseline_071.rs:74:5:
+2026-10-09T10:30:12.0125730Z [
+2026-10-09T10:30:12.0126135Z     "scenario input digest changed: docs/testing/memory/0.71/ci-topology.json",
+2026-10-09T10:30:12.0126629Z ]
+2026-10-09T10:30:12.0127006Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-09T10:30:12.0127396Z 
+2026-10-09T10:30:12.0127400Z 
+2026-10-09T10:30:12.0127491Z failures:
+2026-10-09T10:30:12.0127730Z     b0_b1_are_distinct_cohorts
+2026-10-09T10:30:12.0127932Z 
+2026-10-09T10:30:12.0128242Z test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+2026-10-09T10:30:12.0128582Z 
+2026-10-09T10:30:12.0130681Z error: test failed, to rerun pass `-p xtask --test memory_baseline_071`
+2026-10-09T10:30:12.0210738Z ##[error]Process completed with exit code 101.
+2026-10-09T10:30:12.0294464Z ##[group]Run actions/upload-artifact@v6
+2026-10-09T10:30:12.0294698Z with:
+2026-10-09T10:30:12.0294988Z   name: memory-ownership-071-9956ccf2720b0a1c9918ae29aed7790d6d471d34-37917793197-1
+2026-10-09T10:30:12.0295732Z   path: target/memory-evidence/0.71/ownership-inventory.json
+2026-10-09T10:30:12.0296348Z   if-no-files-found: error
+2026-10-09T10:30:12.0296544Z   retention-days: 30
+2026-10-09T10:30:12.0296721Z   compression-level: 6
+2026-10-09T10:30:12.0296891Z   overwrite: false
+2026-10-09T10:30:12.0297061Z   include-hidden-files: false
+2026-10-09T10:30:12.0297250Z env:
+2026-10-09T10:30:12.0297406Z   CARGO_BUILD_JOBS: 2
+2026-10-09T10:30:12.0297583Z   CARGO_INCREMENTAL: 0
+2026-10-09T10:30:12.0297764Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T10:30:12.0297957Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T10:30:12.0298191Z   HYDRACACHE_CANDIDATE_RELEASE: 0.69
+2026-10-09T10:30:12.0298443Z   HYDRACACHE_EVIDENCE_ROOT: target/release-evidence
+2026-10-09T10:30:12.0298761Z   HYDRACACHE_EVIDENCE_HEAD_SHA: e3b37577129787d23e905d56e80cb83595f9e619
+2026-10-09T10:30:12.0299110Z   HYDRACACHE_EVIDENCE_BASE_SHA: 5f0259da9e8b16d192004becb9881f54b548dbef
+2026-10-09T10:30:12.0299464Z   HYDRACACHE_EVIDENCE_TESTED_SHA: 9956ccf2720b0a1c9918ae29aed7790d6d471d34
+2026-10-09T10:30:12.0299771Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T10:30:12.0299976Z   CARGO_TERM_COLOR: always
+2026-10-09T10:30:12.0300164Z ##[endgroup]
+2026-10-09T10:30:12.1581608Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-09T10:30:12.1602271Z The least common ancestor is /home/runner/work/hydracache/hydracache/target. This will be the root directory of the artifact
+2026-10-09T10:30:12.1603085Z With the provided path, there will be 1 file uploaded
+2026-10-09T10:30:12.1603711Z Artifact name is valid!
+2026-10-09T10:30:12.1604014Z Root directory input is valid!
+2026-10-09T10:30:12.5232604Z Beginning upload of artifact content to blob storage
+2026-10-09T10:30:12.7607488Z Uploaded bytes 7697
+2026-10-09T10:30:12.8214486Z Finished uploading artifact content to blob storage!
+2026-10-09T10:30:12.8215316Z SHA256 digest of uploaded artifact zip is 412def30f87666d2283c6ca95e496e80f5398ff60e556619a3fdde72072a22db
+2026-10-09T10:30:12.8217009Z Finalizing artifact upload
