@@ -1,5 +1,6 @@
 //! Bounded read-only manager observation. No unit mutation or cleanup authority.
 use crate::diagnostic_lease::{validate_identity, DiagnosticIdentity, SURFACES};
+use crate::diagnostic_loaded::{decode_settings, InvocationGuard, LoadedSettings, LoadedSnapshot};
 use crate::{canonical_json, is_hash};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -133,10 +134,19 @@ pub struct ManagerSnapshot {
     unit: Option<ObservedUnit>,
 }
 impl ManagerSnapshot {
+    pub(crate) fn scope(&self) -> &ManagerScope {
+        &self.scope
+    }
+    pub(crate) fn same_manager(&self, other: &Self) -> bool {
+        self.scope == other.scope
+            && self.manager_owner == other.manager_owner
+            && self.manager_uid == other.manager_uid
+            && self.manager_pid == other.manager_pid
+    }
     pub fn unit(&self) -> Option<&ObservedUnit> {
         self.unit.as_ref()
     }
-    fn validate(&self, scope: &ManagerScope) -> Result<(), String> {
+    pub(crate) fn validate(&self, scope: &ManagerScope) -> Result<(), String> {
         scope.validate()?;
         if self.schema_version != 1
             || &self.scope != scope
@@ -224,6 +234,56 @@ pub struct ManagerClient {
     pending: Option<Child>,
 }
 impl ManagerClient {
+    /// Every failure latches the original guard, including an unavailable or
+    /// malformed observation. A later valid read cannot erase that failure.
+    pub fn inspect_original(
+        &mut self,
+        guard: &mut InvocationGuard,
+    ) -> Result<LoadedSnapshot, WorkerFailure> {
+        if guard.is_refused() {
+            return Err(WorkerFailure {
+                kind: WorkerFailureKind::Invalid,
+                stdout: vec![],
+                stderr: vec![],
+                cleanup_confirmed: self.pending.is_none(),
+            });
+        }
+        let snapshot = match self.inspect_loaded(guard.scope()) {
+            Ok(snapshot) => snapshot,
+            Err(error) => {
+                guard.refuse();
+                return Err(error);
+            }
+        };
+        if guard.revalidate(&snapshot).is_err() {
+            return Err(WorkerFailure {
+                kind: WorkerFailureKind::Invalid,
+                // The decoded document was required to match canonical bytes.
+                stdout: canonical_json(&snapshot).unwrap_or_default(),
+                stderr: vec![],
+                cleanup_confirmed: true,
+            });
+        }
+        Ok(snapshot)
+    }
+    /// Separate read-only projection; never complete policy or launch proof.
+    pub fn inspect_loaded(
+        &mut self,
+        scope: &ManagerScope,
+    ) -> Result<LoadedSnapshot, WorkerFailure> {
+        let request = scope
+            .encode()
+            .map_err(|_| failure(WorkerFailureKind::Invalid))?;
+        let mut command = Command::new("/proc/self/exe");
+        command.arg("diagnostic-loaded-worker");
+        let stdout = self.run(command, &request, OPERATION_TIMEOUT)?;
+        LoadedSnapshot::decode(&stdout, scope).map_err(|_| WorkerFailure {
+            kind: WorkerFailureKind::Invalid,
+            stdout,
+            stderr: vec![],
+            cleanup_confirmed: true,
+        })
+    }
     /// No retries. The caller must retain failure evidence and its reservation.
     pub fn inspect(&mut self, scope: &ManagerScope) -> Result<ManagerSnapshot, WorkerFailure> {
         let request = scope
@@ -457,6 +517,12 @@ fn cleanup_child(child: &mut Child, budget: Duration) -> bool {
 /// Fixed worker entry point: canonical stdin, canonical stdout, bounded error.
 /// Use only in a separately bounded child; blocking DBus setup is intentional.
 pub fn worker_main() -> u8 {
+    worker(false)
+}
+pub fn loaded_worker_main() -> u8 {
+    worker(true)
+}
+fn worker(loaded: bool) -> u8 {
     let result = (|| -> Result<Vec<u8>, String> {
         restrict_worker_resources()?;
         let mut request = Vec::new();
@@ -465,8 +531,13 @@ pub fn worker_main() -> u8 {
             .read_to_end(&mut request)
             .map_err(|_| "worker input")?;
         let scope = ManagerScope::decode(&request)?;
-        let snapshot = inspect_in_worker(&scope)?;
-        canonical_json(&snapshot).map_err(|_| "worker encoding".into())
+        let (snapshot, settings) = inspect_in_worker(&scope, loaded)?;
+        if loaded {
+            canonical_json(&LoadedSnapshot::new(snapshot, settings))
+        } else {
+            canonical_json(&snapshot)
+        }
+        .map_err(|_| "worker encoding".into())
     })();
     match result {
         Ok(bytes) if bytes.len() <= OUTPUT_BYTES => {
@@ -617,7 +688,10 @@ fn boot_matches(scope: &ManagerScope) -> Result<(), String> {
     }
     Ok(())
 }
-fn inspect_in_worker(scope: &ManagerScope) -> Result<ManagerSnapshot, String> {
+fn inspect_in_worker(
+    scope: &ManagerScope,
+    loaded: bool,
+) -> Result<(ManagerSnapshot, Option<LoadedSettings>), String> {
     scope.validate()?;
     fixed_bus_socket()?;
     boot_matches(scope)?;
@@ -637,15 +711,15 @@ fn inspect_in_worker(scope: &ManagerScope) -> Result<ManagerSnapshot, String> {
     let name = scope.unit_name();
     let path: Result<OwnedObjectPath, ReplyError> =
         checked_call(&manager, &owner, "GetUnit", &(name.as_str(),));
-    let unit = match path {
+    let (unit, settings) = match path {
         Ok(path) => {
-            let first = read_unit(&connection, &owner, path.as_str())?;
-            if read_unit(&connection, &owner, path.as_str())? != first {
+            let first = read_unit(&connection, &owner, path.as_str(), loaded)?;
+            if read_unit(&connection, &owner, path.as_str(), loaded)? != first {
                 return Err("unit observation changed".into());
             }
-            Some(first)
+            (Some(first.0), first.1)
         }
-        Err(ReplyError::NoSuchUnit) => None,
+        Err(ReplyError::NoSuchUnit) => (None, None),
         Err(_) => return Err("unit inspection failed".into()),
     };
     if manager_owner(&bus)? != owner {
@@ -661,17 +735,42 @@ fn inspect_in_worker(scope: &ManagerScope) -> Result<ManagerSnapshot, String> {
         unit,
     };
     snapshot.validate(scope)?;
-    Ok(snapshot)
+    Ok((snapshot, settings))
 }
-fn read_unit(connection: &Connection, owner: &str, path: &str) -> Result<ObservedUnit, String> {
+fn read_unit(
+    connection: &Connection,
+    owner: &str,
+    path: &str,
+    loaded: bool,
+) -> Result<(ObservedUnit, Option<LoadedSettings>), String> {
     let properties = proxy(connection, owner, path, "org.freedesktop.DBus.Properties")?;
-    let unit: HashMap<String, OwnedValue> =
+    let mut unit: HashMap<String, OwnedValue> =
         checked_call(&properties, owner, "GetAll", &(UNIT_INTERFACE,))
             .map_err(|_| "unit properties")?;
-    let service: HashMap<String, OwnedValue> =
+    let mut service: HashMap<String, OwnedValue> =
         checked_call(&properties, owner, "GetAll", &(SERVICE_INTERFACE,))
             .map_err(|_| "service properties")?;
-    decode_unit_properties(path, unit, service)
+    if loaded {
+        // Description belongs to Unit; never guess from a Service fallback.
+        service.insert(
+            "Description".into(),
+            unit.remove("Description")
+                .ok_or("missing unit description")?,
+        );
+        let mut identity = HashMap::new();
+        for field in ["MainPID", "ControlGroup", "Result"] {
+            identity.insert(
+                field.into(),
+                service.remove(field).ok_or("missing service identity")?,
+            );
+        }
+        Ok((
+            decode_unit_properties(path, unit, identity)?,
+            Some(decode_settings(service)?),
+        ))
+    } else {
+        Ok((decode_unit_properties(path, unit, service)?, None))
+    }
 }
 fn decode_unit_properties(
     path: &str,
@@ -694,7 +793,7 @@ fn decode_unit_properties(
         transient: take(&mut unit, "Transient")?,
     })
 }
-fn take<T: TryFrom<OwnedValue>>(
+pub(crate) fn take<T: TryFrom<OwnedValue>>(
     values: &mut HashMap<String, OwnedValue>,
     name: &str,
 ) -> Result<T, String> {

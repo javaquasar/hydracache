@@ -1011,6 +1011,69 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn loaded_diagnostic_settings_projection_keeps_execution_closed() {
+    let c = contract("diagnostic-loaded-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-loaded-local-074-v1")
+    );
+    for flag in [
+        "unit_mutation_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "complete_policy_proof",
+        "append_destinations_verified",
+        "effective_process_environment_verified",
+        "original_executable_verified",
+        "runtime_guard_is_durable_journal",
+        "snapshot_is_cleanup_authority",
+    ] {
+        assert_eq!(c[flag].as_bool(), Some(false), "{flag}");
+    }
+    for (key, value) in [
+        ("request_schema", 1),
+        ("response_schema", 1),
+        ("projected_settings", 53),
+        ("operation_timeout_ms", 2000),
+        ("combined_output_bytes", 65536),
+        ("cleanup_timeout_ms", 1000),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    assert_eq!(c["helper_mode"].as_str(), Some("diagnostic-loaded-worker"));
+    assert_eq!(c["first_refusal_is_sticky"].as_bool(), Some(true));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_loaded.rs"),
+    )
+    .unwrap();
+    let production = source.split("#[cfg(test)]").next().unwrap();
+    for forbidden in [
+        "StartTransientUnit",
+        "StopUnit",
+        "KillUnit",
+        "DiagnosticBackend",
+        "fs::remove_file",
+        "Command::new",
+    ] {
+        assert!(!production.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        "pin_for",
+        "revalidate",
+        "original.invocation_id",
+        "same_manager",
+        "ExecStartEx",
+        "StandardOutput",
+        "EnvironmentFiles",
+        "LimitNOFILESoft",
+        "LimitFSIZESoft",
+    ] {
+        assert!(production.contains(required), "{required}");
+    }
+}
+
+#[test]
 fn diagnostic_process_binding_cannot_signal_recapture_or_release_host() {
     let c = contract("diagnostic-process-local-contract.toml");
     assert_eq!(c["schema_version"].as_integer(), Some(1));
