@@ -1,6 +1,10 @@
 //! Linux-only pinned descriptor inspection, not a live systemd exec capability.
 
 use super::*;
+use crate::diagnostic_builder::CheckedBuilderPolicy;
+use crate::diagnostic_lease::{cell_intent, DiagnosticState};
+use crate::diagnostic_unit::build_diagnostic_unit_spec;
+use crate::systemd_unit::TransientUnitSpec;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 use std::ffi::CString;
@@ -77,9 +81,11 @@ pub struct BundleSnapshot {
 /// This read-only function is not called by a production route in this slice.
 pub fn inspect_fixed_install(
     identity: &DiagnosticIdentity,
-    trust: &BuildTrust,
+    policy: &CheckedBuilderPolicy,
 ) -> Result<BundleSnapshot, ArtifactError> {
-    inspect(Path::new(INSTALL_ROOT), false, 0, 0, identity, trust)
+    inspect(Path::new(INSTALL_ROOT), false, 0, 0, |receipt| {
+        policy.verify_receipt(receipt, identity)
+    })
 }
 
 /// Explicit local fixture seam. Does NOT certify production ancestry/ownership.
@@ -93,7 +99,92 @@ pub fn inspect_fixture(
     if path == Path::new(INSTALL_ROOT) {
         return Err(ArtifactError::Contents);
     }
-    inspect(path, true, uid, gid, identity, trust)
+    inspect(path, true, uid, gid, |receipt| {
+        verify_receipt(receipt, identity, trust)
+    })
+}
+
+/// Policy/content/state binding with owned descriptors, NOT execution authority.
+/// No serialization, unit mutation, clock observation or host lock is performed.
+/// The backend must still fence a durable intent and authenticate actual start.
+pub struct PinnedStartMaterial {
+    bundle: BundleSnapshot,
+    state: DiagnosticState,
+    intent: CellIntent,
+    spec: TransientUnitSpec,
+    refused: bool,
+}
+
+/// Read-only preparation at the fixed install root using an independently
+/// checked policy. Invalid/nonstartable state is refused before filesystem IO.
+pub fn prepare_fixed_start_material(
+    state: &DiagnosticState,
+    policy: &CheckedBuilderPolicy,
+) -> Result<PinnedStartMaterial, ArtifactError> {
+    let spec = build_diagnostic_unit_spec(state).map_err(|_| ArtifactError::Invalid)?;
+    let bundle = inspect_fixed_install(&state.identity, policy)?;
+    prepare_material(bundle, state, spec)
+}
+
+/// Test-only origin, not certification of production install ancestry.
+pub fn prepare_fixture_start_material(
+    path: &Path,
+    uid: u32,
+    gid: u32,
+    state: &DiagnosticState,
+    policy: &CheckedBuilderPolicy,
+) -> Result<PinnedStartMaterial, ArtifactError> {
+    let spec = build_diagnostic_unit_spec(state).map_err(|_| ArtifactError::Invalid)?;
+    if path == Path::new(INSTALL_ROOT) {
+        return Err(ArtifactError::Contents);
+    }
+    let bundle = inspect(path, true, uid, gid, |receipt| {
+        policy.verify_receipt(receipt, &state.identity)
+    })?;
+    prepare_material(bundle, state, spec)
+}
+
+fn prepare_material(
+    mut bundle: BundleSnapshot,
+    state: &DiagnosticState,
+    spec: TransientUnitSpec,
+) -> Result<PinnedStartMaterial, ArtifactError> {
+    let intent = cell_intent(state).map_err(|_| ArtifactError::Invalid)?;
+    bundle.build().bind_intent(&intent)?;
+    bundle.revalidate()?;
+    Ok(PinnedStartMaterial {
+        bundle,
+        state: state.clone(),
+        intent,
+        spec,
+        refused: false,
+    })
+}
+
+impl PinnedStartMaterial {
+    /// Read-only metadata, including after refusal; never a launch permission.
+    pub fn intent(&self) -> &CellIntent {
+        &self.intent
+    }
+    pub fn spec(&self) -> &TransientUnitSpec {
+        &self.spec
+    }
+    pub fn is_fixture(&self) -> bool {
+        self.bundle.is_fixture()
+    }
+    /// Exact state (including revision/clocks), plus the original bundle.
+    /// A first refusal is sticky for this object, not a durable failure journal.
+    pub fn revalidate_for(&mut self, state: &DiagnosticState) -> Result<(), ArtifactError> {
+        if self.refused || state != &self.state {
+            self.refused = true;
+            return Err(ArtifactError::Invalid);
+        }
+        let result = self.bundle.revalidate();
+        if result.is_err() {
+            self.refused = true;
+        }
+        result
+    }
 }
 
 fn inspect(
@@ -101,8 +192,7 @@ fn inspect(
     fixture: bool,
     uid: u32,
     gid: u32,
-    identity: &DiagnosticIdentity,
-    trust: &BuildTrust,
+    verify: impl FnOnce(&[u8]) -> Result<VerifiedBuild, ArtifactError>,
 ) -> Result<BundleSnapshot, ArtifactError> {
     let directory = open_directory(path, fixture, uid, gid)?;
     let stamp = Stamp::from(directory.metadata()?);
@@ -134,7 +224,7 @@ fn inspect(
         );
     }
     let receipt = &retained["build-receipt-v1.json"];
-    let build = verify_receipt(receipt, identity, trust)?;
+    let build = verify(receipt)?;
     let s = build.statement();
     for (name, expected) in [
         ("timing-controls-074", &s.binary),

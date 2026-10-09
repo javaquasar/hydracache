@@ -810,6 +810,14 @@ fn separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_repl
 #[cfg(target_os = "linux")]
 mod linux_tests {
     use super::*;
+    use hydracache_long_run_supervisor_074::diagnostic_builder::{
+        load_policy, policy_bytes, BuilderPolicy, CheckedBuilderPolicy, BUILDER_ID, POLICY_SCHEMA,
+        REPOSITORY_ID,
+    };
+    use hydracache_long_run_supervisor_074::diagnostic_lease::{
+        DiagnosticStage, DiagnosticState, DiagnosticStopReason,
+    };
+    use hydracache_long_run_supervisor_074::systemd_unit::UnitProperty;
     use std::fs;
     use std::os::unix::fs::{symlink, PermissionsExt};
     use std::path::PathBuf;
@@ -859,6 +867,213 @@ mod linux_tests {
         fn writable(&self) {
             mode(&self.root, 0o755);
         }
+        fn checked_policy(&mut self) -> CheckedBuilderPolicy {
+            // Synthetic test builder only, never the enrolled production key.
+            self.f.statement.repository_id = REPOSITORY_ID;
+            self.f.statement.builder_id = BUILDER_ID.into();
+            let receipt = self.root.join("build-receipt-v1.json");
+            mode(&receipt, 0o644);
+            fs::write(&receipt, self.f.receipt().0).unwrap();
+            mode(&receipt, 0o444);
+            policy_for(&self.f.key)
+        }
+        fn start_state(&self) -> DiagnosticState {
+            DiagnosticState {
+                identity: self.f.receipt().1,
+                revision: 1,
+                stage: DiagnosticStage::Reserved,
+                completed_cells: 0,
+                reserved_monotonic_ns: 100_000_000_000,
+                last_observed_monotonic_ns: 100_000_000_000,
+                controller_monotonic_ns: 100_000_000_000,
+                cell_started_monotonic_ns: None,
+                cgroup_inode: None,
+                reason: None,
+                cleanup_confirmed: true,
+                promotable: false,
+                admission_allowed: false,
+            }
+        }
+        fn prepare(
+            &self,
+            state: &DiagnosticState,
+            policy: &CheckedBuilderPolicy,
+        ) -> Result<linux::PinnedStartMaterial, ArtifactError> {
+            let (uid, gid) = ids();
+            linux::prepare_fixture_start_material(&self.root, uid, gid, state, policy)
+        }
+    }
+    fn policy_for(key: &SigningKey) -> CheckedBuilderPolicy {
+        let controller = SigningKey::from_bytes(&[12; 32]).verifying_key();
+        let bytes = policy_bytes(&BuilderPolicy {
+            schema_version: POLICY_SCHEMA.into(),
+            repository_id: REPOSITORY_ID,
+            builder_id: BUILDER_ID.into(),
+            builder_key_hex: hex(key.verifying_key().as_bytes()),
+            controller_key_hex: hex(controller.as_bytes()),
+        })
+        .unwrap();
+        load_policy(&bytes, &hex(&Sha256::digest(&bytes)), &controller).unwrap()
+    }
+
+    #[test]
+    fn fixed_install_reader_requires_checked_builder_policy() {
+        let _reader: fn(
+            &DiagnosticIdentity,
+            &CheckedBuilderPolicy,
+        ) -> Result<linux::BundleSnapshot, ArtifactError> = linux::inspect_fixed_install;
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let mut state = f.start_state();
+        // Reject before trying to read the production filesystem.
+        state.stage = DiagnosticStage::Running;
+        assert!(matches!(
+            linux::prepare_fixed_start_material(&state, &policy),
+            Err(ArtifactError::Invalid)
+        ));
+    }
+
+    #[test]
+    fn pinned_start_material_binds_four_cells_and_remaining_budget() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        for (index, surface) in ["embedded", "direct", "resp2", "resp3"].iter().enumerate() {
+            let mut state = f.start_state();
+            state.completed_cells = index;
+            let mut material = f.prepare(&state, &policy).unwrap();
+            assert!(material.is_fixture());
+            assert_eq!(material.intent().surface, *surface);
+            assert_eq!(material.spec().unit_name, material.intent().unit_name);
+            assert_eq!(material.intent().maximum_runtime_seconds, 60);
+            material.revalidate_for(&state).unwrap();
+            let exec = material
+                .spec()
+                .properties
+                .iter()
+                .find(|(n, _)| *n == "ExecStart")
+                .unwrap();
+            let UnitProperty::Commands(commands) = &exec.1 else {
+                panic!("fixed exec")
+            };
+            assert_eq!(commands.len(), 1);
+            assert_eq!(commands[0].path, BINARY_PATH);
+            assert_eq!(
+                commands[0].argv,
+                vec![
+                    BINARY_PATH.to_owned(),
+                    "--run".into(),
+                    material.intent().config_path.clone(),
+                    state.identity.binary_sha256.clone(),
+                    SOURCE_COMMIT.into()
+                ]
+            );
+            assert!(!commands[0].ignore_failure);
+        }
+        let mut state = f.start_state();
+        state.last_observed_monotonic_ns += 283_000_000_000;
+        let material = f.prepare(&state, &policy).unwrap();
+        assert_eq!(material.intent().maximum_runtime_seconds, 17);
+        assert!(material
+            .spec()
+            .properties
+            .contains(&("RuntimeMaxUSec", UnitProperty::Unsigned(17_000_000))));
+        state.last_observed_monotonic_ns += 17_000_000_000;
+        assert!(f.prepare(&state, &policy).is_err());
+        let mut state = f.start_state();
+        state.stage = DiagnosticStage::Starting;
+        state.cell_started_monotonic_ns = Some(state.last_observed_monotonic_ns);
+        state.cleanup_confirmed = false;
+        f.prepare(&state, &policy).unwrap();
+    }
+
+    #[test]
+    fn pinned_start_material_refuses_wrong_builder_and_identity() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let state = f.start_state();
+        let foreign = policy_for(&SigningKey::from_bytes(&[13; 32]));
+        assert!(f.prepare(&state, &foreign).is_err());
+        for change in [0, 1] {
+            let mut drift = state.clone();
+            if change == 0 {
+                drift.identity.binary_sha256 = "f".repeat(64);
+            } else {
+                drift.identity.build_provenance_sha256 = "f".repeat(64);
+            }
+            assert!(f.prepare(&drift, &policy).is_err());
+        }
+        let mut terminal = state.clone();
+        terminal.stage = DiagnosticStage::Terminal;
+        terminal.reason = Some(DiagnosticStopReason::OperatorCancelled);
+        assert!(f.prepare(&terminal, &policy).is_err());
+        let (uid, gid) = ids();
+        assert!(linux::prepare_fixture_start_material(
+            std::path::Path::new(INSTALL_ROOT),
+            uid,
+            gid,
+            &state,
+            &policy
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn pinned_start_material_state_drift_is_sticky() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let state = f.start_state();
+        for field in 0..4 {
+            let mut material = f.prepare(&state, &policy).unwrap();
+            let mut changed = state.clone();
+            match field {
+                0 => changed.revision += 1,
+                1 => changed.completed_cells += 1,
+                2 => changed.last_observed_monotonic_ns += 1_000_000_000,
+                _ => changed.identity.boot_id = "00000000-0000-4000-8000-000000000074".into(),
+            }
+            assert!(material.revalidate_for(&changed).is_err());
+            assert!(
+                material.revalidate_for(&state).is_err(),
+                "first failure must not revive"
+            );
+        }
+    }
+
+    #[test]
+    fn pinned_start_material_keeps_original_descriptors_and_refuses_replacement() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let state = f.start_state();
+        let mut material = f.prepare(&state, &policy).unwrap();
+        f.writable();
+        let config = f.root.join("embedded.json");
+        fs::rename(&config, f.temporary.path().join("original-config")).unwrap();
+        fs::write(&config, f.f.configs["embedded"]).unwrap();
+        mode(&config, 0o444);
+        mode(&f.root, 0o555);
+        assert!(material.revalidate_for(&state).is_err());
+        assert!(material.revalidate_for(&state).is_err());
+    }
+
+    #[test]
+    fn independent_parallel_start_materials_remain_fixture_only() {
+        let mut f = Fixture::new();
+        let policy = f.checked_policy();
+        let state = f.start_state();
+        std::thread::scope(|scope| {
+            let handles: Vec<_> = (0..4)
+                .map(|_| {
+                    scope.spawn(|| {
+                        let mut material = f.prepare(&state, &policy).unwrap();
+                        assert!(material.is_fixture());
+                        material.revalidate_for(&state).unwrap();
+                    })
+                })
+                .collect();
+            for handle in handles {
+                handle.join().unwrap();
+            }
+        });
     }
     impl Drop for Fixture {
         fn drop(&mut self) {
