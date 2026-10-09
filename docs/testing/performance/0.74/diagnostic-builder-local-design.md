@@ -113,8 +113,8 @@ branch restriction remain. No administrator bypass or automatic approval is
 authorized. Both jobs also fail closed unless the GitHub metadata explicitly
 reports can_admins_bypass=false. Missing, null, numeric-zero and true values are
 refused; presence of a reviewer alone is not sufficient. Each build/sign approval
-must identify and review the exact tooling
-SHA and job evidence before releasing that job.
+must identify and review the exact tooling SHA and job evidence before releasing
+that job.
 
 The controller public key comes from a read-only extraction of verification_key_hex
 in the installed /etc/hydracache-perf/supervisor-074.toml. No controller private
@@ -131,6 +131,27 @@ reviewed, verified merge path. Do not merge the entire 0.74 branch, add an
 automatic push trigger, or repurpose an existing qualification workflow to work
 around registration. Until registration and exact protected job approvals, no
 actual trusted CI build/sign receipt exists.
+
+The [enrollment packet](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
+records the new environment, required reviewer and exact branch, can_admins_bypass=false,
+one newly registered environment secret and three public variables. The fresh
+32-byte seed used the local OS cryptographic random generator; OpenSSL in local
+WSL derived its Ed25519 public key from DER through stdin. Only transient process
+memory and GitHub's encrypted environment secret held private bytes; no private
+file, repository blob, host copy or backup was created. Public canonical policy
+bytes have SHA-256 dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22;
+Rust load_policy independently checks that pin, canonical form, distinct actual
+controller key and nonweak public keys. API readback verifies names, timestamps
+and all public variable values, not secret contents. A real verified signature
+is still required to establish the operational key/build relationship.
+
+Technical review of the lane includes the fixed source/tree, fresh target,
+credential-stripped compilation/validation, pinned actions, current-run artifact
+selection, private descriptor-bound signing and exclusive publication. Hosted
+runner directory permissions remain an operational preflight: the signer refuses
+unsafe or aliased parents rather than loosening its checks for CI convenience.
+Environment/runner administrators and the GitHub platform remain trusted;
+same-account delegated review is not separation from those principals.
 
 ## Local evidence and limitations
 

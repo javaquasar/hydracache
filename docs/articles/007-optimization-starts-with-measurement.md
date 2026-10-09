@@ -4675,7 +4675,35 @@ Local synthetic positive/negative tests validate the policy, signing round trip,
 content/source drift, private paths and refusal to overwrite. They do not prove
 that a trusted production builder ran, establish reproducible compilation, or
 measure CPU/allocation/latency. See the [design and retained evidence](../testing/performance/0.74/diagnostic-builder-local-design.md).
-The new environment returned 404 in a read-only check; the legacy environment's
-empty protection settings were deliberately not copied. Real reviewer/key/pin
-enrollment remains open. This removes a code-level provenance gap but does not
-close backend, writer-fencing, watchdog, recovery or performance admission gates.
+The initial environment lookup returned 404; the legacy environment's empty
+protection settings were deliberately not copied. After the user explicitly
+delegated technical review to the agent, we configured a new environment with
+the authenticated javaquasar account as required reviewer, the exact feature
+branch as its sole permitted deployment branch, and administrator bypass
+disabled. This is delegated account approval, not independent second-human
+review. No pending build or signing job has been approved automatically.
+
+The review exposed a specific gap: checking that a reviewer exists does not
+prove an administrator cannot bypass that review. The first negative test showed
+that the bypass-enabled configuration was accepted before the fix. The coordinator
+now requires the
+explicit boolean false for can_admins_bypass; missing, null, true and numeric
+zero values fail closed. Both preparation jobs use this check. A new Ed25519
+seed was generated in transient local memory and sent only to the new GitHub
+environment secret through stdin. The controller's private key was neither
+read nor reused. Its public key came independently from the installed host
+configuration, not an incoming receipt or artifact. The new public policy and
+external digest are retained in Git; the private seed is not stored in local
+files or on the performance host. Deleting that secret requires a fresh reviewed
+rotation, not recovery from this evidence.
+
+The [enrollment packet](../testing/performance/0.74/local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
+records protection metadata, public policy validation and local regression
+checks. Registration itself does not prove that the stored secret can produce a
+valid real build signature: that evidence must come from the protected build/sign
+lane and independent verification of its receipt. That lane is still blocked on
+workflow registration: GitHub requires a workflow_dispatch file on the default
+branch before first manual execution, and this file currently exists only on
+the feature branch. We have not merged product code or added automatic triggers
+to work around it. This closes key-enrollment preparation, not backend,
+writer-fencing, watchdog, recovery, installed pilot or performance admission.

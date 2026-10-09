@@ -50,6 +50,70 @@ fn enrolled_public_builder_policy_keeps_execution_admission_closed() {
     let controller = decode_key(c["controller_public_key_hex"].as_str().unwrap()).unwrap();
     assert!(load_policy(&raw, pin, &controller).is_ok());
     assert!(load_policy(&raw, &"0".repeat(64), &controller).is_err());
+    let directory = root()
+        .join("docs/testing/performance/0.74/local-runs/diagnostic-builder-enrollment-20261009");
+    let packet: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        packet["schema_version"],
+        "diagnostic-builder-enrollment-evidence-074-v1"
+    );
+    assert_eq!(packet["public_policy_sha256"], pin);
+    assert_eq!(
+        packet["checked_source_commit"],
+        "b4b62e1e4a21ab3c6e23d2d57cb3c5412e78c30a"
+    );
+    assert_eq!(packet["performance_contract_tests"], 78);
+    for field in [
+        "real_builder_key_generated",
+        "real_builder_key_registered",
+        "required_reviewer_gate",
+    ] {
+        assert_eq!(packet[field], true, "{field}");
+    }
+    for field in [
+        "can_admins_bypass",
+        "real_build_signature_verified",
+        "workflow_dispatched",
+        "github_pending_deployment_approved",
+        "main_modified",
+        "host_modified",
+        "host_install_allowed",
+        "product_workload_run",
+        "qualification_run",
+        "admission_allowed",
+    ] {
+        assert_eq!(packet[field], false, "{field}");
+    }
+    let api: Value = serde_json::from_slice(
+        &std::fs::read(directory.join("github-public-metadata.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(api["environment"]["can_admins_bypass"], false);
+    assert_eq!(api["branches"]["total_count"], 1);
+    assert_eq!(api["branches"]["branch_policies"][0]["type"], "branch");
+    assert_eq!(
+        api["branches"]["branch_policies"][0]["name"],
+        "feat/0.74-resp-native-throughput"
+    );
+    assert_eq!(api["workflow_lookup"]["status"], "404");
+    assert_eq!(api["default_branch_file_lookup"]["status"], "404");
+    assert_eq!(api["secret_metadata"]["total_count"], 1);
+    assert_eq!(
+        api["secret_metadata"]["secrets"][0]["name"],
+        "HYDRACACHE_074_BUILDER_SIGNING_KEY_HEX"
+    );
+    for artifact in packet["raw_files"].as_array().unwrap() {
+        let name = artifact["name"].as_str().unwrap();
+        assert_eq!(Path::new(name).components().count(), 1);
+        let bytes = std::fs::read(directory.join(name)).unwrap();
+        assert_eq!(artifact["bytes"].as_u64().unwrap(), bytes.len() as u64);
+        let actual: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        assert_eq!(artifact["sha256"], actual);
+    }
 }
 
 #[test]

@@ -1916,7 +1916,19 @@ signer checks source/toolchain observations and actual artifact bytes before
 emitting the existing receipt format. Human review and exact branch protection
 are checked before preparation, and unsafe keys/paths or duplicate publication
 fail closed. Local [evidence](local-runs/diagnostic-builder-6118219f/manifest.json)
-uses synthetic signatures, not enrolled production provenance. The proposed
-GitHub environment returned 404; reviewer selection and fresh key/public-pin
-registration remain before the real build/sign lane. No host route or workload
-was enabled, and the earlier unsigned build stays unsigned.
+uses synthetic signatures, not enrolled production provenance. The initial
+environment lookup returned 404. Subsequently, under explicit delegated
+technical review, performance-diagnostic-builder-074 was created with javaquasar
+as required reviewer, one exact feature-branch policy and administrator bypass
+disabled. A fresh separate seed was registered only as its environment secret;
+the [canonical public policy](diagnostic-builder-public-policy.json) is pinned
+at dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22.
+The [enrollment evidence](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
+distinguishes this account-delegated review from independent human review.
+
+Review also added a fail-closed guard against administrator bypass being true,
+absent, null or numeric zero. The real build/sign lane remains unrun: its manual
+workflow is absent from main and unregistered in Actions (404). Registering only
+that workflow on the default branch requires separate permission; no automatic
+trigger or qualification workflow is used as a workaround. No host route or
+workload was enabled, and the earlier unsigned build stays unsigned.

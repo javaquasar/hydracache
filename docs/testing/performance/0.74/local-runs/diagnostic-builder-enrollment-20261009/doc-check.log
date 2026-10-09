@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.95s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
