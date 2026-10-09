@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "publication_producer": ".github/workflows/publish-crates.yml#publish",
+  "workflows": [
+    {
+      "path": ".github/workflows/diagnostic-builder-074.yml",
+      "purpose": "Manual protected frozen observer build and separate signing; no host execution or product workload",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["diagnostic-builder-074"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["build", "sign"],
+        "publish": []
+      },
+      "dependencies": {"sign": ["build"]},
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "purpose": "SHA-bound core validation plus explicitly gated release and diagnostic evidence",
+      "triggers": ["pull_request", "push_branch", "push_tag", "schedule", "workflow_dispatch"],
+      "concurrency_markers": ["github.sha"],
+      "branch_tag_disposition": {
+        "policy": "intentional-rerun",
+        "reason": "immutable 0.71 tags rerun the bounded core once; publication consumes only Release 0.71 CI Admission from that tag run",
+        "admission_job": "release-071-ci-admission"
+      },
+      "classes": {
+        "core": [
+          "ci-topology",
+          "memory-contracts-071",
+          "memory-regression-fast",
+          "docs",
+          "rust",
+          "migration-conformance-fast-evidence-069",
+          "migration-conformance-069",
+          "migration-conformance-postgres-069",
+          "migration-conformance-admission-069",
+          "hc2-linux-required",
+          "hc2-docker-interop",
+          "performance-067-shared-tripwire",
+          "performance-ci-instruction-v1",
+          "msrv"
+        ],
+        "release-only": [
+          "release-071-ci-admission",
+          "release-070-admission",
+          "redis-compat-release-proof",
+          "release-066-daemon-process",
+          "release-066-operator-kind",
+          "release-067-performance",
+          "release-0671-performance-qualification",
+          "release-0671-performance-full-dress",
+          "release-0671-performance-bootstrap",
+          "release-0671-frozen-candidate",
+          "management-mixed-072",
+          "management-candidate-soak-072",
+          "management-ship-soak-072"
+        ],
+        "scheduled-diagnostic": [
+          "memory-diagnostic-hosted",
+          "retention-soak-070",
+          "performance-budget",
+          "dst-nightly-soak",
+          "raft-corner-case-nightly",
+          "raft-loom",
+          "fuzz-nightly",
+          "raft-mutation-testing",
+          "raft-miri",
+          "thread-sanitizer",
+          "dynamic-canary-sweep",
+          "coverage-ratchet"
+        ],
+        "manual-protected": ["gated-proof-registry"],
+        "publish": []
+      },
+      "dependencies": {
+        "release-071-ci-admission": ["ci-topology", "memory-contracts-071", "memory-regression-fast", "docs", "rust", "msrv"],
+        "release-070-admission": ["memory-regression-fast", "retention-soak-070"],
+        "migration-conformance-admission-069": ["migration-conformance-fast-evidence-069", "migration-conformance-069", "migration-conformance-postgres-069"],
+        "hc2-linux-required": ["docs", "rust", "migration-conformance-069", "migration-conformance-postgres-069", "migration-conformance-admission-069", "msrv"],
+        "hc2-docker-interop": ["rust"]
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 3,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "memory-regression-fast": {"reason": "0.70 admission downloads the historical SHA-only name", "expires_after_release": "0.72"},
+        "memory-diagnostic-hosted": {"reason": "diagnostic artifacts predate SHA binding", "expires_after_release": "0.72"},
+        "retention-soak-070": {"reason": "0.70 admission downloads the historical SHA-only name", "expires_after_release": "0.72"},
+        "release-070-admission": {"reason": "0.70 release consumer expects the historical name", "expires_after_release": "0.72"},
+        "migration-conformance-fast-evidence-069": {"reason": "0.69 admission expects the historical name", "expires_after_release": "0.72"},
+        "migration-conformance-069": {"reason": "0.69 admission expects the historical name", "expires_after_release": "0.72"},
+        "migration-conformance-postgres-069": {"reason": "0.69 matrix admission expects the historical name", "expires_after_release": "0.72"},
+        "migration-conformance-admission-069": {"reason": "0.69 release evidence retains the historical name", "expires_after_release": "0.72"},
+        "dst-nightly-soak": {"reason": "legacy daemon replay consumers use fixed names", "expires_after_release": "0.72"},
+        "raft-corner-case-nightly": {"reason": "legacy scheduled diagnostic uses a fixed name", "expires_after_release": "0.72"},
+        "release-066-daemon-process": {"reason": "0.66 evidence consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "release-066-operator-kind": {"reason": "0.66 evidence consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "performance-067-shared-tripwire": {"reason": "0.67 evidence consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "performance-ci-instruction-v1": {"reason": "instruction identity is bound to an explicit head SHA", "expires_after_release": "0.72"},
+        "release-067-performance": {"reason": "0.67 evidence consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "release-0671-performance-qualification": {"reason": "0.67.1 evidence lacks run attempt identity", "expires_after_release": "0.72"},
+        "release-0671-performance-full-dress": {"reason": "cross-run 0.67.1 consumers use frozen historical names", "expires_after_release": "0.72"},
+        "release-0671-performance-bootstrap": {"reason": "cross-run 0.67.1 consumers use frozen historical names", "expires_after_release": "0.72"},
+        "release-0671-frozen-candidate": {"reason": "0.67.1 evidence lacks run attempt identity", "expires_after_release": "0.72"},
+        "fuzz-nightly": {"reason": "0.66 diagnostic consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "raft-mutation-testing": {"reason": "matrix diagnostic consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "raft-miri": {"reason": "diagnostic consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "thread-sanitizer": {"reason": "diagnostic consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "dynamic-canary-sweep": {"reason": "canary registry consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "coverage-ratchet": {"reason": "coverage consumer uses SHA-only identity", "expires_after_release": "0.72"},
+        "gated-proof-registry": {"reason": "gate id and SHA form the legacy evidence identity", "expires_after_release": "0.72"}
+      },
+      "watchdog_jobs": ["ci-topology"]
+    },
+    {
+      "path": ".github/workflows/demo.yml",
+      "purpose": "Branch and scheduled simulator demonstration smoke test; tags do not duplicate release CI",
+      "triggers": ["push_branch", "schedule", "workflow_dispatch"],
+      "concurrency_markers": ["github.sha"],
+      "classes": {
+        "core": ["build"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": []
+      }
+    },
+    {
+      "path": ".github/workflows/docs-site.yml",
+      "purpose": "Build documentation once and deploy only the admitted main-branch result",
+      "triggers": ["pull_request", "push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["github.ref"],
+      "classes": {
+        "core": ["build"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": ["deploy"]
+      },
+      "dependencies": {"deploy": ["build"]}
+    },
+    {
+      "path": ".github/workflows/hc2-client-plane.yml",
+      "purpose": "HC/2 core receipts and tag-gated promotion admissions for the exact tested SHA",
+      "triggers": ["pull_request", "push_branch", "push_tag", "schedule", "workflow_dispatch"],
+      "concurrency_markers": ["github.workflow", "github.ref"],
+      "branch_tag_disposition": {
+        "policy": "intentional-rerun",
+        "reason": "the legacy HC/2 workflow is scoped to v0.68 tags and intentionally builds same-run promotion receipts",
+        "admission_job": "hosted-release-admission"
+      },
+      "classes": {
+        "core": ["linux-required", "java-sdk-compatibility", "docker-interop"],
+        "release-only": ["retain-production-daemon", "hosted-release-admission", "release-admission"],
+        "scheduled-diagnostic": ["fuzz", "fixed-host-soak"],
+        "manual-protected": [],
+        "publish": []
+      },
+      "dependencies": {
+        "hosted-release-admission": ["linux-required", "docker-interop", "fuzz"],
+        "release-admission": ["linux-required", "docker-interop", "fuzz", "fixed-host-soak"]
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "retain-production-daemon": {"reason": "retention key is the requested daemon commit and platform", "expires_after_release": "0.72"}
+      }
+    },
+    {
+      "path": ".github/workflows/memory-reference-071.yml",
+      "purpose": "Serialized protected-host execution from a trusted main harness for one immutable source_sha and preregistered 0.71 memory row",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["inputs.source_sha", "inputs.campaign_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["campaign"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "watchdog_jobs": ["campaign"]
+    },
+    {
+      "path": ".github/workflows/management-baseline-072.yml",
+      "purpose": "Capture immutable pre-feature and published 0.71 Management Center baselines for the exact qualified 0.72 candidate",
+      "triggers": ["push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["github.ref"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["capture"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "capture": {
+          "reason": "baseline artifacts are bound to the validated candidate SHA input rather than the tooling branch SHA",
+          "expires_after_release": "0.72"
+        }
+      }
+    },
+    {
+      "path": ".github/workflows/compatibility-073.yml",
+      "purpose": "Run the exact published 0.72 to frozen 0.73 wire, durable and rolling compatibility matrix",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["compatibility-073"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["compatibility"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "compatibility": {"reason": "artifact identity uses the validated tooling SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-baseline-pilot-073.yml",
+      "purpose": "Run the serialized 0.73 baseline pilot and exact integrated comparison handoff",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["pilot", "integrated"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "integrated": "Reusable-workflow callers cannot declare timeout-minutes; performance-integrated-host-073.yml#compare owns the 180 minute timeout"
+      }
+    },
+    {
+      "path": ".github/workflows/performance-cpu-attribution-073.yml",
+      "purpose": "Capture protected-host CPU attribution evidence for the preregistered 0.73 branch",
+      "triggers": ["push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host"],
+      "classes": {
+        "core": ["attribute"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/performance-host-admission-073.yml",
+      "purpose": "Serialize host admission, compatibility and long-run dispatch for an explicit reviewed 0.73 tooling SHA",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["inputs.lease_owner", "performance-reference-073-host"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [
+          "authorize-long-run",
+          "admit",
+          "compatibility",
+          "long-run-qualification",
+          "long-run-confirmation-i73",
+          "long-run-confirmation-c73"
+        ],
+        "publish": []
+      },
+      "dependencies": {
+        "long-run-qualification": ["authorize-long-run"],
+        "long-run-confirmation-i73": ["authorize-long-run"],
+        "long-run-confirmation-c73": ["long-run-confirmation-i73"]
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "long-run-qualification": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the selected phase timeout",
+        "long-run-confirmation-i73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the I73 confirmation timeout",
+        "long-run-confirmation-c73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the C73 confirmation timeout"
+      },
+      "artifact_identity_exemptions": {
+        "compatibility": {"reason": "artifact identity uses the validated source SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-integrated-host-073.yml",
+      "purpose": "Execute the exact frozen I73 and C73 integrated same-host comparison",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["performance-reference-073-host", "github.run_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["compare"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "compare": {"reason": "artifact identity uses the validated tooling SHA input plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-073.yml",
+      "purpose": "Execute serialized six-hour qualification or explicit 24-hour-per-role confirmation for frozen I73 and C73",
+      "triggers": ["workflow_call"],
+      "concurrency_markers": ["performance-reference-073-host", "github.run_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["qualify"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 2,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "timeout_exemptions": {
+        "qualify": "The phase-selected 900/3480 minute timeout expression is validated by the 0.73 performance contract"
+      },
+      "artifact_identity_exemptions": {
+        "qualify": {"reason": "artifact identity uses the validated tooling SHA and phase inputs plus run id and attempt", "expires_after_release": "0.74"}
+      }
+    },
+    {
+      "path": ".github/workflows/post-publish.yml",
+      "purpose": "Verify published packages through a version- and SHA-scoped reusable workflow",
+      "triggers": ["workflow_call", "workflow_dispatch"],
+      "concurrency_markers": ["inputs.version", "github.sha"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": ["verify"]
+      }
+    },
+    {
+      "path": ".github/workflows/publish-crates.yml",
+      "purpose": "Single owner for crates.io publication after successful SHA-bound CI and post-publish verification",
+      "triggers": ["workflow_dispatch", "workflow_run"],
+      "concurrency_markers": ["github.event.workflow_run.head_sha", "inputs.tag", "github.run_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": ["resolve", "publish", "consumer-verification", "github-release"]
+      },
+      "dependencies": {
+        "publish": ["resolve"],
+        "consumer-verification": ["resolve", "publish"],
+        "github-release": ["resolve", "publish", "consumer-verification"]
+      },
+      "timeout_exemptions": {
+        "consumer-verification": "GitHub does not allow timeout-minutes on a reusable-workflow caller; post-publish.yml#verify has a 60 minute timeout"
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 268435456
+      },
+      "artifact_identity_exemptions": {
+        "resolve": {"reason": "resolved metadata name is generated from validated tag, source SHA, run id, and attempt", "expires_after_release": "0.72"},
+        "publish": {"reason": "publication receipt is keyed by the globally unique released version", "expires_after_release": "0.72"}
+      }
+    },
+    {
+      "path": ".github/workflows/publish-release-notes.yml",
+      "purpose": "Manual fallback publisher scoped to an explicit version and source SHA",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["inputs.version", "github.sha"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": ["publish"]
+      }
+    }
+  ]
+}

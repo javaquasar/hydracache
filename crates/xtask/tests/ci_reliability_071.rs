@@ -114,6 +114,82 @@ fn checked_in_topology_is_closed_and_valid() {
 }
 
 #[test]
+fn diagnostic_builder_is_manual_protected_and_sha_bound() {
+    let text = fs::read_to_string(repo_root().join(".github/workflows/diagnostic-builder-074.yml"))
+        .expect("registered diagnostic builder workflow");
+    let workflow: serde_yaml::Value = serde_yaml::from_str(&text).unwrap();
+    assert_eq!(workflow["on"].as_mapping().unwrap().len(), 1);
+    assert!(workflow["on"]["workflow_dispatch"].is_null());
+    let jobs = workflow["jobs"].as_mapping().unwrap();
+    assert_eq!(jobs.len(), 2);
+    assert_eq!(workflow["jobs"]["sign"]["needs"].as_str(), Some("build"));
+    for name in ["build", "sign"] {
+        let job = &workflow["jobs"][name];
+        assert_eq!(job["runs-on"].as_str(), Some("ubuntu-24.04"));
+        assert_eq!(
+            job["environment"].as_str(),
+            Some("performance-diagnostic-builder-074")
+        );
+        assert!(job["timeout-minutes"].as_u64().unwrap() > 0);
+        for step in job["steps"].as_sequence().unwrap() {
+            if step["uses"].as_str().is_some_and(|action| {
+                action.starts_with("actions/upload-artifact@")
+                    || action.starts_with("actions/download-artifact@")
+            }) {
+                let artifact = step["with"]["name"].as_str().unwrap();
+                for field in ["github.sha", "github.run_id", "github.run_attempt"] {
+                    assert!(artifact.contains(field), "{name}: {field}");
+                }
+            }
+        }
+    }
+    let install = workflow["jobs"]["build"]["steps"]
+        .as_sequence()
+        .unwrap()
+        .iter()
+        .find(|step| step["name"].as_str() == Some("Install exact reviewed compiler"))
+        .unwrap();
+    assert!(install["timeout-minutes"]
+        .as_u64()
+        .is_some_and(|minutes| minutes > 0 && minutes < 40));
+    assert!(!text.split("  sign:").next().unwrap().contains("secrets."));
+    assert!(!text.contains("self-hosted"));
+}
+
+#[test]
+fn live_builder_inventory_preserves_the_frozen_memory_input() {
+    use sha2::{Digest, Sha256};
+    let root = repo_root();
+    let frozen = fs::read_to_string(root.join("docs/testing/memory/0.71/ci-topology.json"))
+        .expect("frozen CI snapshot")
+        .replace("\r\n", "\n");
+    let digest: String = Sha256::digest(frozen.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        digest,
+        "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0"
+    );
+    let live: Value =
+        serde_json::from_slice(&fs::read(root.join("docs/testing/ci-topology.json")).unwrap())
+            .unwrap();
+    let builder = live["workflows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|workflow| workflow["path"] == ".github/workflows/diagnostic-builder-074.yml")
+        .unwrap();
+    assert_eq!(
+        builder["classes"]["manual-protected"],
+        json!(["build", "sign"])
+    );
+    assert!(builder.get("artifact_identity_exemptions").is_none());
+    xtask::ci_topology::check(&root, "0.71")
+        .expect("default must validate live inventory, not frozen snapshot");
+}
+
+#[test]
 fn topology_rejects_missing_timeout_and_duplicate_branch_tag_execution() {
     let temp = TempDir::new("trigger-timeout");
     let workflow = r#"
