@@ -2013,3 +2013,25 @@ retains the original compiler refusal, deterministic 60-versus-17 failure and
 focused Linux/Windows checks. Positive start-material fixtures are synthetic;
 actual loaded-unit policy, original exec/tree identity, writer revocation,
 watchdog and uncertain-intent reconciliation remain before backend enrollment.
+
+The separate [loaded-settings observation](diagnostic-loaded-local-design.md)
+now compares 53 typed, exposed settings and retains the original manager owner,
+boot, object path, nonzero invocation and fixed cgroup path. Missing or changed
+settings and replaced invocations refuse. A helper failure also permanently
+refuses that runtime guard; a later successful read cannot erase it. Existing
+manager scope/snapshot wire and timeout/resource budgets are unchanged.
+
+This is a settings projection, not full loaded-unit policy or launch authority.
+Systemd 255 reports append output mode without its configured filename. Original
+executable/process descriptors, output destinations, effective environment and
+tree continuity still need separate binding. Writer revocation, durable failure,
+watchdog and uncertain-request reconciliation remain open. No unit creation,
+host service changes or product workload accompanies these local checks.
+
+The [local retained packet](local-runs/diagnostic-loaded-20261010/manifest.json)
+records 189 Linux passes (one pre-existing ignored), 28 portable Windows passes
+and 115 root contract/evidence/governance passes. Four actual WSL absent-unit
+reads and wrong-boot refusal are separate from synthetic loaded properties.
+Both test-first compiler refusals and the rejected invalid state fixture remain
+retained. Byte hashes and the unchanged qualification digest passed the offline
+packet guard. No numerical performance claim follows from these checks.

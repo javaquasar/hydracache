@@ -106,3 +106,10 @@ authenticated a unique owner with UID 0 / PID 1 under one boot, and the wrong
 boot was refused with helper cleanup confirmed. No unit was loaded or created.
 This is an authenticated absent-unit observation, not complete loaded-unit
 policy, exec identity, writer revocation, durable failure or cleanup proof.
+
+The later [loaded settings and invocation slice](diagnostic-loaded-local-design.md)
+adds a separate worker response and a sticky original-invocation guard while
+leaving this schema-1 manager snapshot intact. It checks a fixed projection,
+not complete loaded policy: append destinations and original process/executable
+binding remain outside the observation. The existing child budgets, principal
+and reply-origin authentication and no-mutation boundary are reused unchanged.

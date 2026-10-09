@@ -1,0 +1,57 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 9.93s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 6 tests
+test diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags ... FAILED
+test diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation ... FAILED
+test diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget ... FAILED
+test diagnostic_loaded::tests::loaded_invocation_guard_refuses_replacement_owner_object_or_absence ... FAILED
+test diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status ... FAILED
+test diagnostic_loaded::tests::loaded_settings_each_projected_property_drift_is_sticky ... FAILED
+
+failures:
+
+---- diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags' (410) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation' (411) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+
+---- diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget' (413) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+
+---- diagnostic_loaded::tests::loaded_invocation_guard_refuses_replacement_owner_object_or_absence stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_invocation_guard_refuses_replacement_owner_object_or_absence' (409) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+
+---- diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status' (408) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+
+---- diagnostic_loaded::tests::loaded_settings_each_projected_property_drift_is_sticky stdout ----
+
+thread 'diagnostic_loaded::tests::loaded_settings_each_projected_property_drift_is_sticky' (412) panicked at tools/long-run-supervisor-074/src/diagnostic_loaded.rs:205:54:
+called `Result::unwrap()` on an `Err` value: "diagnostic lease document, path, state or identity is unsafe"
+
+
+failures:
+    diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status
+    diagnostic_loaded::tests::loaded_invocation_guard_refuses_replacement_owner_object_or_absence
+    diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags
+    diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation
+    diagnostic_loaded::tests::loaded_settings_each_projected_property_drift_is_sticky
+    diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 80 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

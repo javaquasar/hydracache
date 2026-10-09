@@ -1,0 +1,197 @@
+{
+  "schema_version": "diagnostic-loaded-local-evidence-074-v1",
+  "baseline_source": "eec34ffa924f90496721c5469ce1665384844990",
+  "preregistration_commit": "92b8c9751b311add70a15d0904ca928d60a5f837",
+  "implementation_commit": "43f7bf5b3da1b7c44ba821641841f116713e6fc6",
+  "capture_scope": "Local working-tree checks before implementation commit; not clean-source qualification receipts or signed installed observer execution.",
+  "baseline": {
+    "linux_manager_tests_passed": 14,
+    "clean_source_at_baseline": true,
+    "original_tool_result_observed": true,
+    "raw_log_retained_in_packet": false
+  },
+  "test_first": [
+    {
+      "file": "test-first-red.log",
+      "result": "Compiler refuses absent loaded observation APIs and implementation types."
+    },
+    {
+      "file": "latch-red.log",
+      "result": "Compiler refuses missing inspect_original method before helper-failure latch implementation."
+    },
+    {
+      "file": "contract-red.log",
+      "result": "Root contract test refuses missing preregistered loaded contract."
+    }
+  ],
+  "retained_preparation_negative": {
+    "file": "initial.log",
+    "failed": 6,
+    "cause": "Synthetic Reserved-state fixture incorrectly set cleanup_confirmed=false; existing state validator correctly refused it. Corrected the fixture to a valid Reserved state; no production validator relaxation."
+  },
+  "checks": {
+    "linux_focused_passed": 189,
+    "linux_ignored": 1,
+    "new_linux_loaded_tests": 7,
+    "windows_portable_passed": 28,
+    "windows_linux_loaded_tests_executed": 0,
+    "root_performance_contracts": 79,
+    "root_release_evidence": 13,
+    "root_release_governance": 23,
+    "linux_all_target_check": true,
+    "linux_all_target_all_feature_clippy_warnings_denied": true,
+    "xtask_all_target_all_feature_clippy_warnings_denied": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "full_workspace_verify_rerun": false
+  },
+  "live_read_only": {
+    "environment": "Local WSL Ubuntu, not AX42",
+    "manager_owner": ":1.2",
+    "manager_uid": 0,
+    "manager_pid": 1,
+    "boot_id": "a520ed90-3312-46d8-9fe9-2cfb0f59a08c",
+    "surfaces": [
+      "embedded",
+      "direct",
+      "resp2",
+      "resp3"
+    ],
+    "successful_absence_reads": 4,
+    "operator_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "wrong_boot_exit": 9,
+    "wrong_boot_helper_cleanup": true,
+    "positive_loaded_settings": "Synthetic typed properties only; no real diagnostic unit created.",
+    "systemd_types": "Filtered read-only introspection of pre-existing dbus.service on systemd 255; informational signatures, not diagnostic policy verification."
+  },
+  "commands": {
+    "linux_focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts --test diagnostic_lease --test diagnostic_ipc --test diagnostic_receipts --test diagnostic_spool --test diagnostic_tree --test diagnostic_manager --test host_execution",
+    "root_tests": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "windows": "cargo test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts -j 2",
+    "real_read": "diagnostic-loaded-inspect LEASE CURRENT_LOCAL_BOOT SURFACE; fixed same supervisor executable/worker",
+    "build_environment": {
+      "rust": "1.94.0",
+      "dev_debug": 0,
+      "test_debug": 0,
+      "incremental": false,
+      "build_jobs": 2,
+      "wsl_git": "Read-only explicit mounted Git/worktree paths with GIT_OPTIONAL_LOCKS=0"
+    }
+  },
+  "proof_boundaries": {
+    "projected_settings": 53,
+    "complete_loaded_policy_proved": false,
+    "append_destinations_verified": false,
+    "original_process_or_executable_verified": false,
+    "effective_environment_or_loopback_verified": false,
+    "tree_continuity_or_writer_revocation_verified": false,
+    "runtime_guard_is_durable_journal": false,
+    "host_service_changed": false,
+    "unit_created": false,
+    "observer_workload_run": false,
+    "qualification_run": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false,
+    "existing_scope_snapshot_or_persisted_schema_changed": false,
+    "new_separate_helper_wire_mode": true,
+    "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "frozen_inputs_changed": false
+  },
+  "retention": {
+    "capture_kind": "PowerShell combined native-command stdout/stderr capture bytes. systemd-types.log is explicitly filtered introspection text, not an untouched DBus response. Root capture sealed only after command completion.",
+    "files": [
+      {
+        "name": "contract-green.log",
+        "bytes": 1113,
+        "sha256": "d57133ae7148a796607b9f809fe48965a02f3e6c27433194bbe9f05b7c51d224"
+      },
+      {
+        "name": "contract-red.log",
+        "bytes": 1236,
+        "sha256": "57e6a786722c144d10402906f89a1247878ae2e2f4be2fc8bd560f839d678fc5"
+      },
+      {
+        "name": "focused.log",
+        "bytes": 18937,
+        "sha256": "c845d7d05d263e73cbe5c2ffa2311f910672fa7dcc1a38dd80320e2eb4ec4683"
+      },
+      {
+        "name": "green.log",
+        "bytes": 1105,
+        "sha256": "619c1df233e921beea7c5eec1fd45186632a20b5ddb323ec03dc070cf8d5e0cb"
+      },
+      {
+        "name": "initial.log",
+        "bytes": 4357,
+        "sha256": "89e2c45e4226b37f5d0920c2559410d6c6bec72c84b06ccdb0fdbcd19fdff1e0"
+      },
+      {
+        "name": "latch-red.log",
+        "bytes": 1831,
+        "sha256": "e50f2e6a468da3f793be4c24c6160717a140a466265e1a523a84f23fa23eba04"
+      },
+      {
+        "name": "lint.log",
+        "bytes": 389,
+        "sha256": "aae6b6d6db57250d3a8466926bc3d05e980a9a70791527c2341be778ddfe9abf"
+      },
+      {
+        "name": "live-direct.log",
+        "bytes": 311,
+        "sha256": "96be56ba69f4adf894a568d3e8fbad630f37441a23b4352e317b80c34665cf88"
+      },
+      {
+        "name": "live-embedded.log",
+        "bytes": 313,
+        "sha256": "5fafadab07733aa6ad1bd135a2a98068ba23bf469c665828e0dedb89153067de"
+      },
+      {
+        "name": "live-resp2.log",
+        "bytes": 310,
+        "sha256": "e0fbbaeeaa71ede15ba70d39951dc8136acac001705debb528614cc1e708047a"
+      },
+      {
+        "name": "live-resp3.log",
+        "bytes": 310,
+        "sha256": "17e87852767b50e2cf5326a31cf584cce337c01a371a67abcdd03effd4808d6d"
+      },
+      {
+        "name": "live-wrong-boot.log",
+        "bytes": 55,
+        "sha256": "00eb7040a9bb607041e4e2f030cbf240d5978991fd41fe4bb2644ce2190f2912"
+      },
+      {
+        "name": "root.log",
+        "bytes": 10363,
+        "sha256": "fba894b7f3a595a7904f96e394bbdb011f5e67f68b3be2af705085870788c110"
+      },
+      {
+        "name": "systemd-types.log",
+        "bytes": 2092,
+        "sha256": "e423f7f144a49118c8166aada2f31d220e81dc3f45a88f241b02583272d96e19"
+      },
+      {
+        "name": "test-first-red.log",
+        "bytes": 17475,
+        "sha256": "330460940714eb875a5db5adc55862547d5ecfce4497f5ec21d028579450e5a9"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 2998,
+        "sha256": "a64b295551970ddaeb08b4a48c5789c8d7089cf81355b2aa0eaba2d0ac97a337"
+      }
+    ]
+  },
+  "next_gate": "Bind original executable/output descriptors and process/tree identity, then fenced authenticated start/stop. Durable failure, writer revocation, autonomous watchdog, uncertain-intent reconciliation and non-product loss rehearsals remain before installation and numerical pilot."
+}

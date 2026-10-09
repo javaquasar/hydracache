@@ -1,0 +1,329 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `DiagnosticState` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:9:31
+   |
+ 9 | ...-> DiagnosticState {
+   |       ^^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_lease.rs:52:1
+   |
+52 | ...osticStage {
+   | ...---------- similarly named enum `DiagnosticStage` defined here
+   |
+help: an enum with a similar name exists
+   |
+ 9 -     fn state(index: usize) -> DiagnosticState {
+ 9 +     fn state(index: usize) -> DiagnosticStage {
+   |
+help: consider importing this struct
+   |
+ 5 +     use crate::diagnostic_lease::DiagnosticState;
+   |
+
+error[E0422]: cannot find struct, variant or union type `DiagnosticState` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:10:9
+   |
+10 | ...   Di...ticState {
+   |       ^^...^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 5 +     use crate::diagnostic_lease::DiagnosticState;
+   |
+
+error[E0425]: cannot find type `DiagnosticState` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:24:34
+   |
+24 | ...> (DiagnosticState, L...
+   |       ^^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_lease.rs:52:1
+   |
+52 | ...osticStage {
+   | ...---------- similarly named enum `DiagnosticStage` defined here
+   |
+help: an enum with a similar name exists
+   |
+24 -     fn fixture(index: usize) -> (DiagnosticState, LoadedSnapshot) {
+24 +     fn fixture(index: usize) -> (DiagnosticStage, LoadedSnapshot) {
+   |
+help: consider importing this struct
+   |
+ 5 +     use crate::diagnostic_lease::DiagnosticState;
+   |
+
+error[E0425]: cannot find type `LoadedSnapshot` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:24:51
+   |
+24 | ...e, LoadedSnapshot) {
+   |       ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `diagnostic_start_intent` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:26:22
+   |
+26 | ... = diagnostic_star....
+   |       ^^^^^^^^^^^^^^^...found in this scope
+   |
+help: consider importing this function
+   |
+ 5 +     use crate::diagnostic_unit::diagnostic_start_intent;
+   |
+
+
+thread 'rustc' (373) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 25 but ends at 24
+stack backtrace:
+   0:     0x78538925c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x78538980e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x78538acf8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x785389229b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x785389229993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x785388210aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x785389229e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x785389229c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x785389223ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x78538920448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x785385d8e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x785385a66c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x785387b697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x78538abd5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x78538abc9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x78538ad004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x78538ad02cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x78538ad023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x78538acfc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x78538acf9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x78538acf8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x78538acf8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x78538acf85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x785389efa24c - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate::{closure#0}
+  24:     0x785389ef054d - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate
+  25:     0x785389fc3eb0 - rustc_interface[c6a26c9f392246cf]::passes::configure_and_expand
+  26:     0x78538aa02895 - rustc_interface[c6a26c9f392246cf]::passes::resolver_for_lowering_raw
+  27:     0x78538aa0260d - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>
+  28:     0x78538aa025e7 - <rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(rustc_middle[f9db403ed88df217]::ty::context::TyCtxt, ())>>::call_once
+  29:     0x78538aa01cdc - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  30:     0x78538aa01846 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::get_query_non_incr::__rust_end_short_backtrace
+  31:     0x78538ab90038 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  32:     0x78538a9810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  33:     0x78538a929b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  34:     0x78538a92993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  35:     0x78538a92b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  36:     0x78538429cb84 - <unknown>
+  37:     0x785384329ecc - <unknown>
+  38:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [resolver_for_lowering_raw] getting the resolver for lowering
+end of query stack
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:38:17
+   |
+38 | ...e, LoadedSnap...::n...
+   |       ^^^^^^^^^^... use of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:43:9
+   |
+43 | ...   Lo...Snapshot::d...
+   |       ^^...^^^^^^^^ use of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+  --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:79:70
+   |
+79 | ...), Setting::T...
+   |       ^^^^^^^ use of undeclared type `Setting`
+   |
+help: a struct with a similar name exists
+   |
+79 -         bad.settings.as_mut().unwrap().0.insert("ExecStopEx".into(), Setting::Text("foreign".into()));
+79 +         bad.settings.as_mut().unwrap().0.insert("ExecStopEx".into(), String::Text("foreign".into()));
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:102:23
+    |
+102 | ... = LoadedSnapshot:....
+    |       ^^^^^^^^^^^^^^ ...of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:112:9
+    |
+112 | ...   L...dSnapshot::d...
+    |       ^...^^^^^^^^^ use of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:120:21
+    |
+120 | ...t!(LoadedSnapsho......
+    |       ^^^^^^^^^^^^^...e of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:122:17
+    |
+122 | ...t!(LoadedSna...t::d...
+    |       ^^^^^^^^^...^ use of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:125:17
+    |
+125 | ...t!(LoadedSna...t::d...
+    |       ^^^^^^^^^...^ use of undeclared type `LoadedSnapshot`
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:132:48
+    |
+132 | ...], Setting::T...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+132 -         assert_eq!(settings["StandardOutput"], Setting::Text("append".into()));
+132 +         assert_eq!(settings["StandardOutput"], String::Text("append".into()));
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:133:47
+    |
+133 | ...], Setting::T...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+133 -         assert_eq!(settings["StandardError"], Setting::Text("append".into()));
+133 +         assert_eq!(settings["StandardError"], String::Text("append".into()));
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:134:49
+    |
+134 | ...], Setting::U...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+134 -         assert_eq!(settings["LimitNOFILESoft"], Setting::Unsigned(4096));
+134 +         assert_eq!(settings["LimitNOFILESoft"], String::Unsigned(4096));
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:135:48
+    |
+135 | ...], Setting::U...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+135 -         assert_eq!(settings["LimitFSIZESoft"], Setting::Unsigned(8388608));
+135 +         assert_eq!(settings["LimitFSIZESoft"], String::Unsigned(8388608));
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:137:16
+    |
+137 | ...et Setting::C...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+137 -         if let Setting::Commands(commands) = bad.settings.as_mut().unwrap().0.get_mut("ExecStartEx").unwrap() {
+137 +         if let String::Commands(commands) = bad.settings.as_mut().unwrap().0.get_mut("ExecStartEx").unwrap() {
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:149:17
+    |
+149 | ...   Setting::T...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+149 -                 Setting::Text(v) => OwnedValue::try_from(Value::from(v.as_str())).unwrap(),
+149 +                 String::Text(v) => OwnedValue::try_from(Value::from(v.as_str())).unwrap(),
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:150:17
+    |
+150 | ...   Setting::B...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+150 -                 Setting::Boolean(v) => OwnedValue::from(*v),
+150 +                 String::Boolean(v) => OwnedValue::from(*v),
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:151:17
+    |
+151 | ...   Setting::U...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+151 -                 Setting::Unsigned(v) => OwnedValue::from(*v),
+151 +                 String::Unsigned(v) => OwnedValue::from(*v),
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:152:17
+    |
+152 | ...   Setting::B...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+152 -                 Setting::Bytes(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+152 +                 String::Bytes(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:153:17
+    |
+153 | ...   Setting::S...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+153 -                 Setting::Strings(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+153 +                 String::Strings(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:154:17
+    |
+154 | ...   Setting::C...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+154 -                 Setting::Commands(v) => {
+154 +                 String::Commands(v) => {
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Setting`
+   --> tools/long-run-supervisor-074/src/diagnostic_loaded.rs:158:17
+    |
+158 | ...   Setting::E...
+    |       ^^^^^^^ use of undeclared type `Setting`
+    |
+help: a struct with a similar name exists
+    |
+158 -                 Setting::EnvironmentFiles(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+158 +                 String::EnvironmentFiles(v) => OwnedValue::try_from(Value::from(v.clone())).unwrap(),
+    |
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 25 previous errors

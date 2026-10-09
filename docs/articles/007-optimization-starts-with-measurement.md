@@ -4837,3 +4837,41 @@ unit policy and original executable/process/tree identity, writer revocation,
 autonomous watchdog and explicit uncertain-request recovery. No performance
 claim follows from this safety correction, and no host unit or workload was
 started for it.
+
+### Loaded settings and an invocation that cannot be silently replaced
+
+A signed binary and correct unit name still leave two different questions:
+what settings did the manager actually load, and is this still the original
+execution? A separate bounded read-only helper now authenticates the manager
+and compares two uncached observations, including 53 typed settings. The
+expected projection comes from the fixed diagnostic unit specification and
+validated startable state. It checks resource limits, hardening, environment,
+working directory and exact extended command flags as well as argv. Extra
+lifecycle commands and environment files refuse rather than become invisible
+cost or authority outside the intended observer.
+
+The runtime guard retains the manager owner, boot, object, nonzero InvocationID
+and cgroup path. A replacement invocation cannot be adopted merely because it
+has the same unit name. Missing or changed settings, absence and observation
+failure permanently refuse that guard. This prevents a later successful read
+from hiding a failed observation; it is not restart-safe durable reconciliation.
+PID, active state and result can evolve within the invocation, so this guard
+does not certify original process identity, completion or an empty tree.
+
+The implementation also exposes an important API limit: systemd 255 reports
+the append output mode but does not expose its configured filename in the
+[execution property table](https://github.com/systemd/systemd/blob/v255/src/core/dbus-execute.c).
+Checking the setter's name as if it were a getter would produce either refusal
+on every real unit or false confidence from synthetic properties. The projection
+therefore verifies the mode and explicitly leaves output-file descriptors,
+actual executable and effective process environment for the next binding step.
+These are safety checks for trustworthy future measurements, not throughput or
+allocation improvements, and they do not open numerical pilot admission.
+
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-loaded-20261010/manifest.json)
+keeps the boundary concrete: 189 Linux and 28 portable Windows checks passed,
+as did 115 root contract, evidence and governance tests. Positive loaded-policy
+projections are synthetic; four real local system-bus reads confirmed only
+absence, and an incorrect boot was refused. These results justify continuing
+the process and descriptor binding work, not claiming a successfully launched
+diagnostic or a performance gain.
