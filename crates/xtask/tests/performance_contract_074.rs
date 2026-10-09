@@ -7,6 +7,52 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn enrolled_public_builder_policy_keeps_execution_admission_closed() {
+    use hydracache_long_run_supervisor_074::diagnostic_builder::{decode_key, load_policy};
+    let c = contract("diagnostic-builder-enrollment-contract.toml");
+    assert_eq!(c["github_reviewer_login"].as_str(), Some("javaquasar"));
+    assert_eq!(c["github_reviewer_id"].as_integer(), Some(22050429));
+    assert_eq!(
+        c["technical_review"].as_str(),
+        Some("agent-delegated-by-user")
+    );
+    assert_eq!(c["required_reviewer_gate"].as_bool(), Some(true));
+    assert_eq!(c["fresh_separate_seed_required"].as_bool(), Some(true));
+    assert_eq!(c["manual_workflow_only"].as_bool(), Some(true));
+    assert_eq!(
+        c["default_branch_registration_requires_separate_permission"].as_bool(),
+        Some(true)
+    );
+    for field in [
+        "independent_human_review",
+        "prevent_self_review",
+        "admin_bypass_used",
+        "admin_bypass_permitted",
+        "private_key_in_repository_allowed",
+        "private_key_on_performance_host_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let raw = std::fs::read(
+        root().join("docs/testing/performance/0.74/diagnostic-builder-public-policy.json"),
+    )
+    .unwrap();
+    let pin = "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22";
+    let actual: String = Sha256::digest(&raw)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    assert_eq!(actual, pin);
+    let controller = decode_key(c["controller_public_key_hex"].as_str().unwrap()).unwrap();
+    assert!(load_policy(&raw, pin, &controller).is_ok());
+    assert!(load_policy(&raw, &"0".repeat(64), &controller).is_err());
+}
+
+#[test]
 fn separate_diagnostic_builder_does_not_enroll_host_execution() {
     let c = contract("diagnostic-builder-local-contract.toml");
     assert_eq!(c["repository_id"].as_integer(), Some(1217101761));

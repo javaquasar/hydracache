@@ -784,6 +784,9 @@ function = "separate_builder_cli_signs_checked_fixture_without_execution_and_ref
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_074.rs"
 function = "separate_diagnostic_builder_does_not_enroll_host_execution"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "enrolled_public_builder_policy_keeps_execution_admission_closed"
 
 [[work_item]]
 id = "W12"
