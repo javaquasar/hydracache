@@ -1,0 +1,335 @@
+﻿2026-10-09T11:23:54.9721595Z Current runner version: '2.337.0'
+2026-10-09T11:23:54.9747396Z ##[group]Runner Image Provisioner
+2026-10-09T11:23:54.9748406Z Hosted Compute Agent
+2026-10-09T11:23:54.9749051Z Version: 20261002.596
+2026-10-09T11:23:54.9749708Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T11:23:54.9750612Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T11:23:54.9751350Z Worker ID: {b7e8a4af-83a6-4e7a-8dfa-f1b5b909f915}
+2026-10-09T11:23:54.9752154Z Region: westus2
+2026-10-09T11:23:54.9752757Z Cloud: Azure
+2026-10-09T11:23:54.9753326Z ##[endgroup]
+2026-10-09T11:23:54.9755090Z ##[group]Operating System
+2026-10-09T11:23:54.9756106Z Ubuntu
+2026-10-09T11:23:54.9757108Z 24.04.5
+2026-10-09T11:23:54.9757708Z LTS
+2026-10-09T11:23:54.9758263Z ##[endgroup]
+2026-10-09T11:23:54.9758982Z ##[group]Runner Image
+2026-10-09T11:23:54.9759639Z Image: ubuntu-24.04
+2026-10-09T11:23:54.9760225Z Version: 20261004.327.1
+2026-10-09T11:23:54.9761663Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T11:23:54.9763446Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T11:23:54.9764615Z ##[endgroup]
+2026-10-09T11:23:54.9766362Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T11:23:54.9768585Z Actions: read
+2026-10-09T11:23:54.9769265Z Contents: read
+2026-10-09T11:23:54.9770007Z Metadata: read
+2026-10-09T11:23:54.9770650Z ##[endgroup]
+2026-10-09T11:23:54.9772878Z Secret source: Actions
+2026-10-09T11:23:54.9773925Z Cache mode: write
+2026-10-09T11:23:54.9774783Z Prepare workflow directory
+2026-10-09T11:23:55.0109641Z Prepare all required actions
+2026-10-09T11:23:55.0166857Z Getting action download info
+2026-10-09T11:23:55.4219831Z Download action repository 'actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-10-09T11:23:56.3885303Z Download action repository 'actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f' (SHA:b7c566a772e6b6bfb58ed0dc250532a479d7789f)
+2026-10-09T11:23:56.8083883Z Complete job name: Frozen observer build without signing authority
+2026-10-09T11:23:56.9076496Z ##[group]Run actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+2026-10-09T11:23:56.9078539Z with:
+2026-10-09T11:23:56.9079519Z   ref: 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:23:56.9080761Z   path: tooling
+2026-10-09T11:23:56.9081754Z   persist-credentials: false
+2026-10-09T11:23:56.9082846Z   repository: javaquasar/hydracache
+2026-10-09T11:23:56.9091670Z   token: ***
+2026-10-09T11:23:56.9092579Z   ssh-strict: true
+2026-10-09T11:23:56.9093498Z   ssh-user: git
+2026-10-09T11:23:56.9094391Z   clean: true
+2026-10-09T11:23:56.9095323Z   sparse-checkout-cone-mode: true
+2026-10-09T11:23:56.9096563Z   fetch-depth: 1
+2026-10-09T11:23:56.9097475Z   fetch-tags: false
+2026-10-09T11:23:56.9098419Z   show-progress: true
+2026-10-09T11:23:56.9099347Z   lfs: false
+2026-10-09T11:23:56.9100215Z   submodules: false
+2026-10-09T11:23:56.9101154Z   set-safe-directory: true
+2026-10-09T11:23:56.9102257Z   allow-unsafe-pr-checkout: false
+2026-10-09T11:23:56.9103647Z ##[endgroup]
+2026-10-09T11:23:57.0188290Z Syncing repository: javaquasar/hydracache
+2026-10-09T11:23:57.0192617Z ##[group]Getting Git version info
+2026-10-09T11:23:57.0195161Z Working directory is '/home/runner/work/hydracache/hydracache/tooling'
+2026-10-09T11:23:57.0199027Z [command]/usr/bin/git version
+2026-10-09T11:23:57.0244297Z git version 2.55.0
+2026-10-09T11:23:57.0268197Z ##[endgroup]
+2026-10-09T11:23:57.0285276Z Temporarily overriding HOME='/home/runner/work/_temp/49a5f38d-ff69-44ef-8e3d-fc849a09cb46' before making global git config changes
+2026-10-09T11:23:57.0290417Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:23:57.0294462Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache/tooling
+2026-10-09T11:23:57.0378209Z ##[group]Initializing the repository
+2026-10-09T11:23:57.0390949Z [command]/usr/bin/git init /home/runner/work/hydracache/hydracache/tooling
+2026-10-09T11:23:57.0504221Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T11:23:57.0508832Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T11:23:57.0512388Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T11:23:57.0515378Z hint: call:
+2026-10-09T11:23:57.0517297Z hint:
+2026-10-09T11:23:57.0519266Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T11:23:57.0521740Z hint:
+2026-10-09T11:23:57.0523984Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T11:23:57.0528109Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T11:23:57.0531013Z hint:
+2026-10-09T11:23:57.0532630Z hint: 	git branch -m <name>
+2026-10-09T11:23:57.0534522Z hint:
+2026-10-09T11:23:57.0537194Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T11:23:57.0541832Z Initialized empty Git repository in /home/runner/work/hydracache/hydracache/tooling/.git/
+2026-10-09T11:23:57.0548726Z [command]/usr/bin/git remote add origin https://github.com/javaquasar/hydracache
+2026-10-09T11:23:57.0600671Z ##[endgroup]
+2026-10-09T11:23:57.0603424Z ##[group]Disabling automatic garbage collection
+2026-10-09T11:23:57.0607962Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T11:23:57.0653286Z ##[endgroup]
+2026-10-09T11:23:57.0656245Z ##[group]Setting up auth
+2026-10-09T11:23:57.0663277Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:23:57.0718608Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:23:57.1142862Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:23:57.1184207Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:23:57.1447373Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:23:57.1488021Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:23:57.1717106Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T11:23:57.1759308Z ##[endgroup]
+2026-10-09T11:23:57.1762098Z ##[group]Fetching the repository
+2026-10-09T11:23:57.1772402Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:24:00.7238061Z From https://github.com/javaquasar/hydracache
+2026-10-09T11:24:00.7240123Z  * branch            33596da76b5f31fdd27eea51ec219aefe805180c -> FETCH_HEAD
+2026-10-09T11:24:00.7242793Z ##[endgroup]
+2026-10-09T11:24:00.7243489Z ##[group]Determining the checkout info
+2026-10-09T11:24:00.7246088Z ##[endgroup]
+2026-10-09T11:24:00.7251929Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T11:24:00.7304703Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T11:24:00.7337547Z ##[group]Checking out the ref
+2026-10-09T11:24:00.7341697Z [command]/usr/bin/git checkout --progress --force 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:24:01.7423476Z Updating files:  91% (4386/4768)
+2026-10-09T11:24:01.7485621Z Updating files:  92% (4387/4768)
+2026-10-09T11:24:01.7526983Z Updating files:  93% (4435/4768)
+2026-10-09T11:24:01.7566508Z Updating files:  94% (4482/4768)
+2026-10-09T11:24:01.7786999Z Updating files:  95% (4530/4768)
+2026-10-09T11:24:01.7832874Z Updating files:  96% (4578/4768)
+2026-10-09T11:24:01.7895355Z Updating files:  97% (4625/4768)
+2026-10-09T11:24:01.7933078Z Updating files:  98% (4673/4768)
+2026-10-09T11:24:01.7977862Z Updating files:  99% (4721/4768)
+2026-10-09T11:24:01.7978466Z Updating files: 100% (4768/4768)
+2026-10-09T11:24:01.7978993Z Updating files: 100% (4768/4768), done.
+2026-10-09T11:24:01.8032992Z Note: switching to '33596da76b5f31fdd27eea51ec219aefe805180c'.
+2026-10-09T11:24:01.8033336Z 
+2026-10-09T11:24:01.8033558Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T11:24:01.8034326Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T11:24:01.8035197Z state without impacting any branches by switching back to a branch.
+2026-10-09T11:24:01.8035966Z 
+2026-10-09T11:24:01.8036304Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T11:24:01.8037138Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T11:24:01.8037637Z 
+2026-10-09T11:24:01.8037845Z   git switch -c <new-branch-name>
+2026-10-09T11:24:01.8038174Z 
+2026-10-09T11:24:01.8038340Z Or undo this operation with:
+2026-10-09T11:24:01.8038662Z 
+2026-10-09T11:24:01.8038888Z   git switch -
+2026-10-09T11:24:01.8039091Z 
+2026-10-09T11:24:01.8039471Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T11:24:01.8040028Z 
+2026-10-09T11:24:01.8040386Z HEAD is now at 33596da ci(0.74): close live builder and observer workflow inventory
+2026-10-09T11:24:01.8534517Z ##[endgroup]
+2026-10-09T11:24:01.8582036Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T11:24:01.8610679Z 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:24:01.8620404Z ##[group]Removing auth
+2026-10-09T11:24:01.8625527Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:24:01.8659296Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:24:01.8898122Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:24:01.8927979Z http.https://github.com/.extraheader
+2026-10-09T11:24:01.8937298Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T11:24:01.8974531Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:24:01.9208622Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:24:01.9244433Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:24:01.9476950Z ##[endgroup]
+2026-10-09T11:24:01.9686443Z ##[group]Run set -euo pipefail
+2026-10-09T11:24:01.9686821Z [36;1mset -euo pipefail[0m
+2026-10-09T11:24:01.9687426Z [36;1mgh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074 > "$RUNNER_TEMP/environment.json"[0m
+2026-10-09T11:24:01.9688446Z [36;1mgh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/deployment-branch-policies > "$RUNNER_TEMP/branches.json"[0m
+2026-10-09T11:24:01.9689456Z [36;1mpython3 tooling/scripts/perf/diagnostic_builder_074.py check-protection "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/branches.json"[0m
+2026-10-09T11:24:01.9931380Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T11:24:01.9931833Z env:
+2026-10-09T11:24:01.9935005Z   GH_TOKEN: ***
+2026-10-09T11:24:01.9935253Z ##[endgroup]
+2026-10-09T11:24:02.7577125Z ##[group]Run python3 tooling/scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/build-policy.json"
+2026-10-09T11:24:02.7577915Z [36;1mpython3 tooling/scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/build-policy.json"[0m
+2026-10-09T11:24:02.7640702Z shell: /usr/bin/bash -e {0}
+2026-10-09T11:24:02.7641012Z env:
+2026-10-09T11:24:02.7641485Z   BUILDER_PUBLIC_KEY_HEX: 39215088b0102dffb987b937efa9f49a6c5c7704192fa1f16b4e19ccad12c3ba
+2026-10-09T11:24:02.7642488Z   CONTROLLER_PUBLIC_KEY_HEX: c56f89595c45d0656225f1b8915babed046d278dc9ce1908c6bcb6e9c93e2fda
+2026-10-09T11:24:02.7643307Z   BUILDER_POLICY_SHA256: dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22
+2026-10-09T11:24:02.7643872Z ##[endgroup]
+2026-10-09T11:24:02.8214975Z ##[group]Run actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+2026-10-09T11:24:02.8215362Z with:
+2026-10-09T11:24:02.8215867Z   ref: 62114be0f5da3218706e30d7424acfb5d0579d07
+2026-10-09T11:24:02.8216174Z   path: observer
+2026-10-09T11:24:02.8216391Z   persist-credentials: false
+2026-10-09T11:24:02.8216639Z   repository: javaquasar/hydracache
+2026-10-09T11:24:02.8219001Z   token: ***
+2026-10-09T11:24:02.8219202Z   ssh-strict: true
+2026-10-09T11:24:02.8219399Z   ssh-user: git
+2026-10-09T11:24:02.8219586Z   clean: true
+2026-10-09T11:24:02.8219792Z   sparse-checkout-cone-mode: true
+2026-10-09T11:24:02.8220050Z   fetch-depth: 1
+2026-10-09T11:24:02.8220245Z   fetch-tags: false
+2026-10-09T11:24:02.8220467Z   show-progress: true
+2026-10-09T11:24:02.8220674Z   lfs: false
+2026-10-09T11:24:02.8220862Z   submodules: false
+2026-10-09T11:24:02.8221066Z   set-safe-directory: true
+2026-10-09T11:24:02.8221314Z   allow-unsafe-pr-checkout: false
+2026-10-09T11:24:02.8221558Z ##[endgroup]
+2026-10-09T11:24:02.9050243Z Syncing repository: javaquasar/hydracache
+2026-10-09T11:24:02.9067583Z ##[group]Getting Git version info
+2026-10-09T11:24:02.9068523Z Working directory is '/home/runner/work/hydracache/hydracache/observer'
+2026-10-09T11:24:02.9097581Z [command]/usr/bin/git version
+2026-10-09T11:24:02.9141457Z git version 2.55.0
+2026-10-09T11:24:02.9161482Z ##[endgroup]
+2026-10-09T11:24:02.9175183Z Temporarily overriding HOME='/home/runner/work/_temp/80a6b12b-e851-4b45-bb32-5a54d0420ed9' before making global git config changes
+2026-10-09T11:24:02.9176732Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:24:02.9180121Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache/observer
+2026-10-09T11:24:02.9216915Z ##[group]Initializing the repository
+2026-10-09T11:24:02.9219527Z [command]/usr/bin/git init /home/runner/work/hydracache/hydracache/observer
+2026-10-09T11:24:02.9262512Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T11:24:02.9263627Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T11:24:02.9264796Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T11:24:02.9265948Z hint: call:
+2026-10-09T11:24:02.9276226Z hint:
+2026-10-09T11:24:02.9276671Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T11:24:02.9277208Z hint:
+2026-10-09T11:24:02.9277713Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T11:24:02.9278557Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T11:24:02.9279233Z hint:
+2026-10-09T11:24:02.9279585Z hint: 	git branch -m <name>
+2026-10-09T11:24:02.9279958Z hint:
+2026-10-09T11:24:02.9280485Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T11:24:02.9281482Z Initialized empty Git repository in /home/runner/work/hydracache/hydracache/observer/.git/
+2026-10-09T11:24:02.9283266Z [command]/usr/bin/git remote add origin https://github.com/javaquasar/hydracache
+2026-10-09T11:24:02.9313643Z ##[endgroup]
+2026-10-09T11:24:02.9314328Z ##[group]Disabling automatic garbage collection
+2026-10-09T11:24:02.9318576Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T11:24:02.9352784Z ##[endgroup]
+2026-10-09T11:24:02.9353379Z ##[group]Setting up auth
+2026-10-09T11:24:02.9368679Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:24:02.9404057Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:24:02.9664249Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:24:02.9700642Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:24:02.9966886Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:24:03.0008322Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:24:03.0254147Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T11:24:03.0296921Z ##[endgroup]
+2026-10-09T11:24:03.0297537Z ##[group]Fetching the repository
+2026-10-09T11:24:03.0307078Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 62114be0f5da3218706e30d7424acfb5d0579d07
+2026-10-09T11:24:06.6703595Z From https://github.com/javaquasar/hydracache
+2026-10-09T11:24:06.6704259Z  * branch            62114be0f5da3218706e30d7424acfb5d0579d07 -> FETCH_HEAD
+2026-10-09T11:24:06.6709169Z ##[endgroup]
+2026-10-09T11:24:06.6709736Z ##[group]Determining the checkout info
+2026-10-09T11:24:06.6711474Z ##[endgroup]
+2026-10-09T11:24:06.6717903Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T11:24:06.6762367Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T11:24:06.6794371Z ##[group]Checking out the ref
+2026-10-09T11:24:06.6799789Z [command]/usr/bin/git checkout --progress --force 62114be0f5da3218706e30d7424acfb5d0579d07
+2026-10-09T11:24:07.1242670Z Note: switching to '62114be0f5da3218706e30d7424acfb5d0579d07'.
+2026-10-09T11:24:07.1243424Z 
+2026-10-09T11:24:07.1243890Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T11:24:07.1247252Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T11:24:07.1248719Z state without impacting any branches by switching back to a branch.
+2026-10-09T11:24:07.1249557Z 
+2026-10-09T11:24:07.1249986Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T11:24:07.1250934Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T11:24:07.1251475Z 
+2026-10-09T11:24:07.1251707Z   git switch -c <new-branch-name>
+2026-10-09T11:24:07.1252010Z 
+2026-10-09T11:24:07.1252189Z Or undo this operation with:
+2026-10-09T11:24:07.1252484Z 
+2026-10-09T11:24:07.1252633Z   git switch -
+2026-10-09T11:24:07.1252843Z 
+2026-10-09T11:24:07.1253214Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T11:24:07.1253920Z 
+2026-10-09T11:24:07.1254372Z HEAD is now at 62114be feat(perf): add read-only rented-host inventory without workload admission
+2026-10-09T11:24:07.1696160Z ##[endgroup]
+2026-10-09T11:24:07.1742023Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T11:24:07.1771511Z 62114be0f5da3218706e30d7424acfb5d0579d07
+2026-10-09T11:24:07.1786700Z ##[group]Removing auth
+2026-10-09T11:24:07.1788884Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:24:07.1829289Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:24:07.2063690Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:24:07.2090921Z http.https://github.com/.extraheader
+2026-10-09T11:24:07.2100474Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T11:24:07.2137421Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:24:07.2368562Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:24:07.2402236Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:24:07.2628322Z ##[endgroup]
+2026-10-09T11:24:07.2761440Z ##[group]Run rustup toolchain install 1.94.0 --profile minimal
+2026-10-09T11:24:07.2761899Z [36;1mrustup toolchain install 1.94.0 --profile minimal[0m
+2026-10-09T11:24:07.2823781Z shell: /usr/bin/bash -e {0}
+2026-10-09T11:24:07.2824038Z ##[endgroup]
+2026-10-09T11:24:07.3837609Z info: syncing channel updates for 1.94.0-x86_64-unknown-linux-gnu
+2026-10-09T11:24:07.6587791Z info: latest update on 2026-03-05 for version 1.94.0 (4a4ef493e 2026-03-02)
+2026-10-09T11:24:07.6588421Z info: downloading 3 components
+2026-10-09T11:24:14.8792127Z 
+2026-10-09T11:24:14.8865359Z   1.94.0-x86_64-unknown-linux-gnu installed - rustc 1.94.0 (4a4ef493e 2026-03-02)
+2026-10-09T11:24:14.8866124Z 
+2026-10-09T11:24:14.8955399Z ##[group]Run set -euo pipefail
+2026-10-09T11:24:14.8956165Z [36;1mset -euo pipefail[0m
+2026-10-09T11:24:14.8956654Z [36;1mtest "$(git rev-parse HEAD)" = "$GITHUB_SHA"[0m
+2026-10-09T11:24:14.8957244Z [36;1mtest -z "$(git status --porcelain=v1)"[0m
+2026-10-09T11:24:14.8957949Z [36;1mpython3 -m unittest scripts.perf.test_diagnostic_builder_074[0m
+2026-10-09T11:24:14.9050545Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T11:24:14.9051132Z ##[endgroup]
+2026-10-09T11:24:15.2940974Z .......
+2026-10-09T11:24:15.2941637Z ----------------------------------------------------------------------
+2026-10-09T11:24:15.2942211Z Ran 7 tests in 0.006s
+2026-10-09T11:24:15.2942444Z 
+2026-10-09T11:24:15.2942568Z OK
+2026-10-09T11:24:15.3085964Z ##[group]Run python3 tooling/scripts/perf/diagnostic_builder_074.py build observer tooling/docs/testing/performance/0.74/rental-pilot-draft build-bundle
+2026-10-09T11:24:15.3087089Z [36;1mpython3 tooling/scripts/perf/diagnostic_builder_074.py build observer tooling/docs/testing/performance/0.74/rental-pilot-draft build-bundle[0m
+2026-10-09T11:24:15.3149420Z shell: /usr/bin/bash -e {0}
+2026-10-09T11:24:15.3149672Z ##[endgroup]
+2026-10-09T11:27:53.9172395Z ##[group]Run actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+2026-10-09T11:27:53.9172854Z with:
+2026-10-09T11:27:53.9173278Z   name: diagnostic-unsigned-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1
+2026-10-09T11:27:53.9173769Z   path: build-bundle/**
+2026-10-09T11:27:53.9174013Z   if-no-files-found: error
+2026-10-09T11:27:53.9174243Z   retention-days: 7
+2026-10-09T11:27:53.9174447Z   overwrite: false
+2026-10-09T11:27:53.9174655Z   compression-level: 6
+2026-10-09T11:27:53.9174880Z   include-hidden-files: false
+2026-10-09T11:27:53.9175115Z ##[endgroup]
+2026-10-09T11:27:54.0852084Z With the provided path, there will be 14 files uploaded
+2026-10-09T11:27:54.0859253Z Artifact name is valid!
+2026-10-09T11:27:54.0859883Z Root directory input is valid!
+2026-10-09T11:27:54.4787079Z Beginning upload of artifact content to blob storage
+2026-10-09T11:27:56.2340607Z Uploaded bytes 8388608
+2026-10-09T11:27:56.3595337Z Uploaded bytes 9653311
+2026-10-09T11:27:56.4366484Z Finished uploading artifact content to blob storage!
+2026-10-09T11:27:56.4367985Z SHA256 digest of uploaded artifact zip is abc47a7156257ec1dca5e5a0299ae41d444cd01277e6dc6b574a340c8c5bed78
+2026-10-09T11:27:56.4369441Z Finalizing artifact upload
+2026-10-09T11:27:56.8904552Z Artifact diagnostic-unsigned-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1.zip successfully finalized. Artifact ID 11613755020
+2026-10-09T11:27:56.8907944Z Artifact diagnostic-unsigned-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1 has been successfully uploaded! Final size is 9653311 bytes. Artifact ID is 11613755020
+2026-10-09T11:27:56.8910690Z Artifact download URL: https://github.com/javaquasar/hydracache/actions/runs/37923423889/artifacts/11613755020
+2026-10-09T11:27:56.9102072Z Post job cleanup.
+2026-10-09T11:27:56.9957366Z [command]/usr/bin/git version
+2026-10-09T11:27:57.0006292Z git version 2.55.0
+2026-10-09T11:27:57.0052513Z Temporarily overriding HOME='/home/runner/work/_temp/8d441ace-eedd-4310-849e-d9d2fb0b242f' before making global git config changes
+2026-10-09T11:27:57.0054078Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:27:57.0058997Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache/observer
+2026-10-09T11:27:57.0100964Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:27:57.0138287Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:27:57.0403685Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:27:57.0445572Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:27:57.0725172Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:27:57.0801587Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:27:57.1243511Z Post job cleanup.
+2026-10-09T11:27:57.2097839Z [command]/usr/bin/git version
+2026-10-09T11:27:57.2140185Z git version 2.55.0
+2026-10-09T11:27:57.2184914Z Temporarily overriding HOME='/home/runner/work/_temp/217e36f5-4c68-4221-94b5-ca0d945f6b7b' before making global git config changes
+2026-10-09T11:27:57.2186772Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:27:57.2193897Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache/tooling
+2026-10-09T11:27:57.2239903Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:27:57.2278955Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:27:57.2550332Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:27:57.2591262Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:27:57.2866307Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:27:57.2903004Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:27:57.3357516Z Cleaning up orphan processes

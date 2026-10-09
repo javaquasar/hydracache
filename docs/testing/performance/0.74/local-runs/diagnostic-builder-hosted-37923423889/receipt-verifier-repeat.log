@@ -1,0 +1,11 @@
+
+running 1 test
+test tests::bounded_reader_accepts_exact_limit_and_refuses_unsafe_leaves ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+signature_verified=true contents_verified=true negative_guards_passed=true execution_authorized=false admission_allowed=false
+source_commit=62114be0f5da3218706e30d7424acfb5d0579d07 source_tree=a9f059d752f5497c8dc5f07fbee4db6b22a366f4
+binary_sha256=bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101 receipt_sha256=e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7
+f558c1517e6db49d78c993c7aefd6d4113ef746ca95019ad8d477481211ac765  /home/artur/.cache/hydracache-074-registration-tools/receipt-verifier-hosted-37923423889
+be4b95b10848924e6b8de3e32ce8603dee9bba663ac32b820bed9d2f236a789e  /home/artur/.cache/hydracache-074-manager-local-target/debug/libhydracache_long_run_supervisor_074.rlib

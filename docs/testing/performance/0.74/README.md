@@ -1963,3 +1963,18 @@ by an API-inventory test. A task-local alias to the existing Python 3.12.3 enabl
 a successful full repeat without test changes. The optional console gate reports
 SKIP (node not found); this is not browser proof. Qualification inputs remain
 unchanged; no cache performance measurement follows from these checks.
+
+The [protected hosted build/sign result](local-runs/diagnostic-builder-hosted-37923423889/manifest.json)
+now closes that collection step: run 37923423889 attempt 1 succeeded on exact
+tooling 33596da7 with separate hosted runners and two delegated reviewer approvals.
+Before signing approval, the original unsigned ZIP and actual contents were
+checked locally. The newly signed receipt then passed local Ed25519/content
+verification using the independently retained policy pin, including wrong-pin,
+ELF-mutation and signature-mutation refusal. A clean-source repeat rebuilt the
+read-only verifier and passed its bounded-reader test. The raw Cargo JSON,
+observations, four validate-only reports, job/review metadata and signature are
+retained; both original ZIPs and binary remain in the ignored local target packet.
+This is a trusted build-procedure attestation, not reproducible-build proof.
+No observer workload, host installation, live backend enrollment or qualification
+was run. Execution/admission remain false; exact backend/start binding, immutable
+install, fencing/watchdog/reconciliation and non-product loss gates remain open.

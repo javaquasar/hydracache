@@ -1,0 +1,6 @@
+
+running 1 test
+test tests::bounded_reader_accepts_exact_limit_and_refuses_unsafe_leaves ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

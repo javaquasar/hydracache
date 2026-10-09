@@ -4761,3 +4761,31 @@ calls python, while WSL only provided python3. A dedicated task-tool alias to th
 existing Python 3.12.3 allowed the unchanged full gate to pass. The optional console
 gate explicitly skipped without Node; successful Rust verification is not browser
 evidence. These operational details are retained, not hidden by the green repeat.
+
+### A signed build is still not permission to measure
+
+The [actual protected run](../testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/manifest.json)
+subsequently completed on reviewed tooling 33596da7. It compiled the frozen
+observer on one hosted runner and signed the checked result on another, with
+separate delegated approvals. Before the second approval, review compared the
+original ZIP digest, clean source/tree observations, exact compiler/command,
+locks, native Cargo JSON, ELF and four fixed configurations. The observer was
+called only with --validate: every report said fixture_started=false and
+admission_allowed=false. A partial network download was refused and retried
+without duplicating the workflow.
+
+After signing, a local read-only verifier checked Ed25519 against the public
+policy already retained during enrollment, not a policy chosen by the incoming
+bundle. It also checked the actual signed content. Wrong-pin, ELF-mutation and
+signature-mutation guards passed, including recomputing the changed receipt's
+digest so a signature failure could not be mistaken for a simple hash failure.
+A clean-source rebuild repeated the audit and its bounded-file-reader test.
+
+What this establishes is deliberately narrow: a receipt from the separately
+enrolled builder attests this new hosted artifact and its checked inputs. It is
+not independent-human review, mathematical compilation proof, reproducible-build
+evidence or an installation receipt. The older unsigned local binary was not
+retroactively signed. No cache workload or qualification ran, so these results
+provide no throughput or allocation claim. The next boundary still requires exact
+live backend/start binding, immutable installation, writer fencing, watchdog,
+durable failure and reconciliation/loss rehearsal before even a baseline pilot.

@@ -1,0 +1,492 @@
+﻿2026-10-09T11:31:58.6342396Z Current runner version: '2.337.0'
+2026-10-09T11:31:58.6367898Z ##[group]Runner Image Provisioner
+2026-10-09T11:31:58.6368799Z Hosted Compute Agent
+2026-10-09T11:31:58.6369455Z Version: 20261002.596
+2026-10-09T11:31:58.6370190Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T11:31:58.6370951Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T11:31:58.6371731Z Worker ID: {01ffef5b-5ba5-4a0a-bf1f-f5f91568872d}
+2026-10-09T11:31:58.6372522Z Region: eastus2
+2026-10-09T11:31:58.6373138Z Cloud: Azure
+2026-10-09T11:31:58.6373755Z ##[endgroup]
+2026-10-09T11:31:58.6375292Z ##[group]Operating System
+2026-10-09T11:31:58.6375956Z Ubuntu
+2026-10-09T11:31:58.6376641Z 24.04.5
+2026-10-09T11:31:58.6377629Z LTS
+2026-10-09T11:31:58.6378956Z ##[endgroup]
+2026-10-09T11:31:58.6379583Z ##[group]Runner Image
+2026-10-09T11:31:58.6380210Z Image: ubuntu-24.04
+2026-10-09T11:31:58.6380874Z Version: 20261004.327.1
+2026-10-09T11:31:58.6382198Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T11:31:58.6383875Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T11:31:58.6384928Z ##[endgroup]
+2026-10-09T11:31:58.6386186Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T11:31:58.6388728Z Actions: read
+2026-10-09T11:31:58.6389404Z Contents: read
+2026-10-09T11:31:58.6390054Z Metadata: read
+2026-10-09T11:31:58.6390696Z ##[endgroup]
+2026-10-09T11:31:58.6392835Z Secret source: Actions
+2026-10-09T11:31:58.6393927Z Cache mode: write
+2026-10-09T11:31:58.6394892Z Prepare workflow directory
+2026-10-09T11:31:58.6732421Z Prepare all required actions
+2026-10-09T11:31:58.6781604Z Getting action download info
+2026-10-09T11:31:58.9224979Z Download action repository 'actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-10-09T11:31:59.0271066Z Download action repository 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-09T11:31:59.2327868Z Download action repository 'actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f' (SHA:b7c566a772e6b6bfb58ed0dc250532a479d7789f)
+2026-10-09T11:31:59.4731957Z Complete job name: Protected separate builder signing boundary
+2026-10-09T11:31:59.5541774Z ##[group]Run actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+2026-10-09T11:31:59.5542853Z with:
+2026-10-09T11:31:59.5543339Z   ref: 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:31:59.5543950Z   persist-credentials: false
+2026-10-09T11:31:59.5544484Z   repository: javaquasar/hydracache
+2026-10-09T11:31:59.5548523Z   token: ***
+2026-10-09T11:31:59.5549052Z   ssh-strict: true
+2026-10-09T11:31:59.5549497Z   ssh-user: git
+2026-10-09T11:31:59.5549919Z   clean: true
+2026-10-09T11:31:59.5550374Z   sparse-checkout-cone-mode: true
+2026-10-09T11:31:59.5550914Z   fetch-depth: 1
+2026-10-09T11:31:59.5551353Z   fetch-tags: false
+2026-10-09T11:31:59.5551802Z   show-progress: true
+2026-10-09T11:31:59.5552253Z   lfs: false
+2026-10-09T11:31:59.5552688Z   submodules: false
+2026-10-09T11:31:59.5553139Z   set-safe-directory: true
+2026-10-09T11:31:59.5553643Z   allow-unsafe-pr-checkout: false
+2026-10-09T11:31:59.5554455Z ##[endgroup]
+2026-10-09T11:31:59.6640973Z Syncing repository: javaquasar/hydracache
+2026-10-09T11:31:59.6644148Z ##[group]Getting Git version info
+2026-10-09T11:31:59.6645505Z Working directory is '/home/runner/work/hydracache/hydracache'
+2026-10-09T11:31:59.6647686Z [command]/usr/bin/git version
+2026-10-09T11:31:59.6769629Z git version 2.55.0
+2026-10-09T11:31:59.6805950Z ##[endgroup]
+2026-10-09T11:31:59.6825286Z Temporarily overriding HOME='/home/runner/work/_temp/7ba8e8c9-c5ca-4bb5-a139-8ad166bd374d' before making global git config changes
+2026-10-09T11:31:59.6828186Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:31:59.6833959Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache
+2026-10-09T11:31:59.6898495Z Deleting the contents of '/home/runner/work/hydracache/hydracache'
+2026-10-09T11:31:59.6904527Z ##[group]Initializing the repository
+2026-10-09T11:31:59.6911027Z [command]/usr/bin/git init /home/runner/work/hydracache/hydracache
+2026-10-09T11:31:59.7034109Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T11:31:59.7038503Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T11:31:59.7040516Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T11:31:59.7041901Z hint: call:
+2026-10-09T11:31:59.7042660Z hint:
+2026-10-09T11:31:59.7043734Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T11:31:59.7045005Z hint:
+2026-10-09T11:31:59.7046058Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T11:31:59.7047981Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T11:31:59.7049313Z hint:
+2026-10-09T11:31:59.7050085Z hint: 	git branch -m <name>
+2026-10-09T11:31:59.7050983Z hint:
+2026-10-09T11:31:59.7052167Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T11:31:59.7054458Z Initialized empty Git repository in /home/runner/work/hydracache/hydracache/.git/
+2026-10-09T11:31:59.7057800Z [command]/usr/bin/git remote add origin https://github.com/javaquasar/hydracache
+2026-10-09T11:31:59.7127392Z ##[endgroup]
+2026-10-09T11:31:59.7131748Z ##[group]Disabling automatic garbage collection
+2026-10-09T11:31:59.7134043Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T11:31:59.7229709Z ##[endgroup]
+2026-10-09T11:31:59.7231607Z ##[group]Setting up auth
+2026-10-09T11:31:59.7232723Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:31:59.7281447Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:31:59.7732455Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:31:59.7769994Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:31:59.7995748Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:31:59.8034048Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:31:59.8260575Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T11:31:59.8306314Z ##[endgroup]
+2026-10-09T11:31:59.8308006Z ##[group]Fetching the repository
+2026-10-09T11:31:59.8317888Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:32:01.6079131Z From https://github.com/javaquasar/hydracache
+2026-10-09T11:32:01.6080760Z  * branch            33596da76b5f31fdd27eea51ec219aefe805180c -> FETCH_HEAD
+2026-10-09T11:32:01.6084869Z ##[endgroup]
+2026-10-09T11:32:01.6086586Z ##[group]Determining the checkout info
+2026-10-09T11:32:01.6088866Z ##[endgroup]
+2026-10-09T11:32:01.6093180Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T11:32:01.6148481Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T11:32:01.6183332Z ##[group]Checking out the ref
+2026-10-09T11:32:01.6188411Z [command]/usr/bin/git checkout --progress --force 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:32:02.1487487Z Note: switching to '33596da76b5f31fdd27eea51ec219aefe805180c'.
+2026-10-09T11:32:02.1488536Z 
+2026-10-09T11:32:02.1489194Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T11:32:02.1490607Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T11:32:02.1492500Z state without impacting any branches by switching back to a branch.
+2026-10-09T11:32:02.1493278Z 
+2026-10-09T11:32:02.1493922Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T11:32:02.1494749Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T11:32:02.1495157Z 
+2026-10-09T11:32:02.1495356Z   git switch -c <new-branch-name>
+2026-10-09T11:32:02.1495661Z 
+2026-10-09T11:32:02.1495857Z Or undo this operation with:
+2026-10-09T11:32:02.1496125Z 
+2026-10-09T11:32:02.1496287Z   git switch -
+2026-10-09T11:32:02.1496563Z 
+2026-10-09T11:32:02.1496912Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T11:32:02.1497921Z 
+2026-10-09T11:32:02.1498488Z HEAD is now at 33596da ci(0.74): close live builder and observer workflow inventory
+2026-10-09T11:32:02.1941393Z ##[endgroup]
+2026-10-09T11:32:02.1990418Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T11:32:02.2019302Z 33596da76b5f31fdd27eea51ec219aefe805180c
+2026-10-09T11:32:02.2029133Z ##[group]Removing auth
+2026-10-09T11:32:02.2033088Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:32:02.2068635Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:32:02.2304960Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:32:02.2335613Z http.https://github.com/.extraheader
+2026-10-09T11:32:02.2344338Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T11:32:02.2382493Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:32:02.2616230Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:32:02.2650090Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:32:02.2880499Z ##[endgroup]
+2026-10-09T11:32:02.3099821Z ##[group]Run set -euo pipefail
+2026-10-09T11:32:02.3100348Z [36;1mset -euo pipefail[0m
+2026-10-09T11:32:02.3101116Z [36;1mgh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074 > "$RUNNER_TEMP/environment.json"[0m
+2026-10-09T11:32:02.3102411Z [36;1mgh api repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/deployment-branch-policies > "$RUNNER_TEMP/branches.json"[0m
+2026-10-09T11:32:02.3103701Z [36;1mpython3 scripts/perf/diagnostic_builder_074.py check-protection "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/branches.json"[0m
+2026-10-09T11:32:02.3383361Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T11:32:02.3384020Z env:
+2026-10-09T11:32:02.3388526Z   GH_TOKEN: ***
+2026-10-09T11:32:02.3388901Z ##[endgroup]
+2026-10-09T11:32:03.3381901Z ##[group]Run python3 scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/builder-policy.json"
+2026-10-09T11:32:03.3382692Z [36;1mpython3 scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/builder-policy.json"[0m
+2026-10-09T11:32:03.3448534Z shell: /usr/bin/bash -e {0}
+2026-10-09T11:32:03.3448805Z env:
+2026-10-09T11:32:03.3449189Z   BUILDER_PUBLIC_KEY_HEX: 39215088b0102dffb987b937efa9f49a6c5c7704192fa1f16b4e19ccad12c3ba
+2026-10-09T11:32:03.3449840Z   CONTROLLER_PUBLIC_KEY_HEX: c56f89595c45d0656225f1b8915babed046d278dc9ce1908c6bcb6e9c93e2fda
+2026-10-09T11:32:03.3450455Z   BUILDER_POLICY_SHA256: dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22
+2026-10-09T11:32:03.3450895Z ##[endgroup]
+2026-10-09T11:32:03.3980464Z ##[group]Run set -euo pipefail
+2026-10-09T11:32:03.3980812Z [36;1mset -euo pipefail[0m
+2026-10-09T11:32:03.3981114Z [36;1mtest "$(git rev-parse HEAD)" = "$GITHUB_SHA"[0m
+2026-10-09T11:32:03.3981768Z [36;1mtest -z "$(git status --porcelain=v1)"[0m
+2026-10-09T11:32:03.3982157Z [36;1mrustup toolchain install 1.94.0 --profile minimal[0m
+2026-10-09T11:32:03.3982763Z [36;1mcargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts --lib builder[0m
+2026-10-09T11:32:03.3983497Z [36;1mcargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked --bin diagnostic_builder[0m
+2026-10-09T11:32:03.4048604Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T11:32:03.4048974Z ##[endgroup]
+2026-10-09T11:32:03.5611101Z info: syncing channel updates for 1.94.0-x86_64-unknown-linux-gnu
+2026-10-09T11:32:03.7325409Z info: latest update on 2026-03-05 for version 1.94.0 (4a4ef493e 2026-03-02)
+2026-10-09T11:32:03.7326351Z info: downloading 3 components
+2026-10-09T11:32:11.0659785Z 
+2026-10-09T11:32:11.0736624Z   1.94.0-x86_64-unknown-linux-gnu installed - rustc 1.94.0 (4a4ef493e 2026-03-02)
+2026-10-09T11:32:11.0737584Z 
+2026-10-09T11:32:11.1338613Z     Updating crates.io index
+2026-10-09T11:32:12.2004657Z  Downloading crates ...
+2026-10-09T11:32:12.3551693Z   Downloaded block-buffer v0.12.1
+2026-10-09T11:32:12.3569296Z   Downloaded block-buffer v0.10.4
+2026-10-09T11:32:12.3582718Z   Downloaded async-broadcast v0.7.2
+2026-10-09T11:32:12.3607345Z   Downloaded zstd-safe v7.2.4
+2026-10-09T11:32:12.3625335Z   Downloaded base64ct v1.8.3
+2026-10-09T11:32:12.3655932Z   Downloaded zmij v1.0.21
+2026-10-09T11:32:12.3680091Z   Downloaded zstd v0.13.3
+2026-10-09T11:32:12.3716699Z   Downloaded cfg-if v1.0.4
+2026-10-09T11:32:12.3735120Z   Downloaded toml v1.1.2+spec-1.1.0
+2026-10-09T11:32:12.3784653Z   Downloaded zvariant_derive v5.15.0
+2026-10-09T11:32:12.3803448Z   Downloaded zvariant_utils v4.2.0
+2026-10-09T11:32:12.3840327Z   Downloaded zeroize v1.9.0
+2026-10-09T11:32:12.3860167Z   Downloaded zbus_macros v5.19.0
+2026-10-09T11:32:12.3878937Z   Downloaded zbus_names v4.3.4
+2026-10-09T11:32:12.3907946Z   Downloaded tempfile v3.27.0
+2026-10-09T11:32:12.3936647Z   Downloaded spki v0.7.3
+2026-10-09T11:32:12.3963653Z   Downloaded zbus v5.19.0
+2026-10-09T11:32:12.4092326Z   Downloaded zvariant v5.15.0
+2026-10-09T11:32:12.4171156Z   Downloaded toml_datetime v1.1.1+spec-1.1.0
+2026-10-09T11:32:12.4193269Z   Downloaded serde_repr v0.1.20
+2026-10-09T11:32:12.4230448Z   Downloaded futures-core v0.3.32
+2026-10-09T11:32:12.4253724Z   Downloaded crypto-common v0.1.7
+2026-10-09T11:32:12.4270540Z   Downloaded enumflags2 v0.7.12
+2026-10-09T11:32:12.4296670Z   Downloaded pkg-config v0.3.33
+2026-10-09T11:32:12.4323401Z   Downloaded pkcs8 v0.10.2
+2026-10-09T11:32:12.4355919Z   Downloaded toml_edit v0.25.12+spec-1.1.0
+2026-10-09T11:32:12.4398712Z   Downloaded shlex v2.0.1
+2026-10-09T11:32:12.4415598Z   Downloaded find-msvc-tools v0.1.9
+2026-10-09T11:32:12.4432932Z   Downloaded ed25519 v2.2.3
+2026-10-09T11:32:12.4455144Z   Downloaded thiserror-impl v2.0.18
+2026-10-09T11:32:12.4473558Z   Downloaded tracing-attributes v0.1.31
+2026-10-09T11:32:12.4501950Z   Downloaded sha2 v0.10.9
+2026-10-09T11:32:12.4532947Z   Downloaded thiserror v2.0.18
+2026-10-09T11:32:12.4601637Z   Downloaded signal-hook-registry v1.4.8
+2026-10-09T11:32:12.4614879Z   Downloaded crossbeam-utils v0.8.21
+2026-10-09T11:32:12.4643280Z   Downloaded sha2 v0.11.0
+2026-10-09T11:32:12.4684229Z   Downloaded unicode-ident v1.0.24
+2026-10-09T11:32:12.4713861Z   Downloaded serde_derive v1.0.228
+2026-10-09T11:32:12.4748115Z   Downloaded tracing-core v0.1.36
+2026-10-09T11:32:12.4775528Z   Downloaded semver v1.0.28
+2026-10-09T11:32:12.4800536Z   Downloaded serde_core v1.0.228
+2026-10-09T11:32:12.4831038Z   Downloaded const-oid v0.10.2
+2026-10-09T11:32:12.4857663Z   Downloaded tar v0.4.46
+2026-10-09T11:32:12.4889906Z   Downloaded typenum v1.20.1
+2026-10-09T11:32:12.4926542Z   Downloaded indexmap v2.14.0
+2026-10-09T11:32:12.4973020Z   Downloaded hashbrown v0.17.1
+2026-10-09T11:32:12.5028599Z   Downloaded der v0.7.10
+2026-10-09T11:32:12.5084226Z   Downloaded serde_json v1.0.150
+2026-10-09T11:32:12.5159862Z   Downloaded winnow v1.0.3
+2026-10-09T11:32:12.5259148Z   Downloaded serde v1.0.228
+2026-10-09T11:32:12.5295460Z   Downloaded mio v1.2.1
+2026-10-09T11:32:12.5359249Z   Downloaded memchr v2.8.2
+2026-10-09T11:32:12.5417769Z   Downloaded syn v3.0.6
+2026-10-09T11:32:12.5527230Z   Downloaded curve25519-dalek v4.1.3
+2026-10-09T11:32:12.5611390Z   Downloaded ed25519-dalek v2.2.0
+2026-10-09T11:32:12.5644113Z   Downloaded syn v2.0.118
+2026-10-09T11:32:12.5750531Z   Downloaded socket2 v0.6.4
+2026-10-09T11:32:12.5769865Z   Downloaded zstd-sys v2.0.16+zstd.1.5.7
+2026-10-09T11:32:12.5933157Z   Downloaded proc-macro2 v1.0.106
+2026-10-09T11:32:12.5963872Z   Downloaded tracing v0.1.44
+2026-10-09T11:32:12.6121540Z   Downloaded rustix v1.1.4
+2026-10-09T11:32:12.6413141Z   Downloaded getrandom v0.4.3
+2026-10-09T11:32:12.6452695Z   Downloaded getrandom v0.2.17
+2026-10-09T11:32:12.6483360Z   Downloaded quote v1.0.46
+2026-10-09T11:32:12.6512830Z   Downloaded once_cell v1.21.4
+2026-10-09T11:32:12.6539074Z   Downloaded hybrid-array v0.4.13
+2026-10-09T11:32:12.6562542Z   Downloaded futures-lite v2.6.1
+2026-10-09T11:32:12.6580177Z   Downloaded const-oid v0.9.6
+2026-10-09T11:32:12.6600774Z   Downloaded rand_core v0.6.4
+2026-10-09T11:32:12.6615694Z   Downloaded event-listener v5.4.1
+2026-10-09T11:32:12.6636366Z   Downloaded digest v0.11.3
+2026-10-09T11:32:12.6661440Z   Downloaded fastrand v2.4.1
+2026-10-09T11:32:12.6675930Z   Downloaded equivalent v1.0.2
+2026-10-09T11:32:12.6687109Z   Downloaded concurrent-queue v2.5.0
+2026-10-09T11:32:12.6704553Z   Downloaded pin-project-lite v0.2.17
+2026-10-09T11:32:12.6765935Z   Downloaded ordered-stream v0.2.0
+2026-10-09T11:32:12.6778489Z   Downloaded jobserver v0.1.34
+2026-10-09T11:32:12.6799371Z   Downloaded filetime v0.2.29
+2026-10-09T11:32:12.6816575Z   Downloaded digest v0.10.7
+2026-10-09T11:32:12.6835412Z   Downloaded errno v0.3.14
+2026-10-09T11:32:12.6851276Z   Downloaded curve25519-dalek-derive v0.1.1
+2026-10-09T11:32:12.6861687Z   Downloaded cpufeatures v0.3.0
+2026-10-09T11:32:12.6876471Z   Downloaded version_check v0.9.5
+2026-10-09T11:32:12.6892850Z   Downloaded tokio v1.52.3
+2026-10-09T11:32:12.7348363Z   Downloaded subtle v2.6.1
+2026-10-09T11:32:12.7360781Z   Downloaded serde_spanned v1.1.1
+2026-10-09T11:32:12.7372997Z   Downloaded rustc_version v0.4.1
+2026-10-09T11:32:12.7386839Z   Downloaded proc-macro-crate v3.5.0
+2026-10-09T11:32:12.7401363Z   Downloaded libc v0.2.186
+2026-10-09T11:32:12.7805187Z   Downloaded parking v2.2.1
+2026-10-09T11:32:12.7816688Z   Downloaded hex v0.4.3
+2026-10-09T11:32:12.7833681Z   Downloaded futures-io v0.3.32
+2026-10-09T11:32:12.7843057Z   Downloaded enumflags2_derive v0.7.12
+2026-10-09T11:32:12.7851850Z   Downloaded xattr v1.6.1
+2026-10-09T11:32:12.7871490Z   Downloaded itoa v1.0.18
+2026-10-09T11:32:12.7886441Z   Downloaded endi v1.1.1
+2026-10-09T11:32:12.7898553Z   Downloaded cpufeatures v0.2.17
+2026-10-09T11:32:12.7913091Z   Downloaded generic-array v0.14.7
+2026-10-09T11:32:12.7927327Z   Downloaded fs2 v0.4.3
+2026-10-09T11:32:12.7939000Z   Downloaded event-listener-strategy v0.5.4
+2026-10-09T11:32:12.7950855Z   Downloaded crypto-common v0.2.2
+2026-10-09T11:32:12.7963360Z   Downloaded uuid v1.23.4
+2026-10-09T11:32:12.7992720Z   Downloaded toml_writer v1.1.1+spec-1.1.0
+2026-10-09T11:32:12.8006704Z   Downloaded toml_parser v1.1.2+spec-1.1.0
+2026-10-09T11:32:12.8030243Z   Downloaded signature v2.2.0
+2026-10-09T11:32:12.8045407Z   Downloaded cc v1.2.65
+2026-10-09T11:32:12.8075135Z   Downloaded bytes v1.12.0
+2026-10-09T11:32:12.8110635Z   Downloaded bitflags v2.13.0
+2026-10-09T11:32:12.8156528Z   Downloaded zcheapstr v1.1.0
+2026-10-09T11:32:12.8174744Z   Downloaded async-trait v0.1.89
+2026-10-09T11:32:12.8213067Z   Downloaded async-recursion v1.2.0
+2026-10-09T11:32:12.8363451Z   Downloaded linux-raw-sys v0.12.1
+2026-10-09T11:32:12.9403177Z    Compiling proc-macro2 v1.0.106
+2026-10-09T11:32:12.9404526Z    Compiling unicode-ident v1.0.24
+2026-10-09T11:32:12.9405153Z    Compiling quote v1.0.46
+2026-10-09T11:32:12.9405651Z    Compiling libc v0.2.186
+2026-10-09T11:32:13.0133238Z    Compiling serde v1.0.228
+2026-10-09T11:32:13.1361847Z    Compiling serde_core v1.0.228
+2026-10-09T11:32:13.2127979Z    Compiling winnow v1.0.3
+2026-10-09T11:32:14.1668339Z    Compiling syn v2.0.118
+2026-10-09T11:32:14.2638186Z    Compiling typenum v1.20.1
+2026-10-09T11:32:15.1928248Z    Compiling hashbrown v0.17.1
+2026-10-09T11:32:15.7708153Z    Compiling equivalent v1.0.2
+2026-10-09T11:32:15.8063162Z    Compiling indexmap v2.14.0
+2026-10-09T11:32:15.9519997Z    Compiling toml_parser v1.1.2+spec-1.1.0
+2026-10-09T11:32:16.4718047Z    Compiling syn v3.0.6
+2026-10-09T11:32:16.5739169Z    Compiling toml_datetime v1.1.1+spec-1.1.0
+2026-10-09T11:32:16.7518104Z    Compiling version_check v0.9.5
+2026-10-09T11:32:16.8348021Z    Compiling toml_edit v0.25.12+spec-1.1.0
+2026-10-09T11:32:17.0018359Z    Compiling generic-array v0.14.7
+2026-10-09T11:32:17.0958174Z    Compiling cfg-if v1.0.4
+2026-10-09T11:32:17.1281388Z    Compiling pin-project-lite v0.2.17
+2026-10-09T11:32:17.1938412Z    Compiling jobserver v0.1.34
+2026-10-09T11:32:17.4808774Z    Compiling proc-macro-crate v3.5.0
+2026-10-09T11:32:17.9198609Z    Compiling find-msvc-tools v0.1.9
+2026-10-09T11:32:17.9267932Z    Compiling crossbeam-utils v0.8.21
+2026-10-09T11:32:18.0739820Z    Compiling shlex v2.0.1
+2026-10-09T11:32:18.1909309Z    Compiling cc v1.2.65
+2026-10-09T11:32:18.7098678Z    Compiling rustix v1.1.4
+2026-10-09T11:32:18.9338284Z    Compiling pkg-config v0.3.33
+2026-10-09T11:32:19.1438097Z    Compiling serde_derive v1.0.228
+2026-10-09T11:32:19.4148439Z    Compiling enumflags2_derive v0.7.12
+2026-10-09T11:32:19.7688090Z    Compiling endi v1.1.1
+2026-10-09T11:32:19.8378320Z    Compiling zstd-sys v2.0.16+zstd.1.5.7
+2026-10-09T11:32:20.0668576Z    Compiling linux-raw-sys v0.12.1
+2026-10-09T11:32:20.2168487Z    Compiling semver v1.0.28
+2026-10-09T11:32:20.4668437Z    Compiling parking v2.2.1
+2026-10-09T11:32:20.5718133Z    Compiling bitflags v2.13.0
+2026-10-09T11:32:20.7914738Z    Compiling rustc_version v0.4.1
+2026-10-09T11:32:21.0228654Z    Compiling concurrent-queue v2.5.0
+2026-10-09T11:32:21.6434881Z    Compiling crypto-common v0.1.7
+2026-10-09T11:32:21.7029016Z    Compiling block-buffer v0.10.4
+2026-10-09T11:32:21.7788118Z    Compiling hybrid-array v0.4.13
+2026-10-09T11:32:22.5908058Z    Compiling zvariant_utils v4.2.0
+2026-10-09T11:32:22.8328296Z    Compiling zcheapstr v1.1.0
+2026-10-09T11:32:22.9548488Z    Compiling enumflags2 v0.7.12
+2026-10-09T11:32:23.9520606Z    Compiling zvariant_derive v5.15.0
+2026-10-09T11:32:24.1953553Z    Compiling once_cell v1.21.4
+2026-10-09T11:32:24.3388535Z    Compiling futures-core v0.3.32
+2026-10-09T11:32:24.4258495Z    Compiling zvariant v5.15.0
+2026-10-09T11:32:25.4363821Z    Compiling digest v0.10.7
+2026-10-09T11:32:25.5720366Z    Compiling event-listener v5.4.1
+2026-10-09T11:32:25.7533747Z    Compiling curve25519-dalek v4.1.3
+2026-10-09T11:32:27.0803892Z    Compiling errno v0.3.14
+2026-10-09T11:32:27.1607984Z    Compiling cpufeatures v0.2.17
+2026-10-09T11:32:27.2023898Z    Compiling fastrand v2.4.1
+2026-10-09T11:32:27.2558251Z    Compiling zstd-safe v7.2.4
+2026-10-09T11:32:27.3458425Z    Compiling zmij v1.0.21
+2026-10-09T11:32:27.3738359Z    Compiling signal-hook-registry v1.4.8
+2026-10-09T11:32:27.6128217Z    Compiling zbus_names v4.3.4
+2026-10-09T11:32:28.3108192Z    Compiling event-listener-strategy v0.5.4
+2026-10-09T11:32:28.3758620Z    Compiling tracing-core v0.1.36
+2026-10-09T11:32:28.7180910Z    Compiling block-buffer v0.12.1
+2026-10-09T11:32:28.8444125Z    Compiling crypto-common v0.2.2
+2026-10-09T11:32:29.0264321Z    Compiling tracing-attributes v0.1.31
+2026-10-09T11:32:29.9128131Z    Compiling curve25519-dalek-derive v0.1.1
+2026-10-09T11:32:30.0738300Z    Compiling socket2 v0.6.4
+2026-10-09T11:32:30.3424843Z    Compiling mio v1.2.1
+2026-10-09T11:32:30.3549104Z    Compiling subtle v2.6.1
+2026-10-09T11:32:30.4423515Z    Compiling serde_json v1.0.150
+2026-10-09T11:32:30.5408143Z    Compiling const-oid v0.10.2
+2026-10-09T11:32:30.5698206Z    Compiling futures-io v0.3.32
+2026-10-09T11:32:30.6667978Z    Compiling bytes v1.12.0
+2026-10-09T11:32:30.6888975Z    Compiling thiserror v2.0.18
+2026-10-09T11:32:30.8198979Z    Compiling zeroize v1.9.0
+2026-10-09T11:32:30.8808734Z    Compiling signature v2.2.0
+2026-10-09T11:32:30.9500243Z    Compiling ed25519 v2.2.3
+2026-10-09T11:32:31.1128559Z    Compiling digest v0.11.3
+2026-10-09T11:32:31.2208005Z    Compiling tokio v1.52.3
+2026-10-09T11:32:31.3388059Z    Compiling futures-lite v2.6.1
+2026-10-09T11:32:32.0610188Z    Compiling tracing v0.1.44
+2026-10-09T11:32:32.2629008Z    Compiling async-broadcast v0.7.2
+2026-10-09T11:32:32.4267966Z    Compiling zbus_macros v5.19.0
+2026-10-09T11:32:33.2188178Z    Compiling sha2 v0.10.9
+2026-10-09T11:32:33.5538159Z    Compiling ordered-stream v0.2.0
+2026-10-09T11:32:33.8298095Z    Compiling xattr v1.6.1
+2026-10-09T11:32:34.1160790Z    Compiling async-recursion v1.2.0
+2026-10-09T11:32:34.5108229Z    Compiling serde_repr v0.1.20
+2026-10-09T11:32:34.7138386Z    Compiling thiserror-impl v2.0.18
+2026-10-09T11:32:34.8075492Z    Compiling async-trait v0.1.89
+2026-10-09T11:32:35.5508124Z    Compiling filetime v0.2.29
+2026-10-09T11:32:35.7654939Z    Compiling serde_spanned v1.1.1
+2026-10-09T11:32:35.8278258Z    Compiling uuid v1.23.4
+2026-10-09T11:32:36.1778095Z    Compiling itoa v1.0.18
+2026-10-09T11:32:36.2958563Z    Compiling toml_writer v1.1.1+spec-1.1.0
+2026-10-09T11:32:36.4418310Z    Compiling memchr v2.8.2
+2026-10-09T11:32:36.6948184Z    Compiling cpufeatures v0.3.0
+2026-10-09T11:32:36.7279758Z    Compiling hex v0.4.3
+2026-10-09T11:32:37.1690991Z    Compiling zbus v5.19.0
+2026-10-09T11:32:37.4395345Z    Compiling sha2 v0.11.0
+2026-10-09T11:32:37.8560486Z    Compiling toml v1.1.2+spec-1.1.0
+2026-10-09T11:32:38.2817952Z    Compiling zstd v0.13.3
+2026-10-09T11:32:38.4586197Z    Compiling tar v0.4.46
+2026-10-09T11:32:38.5228123Z    Compiling ed25519-dalek v2.2.0
+2026-10-09T11:32:38.7508316Z    Compiling fs2 v0.4.3
+2026-10-09T11:32:38.8398576Z    Compiling getrandom v0.4.3
+2026-10-09T11:32:39.0958830Z    Compiling tempfile v3.27.0
+2026-10-09T11:32:42.4172983Z    Compiling hydracache-long-run-supervisor-074 v0.0.0 (/home/runner/work/hydracache/hydracache/tools/long-run-supervisor-074)
+2026-10-09T11:32:58.0258732Z     Finished `test` profile [unoptimized + debuginfo] target(s) in 46.94s
+2026-10-09T11:32:58.1124794Z      Running unittests src/lib.rs (target/debug/deps/hydracache_long_run_supervisor_074-de2bfcc5f904c79b)
+2026-10-09T11:32:58.1148976Z 
+2026-10-09T11:32:58.1149258Z running 1 test
+2026-10-09T11:32:58.1176333Z test diagnostic_builder::linux::tests::builder_cli_refuses_unprotected_key_files_and_existing_outputs ... ok
+2026-10-09T11:32:58.1176824Z 
+2026-10-09T11:32:58.1177389Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 79 filtered out; finished in 0.00s
+2026-10-09T11:32:58.1177771Z 
+2026-10-09T11:32:58.1178139Z      Running tests/diagnostic_artifacts.rs (target/debug/deps/diagnostic_artifacts-55c5e7491790c879)
+2026-10-09T11:32:58.1203568Z 
+2026-10-09T11:32:58.1203757Z running 4 tests
+2026-10-09T11:32:58.1257764Z test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+2026-10-09T11:32:58.1336170Z test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+2026-10-09T11:32:58.1898962Z test builder_signing_checks_observation_and_contents_before_signing ... ok
+2026-10-09T11:32:58.1998566Z test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... ok
+2026-10-09T11:32:58.1999239Z 
+2026-10-09T11:32:58.1999767Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.08s
+2026-10-09T11:32:58.2000388Z 
+2026-10-09T11:32:58.4055280Z    Compiling rustix v1.1.4
+2026-10-09T11:32:58.4092697Z    Compiling fastrand v2.4.1
+2026-10-09T11:32:58.4980967Z    Compiling futures-lite v2.6.1
+2026-10-09T11:33:00.4129893Z    Compiling xattr v1.6.1
+2026-10-09T11:33:00.4130512Z    Compiling zbus v5.19.0
+2026-10-09T11:33:00.5741991Z    Compiling tar v0.4.46
+2026-10-09T11:33:04.9527747Z    Compiling hydracache-long-run-supervisor-074 v0.0.0 (/home/runner/work/hydracache/hydracache/tools/long-run-supervisor-074)
+2026-10-09T11:33:16.9548232Z     Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.73s
+2026-10-09T11:33:16.9826434Z ##[group]Run actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+2026-10-09T11:33:16.9826881Z with:
+2026-10-09T11:33:16.9827635Z   name: diagnostic-unsigned-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1
+2026-10-09T11:33:16.9828134Z   path: build-bundle
+2026-10-09T11:33:16.9828369Z   merge-multiple: false
+2026-10-09T11:33:16.9828608Z   repository: javaquasar/hydracache
+2026-10-09T11:33:16.9828872Z   run-id: 37923423889
+2026-10-09T11:33:16.9829084Z   skip-decompress: false
+2026-10-09T11:33:16.9829307Z   digest-mismatch: error
+2026-10-09T11:33:16.9829523Z ##[endgroup]
+2026-10-09T11:33:17.1221354Z Downloading single artifact
+2026-10-09T11:33:17.2515777Z Preparing to download the following artifacts:
+2026-10-09T11:33:17.2517398Z - diagnostic-unsigned-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1 (ID: 11613755020, Size: 9653311, Expected Digest: sha256:abc47a7156257ec1dca5e5a0299ae41d444cd01277e6dc6b574a340c8c5bed78)
+2026-10-09T11:33:17.4452074Z Redirecting to blob download url: https://productionresultssa6.blob.core.windows.net/actions-results/a56fc41f-ebfb-4801-9b82-ea393626cf59/workflow-job-run-3d4a154d-499e-5df5-814d-5e8d90ee01dc/artifacts/b99a72519b18de4cce5ff15c525041379ff2587a7997a1e80c9613bc0a27b76a.zip
+2026-10-09T11:33:17.4455476Z Starting download of artifact to: /home/runner/work/hydracache/hydracache/build-bundle
+2026-10-09T11:33:17.5343807Z (node:5539) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-09T11:33:17.5345587Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T11:33:17.8163963Z SHA256 digest of downloaded artifact is abc47a7156257ec1dca5e5a0299ae41d444cd01277e6dc6b574a340c8c5bed78
+2026-10-09T11:33:17.8165037Z Artifact download completed successfully.
+2026-10-09T11:33:17.8165645Z Total of 1 artifact(s) downloaded
+2026-10-09T11:33:17.8171314Z Download artifact has finished successfully
+2026-10-09T11:33:17.8292819Z ##[group]Run set -euo pipefail
+2026-10-09T11:33:17.8293163Z [36;1mset -euo pipefail[0m
+2026-10-09T11:33:17.8293419Z [36;1mumask 077[0m
+2026-10-09T11:33:17.8293770Z [36;1mprivate=$(mktemp -d "$RUNNER_TEMP/diagnostic-builder-074.XXXXXXXX")[0m
+2026-10-09T11:33:17.8294180Z [36;1mkey="$private/key.hex"[0m
+2026-10-09T11:33:17.8294452Z [36;1mtrap 'rm -f -- "$key"' EXIT[0m
+2026-10-09T11:33:17.8294748Z [36;1mtest -n "$BUILDER_SIGNING_KEY_HEX"[0m
+2026-10-09T11:33:17.8295086Z [36;1mprintf '%s\n' "$BUILDER_SIGNING_KEY_HEX" > "$key"[0m
+2026-10-09T11:33:17.8295423Z [36;1munset BUILDER_SIGNING_KEY_HEX[0m
+2026-10-09T11:33:17.8295702Z [36;1mmkdir -m 0700 signed-build[0m
+2026-10-09T11:33:17.8295992Z [36;1mtarget/debug/diagnostic_builder sign \[0m
+2026-10-09T11:33:17.8296402Z [36;1m  "$RUNNER_TEMP/builder-policy.json" "$BUILDER_POLICY_SHA256" \[0m
+2026-10-09T11:33:17.8296812Z [36;1m  "$CONTROLLER_PUBLIC_KEY_HEX" "$key" \[0m
+2026-10-09T11:33:17.8297549Z [36;1m  "$PWD/build-bundle/observation.json" "$PWD/build-bundle" \[0m
+2026-10-09T11:33:17.8297968Z [36;1m  "$PWD/signed-build/build-receipt-v1.json"[0m
+2026-10-09T11:33:17.8298418Z [36;1mcp "$RUNNER_TEMP/builder-policy.json" signed-build/builder-policy.json[0m
+2026-10-09T11:33:17.8299005Z [36;1msha256sum signed-build/build-receipt-v1.json > signed-build/build-receipt.sha256[0m
+2026-10-09T11:33:17.8361673Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T11:33:17.8362022Z env:
+2026-10-09T11:33:17.8362545Z   BUILDER_SIGNING_KEY_HEX: ***
+2026-10-09T11:33:17.8363011Z   CONTROLLER_PUBLIC_KEY_HEX: c56f89595c45d0656225f1b8915babed046d278dc9ce1908c6bcb6e9c93e2fda
+2026-10-09T11:33:17.8363632Z   BUILDER_POLICY_SHA256: dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22
+2026-10-09T11:33:17.8364075Z ##[endgroup]
+2026-10-09T11:33:19.3821106Z Diagnostic build receipt created; installation/execution/admission not authorized.
+2026-10-09T11:33:19.3937666Z ##[group]Run actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+2026-10-09T11:33:19.3938107Z with:
+2026-10-09T11:33:19.3938529Z   name: diagnostic-signed-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1
+2026-10-09T11:33:19.3939015Z   path: signed-build/**
+2026-10-09T11:33:19.3939255Z   if-no-files-found: error
+2026-10-09T11:33:19.3939489Z   retention-days: 30
+2026-10-09T11:33:19.3939708Z   overwrite: false
+2026-10-09T11:33:19.3939919Z   compression-level: 6
+2026-10-09T11:33:19.3940147Z   include-hidden-files: false
+2026-10-09T11:33:19.3940388Z ##[endgroup]
+2026-10-09T11:33:19.5599540Z With the provided path, there will be 3 files uploaded
+2026-10-09T11:33:19.5606251Z Artifact name is valid!
+2026-10-09T11:33:19.5607307Z Root directory input is valid!
+2026-10-09T11:33:19.7782413Z Beginning upload of artifact content to blob storage
+2026-10-09T11:33:19.8307689Z Uploaded bytes 1686
+2026-10-09T11:33:19.8405835Z Finished uploading artifact content to blob storage!
+2026-10-09T11:33:19.8407231Z SHA256 digest of uploaded artifact zip is 7784e40923b76c40f6672fbee1db21a8d4376f133c8bb4f6cf9a2541229a7f20
+2026-10-09T11:33:19.8413426Z Finalizing artifact upload
+2026-10-09T11:33:20.1226651Z Artifact diagnostic-signed-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1.zip successfully finalized. Artifact ID 11613760761
+2026-10-09T11:33:20.1229121Z Artifact diagnostic-signed-build-074-33596da76b5f31fdd27eea51ec219aefe805180c-37923423889-1 has been successfully uploaded! Final size is 1686 bytes. Artifact ID is 11613760761
+2026-10-09T11:33:20.1231077Z Artifact download URL: https://github.com/javaquasar/hydracache/actions/runs/37923423889/artifacts/11613760761
+2026-10-09T11:33:20.1410452Z Post job cleanup.
+2026-10-09T11:33:20.2276277Z [command]/usr/bin/git version
+2026-10-09T11:33:20.2319370Z git version 2.55.0
+2026-10-09T11:33:20.2357651Z Temporarily overriding HOME='/home/runner/work/_temp/b50e2a58-9fe3-4317-8ddc-cdb84deb4b36' before making global git config changes
+2026-10-09T11:33:20.2359052Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T11:33:20.2363293Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hydracache/hydracache
+2026-10-09T11:33:20.2402040Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T11:33:20.2435727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T11:33:20.2691889Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T11:33:20.2729280Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T11:33:20.3005227Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T11:33:20.3044954Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T11:33:20.3441413Z Cleaning up orphan processes

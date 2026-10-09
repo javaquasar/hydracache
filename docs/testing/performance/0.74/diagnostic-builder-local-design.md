@@ -181,6 +181,34 @@ alias to existing Python 3.12.3 resolved that environment precondition; the full
 gate passed unchanged. Optional console verification explicitly skipped because
 WSL lacks Node. This result does not assert browser coverage.
 
+## Actual protected hosted build and read-only receipt audit
+
+The [hosted packet](local-runs/diagnostic-builder-hosted-37923423889/manifest.json)
+retains successful run 37923423889 attempt 1 on tooling 33596da7. Build and sign
+used separate hosted runners and separate delegated approvals through javaquasar;
+neither approval is independent second-human review. Both enforced environment
+metadata checks and the existing external policy pin. No secret was added,
+rotated, exported by the auditor or installed on the performance host.
+
+Before releasing the signing job, review matched the complete original unsigned
+ZIP digest, fixed clean source/tree/toolchain observations, actual ELF/locks/Cargo
+JSON/configs and four validate-only reports. A network-reset partial ZIP was
+refused; only a download retry for the same artifact ID was needed, not a build
+rerun. The signer tested and compiled before receiving its separate secret and
+successfully emitted the exclusive signed receipt for this new hosted build.
+The previous unsigned local artifact remains unsigned and is not this binary.
+
+Local verification used the independently enrolled canonical policy bytes and
+pin, never the downloaded policy as a trust root. The retained read-only helper
+uses the reviewed Rust verification APIs: it checks Ed25519 and actual content,
+then rejects a wrong pin, mutated ELF and mutated signature even with a recomputed
+receipt digest. Its clean-source rebuild/repeat and bounded-reader test passed.
+The synthetic audit identity grants no lease, installation, bind_intent or workload
+authority. This verifies the trusted procedure's attestation, not mathematical
+compilation or byte-for-byte reproducibility. Actual immutable paths and the live
+backend/start/fencing/watchdog/reconciliation/loss boundary are still unproved;
+no host was changed and no numerical product workload was executed.
+
 The [enrollment packet](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
 records the new environment, required reviewer and exact branch, can_admins_bypass=false,
 one newly registered environment secret and three public variables. The fresh
