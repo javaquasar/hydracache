@@ -1,0 +1,30 @@
+schema_version = 1
+contract_id = "diagnostic-builder-local-074-v1"
+baseline_source = "b08d1e706c3a401ce06047cba66b97068e886b3a"
+state = "preregistered-separate-builder-policy-and-signing-lane"
+repository_id = 1217101761
+builder_id = "hydracache-linux-observer-074-v1"
+policy_schema = "diagnostic-builder-policy-074-v1"
+signature_domain = "hydracache-diagnostic-build-074-v1"
+separate_provisioning_key_required = true
+external_policy_digest_required = true
+build_job_has_signing_secret = false
+sign_job_builds_observer = false
+automatic_workflow_trigger = false
+host_install_allowed = false
+product_workload_allowed = false
+qualification_allowed = false
+production_route_enabled = false
+real_key_enrolled_by_local_tests = false
+admission_allowed = false
+old_unsigned_build_promotable = false
+policy_bytes = 4096
+key_bytes = 65
+source_commit = "62114be0f5da3218706e30d7424acfb5d0579d07"
+source_tree = "a9f059d752f5497c8dc5f07fbee4db6b22a366f4"
+
+[required_tests]
+policy = "builder_policy_requires_external_pin_and_distinct_controller_key"
+signer = "builder_signing_checks_observation_and_contents_before_signing"
+files = "builder_cli_refuses_unprotected_key_files_and_existing_outputs"
+governance = "separate_diagnostic_builder_does_not_enroll_host_execution"
