@@ -5,7 +5,8 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-const DEFAULT_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
+// The 0.71 snapshot is a frozen measurement input, not the mutable workflow inventory.
+const DEFAULT_TOPOLOGY: &str = "docs/testing/ci-topology.json";
 const JOB_CLASSES: [&str; 5] = [
     "core",
     "release-only",

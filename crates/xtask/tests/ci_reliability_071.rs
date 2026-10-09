@@ -157,6 +157,39 @@ fn diagnostic_builder_is_manual_protected_and_sha_bound() {
 }
 
 #[test]
+fn live_builder_inventory_preserves_the_frozen_memory_input() {
+    use sha2::{Digest, Sha256};
+    let root = repo_root();
+    let frozen = fs::read_to_string(root.join("docs/testing/memory/0.71/ci-topology.json"))
+        .expect("frozen CI snapshot")
+        .replace("\r\n", "\n");
+    let digest: String = Sha256::digest(frozen.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        digest,
+        "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0"
+    );
+    let live: Value =
+        serde_json::from_slice(&fs::read(root.join("docs/testing/ci-topology.json")).unwrap())
+            .unwrap();
+    let builder = live["workflows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|workflow| workflow["path"] == ".github/workflows/diagnostic-builder-074.yml")
+        .unwrap();
+    assert_eq!(
+        builder["classes"]["manual-protected"],
+        json!(["build", "sign"])
+    );
+    assert!(builder.get("artifact_identity_exemptions").is_none());
+    xtask::ci_topology::check(&root, "0.71")
+        .expect("default must validate live inventory, not frozen snapshot");
+}
+
+#[test]
 fn topology_rejects_missing_timeout_and_duplicate_branch_tag_execution() {
     let temp = TempDir::new("trigger-timeout");
     let workflow = r#"
