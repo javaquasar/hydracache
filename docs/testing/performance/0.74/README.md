@@ -1978,3 +1978,20 @@ This is a trusted build-procedure attestation, not reproducible-build proof.
 No observer workload, host installation, live backend enrollment or qualification
 was run. Execution/admission remain false; exact backend/start binding, immutable
 install, fencing/watchdog/reconciliation and non-product loss gates remain open.
+
+Before that host stage, an SSH invocation incorrectly used a private-key path as
+configuration and exposed key material in tool diagnostics without connecting.
+The key is treated as disclosed, not as safe because the connection failed. Under
+explicit user authorization, [the access rotation audit](local-runs/ssh-access-rotation-20261009/manifest.json)
+records a fresh local key, independently tested replacement access, exact removal
+of the old public key from both AX42 authorization files and refusal of the old
+key. Other authorization entries and sshd policy are preserved; the supervisor
+remains active. No private material is retained in this evidence packet.
+
+Revocation is not globally complete: the old rental alias also references that
+key, but its host identity changed. Strict verification refused connection;
+known_hosts was not changed. Provider-console identity confirmation or confirmed
+retirement is required before closing that dependency. The local old key is kept
+only for controlled revocation, not ordinary operations. Builder/controller
+signing keys, the frozen observer and qualification inputs are unchanged. This
+access repair neither installs the observer nor opens performance admission.

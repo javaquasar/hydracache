@@ -4789,3 +4789,22 @@ retroactively signed. No cache workload or qualification ran, so these results
 provide no throughput or allocation claim. The next boundary still requires exact
 live backend/start binding, immutable installation, writer fencing, watchdog,
 durable failure and reconciliation/loss rehearsal before even a baseline pilot.
+
+### SSH access incident before host installation
+
+Preparation also exposed an operational security failure: an SSH command passed
+a private-key path as configuration, and the parser printed key material before
+connecting. A failed connection does not make a disclosed credential safe. With
+explicit approval, a fresh key was created locally and tested without an agent
+or fallback identities before the old public key was removed from AX42. New
+access and sudo remained usable; the old key was then refused. Existing access
+entries and SSH server policy were preserved, and the supervisor was not stopped.
+The [sanitized audit](../testing/performance/0.74/local-runs/ssh-access-rotation-20261009/manifest.json)
+contains public fingerprints and observed outcomes, not private material.
+
+That result applies only to AX42. The same old key is configured for a previous
+rental host whose host identity changed. Connection remains blocked until its
+identity is independently verified or the user confirms retirement; overriding
+known_hosts would trade a visible blocker for unverified access. Builder and
+controller signing keys are separate and unchanged. No observer installation,
+cache workload or qualification follows from this credential rotation.

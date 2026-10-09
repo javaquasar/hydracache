@@ -1,0 +1,89 @@
+{
+  "schema_version": "ssh-access-rotation-audit-074-v1",
+  "date_utc": "2026-10-09",
+  "repository_commit_before_rotation": "094ff1caec22e48e0b99373ad0416b5b6d799b4e",
+  "authority": "Explicit user approval to replace the disclosed SSH key only, preserve other access, verify replacement before revocation and then continue the separately authorized backend/install/loss stage.",
+  "incident": {
+    "cause": "SSH private-key path was incorrectly passed as the -F configuration argument in the preceding turn; the SSH configuration parser printed key material in tool diagnostics before connecting.",
+    "old_key_treated_as_disclosed": true,
+    "incident_command_connected": false,
+    "private_material_retained_in_repository": false,
+    "diagnostic_history_erased": false,
+    "old_fingerprint": "SHA256:VvOCoXQMOL9jLf7UB6HzTZW6dcclCQNhVtkIA9K5EuU"
+  },
+  "replacement": {
+    "type": "ED25519",
+    "fingerprint": "SHA256:WlNTsNn1rHoffspNV/aRdfyvLY2k1Y36tLjRTACt6Vc",
+    "private_key_generated_locally_outside_repository": true,
+    "private_key_uploaded_to_host": false,
+    "windows_private_key_acl_principals": ["current user", "SYSTEM", "Administrators"],
+    "builder_signing_key_changed": false,
+    "controller_signing_key_changed": false
+  },
+  "ax42": {
+    "host_alias": "hydracache-ax42",
+    "account": "hydracache-admin",
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "strict_known_host_check_retained": true,
+    "replacement_access_verified_before_revocation": true,
+    "replacement_probe_excluded_agent_and_other_keys": true,
+    "noninteractive_sudo_verified": true,
+    "authorized_key_files": [
+      {"path":"/home/hydracache-admin/.ssh/authorized_keys","owner_uid":1000,"mode":"0600","old_key_count_before":1,"old_key_count_after":0,"new_key_count_after":1},
+      {"path":"/root/.ssh/authorized_keys","owner_uid":0,"mode":"0600","old_key_count_before":1,"old_key_count_after":0,"new_key_count_after":1}
+    ],
+    "other_authorized_entries_preserved_byte_for_byte": true,
+    "replacement_line_options_and_comment_preserved": true,
+    "write_method": "Exact public-key blob match, no-follow/owner/mode/single-link guards, file locking, same-directory exclusive temporary file, original identity/content comparison, atomic replacement, file and parent sync, post-write verification.",
+    "authorized_keys2_found_under_root_or_home": false,
+    "sshd_authorized_keys_command": "none",
+    "sshd_trusted_user_ca_keys": "none",
+    "sshd_permit_root_login": "no",
+    "sshd_configuration_changed": false,
+    "replacement_access_verified_after_revocation": true,
+    "old_explicit_key_probe_exit": 255,
+    "old_explicit_key_probe_result": "Permission denied (publickey)",
+    "ssh_alias_identity_updated": true,
+    "supervisor_active_after_rotation": true,
+    "supervisor_stopped_or_restarted": false,
+    "active_campaign_marker_present": false,
+    "active_diagnostic_marker_present": false,
+    "campaign_lifecycle_smoke_context_present": false,
+    "controller_loss_smoke_context_present": false,
+    "marker_observation_is_not_a_host_fence_or_install_authority": true
+  },
+  "old_rental_host": {
+    "host_alias": "hydracache-rental",
+    "status": "revocation-unverified-host-identity-changed",
+    "offered_ed25519_host_fingerprint": "SHA256:0oFeuzlpPPzShFfhmCD9T8oz2ha0xRhRsB0rUdkNLrM",
+    "existing_known_hosts_check_failed": true,
+    "known_hosts_modified": false,
+    "identity_check_bypassed": false,
+    "authenticated_connection_established": false,
+    "old_key_revoked": false,
+    "old_ssh_alias_changed": false,
+    "old_local_private_key_deleted": false,
+    "required_action": "User must confirm whether this host remains theirs and independently verify its host identity through the provider console, or confirm retirement. Keep the old local key only for controlled revocation until that dependency is resolved. Do not use it for AX42 or ordinary operations."
+  },
+  "local_checks": {
+    "audit_json_and_internal_consistency": "pass; not an independent live-host verifier",
+    "qualification_digest_check": "pass",
+    "doc_check": "pass",
+    "performance_contract_check_074": "pass; local, non-promotable",
+    "docs_local_links": "pass; 51 markdown files and 20 external includes",
+    "mdbook_build": "pass",
+    "git_diff_check": "pass",
+    "full_product_suite_rerun": false,
+    "preparation_warning": "Initial WSL driver expanded an unquoted PATH containing Windows spaces and printed export warnings. Compilation and both checks completed successfully. Both checks were repeated with an explicit Linux-only PATH and passed without those warnings. No test or threshold was changed."
+  },
+  "scope": {
+    "product_code_changed": false,
+    "observer_installed_or_executed": false,
+    "backend_enrolled": false,
+    "product_workload_or_qualification_run": false,
+    "numerical_performance_result": false,
+    "qualification_manifest_changed": false,
+    "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "global_key_revocation_complete": false
+  }
+}
