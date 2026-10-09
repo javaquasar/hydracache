@@ -4,6 +4,43 @@
   "publication_producer": ".github/workflows/publish-crates.yml#publish",
   "workflows": [
     {
+      "path": ".github/workflows/observer-semantics-074.yml",
+      "purpose": "Bounded exact-SHA observer semantic controls without numerical qualification",
+      "triggers": ["push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["github.sha"],
+      "classes": {
+        "core": ["semantic"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
+      "path": ".github/workflows/diagnostic-builder-074.yml",
+      "purpose": "Manual protected frozen observer build and separate signing; no host execution or product workload",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["diagnostic-builder-074"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["build", "sign"],
+        "publish": []
+      },
+      "dependencies": {"sign": ["build"]},
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      }
+    },
+    {
       "path": ".github/workflows/ci.yml",
       "purpose": "SHA-bound core validation plus explicitly gated release and diagnostic evidence",
       "triggers": ["pull_request", "push_branch", "push_tag", "schedule", "workflow_dispatch"],

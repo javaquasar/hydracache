@@ -45,6 +45,7 @@ jobs:
           path: observer
           persist-credentials: false
       - name: Install exact reviewed compiler
+        timeout-minutes: 10
         run: rustup toolchain install 1.94.0 --profile minimal
       - name: Build once and retain native observations; validation only
         shell: bash
@@ -58,7 +59,7 @@ jobs:
         run: python3 tooling/scripts/perf/diagnostic_builder_074.py build observer tooling/docs/testing/performance/0.74/rental-pilot-draft build-bundle
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: diagnostic-unsigned-build-074-${{ github.run_id }}-${{ github.run_attempt }}
+          name: diagnostic-unsigned-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: build-bundle/**
           if-no-files-found: error
           retention-days: 7
@@ -101,7 +102,7 @@ jobs:
           cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked --bin diagnostic_builder
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: diagnostic-unsigned-build-074-${{ github.run_id }}-${{ github.run_attempt }}
+          name: diagnostic-unsigned-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: build-bundle
       - name: Sign only this run's checked fixed build with the separate key
         shell: bash
@@ -128,7 +129,7 @@ jobs:
           sha256sum signed-build/build-receipt-v1.json > signed-build/build-receipt.sha256
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: diagnostic-signed-build-074-${{ github.run_id }}-${{ github.run_attempt }}
+          name: diagnostic-signed-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: signed-build/**
           if-no-files-found: error
           retention-days: 30
