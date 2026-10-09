@@ -114,6 +114,49 @@ fn checked_in_topology_is_closed_and_valid() {
 }
 
 #[test]
+fn diagnostic_builder_is_manual_protected_and_sha_bound() {
+    let text = fs::read_to_string(repo_root().join(".github/workflows/diagnostic-builder-074.yml"))
+        .expect("registered diagnostic builder workflow");
+    let workflow: serde_yaml::Value = serde_yaml::from_str(&text).unwrap();
+    assert_eq!(workflow["on"].as_mapping().unwrap().len(), 1);
+    assert!(workflow["on"]["workflow_dispatch"].is_null());
+    let jobs = workflow["jobs"].as_mapping().unwrap();
+    assert_eq!(jobs.len(), 2);
+    assert_eq!(workflow["jobs"]["sign"]["needs"].as_str(), Some("build"));
+    for name in ["build", "sign"] {
+        let job = &workflow["jobs"][name];
+        assert_eq!(job["runs-on"].as_str(), Some("ubuntu-24.04"));
+        assert_eq!(
+            job["environment"].as_str(),
+            Some("performance-diagnostic-builder-074")
+        );
+        assert!(job["timeout-minutes"].as_u64().unwrap() > 0);
+        for step in job["steps"].as_sequence().unwrap() {
+            if step["uses"].as_str().is_some_and(|action| {
+                action.starts_with("actions/upload-artifact@")
+                    || action.starts_with("actions/download-artifact@")
+            }) {
+                let artifact = step["with"]["name"].as_str().unwrap();
+                for field in ["github.sha", "github.run_id", "github.run_attempt"] {
+                    assert!(artifact.contains(field), "{name}: {field}");
+                }
+            }
+        }
+    }
+    let install = workflow["jobs"]["build"]["steps"]
+        .as_sequence()
+        .unwrap()
+        .iter()
+        .find(|step| step["name"].as_str() == Some("Install exact reviewed compiler"))
+        .unwrap();
+    assert!(install["timeout-minutes"]
+        .as_u64()
+        .is_some_and(|minutes| minutes > 0 && minutes < 40));
+    assert!(!text.split("  sign:").next().unwrap().contains("secrets."));
+    assert!(!text.contains("self-hosted"));
+}
+
+#[test]
 fn topology_rejects_missing_timeout_and_duplicate_branch_tag_execution() {
     let temp = TempDir::new("trigger-timeout");
     let workflow = r#"
