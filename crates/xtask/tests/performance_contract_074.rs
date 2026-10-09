@@ -7,6 +7,78 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn separate_diagnostic_builder_does_not_enroll_host_execution() {
+    let c = contract("diagnostic-builder-local-contract.toml");
+    assert_eq!(c["repository_id"].as_integer(), Some(1217101761));
+    assert_eq!(
+        c["builder_id"].as_str(),
+        Some("hydracache-linux-observer-074-v1")
+    );
+    for field in [
+        "separate_provisioning_key_required",
+        "external_policy_digest_required",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true));
+    }
+    for field in [
+        "build_job_has_signing_secret",
+        "sign_job_builds_observer",
+        "automatic_workflow_trigger",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "production_route_enabled",
+        "real_key_enrolled_by_local_tests",
+        "admission_allowed",
+        "old_unsigned_build_promotable",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false));
+    }
+    for name in ["main.rs", "server.rs", "protocol.rs", "config.rs"] {
+        let code =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(name))
+                .unwrap();
+        assert!(!code.contains("diagnostic_builder"), "{name}");
+    }
+    let workflow =
+        std::fs::read_to_string(root().join(".github/workflows/diagnostic-builder-074.yml"))
+            .unwrap();
+    let parsed: serde_yaml::Value = serde_yaml::from_str(&workflow).unwrap();
+    assert_eq!(parsed["on"].as_mapping().unwrap().len(), 1);
+    assert!(parsed["on"]
+        .as_mapping()
+        .unwrap()
+        .contains_key("workflow_dispatch"));
+    assert_eq!(parsed["jobs"].as_mapping().unwrap().len(), 2);
+    assert_eq!(parsed["jobs"]["sign"]["needs"].as_str(), Some("build"));
+    let (build, sign) = workflow.split_once("  sign:").unwrap();
+    assert!(!build.contains("secrets."));
+    assert!(sign.contains("environment: performance-diagnostic-builder-074"));
+    assert!(sign.contains("unset BUILDER_SIGNING_KEY_HEX"));
+    for forbidden in [
+        "self-hosted",
+        "sudo",
+        "HYDRACACHE_074_AUTH_SIGNING_KEY_HEX",
+        "--run ",
+        "workflow_call:",
+        "  push:",
+    ] {
+        assert!(!workflow.contains(forbidden));
+    }
+    assert_eq!(workflow.matches("overwrite: false").count(), 2);
+    assert_eq!(workflow.matches("check-protection").count(), 2);
+    let provisioning = std::fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-host-provision-074.yml"),
+    )
+    .unwrap();
+    assert!(!provisioning.contains("BUILDER_SIGNING_KEY"));
+    assert!(!provisioning.contains("diagnostic_builder"));
+    let manifest =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/Cargo.toml")).unwrap();
+    assert!(manifest.contains("default-run = \"hydracache-long-run-supervisor-074\""));
+}
+
+#[test]
 fn unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch() {
     let c = contract("diagnostic-local-build-contract.toml");
     assert_eq!(

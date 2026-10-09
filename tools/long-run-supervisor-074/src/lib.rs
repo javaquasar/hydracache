@@ -21,6 +21,7 @@ pub mod client;
 #[cfg(target_os = "linux")]
 pub mod config;
 pub mod diagnostic_artifacts;
+pub mod diagnostic_builder;
 pub mod diagnostic_ipc;
 pub mod diagnostic_lease;
 #[cfg(target_os = "linux")]

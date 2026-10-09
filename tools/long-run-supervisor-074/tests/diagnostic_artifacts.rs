@@ -177,6 +177,129 @@ impl Synthetic {
 }
 
 #[test]
+fn builder_policy_requires_external_pin_and_distinct_controller_key() {
+    use hydracache_long_run_supervisor_074::diagnostic_builder::*;
+    let f = Synthetic::new();
+    let controller = SigningKey::from_bytes(&[12; 32]).verifying_key();
+    let policy = BuilderPolicy {
+        schema_version: POLICY_SCHEMA.into(),
+        repository_id: REPOSITORY_ID,
+        builder_id: BUILDER_ID.into(),
+        builder_key_hex: hex(f.key.verifying_key().as_bytes()),
+        controller_key_hex: hex(controller.as_bytes()),
+    };
+    let bytes = policy_bytes(&policy).unwrap();
+    let digest = hex(&Sha256::digest(&bytes));
+    assert!(load_policy(&bytes, &digest, &controller).is_ok());
+    assert!(load_policy(&bytes, &"0".repeat(64), &controller).is_err());
+    assert!(load_policy(&bytes, &digest, &f.key.verifying_key()).is_err());
+    assert!(load_policy(&bytes[..bytes.len() - 1], &digest, &controller).is_err());
+    type Mutation = fn(&mut BuilderPolicy);
+    for change in [
+        (|p: &mut BuilderPolicy| p.schema_version.push('x')) as Mutation,
+        |p| p.repository_id += 1,
+        |p| p.builder_id.push('x'),
+        |p| p.builder_key_hex = p.controller_key_hex.clone(),
+        |p| p.builder_key_hex = "0".repeat(64),
+        |p| p.builder_key_hex.make_ascii_uppercase(),
+        |p| p.controller_key_hex = "0".repeat(64),
+    ] {
+        let mut changed = policy.clone();
+        change(&mut changed);
+        let bytes = policy_bytes(&changed).unwrap();
+        assert!(load_policy(&bytes, &hex(&Sha256::digest(&bytes)), &controller).is_err());
+    }
+    let mut unknown: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    unknown["execution_allowed"] = true.into();
+    let mut bytes = serde_json::to_vec(&unknown).unwrap();
+    bytes.push(b'\n');
+    assert!(load_policy(&bytes, &hex(&Sha256::digest(&bytes)), &controller).is_err());
+}
+
+#[test]
+fn builder_signing_checks_observation_and_contents_before_signing() {
+    use hydracache_long_run_supervisor_074::diagnostic_builder::*;
+    let f = Synthetic::new();
+    let controller = SigningKey::from_bytes(&[12; 32]).verifying_key();
+    let bytes = policy_bytes(&BuilderPolicy {
+        schema_version: POLICY_SCHEMA.into(),
+        repository_id: REPOSITORY_ID,
+        builder_id: BUILDER_ID.into(),
+        builder_key_hex: hex(f.key.verifying_key().as_bytes()),
+        controller_key_hex: hex(controller.as_bytes()),
+    })
+    .unwrap();
+    let policy = load_policy(&bytes, &hex(&Sha256::digest(&bytes)), &controller).unwrap();
+    let observed = BuildObservation {
+        schema_version: OBSERVATION_SCHEMA.into(),
+        source_commit_before: SOURCE_COMMIT.into(),
+        source_commit_after: SOURCE_COMMIT.into(),
+        source_tree_before: SOURCE_TREE.into(),
+        source_tree_after: SOURCE_TREE.into(),
+        source_clean_before: true,
+        source_clean_after: true,
+        rustc_version: f.statement.rustc_version.clone(),
+        cargo_version: f.statement.cargo_version.clone(),
+        build_command: f.statement.build_command.clone(),
+    };
+    let receipt = sign_build(&policy, &f.key, &observed, &f.contents()).unwrap();
+    let bytes = receipt_bytes(&receipt).unwrap();
+    let mut identity = f.receipt().1;
+    identity.build_provenance_sha256 = hex(&Sha256::digest(&bytes));
+    policy
+        .verify_receipt(&bytes, &identity)
+        .unwrap()
+        .verify_contents(&f.contents())
+        .unwrap();
+    assert!(sign_build(
+        &policy,
+        &SigningKey::from_bytes(&[1; 32]),
+        &observed,
+        &f.contents()
+    )
+    .is_err());
+    type Mutation = fn(&mut BuildObservation);
+    for change in [
+        (|o: &mut BuildObservation| o.schema_version.push('x')) as Mutation,
+        |o| o.source_commit_before.push('x'),
+        |o| o.source_commit_after.push('x'),
+        |o| o.source_tree_before.push('x'),
+        |o| o.source_tree_after.push('x'),
+        |o| o.source_clean_before = false,
+        |o| o.source_clean_after = false,
+        |o| o.rustc_version.push('x'),
+        |o| o.cargo_version.push('x'),
+        |o| {
+            o.build_command
+                .push("--features=allocation-diagnostics".into())
+        },
+    ] {
+        let mut changed = observed.clone();
+        change(&mut changed);
+        assert!(sign_build(&policy, &f.key, &changed, &f.contents()).is_err());
+    }
+    let mut corrupt = f.contents();
+    corrupt.binary = b"corrupt";
+    assert!(sign_build(&policy, &f.key, &observed, &corrupt).is_err());
+    let mut corrupt = f.contents();
+    corrupt.configs.remove("direct");
+    assert!(sign_build(&policy, &f.key, &observed, &corrupt).is_err());
+}
+
+#[test]
+fn builder_signer_cli_refuses_missing_or_unknown_commands() {
+    for args in [vec![], vec!["unknown"], vec!["sign"]] {
+        let result = std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_builder"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(result.status.code(), Some(2));
+        assert!(result.stdout.is_empty());
+        assert!(!result.stderr.is_empty());
+    }
+}
+
+#[test]
 fn unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs() {
     let f = Synthetic::new();
     let directory = tempfile::tempdir().unwrap();
@@ -588,6 +711,100 @@ fn checked_statement_binds_exact_model_intent_without_enrolling_execution() {
         change(&mut intent);
         assert!(verified.bind_intent(&intent).is_err());
     }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay() {
+    use hydracache_long_run_supervisor_074::diagnostic_builder::*;
+    use std::os::unix::fs::PermissionsExt;
+    let f = Synthetic::new();
+    let controller = SigningKey::from_bytes(&[12; 32]).verifying_key();
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path();
+    std::fs::set_permissions(root, std::fs::Permissions::from_mode(0o700)).unwrap();
+    let policy = policy_bytes(&BuilderPolicy {
+        schema_version: POLICY_SCHEMA.into(),
+        repository_id: REPOSITORY_ID,
+        builder_id: BUILDER_ID.into(),
+        builder_key_hex: hex(f.key.verifying_key().as_bytes()),
+        controller_key_hex: hex(controller.as_bytes()),
+    })
+    .unwrap();
+    std::fs::write(root.join("policy.json"), &policy).unwrap();
+    let observation = BuildObservation {
+        schema_version: OBSERVATION_SCHEMA.into(),
+        source_commit_before: SOURCE_COMMIT.into(),
+        source_commit_after: SOURCE_COMMIT.into(),
+        source_tree_before: SOURCE_TREE.into(),
+        source_tree_after: SOURCE_TREE.into(),
+        source_clean_before: true,
+        source_clean_after: true,
+        rustc_version: f.statement.rustc_version.clone(),
+        cargo_version: f.statement.cargo_version.clone(),
+        build_command: f.statement.build_command.clone(),
+    };
+    std::fs::write(
+        root.join("observation.json"),
+        serde_json::to_vec(&observation).unwrap(),
+    )
+    .unwrap();
+    std::fs::write(root.join("secret.hex"), format!("{}\n", hex(&[74; 32]))).unwrap();
+    std::fs::set_permissions(
+        root.join("secret.hex"),
+        std::fs::Permissions::from_mode(0o600),
+    )
+    .unwrap();
+    for (name, raw) in [
+        ("timing-controls-074", f.binary.as_slice()),
+        ("build-log.jsonl", f.log.as_slice()),
+        ("Cargo.lock.root", ROOT_LOCK),
+        ("Cargo.lock.observer", OBSERVER_LOCK),
+    ] {
+        std::fs::write(root.join(name), raw).unwrap();
+    }
+    for (surface, raw) in &f.configs {
+        std::fs::write(root.join(format!("{surface}.json")), raw).unwrap();
+    }
+    let invoke = || {
+        std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_builder"))
+            .args([
+                "sign",
+                root.join("policy.json").to_str().unwrap(),
+                &hex(&Sha256::digest(&policy)),
+                &hex(controller.as_bytes()),
+                root.join("secret.hex").to_str().unwrap(),
+                root.join("observation.json").to_str().unwrap(),
+                root.to_str().unwrap(),
+                root.join("receipt.json").to_str().unwrap(),
+            ])
+            .output()
+            .unwrap()
+    };
+    let result = invoke();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    assert!(!String::from_utf8_lossy(&result.stdout).contains(&hex(&[74; 32])));
+    let bytes = std::fs::read(root.join("receipt.json")).unwrap();
+    let checked = load_policy(&policy, &hex(&Sha256::digest(&policy)), &controller).unwrap();
+    let mut identity = f.receipt().1;
+    identity.build_provenance_sha256 = hex(&Sha256::digest(&bytes));
+    checked
+        .verify_receipt(&bytes, &identity)
+        .unwrap()
+        .verify_contents(&f.contents())
+        .unwrap();
+    assert_eq!(invoke().status.code(), Some(2));
+    assert_eq!(std::fs::read(root.join("receipt.json")).unwrap(), bytes);
+    std::fs::set_permissions(
+        root.join("secret.hex"),
+        std::fs::Permissions::from_mode(0o644),
+    )
+    .unwrap();
+    assert_eq!(invoke().status.code(), Some(2));
 }
 
 #[cfg(target_os = "linux")]
