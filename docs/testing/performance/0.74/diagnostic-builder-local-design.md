@@ -97,10 +97,37 @@ Real enrollment requires these explicit operator steps:
    revokes the previous build-key policy for new verification; do not infer a
    grace period, cache refresh or live-policy migration from this local slice.
 
-The read-only GitHub check returned 404 for the proposed new environment; the
-existing performance-reference-074 returned no protection rules or branch
-policy. Neither was changed. Reviewer selection is required before real key
-registration; the workflow has not been dispatched and no real key is enrolled.
+The initial read-only GitHub check returned 404 for the proposed new environment;
+the existing performance-reference-074 returned no protection rules or branch
+policy. The sealed local packet records that historical state, not a live status.
+
+## Delegated technical review and environment enrollment
+
+The user explicitly assigned technical review to the agent. The
+[enrollment contract](diagnostic-builder-enrollment-contract.toml) maps the GitHub
+required-reviewer gate to the authenticated account javaquasar (22050429), not a
+fictitious AI account. An approval through this account is delegated technical
+review, not an independent second-human review. Self-review prevention is false
+so the authorized dispatcher can approve; the required-reviewer gate and exact
+branch restriction remain. No administrator bypass or automatic approval is
+authorized. Each build/sign approval must identify and review the exact tooling
+SHA and job evidence before releasing that job.
+
+The controller public key comes from a read-only extraction of verification_key_hex
+in the installed /etc/hydracache-perf/supervisor-074.toml. No controller private
+key, receipt, or incoming build bundle supplies this trust root. The new seed is
+generated independently outside Git and sent only to the new environment secret;
+public policy bytes and their digest are retained separately. Enrollment is not
+host installation, artifact admission, or approval of a measured run.
+
+The manual workflow is currently absent from main and unregistered in Actions.
+GitHub requires its workflow_dispatch file on the default branch before first
+manual execution; see [the documented trigger rule](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch).
+Registering only that workflow on main requires separate permission and a
+reviewed, verified merge path. Do not merge the entire 0.74 branch, add an
+automatic push trigger, or repurpose an existing qualification workflow to work
+around registration. Until registration and exact protected job approvals, no
+actual trusted CI build/sign receipt exists.
 
 ## Local evidence and limitations
 
