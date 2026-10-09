@@ -98,3 +98,30 @@ Real clean Linux compilation, reviewed builder trust, immutable install/start
 coordination, uncertain-ledger reconciliation and host installation/pilot remain
 separate prerequisites. Neither signature nor snapshot opens full D3, supported
 allocator retention, production execution or numerical admission.
+
+## Pinned start material before backend enrollment
+
+Baseline `4ec821588a56f3c6fc7b830b8c68ac84e9e26b24` passes 22 Linux artifact
+tests. The next isolated slice connects the previously separate checked builder
+policy, descriptor-owned bundle, diagnostic state and constructed unit spec.
+The fixed-root inspector will require `CheckedBuilderPolicy`, not raw caller
+`BuildTrust`. The existing raw-trust fixture reader remains explicitly synthetic.
+No receipt, policy, lease, helper or observer wire format changes.
+
+Preparation must validate the startable state before filesystem inspection,
+verify the bundle against that identity and policy, bind its exact derived cell
+intent, and retain its descriptors alongside the unchanged fixed unit spec.
+Revalidation must refuse any state/revision/cell/budget drift or file drift.
+Its first failure remains latched for that runtime object; a later matching
+observation cannot revive it. A fixture-origin object cannot become production
+origin. Dropping or inspecting the object must have no execution side effects.
+
+Test-first checks will cover the production reader's policy type, four fixed
+cells, remaining/expired budgets, wrong builder, binary/receipt identity drift,
+nonstartable state, revision/cell drift, descriptor replacement, sticky refusal
+and independently owned parallel preparations. Positive fixtures remain fake
+ELF and synthetic signatures. This object is not a start authorization: the
+future backend must still authenticate the current boot/clock and durable intent
+under the host fence, bind the actual executable and original manager invocation,
+retain tree/process identity, revoke writers, persist failures, run its watchdog
+and reconcile uncertain requests. No observer, unit or host service is started.
