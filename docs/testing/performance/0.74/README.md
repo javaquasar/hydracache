@@ -1995,3 +1995,21 @@ retirement is required before closing that dependency. The local old key is kept
 only for controlled revocation, not ordinary operations. Builder/controller
 signing keys, the frozen observer and qualification inputs are unchanged. This
 access repair neither installs the observer nor opens performance admission.
+
+The next [pinned start-material slice](diagnostic-artifacts-local-design.md#pinned-start-material-before-backend-enrollment)
+binds the checked policy, original bundle descriptors, validated state, exact
+cell intent and fixed unit spec. The fixed-root reader no longer accepts raw
+caller trust. State/revision/cell/clock or file drift permanently refuses that
+runtime object; fixture origin stays explicit. This is read-only preparation,
+not authenticated start, an installation receipt or durable failure recovery.
+
+Its separate test-first lease-boundary correction prevents Starting from using
+an old timestamp to grant 60 seconds when the latest observation has only 17
+seconds left. Both intent and spec use the capped start budget; expired state is
+refused before filesystem inspection. The 60/300-second ceilings, running-state
+model, observer inputs and qualification manifest are unchanged. The
+[local packet](local-runs/diagnostic-start-material-20261009/manifest.json)
+retains the original compiler refusal, deterministic 60-versus-17 failure and
+focused Linux/Windows checks. Positive start-material fixtures are synthetic;
+actual loaded-unit policy, original exec/tree identity, writer revocation,
+watchdog and uncertain-intent reconciliation remain before backend enrollment.

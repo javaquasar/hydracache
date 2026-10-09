@@ -1,0 +1,71 @@
+{
+  "schema_version": "diagnostic-start-material-local-evidence-074-v1",
+  "baseline_source": "4ec821588a56f3c6fc7b830b8c68ac84e9e26b24",
+  "preregistration_commit": "4682457dcd52a30701fe4999895327cee97ae08b",
+  "binding_commit": "b2da495125ab76ac02d04ed7e1364a512e5d44a7",
+  "latest_observation_cap_commit": "8ad80d5357383ba233992599a30e11143cfcf11e",
+  "capture_scope": "Focused local working-tree checks. Code/test changes were tested before their implementation commits. These are not clean-source qualification receipts or numerical performance attempts.",
+  "baseline": {"linux_artifact_tests_passed":22,"original_tool_result_observed":true,"raw_log_retained_in_this_packet":false},
+  "test_first": [
+    {"file":"test-first-red.log","exit":101,"classification":"Compilation refused absent PinnedStartMaterial/preparation APIs and raw BuildTrust versus CheckedBuilderPolicy reader signature."},
+    {"file":"starting-budget-red.log","exit":101,"classification":"Deterministic synthetic Starting timeline: expected 17 seconds at latest observation, observed old 60-second start cap. Not a measured workload or threshold change."}
+  ],
+  "checks": {
+    "initial_linux_artifacts": {"passed":28,"failed":0},
+    "initial_linux_focused": {"passed":181,"ignored":1,"failed":0},
+    "final_linux_focused": {"passed":182,"ignored":1,"failed":0,"artifact_tests_passed":29},
+    "linux_targets": ["library","diagnostic_artifacts","diagnostic_lease","diagnostic_ipc","diagnostic_receipts","diagnostic_spool","diagnostic_tree","diagnostic_manager","host_execution"],
+    "linux_check_all_targets":true,
+    "linux_clippy_all_targets_all_features_warnings_denied":true,
+    "linux_scoped_format":true,
+    "windows_portable_artifacts": {"passed":15,"failed":0,"linux_start_material_tests_executed":0},
+    "root_performance_contract_tests":78,
+    "root_release_evidence_tests":13,
+    "root_release_governance_tests":23,
+    "root_doc_check":true,
+    "root_local_performance_contract": "pass; non-promotable",
+    "full_workspace_verify_rerun":false
+  },
+  "commands": {
+    "linux_focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts --test diagnostic_lease --test diagnostic_ipc --test diagnostic_receipts --test diagnostic_spool --test diagnostic_tree --test diagnostic_manager --test host_execution",
+    "linux_check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked",
+    "linux_clippy": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "root_tests": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "windows_artifacts": "cargo test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts -j 2",
+    "build_environment": {"dev_debug":0,"test_debug":0,"incremental":false,"linux_build_jobs":2,"linux_python":"task-local alias to existing python3","wsl_git":"read-only explicit mounted Git/worktree paths; GIT_OPTIONAL_LOCKS=0"}
+  },
+  "proof_boundaries": {
+    "positive_start_material_fixtures": "Synthetic test signatures, fake non-runnable ELF, invented Cargo log/state clocks and temporary bundle files; not the actual signed hosted bundle or real installed unit.",
+    "runtime_latch_is_durable_failure_journal":false,
+    "current_boot_clock_or_durable_intent_authenticated_by_material":false,
+    "later_pathname_exec_race_closed":false,
+    "loaded_unit_policy_or_original_invocation_verified":false,
+    "writer_revocation_or_cgroup_cleanup_proved":false,
+    "watchdog_or_uncertain_request_reconciliation_implemented":false,
+    "fixture_origin_can_certify_production":false,
+    "execution_or_admission_allowed":false,
+    "host_service_changed":false,
+    "observer_installed_or_executed":false,
+    "product_workload_or_qualification_run":false,
+    "numerical_performance_claim":false,
+    "wire_or_durable_schema_changed":false,
+    "running_state_model_intent_changed":false,
+    "frozen_cell_seconds":60,
+    "frozen_total_seconds":300,
+    "qualification_manifest_sha256":"11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "retention": {
+    "capture_kind":"PowerShell combined native-command stdout/stderr capture bytes; not a claim of untouched separate Linux stdout/stderr streams",
+    "raw_files": [
+      {"name":"artifacts-green.log","bytes":2742,"sha256":"658b6f6619a1d18da4ead0ccb5b4d72a5f64e4865fdce49d5f53d83b7f1abf9e"},
+      {"name":"linux-budget-green.log","bytes":18584,"sha256":"1f45f1434fdfe6c4de34f1bd62388b658f321f35fd1fa07d6cfe3797a98539d0"},
+      {"name":"linux-focused.log","bytes":19360,"sha256":"fc96263c87c4062a937adc6f39d9d7e88243a2f0ebd5b40c1706fabac2cc7648"},
+      {"name":"root-contracts.log","bytes":10617,"sha256":"62aab3db4fb8b2756ac128133ed12629b8b6efd38549935920e9d8a9fb46e1fa"},
+      {"name":"starting-budget-red.log","bytes":1210,"sha256":"300ac74cf44fbf4a94f3a24e93d436f0c967b8c0170968383b7ea2addbe53c7d"},
+      {"name":"test-first-red.log","bytes":2417,"sha256":"a7ef464c1faba4b8d3dca19f8997739d12e7e282f84c9924d365bc7cbc15b29c"},
+      {"name":"windows-artifacts.log","bytes":3601,"sha256":"92310f3a2fde150e70b302033c5f81be1a0339bd685e09c1d01fe1bea153c1da"}
+    ],
+    "preparation_observation":"A digest attempt while root-contracts.log was still open refused with a Windows sharing violation. No incomplete root digest was accepted; the final digest was collected after command completion."
+  },
+  "next_gate":"Authenticated bounded loaded-unit policy observation, original executable/invocation/tree binding, fenced start/stop, durable failure and writer revocation, autonomous watchdog, uncertain-intent reconciliation and non-product loss rehearsal before real installation/pilot."
+}

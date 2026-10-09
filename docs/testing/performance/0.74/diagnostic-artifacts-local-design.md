@@ -102,9 +102,9 @@ allocator retention, production execution or numerical admission.
 ## Pinned start material before backend enrollment
 
 Baseline `4ec821588a56f3c6fc7b830b8c68ac84e9e26b24` passes 22 Linux artifact
-tests. The next isolated slice connects the previously separate checked builder
+tests. This isolated slice connects the previously separate checked builder
 policy, descriptor-owned bundle, diagnostic state and constructed unit spec.
-The fixed-root inspector will require `CheckedBuilderPolicy`, not raw caller
+The fixed-root inspector requires `CheckedBuilderPolicy`, not raw caller
 `BuildTrust`. The existing raw-trust fixture reader remains explicitly synthetic.
 No receipt, policy, lease, helper or observer wire format changes.
 
@@ -116,7 +116,7 @@ Its first failure remains latched for that runtime object; a later matching
 observation cannot revive it. A fixture-origin object cannot become production
 origin. Dropping or inspecting the object must have no execution side effects.
 
-Test-first checks will cover the production reader's policy type, four fixed
+Test-first checks cover the production reader's policy type, four fixed
 cells, remaining/expired budgets, wrong builder, binary/receipt identity drift,
 nonstartable state, revision/cell drift, descriptor replacement, sticky refusal
 and independently owned parallel preparations. Positive fixtures remain fake
@@ -125,3 +125,18 @@ future backend must still authenticate the current boot/clock and durable intent
 under the host fence, bind the actual executable and original manager invocation,
 retain tree/process identity, revoke writers, persist failures, run its watchdog
 and reconcile uncertain requests. No observer, unit or host service is started.
+
+The implemented `PinnedStartMaterial` owns the descriptor snapshot, validated
+state copy, exact intent and unit spec. Its getters return metadata only, even
+after refusal; they are not a launch API. `revalidate_for` compares the whole
+state, including revision and clocks, and latches the first state/file failure.
+The fixed-root inspector now accepts only the checked policy. Raw-trust fixture
+inspection remains available for historical tests and cannot certify production.
+
+A test-first boundary check exposed an inherited construction defect in
+Starting: with 17 seconds left at the latest state observation, the old start
+timestamp still produced a 60-second RuntimeMaxUSec. The separate correction
+derives a start-only intent capped by the latest observation, refuses an expired
+budget before filesystem IO and uses the same cap for the intent and spec.
+The running-state model intent and fixed 60/300-second ceilings are unchanged.
+The regression uses an invented monotonic timeline, not a measured workload.

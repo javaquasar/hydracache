@@ -1,0 +1,45 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `PinnedStartMaterial` in module `linux`
+   --> tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:901:28
+    |
+901 | ...x::PinnedStartMaterial, A...
+    |       ^^^^^^^^^^^^^^^^^^^ ... in `linux`
+
+error[E0425]: cannot find function `prepare_fixture_start_material` in module `linux`
+   --> tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:903:20
+    |
+903 | ...x::prepare_fixt...s...
+    |       ^^^^^^^^^^^^...ot found in `linux`
+
+error[E0425]: cannot find function `prepare_fixed_start_material` in module `linux`
+   --> tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:931:20
+    |
+931 | ...x::prepare_fixe...s...
+    |       ^^^^^^^^^^^^...ot found in `linux`
+
+error[E0425]: cannot find function `prepare_fixture_start_material` in module `linux`
+   --> tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:989:24
+    |
+989 | ...x::prepare_fixture_...
+    |       ^^^^^^^^^^^^^^^^...ound in `linux`
+
+error[E0308]: mismatched types
+   --> tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:924:61
+    |
+921 |           let _reader: fn(
+    |  ______________________-
+922 | |             &DiagnosticIdentity,
+923 | |             &CheckedBuilderPolicy,
+924 | |         ) -> Result<linux::BundleSnapshot, ArtifactError>...fixed_install;
+    | |                                                         -...^^^^^^^^^^^^^ expected fn pointer, found fn item
+    | |_________________________________________________________|
+    |                                                           expected due to this
+    |
+    = note: expected fn pointer `fn(..., ...) -> ...`
+                  found fn item `fn(..., ...) -> ... {inspect_fixed_install}`
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-6ff3a485e5abd487.long-type-4018248187191430274.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0308, E0425.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_artifacts") due to 5 previous errors

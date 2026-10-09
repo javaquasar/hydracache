@@ -1,0 +1,36 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 11.11s
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-6ff3a485e5abd487)
+
+running 28 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test linux_tests::fixed_install_reader_requires_checked_builder_policy ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test linux_tests::independent_parallel_start_materials_remain_fixture_only ... ok
+test linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test linux_tests::pinned_start_material_refuses_wrong_builder_and_identity ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... ok
+test linux_tests::pinned_start_material_state_drift_is_sticky ... ok
+test linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+

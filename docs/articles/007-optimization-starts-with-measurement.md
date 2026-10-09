@@ -4808,3 +4808,32 @@ identity is independently verified or the user confirms retirement; overriding
 known_hosts would trade a visible blocker for unverified access. Builder and
 controller signing keys are separate and unchanged. No observer installation,
 cache workload or qualification follows from this credential rotation.
+
+### Binding preparation to policy and the remaining lease
+
+The next backend prerequisite joins the previously separate checks: the
+independently pinned builder policy, signed bundle, retained file descriptors,
+validated diagnostic state, exact cell intent and fixed unit specification.
+The fixed installation reader now requires the checked policy type. The
+prepared object retains the original descriptors and refuses any state or file
+drift; its first refusal cannot be erased by a later matching observation.
+This latch is runtime-only, so it does not replace a durable failure journal or
+restart reconciliation. Fixture origin remains visible and cannot certify a
+production installation.
+
+The [test-first packet](../testing/performance/0.74/local-runs/diagnostic-start-material-20261009/manifest.json)
+also records a concrete lease-boundary defect. In Starting, an old recorded
+start time could still grant a 60-second unit runtime after the latest state
+observation left only 17 seconds. A deterministic regression failed with
+60 instead of 17. Start-only construction now caps both the cell intent and
+RuntimeMaxUSec using the latest observation and refuses an exhausted lease.
+The running-state model and 60/300-second ceilings are unchanged; the example
+uses an invented clock, not a benchmark or an altered measurement duration.
+
+These checks establish preparation consistency, not a live start. Positive
+fixtures use fake ELF and test signatures. The backend still needs a fresh
+boot/clock check and durable intent under the host fence, authenticated loaded
+unit policy and original executable/process/tree identity, writer revocation,
+autonomous watchdog and explicit uncertain-request recovery. No performance
+claim follows from this safety correction, and no host unit or workload was
+started for it.

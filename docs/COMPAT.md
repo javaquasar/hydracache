@@ -64,6 +64,15 @@ they are persisted or transmitted across processes.
 
 ## Upgrade Rules
 
+The 0.74 pinned diagnostic start material is a runtime-only, descriptor-owning
+object, not a new persisted or helper-wire artifact. The fixed install reader
+requires an externally checked builder policy; historical raw-trust fixture
+inspection remains fixture-only. Build receipt, policy, lease, request ledger,
+observer and manager helper schemas are unchanged. Start-only unit construction
+caps runtime by the latest validated lease observation, without changing the
+running-state model intent or the frozen 60/300-second ceilings. Neither the
+runtime object nor a matching observation authorizes execution or rollback.
+
 - Writers may not emit a newer durable or wire artifact until readers in the
   deployment explicitly support it.
 - Unknown future schema versions fail closed. A worker must not silently drain a
