@@ -122,6 +122,8 @@ def policy(environment):
 def check_protection(environment, branches):
     if environment.get("name") != "performance-diagnostic-builder-074":
         raise ValueError("wrong signing environment")
+    if environment.get("can_admins_bypass") is not False:
+        raise ValueError("administrator review bypass must be disabled")
     if environment.get("deployment_branch_policy") != {
             "protected_branches": False, "custom_branch_policies": True}:
         raise ValueError("explicit branch restriction required")

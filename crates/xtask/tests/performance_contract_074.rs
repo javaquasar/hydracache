@@ -67,6 +67,9 @@ fn separate_diagnostic_builder_does_not_enroll_host_execution() {
     }
     assert_eq!(workflow.matches("overwrite: false").count(), 2);
     assert_eq!(workflow.matches("check-protection").count(), 2);
+    let coordinator =
+        std::fs::read_to_string(root().join("scripts/perf/diagnostic_builder_074.py")).unwrap();
+    assert!(coordinator.contains("environment.get(\"can_admins_bypass\") is not False"));
     let provisioning = std::fs::read_to_string(
         root().join(".github/workflows/performance-long-run-host-provision-074.yml"),
     )

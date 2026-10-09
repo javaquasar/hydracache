@@ -69,11 +69,16 @@ class DiagnosticBuilderTests(unittest.TestCase):
 
     def test_signing_environment_requires_human_review_and_exact_branch(self):
         environment = {"name": "performance-diagnostic-builder-074",
+                       "can_admins_bypass": False,
                        "deployment_branch_policy": {"protected_branches": False, "custom_branch_policies": True},
                        "protection_rules": [{"type": "required_reviewers", "reviewers": [{"type": "User", "reviewer": {"id": 1}}]}]}
         branches = {"total_count": 1, "branch_policies": [{"name": "feat/0.74-resp-native-throughput", "type": "branch"}]}
         builder.check_protection(environment, branches)
         for changed in ({}, {**environment, "name": "performance-reference-074"},
+                        {**environment, "can_admins_bypass": True},
+                        {k: v for k, v in environment.items() if k != "can_admins_bypass"},
+                        {**environment, "can_admins_bypass": None},
+                        {**environment, "can_admins_bypass": 0},
                         {**environment, "protection_rules": []}, {**environment, "deployment_branch_policy": None}):
             with self.assertRaises(ValueError):
                 builder.check_protection(changed, branches)

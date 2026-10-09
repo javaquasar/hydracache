@@ -11,6 +11,7 @@ independent_human_review = false
 prevent_self_review = false
 required_reviewer_gate = true
 admin_bypass_used = false
+admin_bypass_permitted = false
 fresh_separate_seed_required = true
 private_key_in_repository_allowed = false
 private_key_on_performance_host_allowed = false

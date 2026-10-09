@@ -110,7 +110,10 @@ fictitious AI account. An approval through this account is delegated technical
 review, not an independent second-human review. Self-review prevention is false
 so the authorized dispatcher can approve; the required-reviewer gate and exact
 branch restriction remain. No administrator bypass or automatic approval is
-authorized. Each build/sign approval must identify and review the exact tooling
+authorized. Both jobs also fail closed unless the GitHub metadata explicitly
+reports can_admins_bypass=false. Missing, null, numeric-zero and true values are
+refused; presence of a reviewer alone is not sufficient. Each build/sign approval
+must identify and review the exact tooling
 SHA and job evidence before releasing that job.
 
 The controller public key comes from a read-only extraction of verification_key_hex
