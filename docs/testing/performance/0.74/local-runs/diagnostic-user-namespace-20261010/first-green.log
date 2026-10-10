@@ -1,0 +1,20 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 17.35s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 11 tests
+test diagnostic_process::user_namespace::tests::namespace_bracket_is_generation_namespace_generation_namespace_generation ... ok
+test diagnostic_process::user_namespace::tests::namespace_mismatch_at_each_namespace_read_cannot_refresh ... ok
+test diagnostic_process::user_namespace::tests::namespace_every_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_process::user_namespace::tests::namespace_real_wrong_type_and_ordinary_files_refuse ... ok
+namespace mutation seed=0x74e2026
+test diagnostic_process::user_namespace::tests::namespace_seeded_valid_inode_mutations_are_not_adopted ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_exit_refuses_even_though_namespace_fd_survives ... ok
+test diagnostic_process::user_namespace::tests::namespace_constructor_refuses_original_process_after_exit ... ok
+test diagnostic_process::user_namespace::tests::namespace_original_directory_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_descriptor_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_original_and_reader_match_repeatedly ... ok
+test diagnostic_process::user_namespace::tests::namespace_concurrent_original_guards_do_not_share_refusal ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 185 filtered out; finished in 0.03s
+

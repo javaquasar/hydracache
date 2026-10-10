@@ -1111,6 +1111,15 @@ all-thread or original-start authority. Trusted host policy, root-owned output
 preparation and signed lifecycle activation remain prerequisites. No new helper
 or IPC route, host mutation, product workload or qualification is enabled.
 
+The [original user namespace guard](../testing/performance/0.74/diagnostic-user-namespace-local-design.md)
+now pins and compares nsfs user namespace objects for the original process and
+reading thread under generation brackets, with sticky refusal on exit/drift.
+Fixed proc magic links are followed deliberately; wrong filesystem/type refuses.
+Real owned-helper checks establish local same-namespace consistency only, not
+initial host/NSS policy or production cgroup identity. Credential-file opener
+binding remains explicit future work; no existing numeric API, helper/IPC route,
+namespace join, host mutation or qualification admission changes.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

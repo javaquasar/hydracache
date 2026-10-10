@@ -1,0 +1,83 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `dev` found for struct `Metadata` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs:170:27
+    |
+170 | ...)?.dev() ...
+    |       ^^^
+    |
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/os/unix/fs.rs:555:7
+    |
+    = note: the method is available for `Metadata` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `MetadataExt` which provides `dev` is implemented but not in scope; perhaps you want to import it
+    |
+  3 + use std::os::unix::fs::MetadataExt;
+    |
+help: there is a method `rdev` with a similar name
+    |
+170 |     if thread.metadata()?.rdev() != root.metadata()?.dev() {
+    |                           +
+
+error[E0599]: no method named `dev` found for struct `Metadata` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs:170:53
+    |
+170 | ...)?.dev() {
+    |       ^^^
+    |
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/os/unix/fs.rs:555:7
+    |
+    = note: the method is available for `Metadata` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `MetadataExt` which provides `dev` is implemented but not in scope; perhaps you want to import it
+    |
+  3 + use std::os::unix::fs::MetadataExt;
+    |
+help: there is a method `rdev` with a similar name
+    |
+170 |     if thread.metadata()?.dev() != root.metadata()?.rdev() {
+    |                                                     +
+
+error[E0599]: no method named `dev` found for struct `Metadata` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs:175:23
+    |
+175 | ...)?.dev() ...
+    |       ^^^
+    |
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/os/unix/fs.rs:555:7
+    |
+    = note: the method is available for `Metadata` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `MetadataExt` which provides `dev` is implemented but not in scope; perhaps you want to import it
+    |
+  3 + use std::os::unix::fs::MetadataExt;
+    |
+help: there is a method `rdev` with a similar name
+    |
+175 |     if ns.metadata()?.rdev() != root.metadata()?.dev() {
+    |                       +
+
+error[E0599]: no method named `dev` found for struct `Metadata` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs:175:49
+    |
+175 | ...)?.dev() {
+    |       ^^^
+    |
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/os/unix/fs.rs:555:7
+    |
+    = note: the method is available for `Metadata` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `MetadataExt` which provides `dev` is implemented but not in scope; perhaps you want to import it
+    |
+  3 + use std::os::unix::fs::MetadataExt;
+    |
+help: there is a method `rdev` with a similar name
+    |
+175 |     if ns.metadata()?.dev() != root.metadata()?.rdev() {
+    |                                                 +
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

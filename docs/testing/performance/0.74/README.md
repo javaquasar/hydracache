@@ -2243,3 +2243,20 @@ source, without claiming measured allocation or throughput improvements.
 Trusted provider/configuration and namespace policy, root-owned outputs, signed
 start and watchdog recovery remain before production activation. Frozen
 qualification inputs and closed ship admission are unchanged.
+
+The [original user namespace guard](diagnostic-user-namespace-local-design.md)
+now retains user namespace objects for the original process and current reading
+thread. Nsfs/type and device/inode checks accompany original generation brackets;
+exit or drift permanently refuses the guard. This is opt-in consistency only,
+not initial host namespace or trusted NSS enrollment. The credential document's
+opener view remains a separate prerequisite; existing numeric APIs are unchanged.
+
+The [packet](local-runs/diagnostic-user-namespace-20261010/manifest.json)
+retains the 218-pass baseline, API refusal, missing-import correction, eleven
+initial passes and final 230 Linux passes with one pre-existing ignored. All
+twelve new cases pass three repetitions. Real owned-helper positives and exit,
+descriptor/directory substitution and concurrent checks are local kernel proof;
+foreign-user-namespace drift cases remain synthetic. Windows passes 28 portable
+tests and root contracts/evidence/governance pass 125 before registration. No
+namespace/account/unit mutation, product workload or performance measurement ran;
+qualification inputs and closed ship admission are unchanged.

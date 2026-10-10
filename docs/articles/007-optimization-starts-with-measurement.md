@@ -5368,3 +5368,42 @@ namespace policy still precede production use. Sequential checks are not an
 atomic or continuous credential proof; root-owned output preparation,
 authenticated original start and watchdog recovery remain separate. No product
 workload or qualification ran, and no numerical performance gain is claimed.
+
+## Retaining the original process user namespace
+
+Numeric credentials need a defined reader context. The
+[user namespace rules](https://linuxman7.org/linux/man-pages/man7/user_namespaces.7.html)
+describe how numeric ID mappings depend on the reader namespace. A fixed user
+name and matching numbers do not alone establish a trusted host identity.
+The [new opt-in guard](../testing/performance/0.74/diagnostic-user-namespace-local-design.md)
+retains kernel user namespace objects for the already pinned process and the
+current reading thread. It deliberately uses `thread-self`, not the process
+leader's namespace. Nsfs and namespace type checks precede device/inode matching;
+ordinary namespace-directory lookup remains descriptor-relative and no-follow.
+
+The namespace and original process-generation checks alternate. This catches a
+dead original process even though its retained namespace FD can remain valid.
+Every observation error or identity drift permanently refuses the guard, and
+restoring a substituted descriptor cannot repair it. No PID, namespace ID, path
+or FD can be supplied to replace an input; no namespace join or launch operation
+is exposed. The hypothesis is a bounded, opt-in consistency check rather than a
+conversion of observed namespace equality into production authority.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-user-namespace-20261010/manifest.json)
+supports that narrow mechanism. A 218-pass Linux baseline precedes the missing
+API check. After correcting a missing trait import, eleven tests pass; review
+adds a distinct-kernel-object comparison and the final suite passes 230 with one
+pre-existing ignored. All twelve new cases pass three further repetitions.
+Real owned cat helpers exercise same-namespace positives, exit refusal, both
+namespace descriptors, directory substitution and independent concurrent guards.
+Actual mount namespace and regular-file descriptors refuse as user namespaces.
+Seed `0x74e2026` mutates 256 synthetic device/inode identities per repetition;
+these are not real foreign-user-namespace transitions. Windows passes 28 portable
+checks and root contracts/evidence/governance pass 125 tests.
+
+The guard does not certify an initial host namespace, every thread or a trusted
+NSS provider. It also cannot retroactively certify the reader namespace used to
+open an existing credential document; that binding must precede later
+composition. Production output preparation, authenticated original start and
+watchdog recovery remain separate. No product workload or numeric allocation,
+CPU/op or throughput result follows from these local safety checks.

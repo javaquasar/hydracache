@@ -7,7 +7,6 @@ read-only user namespace guard over an already retained original `ProcessRead`.
 Record baseline, missing API check, tests, implementation and repeated local
 results separately. No PID, namespace ID, pathname, FD, account or numeric policy
 is accepted from the caller. The existing credential/account APIs are unchanged.
-Use write-page for repository design/article prose; no cloud Page is created.
 
 ## Namespace identity and observations
 
@@ -54,3 +53,42 @@ binding, production output preparation, authenticated original start, watchdog
 recovery and a positive lifecycle rehearsal remain separate. No helper/IPC route,
 host install, product workload or qualification is enabled. Frozen qualification
 inputs, thresholds and closed ship admission remain exact.
+
+## Local implementation and results
+
+`pin_same_user_namespace` borrows the original process and pins nsfs objects for
+that process and the current reading thread. Only the fixed proc magic links
+are followed; ordinary directory traversal retains the no-follow policy. Kernel
+filesystem/type checks precede device/inode comparison. The runtime guard has
+no serialization, ID/FD export, refresh, namespace join or execution route.
+
+The [local packet](local-runs/diagnostic-user-namespace-20261010/manifest.json)
+retains the 218-pass Linux baseline and clean missing-API refusal. The initial
+implementation test compilation refused a missing `MetadataExt` import; after
+that correction eleven tests passed. Review factors the shared ID comparison
+and adds a twelfth case using actual distinct kernel objects. Final Linux
+coverage passes 230 tests with one pre-existing ignored, followed by three
+twelve-test repetitions. Seed `0x74e2026` exercises 256 device/inode mutations
+per repetition. Those changed identities are synthetic; no test creates or joins
+a foreign user namespace. Real positives use ordinary owned cat processes with
+the private original-process fixture pin, not a production diagnostic cgroup.
+
+The exit regression demonstrates why a namespace FD is not process-liveness
+authority: the retained nsfs FD remains valid after the helper exits, but the
+original generation check rejects revalidation. Substituted observer/worker FDs
+and the original namespace directory refuse permanently even after restoration.
+Independent concurrent guards do not share that refusal state. Actual mount
+namespace and regular-file descriptors refuse as user namespace objects.
+
+Windows passes 28 portable checks and executes no Linux namespace cases. Root
+contracts/evidence/governance pass 125 checks before packet registration. Scoped
+formatting/check/lint and documentation gates pass; full workspace milestone
+verification and numerical performance measurement are outside this local step.
+The qualification digest and expected-red ship admission remain unchanged.
+
+Same-namespace consistency is implemented, not trusted host enrollment. Binding
+the credential document's opener namespace must precede later credential
+composition; earlier numeric observations are not retroactively certified.
+Trusted NSS provider/configuration, initial/host and all-thread policy, fenced
+production preparation, authenticated original start and watchdog recovery still
+precede a positive production lifecycle rehearsal.

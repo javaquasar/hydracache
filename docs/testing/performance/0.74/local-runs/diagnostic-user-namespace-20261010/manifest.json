@@ -1,0 +1,159 @@
+{
+  "schema_version": "diagnostic-user-namespace-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "bde3a8ac4ee00620672d6e2cd05c2471bec03bc7",
+  "preregistration_commit": "d0e445e2e053bb1558f93fdeee8c32380127bf67",
+  "implementation_commit": "4243ed44018fd6d110b2ef1f98fda9640433e2bd",
+  "implementation_tree": "fbfcb410a47e2f2b436a06cea10d809caee8f4a8",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur non-root; owned non-product cat helpers only",
+  "checks": {
+    "baseline_linux_passed": 218,
+    "first_green_new_tests": 11,
+    "final_linux_passed": 230,
+    "new_namespace_tests": 12,
+    "preexisting_linux_ignored": 1,
+    "repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_namespace_tests_executed": 0,
+    "root_passed_before_packet_registration": 125,
+    "ship_expected_red_native_exit": 1,
+    "post_evidence_registry": true,
+    "documentation_final_passed": true,
+    "full_workspace_verify_rerun": false
+  },
+  "real_kernel_test_boundary": "owned-cat-original-process-test-pin-and-current-reading-thread",
+  "negative_results": {
+    "api_red": "Library check refused unresolved namespace API imports before implementation; API red, not behavioral failure.",
+    "implementation_red": "First test compile refused four E0599 errors due to missing MetadataExt import. Corrected before eleven-test green.",
+    "registry_edit_review": "A stray leading plus in the authored TOML insertion was identified by diff review and removed before root gates; no failed gate is represented as a pass.",
+    "namespace_liveness": "Retained user namespace FD still passes nsfs/type after owned original process exit. Original generation revalidation refuses; namespace FD validity alone cannot establish process liveness."
+  },
+  "proof_boundaries": {
+    "trusted_host_or_initial_namespace": false,
+    "trusted_nss_provider": false,
+    "credential_opener_namespace_binding": false,
+    "all_thread_namespace_proof": false,
+    "atomic_or_continuous_observation": false,
+    "real_foreign_user_namespace_transition": false,
+    "production_cgroup_identity": false,
+    "other_original_guards_latched": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "whole_operation_deadline": false,
+    "namespace_creation_or_join": false,
+    "host_account_or_unit_mutation": false,
+    "host_install": false,
+    "product_or_observer_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "retention": {
+    "log_count": 20,
+    "files": [
+      {
+        "bytes": 919,
+        "name": "api-red.log",
+        "sha256": "bfae8f2d1a542c4d1b1e816413cda4ac0a391a35d04dab8d8f446e182de7182f"
+      },
+      {
+        "bytes": 23420,
+        "name": "baseline.log",
+        "sha256": "305a1bf08c6f3f6845d924fb7ea66ba3653e85d6da8c25f3c04d9cd1b54f0b85"
+      },
+      {
+        "bytes": 151,
+        "name": "book.log",
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "bytes": 203,
+        "name": "contract.log",
+        "sha256": "37e0f7b1784770f4a1f79b1b86a3a20f94348f2204f9a02cce197146b5c3dcad"
+      },
+      {
+        "bytes": 239,
+        "name": "doc.log",
+        "sha256": "1df16180ec3ee9c9b7c4c0a8da23b796c65ff377d650962948d3c722762e8fe2"
+      },
+      {
+        "bytes": 578,
+        "name": "docs-final.log",
+        "sha256": "5edc6877ea98bac0cb05447f595193d99dd306cf2d7ed6ef5a282fe31e12db84"
+      },
+      {
+        "bytes": 24983,
+        "name": "final-linux.log",
+        "sha256": "f7d8baa9ab52f4dd725e545f9a53a009caf473e8077aeac876e08dfb6da4fae7"
+      },
+      {
+        "bytes": 1778,
+        "name": "first-green.log",
+        "sha256": "266f93f6951e0bf49317980a8cb19f7c8a06a6cd78818e64b6f272e92e7f5804"
+      },
+      {
+        "bytes": 18,
+        "name": "format.log",
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92"
+      },
+      {
+        "bytes": 3394,
+        "name": "implementation-red.log",
+        "sha256": "574710d4439bcaad6448aa958f19eed16aab9e8d5cdba150a37da32125f49b4a"
+      },
+      {
+        "bytes": 69,
+        "name": "links.log",
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "bytes": 280,
+        "name": "linux-check.log",
+        "sha256": "b5b87e4006ec194d5376de51e37cdb3ca9494d8e55aec28cefefd703eb325ffe"
+      },
+      {
+        "bytes": 280,
+        "name": "linux-lint.log",
+        "sha256": "3cf369b1d324806e17f3b977bdd7b97ea5edc072dbd9055935957a34c5b5c27d"
+      },
+      {
+        "bytes": 439,
+        "name": "post-registry.log",
+        "sha256": "ec13135dc76ea24babe039efea826193f89646d36e6a05c01ec63ca16d240814"
+      },
+      {
+        "bytes": 5286,
+        "name": "repeats.log",
+        "sha256": "7b613dc8c25caaa619583cfcf8c808bbc7340a273290bb6a4bcea6dc4a3a6965"
+      },
+      {
+        "bytes": 10782,
+        "name": "root.log",
+        "sha256": "39a1cd0e5a4da9f7ab87da61aa97c97de7da2c9475310d65a7e5872a6659d3ef"
+      },
+      {
+        "bytes": 511,
+        "name": "ship.log",
+        "sha256": "2f073861fc6f19e29d553c1d6cd39eb0ea47ead99b7c20e22a259416b8cd83fd"
+      },
+      {
+        "bytes": 145,
+        "name": "windows-check.log",
+        "sha256": "5bf921ec28bd3a1ffaf81d3b9b45f1cf3b9e0ff5336782e9dda5a4e740dcc441"
+      },
+      {
+        "bytes": 145,
+        "name": "windows-lint.log",
+        "sha256": "ab8bc9e3bc2e6e5919e799db4b990da2dc831f609adadbdff6438836c976a7dd"
+      },
+      {
+        "bytes": 3322,
+        "name": "windows.log",
+        "sha256": "02c22a140de8d279cb6903b20b90c8825ca5aefc3d040f2256e586c4ea380df4"
+      }
+    ]
+  }
+}
