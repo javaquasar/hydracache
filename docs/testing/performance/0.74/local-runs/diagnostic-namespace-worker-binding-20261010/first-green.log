@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 18.28s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_order_keeps_original_reader_between_accounts ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_every_failure_keeps_typed_first_error_and_details ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_prior_refusal_and_mismatch_make_no_observations ... ok
+namespace binding mutation seed=0x7502026
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_seeded_valid_mapping_drift_cannot_be_adopted ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_binding_reader_refusal_reaches_all_owned_guards ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_exit_preserves_namespace_error_and_refuses_account ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_mapping_mismatch_refuses_without_helper ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_first_and_second_account_drift_latch_after_drop ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_pending_cleanup_preserves_exact_owned_helper ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_prior_refusal_latches_other_without_helper ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_success_drop_preserves_healthy_original_inputs ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_concurrent_bindings_do_not_share_refusal ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 209 filtered out; finished in 0.06s
+

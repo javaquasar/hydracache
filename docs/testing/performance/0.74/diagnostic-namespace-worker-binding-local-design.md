@@ -51,3 +51,43 @@ and expected-red require-ship. Retain exact raw captures and their hashes,
 including negatives. Frozen qualification manifest and old evidence packets
 remain unchanged. No host mutation, expensive workload, qualification, full
 workspace milestone verification or numerical performance claim is enabled.
+
+## Local implementation and results
+
+`bind_namespace_checked_worker` borrows the original fixed-account and
+namespace-checked reader. Crate-private mapping/refusal methods expose neither
+numeric assertions nor underlying guards. Mapping delegates to the existing
+bounded union rule; refusal reaches the account and both reader components.
+The old binder and numeric credential source are unchanged. Successful binding
+drop leaves healthy inputs usable; failed construction/drop cannot refresh them.
+
+The [packet](local-runs/diagnostic-namespace-worker-binding-20261010/manifest.json)
+retains a 242-pass baseline, missing-API refusal with Cargo native exit 101,
+twelve-test first green and 254-test final Linux suite with one pre-existing
+ignored. All twelve new tests pass three further runs. Seed `0x7502026` exercises
+256 canonically valid mapping mutations per repetition. Exact order and injected
+first-error branches are modeled; real owned NNP cat processes establish local
+original readers, exit refusal, early public-constructor refusal, healthy drop,
+pending-helper reservation and independent concurrent state. Positive account
+projections remain synthetic and do not authenticate NSS.
+
+Account drift at either outer step refuses the original account and reader
+after wrapper drop. Reader process exit preserves the nested namespace/process
+error and refuses the account. Prior refusal and mapping mismatch make no helper
+observation. PendingCleanup retains its false cleanup flag and the same live
+owned helper; only the test subsequently stops its own helper. A reader-level
+test verifies binder refusal reaches both privately owned component guards.
+
+Windows passes 28 portable tests, executing no Linux binding cases. Root
+contracts/evidence/governance pass 127 checks. Scoped formatting/check/clippy
+and documentation gates pass; require-ship remains expected red with native
+exit 1. Independent real NSS operator inspection still refuses exit 9 with
+empty stdout and confirmed cleanup. No specific underlying NSS cause is inferred.
+Frozen qualification and old evidence packets remain exact. No performance
+measurement, host/product workload or full workspace milestone gate ran.
+
+Original mapping consistency with namespace-checked credentials is implemented.
+Trusted NSS provider/configuration and helper namespace policy, trusted
+host/initial and all-thread policy, root-owned fenced production preparation,
+authenticated original start and watchdog recovery remain separate before
+production composition or a positive lifecycle rehearsal.

@@ -5450,3 +5450,45 @@ Windows passes 28 portable tests and root contracts/evidence/governance pass
 they are separate from the green implementation tests. Scoped lint/check and
 documentation gates pass, while require-ship remains expected red and the
 qualification manifest remains unchanged.
+
+## Binding the original account to namespace checked credentials
+
+The next local hypothesis joins the original fixed-account observation to the
+reader that checks namespace before opening status and around credential reads.
+The [new opt-in binder](../testing/performance/0.74/diagnostic-namespace-worker-binding-local-design.md)
+accepts only these two retained guards, not another process, numeric policy,
+account projection or descriptor. It reuses the existing UID/primary GID and
+group-membership mapping rule and refuses mismatch before any helper observation.
+The older numeric-only reader and binder remain unchanged.
+
+Account checks surround the namespace-checked reader. The reader preserves
+its original status and namespace/credentials/namespace sequence; no document
+is reopened or reinterpreted from a replacement policy. Any error preserves
+its first typed details and refuses the account and both privately owned reader
+guards. Constructor failure and dropping the borrow wrapper cannot undo refusal.
+A successful drop, by contrast, leaves healthy inputs usable. Pending helper
+cleanup stays reserved to the original manager instead of being replaced or
+silently retried.
+
+This establishes agreement among observations, not their authority. An NSS
+snapshot's provider/configuration and helper namespace are not attested by
+matching its numbers to a sequentially checked reader. Trusted host/initial
+namespace, all-thread policy, authenticated original start, root-owned fenced
+outputs and watchdog recovery remain prerequisites for production composition.
+There is no launch or live IPC route, and these safety checks imply no measured
+allocation, CPU/op or throughput improvement.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-namespace-worker-binding-20261010/manifest.json)
+retains the 242-pass Linux baseline, missing-API check and twelve new passing
+tests. Final coverage passes 254 with one pre-existing ignored, followed by
+three twelve-test repetitions. Seed `0x7502026` exercises 256 canonically valid
+UID/GID/group mapping changes per repetition; these and injected observation
+failures are synthetic. Real owned NNP cat processes exercise original readers,
+exit refusal, healthy wrapper drop, early public-constructor refusal, pending
+helper reservation and independent concurrency, using synthetic account
+projections. A reader-level test verifies that binding refusal reaches both
+privately owned components. Actual NSS operator inspection still refuses with
+exit 9 and confirmed cleanup, so none of these positives become trusted NSS
+enrollment. Windows passes 28 portable tests, and root contracts/evidence/
+governance pass 127. Scoped lint/check and documentation gates pass; qualification
+inputs remain exact and require-ship remains expected red.

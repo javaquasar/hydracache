@@ -2279,3 +2279,22 @@ variations are modeled; owned-helper exit, substitution/restoration, NNP and
 concurrency checks exercise real local kernel readers. Command-wrapper exit
 capture mistakes are retained as negative evidence. Frozen qualification and
 closed production/ship admission are unchanged; no numerical gain is claimed.
+
+The [namespace-checked fixed-account binder](diagnostic-namespace-worker-binding-local-design.md)
+borrows the original account and namespace-checked credential reader. It reuses
+the original numeric mapping, checks refusal/mismatch before observation, and
+requires account/reader/account. Reader opening and its namespace/credentials/
+namespace checks stay intact. Errors refuse all three underlying guards, even
+after construction fails or the binding drops; a successful drop preserves
+healthy inputs. No numeric reader conversion, replacement input, helper mode,
+IPC or live route is added. Mapping agreement does not attest the NSS helper's
+namespace or provider/configuration and remains local consistency, not enrollment.
+
+The [packet](local-runs/diagnostic-namespace-worker-binding-20261010/manifest.json)
+retains the 242-pass baseline, missing-API check, twelve-test first green and
+254-pass final Linux suite with one pre-existing ignored; all twelve new cases
+pass three further repetitions. Windows passes 28 portable tests and root checks
+pass 127. Real owned original readers use synthetic account projections; actual
+NSS operator observation still refuses exit 9 with confirmed cleanup. Seeded
+mapping drift is canonically valid but synthetic. Scoped checks/documentation
+pass; unchanged qualification and expected-red ship admission remain closed.

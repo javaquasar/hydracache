@@ -1127,6 +1127,17 @@ initial host/NSS policy or all-thread authority. Preopened numeric readers canno
 be enrolled. No existing numeric API, account binder, helper/IPC route, namespace
 join, host mutation or qualification admission changes.
 
+The separate [namespace-checked fixed-account binder](../testing/performance/0.74/diagnostic-namespace-worker-binding-local-design.md)
+now borrows the original account and namespace-checked reader, reusing the
+original numeric mapping rule before observation. Account checks bracket the
+unchanged namespace/credentials/namespace reader. Any error refuses account,
+namespace and credentials through constructor failure and binding drop; a
+successful drop leaves healthy inputs usable. This cannot convert a numeric-only
+reader, attest NSS provider/configuration or helper namespace, or establish
+trusted host/all-thread/original-start authority. Production preparation and
+signed lifecycle/watchdog integration remain separate; no helper/IPC or live
+route, host mutation, workload or qualification is enabled.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

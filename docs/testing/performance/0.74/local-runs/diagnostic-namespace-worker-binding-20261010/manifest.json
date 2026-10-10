@@ -1,0 +1,181 @@
+{
+  "schema_version": "diagnostic-namespace-worker-binding-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "8ceb10e08f63151974c73fd66b9812e91fb5130d",
+  "preregistration_commit": "d1396746f1ee34dec8ba51b0ac1a17b8ae7d8ca6",
+  "implementation_commit": "00bae2ddcba8ba5f20c7ace88da20e8a229a71cb",
+  "implementation_tree": "6841d9c8eff543b7af1f1ffd21f9a86e61097033",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur non-root; owned non-product NNP cat helpers only",
+  "checks": {
+    "baseline_linux_passed": 242,
+    "first_green_new_tests": 12,
+    "final_linux_passed": 254,
+    "new_binding_tests": 12,
+    "preexisting_linux_ignored": 1,
+    "repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_binding_tests_executed": 0,
+    "root_passed_before_packet_registration": 127,
+    "api_red_cargo_native_exit": 101,
+    "ship_expected_red_native_exit": 1,
+    "post_evidence_registry": true,
+    "documentation_final_passed": true,
+    "full_workspace_verify_rerun": false
+  },
+  "real_kernel_test_boundary": "owned-nnp-cat-original-process-test-pin-and-synthetic-account-projections",
+  "new_test_functions": [
+    "namespace_binding_reader_refusal_reaches_all_owned_guards",
+    "namespace_binding_order_keeps_original_reader_between_accounts",
+    "namespace_binding_prior_refusal_and_mismatch_make_no_observations",
+    "namespace_binding_every_failure_keeps_typed_first_error_and_details",
+    "namespace_binding_seeded_valid_mapping_drift_cannot_be_adopted",
+    "namespace_binding_owned_success_drop_preserves_healthy_original_inputs",
+    "namespace_binding_owned_first_and_second_account_drift_latch_after_drop",
+    "namespace_binding_owned_exit_preserves_namespace_error_and_refuses_account",
+    "namespace_binding_public_mapping_mismatch_refuses_without_helper",
+    "namespace_binding_public_prior_refusal_latches_other_without_helper",
+    "namespace_binding_public_pending_cleanup_preserves_exact_owned_helper",
+    "namespace_binding_owned_concurrent_bindings_do_not_share_refusal"
+  ],
+  "negative_results": {
+    "api_red": "Missing opt-in API imports refuse library compilation with Cargo native exit 101 before implementation. Availability check only, not behavioral failure.",
+    "real_nss": "Independent fixed real account operator still refuses exit 9 with empty stdout and confirmed cleanup. Synthetic account positives cannot establish trusted NSS enrollment.",
+    "pending_cleanup": "Public binder preserves PendingCleanup and cleanup_confirmed=false without replacing or stopping the exact retained helper; the test then cleans up its own helper.",
+    "account_or_reader_drift": "Original account drift at either outer stage and original process exit permanently refuse all original component guards; restoration cannot refresh them."
+  },
+  "implemented_mechanisms": {
+    "borrowed_original_guards_only": true,
+    "original_mapping_rule_reused": true,
+    "namespace_checked_reader_required": true,
+    "unchanged_original_status_opening_and_reader_order": true,
+    "account_reader_account_bracket": true,
+    "all_three_original_guards_sticky_on_error": true,
+    "successful_drop_preserves_healthy_inputs": true,
+    "pending_helper_reservation_preserved": true,
+    "old_numeric_api_and_binder_unchanged": true
+  },
+  "proof_boundaries": {
+    "trusted_host_or_initial_namespace": false,
+    "trusted_nss_provider_or_configuration": false,
+    "nss_helper_namespace_attestation": false,
+    "all_thread_proof": false,
+    "kernel_attested_file_credential_namespace": false,
+    "atomic_or_continuous_observation": false,
+    "whole_composition_deadline": false,
+    "real_foreign_user_namespace_transition": false,
+    "production_cgroup_identity": false,
+    "real_nss_positive_enrollment": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "namespace_creation_or_join": false,
+    "host_account_or_unit_mutation": false,
+    "host_install": false,
+    "product_or_observer_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "retention": {
+    "log_count": 19,
+    "files": [
+      {
+        "name": "api-red.log",
+        "bytes": 1454,
+        "sha256": "3926ce285c3cd31ef00f24d6d58d6be4464b4149631749d1e52a6e445ded0b14"
+      },
+      {
+        "name": "baseline.log",
+        "bytes": 26558,
+        "sha256": "f166513ca258a66396bce3f15bc1450594ba010b9da1e28fc58a81d44de00322"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 203,
+        "sha256": "66730a6c41bd8a162e0aee73e5c0136776e7f28805d05b62b52b5a0117d7cd82"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 239,
+        "sha256": "23aeb430de9a7f65c1761f75ecaa73f64e4d45d212a04a5bb5328f29e277a8e4"
+      },
+      {
+        "name": "docs-final.log",
+        "bytes": 578,
+        "sha256": "56ff4406df639861ff61f05d9accf472661191a106a0c2529ed575d3b7e75c9a"
+      },
+      {
+        "name": "final-linux.log",
+        "bytes": 28345,
+        "sha256": "eac7ae7259e8cc5f5e23e031bd901c5567f0deded162e67c7ae86dc17d79e5e1"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 2119,
+        "sha256": "d929321b4fb06550c9d7c853e32b0020c8ca78b4b91da6f54808b3ddf1fc219c"
+      },
+      {
+        "name": "format.log",
+        "bytes": 18,
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "linux-check.log",
+        "bytes": 280,
+        "sha256": "f5bf7b772548e8006979d1192d0aba154d177a7639ffdbe4748c773ed970c48c"
+      },
+      {
+        "name": "linux-lint.log",
+        "bytes": 280,
+        "sha256": "cb42b17f74da3809f459385b6fb2c1538879be915f92941ef65ae2e9d4c31e11"
+      },
+      {
+        "name": "post-registry.log",
+        "bytes": 439,
+        "sha256": "361f779929cba399dc57daff0548d88b381a008ef78b125b2735ca82f1551502"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 5958,
+        "sha256": "b071866ce663163f715cf969d70ca8323faaa7df65c795a68685e5c0346dca94"
+      },
+      {
+        "name": "root.log",
+        "bytes": 11325,
+        "sha256": "9d7424d4d682d483d66ee909bca51deb9646436f03913b12708981a4da0eaeae"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 511,
+        "sha256": "474aa6d4ebc318cc8aa19c29e250102bfb7f34c158f4d9790b127266cb61a8ed"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 200,
+        "sha256": "c92b9d6c834a51c00a34d3d6718939f99a98cf82e64956fe2089d7d203de471e"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 145,
+        "sha256": "0851e55181ddfcfc9ff1d0b3e8f270b5e6a93559901b99a8735d24ee356f2c77"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 3322,
+        "sha256": "26de08b999f48128f8dd053b4a063e59cdd096a4b241a942fc58413d60932cda"
+      }
+    ]
+  }
+}
