@@ -1,0 +1,45 @@
+
+running 10 tests
+test diagnostic_live_identity::tests::synthetic_manager_checks_bracket_both_original_source_checks ... ok
+test diagnostic_live_identity::tests::synthetic_scope_generation_origin_and_root_mismatch_refuse ... ok
+test diagnostic_live_identity::tests::synthetic_four_cells_bind_exact_root_and_descendant_membership ... ok
+test diagnostic_live_identity::tests::synthetic_pid_in_wrong_node_missing_duplicate_or_frozen_refuses ... ok
+test diagnostic_live_identity::tests::synthetic_second_pid_or_invocation_change_cannot_be_adopted ... ok
+test diagnostic_live_identity::tests::synthetic_process_and_tree_failures_at_both_positions_latch ... ok
+test diagnostic_live_identity::tests::synthetic_both_manager_failures_retain_details_and_latch ... ok
+test diagnostic_live_identity::tests::actual_owned_helper_and_fixture_tree_cannot_be_promoted ... ok
+test diagnostic_live_identity::tests::synthetic_independent_guards_do_not_share_refusal_state ... ok
+test diagnostic_live_identity::tests::synthetic_same_invocation_pid_and_status_drift_is_sticky ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 108 filtered out; finished in 0.02s
+
+
+running 10 tests
+test diagnostic_live_identity::tests::synthetic_manager_checks_bracket_both_original_source_checks ... ok
+test diagnostic_live_identity::tests::synthetic_both_manager_failures_retain_details_and_latch ... ok
+test diagnostic_live_identity::tests::synthetic_pid_in_wrong_node_missing_duplicate_or_frozen_refuses ... ok
+test diagnostic_live_identity::tests::synthetic_four_cells_bind_exact_root_and_descendant_membership ... ok
+test diagnostic_live_identity::tests::actual_owned_helper_and_fixture_tree_cannot_be_promoted ... ok
+test diagnostic_live_identity::tests::synthetic_process_and_tree_failures_at_both_positions_latch ... ok
+test diagnostic_live_identity::tests::synthetic_scope_generation_origin_and_root_mismatch_refuse ... ok
+test diagnostic_live_identity::tests::synthetic_independent_guards_do_not_share_refusal_state ... ok
+test diagnostic_live_identity::tests::synthetic_second_pid_or_invocation_change_cannot_be_adopted ... ok
+test diagnostic_live_identity::tests::synthetic_same_invocation_pid_and_status_drift_is_sticky ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 108 filtered out; finished in 0.02s
+
+
+running 10 tests
+test diagnostic_live_identity::tests::synthetic_pid_in_wrong_node_missing_duplicate_or_frozen_refuses ... ok
+test diagnostic_live_identity::tests::synthetic_manager_checks_bracket_both_original_source_checks ... ok
+test diagnostic_live_identity::tests::synthetic_both_manager_failures_retain_details_and_latch ... ok
+test diagnostic_live_identity::tests::synthetic_process_and_tree_failures_at_both_positions_latch ... ok
+test diagnostic_live_identity::tests::actual_owned_helper_and_fixture_tree_cannot_be_promoted ... ok
+test diagnostic_live_identity::tests::synthetic_four_cells_bind_exact_root_and_descendant_membership ... ok
+test diagnostic_live_identity::tests::synthetic_scope_generation_origin_and_root_mismatch_refuse ... ok
+test diagnostic_live_identity::tests::synthetic_second_pid_or_invocation_change_cannot_be_adopted ... ok
+test diagnostic_live_identity::tests::synthetic_same_invocation_pid_and_status_drift_is_sticky ... ok
+test diagnostic_live_identity::tests::synthetic_independent_guards_do_not_share_refusal_state ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 108 filtered out; finished in 0.01s
+

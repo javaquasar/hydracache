@@ -4983,3 +4983,58 @@ guard without relaxing any runtime check. Affected check/lint, scoped format,
 documentation/local performance contracts, links and book build passed. These
 working-tree observations support the narrow fixture safety result, not release
 readiness or a numerical performance claim; the qualification digest is unchanged.
+
+### An unchanged invocation can still report a different process
+
+The next safety hypothesis concerns the relationship between three observations.
+The manager identifies a unit invocation, procfs identifies a process generation,
+and the recursive cgroup reader identifies a stable tree. Independently valid
+observations need not describe the same execution. The invocation-only guard
+intentionally permits MainPID to change as lifecycle progresses; that flexibility
+cannot become permission to substitute a new process for a measurement already
+bound to an original generation.
+
+The [original identity join](../testing/performance/0.74/diagnostic-live-identity-local-design.md)
+therefore borrows the retained process and tree readers rather than capturing
+replacements. It requires the manager's MainPID to equal the original process
+PID, keeps the original boot and start ticks, and requires the PID in exactly
+the node named by that process's cgroup path. Finding it somewhere in the unit
+tree is insufficient: a sibling membership does not establish the same identity.
+Frozen nodes and anything other than active/running/success refuse the stable
+live observation. These are conservative diagnostic conditions, not a change to
+product lifecycle semantics.
+
+The revealing regression holds invocation constant while changing MainPID.
+The older invocation-only check accepts, as designed; the composite refuses and
+stays refused after the original PID returns. Two manager observations surround
+retained process/tree checks, and failures at either position latch the same
+guard. Manager deadline failures keep their raw bounded output and helper cleanup
+status. A subsequent apparently healthy observation does not erase uncertainty.
+No new pidfd, tree inventory or invocation is adopted to make the check green.
+
+The local positive join tests use explicitly invented inputs. An actual owned
+cat helper provides a different kind of evidence: its ordinary cgroup and a
+temporary document tree cannot be promoted to fixed diagnostic kernel evidence,
+and refusal does not kill the helper. Producing a positive live composition would
+require the real fixed diagnostic unit and root provenance. That remains a
+controlled rehearsal, not something the synthetic matrix establishes.
+
+The retained tree is deliberately stable. A legitimate fork or membership change
+can invalidate it, so this guard is not yet a dynamic lifecycle observer. The
+checks are sequential and cannot detect every change-and-return between reads.
+Systemd's ControlGroup string also does not attest to the caller-supplied root
+inode or authenticate original launch. Production output preparation, joining
+executable and output evidence, writer revocation, durable first failure,
+watchdog and uncertain-start reconciliation remain before backend enrollment.
+The result is narrower identity refusal, not an allocation or throughput gain.
+
+The [retained packet](../testing/performance/0.74/local-runs/diagnostic-live-identity-20261010/manifest.json)
+contains 220 final Linux passes with one pre-existing ignored, three further
+repetitions of the ten new tests, 28 portable Windows passes and 118 root checks.
+The seven-test baseline is loaded-manager coverage only: Cargo's filter excluded
+the selected tree target. Both complete implementation runs execute its eight
+tests. Initial compile/source-guard failures and the earlier alternating order
+are preserved; the final order puts both source checks between manager reads.
+These working-tree checks and their byte/hash verifier support the scoped safety
+result. Positive live composition and numerical performance admission remain
+separate, and no frozen qualification input is regenerated.

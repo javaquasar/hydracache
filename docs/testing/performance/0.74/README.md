@@ -2079,3 +2079,27 @@ ten-test repetitions, 28 portable Windows passes and 117 root passes. It retains
 the absent-API/compiler-renderer and whitespace-sensitive static-guard refusals.
 Working-tree captures and explicit fixture positives are not clean-source
 qualification or installed observer receipts. Frozen inputs/digest stay unchanged.
+
+The subsequent [original identity join](diagnostic-live-identity-local-design.md)
+borrows the original kernel process and tree readers and owns the loaded
+invocation guard. It ties the manager's original MainPID to the process
+generation and exact member-node path. Active/running/success, fixed boot/root
+scope and unfrozen membership are required. Two bounded manager observations
+bracket repeated retained process/tree checks; any failure permanently refuses.
+Neither a later matching read nor replacement evidence repairs that guard.
+
+The local positive matrix is synthetic, while one actual owned-helper test
+proves foreign cgroup and temporary-tree rejection without creating a unit.
+This is not an atomic snapshot, authenticated original start, dynamic inventory
+refresh or production executable/output binding. Controlled positive host
+composition, fixed production output preparation and the remaining fenced
+lifecycle/durable failure prerequisites are still ahead. No numerical workload
+or qualification follows from this read-only implementation.
+
+The [identity-join packet](local-runs/diagnostic-live-identity-20261010/manifest.json)
+retains final 220 Linux passes with one pre-existing ignored, three additional
+ten-test repetitions, 28 portable Windows passes and 118 root checks. It separates
+synthetic joins, the actual foreign-scope refusal and earlier preparation
+observations. Code is committed as `44b62afe`; checks are working-tree observations,
+not a clean-source qualification. Check/lint/format, local docs/performance
+contracts, links and book build pass; the frozen qualification digest is unchanged.

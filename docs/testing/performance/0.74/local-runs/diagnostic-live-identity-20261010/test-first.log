@@ -1,0 +1,284 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `LoadedSnapshot` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:11:30
+   |
+11 | ...: &LoadedSnapshot) -...
+   |       ^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_tree.rs:67:1
+   |
+67 | ...deSnapshot {
+   | ...---------- similarly named struct `NodeSnapshot` defined here
+   |
+help: a struct with a similar name exists
+   |
+11 -     fn generation(snapshot: &LoadedSnapshot) -> ExpectedGeneration {
+11 +     fn generation(snapshot: &NodeSnapshot) -> ExpectedGeneration {
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_loaded::LoadedSnapshot;
+   |
+
+error[E0425]: cannot find type `ExpectedGeneration` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:11:49
+   |
+11 | ...-> ExpectedGeneration {
+   |       ^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_process::ExpectedGeneration;
+   |
+
+error[E0422]: cannot find struct, variant or union type `ExpectedGeneration` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:12:9
+   |
+12 | ...   Ex...neration {
+   |       ^^...^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_process::ExpectedGeneration;
+   |
+
+error[E0425]: cannot find type `JoinView` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:33:50
+   |
+33 | ...-> JoinView<'_> {
+   |       ^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `JoinView` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:34:9
+   |
+34 | ...   JoinView { ...
+   |       ^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `CgroupId` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:34:54
+   |
+34 | ...t: CgroupId {d...
+   |       ^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_tree::CgroupId;
+   |
+
+error[E0425]: cannot find type `LoadedSnapshot` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:36:27
+   |
+36 | ...: &LoadedSnapshot, f...
+   |       ^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_tree.rs:67:1
+   |
+67 | ...deSnapshot {
+   | ...---------- similarly named struct `NodeSnapshot` defined here
+   |
+help: a struct with a similar name exists
+   |
+36 -     fn changed(snapshot: &LoadedSnapshot, field: &str, value: serde_json::Value) -> LoadedSnapshot {
+36 +     fn changed(snapshot: &NodeSnapshot, field: &str, value: serde_json::Value) -> LoadedSnapshot {
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_loaded::LoadedSnapshot;
+   |
+
+error[E0425]: cannot find type `LoadedSnapshot` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:36:85
+   |
+36 | ...-> LoadedSnapshot {
+   |       ^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_tree.rs:67:1
+   |
+67 | ...deSnapshot {
+   | ...---------- similarly named struct `NodeSnapshot` defined here
+   |
+help: a struct with a similar name exists
+   |
+36 -     fn changed(snapshot: &LoadedSnapshot, field: &str, value: serde_json::Value) -> LoadedSnapshot {
+36 +     fn changed(snapshot: &LoadedSnapshot, field: &str, value: serde_json::Value) -> NodeSnapshot {
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_loaded::LoadedSnapshot;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `LoadedSnapshot`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:39:9
+   |
+39 | ...   Lo...Snapshot::d...
+   |       ^^...^^^^^^^^ use of undeclared type `LoadedSnapshot`
+   |
+help: a struct with a similar name exists
+   |
+39 -         LoadedSnapshot::decode(&canonical_json(&wire).unwrap(), snapshot.manager().scope()).unwrap()
+39 +         NodeSnapshot::decode(&canonical_json(&wire).unwrap(), snapshot.manager().scope()).unwrap()
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_loaded::LoadedSnapshot;
+   |
+
+error[E0425]: cannot find type `WorkerFailure` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:41:28
+    |
+ 41 | ...-> WorkerFailure {
+    |       ^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_manager.rs:216:1
+    |
+216 |...FailureKind {
+    |...----------- similarly named enum `WorkerFailureKind` defined here
+    |
+help: an enum with a similar name exists
+    |
+ 41 |     fn worker_failure() -> WorkerFailureKind {
+    |                                         ++++
+help: consider importing this struct
+    |
+  3 +     use crate::diagnostic_manager::WorkerFailure;
+    |
+
+error[E0422]: cannot find struct, variant or union type `WorkerFailure` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:42:9
+   |
+42 | ...   Wo...rFailure {k...
+   |       ^^...^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+ 3 +     use crate::diagnostic_manager::WorkerFailure;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `TreeError`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:146:68
+    |
+146 | ...rr(TreeError::I...
+    |       ^^^^^^^^^ use of undeclared type `TreeError`
+    |
+help: consider importing this enum
+    |
+  3 +     use crate::diagnostic_tree::TreeError;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ProcessError`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:146:106
+    |
+146 | ...rr(ProcessError::N...
+    |       ^^^^^^^^^^^^ use of undeclared type `ProcessError`
+    |
+help: consider importing this enum
+    |
+  3 +     use crate::diagnostic_process::ProcessError;
+    |
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:3:9
+  |
+3 | ...se super::*;
+  |       ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:52:33
+   |
+52 | ... = IdentityGuard::p...
+   |       ^^^^^^^^^^^^^ use of undec...ed type `IdentityGuard`
+
+error[E0282]: type annotations needed
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:53:40
+   |
+53 | ...h(|invocation| {invocation.re...
+   |       ^^^^^^^^^^   ---------- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+53 |                 guard.revalidate_with(|invocation: /* Type */| {invocation.revalidate(&snapshot).unwrap(); Ok(snapshot.clone())}, || Ok(())).unwrap();
+   |                                                  ++++++++++++
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:66:29
+   |
+66 | ... = IdentityGuard::p...
+   |       ^^^^^^^^^^^^^ use of u...clared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:70:21
+   |
+70 | ...t!(IdentityGuard:.....
+   |       ^^^^^^^^^^^^^ ... of undeclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:91:21
+   |
+91 | ...t!(IdentityGuard:.....
+   |       ^^^^^^^^^^^^^ ... of undeclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:94:17
+   |
+94 | ...t!(IdentityGu...::p...
+   |       ^^^^^^^^^^... use of undeclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:110:21
+    |
+110 | ...t!(IdentityGuard......
+    |       ^^^^^^^^^^^^^...e of undeclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:116:25
+    |
+116 | ... = IdentityGuard::p...
+    |       ^^^^^^^^^^^^^ use... undeclared type `IdentityGuard`
+
+error[E0282]: type annotations needed
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:118:32
+    |
+118 | ...h(|invocation| {order.borrow_mut().push("manager"); invocation.re...
+    |       ^^^^^^^^^^                                       ---------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+118 |         guard.revalidate_with(|invocation: /* Type */| {order.borrow_mut().push("manager"); invocation.revalidate(&good).unwrap(); Ok(good.clone())},
+    |                                          ++++++++++++
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:126:29
+    |
+126 | ... = IdentityGuard::p...
+    |       ^^^^^^^^^^^^^ use of ...eclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:142:33
+    |
+142 | ... = IdentityGuard::p...
+    |       ^^^^^^^^^^^^^ use of unde...red type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:158:29
+    |
+158 | ... = IdentityGuard::p...
+    |       ^^^^^^^^^^^^^ use of ...eclared type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityGuard`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:170:33
+    |
+170 | ... = IdentityGuard::p...
+    |       ^^^^^^^^^^^^^ use of unde...red type `IdentityGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `IdentityError`
+   --> tools/long-run-supervisor-074/src/diagnostic_live_identity.rs:129:17
+    |
+129 | ...et IdentityE...r::M...
+    |       ^^^^^^^^^...^ use of undeclared type `IdentityError`
+
+Some errors have detailed explanations: E0282, E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0282`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 27 previous errors; 1 warning emitted

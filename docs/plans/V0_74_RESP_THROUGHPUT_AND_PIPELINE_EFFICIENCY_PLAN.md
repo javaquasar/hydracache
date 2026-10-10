@@ -1040,6 +1040,15 @@ ownership is not production ancestry: fixed-root preparation, authenticated
 manager/process/tree composition and fenced lifecycle remain unimplemented by
 this reader. No launch, product workload or numerical admission follows.
 
+The separate [original manager/process/tree identity join](../testing/performance/0.74/diagnostic-live-identity-local-design.md)
+now composes retained read-only sources, requires the original MainPID and exact
+member-node cgroup path, and latches manager/process/tree failures without
+refresh. Synthetic positives and an owned-helper foreign-scope refusal are local
+safety evidence, not positive live diagnostic-unit proof. Stable inventory is
+conservative: membership changes refuse. Original start/root-inode provenance,
+production outputs, executable/environment binding and fenced lifecycle remain
+before backend enrollment or numerical admission.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

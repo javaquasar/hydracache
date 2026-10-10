@@ -1,0 +1,277 @@
+{
+  "schema_version": "diagnostic-live-identity-local-evidence-074-v1",
+  "baseline_code_source": "90aa84fcf887a4bfcb1ca4ecec9c31fee842085b",
+  "baseline_capture_head": "bc4cfa055ee4ca77eb991def564b674d79506750",
+  "preregistration_commit": "bc4cfa055ee4ca77eb991def564b674d79506750",
+  "implementation_commit": "44b62afe98bd9976ff1b4e3d3b23eae08e63fc07",
+  "implementation_tree": "1a0fcedfc4de53a3499c14a4fd84e700421bf89f",
+  "capture_scope": "Local working-tree tests before implementation commit. Final focused/check/lint/format and three final compiled-unit-binary repetitions cover the reviewed manager-sources-sources-manager order. Documentation/packet completion afterward. Not a clean-source qualification or installed observer receipt.",
+  "baseline": {
+    "loaded_tests_passed": 7,
+    "tree_tests_executed": 0,
+    "explanation": "Cargo's diagnostic_loaded filter also applied to the selected tree target and filtered out all eight tests. No baseline tree pass is claimed. Both complete implementation runs execute all eight tree tests. Preregistration HEAD differs from baseline code by design prose only."
+  },
+  "retained_preparation_observations": [
+    {
+      "files": [
+        "test-first.log"
+      ],
+      "result": "Tests before implementation refuse compilation for missing join types and imports (27 errors, one warning). No runtime candidate or numerical measurement."
+    },
+    {
+      "files": [
+        "root.log"
+      ],
+      "result": "Initial source guard requires snapshot.pin_for(state), but rustfmt splits before the dot. 81 pass, one fails. Match .pin_for(state) after whitespace normalization; no runtime requirement weakened."
+    },
+    {
+      "files": [
+        "focused.log",
+        "repeats.log",
+        "final-focused.log",
+        "final-repeats.log"
+      ],
+      "result": "Initial implementation alternates manager/sources/manager/sources. Review moves both source checks between the two manager reads. Final complete focused run and three repetitions cover manager/sources/sources/manager."
+    },
+    {
+      "scope": "Tool console only",
+      "result": "Wrong initial repository source path and a PowerShell glob lookup fail read-only; a patch context mismatch applies no edits. Corrected exact paths/context without changing runtime thresholds."
+    }
+  ],
+  "checks": {
+    "linux_focused_passed": 220,
+    "linux_ignored": 1,
+    "new_linux_tests": 10,
+    "synthetic_join_tests": 9,
+    "actual_owned_helper_negative_tests": 1,
+    "final_repeat_runs": 3,
+    "new_tests_per_final_repeat": 10,
+    "windows_portable_passed": 28,
+    "windows_linux_identity_tests_executed": 0,
+    "root_performance_contracts": 82,
+    "root_release_evidence": 13,
+    "root_release_governance": 23,
+    "linux_supervisor_all_target_check": true,
+    "linux_xtask_all_target_check": true,
+    "linux_supervisor_and_xtask_all_target_all_feature_clippy_warnings_denied": true,
+    "windows_supervisor_all_target_check": true,
+    "windows_supervisor_all_target_all_feature_clippy_warnings_denied": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "full_workspace_verify_rerun": false,
+    "ship_expected_red_exit": 1,
+    "post_evidence_registry_passed": 1,
+    "final_doc_and_local_contract_passed": true,
+    "final_links_and_book_passed": true
+  },
+  "local_scope": {
+    "environment": "Local WSL Ubuntu as existing artur UID/GID 1000; Rust/Cargo 1.94.0; native Windows portable controls. No host operation.",
+    "environment_log": "environment.log",
+    "positive_evidence": "Private invented loaded settings, generation and tree-view fields only. No public kernel reader constructed from synthetic booleans.",
+    "actual_evidence": "One owned /bin/cat with fresh proc/pidfd generation plus a temporary regular-file tree: foreign fixed scope and fixture-origin promotion refuse; helper remains live until test-owned cleanup.",
+    "ordering": "manager, process/tree/process, process/tree/process, manager",
+    "tree_policy": "Stable retained inventory; legitimate membership changes also refuse. No dynamic refresh or adoption.",
+    "manager_limits": "Existing per-helper request/output/deadline/cleanup limits; not a new whole-composition wall-clock promise."
+  },
+  "commands": {
+    "baseline": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_loaded --test diagnostic_tree --locked",
+    "focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts --test diagnostic_lease --test diagnostic_ipc --test diagnostic_receipts --test diagnostic_spool --test diagnostic_tree --test diagnostic_manager --test host_execution",
+    "new_tests": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_live_identity --locked; final repeats directly invoke that compiled unit binary with diagnostic_live_identity filter three times",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts; all-target check and all-target/all-feature clippy",
+    "step_gate": "cargo check for supervisor and xtask --all-targets --locked; cargo clippy for both --all-targets --all-features --locked -- -D warnings; scoped rustfmt --check",
+    "docs": "xtask doc-check; performance-contract-check --release 0.74; node scripts/docs-link-check.mjs; mdbook build docs-site",
+    "build_environment": {
+      "dev_debug": 0,
+      "test_debug": 0,
+      "incremental": false,
+      "build_jobs": 2,
+      "wsl_git": "Explicit read-only GIT_DIR/GIT_WORK_TREE; GIT_OPTIONAL_LOCKS=0"
+    }
+  },
+  "proof_boundaries": {
+    "positive_live_diagnostic_composition_proved": false,
+    "original_start_authenticated": false,
+    "root_inode_authenticated_by_manager": false,
+    "atomic_snapshot_proved": false,
+    "dynamic_tree_refresh_allowed": false,
+    "production_ancestry_proved": false,
+    "production_output_prepared": false,
+    "output_and_executable_composed": false,
+    "effective_environment_proved": false,
+    "writer_revocation_proved": false,
+    "durable_refusal_journal": false,
+    "host_service_changed": false,
+    "unit_created": false,
+    "observer_workload_run": false,
+    "qualification_run": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false,
+    "frozen_snapshot_inputs_changed": false,
+    "existing_wire_or_persisted_schema_changed": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "live_plan_documentation": "W11 prose extended outside frozen qualification snapshots; manifest, registered frozen inputs, P0 configs, locks and public builder policy are not regenerated.",
+  "next": "Reviewed fixed production output ancestry/preparation and join with original executable/output evidence, then fenced lifecycle, writer revocation, watchdog and durable reconciliation; controlled positive host composition remains unproved.",
+  "retention": {
+    "capture_kind": "Byte-preserved completed WSL tee/native PowerShell combined test/check output. No signed execution or live manager/proc/tree raw packet.",
+    "files": [
+      {
+        "name": "baseline.log",
+        "bytes": 1450,
+        "sha256": "56bc75583b892a7adc50431ee9af8bc66fcdb3b36678c8f76bf66e73c12f3a7c"
+      },
+      {
+        "name": "check.log",
+        "bytes": 193,
+        "sha256": "bab4f85adc01ef546b6181a64ae87253c267e59c3777b2f50743e2f879760045"
+      },
+      {
+        "name": "clippy.log",
+        "bytes": 280,
+        "sha256": "8ae5608f1e32139879ac3baa618a95275f8b29734caa950bbff3d5ac27cb8b91"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 60,
+        "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+      },
+      {
+        "name": "doc-final.log",
+        "bytes": 104,
+        "sha256": "5347be8998d238dda564d5bcc03de104395e25d3df37c7e4e2bcb9312c56e4af"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 44,
+        "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+      },
+      {
+        "name": "environment.log",
+        "bytes": 304,
+        "sha256": "c8e8b3422bad311a748e461cb2640cb525b7266410e8c30975408ed103326e23"
+      },
+      {
+        "name": "final-check.log",
+        "bytes": 193,
+        "sha256": "de9b32c5f81d0ad52af259d7533f78489437d7a7fa7532d97cfa3333177b92a7"
+      },
+      {
+        "name": "final-clippy.log",
+        "bytes": 280,
+        "sha256": "4f8b94271ef02de840128e1937da383a9954edb9a02de56f3e31fb217119aa5a"
+      },
+      {
+        "name": "final-focused.log",
+        "bytes": 21994,
+        "sha256": "ffc808d5eb434890d00353ff6779eec5ff89b3d1015ed7710851065b552f7818"
+      },
+      {
+        "name": "final-format.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "final-repeats.log",
+        "bytes": 3480,
+        "sha256": "21bd17f562fa79a6040614255b5e630ff299c89507cc45722406f6d7584aa970"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1405,
+        "sha256": "e90cb07a2c389f7d6e993611fdc4dc56187580170a59febb5b1431433f164ee0"
+      },
+      {
+        "name": "focused.log",
+        "bytes": 21994,
+        "sha256": "3568fe1746389d43ab4ab0b5304b5089fdc3be8710d0237cd74cd40bc3e84134"
+      },
+      {
+        "name": "format.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "links-final.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "mdbook-final.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "mdbook.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "post-evidence.log",
+        "bytes": 480,
+        "sha256": "1be7826c7a46dd81effcf3df67cd89c8d7bd025020440def6877271bed0e67a0"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 3480,
+        "sha256": "4886002279e5fa9e8de7b653700fdd066b7859f9f5cf66d6ca1d6bcb3f9fb781"
+      },
+      {
+        "name": "review.log",
+        "bytes": 1508,
+        "sha256": "4b58ee34704aa2b47c9687c85a83b2cd5201c414b7ffcc4e98dcdb03074b04cf"
+      },
+      {
+        "name": "root-green.log",
+        "bytes": 11174,
+        "sha256": "8b5a586bad7fcc7d00d13bdad4254e4758e54c1bcde17874616c586b5b693321"
+      },
+      {
+        "name": "root.log",
+        "bytes": 7602,
+        "sha256": "968bfc5cce5af0d7516806287a0316a55748a99a5074c0d3b368e1b65d1cd922"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 191,
+        "sha256": "fda7f109f86cbf084c21df6cab51fff85988697621132535c10352d93faf618b"
+      },
+      {
+        "name": "test-first.log",
+        "bytes": 10710,
+        "sha256": "f5cf4b97b21ea1af29dcde827bc1d711a0643c3337bb87c1231b29f4def885cb"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 203,
+        "sha256": "42597ed7a2ec067c9d1802315e48f1fb2e80279b330df832400b52046ed355b4"
+      },
+      {
+        "name": "windows-clippy.log",
+        "bytes": 202,
+        "sha256": "290342a74f9f1eb65d8ef555c9b319974bc75f09fbcf0d250474f4cd670fdc58"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 3010,
+        "sha256": "ffd302a644d8b834b8f4f273468c20ffc2a594b01d1206596eb07e7370d289b1"
+      },
+      {
+        "name": "xtask-check.log",
+        "bytes": 415,
+        "sha256": "a573feb3c86a0626213f30d4cbb1839da25098ab676df98a496277dacd1e5f59"
+      }
+    ]
+  }
+}
