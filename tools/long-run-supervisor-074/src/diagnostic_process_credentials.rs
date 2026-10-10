@@ -5,6 +5,7 @@ use thiserror::Error;
 
 #[path = "diagnostic_namespace_credentials.rs"]
 mod namespace_checked;
+pub(crate) use namespace_checked::open_namespace_checked_credentials_unobserved;
 pub use namespace_checked::{
     pin_namespace_checked_credentials, NamespaceCredentialError, NamespaceCredentialRead,
 };

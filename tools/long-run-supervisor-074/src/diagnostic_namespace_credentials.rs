@@ -109,6 +109,40 @@ pub fn pin_namespace_checked_credentials(
         gate,
     })
 }
+/// Private opening stage only: no credential projection until the outer signed
+/// account/context has been checked again. The original status is never reopened.
+pub(crate) fn open_namespace_checked_credentials_unobserved(
+    process: &ProcessRead,
+    policy: AssertedWorkerCredentials,
+) -> Result<NamespaceCredentialRead<'_>, NamespaceCredentialError> {
+    let mut namespace = pin_same_user_namespace(process)?;
+    let result = (|| {
+        namespace.revalidate()?;
+        process.revalidate().map_err(CredentialError::from)?;
+        let document = Document::open(&process.probe.files.directory, "status")
+            .map_err(CredentialError::from)?;
+        namespace.revalidate()?;
+        Ok(ProcessCredentialRead {
+            process,
+            document,
+            gate: super::Gate::new(process.observation.expected.pid, policy),
+        })
+    })();
+    match result {
+        Ok(credentials) => Ok(NamespaceCredentialRead {
+            namespace,
+            credentials,
+            gate: Gate {
+                initialized: true,
+                refused: false,
+            },
+        }),
+        Err(error) => {
+            namespace.refuse();
+            Err(error)
+        }
+    }
+}
 impl NamespaceCredentialRead<'_> {
     pub(crate) fn matches_worker_policy(
         &self,
@@ -201,6 +235,32 @@ mod tests {
         let mut read = pin_namespace_checked_credentials(&process, policy()).unwrap();
         read.credentials.refuse();
         assert!(!read.matches_worker_policy(&signed));
+    }
+
+    #[test]
+    fn signed_status_private_opener_defers_projection_until_revalidation() {
+        for hardened in [true, false] {
+            let child = Owned::new(hardened);
+            let process = pin_owned_test_helper(child.0.id());
+            let mut read =
+                open_namespace_checked_credentials_unobserved(&process, policy()).unwrap();
+            assert!(read.credentials.gate.original.is_none());
+            let original = read.credentials.document.id;
+            if hardened {
+                read.revalidate().unwrap();
+                assert!(read.credentials.gate.original.is_some());
+            } else {
+                assert!(matches!(
+                    read.revalidate(),
+                    Err(NamespaceCredentialError::Credentials(
+                        CredentialError::Drift
+                    ))
+                ));
+                assert!(read.credentials.gate.original.is_none());
+                refused(&mut read);
+            }
+            assert_eq!(read.credentials.document.id, original);
+        }
     }
 
     #[test]

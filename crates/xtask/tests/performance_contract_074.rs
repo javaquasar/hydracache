@@ -3,6 +3,123 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_signed_opening_keeps_projection_after_original_context_and_start_closed() {
+    let c = contract("diagnostic-signed-opening-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-signed-opening-local-074-v1")
+    );
+    for (key, expected) in [
+        (
+            "opening_order",
+            vec!["account", "open", "account", "credentials", "account"],
+        ),
+        ("later_order", vec!["account", "credentials", "account"]),
+    ] {
+        assert_eq!(
+            c[key]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap())
+                .collect::<Vec<_>>(),
+            expected
+        );
+    }
+    assert_eq!(c["max_derived_supplementary_groups"].as_integer(), Some(32));
+    for key in [
+        "original_account_and_process_borrowed",
+        "new_credentials_privately_owned",
+        "sequential_signed_status_open_bracket",
+        "post_open_account_before_first_projection",
+        "numeric_assertions_derived_only_from_original_policy",
+        "exact_supplementary_list_not_primary_union",
+        "first_typed_error_stops",
+        "failure_latches_original_policy_and_owned_components",
+        "fixed_fixture_types_distinct",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "preopened_credentials_accepted",
+        "raw_pid_path_numeric_policy_accepted",
+        "guard_send_or_sync",
+        "old_public_constructor_or_parser_behavior_changed",
+        "real_issuer_enrolled",
+        "positive_fixed_production_inspection",
+        "file_opener_credentials_attested",
+        "worker_mount_namespace_proved",
+        "all_threads_proved",
+        "initial_host_namespace_proved",
+        "atomic_cross_file_snapshot",
+        "continuous_context_or_writer_revocation",
+        "regular_file_io_deadline",
+        "durable_epoch_or_refusal_registry",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let raw = std::fs::read_to_string(base.join("diagnostic_signed_opening.rs")).unwrap();
+    let code = raw
+        .split("#[cfg(test)]\n#[path")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "Step::Account, Step::Open, Step::Account, Step::Credentials, Step::Account",
+        "[Step::Account, Step::Credentials, Step::Account]",
+        "if self.refused || input_refused",
+        "return Err(error)",
+        "credentials: NamespaceCredentialRead<'process>",
+        "policy.uid, policy.gid, policy.supplementary_gids.clone()",
+        "account.refuse()",
+        "read.refuse()",
+        "self.credentials.refuse()",
+        "pub struct FixedSignedCredentialRead",
+        "pub struct FixtureSignedCredentialRead",
+        "open_namespace_checked_credentials_unobserved",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn reset",
+        "pub fn into_",
+        "pub fn descriptor",
+        "pub fn adopt",
+        "Serialize",
+        "ManagerClient",
+        "Command::new",
+        "kill(",
+        "start_transient",
+        "unsafe impl Send",
+        "unsafe impl Sync",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let raw = std::fs::read_to_string(base.join("diagnostic_namespace_credentials.rs")).unwrap();
+    let private = raw
+        .split("pub(crate) fn open_namespace_checked_credentials_unobserved")
+        .nth(1)
+        .unwrap()
+        .split("impl NamespaceCredentialRead")
+        .next()
+        .unwrap();
+    assert!(!private.contains(".credentials.revalidate()"));
+    assert!(!private.contains(".read("));
+    assert!(private.contains("initialized: true"));
+}
+
+#[test]
 fn diagnostic_policy_credentials_bind_exact_original_mapping_and_keep_start_closed() {
     let c = contract("diagnostic-policy-credentials-local-contract.toml");
     assert_eq!(

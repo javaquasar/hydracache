@@ -6,6 +6,9 @@ use super::{
 use crate::diagnostic_process::{NamespaceCredentialError, NamespaceCredentialRead};
 use thiserror::Error;
 
+#[path = "diagnostic_signed_opening.rs"]
+pub mod opening;
+
 #[derive(Debug, Error)]
 pub enum PolicyCredentialError {
     #[error("original signed mapping and original credential assertions differ")]

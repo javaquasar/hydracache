@@ -15,7 +15,7 @@ use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, Stdio};
 
-fn ids() -> (u32, u32, Vec<u32>) {
+pub(super) fn ids() -> (u32, u32, Vec<u32>) {
     // SAFETY: scalar queries and a bounded group buffer sized by getgroups.
     let (uid, gid, count) = unsafe {
         (
@@ -42,17 +42,20 @@ fn canonical(value: &impl serde::Serialize) -> Vec<u8> {
     b.push(b'\n');
     b
 }
-struct Fixture {
-    dir: tempfile::TempDir,
-    policy: WorkerPolicy,
-    group: Vec<u8>,
-    bytes: Vec<u8>,
-    trust: WorkerPolicyTrust,
-    host: AssertedWorkerHost,
+pub(super) struct Fixture {
+    pub(super) dir: tempfile::TempDir,
+    pub(super) policy: WorkerPolicy,
+    pub(super) group: Vec<u8>,
+    pub(super) bytes: Vec<u8>,
+    pub(super) trust: WorkerPolicyTrust,
+    pub(super) host: AssertedWorkerHost,
 }
 impl Fixture {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let (uid, gid, groups) = ids();
+        Self::with_ids(uid, gid, groups)
+    }
+    pub(super) fn with_ids(uid: u32, gid: u32, groups: Vec<u32>) -> Self {
         let dir = tempfile::tempdir().unwrap();
         fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o700)).unwrap();
         let passwd = format!(
@@ -137,10 +140,13 @@ impl Fixture {
             host,
         }
     }
-    fn checked(&self) -> CheckedWorkerPolicy {
+    pub(super) fn checked(&self) -> CheckedWorkerPolicy {
         verify_worker_policy(&self.bytes, &self.trust, &self.host).unwrap()
     }
-    fn account<'p>(&self, p: &'p mut CheckedWorkerPolicy) -> super::ContextFixtureFilesRead<'p> {
+    pub(super) fn account<'p>(
+        &self,
+        p: &'p mut CheckedWorkerPolicy,
+    ) -> super::ContextFixtureFilesRead<'p> {
         let (uid, gid, _) = ids();
         inspect_context_fixture_files(
             self.dir.path(),
@@ -154,9 +160,9 @@ impl Fixture {
         .unwrap()
     }
 }
-struct Owned(Child);
+pub(super) struct Owned(pub(super) Child);
 impl Owned {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let mut command = Command::new("/bin/cat");
         command
             .stdin(Stdio::piped())
@@ -174,7 +180,7 @@ impl Owned {
         }
         Self(command.spawn().unwrap())
     }
-    fn finish(&mut self) {
+    pub(super) fn finish(&mut self) {
         self.0.stdin.take();
         self.0.wait().unwrap();
     }

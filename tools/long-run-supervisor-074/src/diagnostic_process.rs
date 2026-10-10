@@ -17,6 +17,7 @@ pub use io::ProcessIoRead;
 
 #[path = "diagnostic_process_credentials.rs"]
 mod credentials;
+pub(crate) use credentials::open_namespace_checked_credentials_unobserved;
 pub use credentials::{
     pin_asserted_worker_credentials, AssertedWorkerCredentials, CredentialError,
     ProcessCredentialRead,
