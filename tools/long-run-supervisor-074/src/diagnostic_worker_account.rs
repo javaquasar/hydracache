@@ -632,9 +632,15 @@ mod tests {
             let mut changed = snapshot();
             match rng % 3 {
                 0 => changed.uid += 1,
-                1 => changed.gid += 1,
+                1 => {
+                    changed.gid += 1;
+                    changed.membership_gids = vec![4, changed.gid];
+                }
                 _ => changed.membership_gids.push(1002),
             };
+            // Drift must refuse even when the mutated projection is itself valid.
+            let bytes = canonical_json(&changed).unwrap();
+            assert_eq!(WorkerAccountSnapshot::decode(&bytes).unwrap(), changed);
             let mut read = WorkerAccountRead::new(snapshot());
             assert!(read.observe(|| Ok(changed)).is_err());
             assert!(read.is_refused());
