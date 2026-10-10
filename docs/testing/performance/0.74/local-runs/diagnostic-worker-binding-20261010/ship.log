@@ -1,0 +1,6 @@
+    Finished `dev` profile [unoptimized] target(s) in 1.41s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74 --require-ship`
+performance-contract-check 0.74: 0.74 ship admission is closed while candidate identity and release qualification are incomplete
+Error: "performance-contract-check 0.74 found 1 problem(s)"
+error: process didn't exit successfully: `target\debug\xtask.exe performance-contract-check --release 0.74 --require-ship` (exit code: 1)
+observed-native-exit=1

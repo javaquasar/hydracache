@@ -1,0 +1,99 @@
+    Finished `test` profile [unoptimized] target(s) in 6.70s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_manager::account::binding::tests::binding_bracket_has_exact_account_credential_account_order ... ok
+test diagnostic_manager::account::binding::tests::binding_prior_refusal_and_mapping_mismatch_perform_no_observation ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_refuses_wrong_ids_missing_foreign_root_and_invalid_groups ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_keeps_explicit_primary_inclusion_or_omission ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_full_bound_does_not_grow_or_drop_membership ... ok
+binding mutation seed=0x74b2026
+test diagnostic_manager::account::binding::tests::binding_every_failure_preserves_first_error_and_stops_the_bracket ... ok
+test diagnostic_manager::account::binding::tests::owned_original_exit_refuses_account_and_credentials_after_wrapper_drop ... ok
+test diagnostic_manager::account::binding::tests::seeded_valid_mapping_mutations_cannot_be_adopted ... ok
+test diagnostic_manager::account::binding::tests::public_binding_mapping_mismatch_latches_both_original_inputs ... ok
+test diagnostic_manager::account::binding::tests::owned_original_credentials_and_synthetic_account_bind_without_refresh ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pre_refused_input_latches_the_other_without_helper_reads ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pending_helper_cleanup_is_preserved_and_latches_inputs ... ok
+test diagnostic_manager::account::binding::tests::owned_concurrent_bindings_keep_independent_refusal_state ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized] target(s) in 4.56s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 4.04s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_manager::account::binding::tests::binding_bracket_has_exact_account_credential_account_order ... ok
+test diagnostic_manager::account::binding::tests::binding_prior_refusal_and_mapping_mismatch_perform_no_observation ... ok
+test diagnostic_manager::account::binding::tests::binding_every_failure_preserves_first_error_and_stops_the_bracket ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_keeps_explicit_primary_inclusion_or_omission ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_full_bound_does_not_grow_or_drop_membership ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_refuses_wrong_ids_missing_foreign_root_and_invalid_groups ... ok
+binding mutation seed=0x74b2026
+test diagnostic_manager::account::binding::tests::public_binding_mapping_mismatch_latches_both_original_inputs ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pre_refused_input_latches_the_other_without_helper_reads ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pending_helper_cleanup_is_preserved_and_latches_inputs ... ok
+test diagnostic_manager::account::binding::tests::owned_original_credentials_and_synthetic_account_bind_without_refresh ... ok
+test diagnostic_manager::account::binding::tests::owned_original_exit_refuses_account_and_credentials_after_wrapper_drop ... ok
+test diagnostic_manager::account::binding::tests::owned_concurrent_bindings_keep_independent_refusal_state ... ok
+test diagnostic_manager::account::binding::tests::seeded_valid_mapping_mutations_cannot_be_adopted ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized] target(s) in 3.46s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 3.26s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_manager::account::binding::tests::binding_bracket_has_exact_account_credential_account_order ... ok
+test diagnostic_manager::account::binding::tests::binding_every_failure_preserves_first_error_and_stops_the_bracket ... ok
+test diagnostic_manager::account::binding::tests::binding_prior_refusal_and_mapping_mismatch_perform_no_observation ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_refuses_wrong_ids_missing_foreign_root_and_invalid_groups ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_full_bound_does_not_grow_or_drop_membership ... ok
+binding mutation seed=0x74b2026
+test diagnostic_manager::account::binding::tests::mapping_union_keeps_explicit_primary_inclusion_or_omission ... ok
+test diagnostic_manager::account::binding::tests::seeded_valid_mapping_mutations_cannot_be_adopted ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pending_helper_cleanup_is_preserved_and_latches_inputs ... ok
+test diagnostic_manager::account::binding::tests::owned_original_exit_refuses_account_and_credentials_after_wrapper_drop ... ok
+test diagnostic_manager::account::binding::tests::public_binding_mapping_mismatch_latches_both_original_inputs ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pre_refused_input_latches_the_other_without_helper_reads ... ok
+test diagnostic_manager::account::binding::tests::owned_concurrent_bindings_keep_independent_refusal_state ... ok
+test diagnostic_manager::account::binding::tests::owned_original_credentials_and_synthetic_account_bind_without_refresh ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.03s
+
+    Finished `test` profile [unoptimized] target(s) in 2.71s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

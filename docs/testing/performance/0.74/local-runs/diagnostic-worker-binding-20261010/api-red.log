@@ -1,0 +1,12 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved imports `binding::bind_asserted_worker`, `binding::AssertedWorkerBindingRead`, `binding::WorkerBindingError`
+  --> tools/long-run-supervisor-074/src/diagnostic_worker_account.rs:18:19
+   |
+18 | ...::{bind_asserte...AssertedWork...WorkerBindingError};
+   |       ^^^^^^^^^^^^...^^^^^^^^^^^^...^^^^^^^^^^^^^^^^^^ no `WorkerBindingError` in `diagnostic_manager::account::binding`
+   |       |                     |
+   |       |                     no `AssertedWorkerBindingRead` in `diagnostic_manager::account::binding`
+   |       no `bind_asserted_worker` in `diagnostic_manager::account::binding`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error

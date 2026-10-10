@@ -1100,6 +1100,17 @@ mapping tests are synthetic. Trusted host policy and the kernel credential join
 remain before production output preparation and signed lifecycle activation.
 Qualification inputs, thresholds and closed admission remain unchanged.
 
+The [asserted account/credential binding](../testing/performance/0.74/diagnostic-worker-binding-local-design.md)
+now borrows the original account and process credential guards. UID/primary GID
+and the union of explicitly asserted groups with primary GID must agree before
+an account/credentials/account observation bracket. Errors latch both original
+inputs through constructor failure and wrapper drop. Local owned-kernel tests
+with synthetic account projections, seeded valid mutations and independent
+concurrency checks establish consistency only, not trusted provider, namespace,
+all-thread or original-start authority. Trusted host policy, root-owned output
+preparation and signed lifecycle activation remain prerequisites. No new helper
+or IPC route, host mutation, product workload or qualification is enabled.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

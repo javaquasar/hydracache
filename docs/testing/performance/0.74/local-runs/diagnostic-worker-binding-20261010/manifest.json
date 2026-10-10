@@ -1,0 +1,191 @@
+{
+  "schema_version": "diagnostic-worker-binding-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "0f3c6e674b82e12d365813c307ca22830680a714",
+  "preregistration_commit": "eb9c054f7fc3ba5839b35a2133901e583ea98336",
+  "clarification_commit": "a7d5a170033086c70d821ca7459c39fda193028b",
+  "implementation_commit": "41cc24f1934a646edab4d473ff13c86adfc4545b",
+  "implementation_tree": "b87fc96c5cb1b4fbe14c6beb96fb52106ebdb460",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur effective UID/GID 1000; owned non-product helpers only",
+  "checks": {
+    "baseline_linux_passed": 205,
+    "first_green_new_unit_tests": 12,
+    "final_linux_passed": 218,
+    "new_linux_binding_tests": 13,
+    "preexisting_linux_ignored": 1,
+    "reviewed_repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_binding_tests_executed": 0,
+    "root_passed_before_packet_registration": 124,
+    "ship_expected_red_native_exit": 1,
+    "post_evidence_registry": true,
+    "documentation_final_passed": true,
+    "full_workspace_verify_rerun": false
+  },
+  "positive_binding_test_boundary": "real-owned-original-kernel-credentials-with-synthetic-fixed-account-snapshot",
+  "real_account_observation": {
+    "exit": 9,
+    "kind": "Exit",
+    "helper_cleanup_confirmed": true,
+    "raw_stdout_empty": true,
+    "cause_detail_not_exported": true,
+    "positive_real_nss_enrollment_proved": false
+  },
+  "negative_results": {
+    "api_red": "Pre-implementation check refused unresolved public binding imports; API red, not behavioral failure.",
+    "preregistered_boundary_clarification": "The public helper is /proc/self/exe; library tests do not execute a production supervisor helper. Positive binding tests therefore use a private synthetic account seam with real owned original kernel readers. Public constructor tests cover early refusal and pending cleanup.",
+    "initial_linux_lint": "Two drop_non_drop errors in tests. Lexical scopes release borrowed wrappers before original-input refusal assertions. Production code is unchanged. Reviewed captures preserve the corrected checks separately.",
+    "initial_root_command": "Incorrect test target governance was unavailable. Corrected release_governance invocation supplies root.log. Initial command error is recorded here, not misrepresented as a retained raw capture.",
+    "offline_verifier_review": "Initial verifier counted the lint identifier rather than error headers, also matching URL/allow references. Corrected to count exactly two std::mem::drop error headers; raw captures and expected test counts are unchanged."
+  },
+  "source_review": {
+    "mapping_temporary_union_removed": true,
+    "measured_allocation_reduction_claimed": false,
+    "numeric_only_policy_unchanged": true,
+    "existing_nss_schema_unchanged": true
+  },
+  "proof_boundaries": {
+    "worker_account_authentication": false,
+    "trusted_nss_provider": false,
+    "host_namespace_enrollment": false,
+    "all_threads_credentials": false,
+    "atomic_or_continuous_observation": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "whole_composition_deadline": false,
+    "host_or_systemd_mutation": false,
+    "account_creation": false,
+    "observer_or_product_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "retention": {
+    "log_count": 24,
+    "files": [
+      {
+        "sha256": "f6626829c1cbcf6f463673e68936824ef96e81c83b8a0119a36c37424503fc92",
+        "name": "api-red.log",
+        "bytes": 915
+      },
+      {
+        "sha256": "5ba67a3b44560f0d3282ef24dfc05ce889c314e0d604ed418bd902e22c87e9ea",
+        "name": "baseline.log",
+        "bytes": 21642
+      },
+      {
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+        "name": "book.log",
+        "bytes": 151
+      },
+      {
+        "sha256": "15edd13a57021582c5fde55b4c423daf495b8d6cafa9e4c955f5f075347898ed",
+        "name": "contract.log",
+        "bytes": 203
+      },
+      {
+        "sha256": "e36306683384aaf7c316f67eacb7b994868fc561351939638c5d3f62157a530a",
+        "name": "doc.log",
+        "bytes": 239
+      },
+      {
+        "sha256": "8cf89fc7c76bdd23c0380550e247d5ebf0bfaa50ad22062d375697d405e09650",
+        "name": "docs-final.log",
+        "bytes": 578
+      },
+      {
+        "sha256": "ad360a402576dfd81690ee1b928c20d25b3c072786c27a92bd99c5f175b3de8e",
+        "name": "final-linux.log",
+        "bytes": 23553
+      },
+      {
+        "sha256": "ccc5e43163817271e1dd45b964dcd181ff6c1ea3c23043320dff19412be356b0",
+        "name": "first-green.log",
+        "bytes": 1939
+      },
+      {
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92",
+        "name": "format.log",
+        "bytes": 18
+      },
+      {
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+        "name": "links.log",
+        "bytes": 69
+      },
+      {
+        "sha256": "cf176abb58b55e16d9dec917343c715587faf08075a8c44733c7f674dd68e82b",
+        "name": "linux-check.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "6d1d7f8a174b609d7ad590ac060d13cb4e6458c083e9b2765150139966fd37d0",
+        "name": "linux-lint.log",
+        "bytes": 1643
+      },
+      {
+        "sha256": "1edffa1b9594f32b63169fe0a37a10e405f9a67078719ed115b0c161427dfa86",
+        "name": "post-registry.log",
+        "bytes": 439
+      },
+      {
+        "sha256": "72a47d86d8dd5b8248d94d763b1d473f4f592f4bc5ff8075846792e4168ce13f",
+        "name": "repeats.log",
+        "bytes": 7821
+      },
+      {
+        "sha256": "8d176e8fbc0196d01b764d87869863b3e86b1fd8732fad927a0395fc303d8b9e",
+        "name": "reviewed-check.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92",
+        "name": "reviewed-format.log",
+        "bytes": 18
+      },
+      {
+        "sha256": "0096104e034eb76ff54af26edfd67aa5948ed1237291ad902a31ecbb6685df67",
+        "name": "reviewed-lint.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "a7f383fe1bbffd0dad7c34c2caf516bb1559e392269ff7e3099d3b4ecf71b645",
+        "name": "reviewed-linux.log",
+        "bytes": 23553
+      },
+      {
+        "sha256": "6b249e08fde829a534aac0ae59dc1c0ce890ebc02372108016a8f77ff586ce01",
+        "name": "reviewed-repeats.log",
+        "bytes": 7821
+      },
+      {
+        "sha256": "977dde9d7c374b33d9e1498321b44c1f448fe57c542eba871423c0b2f721f7cc",
+        "name": "root.log",
+        "bytes": 10694
+      },
+      {
+        "sha256": "ac8a44c722cd68922812f86fa27048867700238139e587d0eea5de9ac0188e11",
+        "name": "ship.log",
+        "bytes": 511
+      },
+      {
+        "sha256": "3954ad89e4a53c30d080ca0f5ff682f9f5b73650d5e0e90a33f14e6018f3404d",
+        "name": "windows-check.log",
+        "bytes": 145
+      },
+      {
+        "sha256": "ecd0b68177705a5515fadc2e59d8065cad47af0c867181719459c55a2389353c",
+        "name": "windows-lint.log",
+        "bytes": 145
+      },
+      {
+        "sha256": "7008f48d5b82dbc309117236648ff7cc07e0fe84f915f10336a2bc90369bd885",
+        "name": "windows.log",
+        "bytes": 3322
+      }
+    ]
+  }
+}

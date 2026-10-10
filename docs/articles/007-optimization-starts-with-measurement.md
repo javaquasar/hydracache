@@ -5330,3 +5330,41 @@ were cleaned. C: free space rose from about 12.6 to 81.6 GiB at those observatio
 the current build caches, canary process capture, raw evidence and all worktrees
 were retained. These are disk-maintenance observations, not an exact physical
 deletion size or a performance result.
+
+## Binding account observations to original kernel credentials
+
+The [asserted binding](../testing/performance/0.74/diagnostic-worker-binding-local-design.md)
+closes a consistency gap between a fixed account observation and the numeric
+policy already retained by an original-process credential reader. Borrowing
+both original guards avoids a second PID capture or replacement policy. UID
+and primary GID must match exactly. The union of explicitly asserted
+supplementary groups and primary GID must equal original NSS memberships.
+This does not infer whether the primary GID appears in the kernel's `Groups`
+list: the original credential policy still checks that list exactly.
+
+Mapping mismatch refuses before observation. Successful revalidation follows
+account, original credentials, then account again. A failure preserves its typed
+first error and permanently refuses both inputs, even when construction fails
+or the wrapper is dropped. A later matching observation cannot repair the
+original guards. The hypothesis here is that composition can preserve identity
+and refusal without converting observed values into authority.
+
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-worker-binding-20261010/manifest.json)
+supports that hypothesis within a narrow test boundary. Against a 205-pass
+baseline, final Linux coverage passes 218 tests with one pre-existing ignored;
+the thirteen new cases pass three additional repetitions. Seed `0x74b2026`
+mutates 256 valid mappings rather than merely malformed documents. Real owned
+NoNewPrivs cat helpers exercise original kernel status, exit refusal and
+independent concurrent bindings. Their positive account projections are
+synthetic, not real NSS enrollment. The public constructor separately covers
+mapping mismatch, pre-refusal and pending-helper reservation. Real NSS operator
+inspection in WSL still refuses with exit 9 and confirmed cleanup. Windows
+passes 28 portable tests, and root contracts/evidence/governance pass 124 checks.
+
+Review replaced a temporary group union with bounded iterator comparison.
+That removes an allocation from this comparison's source, but safety tests are
+not an allocations/op or CPU/op measurement. Trusted provider/configuration and
+namespace policy still precede production use. Sequential checks are not an
+atomic or continuous credential proof; root-owned output preparation,
+authenticated original start and watchdog recovery remain separate. No product
+workload or qualification ran, and no numerical performance gain is claimed.

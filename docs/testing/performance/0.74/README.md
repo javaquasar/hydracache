@@ -2223,3 +2223,23 @@ supplementary-group policy. No host/account/unit mutation, product workload or
 performance measurement occurred; ship admission and frozen qualification inputs
 are unchanged. The two checked Cargo caches were removed before baseline, while
 current caches, evidence and all worktrees were preserved.
+
+The [asserted account and credential binding](diagnostic-worker-binding-local-design.md)
+now borrows those two original guards without accepting replacement PID, policy
+or account inputs. Exact UID/GID and the union of explicitly asserted groups with
+primary GID must agree with original NSS memberships before observation. Account
+checks bracket original credential checks; every failure latches both inputs,
+including constructor errors and after wrapper drop. This is consistency only,
+not trusted account enrollment or a production route.
+
+The [packet](local-runs/diagnostic-worker-binding-20261010/manifest.json)
+retains the 205-pass baseline, API red, first twelve passes and final 218 Linux
+passes with one pre-existing ignored. All thirteen new cases pass three further
+repetitions; Windows passes 28 portable tests and root checks pass 124 before
+packet registration. Real owned kernel readers use synthetic account projections
+for positive binding tests. Independent real NSS inspection still refuses with
+exit 9 and confirmed cleanup. Iterator comparison avoids a temporary union in
+source, without claiming measured allocation or throughput improvements.
+Trusted provider/configuration and namespace policy, root-owned outputs, signed
+start and watchdog recovery remain before production activation. Frozen
+qualification inputs and closed ship admission are unchanged.
