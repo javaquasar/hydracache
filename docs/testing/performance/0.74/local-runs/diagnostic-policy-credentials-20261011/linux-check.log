@@ -1,0 +1,14 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: variable does not need to be mutable
+   --> tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs:365:13
+    |
+365 | ...et mut a = ...
+    |       ----^
+    |       |
+    |       help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning (run `cargo fix --lib -p hydracache-long-run-supervisor-074 --tests` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized] target(s) in 46.25s

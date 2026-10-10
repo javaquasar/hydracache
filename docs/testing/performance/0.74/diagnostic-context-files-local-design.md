@@ -77,3 +77,9 @@ Actual unprivileged context and owned synthetic account fixtures do not establis
 a valid production account or real issuer enrollment. No cache workload or
 performance measurement is made. Next: join this retained context/account reader
 to namespace-checked kernel credentials without replacing any original input.
+
+The subsequent [signed policy credential binding](diagnostic-policy-credentials-local-design.md)
+borrows this original reader and the original namespace-checked credential guard.
+It compares exact signed UID/GID/supplementary assertions, then brackets credential
+reads with this reader. Failures latch both borrowed sides. Status opening under
+signed context, real issuer enrollment and authenticated start remain separate.

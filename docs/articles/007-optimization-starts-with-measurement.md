@@ -5712,3 +5712,46 @@ initial-host proof, durable epoch/refusal or performance improvement is claimed.
 The next slice is joining this owned context/account reader to namespace-checked
 kernel credentials without refreshing any original object or clearing a refusal.
 Production preparation, authenticated original start and qualification remain closed.
+
+## Exact signed account mapping and retained kernel credentials
+
+A signed local mapping and a healthy credential reader can disagree even when
+each is internally valid. The [new binding](../testing/performance/0.74/diagnostic-policy-credentials-local-design.md)
+compares the retained credential assertions with the original signed UID, primary
+GID and supplementary list. It does not merge the primary group into the list:
+primary membership and supplementary membership remain distinct signed decisions.
+The adapter returns only a private boolean; no new numeric policy or projection
+is allocated or exported.
+
+Prior refusal or mismatch stops before IO. Otherwise the sequence is original
+context/account, namespace-checked credentials, original context/account. Those
+stages preserve the existing context/files/context and namespace/credentials/
+namespace brackets, bounded parsers and process generation checks. First failure
+preserves its typed error and refuses the original signed policy, account/context
+reader and both privately owned credential components. Binding drop, restoration
+and successful observation of another independent reader cannot clear refusal.
+Healthy drop preserves the original inputs. Fixed and owned-fixture bindings stay
+separate and inherit the original context's negative Send/Sync properties.
+
+The [retained packet](../testing/performance/0.74/local-runs/diagnostic-policy-credentials-20261011/manifest.json)
+records 324 Linux passes with one existing system-bus test ignored, 43 Windows
+regressions and 132 root contract/evidence/governance passes. Fifteen binding tests
+and one component test pass three additional repetitions. Seed `0x7562026`
+varies 256 modeled mapping mutations per run. Real owned unprivileged NNP cat
+helpers cover healthy revalidation/drop, original exit, constructor refusal,
+revocation precedence, file replacement/restoration and independent concurrency.
+Private gate tests cover every outer failure position and no IO after prior
+refusal/mismatch. The first full Linux capture retains an unused-mut warning in
+a new test; the annotation is removed and final tests/check/strict lint pass.
+No product hypothesis or threshold changed.
+
+This establishes sequential mapping consistency, not production enrollment.
+Positives use actual local context and owned synthetic account documents under
+test issuer pins. The binding accepts the original already namespace-checked
+credential reader: its previous namespace bracket is retained, not upgraded into
+attestation that status was opened under signed mount/host context. Worker mount
+namespace, kernel file-opener credentials, all threads, initial-host authority,
+atomic/continuous proof and durable epoch/refusal remain separate. No workload
+or performance claim follows these safety results. Next: enforce signed-context
+bracketing when opening status, while preserving original process identity;
+real issuer enrollment and authenticated lifecycle activation remain closed.

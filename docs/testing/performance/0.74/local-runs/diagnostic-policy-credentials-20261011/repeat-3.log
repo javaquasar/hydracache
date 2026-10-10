@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized] target(s) in 2.89s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 15 tests
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_binding_types_are_neither_send_nor_sync ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_every_error_stops_with_original_type ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_order_preserves_both_original_brackets ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_prior_refusal_and_mismatch_never_observe ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_exact_mapping_never_forms_primary_union ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_constructor_file_failure_latches_after_drop ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_public_mismatch_precedes_broken_account_io ... ok
+policy credentials mutation seed=0x7562026; mutations=256
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_fixed_prior_refusal_never_reads_production_accounts ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_seeded_mapping_mutations_cannot_refresh ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_file_restoration_cannot_clear_binding_refusal ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_revocation_precedes_account_and_process_errors ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_public_prior_refusal_latches_other_input ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_original_exit_refuses_constructor_and_later_read ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_owned_roundtrip_and_drop_keep_inputs_healthy ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::policy_credentials_independent_concurrent_bindings_share_no_refusal ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.76s
+

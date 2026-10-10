@@ -55,3 +55,37 @@ inputs and manifest, product/cache/native code and production routes remain exac
 No host infrastructure, install, workloads, performance claim, durable epoch/refusal,
 production preparation, authenticated original start or qualification follows.
 Rollback uses the earlier binary without this new opt-in runtime-only API.
+
+## Implemented binding and local results
+
+Implementation `72322696b422f3621763fb2af1c9535c0f1d9a7c` adds fixed and owned-fixture runtime bindings.
+Two private boolean adapters compare original credential assertions to the signed
+mapping, requiring an original projection and healthy components. No projection,
+policy or original object is exported. Old opening/read/parser behavior stays
+unchanged. Refusal reaches original policy/account/context and both namespace/
+credential guards; success drop leaves them healthy.
+
+The [packet](local-runs/diagnostic-policy-credentials-20261011/manifest.json)
+retains a 43-pass portable baseline, ordinary missing-API E0432 (WSL exit 1),
+14-test first green and reviewed final suite. Linux passes 324 (250 library,
+29 artifacts, 9 context-files, 2 manager, 3 account, 5 context, 13 files, 13 policy),
+with one existing system-bus ignored. Windows passes 43; root contracts/evidence/
+governance pass 132 and new root guard passes Linux. All fifteen binding cases
+plus the component/projection case pass three further runs. Seed `0x7562026`
+varies 256 modeled mapping mutations per run.
+
+Order/first error, no IO after mismatch/refusal, exact primary-list distinction,
+non-transferability, healthy drop, constructor refusal, revocation, restored
+account files and owned NNP process exit/concurrency pass. Private component tests
+refuse missing projection or either refused component. The fixed branch has
+negative coverage only; no public fixture conversion or positive production
+inspection is introduced. Initial Linux test/check logs retain one redundant-mut
+warning; after removing the annotation final tests/check/strict lint pass.
+
+Format, scoped check/lint on both platforms, docs/links/book and final registry
+pass; require-ship remains expected native exit 1. Frozen qualification inputs
+and existing packets remain exact. This is working-tree local safety, not
+full-workspace qualification, real issuer enrollment or performance data. Next:
+open status inside the signed-context observation bracket without replacing
+original process identity. All-thread/worker mount authority, durable issuer
+epoch/refusal, production preparation and authenticated lifecycle remain separate.

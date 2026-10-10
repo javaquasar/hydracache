@@ -1,0 +1,228 @@
+{
+  "schema_version": "diagnostic-policy-credentials-local-evidence-074-v1",
+  "state": "retained-local-original-policy-credential-consistency-not-production-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "4fa462b2cd339f6e4bab4e7371bcdaa8125dea98",
+  "preregistered_design_commit": "c83f320ea5b14a9929b83f686bcf2d0db608cd5c",
+  "implementation_commit": "72322696b422f3621763fb2af1c9535c0f1d9a7c",
+  "implementation_tree": "b42f5798bfde51d1b26f3db25be5e7e335b633bf",
+  "toolchain": "1.94.0",
+  "source_scope": "Implementation and working-tree registry/documentation/evidence; not clean-source qualification.",
+  "fixtures": "Real owned unprivileged NNP cat helpers, actual Linux observer context, synthetic signed account files, test process-generation pins. No fixed production positive, real issuer or foreign namespaces.",
+  "seed": "0x7562026",
+  "modeled_mapping_mutations_per_seeded_run": 256,
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "windows_linux_target_tests": 0,
+    "first_green_binding_passed": 14,
+    "linux_final_passed": 324,
+    "linux_existing_ignored": 1,
+    "new_binding_tests": 15,
+    "new_component_tests": 1,
+    "additional_linux_repetitions": 3,
+    "root_final_passed": 132,
+    "linux_new_root_guard_passed": 1
+  },
+  "retained_negatives": [
+    "Missing kernel_binding API before code gives ordinary E0432; WSL wrapper exit 1.",
+    "Prior refusal/mapping mismatch stops before observation and latches both borrowed sides.",
+    "Typed account/context and namespace/credential/process errors stop; restoration/drop cannot clear refusal.",
+    "Already-open namespace reader does not attest signed status-opening context.",
+    "require-ship remains native exit 1."
+  ],
+  "retained_warning": "Initial Linux tests/check retain unused_mut in fixed-negative test. Redundant annotation removed; final tests/check and strict lint pass. No test failure or threshold/product change.",
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_order_preserves_both_original_brackets"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_prior_refusal_and_mismatch_never_observe"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_every_error_stops_with_original_type"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_exact_mapping_never_forms_primary_union"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_seeded_mapping_mutations_cannot_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_binding_types_are_neither_send_nor_sync"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_fixed_prior_refusal_never_reads_production_accounts"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_owned_roundtrip_and_drop_keep_inputs_healthy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_public_mismatch_precedes_broken_account_io"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_public_prior_refusal_latches_other_input"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_constructor_file_failure_latches_after_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_file_restoration_cannot_clear_binding_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_revocation_precedes_account_and_process_errors"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_original_exit_refuses_constructor_and_later_read"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs",
+      "name": "policy_credentials_independent_concurrent_bindings_share_no_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs",
+      "name": "namespace_policy_matching_requires_original_projection_and_both_guards"
+    }
+  ],
+  "new_root_guard": "diagnostic_policy_credentials_bind_exact_original_mapping_and_keep_start_closed",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "real_issuer_enrollment": false,
+    "positive_fixed_production_inspection": false,
+    "signed_context_at_status_open_attested": false,
+    "worker_mount_namespace_proved": false,
+    "initial_host_namespace_proved": false,
+    "file_opener_credentials_attested": false,
+    "atomic_cross_file_snapshot": false,
+    "continuous_context_or_writer_revocation": false,
+    "regular_file_io_deadline": false,
+    "all_threads_proved": false,
+    "durable_epoch_or_refusal_registry": false,
+    "production_preparation": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_measurement": false,
+    "qualification": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "api-red.log": {
+      "bytes": 408,
+      "sha256": "5d6d51fcb1794e56557a032ba9366333c80b44716df4b69511a4271d7a6d66f5"
+    },
+    "baseline.log": {
+      "bytes": 4236,
+      "sha256": "0603926e35ff0e3c53a2cf29d30bfa8f16a51f4b4f5ab6da2a08d1265997299a"
+    },
+    "docs.log": {
+      "bytes": 692,
+      "sha256": "95ee00e015f35827ece6519378e66882a3c6250adb9a6894e14fdd0255fd8ad2"
+    },
+    "first-green.log": {
+      "bytes": 2664,
+      "sha256": "089e6ff9bf55717dbd0034a91e93e7f0d0c70d44067cc097f1ba9ab5be7a701f"
+    },
+    "isolation.log": {
+      "bytes": 215,
+      "sha256": "6fa6ee9b4df625d5e109c6382f2561193e1a34a69c1d6073b5981800cfaa5ca5"
+    },
+    "linux-check-final.log": {
+      "bytes": 193,
+      "sha256": "940605fcaf4cb2ff1057b21d6d6e5af8943c78103e6139f03db133dbefd276c1"
+    },
+    "linux-check.log": {
+      "bytes": 763,
+      "sha256": "089fac80054bc3f862244c3cf75d79600734368077799cb67de2d0d7de4139b8"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "4be9c81a93cc8c3feb1d9e49d58e30fada50bc2ded6b053821080422100a31f4"
+    },
+    "linux-root.log": {
+      "bytes": 643,
+      "sha256": "2ad155d2432f26c3ce8f341eb4e13959fc07e7ac952f06f9b21b4f3d9e0d91a1"
+    },
+    "linux-tests-final.log": {
+      "bytes": 36918,
+      "sha256": "d9b962a104add7ff0333685d8c9f05ab49e282e878f4499b6511e0cfc856d2c6"
+    },
+    "linux-tests.log": {
+      "bytes": 37344,
+      "sha256": "005743e9b699f3a37fa08ab51f9d2500513de94a074de84b58f6474d84856c5e"
+    },
+    "repeat-1.log": {
+      "bytes": 2751,
+      "sha256": "9f0bb1d92823aca73301291605574d96c2e9cb696c5e81e322ab5ed8d3f308c6"
+    },
+    "repeat-2.log": {
+      "bytes": 2693,
+      "sha256": "8e8489c77274491bc0d6b7f2fad8c469b1ac6d0e9387a09a135cbf5069e168cf"
+    },
+    "repeat-3.log": {
+      "bytes": 2693,
+      "sha256": "a01c3574e7115d0fbccf5b7a1d7bca3d29908298a9b466cc390d772353d4e6be"
+    },
+    "repeat-components-1.log": {
+      "bytes": 471,
+      "sha256": "60ccec02dde46c2a44b57a0ebdd81c3b78e663565d4851b22d234af6cd7e1a21"
+    },
+    "repeat-components-2.log": {
+      "bytes": 471,
+      "sha256": "e47b3176cce54de579f82dd500b9f83ee0d649fe3406cbcffd9d4562d3697670"
+    },
+    "repeat-components-3.log": {
+      "bytes": 471,
+      "sha256": "b287c4ef4c4b1401c015f3c5b0aa7713d70e71d7bdc2b359495f8fa5cd908933"
+    },
+    "root-tests.log": {
+      "bytes": 11421,
+      "sha256": "9da135662d03499c7e35bfc6e9b99b1347e7b6cc15abe84ce3623b158224124c"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "647df5fd9e7b5ad40712cf68b9b7a00915bc9049418d91b81788f9f403eebdbb"
+    },
+    "windows-check.log": {
+      "bytes": 61,
+      "sha256": "a1acdf332f970f8fe03fc3d5106a5eb151e951c9b16688274097f9e174846156"
+    },
+    "windows-lint-final.log": {
+      "bytes": 145,
+      "sha256": "4d34931b66617e07e935751e1babe09525a53161b58e03c937305b3c150f3996"
+    },
+    "windows-lint.log": {
+      "bytes": 61,
+      "sha256": "e4ef176075a08511f113b63e384f43a29613b9a7a245d965b1b5fdb2ca2e0bf7"
+    },
+    "windows-tests.log": {
+      "bytes": 4468,
+      "sha256": "198a06d3a2d1ef34a8e9878ca1a9ae4cb9f7d9c56a22dd6a49c779dc6d3df394"
+    },
+    "docs-final.log": {
+      "bytes": 578,
+      "sha256": "841620966ba37586a320fa76a0623c6dc9dbec3eb846b7c45f867c7d8810574b"
+    },
+    "registry.log": {
+      "bytes": 439,
+      "sha256": "25ad9fa38c76adc946e1e33ef73af191c6a4f5b907a7a4e0abe9d28e158d084c"
+    }
+  }
+}

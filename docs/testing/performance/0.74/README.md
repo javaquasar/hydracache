@@ -2347,3 +2347,13 @@ no production account inspection or worker credentials are enrolled. The
 [packet](local-runs/diagnostic-context-files-20261011/manifest.json) is local safety
 evidence only. Kernel-credential composition, durable external authority and
 original authenticated start remain outstanding.
+
+The [signed policy credential binding](diagnostic-policy-credentials-local-design.md)
+now borrows the original context/account and namespace-checked credential readers.
+It requires exact UID, primary GID and supplementary list, without membership
+union or new numeric policy, and checks context/account, credentials, context/
+account. Any failure refuses the original signed policy and both credential
+components after binding drop. Fixed and fixture types stay distinct; no production
+route is added. The [packet](local-runs/diagnostic-policy-credentials-20261011/manifest.json)
+records scoped local safety only. It does not attest signed context at status
+opening, worker mount/all-thread authority, durable issuer revocation or start.

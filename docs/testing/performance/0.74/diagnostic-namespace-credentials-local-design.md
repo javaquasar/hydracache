@@ -79,3 +79,10 @@ This step implements the sequential context bracket only. Trusted NSS provider
 and host/initial namespace policy, all-thread proof, root-owned fenced output
 preparation, authenticated original start and watchdog recovery still precede
 production composition and a positive lifecycle rehearsal.
+
+The subsequent [signed policy credential binding](diagnostic-policy-credentials-local-design.md)
+compares this retained reader's assertions with the original signed local mapping
+and brackets revalidation with observed context/account reads. Private boolean
+adapters expose no projection or replacement policy; original opening/parser
+behavior is unchanged. This read-time consistency does not retroactively attest
+status opening under the signed host/mount context.
