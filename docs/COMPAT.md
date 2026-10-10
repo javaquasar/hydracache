@@ -20,6 +20,16 @@ helper or IPC mode changes; the numeric-only API and account binder are unchange
 Sequential opening-context checks are not kernel-attested file credentials,
 atomic/continuous namespace proof, trusted host/NSS enrollment or admission.
 
+The separate 0.74 namespace-checked worker binder borrows the original fixed
+account and namespace-checked credential guards, reusing the existing numeric
+mapping rule. Account observations bracket the unchanged guarded reader; every
+error refuses account, namespace and credentials through constructor failure
+and binding drop. A successful drop leaves healthy inputs usable. It adds no
+serialized artifact or helper/IPC mode and accepts no numeric-only reader
+conversion or replacement inputs. The old numeric API and binder remain intact.
+Mapping agreement does not attest NSS provider/configuration or helper namespace,
+trusted host/initial namespace, all threads, authenticated start or admission.
+
 The 0.74 asserted worker binding is Linux runtime-only. It borrows the original
 fixed-account and retained-process credential guards, compares the existing
 numeric policy and brackets credential observation with account checks. It adds

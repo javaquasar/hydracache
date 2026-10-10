@@ -1800,6 +1800,136 @@ fn diagnostic_namespace_credentials_keep_sequential_opening_and_admission_closed
 }
 
 #[test]
+fn diagnostic_namespace_worker_binding_keeps_original_mapping_and_trusted_policy_closed() {
+    let c = contract("diagnostic-namespace-worker-binding-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-namespace-worker-binding-local-074-v1")
+    );
+    let order = c["revalidation_order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        order,
+        ["account", "namespace-checked-credentials", "account"]
+    );
+    for field in [
+        "borrowed_original_guards_only",
+        "original_numeric_mapping_reused",
+        "mapping_and_refusal_checked_before_observation",
+        "namespace_checked_reader_required",
+        "reader_opening_and_revalidation_order_unchanged",
+        "account_namespace_and_credentials_refused_on_error",
+        "first_typed_error_details_preserved",
+        "constructor_error_and_drop_preserve_refusal",
+        "successful_drop_preserves_healthy_inputs",
+        "no_observation_after_refusal",
+        "pending_helper_reservation_preserved",
+        "old_numeric_api_and_binder_unchanged",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "numeric_reader_conversion_allowed",
+        "new_process_pid_policy_account_fd_or_path_input_allowed",
+        "original_input_extraction_or_reset_allowed",
+        "new_helper_or_ipc_route",
+        "trusted_host_or_initial_namespace_proved",
+        "trusted_nss_provider_or_helper_namespace_attested",
+        "all_threads_proved",
+        "atomic_or_continuous_observation_proved",
+        "whole_composition_deadline_proved",
+        "original_start_authenticated",
+        "positive_production_composition_proved",
+        "durable_refusal_journal",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_namespace_worker_binding.rs")).unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "account: &'guard mut WorkerAccountRead",
+        "credentials: &'guard mut NamespaceCredentialRead<'process>",
+        "self.credentials.matches_account(self.account)",
+        "self.account.refuse()",
+        "self.credentials.refuse()",
+        "self.refused = true",
+        "Err(NamespaceWorkerBindingError::Refused)",
+        "Err(NamespaceWorkerBindingError::Invalid)",
+        "[Step::Account, Step::Reader, Step::Account]",
+        "account.revalidate(manager)",
+        "self.credentials.revalidate()",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "ProcessCredentialRead",
+        "ProcessRead",
+        "AssertedWorkerCredentials",
+        "WorkerAccountSnapshot",
+        "Serialize",
+        "Command::new",
+        "pub fn revalidate_with",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_inner",
+        "pub fn descriptor",
+        "write_all(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let reader = std::fs::read_to_string(base.join("diagnostic_namespace_credentials.rs")).unwrap();
+    let code = reader
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "pub(crate) fn refuse",
+        "self.gate.refused = true",
+        "self.namespace.refuse()",
+        "self.credentials.refuse()",
+        "pub(crate) fn matches_account",
+        "self.credentials.matches_account(account)",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_output_preparation.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("bind_namespace_checked_worker"),
+            "no live route in {path}"
+        );
+    }
+    // Scope/source shape only; behavioral refusal and actual readers have Linux tests.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(

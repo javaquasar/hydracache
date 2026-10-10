@@ -32,6 +32,9 @@ const SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
 mod account;
 pub use account::{account_worker_main, WorkerAccountRead, WorkerAccountSnapshot};
 pub use account::{bind_asserted_worker, AssertedWorkerBindingRead, WorkerBindingError};
+pub use account::{
+    bind_namespace_checked_worker, NamespaceWorkerBindingError, NamespaceWorkerBindingRead,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ManagerScope {

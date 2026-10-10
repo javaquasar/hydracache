@@ -17,6 +17,12 @@ const MEMBERSHIPS: usize = 32;
 mod binding;
 pub use binding::{bind_asserted_worker, AssertedWorkerBindingRead, WorkerBindingError};
 
+#[path = "diagnostic_namespace_worker_binding.rs"]
+mod namespace_binding;
+pub use namespace_binding::{
+    bind_namespace_checked_worker, NamespaceWorkerBindingError, NamespaceWorkerBindingRead,
+};
+
 /// Local NSS projection only: not authenticated host policy or process credentials.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct WorkerAccountSnapshot {

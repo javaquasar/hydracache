@@ -110,6 +110,19 @@ pub fn pin_namespace_checked_credentials(
     })
 }
 impl NamespaceCredentialRead<'_> {
+    pub(crate) fn refuse(&mut self) {
+        self.gate.refused = true;
+        self.namespace.refuse();
+        self.credentials.refuse();
+    }
+    pub(crate) fn matches_account(
+        &self,
+        account: &crate::diagnostic_manager::WorkerAccountRead,
+    ) -> bool {
+        !self.is_refused()
+            && !self.namespace.is_refused()
+            && self.credentials.matches_account(account)
+    }
     pub fn is_refused(&self) -> bool {
         self.gate.refused
     }
@@ -122,8 +135,7 @@ impl NamespaceCredentialRead<'_> {
             Step::Open => Err(CredentialError::Invalid.into()),
         });
         if result.is_err() {
-            self.namespace.refuse();
-            self.credentials.refuse();
+            self.refuse();
         }
         result
     }
@@ -136,6 +148,16 @@ mod tests {
     use std::fs::File;
     use std::os::unix::process::CommandExt;
     use std::process::{Child, Command, Stdio};
+
+    #[test]
+    fn namespace_binding_reader_refusal_reaches_all_owned_guards() {
+        let child = Owned::new(true);
+        let process = pin_owned_test_helper(child.0.id());
+        let mut read = pin_namespace_checked_credentials(&process, policy()).unwrap();
+        read.refuse();
+        assert!(read.namespace.is_refused() && read.credentials.is_refused());
+        refused(&mut read);
+    }
 
     #[test]
     fn namespace_credentials_open_and_read_orders_are_distinct() {
