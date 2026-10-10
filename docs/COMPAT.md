@@ -4,6 +4,11 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 fixed production output inspector is Linux runtime-only. It adds no
+wire or persisted artifact, output creation or launch authority. Its numeric
+worker UID/GID inputs are assertions, not authenticated account enrollment;
+read-only ancestry observations are neither durable refusal nor writer revocation.
+
 The 0.74 original manager/process/tree identity join is Linux runtime-only and
 reuses the existing bounded loaded-manager helper. No new wire, persisted schema
 or launch operation is added. Its refusal latch is not a durable journal, and

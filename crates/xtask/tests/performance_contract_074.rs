@@ -1011,6 +1011,84 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
+    let c = contract("diagnostic-production-output-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-production-output-local-074-v1")
+    );
+    assert_eq!(
+        c["fixed_root"].as_str(),
+        Some("/var/lib/hydracache-performance/diagnostics")
+    );
+    assert_eq!(c["maximum_stream_bytes"].as_integer(), Some(8388608));
+    for field in [
+        "root_owned_ancestors_required",
+        "root_owned_private_lease_required",
+        "nonroot_worker_cell_required",
+        "distinct_production_capability",
+        "first_refusal_is_sticky",
+        "readonly_stream_descriptors",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "worker_identity_authenticated",
+        "positive_production_ancestry_observed",
+        "production_output_preparation_allowed",
+        "process_identity_composed",
+        "original_start_authenticated",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "atomic_namespace_snapshot_proved",
+        "writer_revocation_proved",
+        "durable_refusal_journal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_named_output.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for forbidden in [
+        "O_CREAT",
+        "O_TRUNC",
+        "chown(",
+        "create_dir",
+        "write_all(",
+        "StartTransientUnit",
+        "Serialize",
+        "pub fn streams",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        "pub struct ProductionOutputRead",
+        "pub fn pin_production_outputs(",
+        "Path::new(PRODUCTION_ROOT)",
+        "s.uid == 0 && s.gid == 0",
+        "s.mode & 0o7022 == 0",
+        "s.mode & 0o7777 == 0o700",
+        "ProductionLevel::Lease",
+        "self.inner.revalidate()",
+        "if self.production || state != &self.state",
+        "*id == 0 || *id == u32::MAX",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+}
+
+#[test]
 fn diagnostic_live_identity_composition_keeps_lifecycle_and_admission_closed() {
     let c = contract("diagnostic-live-identity-local-contract.toml");
     assert_eq!(

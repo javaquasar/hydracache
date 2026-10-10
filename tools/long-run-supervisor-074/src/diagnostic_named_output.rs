@@ -1,4 +1,4 @@
-//! Fixed fixture output names; no production ownership or launch authority.
+//! Fixed output names and retained ancestry; read-only, never launch authority.
 
 use crate::diagnostic_artifacts::linux::{PinnedStartMaterial, ProcessIoBindingError};
 use crate::diagnostic_lease::DiagnosticState;
@@ -16,14 +16,15 @@ const NAMES: [&str; 2] = ["stdout.json", "stderr.log"];
 const STREAM_BYTES: u64 = crate::diagnostic_receipts::STREAM_BYTES as u64;
 const MAX_PATH_BYTES: usize = 4096;
 const MAX_DEPTH: usize = 64;
+const PRODUCTION_ROOT: &str = "/var/lib/hydracache-performance/diagnostics";
 
 #[derive(Debug, Error)]
 pub enum NamedOutputError {
-    #[error("fixed fixture output path, state, metadata or byte budget refused")]
+    #[error("fixed output path, state, metadata or byte budget refused")]
     Invalid,
-    #[error("original fixture output observation already refused")]
+    #[error("original output observation already refused")]
     Refused,
-    #[error("fixed fixture output I/O failed: {0}")]
+    #[error("fixed output I/O failed: {0}")]
     Io(#[from] std::io::Error),
     #[error("fixture original-process binding failed: {0}")]
     Binding(#[from] ProcessIoBindingError),
@@ -65,6 +66,62 @@ pub struct FixtureOutputRead {
     stamps: [Stable; 2],
     high_water: [u64; 2],
     refused: bool,
+    production: bool,
+}
+
+/// Fixed-root read-only capability. Worker UID/GID are explicit assertions,
+/// not account enrollment. Cannot convert to a fixture or expose stream FDs.
+pub struct ProductionOutputRead {
+    inner: FixtureOutputRead,
+}
+
+#[derive(Clone, Copy)]
+enum ProductionLevel {
+    Ancestor,
+    Lease,
+    Cell,
+}
+
+fn production_directory_valid(s: &Stable, level: ProductionLevel, uid: u32, gid: u32) -> bool {
+    if s.mode & libc::S_IFMT != libc::S_IFDIR {
+        return false;
+    }
+    match level {
+        ProductionLevel::Ancestor => s.uid == 0 && s.gid == 0 && s.mode & 0o7022 == 0,
+        ProductionLevel::Lease => s.uid == 0 && s.gid == 0 && s.mode & 0o7777 == 0o700,
+        ProductionLevel::Cell => s.uid == uid && s.gid == gid && s.mode & 0o7777 == 0o700,
+    }
+}
+
+pub fn pin_production_outputs(
+    state: &DiagnosticState,
+    worker_uid: u32,
+    worker_gid: u32,
+) -> Result<ProductionOutputRead, NamedOutputError> {
+    if [worker_uid, worker_gid]
+        .iter()
+        .any(|id| *id == 0 || *id == u32::MAX)
+    {
+        return Err(NamedOutputError::Invalid);
+    }
+    Ok(ProductionOutputRead {
+        inner: pin_outputs(
+            Path::new(PRODUCTION_ROOT),
+            state,
+            worker_uid,
+            worker_gid,
+            true,
+        )?,
+    })
+}
+
+impl ProductionOutputRead {
+    pub fn is_refused(&self) -> bool {
+        self.inner.is_refused()
+    }
+    pub fn revalidate(&mut self) -> Result<(), NamedOutputError> {
+        self.inner.revalidate()
+    }
 }
 
 /// Borrows both original capabilities; a failed composed observation also
@@ -80,11 +137,23 @@ pub fn pin_fixture_outputs(
     uid: u32,
     gid: u32,
 ) -> Result<FixtureOutputRead, NamedOutputError> {
+    pin_outputs(root, state, uid, gid, false)
+}
+
+fn pin_outputs(
+    root: &Path,
+    state: &DiagnosticState,
+    uid: u32,
+    gid: u32,
+    production: bool,
+) -> Result<FixtureOutputRead, NamedOutputError> {
     let intent = diagnostic_start_intent(state).map_err(|_| NamedOutputError::Invalid)?;
     let raw = root.as_os_str().as_bytes();
     if !root.is_absolute()
-        || root.starts_with("/var/lib/hydracache-performance")
-        || root.starts_with("/opt/hydracache-performance")
+        || (production && root != Path::new(PRODUCTION_ROOT))
+        || (!production
+            && (root.starts_with("/var/lib/hydracache-performance")
+                || root.starts_with("/opt/hydracache-performance")))
         || raw.len() > MAX_PATH_BYTES
     {
         return Err(NamedOutputError::Invalid);
@@ -104,8 +173,13 @@ pub fn pin_fixture_outputs(
         .read(true)
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open("/")?;
+    let first_stamp = Stable::of(&first.metadata()?);
+    if production && !production_directory_valid(&first_stamp, ProductionLevel::Ancestor, uid, gid)
+    {
+        return Err(NamedOutputError::Invalid);
+    }
     let mut directories = vec![Directory {
-        stamp: Stable::of(&first.metadata()?),
+        stamp: first_stamp,
         file: first,
         name: CString::new("/").unwrap(),
     }];
@@ -118,7 +192,18 @@ pub fn pin_fixture_outputs(
         let name = CString::new(bytes).map_err(|_| NamedOutputError::Invalid)?;
         let file = open_at(&directories.last().unwrap().file, &name, true)?;
         let meta = file.metadata()?;
-        if i + 1 >= parts.len()
+        if production {
+            let level = if i < parts.len() {
+                ProductionLevel::Ancestor
+            } else if i == parts.len() {
+                ProductionLevel::Lease
+            } else {
+                ProductionLevel::Cell
+            };
+            if !production_directory_valid(&Stable::of(&meta), level, uid, gid) {
+                return Err(NamedOutputError::Invalid);
+            }
+        } else if i + 1 >= parts.len()
             && (meta.uid() != uid || meta.gid() != gid || meta.mode() & 0o7777 != 0o700)
         {
             return Err(NamedOutputError::Invalid);
@@ -149,6 +234,7 @@ pub fn pin_fixture_outputs(
         stamps: [Stable::of(&metadata[0]), Stable::of(&metadata[1])],
         high_water: [metadata[0].len(), metadata[1].len()],
         refused: false,
+        production,
     };
     guard.revalidate()?;
     Ok(guard)
@@ -156,7 +242,7 @@ pub fn pin_fixture_outputs(
 
 impl FixtureOutputRead {
     pub fn is_fixture(&self) -> bool {
-        true
+        !self.production
     }
     pub fn is_refused(&self) -> bool {
         self.refused
@@ -179,7 +265,7 @@ impl FixtureOutputRead {
     ) -> Result<FixtureProcessIoRead<'a>, NamedOutputError> {
         let result = (|| {
             self.revalidate()?;
-            if state != &self.state || !material.is_fixture() {
+            if self.production || state != &self.state || !material.is_fixture() {
                 return Err(NamedOutputError::Invalid);
             }
             let io = material.bind_asserted_process_io(
@@ -372,6 +458,132 @@ mod tests {
         fn pin(&self) -> Result<FixtureOutputRead, NamedOutputError> {
             pin_fixture_outputs(&self.root, &self.state, self.uid, self.gid)
         }
+    }
+
+    #[test]
+    fn production_ancestry_policy_requires_root_and_private_worker_cell() {
+        let root = Stable {
+            dev: 1,
+            ino: 2,
+            uid: 0,
+            gid: 0,
+            mode: libc::S_IFDIR | 0o755,
+        };
+        for level in [ProductionLevel::Ancestor, ProductionLevel::Lease] {
+            let mut stamp = root.clone();
+            if matches!(level, ProductionLevel::Lease) {
+                stamp.mode = libc::S_IFDIR | 0o700;
+            }
+            assert!(production_directory_valid(&stamp, level, 1000, 1000));
+            for case in 0..5 {
+                let mut bad = stamp.clone();
+                match case {
+                    0 => bad.uid = 1000,
+                    1 => bad.gid = 1000,
+                    2 => bad.mode |= 0o020,
+                    3 => bad.mode |= 0o002,
+                    _ => bad.mode = libc::S_IFREG | 0o700,
+                }
+                assert!(!production_directory_valid(&bad, level, 1000, 1000));
+            }
+        }
+        let cell = Stable {
+            uid: 1000,
+            gid: 1000,
+            mode: libc::S_IFDIR | 0o700,
+            ..root
+        };
+        assert!(production_directory_valid(
+            &cell,
+            ProductionLevel::Cell,
+            1000,
+            1000
+        ));
+        assert!(!production_directory_valid(
+            &cell,
+            ProductionLevel::Cell,
+            1001,
+            1000
+        ));
+        assert!(!production_directory_valid(
+            &cell,
+            ProductionLevel::Cell,
+            1000,
+            1001
+        ));
+    }
+
+    #[test]
+    fn production_directory_policy_exhaustively_refuses_special_or_writable_modes() {
+        for mode in 0..=0o7777 {
+            let stamp = Stable {
+                dev: 1,
+                ino: 2,
+                uid: 0,
+                gid: 0,
+                mode: libc::S_IFDIR | mode,
+            };
+            assert_eq!(
+                production_directory_valid(&stamp, ProductionLevel::Ancestor, 1000, 1000),
+                mode & 0o7022 == 0
+            );
+            assert_eq!(
+                production_directory_valid(&stamp, ProductionLevel::Lease, 1000, 1000),
+                mode == 0o700
+            );
+            let cell = Stable {
+                uid: 1000,
+                gid: 1000,
+                ..stamp
+            };
+            assert_eq!(
+                production_directory_valid(&cell, ProductionLevel::Cell, 1000, 1000),
+                mode == 0o700
+            );
+        }
+    }
+
+    #[test]
+    fn production_reader_refuses_invalid_owner_and_state_before_filesystem() {
+        let f = Fixture::new();
+        for (uid, gid) in [(0, 1000), (1000, 0), (u32::MAX, 1000), (1000, u32::MAX)] {
+            assert!(matches!(
+                pin_production_outputs(&f.state, uid, gid),
+                Err(NamedOutputError::Invalid)
+            ));
+        }
+        let mut state = f.state.clone();
+        state.stage = DiagnosticStage::Running;
+        assert!(matches!(
+            pin_production_outputs(&state, 1000, 1000),
+            Err(NamedOutputError::Invalid)
+        ));
+        state = f.state.clone();
+        state.last_observed_monotonic_ns = 300_000_000_001;
+        state.controller_monotonic_ns = state.last_observed_monotonic_ns;
+        assert!(matches!(
+            pin_production_outputs(&state, 1000, 1000),
+            Err(NamedOutputError::Invalid)
+        ));
+    }
+
+    #[test]
+    fn synthetic_production_wrapper_retains_shared_reader_refusal() {
+        // Private wrapper seam only; temporary ancestry is not production proof.
+        let f = Fixture::new();
+        let mut reader = ProductionOutputRead {
+            inner: f.pin().unwrap(),
+        };
+        reader.revalidate().unwrap();
+        assert!(!reader.is_refused());
+        fs::set_permissions(&f.cell, fs::Permissions::from_mode(0o750)).unwrap();
+        assert!(reader.revalidate().is_err());
+        fs::set_permissions(&f.cell, fs::Permissions::from_mode(0o700)).unwrap();
+        assert!(matches!(
+            reader.revalidate(),
+            Err(NamedOutputError::Refused)
+        ));
+        assert!(reader.is_refused());
     }
 
     #[test]
