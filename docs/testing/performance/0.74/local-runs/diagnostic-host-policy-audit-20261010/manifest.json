@@ -1,0 +1,123 @@
+{
+  "schema_version": "diagnostic-host-policy-audit-local-evidence-074-v1",
+  "state": "retained-local-audit-not-authority",
+  "evidence_class": "working-tree-local-regression-not-release-qualification",
+  "baseline_source": "8e16117b94ab6a3b60a182ef5f33e2c5aaeb6893",
+  "preregistered_audit_commit": "6e54a700e57ba2e59e71cfcdee6e884bd4891efb",
+  "test_commit": "2f762e3a33c4e8241301eff201f435522d75303a",
+  "test_commit_tree": "59ca11ed8fd1355c97aeefe507d7f3da27e792cd",
+  "rust_toolchain": "1.94.0",
+  "production_source_prefix_unchanged": true,
+  "architecture_decision": "awaiting-user-approval-of-local-file-enrollment",
+  "new_tests": [
+    "host_observation_v1_rejects_worker_authority_extensions",
+    "provisioning_v1_rejects_worker_authority_extensions"
+  ],
+  "authority_field_mutations_per_test": 8,
+  "windows_baseline_passes": 7,
+  "windows_final_passes": 9,
+  "linux_final_passes": 10,
+  "root_passes": 127,
+  "final_registry_passes": 1,
+  "require_ship_native_exit": 1,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "trusted_worker_policy_implemented": false,
+    "trusted_nss_provider_attested": false,
+    "trusted_host_namespace_proved": false,
+    "real_worker_enrollment": false,
+    "production_preparation": false,
+    "authenticated_diagnostic_start": false,
+    "host_operations": false,
+    "product_workload": false,
+    "qualification": false,
+    "performance_measurement": false,
+    "full_workspace_verification": false
+  },
+  "commands": {
+    "baseline_and_green_windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib host_receipt::tests -- --nocapture",
+    "final_linux": "wsl -d Ubuntu -u artur: cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib host_receipt::tests -- --nocapture",
+    "check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked",
+    "lint": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "registry": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 w12_evidence_skeleton_is_exact_and_fail_closed -- --exact",
+    "docs": [
+      "cargo +1.94.0 xtask doc-check",
+      "cargo +1.94.0 xtask performance-contract-check --release 0.74",
+      "node scripts/docs-link-check.mjs",
+      "mdbook build docs-site"
+    ],
+    "ship_expected_refusal": "cargo +1.94.0 xtask performance-contract-check --release 0.74 --require-ship"
+  },
+  "logs": {
+    "baseline.log": {
+      "sha256": "0e48e91a2c3eb1955e58a583eca52508bb313efa12c1dc2907e4b4348934fe6d",
+      "bytes": 894
+    },
+    "green.log": {
+      "sha256": "2727c3f9d75bb5a87dc2064384b98b5d11c506074fdbdac6a120ce45d62586ab",
+      "bytes": 1199
+    },
+    "check.log": {
+      "sha256": "6ef1e18b447414e33e03e9586660fe3f6cb935722602b988c1ec3ef8816bbabb",
+      "bytes": 191
+    },
+    "lint.log": {
+      "sha256": "eb1a18a1c519401ae9ea7a7120ec6d19fc0061ee49b6d53097d70871ab29bc38",
+      "bytes": 191
+    },
+    "linux.log": {
+      "sha256": "e1215e1918706273532c158ce90dc23279340b6dc838cbd27f3a5d83a2769775",
+      "bytes": 1321
+    },
+    "linux-check.log": {
+      "sha256": "c54d8a122b5331a7e15c605602f8d229f512ec52131dabeb1997339b0bbd1cf7",
+      "bytes": 193
+    },
+    "linux-lint.log": {
+      "sha256": "9304915f835a3793ea1f811e991517470057812faab115e1ae7c603a8f929a02",
+      "bytes": 193
+    },
+    "root.log": {
+      "sha256": "d70763d5f0b7f7ec1b55c2d26bc00c41eecbfc1f5ec3efac0a7568b4120e080e",
+      "bytes": 11101
+    },
+    "doc.log": {
+      "sha256": "72acccb74694fc4198809461e85b4a0d0a5c69e64bc90ca796f9a732e234bf6b",
+      "bytes": 239
+    },
+    "contract.log": {
+      "sha256": "495a27abefd69417f1306b332a9a07ff166b32cfd907d626bf1209b95c41530a",
+      "bytes": 203
+    },
+    "links.log": {
+      "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+      "bytes": 69
+    },
+    "book.log": {
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "bytes": 151
+    },
+    "ship.log": {
+      "sha256": "e26b2d266746e68a6c0a643dc7cdf13ec7df85c81d176c835677353854c2ff67",
+      "bytes": 487
+    },
+    "isolation.log": {
+      "sha256": "e4765f84d21b160aa02e6e5dc02afae13854fd48f57ad695ba2d53cf0c32d1db",
+      "bytes": 241
+    },
+    "registry.log": {
+      "sha256": "279b4fe7154b250d1e66d44e9cfa48fa8b64624e35442bc45a50aebf8ee7e963",
+      "bytes": 439
+    },
+    "docs-final.log": {
+      "sha256": "668c4c7fe439e951a6efa2184a63d2c0f9c9651e2251b61428e3b452d0a3812a",
+      "bytes": 662
+    },
+    "post-retained.log": {
+      "bytes": 881,
+      "sha256": "e4cb208f76030b22dfda48120ac370b3a32adf73f7eec927bf0594ab8a0406bb"
+    }
+  },
+  "post_retention_registry_and_contract_checked": true
+}

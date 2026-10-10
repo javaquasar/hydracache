@@ -5492,3 +5492,37 @@ exit 9 and confirmed cleanup, so none of these positives become trusted NSS
 enrollment. Windows passes 28 portable tests, and root contracts/evidence/
 governance pass 127. Scoped lint/check and documentation gates pass; qualification
 inputs remain exact and require-ship remains expected red.
+
+## Worker identity authority before production preparation
+
+Agreement between account and namespace-checked credentials does not decide who
+is allowed to authorize the worker. The [authority audit](../testing/performance/0.74/diagnostic-host-policy-audit.md)
+finds that provisioning v1 records installation/source identity, while the host
+observation records host characteristics and backing-mount identity. Neither
+enrolls the fixed account's UID, primary GID, complete groups, NSS provider or
+helper namespace. The sysusers digest identifies an allocation request, not the
+resulting mapping; the installed supervisor is root, distinct from the requested
+unprivileged worker account. Backing-mount equality deliberately ignores the
+namespace-local mount ID and cannot establish the helper's namespace.
+
+GNU libc's [NSS design](https://raw.githubusercontent.com/bminor/glibc/glibc-2.39/manual/nss.texi)
+separates lookup services and per-database configuration. Our resulting design
+conclusion is that a digest of nsswitch.conf alone would not authenticate the
+providers, data and execution context. Repeating the same lookup or adding
+another consistency bracket would not close this authority gap.
+
+The proposed narrow alternative is an explicitly approved local enrollment for
+the fixed diagnostic worker: canonical nonroot UID/GID/groups under an external
+policy pin and admitted host/boot context, followed by bounded inspection of
+fixed local account files. General NSS remains a separate consistency diagnostic;
+system-wide NSS need not change. This selects an authority model and therefore
+requires approval. Its verifier, trust enrollment, namespace/context enforcement,
+reboot revocation, all-thread requirements and production integration remain
+unimplemented. Local parser and reader fixtures would not become real host
+admission. No allocation/throughput gain follows from these safety checks.
+
+Two regression tests protect the current v1 boundaries: added worker-authority
+fields must refuse, including canonical host-observation bytes with a matching
+digest. These tests exercise existing strict decoding, not a new authenticated
+policy. Production output preparation, signed diagnostic start and qualification
+remain closed until their separate authority and lifecycle gates are complete.

@@ -1,0 +1,4 @@
+host_receipt production prefix: unchanged from 8e16117b94ab6a3b60a182ef5f33e2c5aaeb6893
+qualification-manifest sha256=11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc
+rustfmt 1.94.0 scoped check:
+scoped formatting passed

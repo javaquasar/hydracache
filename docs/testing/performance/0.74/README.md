@@ -2298,3 +2298,11 @@ pass 127. Real owned original readers use synthetic account projections; actual
 NSS operator observation still refuses exit 9 with confirmed cleanup. Seeded
 mapping drift is canonically valid but synthetic. Scoped checks/documentation
 pass; unchanged qualification and expected-red ship admission remain closed.
+
+The [worker authority audit](diagnostic-host-policy-audit.md) distinguishes
+installed-source and host-observation receipts from worker enrollment. Existing
+v1 schemas reject added authority fields; no new trusted policy is implemented.
+The proposed next slice is opt-in fixed local account enrollment under an
+externally pinned policy, not system-wide NSS changes. That source-of-authority
+choice requires explicit approval before implementation. Production preparation,
+authenticated start and qualification stay closed.

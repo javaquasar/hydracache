@@ -87,3 +87,20 @@ non-product lifecycle rehearsal exercise the installed implementation. Watchdog
 and uncertain-intent recovery remain gates before qualification. Approval of the
 local policy design alone does not authorize installation, workloads or changing
 frozen qualification identities and thresholds.
+
+## Local regression results
+
+Test commit `2f762e3a33c4e8241301eff201f435522d75303a` adds two regressions
+inside the existing host-receipt test module. Each rejects eight extra authority
+fields; the host-observation cases use canonical bytes and a matching digest.
+The seven-test Windows baseline becomes nine passes. Linux passes ten, including
+its existing mountinfo-only case. Windows and Linux scoped check and all-feature
+strict clippy pass; the production source prefix and frozen qualification digest
+remain unchanged. These are schema-refusal observations, not a policy verifier.
+
+The [packet](local-runs/diagnostic-host-policy-audit-20261010/manifest.json) retains
+raw captures and the read-only integrity verifier. Root contracts/evidence/
+governance pass 127 checks, followed by a final registry check. Documentation,
+local performance contract, links and book gates pass; require-ship refuses with
+native exit 1. This local audit performs no host operation or performance
+measurement and leaves the proposed authority model awaiting explicit approval.
