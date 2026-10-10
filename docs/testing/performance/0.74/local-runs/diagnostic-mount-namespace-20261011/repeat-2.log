@@ -1,0 +1,24 @@
+    Finished `test` profile [unoptimized] target(s) in 4.72s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 16 tests
+test diagnostic_process::mount_namespace::tests::mount_namespace_identity_drift_never_adopts_device_or_inode ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_every_first_error_stops_with_original_type ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_guard_is_neither_send_nor_sync ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_named_directory_pin_drift_cannot_refresh ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_constructor_refuses_dead_original_generation ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_prior_refusal_and_foreign_thread_never_observe ... ok
+mount namespace mutation seed=0x7582026; mutations=256
+test diagnostic_process::mount_namespace::tests::mount_namespace_seeded_failure_and_identity_are_sticky ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_type_is_kernel_checked_not_link_text ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_order_brackets_both_observations_with_generation ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_observer_tid_drift_precedes_dead_process_and_bad_fd ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_distinct_identity_check_is_not_initial_host_attestation ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_owned_exit_refuses_despite_retained_namespace ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_original_directory_substitution_cannot_restore ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_owned_roundtrip_readonly_flags_and_healthy_drop ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_wrong_objects_and_restoration_latch ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_concurrent_readers_construct_on_own_threads ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 267 filtered out; finished in 0.03s
+

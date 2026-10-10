@@ -1,0 +1,10 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+   Compiling xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `test` profile [unoptimized] target(s) in 20.59s
+     Running tests/performance_contract_074.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/performance_contract_074-a26b883cc8170f60)
+
+running 1 test
+test diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.01s
+

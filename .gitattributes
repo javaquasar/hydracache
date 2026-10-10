@@ -95,3 +95,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-worker-context-*/**/*.log -t
 docs/testing/performance/0.74/local-runs/diagnostic-context-files-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-policy-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-signed-opening-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-mount-namespace-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

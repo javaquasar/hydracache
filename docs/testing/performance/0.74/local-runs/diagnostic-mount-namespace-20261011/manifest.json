@@ -1,0 +1,199 @@
+{
+  "schema_version": "diagnostic-mount-namespace-local-evidence-074-v1",
+  "state": "retained-local-leader-mount-consistency-not-production-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "4c93f79987f2f582e75bd2d5cdc3a435d5b3bf4b",
+  "preregistered_design_commit": "9600967f0a3d43b496efa7069b46e6acfada9c08",
+  "implementation_commit": "6137743ae518e73d8bc9815f209665b734428653",
+  "implementation_tree": "64c1d03c2c2ac2de5f1f0e40a15a26b8875f036d",
+  "toolchain": "1.94.0",
+  "fixtures": "Original owned unprivileged cat helpers, actual local Linux mount namespaces, and private modeled identity/TID/descriptor drift. No foreign namespace creation or setns/unshare transition.",
+  "source_scope": "Scoped working-tree safety and regression captures, not clean candidate or full-workspace qualification.",
+  "seed": "0x7582026",
+  "modeled_iterations_per_seeded_run": 256,
+  "first_green_scope": "Sixteen tests; seeded stage failures only. Final full suite and all three repetitions also exercise 256 device/inode changes inside the 256 iterations.",
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "windows_linux_target_tests": 0,
+    "first_green_passed": 16,
+    "linux_final_passed": 356,
+    "linux_existing_ignored": 1,
+    "new_tests": 16,
+    "additional_linux_repetitions": 3,
+    "root_final_passed": 134,
+    "linux_new_root_guard_passed": 1
+  },
+  "retained_negatives": [
+    "Missing mount_namespace module gives E0432 and a dependent E0282 before implementation; WSL wrapper exit 1.",
+    "Wrong namespace filesystem/type and changed descriptors refuse.",
+    "Observer TID drift precedes original-dead-process and wrong FD errors.",
+    "Original exit refuses despite surviving mount namespace FD.",
+    "Restoring private FD/directory/TID/identity inputs cannot clear refusal.",
+    "Require-ship remains native exit 1."
+  ],
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_order_brackets_both_observations_with_generation"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_every_first_error_stops_with_original_type"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_prior_refusal_and_foreign_thread_never_observe"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_identity_drift_never_adopts_device_or_inode"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_seeded_failure_and_identity_are_sticky"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_guard_is_neither_send_nor_sync"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_owned_roundtrip_readonly_flags_and_healthy_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_owned_exit_refuses_despite_retained_namespace"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_constructor_refuses_dead_original_generation"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_wrong_objects_and_restoration_latch"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_original_directory_substitution_cannot_restore"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_named_directory_pin_drift_cannot_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_type_is_kernel_checked_not_link_text"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_observer_tid_drift_precedes_dead_process_and_bad_fd"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_distinct_identity_check_is_not_initial_host_attestation"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs",
+      "name": "mount_namespace_concurrent_readers_construct_on_own_threads"
+    }
+  ],
+  "new_root_guard": "diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "guard_send_or_sync": false,
+    "public_descriptor_identity_or_reset": false,
+    "arbitrary_path_or_namespace_selector": false,
+    "signed_policy_composition": false,
+    "all_threads_proved": false,
+    "initial_host_namespace_proved": false,
+    "mount_content_immutability_proved": false,
+    "kernel_foreign_namespace_mutation_tested": false,
+    "atomic_or_continuous_proof": false,
+    "file_opener_credentials_attested": false,
+    "real_issuer_enrolled": false,
+    "production_preparation_allowed": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation_allowed": false,
+    "product_workload_allowed": false,
+    "performance_claim_allowed": false,
+    "qualification_allowed": false,
+    "admission_allowed": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "registry.log": {"bytes":439,"sha256":"dfb6461fbf1b6e7027572c3cfe93e80921b4c911560fd5f72c3198f1e1fe13d3"},
+    "docs-final.log": {"bytes":662,"sha256":"b75bbf31fa8d7fedd122736602d491e834d62d85bc74e8a6830a9d555a07f2b6"},
+    "api-red.log": {
+      "bytes": 764,
+      "sha256": "1d4a77c53072f842cef341135dae8daac5676c4d392daa93b393674c2957d079"
+    },
+    "baseline.log": {
+      "bytes": 4281,
+      "sha256": "43d508a8c5c0d3b907b6bacc70f0834fe0a055e0a0aa2ed2ab1b9e2b28a6dc3d"
+    },
+    "docs.log": {
+      "bytes": 692,
+      "sha256": "5e64faec1e1a9cdfff026fcbd5943cb9932c7a82c0a8a31a7e0ff0b1e75979a6"
+    },
+    "first-green.log": {
+      "bytes": 2377,
+      "sha256": "1c055027b9ff27b58dc473f4863076d40bcc70e31f9fe62ca447c9a5ed54697c"
+    },
+    "isolation.log": {
+      "bytes": 202,
+      "sha256": "bc8ffa434a8fd32b2448b69929adceac6941d11a8281b03dc165e3f9fb149a0e"
+    },
+    "linux-check.log": {
+      "bytes": 280,
+      "sha256": "fbad49ba75fa1d5b85466309ea60016b50dbb0248bf231683f6cf318f4086c1c"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "97bc1217c267dbc3ed008cf1f156ccc83d3279760cc96ff82e51369fafd3e264"
+    },
+    "linux-root.log": {
+      "bytes": 637,
+      "sha256": "ca9b482be641de68bdb899fa2d13298353634249ddedfed3a8a5a200a7d627f8"
+    },
+    "linux-scope.log": {
+      "bytes": 41417,
+      "sha256": "601795ad278af74cf7430365d7c6addd26e6c5640bf707cc4f1b635b44dca5f5"
+    },
+    "repeat-1.log": {
+      "bytes": 2245,
+      "sha256": "9412a664cf2b6239ce50a46c1b1178a19685b2998a0d3910c71ff8686154bff5"
+    },
+    "repeat-2.log": {
+      "bytes": 2244,
+      "sha256": "b9a9bc1b2eae77af7a2d93cffb89720314162e3a0706936954a22b223e9286da"
+    },
+    "repeat-3.log": {
+      "bytes": 2244,
+      "sha256": "8a8a1e36a802f42a433b8b929a296a51b9b848a68691a78d97dbbe5787796700"
+    },
+    "root.log": {
+      "bytes": 11958,
+      "sha256": "d47127c08a04eef4b1b0b876b05caa46052f84d5796fc4400242c55aa1f454d9"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "1dc703b195e53b5a01d16d9706832879ed09e1ccb805f17f9ad0e4b3369b3870"
+    },
+    "windows-check.log": {
+      "bytes": 145,
+      "sha256": "9e4c8aa65ac052aa02c339ddef363cd63abacd93608486063e06e56aad55e948"
+    },
+    "windows-lint.log": {
+      "bytes": 145,
+      "sha256": "b22bf57405b80e5c6a19550cdca934403883e41d389ce0d28c8d7c2bae03188c"
+    },
+    "windows-scope.log": {
+      "bytes": 4513,
+      "sha256": "a2e5ab409fe58195c52a70f44fb82d5da90aeedb489e7057b34310ffb08aa948"
+    }
+  }
+}

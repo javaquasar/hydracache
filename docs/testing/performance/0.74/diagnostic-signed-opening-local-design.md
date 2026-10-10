@@ -32,6 +32,10 @@ follows. Frozen qualification inputs remain exact. Worker mount/all-thread proof
 kernel opener credentials, real issuer/durable epoch/refusal and authenticated
 original start remain independent outstanding authority work.
 
+The standalone [leader mount guard](diagnostic-mount-namespace-local-design.md)
+now adds local same-mount consistency. It is not yet composed into this signed
+opening reader, so its historical mount/all-thread proof boundaries stay closed.
+
 ## Scope and baseline
 
 Baseline `70064e71078c587f79d371fa611c78a2e53b9ff8`. Add opt-in Linux

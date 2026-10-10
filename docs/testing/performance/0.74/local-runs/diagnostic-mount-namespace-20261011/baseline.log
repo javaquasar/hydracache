@@ -1,0 +1,63 @@
+    Finished `test` profile [unoptimized] target(s) in 0.48s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 15 tests
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-9812b2350634447c.exe)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests\diagnostic_worker_policy.rs (target\debug\deps\diagnostic_worker_policy-4a19612bf3999c04.exe)
+
+running 13 tests
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+worker-policy seed=0x7512026; mutations=256
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.45s
+

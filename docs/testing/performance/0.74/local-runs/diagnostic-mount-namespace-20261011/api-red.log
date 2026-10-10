@@ -1,0 +1,16 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `super::mount_namespace`
+ --> tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs:2:12
+  |
+2 | ...r::mount_...pace::*;
+  |       ^^^^^^...^^^^ could not find `mount_namespace` in `super`
+
+error[E0282]: type annotations needed
+  --> tools/long-run-supervisor-074/src/diagnostic_mount_namespace_tests.rs:91:43
+   |
+91 | ...tl(f.as...
+   |       ^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0432.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

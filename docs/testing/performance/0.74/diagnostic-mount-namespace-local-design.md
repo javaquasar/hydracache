@@ -1,5 +1,37 @@
 # Original worker leader mount namespace consistency
 
+## Implemented local guard
+
+The standalone reader now pins the original leader and observer mount objects,
+worker ns directory and original observer TID. It requires procfs ancestry on the
+retained process root, nsfs and kernel mount type on both namespace objects, and
+exact device/inode equality. Generation checks bracket two namespace observations.
+Wrong type, changed object/directory/TID or original exit stops and latches refusal.
+No mutable process authority, getter, reset or signed-policy join is introduced.
+
+The [packet](local-runs/diagnostic-mount-namespace-20261011/manifest.json) retains
+the 43-test portable baseline, missing-module E0432 with its downstream E0282,
+16-test first green and final checks. Linux passes 356 with one existing
+system-bus ignored; Windows passes 43. Root contract/evidence/governance passes
+134. All sixteen new tests pass three more repetitions. Seed `0x7582026` supplies
+256 modeled iterations, with final coverage of first-error positions and distinct
+device/inode identities. The first green preceded the additional seeded identity
+cases; the full and repeated suites exercise the strengthened test.
+
+Actual owned helpers cover retained mount FD flags, repeated reads/healthy drop,
+exit with surviving namespace FD, wrong nsfs type, FD/directory substitution and
+independent readers built on their own threads. Private TID/identity/directory-pin
+mutations provide deterministic drift coverage, not real namespace transitions.
+No setns/unshare or foreign namespace is created. Three original namespace/directory
+FDs are retained; each stage's transient name lookups are dropped before it returns.
+
+Formatting, both-platform scoped check/strict lint, docs/links/book and registry
+are retained. Qualification bytes and old guards remain unchanged; require-ship
+remains expected native exit 1. No performance measurement or production authority
+follows. The next slice must derive the original process from the signed credential
+reader rather than accept an independent process argument; all-thread observations,
+durable external authority and original authenticated start remain separate.
+
 ## Scope and baseline
 
 Baseline `4c93f79987f2f582e75bd2d5cdc3a435d5b3bf4b`. Add an opt-in Linux read-only guard

@@ -5805,3 +5805,52 @@ qualification inputs remain exact and ship admission stays closed. The bracket
 does not attest kernel file-opener credentials, worker mount namespace, all
 threads, initial-host authority or continuous writer revocation. Real issuer/
 durable epoch enrollment and authenticated original lifecycle start remain separate.
+
+## Retaining the original leader mount namespace
+
+The signed opening reader checks the observer mount context, but its credential
+component previously compared only user namespaces. A separate
+[mount guard](../testing/performance/0.74/diagnostic-mount-namespace-local-design.md)
+now observes the original retained process leader and reading thread sharing a
+mount namespace. This isolates the new observation before composing it with
+signed policy; passing standalone consistency cannot authorize production.
+
+The reader retains worker and observer namespace descriptors and the original
+worker ns directory. It pins the observer TID and is neither Send nor Sync.
+Original generation checks bracket two observations of current and retained
+objects, named worker directory identity and freshly named worker mount. Each
+namespace descriptor must be nsfs with the kernel mount type, and device/inode
+must match the original. The type comes from
+[NS_GET_NSTYPE](https://raw.githubusercontent.com/torvalds/linux/v6.1/fs/nsfs.c),
+not the text printed by a proc magic link. Only fixed proc magic links are followed,
+using read-only CLOEXEC descriptors.
+
+The first typed error stops and latches refusal. Restoring descriptors or private
+test pins cannot reset it. Exit refuses even when a retained namespace descriptor
+survives. The original process is borrowed, never refreshed, signaled or exported;
+healthy drop preserves it. Independent readers constructed on separate threads
+keep separate refusal state. Three original directory/namespace FDs are retained;
+transient lookup descriptors are released at each observation.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-mount-namespace-20261011/manifest.json)
+records 356 Linux passes with one existing system-bus ignored, 43 Windows
+regressions and 134 root contract/evidence/governance passes. Sixteen new tests
+pass three additional repetitions. Seed `0x7582026` drives 256 modeled iterations
+of failing stages and device/inode changes in the final suites. The first green
+preceded the extra seeded identity cases; it remains an exact earlier capture.
+Missing-module E0432 and its dependent E0282 before implementation are retained,
+alongside expected-red ship admission.
+
+Owned local helpers exercise real namespace descriptors, readonly flags, original
+exit and wrong-type/substitution refusal. Observer TID, stored directory pin and
+distinct mount identity mutations are private deterministic cases. No foreign
+namespace or real setns/unshare transition is exercised. This does not prove
+every worker task, initial-host namespace, mount contents remaining unchanged,
+atomic/continuous inspection or kernel file-opener credentials. In particular,
+mount-tree contents can change while namespace identity stays equal.
+
+This stage measures safety, not cache allocations, CPU/op or throughput. Product
+code and frozen qualification inputs remain unchanged. Next, the signed composition
+must derive the mount guard's process from the original credential reader without
+allowing a substitute argument. Bounded all-thread observations, durable issuer
+enrollment and authenticated lifecycle still have independent requirements.

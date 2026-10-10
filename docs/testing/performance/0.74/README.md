@@ -2367,3 +2367,12 @@ owned components; fixed/fixture types remain distinct and non-transferable.
 The [packet](local-runs/diagnostic-signed-opening-20261011/manifest.json) is local
 safety evidence, not performance or enrollment. Worker mount/all-thread proof,
 kernel opener credentials, durable authority and authenticated start remain open.
+
+The [original leader mount guard](diagnostic-mount-namespace-local-design.md)
+retains worker/observer typed mount objects and pins the reading thread TID under
+original process-generation brackets. Wrong type, substitution, thread drift and
+exit refuse without refresh. It is read-only and neither Send nor Sync; no namespace
+join or mutation occurs. The [packet](local-runs/diagnostic-mount-namespace-20261011/manifest.json)
+is standalone local consistency, not signed mount enrollment or all-thread proof.
+Shared namespace identity does not guarantee immutable mount contents. The next
+step is an original-process-only signed composition, then bounded all-thread checks.
