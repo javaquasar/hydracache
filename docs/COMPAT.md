@@ -11,6 +11,15 @@ IPC or serialized artifact, accepts no replacement PID/namespace/FD and cannot
 join namespaces. It does not authenticate an initial host namespace, bind an
 already-open credential document's view or alter the numeric-only credential API.
 
+The separate 0.74 namespace-checked credential reader is opt-in Linux runtime-only.
+It owns original namespace and credential guards, opens status inside a
+namespace/open/namespace/credentials/namespace bracket, and later brackets
+credential revalidation with namespace checks. Every failure refuses both guards.
+It cannot enroll an already-open reader or export/refresh either guard. No wire,
+helper or IPC mode changes; the numeric-only API and account binder are unchanged.
+Sequential opening-context checks are not kernel-attested file credentials,
+atomic/continuous namespace proof, trusted host/NSS enrollment or admission.
+
 The 0.74 asserted worker binding is Linux runtime-only. It borrows the original
 fixed-account and retained-process credential guards, compares the existing
 numeric policy and brackets credential observation with account checks. It adds

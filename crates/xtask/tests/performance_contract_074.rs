@@ -1681,6 +1681,125 @@ fn diagnostic_user_namespace_keeps_host_enrollment_and_credential_view_closed() 
 }
 
 #[test]
+fn diagnostic_namespace_credentials_keep_sequential_opening_and_admission_closed() {
+    let c = contract("diagnostic-namespace-credentials-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-namespace-credentials-local-074-v1")
+    );
+    for (field, expected) in [
+        (
+            "initialization_order",
+            vec!["namespace", "open", "namespace", "credentials", "namespace"],
+        ),
+        (
+            "revalidation_order",
+            vec!["namespace", "credentials", "namespace"],
+        ),
+    ] {
+        let actual = c[field]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(actual, expected, "{field}");
+    }
+    for field in [
+        "original_process_only",
+        "same_call_opening_required",
+        "status_open_once_before_first_credential_read",
+        "namespace_before_and_after_open_required",
+        "original_namespace_and_credential_guards_owned",
+        "both_guards_refused_on_failure",
+        "first_error_preserved",
+        "refusal_sticky",
+        "numeric_only_api_unchanged",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "observation_after_refusal_allowed",
+        "preopened_credentials_enrollment_allowed",
+        "replacement_pid_path_fd_namespace_allowed",
+        "guard_or_descriptor_exported",
+        "setns_or_unshare_allowed",
+        "kernel_attested_file_credential_namespace_proved",
+        "atomic_or_continuous_observation_proved",
+        "trusted_host_or_initial_namespace_proved",
+        "all_threads_namespace_proved",
+        "trusted_nss_provider_proved",
+        "account_binder_or_live_route_changed",
+        "original_start_authenticated",
+        "host_install_or_unit_mutation_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "process: &ProcessRead",
+        "policy: AssertedWorkerCredentials",
+        "pin_same_user_namespace(process)?",
+        "Document::open(&process.probe.files.directory, \"status\")",
+        "namespace.refuse()",
+        "credentials.refuse()",
+        "self.namespace.refuse()",
+        "self.credentials.refuse()",
+        "Err(NamespaceCredentialError::Refused)",
+        "self.refused = true",
+        "self.initialized = true",
+        "policy.take()",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "libc::setns",
+        "libc::unshare",
+        "Command::new",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn descriptor",
+        "pub fn credentials",
+        "pub fn namespace",
+        "pub fn into_inner",
+        "write_all(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_worker_binding.rs",
+    ] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("pin_namespace_checked_credentials"),
+            "no live/account route in {path}"
+        );
+    }
+    // Source shape only; behavior and syscall ownership have Linux tests.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(

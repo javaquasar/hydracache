@@ -21,6 +21,9 @@ pub use credentials::{
     pin_asserted_worker_credentials, AssertedWorkerCredentials, CredentialError,
     ProcessCredentialRead,
 };
+pub use credentials::{
+    pin_namespace_checked_credentials, NamespaceCredentialError, NamespaceCredentialRead,
+};
 
 #[path = "diagnostic_user_namespace.rs"]
 mod user_namespace;

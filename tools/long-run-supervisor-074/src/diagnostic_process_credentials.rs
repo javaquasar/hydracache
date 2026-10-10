@@ -3,6 +3,12 @@
 use super::{number, Document, ProcessError, ProcessRead, DOCUMENT_BYTES};
 use thiserror::Error;
 
+#[path = "diagnostic_namespace_credentials.rs"]
+mod namespace_checked;
+pub use namespace_checked::{
+    pin_namespace_checked_credentials, NamespaceCredentialError, NamespaceCredentialRead,
+};
+
 const GROUPS: usize = 32;
 const FIELDS: [&[u8]; 11] = [
     b"Pid",

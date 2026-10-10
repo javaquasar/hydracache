@@ -129,6 +129,9 @@ pub fn pin_same_user_namespace(
     Ok(read)
 }
 impl SameUserNamespaceRead<'_> {
+    pub(crate) fn refuse(&mut self) {
+        self.guard.refused = true;
+    }
     pub fn is_refused(&self) -> bool {
         self.guard.refused
     }
@@ -194,6 +197,13 @@ fn follow_fixed(directory: &File, name: &CStr, is_dir: bool) -> Result<File, Nam
     }
     // SAFETY: successful openat returned one new owned descriptor.
     Ok(unsafe { File::from_raw_fd(fd) })
+}
+
+#[cfg(test)]
+impl SameUserNamespaceRead<'_> {
+    pub(super) fn replace_worker_for_test(&mut self, replacement: File) -> File {
+        std::mem::replace(&mut self.probe.worker, replacement)
+    }
 }
 
 #[cfg(test)]
