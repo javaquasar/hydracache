@@ -59,3 +59,38 @@ files and synthetic issuer/context; never modify real account files or enroll a
 host. Run affected Windows/Linux check/strict lint, scoped rustfmt, focused tests,
 root contracts/evidence/governance, docs/links/book and expected-red require-ship.
 Keep qualification inputs, old account/NSS/namespace APIs and live routes exact.
+
+## Implementation and retained local results
+
+Implementation `7d3b276973893f53553528b2dacfb2d67eda5348` adds the Linux child
+module, separate fixed/fixture wrappers and parser/descriptor guards, plus the
+platform-target registry and root scope check. No policy wire schema changes.
+The [local packet](local-runs/diagnostic-worker-files-20261011/manifest.json)
+retains the 43-test Windows baseline and final portable regression scope; the
+Linux-only target contains zero Windows cases. Final Linux scope passes 283
+(223 library, 29 artifacts, 2 manager, 3 account, 13 policy and 13 file tests),
+with one existing system-bus case ignored. The 13 new integration cases and one
+new positional-read unit case pass three additional Linux repetitions. Seed
+`0x7522026` drives 64 valid unrelated-document mutations per repetition: new
+matching policy pins accept each fixture, original whole-file pins refuse it.
+Exact 1 MiB, 4096-byte line, 16384-record and 32-group positives pass as well as
+their over-budget/unsafe/ambiguous counterparts.
+
+Negative evidence remains intact. Before implementation the missing-API check
+hit Rust 1.94's diagnostic-renderer ICE while formatting unresolved-import E0432;
+a baseline API replay repeated that ICE. The same absent module with Cargo's short
+diagnostic format returns ordinary E0432/native exit 101. The first full Linux run
+failed the injected same-length-write metadata assertion; the injection now
+changes length deterministically and the full scope passes without sleeps or
+timestamp-resolution assumptions. The first root gate caught an unregistered
+Linux cfg target; registration under the existing CI step fixes that omission,
+without changing the workflow, an old gate or a qualification threshold.
+
+Root contracts/evidence/governance pass 129 checks. Windows/Linux affected package
+check and strict lint, scoped format, doc/local contract, links and book pass;
+require-ship remains expected native exit 1. All actual frozen qualification
+contract inputs and product/native/NSS/namespace/live-route code are unchanged.
+These are working-tree local safety gates, not full-workspace or release
+qualification. No positive production ancestry/context, real issuer enrollment,
+host mutation or performance result is established. Next: observe and enforce
+actual admitted kernel/host context before composing this reader with credentials.

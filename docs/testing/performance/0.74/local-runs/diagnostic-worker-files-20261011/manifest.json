@@ -1,0 +1,185 @@
+{
+  "schema_version": "diagnostic-worker-files-local-evidence-074-v1",
+  "state": "retained-local-fixed-reader-not-host-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "4f7336a82eb5529f20609c6494dacec03664c55a",
+  "preregistered_design_commit": "3bb4482ac963a210e6a2152247b668912a2022f4",
+  "implementation_commit": "7d3b276973893f53553528b2dacfb2d67eda5348",
+  "implementation_tree": "dda0a020023c41fb8abaa148ccb09def61cc1507",
+  "source_scope": "Implementation plus working-tree documentation/evidence; local checks do not establish clean-source qualification.",
+  "toolchain": "1.94.0",
+  "authority_model_approved": true,
+  "fixtures": "Owned unprivileged temporary account documents; synthetic issuer key and asserted context. No positive fixed production inspection.",
+  "max_file_bytes": 1048576,
+  "max_line_bytes": 4096,
+  "max_records": 16384,
+  "seed": "0x7522026",
+  "valid_mutations_per_seeded_run": 64,
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_portable_passed": 43,
+    "windows_new_linux_target_tests": 0,
+    "first_green_new_integration_passed": 12,
+    "linux_final_passed": 283,
+    "linux_existing_ignored": 1,
+    "new_integration_tests": 13,
+    "new_positional_read_unit_tests": 1,
+    "additional_full_linux_repetitions": 3,
+    "root_final_passed": 129,
+    "final_registry_passed": 1,
+    "linux_new_root_guard_passed": 1
+  },
+  "retained_negatives": [
+    "Initial missing-module check before implementation: diagnostic-renderer ICE while formatting E0432, native 101.",
+    "Replay with the own module export absent: same renderer ICE, native 101. Short diagnostics on the absent API return ordinary E0432/native 101; no toolchain change.",
+    "First full Linux library run: 222 pass, one injected same-length metadata assertion fails, one existing ignored. Injection revised to deterministic length change; same-size changed-content refusal remains separately tested.",
+    "First root scope: 93 performance contracts + 13 evidence pass, 19 governance pass and four governance checks fail on missing cfg-target registration. Register only the new target under the existing CI step; reviewed 129 pass."
+  ],
+  "missing_api_native_exit": 101,
+  "first_linux_native_exit": 101,
+  "first_root_native_exit": 101,
+  "require_ship_native_exit": 1,
+  "package_scope": "Supervisor and xtask all-target check / all-target all-feature strict clippy on Windows and Linux. Final Linux includes reviewed grammar cases; portable Windows target excludes Linux-only implementation.",
+  "new_integration_tests": [
+    "worker_files_fixture_roundtrip_keeps_policy_private_and_healthy",
+    "worker_files_refused_or_revoked_policy_precedes_any_path_access",
+    "worker_files_fixture_rejects_production_paths_and_root_assertions",
+    "worker_files_resigned_strict_grammar_and_ambiguity_refuse",
+    "worker_files_mapping_and_exact_supplementary_groups_refuse_inference",
+    "worker_files_whole_documents_and_budgets_are_not_worker_only",
+    "worker_files_symlink_hardlink_fifo_directory_and_socket_refuse",
+    "worker_files_modes_ownership_and_symlink_ancestors_refuse",
+    "worker_files_named_leaf_and_directory_replacement_refuse_after_restore",
+    "worker_files_inplace_rewrite_growth_and_trust_failures_latch_original",
+    "worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin",
+    "worker_files_independent_concurrent_readers_share_no_refusal",
+    "worker_files_exact_byte_line_record_and_group_bounds_accept"
+  ],
+  "new_unit_test": "account_positional_read_refuses_short_overrun_error_and_midread_drift",
+  "new_root_guard": "diagnostic_worker_files_preserve_fixed_names_original_policy_and_closed_start",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "real_issuer_enrollment": false,
+    "positive_fixed_production_inspection": false,
+    "trusted_host_namespace_proved": false,
+    "atomic_cross_file_snapshot": false,
+    "continuous_context_or_writer_revocation": false,
+    "regular_file_io_deadline": false,
+    "all_threads_proved": false,
+    "durable_epoch_or_refusal_registry": false,
+    "production_preparation": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_measurement": false,
+    "qualification": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "api-red-reviewed.log": {
+      "sha256": "62412188f1a681121e41dac7c930bea2f75c6cac3a0df9ff1596217952994013",
+      "bytes": 9703
+    },
+    "api-red-short.log": {
+      "sha256": "baa0a5600ebcff3c760d642634a8647d6651aea1f683ea46fd24a1acf98ffafa",
+      "bytes": 488
+    },
+    "api-red.log": {
+      "sha256": "1f741020d0b38f37e03d03401ad2c6162d33d2e51d3a38676f4edfcb2cb637c8",
+      "bytes": 9703
+    },
+    "baseline.log": {
+      "sha256": "3b89f46bc8043cff2804af9f0280e275732b050374cef5b5741ece2223004db9",
+      "bytes": 4281
+    },
+    "docs-final.log": {
+      "sha256": "1b7d7395236379006f3e5137b110bc50a4dd2457cd72b6a12ea6e71c60cf7cee",
+      "bytes": 662
+    },
+    "docs.log": {
+      "sha256": "9eff380e62e173e0bb45aa0dee41fc5300552a74622c9af9fae331220773fdf2",
+      "bytes": 662
+    },
+    "first-green.log": {
+      "sha256": "a4dbe729a60a10e83fb49ea7241af24347754c44e768e03583189a6cd75483c9",
+      "bytes": 1424
+    },
+    "format.log": {
+      "sha256": "2803b5b23718022bc026f93ea4bcb725efab1d10ebaa976db015c85db25bafcf",
+      "bytes": 30
+    },
+    "isolation-reviewed.log": {
+      "sha256": "5231f941c88645d03ba8d118e21ee27af846d53fc1b72151123bb45341d31ab6",
+      "bytes": 330
+    },
+    "isolation.log": {
+      "sha256": "f1597ea57483f5dbca07a3d012876e57556bdd9c7b7a70beabfbce186415301a",
+      "bytes": 320
+    },
+    "linux-check.log": {
+      "sha256": "ce89e89ad27cce8ae438b5bf2431692e8f1c7c9de34391294abcb243d7afd3f2",
+      "bytes": 280
+    },
+    "linux-final-check.log": {
+      "sha256": "5089dbcba73bd6d2f2d613be472e0acf9caeaa1481fca650e3151542e209fe2d",
+      "bytes": 280
+    },
+    "linux-final-lint.log": {
+      "sha256": "ee56c3c1aa1928fcfcfb44027c6586f8500ae802038dc87cecbd87da0b14a23d",
+      "bytes": 280
+    },
+    "linux-final.log": {
+      "sha256": "54e0f077de23cd9f7f73a59220222d0a4cd3ac99f684da67ea15f51b9b591e63",
+      "bytes": 31210
+    },
+    "linux-lint.log": {
+      "sha256": "20be288eb13bf18d2b56b06a11c20df77ad60dbbf8ad14e41058bf1995dfb237",
+      "bytes": 280
+    },
+    "linux-reviewed.log": {
+      "sha256": "80ff99aa94b10fac0dc9138c147f657c4f0f9b44f904f4971b3209fbb9d704fa",
+      "bytes": 31210
+    },
+    "linux-root.log": {
+      "bytes": 641,
+      "sha256": "845acc747b126b0cc17d521d722f05de1ece3f40a2ec0a0744b55509fa997cab"
+    },
+    "linux.log": {
+      "sha256": "5081dc6f6cdd8e1232dbb7f05df2c2703d87017b2114d956734248566f3acef8",
+      "bytes": 25685
+    },
+    "registry.log": {
+      "sha256": "d91277bf3c09901a872f2480cfce29cccc3e581fae0f7aa2f012bf2308552a47",
+      "bytes": 439
+    },
+    "repeats.log": {
+      "sha256": "c673e26c270443c0046e5e6213fddc2c742c3cfe09c3ebaaaafc153977835ec6",
+      "bytes": 5462
+    },
+    "root-reviewed.log": {
+      "sha256": "35e825f38cd19dfdc657972fc6582624188c450c2f74d5dc6e726d8093968bf5",
+      "bytes": 11061
+    },
+    "root.log": {
+      "sha256": "d63d54465b68ab5a38fe75ff0cb0445f8ba3d65fa10ab8f157523ba47f142b09",
+      "bytes": 13678
+    },
+    "ship.log": {
+      "sha256": "5440ca7659e34be5341704ed4421b2c2dc37931879d5911f568d96d672159342",
+      "bytes": 515
+    },
+    "windows-check.log": {
+      "sha256": "e525d52854e446ccbf323011ec0a2f42122f778de81011f9c2095bcd3576bea0",
+      "bytes": 275
+    },
+    "windows-lint.log": {
+      "sha256": "2bd37715e25eec9084d647c11e905190319d1ab2f07117d0841d53b45be23da0",
+      "bytes": 275
+    },
+    "windows.log": {
+      "sha256": "a29bb9b0ec1c9098ae489b26b58556c638a2a8021a7e296b178477e2b874b79f",
+      "bytes": 4641
+    }
+  }
+}

@@ -5566,3 +5566,54 @@ then refused under the original pin. Signatures and host context remain syntheti
 Root gates pass 128 checks; scoped lint/check/format and documentation gates pass.
 The frozen qualification digest and closed release admission remain unchanged.
 These are policy safety results, not cache allocation or throughput evidence.
+
+## Fixed local account files bound to the original policy
+
+The [Linux account-file reader](../testing/performance/0.74/diagnostic-worker-files-local-design.md)
+connects signed expectations to read-only file observations. It revalidates the
+original policy under current external trust and asserted context before touching
+files. Fixed names are opened relative to retained safe directory descriptors;
+root ownership, no symlinks, no group/world writes, regular single-link leaves
+and bounded sizes are required. A temporary fixture has a distinct type and
+caller-owned origin, with no conversion to production proof.
+
+Both complete account documents are hash-bound, including unrelated users and
+groups. A conservative ASCII local-file parser rejects malformed or ambiguous
+names, numeric aliases, noncanonical IDs and member lists. Worker UID/primary GID
+must match the fixed user/group; explicit group membership must match the exact
+signed supplementary list. The parser does not run NSS or infer an extra primary
+group. Account maintenance therefore requires a new approved policy when these
+documents change, even if the diagnostic worker itself is unchanged.
+
+Two sequential rounds check original names, descriptors and security/size/time
+metadata around bounded positional reads and mapping checks. Short reads refuse
+rather than retry: [Rust's positional-read contract](https://doc.rust-lang.org/std/os/unix/fs/trait.FileExt.html#tymethod.read_at)
+allows them. Errors permanently refuse the borrowed original policy, including
+after dropping the file wrapper or restoring original files. The reader exports
+neither file descriptors nor a launch capability.
+
+These rounds are point-in-time consistency, not an atomic cross-file transaction
+or privileged writer revocation. A changed-and-restored object indistinguishable
+at every observation is outside this proof. NONBLOCK prevents waiting for FIFO
+data but does not establish a regular-storage IO deadline. Actual host/boot and
+user/mount namespace enforcement, real issuer enrollment, durable epoch/refusal,
+all-thread credentials and authenticated original start remain prerequisites.
+No account mutation, new helper/IPC route, workload or throughput claim follows.
+
+The [retained file-reader packet](../testing/performance/0.74/local-runs/diagnostic-worker-files-20261011/manifest.json)
+records 283 passing Linux tests (one pre-existing system-bus test ignored), 43
+portable Windows regression tests and 129 root contracts/evidence/governance
+checks. All 13 new integration cases plus the short-read unit case pass three
+additional Linux repetitions. Seed `0x7522026` checks 64 valid unrelated-file
+mutations against matching versus original digest pins per repetition. Exact
+byte/line/record/group bounds pass; malformed, ambiguous, substituted, unsafe and
+over-budget fixtures refuse. Check, strict lint, format and documentation pass.
+
+Three negative findings are retained rather than folded into green summaries:
+the missing-API diagnostic hit a compiler-renderer ICE and was reproduced as
+ordinary E0432 with short diagnostics; a same-length metadata-mutation test was
+changed to a deterministic length change after failure; governance required
+explicit Linux-target registration. No gate or qualification threshold was
+weakened. These findings improve test reproducibility and enrollment coverage,
+not product allocations or throughput. Fixed production inspection and actual
+admitted-context enforcement are still not established by temporary fixtures.

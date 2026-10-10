@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 3.73s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
+    Finished `dev` profile [unoptimized] target(s) in 0.93s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)
+Checked 51 markdown files and 20 external includes for local links.
+ INFO Book building has started
+ INFO Running the html backend
+ INFO HTML book written to `C:\Workspace\prj\jq\cashe\hydracache-074\docs-site\book`

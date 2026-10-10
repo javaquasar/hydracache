@@ -2316,3 +2316,12 @@ the original envelope/trust/context and permanently refuses any revalidation
 failure without refreshing them. Context remains an explicit caller assertion;
 no account file or kernel namespace is observed by this portable verifier. A
 valid signature does not create a production preparation or start capability.
+
+The [fixed local account-file reader](diagnostic-worker-files-local-design.md)
+adds bounded Linux read-only consistency with whole-file policy hashes and exact
+local UID/GID/supplementary mappings. Fixed `/etc/passwd` and `/etc/group` require
+root-owned safe ancestry and singly linked regular leaves. Original descriptors,
+names and metadata remain pinned through two rounds; failure refuses the borrowed
+original policy after wrapper drop. Temporary ownership tests use a distinct
+fixture type and do not certify production ancestry. Caller-asserted context is
+still not kernel host/boot/user/mount enforcement; preparation/start remain closed.

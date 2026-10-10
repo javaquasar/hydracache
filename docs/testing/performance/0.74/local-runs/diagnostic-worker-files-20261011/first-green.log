@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 18.16s
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_files-4cda4e28574e6b42)
+
+running 12 tests
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.44s
+

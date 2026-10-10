@@ -90,3 +90,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-namespace-credentials-*/**/*
 docs/testing/performance/0.74/local-runs/diagnostic-namespace-worker-binding-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-host-policy-audit-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-worker-policy-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-files-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

@@ -105,3 +105,9 @@ review strengthened the schema/domain/budget assertions. Doc/local performance
 contract, links/book pass; require-ship remains expected native exit 1. The frozen
 qualification digest is unchanged. No performance measurement, host mutation,
 product workload, qualification or full workspace milestone gate ran.
+
+The subsequent [fixed local account-file reader](diagnostic-worker-files-local-design.md)
+borrows this checked policy under the same current trust/envelope/context gates.
+It adds separate Linux file consistency without changing the signed schemas or
+turning asserted context into live host proof. The policy-byte results above are
+the historical first slice; real issuer/context/start enrollment remains closed.

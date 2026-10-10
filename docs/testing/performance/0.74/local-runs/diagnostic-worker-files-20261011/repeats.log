@@ -1,0 +1,87 @@
+    Finished `test` profile [unoptimized] target(s) in 4.94s
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_files-4cda4e28574e6b42)
+
+running 13 tests
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.56s
+
+    Finished `test` profile [unoptimized] target(s) in 2.79s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_worker_policy::local_files::tests::account_positional_read_refuses_short_overrun_error_and_midread_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 223 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized] target(s) in 3.81s
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_files-4cda4e28574e6b42)
+
+running 13 tests
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.69s
+
+    Finished `test` profile [unoptimized] target(s) in 2.83s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_worker_policy::local_files::tests::account_positional_read_refuses_short_overrun_error_and_midread_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 223 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized] target(s) in 14.53s
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_files-4cda4e28574e6b42)
+
+running 13 tests
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.98s
+
+    Finished `test` profile [unoptimized] target(s) in 13.35s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_worker_policy::local_files::tests::account_positional_read_refuses_short_overrun_error_and_midread_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 223 filtered out; finished in 0.01s
+
