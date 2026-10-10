@@ -4,6 +4,13 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 original execution composition is Linux runtime-only and reuses the
+existing helper and descriptor readers. It adds no wire/persisted schema or launch
+API. Only the original identity's process can bind fixed production outputs and
+signed material; a failure latches all borrowed guards, even after wrapper drop.
+Sequential observations remain neither original-start authentication nor durable
+refusal, writer revocation or qualification authority.
+
 The 0.74 fixed production output inspector is Linux runtime-only. It adds no
 wire or persisted artifact, output creation or launch authority. Its numeric
 worker UID/GID inputs are assertions, not authenticated account enrollment;

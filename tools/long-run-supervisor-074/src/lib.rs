@@ -25,6 +25,8 @@ pub mod diagnostic_builder;
 pub mod diagnostic_ipc;
 pub mod diagnostic_lease;
 #[cfg(target_os = "linux")]
+pub mod diagnostic_live_execution;
+#[cfg(target_os = "linux")]
 pub mod diagnostic_live_identity;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_loaded;

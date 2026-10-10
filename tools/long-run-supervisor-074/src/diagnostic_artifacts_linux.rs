@@ -171,6 +171,15 @@ fn prepare_material(
 }
 
 impl PinnedStartMaterial {
+    pub fn is_refused(&self) -> bool {
+        self.refused
+    }
+    pub(crate) fn refuse(&mut self) {
+        self.refused = true;
+    }
+    pub(crate) fn matches_production_state(&self, state: &DiagnosticState) -> bool {
+        !self.is_fixture() && state == &self.state
+    }
     /// Bind the original signed executable to a retained process generation.
     /// Output FDs are caller assertions, NOT certification of production names,
     /// safe ancestry or original start. No unit mutation/execution is enabled.
@@ -676,6 +685,134 @@ mod io_binding_tests {
             )
             .unwrap();
             (cell, outputs)
+        }
+    }
+    #[test]
+    fn synthetic_material_origin_and_exact_execution_state_cannot_drift() {
+        let f = Fixture::new();
+        let mut material = f.material();
+        assert!(!material.matches_production_state(&f.state));
+        // Synthetic private policy flag ONLY. No fixed install or signature
+        // origin is authenticated by flipping it; do not bind or execute here.
+        material.bundle.fixture = false;
+        assert!(material.matches_production_state(&f.state));
+        for field in 0..9 {
+            let mut wrong = f.state.clone();
+            match field {
+                0 => wrong.revision += 1,
+                1 => wrong.last_observed_monotonic_ns += 1,
+                2 => wrong.controller_monotonic_ns += 1,
+                3 => wrong.reserved_monotonic_ns += 1,
+                4 => wrong.completed_cells += 1,
+                5 => wrong.identity.lease_id = "d".repeat(64),
+                6 => wrong.identity.boot_id = "ffffffff-ffff-ffff-ffff-ffffffffffff".into(),
+                7 => wrong.identity.binary_sha256 = "d".repeat(64),
+                _ => wrong.identity.build_provenance_sha256 = "d".repeat(64),
+            }
+            assert!(!material.matches_production_state(&wrong), "field {field}");
+        }
+    }
+    #[test]
+    fn fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs() {
+        use crate::diagnostic_live_execution::{pin_live_execution, ExecutionError};
+        use crate::diagnostic_live_identity::unjoined_fixture_identity;
+        use crate::diagnostic_manager::ManagerClient;
+        use crate::diagnostic_named_output::fixture_output_for_refusal_test;
+        use crate::diagnostic_tree::read_fixture_tree;
+        for refused_input in 0..10 {
+            let f = Fixture::new();
+            let tree_root = f.temporary.path().join("tree");
+            fs::create_dir(&tree_root).unwrap();
+            fs::set_permissions(&tree_root, fs::Permissions::from_mode(0o700)).unwrap();
+            for (name, bytes) in [
+                ("cgroup.type", "domain\n"),
+                ("cgroup.events", "populated 0\nfrozen 0\n"),
+                ("cgroup.procs", ""),
+            ] {
+                fs::write(tree_root.join(name), bytes).unwrap();
+                fs::set_permissions(tree_root.join(name), fs::Permissions::from_mode(0o600))
+                    .unwrap();
+            }
+            // SAFETY: read-only credential queries for explicit fixture ownership.
+            let (uid, gid) = unsafe { (libc::geteuid(), libc::getegid()) };
+            let tree = read_fixture_tree(&tree_root, uid, gid).unwrap();
+            let mut identity = unjoined_fixture_identity(&f.state, &f.process, &tree);
+            let (cell, outputs) = f.named_outputs();
+            let mut outputs = fixture_output_for_refusal_test(outputs);
+            let mut material = f.material();
+            if refused_input >= 4 {
+                let io = material
+                    .bind_asserted_process_io(&f.state, &f.process, &f.stdout, &f.stderr)
+                    .unwrap();
+                let failure = match refused_input {
+                    4 => ExecutionError::Identity(
+                        crate::diagnostic_live_identity::IdentityError::Invalid,
+                    ),
+                    5 => ExecutionError::Outputs(
+                        crate::diagnostic_named_output::NamedOutputError::Invalid,
+                    ),
+                    6 => ExecutionError::Material(ArtifactError::Contents),
+                    7 => ExecutionError::Io(ProcessError::NotLive),
+                    8 => ExecutionError::Invalid,
+                    _ => ExecutionError::Refused,
+                };
+                let expected = failure.to_string();
+                let error = crate::diagnostic_live_execution::finish_fixture_execution_refusal(
+                    &mut identity,
+                    &mut outputs,
+                    &mut material,
+                    io,
+                    failure,
+                );
+                assert_eq!(error.to_string(), expected);
+                // Six error categories use the concrete finish path. Seven
+                // sequence positions are tested separately; no live join here.
+            }
+            match refused_input {
+                1 => identity.refuse(),
+                2 => {
+                    fs::set_permissions(
+                        cell.join("stdout.json"),
+                        fs::Permissions::from_mode(0o644),
+                    )
+                    .unwrap();
+                    assert!(outputs.revalidate().is_err());
+                    fs::set_permissions(
+                        cell.join("stdout.json"),
+                        fs::Permissions::from_mode(0o600),
+                    )
+                    .unwrap();
+                }
+                3 => {
+                    let mut wrong = f.state.clone();
+                    wrong.revision += 1;
+                    assert!(material.revalidate_for(&wrong).is_err());
+                }
+                _ => {}
+            }
+            assert!(matches!(
+                pin_live_execution(
+                    &mut identity,
+                    &mut outputs,
+                    &mut material,
+                    &mut ManagerClient::default()
+                ),
+                Err(ExecutionError::Invalid | ExecutionError::Refused)
+            ));
+            assert!(identity.is_refused());
+            assert!(outputs.is_refused());
+            assert!(material.is_refused());
+            assert!(matches!(
+                pin_live_execution(
+                    &mut identity,
+                    &mut outputs,
+                    &mut material,
+                    &mut ManagerClient::default()
+                ),
+                Err(ExecutionError::Refused)
+            ));
+            f.process.revalidate().unwrap(); // Only the owned non-product helper remains alive.
+            assert!(material.revalidate_for(&f.state).is_err());
         }
     }
     #[test]

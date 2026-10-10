@@ -120,6 +120,38 @@ pub fn pin_production_outputs(
 }
 
 impl ProductionOutputRead {
+    pub(crate) fn refuse(&mut self) {
+        self.inner.refused = true;
+    }
+    pub(crate) fn matches_production_state(&self, state: &DiagnosticState) -> bool {
+        self.inner.production && state == &self.inner.state
+    }
+    pub(crate) fn bind_original_process_io<'a>(
+        &mut self,
+        state: &DiagnosticState,
+        material: &mut PinnedStartMaterial,
+        process: &'a ProcessRead,
+    ) -> Result<ProcessIoRead<'a>, NamedOutputError> {
+        let result = (|| {
+            if !self.matches_production_state(state) || !material.matches_production_state(state) {
+                return Err(NamedOutputError::Invalid);
+            }
+            self.revalidate()?;
+            let io = material.bind_asserted_process_io(
+                state,
+                process,
+                &self.inner.streams[0],
+                &self.inner.streams[1],
+            )?;
+            self.revalidate()?;
+            Ok(io)
+        })();
+        if result.is_err() {
+            self.refuse();
+            material.refuse();
+        }
+        result
+    }
     pub fn is_refused(&self) -> bool {
         self.inner.is_refused()
     }
@@ -396,6 +428,13 @@ fn check_entries(directory: &File) -> Result<(), NamedOutputError> {
 }
 
 #[cfg(test)]
+pub(crate) fn fixture_output_for_refusal_test(inner: FixtureOutputRead) -> ProductionOutputRead {
+    assert!(inner.is_fixture());
+    // Keep fixture origin: no production conversion even in this negative seam.
+    ProductionOutputRead { inner }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
@@ -464,6 +503,32 @@ mod tests {
         }
     }
 
+    #[test]
+    fn synthetic_output_origin_and_exact_execution_state_cannot_drift() {
+        let f = Fixture::new();
+        let inner = f.pin().unwrap();
+        let mut output = ProductionOutputRead { inner };
+        assert!(!output.matches_production_state(&f.state));
+        // Synthetic private policy bit only; never use this object for binding
+        // or claim successful production ancestry from a temporary root.
+        output.inner.production = true;
+        assert!(output.matches_production_state(&f.state));
+        for field in 0..9 {
+            let mut wrong = f.state.clone();
+            match field {
+                0 => wrong.revision += 1,
+                1 => wrong.last_observed_monotonic_ns += 1,
+                2 => wrong.controller_monotonic_ns += 1,
+                3 => wrong.reserved_monotonic_ns += 1,
+                4 => wrong.completed_cells += 1,
+                5 => wrong.identity.lease_id = "d".repeat(64),
+                6 => wrong.identity.boot_id = "ffffffff-ffff-ffff-ffff-ffffffffffff".into(),
+                7 => wrong.identity.binary_sha256 = "d".repeat(64),
+                _ => wrong.identity.build_provenance_sha256 = "d".repeat(64),
+            }
+            assert!(!output.matches_production_state(&wrong), "field {field}");
+        }
+    }
     #[test]
     fn production_search_policy_preserves_nonroot_working_directory_traversal() {
         let mut s = Stable {

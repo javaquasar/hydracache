@@ -146,11 +146,22 @@ impl IdentityGuard {
 /// Borrows original kernel readers; no fixture promotion or descriptor export.
 pub struct LiveIdentityRead<'a> {
     guard: IdentityGuard,
+    state: DiagnosticState,
     process: &'a ProcessRead,
     tree: &'a TreeRead,
     scope: DiagnosticTreeScope,
 }
-impl LiveIdentityRead<'_> {
+impl<'a> LiveIdentityRead<'a> {
+    pub(crate) fn state(&self) -> &DiagnosticState {
+        &self.state
+    }
+    pub(crate) fn original_process(&self) -> &'a ProcessRead {
+        self.process
+    }
+    pub(crate) fn refuse(&mut self) {
+        self.guard.refused = true;
+        self.guard.invocation.refuse();
+    }
     /// Two bounded manager reads and two retained process/tree checks; no refresh.
     pub fn revalidate(&mut self, manager: &mut ManagerClient) -> Result<(), IdentityError> {
         self.guard.revalidate_with(
@@ -192,12 +203,39 @@ pub fn pin_live_identity<'a>(
     )?;
     let mut read = LiveIdentityRead {
         guard,
+        state: state.clone(),
         process,
         tree,
         scope,
     };
     read.revalidate(manager)?;
     Ok(read)
+}
+
+#[cfg(test)]
+pub(crate) fn unjoined_fixture_identity<'a>(
+    state: &DiagnosticState,
+    process: &'a ProcessRead,
+    tree: &'a TreeRead,
+) -> LiveIdentityRead<'a> {
+    // Invented holder ONLY for early-refusal tests, never a positive identity
+    // proof. The public pin still rejects fixture trees and foreign processes.
+    let (invented, snapshot) = crate::diagnostic_loaded::synthetic_loaded_fixture(0);
+    LiveIdentityRead {
+        guard: IdentityGuard {
+            invocation: snapshot.pin_for(&invented).unwrap(),
+            generation: process.observation().expected().clone(),
+            root: CgroupId {
+                device: 1,
+                inode: 2,
+            },
+            refused: false,
+        },
+        state: state.clone(),
+        process,
+        tree,
+        scope: DiagnosticTreeScope::new(&state.identity, SURFACES[state.completed_cells]).unwrap(),
+    }
 }
 
 #[cfg(test)]

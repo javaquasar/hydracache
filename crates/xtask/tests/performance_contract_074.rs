@@ -1011,6 +1011,89 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn diagnostic_live_execution_composition_keeps_enrollment_and_admission_closed() {
+    let c = contract("diagnostic-live-execution-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-live-execution-local-074-v1")
+    );
+    for field in [
+        "original_identity_process_only",
+        "original_state_revision_and_clocks_required",
+        "production_material_and_outputs_required",
+        "first_failure_latches_three_borrowed_guards",
+        "typed_first_error_preserved",
+        "no_observation_after_refusal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "positive_local_production_composition_proved",
+        "worker_account_authenticated",
+        "original_start_authenticated",
+        "atomic_snapshot_proved",
+        "same_open_file_description_proved",
+        "whole_operation_deadline_proved",
+        "production_output_preparation_allowed",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "writer_revocation_proved",
+        "durable_refusal_journal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let order: Vec<_> = c["revalidation_order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect();
+    assert_eq!(
+        order,
+        ["identity", "outputs", "material", "io", "material", "outputs", "identity"]
+    );
+    assert_eq!(
+        c["manager_observations_per_revalidation"].as_integer(),
+        Some(4)
+    );
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_live_execution.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in ["pub fn pin_live_execution<'guard, 'process>", "let process = identity.original_process();",
+        "identity.refuse(); outputs.refuse(); material.refuse();", "outputs.matches_production_state(&state)",
+        "material.matches_production_state(&state)", "self.finish_observation(result)",
+        "Step::Identity, Step::Outputs, Step::Material, Step::Io, Step::Material, Step::Outputs, Step::Identity,"] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "StartTransientUnit",
+        "kill(",
+        "create_dir",
+        "write_all(",
+        "pub fn streams",
+        "pub fn process",
+        "pub fn material",
+        "pub fn outputs",
+        "pin_kernel_process(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    // Shape guard only; runtime refusal and ordering tests supply behavior evidence.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(
