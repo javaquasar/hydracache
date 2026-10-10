@@ -5755,3 +5755,53 @@ atomic/continuous proof and durable epoch/refusal remain separate. No workload
 or performance claim follows these safety results. Next: enforce signed-context
 bracketing when opening status, while preserving original process identity;
 real issuer enrollment and authenticated lifecycle activation remain closed.
+
+## Opening status inside the original signed observer context
+
+The previous binding compares a signed account mapping with a retained credential
+reader, but cannot retroactively prove its opening context. The next
+[isolated slice](../testing/performance/0.74/diagnostic-signed-opening-local-design.md)
+therefore creates a fresh private reader from the original process under the
+original signed account/context checks. It accepts neither preopened credentials
+nor caller-supplied UID/GID/groups. Numbers come only from the checked original
+policy; supplementary groups stay an exact list, not a primary-GID membership union.
+
+The old namespace constructor opens status and immediately reads credentials.
+Wrapping it would put the first observation before the post-open signed-context
+check. Its existing behavior is preserved instead. A new crate-private opener
+brackets opening with original namespace/generation checks and leaves the
+projection unset. The outer sequence is account, open, account, credentials,
+account: only the fourth stage observes credentials. Later checks are account,
+credentials, account, without reopening. Account stages retain context/files/context;
+credential stages retain namespace/credentials/namespace and bounded status parsing.
+
+The first typed error stops and refuses the original policy/account and any owned
+namespace/credential components. Restoration, dropping a failed reader or observing
+an independent healthy reader cannot reset refusal. Healthy drop preserves borrowed
+inputs, and the original process is never signaled. Fixed and fixture wrappers
+remain distinct, neither Send nor Sync, without descriptors, reset or production
+capability. This is sequential consistency, not atomic or continuous authority.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-signed-opening-20261011/manifest.json)
+retains 340 Linux passes (one existing system-bus ignored), 43 Windows regressions
+and 133 root contract/evidence/governance passes. Fifteen new opening tests and
+one private opener test pass three further runs. Seed `0x7572026` explores 256
+modeled failure positions each run. Valid freshly signed fixtures with wrong UID,
+primary GID or supplementary membership refuse against a real owned process.
+Other cases cover revocation before process/file errors, original exit, unhardened
+credentials, file restoration, healthy drop and independently constructed readers.
+
+A deterministic private seam changes the real fixture account file just after
+status opens; its account error precedes the projection stage. A separate component
+test verifies that the opener leaves no projection and an unhardened process
+refuses only at the later credential read. These are retained-object and modeled
+ordering checks, not exhaustive kernel race evidence. The missing-API compilation
+failure before implementation remains in evidence.
+
+Construction clones at most 32 signed supplementary GIDs once, not on later
+observations. That explicit diagnostic cost is not a product allocation improvement.
+No workload, RSS/goodput claim, host mutation or qualification is involved. Frozen
+qualification inputs remain exact and ship admission stays closed. The bracket
+does not attest kernel file-opener credentials, worker mount namespace, all
+threads, initial-host authority or continuous writer revocation. Real issuer/
+durable epoch enrollment and authenticated original lifecycle start remain separate.

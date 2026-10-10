@@ -1,0 +1,224 @@
+{
+  "schema_version": "diagnostic-signed-opening-local-evidence-074-v1",
+  "state": "retained-local-signed-status-opening-not-production-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "70064e71078c587f79d371fa611c78a2e53b9ff8",
+  "preregistered_design_commit": "3ad236d3eac257fc182b699b882962f931995492",
+  "implementation_commit": "69eb668cd135443c1b6ecef8c95756b6c367b83f",
+  "implementation_tree": "63e50a904e1b64c52b382754bbd10d2319cf30d6",
+  "toolchain": "1.94.0",
+  "fixtures": "Actual unprivileged Linux observer context; synthetic signed account files and keys; original owned NNP cat helpers. Private modeled boundary injection, not a kernel race or fixed production positive.",
+  "seed": "0x7572026",
+  "modeled_failure_positions_per_seeded_run": 256,
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "linux_final_passed": 340,
+    "linux_existing_ignored": 1,
+    "new_opening_tests": 15,
+    "new_component_tests": 1,
+    "additional_linux_repetitions": 3,
+    "root_final_passed": 133,
+    "linux_new_root_guard_passed": 1
+  },
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "retained_negatives": [
+    "Missing opening API before implementation gives ordinary E0432.",
+    "Revocation and refused original account precede process/file errors.",
+    "Valid signed wrong UID/GID/supplementary list refuses at first credential read.",
+    "Post-open changed account fixture refuses before projection stage at private seam.",
+    "Unhardened owned process opens without projection but refuses on revalidation.",
+    "Original exit/restoration/drop never refresh policy or credentials.",
+    "Ship admission remains native exit 1."
+  ],
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_constructor_and_later_orders_are_exact"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_every_failure_preserves_first_typed_error_and_stops"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_prior_refusal_never_opens_or_reads"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_seeded_failure_positions_remain_sticky"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_origin_types_are_neither_send_nor_sync"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_owned_roundtrip_and_drop_preserve_original_inputs"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_refused_account_precedes_dead_process_and_missing_files"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_revocation_precedes_process_and_file_errors"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_dead_original_process_latches_policy_at_construction"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_unhardened_process_refuses_only_at_projection_read"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_valid_signed_mapping_mismatch_is_not_caller_numbers"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_post_open_account_failure_precedes_first_projection_stage"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_restoration_latches_owned_credentials_and_policy_after_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_original_exit_refuses_without_replacement_or_signal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_opening_tests.rs",
+      "name": "signed_opening_independent_concurrent_readers_share_no_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs",
+      "name": "signed_status_private_opener_defers_projection_until_revalidation"
+    }
+  ],
+  "new_root_guard": "diagnostic_signed_opening_keeps_projection_after_original_context_and_start_closed",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "preopened_credentials_accepted": false,
+    "raw_pid_path_numeric_policy_accepted": false,
+    "guard_send_or_sync": false,
+    "old_public_constructor_or_parser_behavior_changed": false,
+    "real_issuer_enrolled": false,
+    "positive_fixed_production_inspection": false,
+    "file_opener_credentials_attested": false,
+    "worker_mount_namespace_proved": false,
+    "all_threads_proved": false,
+    "initial_host_namespace_proved": false,
+    "atomic_cross_file_snapshot": false,
+    "continuous_context_or_writer_revocation": false,
+    "regular_file_io_deadline": false,
+    "durable_epoch_or_refusal_registry": false,
+    "production_preparation_allowed": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation_allowed": false,
+    "product_workload_allowed": false,
+    "performance_claim_allowed": false,
+    "qualification_allowed": false,
+    "admission_allowed": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "docs-sealed.log": {"sha256":"310a904a78e012722bfe39cb2a09fa4516d065861f8d452751280ce3212cfb8a","bytes":662},
+    "registry.log": {"sha256":"c5daae8e9c47e27f2800f5be88c0182b2ae7d3de021a315e76093e31bc2c95c8","bytes":439},
+    "api-red.log": {
+      "bytes": 390,
+      "sha256": "9cebd502c1bf0f13d55a3de02861181db890c9ca6ca3c3377a32d52f29a1f545"
+    },
+    "baseline.log": {
+      "bytes": 4236,
+      "sha256": "894a7a11eda1cb29c4d6fa379f3c4b5b9185716d86d12dab065129d317c244cc"
+    },
+    "component-1.log": {
+      "bytes": 466,
+      "sha256": "9bb1bf824648422312ef9a821d3d017d191248227727399ea96becfd1097d55d"
+    },
+    "component-2.log": {
+      "bytes": 466,
+      "sha256": "a774567082f51f6e37c4a6f233d7a5be19ed9522c916119de872ef7d34e9d480"
+    },
+    "component-3.log": {
+      "bytes": 466,
+      "sha256": "cd531d9c0f4aadbd0b7b1308268cea0b18ec1c80ba3fdf7777dc0b9b5eac0bd8"
+    },
+    "contract-local.log": {
+      "bytes": 203,
+      "sha256": "e3726bbf94ef81918350f5a06fdf6de033a1b6bdba7bfa35432d2ae12c31a5a7"
+    },
+    "docs-final.log": {
+      "bytes": 608,
+      "sha256": "b9f8ed8babe44bea44b6d56d8b8d08c5235718859b0420a07b1f9b85015521eb"
+    },
+    "docs-pre.log": {
+      "bytes": 239,
+      "sha256": "2eaf4f0e353d235b264231cc1d1da6017ea6ac03d90604fe09c1f4b03bdc009e"
+    },
+    "isolation.log": {
+      "bytes": 272,
+      "sha256": "056c8b18579058d301dd867344170705155f54b144ac5ae50f0eca88bdaecc73"
+    },
+    "linux-check.log": {
+      "bytes": 280,
+      "sha256": "c079f4a1bf5460a033abb54b6bef549cd4d2523813cffd163dec31d8d51f3525"
+    },
+    "linux-first-green.log": {
+      "bytes": 2972,
+      "sha256": "394304c24a9c59a027cd54ffd064fc899aaf333abaaeb4a24d03547563a2ca9a"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "cfa9321d75c85b841d666ad738dee05eb4e37aaef436723629a7078bdc051a76"
+    },
+    "linux-root.log": {
+      "bytes": 646,
+      "sha256": "86ca9c92eb91d37b76c4a8fe297f69e8c3f5c1ec0484415f7078beb88d203fb5"
+    },
+    "linux-scope.log": {
+      "bytes": 39505,
+      "sha256": "ac0fb9e4fb3bce6760334d7e59018cc33496b58ed2292a1bffce6c09842c9ff9"
+    },
+    "performance-contract.log": {
+      "bytes": 8211,
+      "sha256": "653c0c7f2b0adcf173aa212f29e7c65757152ae8e07aefc0a38afecdff306dd4"
+    },
+    "repeat-1.log": {
+      "bytes": 2897,
+      "sha256": "eb292f6e436d880f1ae63d8f429cdd5e503d810b6cff80b5c79c3d293038b441"
+    },
+    "repeat-2.log": {
+      "bytes": 2839,
+      "sha256": "f963618270e397d5cfbd6429aa416a32f9b3b06aa7b678f40ad7faae8b4fe58e"
+    },
+    "repeat-3.log": {
+      "bytes": 2897,
+      "sha256": "701c2ff27cf845713a000aa82c407cce8c61f5974527ef775d7ac6ae4f260759"
+    },
+    "root-evidence.log": {
+      "bytes": 3722,
+      "sha256": "12efa24a49aafca61f9e8e837af129bfbe3659626bba9de061676bdd8924481b"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "d9441125e2689f4fab625d0b373f4ec7e6837de92a6b6fc79c58e6cf511e7d0f"
+    },
+    "windows-check.log": {
+      "bytes": 145,
+      "sha256": "16bdf2b2a5f6fc1c8ee09539d9773a2001c92257793353acd83a1d6327c45249"
+    },
+    "windows-lint.log": {
+      "bytes": 145,
+      "sha256": "cc8126516c83cd1258bab6ed36f2985048207b752f24e8f8b8f388efa4271dc1"
+    },
+    "windows-scope.log": {
+      "bytes": 4513,
+      "sha256": "d96a60ef8a14e3085715910201dba4fc9b307bb852ef35602beae9ed1b17042c"
+    }
+  }
+}

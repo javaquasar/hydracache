@@ -1,5 +1,37 @@
 # Credential status opening inside signed reader context
 
+## Implemented local safety slice
+
+The fixed/fixture constructors now borrow the original account/context and
+process generation while privately owning fresh namespace-checked credentials.
+The old public namespace constructor body and parser stay unchanged. A separate
+crate-private opener pins status without observing its credential projection.
+The post-open original account/context check must pass before that first read;
+later observations never reopen or replace the object.
+
+The [packet](local-runs/diagnostic-signed-opening-20261011/manifest.json)
+retains the 43-test portable baseline, missing-opening-API E0432, 15-test first
+green, 340 Linux passes (one existing system-bus ignored), 43 Windows passes and
+133 root contract/evidence/governance passes. Fifteen owning reader tests and one
+private opener test pass three additional repetitions. Seed `0x7572026` varies
+256 modeled failure positions per run. Scoped format/check/strict lint and
+documentation checks are retained; ship admission is expected-red.
+
+Actual owned NNP helpers with synthetic signed account fixtures cover revocation,
+valid signed UID/GID/exact supplementary mismatch, process exit, restoration/drop
+and concurrency. A private opener test confirms no projection before revalidation,
+including an unhardened helper that refuses only on reading credentials.
+A deterministic private boundary seam mutates the real account fixture after
+opening status: the post-open account error stops before the projection stage.
+Modeled stage tests cover every first-error position, not exhaustive kernel races.
+
+Construction makes one bounded clone of at most 32 original supplementary GIDs;
+subsequent observations do not clone that list. This diagnostic cost is not a
+product allocation improvement. No performance or production-enrollment claim
+follows. Frozen qualification inputs remain exact. Worker mount/all-thread proof,
+kernel opener credentials, real issuer/durable epoch/refusal and authenticated
+original start remain independent outstanding authority work.
+
 ## Scope and baseline
 
 Baseline `70064e71078c587f79d371fa611c78a2e53b9ff8`. Add opt-in Linux

@@ -2357,3 +2357,13 @@ components after binding drop. Fixed and fixture types stay distinct; no product
 route is added. The [packet](local-runs/diagnostic-policy-credentials-20261011/manifest.json)
 records scoped local safety only. It does not attest signed context at status
 opening, worker mount/all-thread authority, durable issuer revocation or start.
+
+The [signed-context status opener](diagnostic-signed-opening-local-design.md)
+owns newly opened credentials and derives numeric assertions only from the original
+checked policy. Construction is account/open/account/credentials/account; later
+checks are account/credentials/account. The private opener observes no projection
+before the post-open account/context check. Failures latch original policy and
+owned components; fixed/fixture types remain distinct and non-transferable.
+The [packet](local-runs/diagnostic-signed-opening-20261011/manifest.json) is local
+safety evidence, not performance or enrollment. Worker mount/all-thread proof,
+kernel opener credentials, durable authority and authenticated start remain open.

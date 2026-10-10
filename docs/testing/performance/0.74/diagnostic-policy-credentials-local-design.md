@@ -89,3 +89,8 @@ full-workspace qualification, real issuer enrollment or performance data. Next:
 open status inside the signed-context observation bracket without replacing
 original process identity. All-thread/worker mount authority, durable issuer
 epoch/refusal, production preparation and authenticated lifecycle remain separate.
+
+The next opening slice is implemented separately in the
+[signed opening design](diagnostic-signed-opening-local-design.md).
+The borrowed binding retains its original API and historical proof limits;
+the new owning constructors do not upgrade an already-open reader.

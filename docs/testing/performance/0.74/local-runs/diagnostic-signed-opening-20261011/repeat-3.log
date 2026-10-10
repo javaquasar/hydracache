@@ -1,0 +1,24 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized] target(s) in 58.32s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 15 tests
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_constructor_and_later_orders_are_exact ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_every_failure_preserves_first_typed_error_and_stops ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_origin_types_are_neither_send_nor_sync ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_prior_refusal_never_opens_or_reads ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_revocation_precedes_process_and_file_errors ... ok
+signed opening mutation seed=0x7572026; mutations=256
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_seeded_failure_positions_remain_sticky ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_refused_account_precedes_dead_process_and_missing_files ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_dead_original_process_latches_policy_at_construction ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_post_open_account_failure_precedes_first_projection_stage ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_restoration_latches_owned_credentials_and_policy_after_drop ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_original_exit_refuses_without_replacement_or_signal ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_unhardened_process_refuses_only_at_projection_read ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_owned_roundtrip_and_drop_preserve_original_inputs ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_independent_concurrent_readers_share_no_refusal ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::tests::signed_opening_valid_signed_mapping_mismatch_is_not_caller_numbers ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.53s
+

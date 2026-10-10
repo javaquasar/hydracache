@@ -1,0 +1,51 @@
+    Finished `test` profile [unoptimized] target(s) in 1.29s
+     Running tests\release_evidence.rs (target\debug\deps\release_evidence-911f8eddc24064ca.exe)
+
+running 13 tests
+test active_ship_blocker_artifact_is_preserved_by_the_manifest_schema ... ok
+test fast_receipts_reject_one_millisecond_over_the_unchanged_cadence_budget ... ok
+test release_evidence_rejects_dirty_receipts_and_path_traversal ... ok
+test release_evidence_rejects_handwritten_green_status_and_tampered_artifact_hash ... ok
+release-evidence: wrote template to C:\Users\ARTURB~1\AppData\Local\Temp\hydracache-release-evidence-template-44196-1791674248818002300\docs/testing/release-evidence/0.66.toml
+test release_evidence_template_preserves_dynamic_canary_selection ... ok
+test final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes ... ok
+release-evidence: wrote template to C:\Users\ARTURB~1\AppData\Local\Temp\hydracache-release-evidence-template-44196-1791674248809253700\docs/testing/release-evidence/0.66.toml
+test release_evidence_template_rejects_a_mislabeled_release_registry ... ok
+test release_evidence_template_cannot_borrow_equal_w_ids_from_the_0_64_registry ... ok
+test release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release ... ok
+test release_evidence_reports_every_manifest_work_item_exactly_once ... ok
+test release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green ... ok
+test cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes ... ok
+test explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.09s
+
+     Running tests\release_governance.rs (target\debug\deps\release_governance-91af24d8e4a931d1.exe)
+
+running 23 tests
+test crates_io_probe_identifies_itself_and_retries_transient_responses ... ok
+test publish_order_keeps_workspace_dev_and_build_dependencies ... ok
+test post_publish_consumer_tracks_the_current_public_api ... ok
+test release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c ... ok
+test canary_release_governance_accepts_a_missing_deferred_performance_gate ... ok
+test canary_release_governance_accepts_a_missing_mandatory_gate ... ok
+test canary_release_0671_governance_accepts_a_missing_stage_gate ... ok
+test release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha ... ok
+test release_066_registered_heavy_gates_are_mandatory_and_fail_closed ... ok
+test release_0671_governance_contract_is_fail_closed ... ok
+test release_067_deferred_performance_gates_remain_registered_and_fail_closed ... ok
+test release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry ... ok
+test release_governance_check_rejects_an_unwired_or_missing_meta_gate ... ok
+test release_governance_rejects_coverage_receipts_bound_to_an_older_release ... ok
+test release_governance_requires_complete_072_dynamic_canary_wiring ... ok
+test runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts ... ok
+test release_069_receipt_and_admission_commands_are_fail_closed ... ok
+test performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency ... ok
+test ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands ... ok
+test release_governance_check_accepts_release_069_independent_evidence_wiring ... ok
+test release_governance_check_accepts_the_explicit_0_70_fast_wiring ... ok
+test release_governance_check_accepts_the_explicit_0_66_fast_wiring ... ok
+test release_governance_check_accepts_current_structural_meta_gates ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.95s
+
