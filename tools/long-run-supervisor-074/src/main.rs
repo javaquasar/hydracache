@@ -32,6 +32,33 @@ fn run() -> u8 {
             }
         }
         #[cfg(target_os = "linux")]
+        [command] if command == "diagnostic-worker-account-worker" => {
+            hydracache_long_run_supervisor_074::diagnostic_manager::account_worker_main()
+        }
+        #[cfg(target_os = "linux")]
+        [command] if command == "diagnostic-worker-account-inspect" => {
+            use hydracache_long_run_supervisor_074::diagnostic_manager::ManagerClient;
+            match ManagerClient::default().inspect_worker_account() {
+                Ok(snapshot) => match serde_json::to_string(&snapshot) {
+                    Ok(json) => {
+                        println!("{json}");
+                        0
+                    }
+                    Err(_) => {
+                        eprintln!("worker account encoding refused");
+                        9
+                    }
+                },
+                Err(error) => {
+                    eprintln!(
+                        "worker account observation refused: {:?}; helper cleanup={}",
+                        error.kind, error.cleanup_confirmed
+                    );
+                    9
+                }
+            }
+        }
+        #[cfg(target_os = "linux")]
         [command] if command == "diagnostic-manager-worker" => {
             hydracache_long_run_supervisor_074::diagnostic_manager::worker_main()
         }
@@ -195,7 +222,7 @@ fn run() -> u8 {
         }
         _ => {
             eprintln!(
-                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | audit-local-build <binary> <cargo-json> <root-lock> <observer-lock> <p0-config-directory> (unsigned, read-only) | diagnostic-manager-inspect <lease-id> <boot-id> <embedded|direct|resp2|resp3> (Linux read-only) | diagnostic-loaded-inspect <lease-id> <boot-id> <embedded|direct|resp2|resp3> (Linux read-only projection) | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
+                "usage: hydracache-long-run-supervisor-074 verify <checkpoints.jsonl> | audit-local-build <binary> <cargo-json> <root-lock> <observer-lock> <p0-config-directory> (unsigned, read-only) | diagnostic-manager-inspect <lease-id> <boot-id> <embedded|direct|resp2|resp3> (Linux read-only) | diagnostic-loaded-inspect <lease-id> <boot-id> <embedded|direct|resp2|resp3> (Linux read-only projection) | diagnostic-worker-account-inspect (Linux read-only NSS observation, not enrollment) | derive-verification-key <signing-key-file> | sign-provisioning-manifest <manifest> <signing-key-file> <signature-output> | verify-provisioning-manifest <manifest> <verification-key-file> <signature-file> | build-request <request.json> <signing-key-file> <issued-unix-seconds> <expires-unix-seconds> <output.json> | validate-production-config <config.toml> | systemd-smoke | controller-loss-smoke-start | controller-loss-smoke-resume | campaign-lifecycle-smoke-start | campaign-lifecycle-smoke-resume | serve <config.toml> | request <socket> <request.json> | request-start <socket> <request.json> <bundle-directory> | collect-host-receipt <campaign-directory>"
             );
             2
         }

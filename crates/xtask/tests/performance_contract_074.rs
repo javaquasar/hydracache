@@ -1324,6 +1324,131 @@ fn diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed() {
 }
 
 #[test]
+fn diagnostic_fixed_account_lookup_keeps_trusted_enrollment_and_launch_closed() {
+    let c = contract("diagnostic-worker-account-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-worker-account-local-074-v1")
+    );
+    for field in ["fixed_account", "fixed_group"] {
+        assert_eq!(c[field].as_str(), Some("hydracache-perf"));
+    }
+    for (field, value) in [
+        ("request_schema", 1),
+        ("snapshot_schema", 1),
+        ("request_bytes", 4096),
+        ("snapshot_bytes", 4096),
+        ("nss_buffer_bytes", 16384),
+        ("membership_limit", 32),
+        ("operation_deadline_ms", 2000),
+        ("cleanup_deadline_ms", 1000),
+        ("combined_output_bytes", 65536),
+        ("complete_lookup_rounds", 2),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(value), "{field}");
+    }
+    for field in [
+        "fixed_self_executable",
+        "forward_reverse_mapping_required",
+        "nonroot_uid_primary_gid_required",
+        "primary_gid_in_memberships_required",
+        "membership_duplicates_refused",
+        "canonical_wire_required",
+        "first_error_is_sticky",
+        "no_observation_after_refusal",
+        "pending_cleanup_blocks_helper",
+        "inherited_environment_cleared",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "raw_nss_buffers_exported",
+        "buffer_growth_or_nss_retry_allowed",
+        "nss_internal_allocation_bounded_by_caller_buffer",
+        "worker_account_authenticated",
+        "trusted_nss_provider_proved",
+        "host_namespace_enrollment_proved",
+        "process_supplementary_groups_proved",
+        "all_threads_credentials_proved",
+        "atomic_or_continuous_observation_proved",
+        "original_start_authenticated",
+        "production_composition_proved",
+        "durable_refusal_journal",
+        "unit_mutation_allowed",
+        "account_creation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_account.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "Command::new(\"/proc/self/exe\")",
+        "command.arg(\"diagnostic-worker-account-worker\")",
+        "self.run(command, REQUEST, OPERATION_TIMEOUT)?",
+        "restrict_worker_resources()",
+        "libc::getpwnam_r(",
+        "libc::getpwuid_r(",
+        "libc::getgrnam_r(",
+        "libc::getgrgid_r(",
+        "libc::getgrouplist(",
+        "self.refused = true; Err(error)",
+        "first != round(lookup)?",
+        "rc == 0 && !actual.is_null() && actual == expected",
+        "rc == count",
+        "buffer.get(offset..)",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    assert_eq!(code.matches("Command::new(").count(), 1);
+    for forbidden in [
+        "pub fn refresh",
+        "pub fn reset",
+        "pub fn decode",
+        "setuid(",
+        "setgid(",
+        "initgroups(",
+        "setgroups(",
+        "StartTransientUnit",
+        "pin_asserted_worker_credentials",
+        "Command::new(\"getent\")",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("inspect_worker_account"),
+            "no launch enrollment route in {path}"
+        );
+        assert!(
+            !text.contains("pin_worker_account"),
+            "no launch enrollment route in {path}"
+        );
+    }
+    // Source-shape guard only; bounded execution and NSS semantics have separate tests.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(

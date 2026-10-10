@@ -28,6 +28,10 @@ const MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
 const UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
 const SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
 
+#[path = "diagnostic_worker_account.rs"]
+mod account;
+pub use account::{account_worker_main, WorkerAccountRead, WorkerAccountSnapshot};
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ManagerScope {
     schema_version: u32,
