@@ -7887,3 +7887,129 @@ fn w12_live_registries_preserve_frozen_baseline_inputs() {
         );
     }
 }
+
+#[test]
+fn diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_start() {
+    let contract: toml::Value =
+        toml::from_str(
+            &std::fs::read_to_string(root().join(
+                "docs/testing/performance/0.74/diagnostic-worker-context-local-contract.toml",
+            ))
+            .unwrap(),
+        )
+        .unwrap();
+    assert_eq!(contract["machine_document_bytes"].as_integer(), Some(33));
+    assert_eq!(contract["boot_document_bytes"].as_integer(), Some(37));
+    assert_eq!(contract["observation_rounds"].as_integer(), Some(2));
+    #[cfg(target_os = "linux")]
+    {
+        use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::*;
+        assert_eq!(
+            contract["machine_document_bytes"].as_integer().unwrap() as usize,
+            MACHINE_DOCUMENT_BYTES
+        );
+        assert_eq!(
+            contract["boot_document_bytes"].as_integer().unwrap() as usize,
+            BOOT_DOCUMENT_BYTES
+        );
+    }
+    for field in [
+        "policy_gate_before_io",
+        "original_objects_retained",
+        "typed_nsfs_user_and_mount",
+        "reading_thread_bound",
+        "failure_latches_borrowed_policy",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "guard_send_or_sync",
+        "external_pins_chosen_by_observation",
+        "real_issuer_enrolled",
+        "initial_host_namespace_proved",
+        "atomic_cross_file_snapshot",
+        "continuous_context_or_writer_revocation",
+        "regular_file_io_deadline",
+        "all_threads_proved",
+        "durable_epoch_or_refusal_registry",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "policy.revalidate(bytes, trust, host)?",
+        "policy.refused = true",
+        "Probe::open(&policy.context)",
+        "PhantomData<Rc<()>>",
+        "thread_id() != self.tid",
+        "libc::PROC_SUPER_MAGIC",
+        "libc::NSFS_MAGIC",
+        "libc::NS_GET_NSTYPE",
+        "libc::CLONE_NEWUSER",
+        "libc::CLONE_NEWNS",
+        "libc::O_NOFOLLOW",
+        "libc::O_CLOEXEC",
+        "libc::O_NONBLOCK",
+        "self.file.read_at(buffer, 0)",
+        "for _ in 0..2",
+        "self.namespace_bracket(expected)?",
+        "self.paths.named()?",
+        "c\"machine-id\"",
+        "c\"boot_id\"",
+        "c\"thread-self\"",
+        "c\"mnt\"",
+    ] {
+        assert!(
+            runtime.contains(marker),
+            "missing context invariant {marker}"
+        );
+    }
+    for forbidden in [
+        "pub fn context",
+        "pub fn policy(",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "impl Clone",
+        "Serialize",
+        "libc::setns(",
+        "libc::unshare(",
+        "libc::O_CREAT",
+        "libc::O_WRONLY",
+        ".write(true)",
+        "Command::new",
+        "WorkerPolicyTrust::new",
+        "verify_worker_policy(",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "context cannot add authority: {forbidden}"
+        );
+    }
+    let tests = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "worker_context_actual_reader_roundtrip_keeps_original_policy_healthy",
+        "worker_context_valid_resigned_foreign_context_refuses_original_policy",
+        "worker_context_trust_and_envelope_failure_latch_through_drop",
+        "worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins",
+        "worker_context_independent_concurrent_readers_keep_thread_local_refusal",
+        "0x7542026",
+    ] {
+        assert!(tests.contains(marker), "missing test {marker}");
+    }
+}

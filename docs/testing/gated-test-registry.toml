@@ -7568,6 +7568,38 @@ platform = "any"
 
 
 [[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-worker-context"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_worker_context"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Read-only current-thread Linux host context under synthetic operator pins; no enrolled host or namespace mutation required"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_worker_context", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.diagnostic-worker-files"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/diagnostic_worker_files.rs"

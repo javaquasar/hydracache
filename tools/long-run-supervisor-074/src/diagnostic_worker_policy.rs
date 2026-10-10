@@ -16,6 +16,10 @@ const GROUP_LIMIT: usize = 32;
 #[path = "diagnostic_worker_files.rs"]
 pub mod local_files;
 
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_worker_context.rs"]
+pub mod local_context;
+
 /// Values in a policy or caller assertion, not verified kernel namespace handles.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
