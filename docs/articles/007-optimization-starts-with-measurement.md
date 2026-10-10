@@ -4934,3 +4934,52 @@ without executing Linux IO readers, and 116 root contract/evidence/governance
 tests passed. Formatting, affected package checks/lint and local documentation
 and performance contracts were green. The packet keeps working-tree checks
 distinct from qualification receipts and preserves the frozen manifest digest.
+
+### An unchanged output inode can still belong to the wrong filename
+
+The preceding regression suggested the next precise hypothesis: can directory
+and fixed-name observations reject an output destination swap without forbidding
+normal append growth? The answer from local fixtures is yes. The new
+[named-output reader](../testing/performance/0.74/diagnostic-named-output-local-design.md)
+derives lease, surface and `stdout.json`/`stderr.log` from validated state, opens
+each directory component without following symlinks and retains every original
+parent/child binding. Files must remain distinct, regular, single-linked and
+0600, within the unchanged byte budget. Extra or missing cell entries refuse.
+
+The important comparison uses the same non-product process and original output
+object. After moving stdout outside its cell and replacing its fixed filename,
+the inode-only reader accepts: its assertion still matches where the process
+writes. The composed reader refuses: that object no longer occupies the required
+name. Restoring the old name cannot repair a refused capability. Process exit
+and checked-material refusal are also propagated rather than hidden by a fresh
+reader. This gives a concrete safety result, not a faster product benchmark.
+
+Append requires a different contract from immutable artifact verification.
+Freezing file timestamps or exact lengths would reject legitimate output.
+Revalidation instead advances length high-water marks and rejects observed
+shrink or overflow, without reading stream content or altering shared offsets.
+Four independent readers can observe an appending file; unrelated entries in
+an ancestor directory do not invalidate its stable identity. Conversely,
+directory generation, ownership, permissions and each named child remain bound.
+The existing terminal spool verifier keeps its stricter stable-content rules;
+it is not repurposed as a live reader.
+
+These observations remain sequential, not an atomic namespace/FD snapshot.
+Replacement-and-return between checks and truncate-and-regrow can remain
+invisible. Temporary UID/GID assertions do not establish safe production
+ancestry, original launch, effective environment or absence of other writers.
+The wrapper explicitly requires fixture start material, and production roots
+are refused. Fixed-root preparation and manager/process/tree composition must
+still join the host fence, stop/revoke writers and durable failure/reconciliation
+before a real diagnostic backend is enrolled. No service or numerical workload
+was started, and no allocation or throughput improvement is claimed here.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-named-output-20261010/manifest.json)
+retains 210 Linux passes, with one pre-existing ignored, three extra repetitions
+of all ten new tests, 28 portable Windows passes and 117 root checks. It also
+retains the missing-API compile refusal/compiler-renderer panic and the first
+static guard's formatting-sensitive failure. Normalizing whitespace fixed that
+guard without relaxing any runtime check. Affected check/lint, scoped format,
+documentation/local performance contracts, links and book build passed. These
+working-tree observations support the narrow fixture safety result, not release
+readiness or a numerical performance claim; the qualification digest is unchanged.

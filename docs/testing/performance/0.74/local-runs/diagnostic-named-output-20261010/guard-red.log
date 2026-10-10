@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'named_fixture_outputs_keep_production_preparation_and_execution_closed' (1699) panicked at crates/xtask/tests/performance_contract_074.rs:1088:9:
+O_RDONLY | libc::O_NOFOLLOW
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test named_fixture_outputs_keep_production_preparation_and_execution_closed ... FAILED
+
+failures:
+
+failures:
+    named_fixture_outputs_keep_production_preparation_and_execution_closed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 80 filtered out; finished in 0.01s
+

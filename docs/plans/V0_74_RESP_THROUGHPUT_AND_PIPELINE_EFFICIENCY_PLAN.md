@@ -1033,6 +1033,13 @@ fixed output pathnames, authenticate original start, compose manager and process
 identity, revoke writers or open pilot/qualification admission. Keep those
 remaining backend prerequisites separate from this local observation evidence.
 
+The subsequent [fixed named-output fixture reader](../testing/performance/0.74/diagnostic-named-output-local-design.md)
+retains directory/stream name bindings around original process IO checks and
+refuses path substitution while allowing append growth. Explicit temporary
+ownership is not production ancestry: fixed-root preparation, authenticated
+manager/process/tree composition and fenced lifecycle remain unimplemented by
+this reader. No launch, product workload or numerical admission follows.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

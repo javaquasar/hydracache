@@ -1,0 +1,233 @@
+{
+  "schema_version": "diagnostic-named-output-local-evidence-074-v1",
+  "baseline_code_source": "5f1f4edc8398900d3eed7f030dbf941a7db77c36",
+  "baseline_capture_head": "2eabe6a301ae067b1bea9f8f8b15bf0fb5d24bb5",
+  "preregistration_commit": "2eabe6a301ae067b1bea9f8f8b15bf0fb5d24bb5",
+  "implementation_commit": "5156c636aa66a0e881b8227c386081e6a338e231",
+  "capture_scope": "Local working-tree tests before implementation commit; final documentation checks afterward. Initial full focused run precedes a test-only seek-position assertion, which post-review named tests and all three repeats verify. No clean-source qualification or installed observer execution receipt.",
+  "baseline": {
+    "passed": 25,
+    "head_difference_from_baseline_code": "Preregistration design document only; product, process and IO source unchanged."
+  },
+  "test_first": {
+    "file": "test-first.log",
+    "result": "Missing named-output types/constants/functions refuse compilation; pinned Rust 1.94.0 additionally panics in diagnostic rendering. No runtime candidate measured."
+  },
+  "retained_preparation_negatives": [
+    {
+      "files": [
+        "root.log",
+        "guard-red.log"
+      ],
+      "result": "New static source guard required adjacent text spanning a rustfmt line break. Normalize whitespace in the source guard; runtime flags, limits and refusal behavior unchanged. Initial root target: 80 passed, 1 failed; green repeat executes all three targets."
+    },
+    {
+      "scope": "Tool-console observation, not a retained raw log",
+      "result": "Initial WSL invocation used nonexistent user artur1000 and executed no command. Read-only account inspection identified actual artur UID/GID 1000; subsequent commands use that existing account without environment or workload modification."
+    },
+    {
+      "scope": "Tool-console observations, not retained raw logs",
+      "result": "One documentation patch context mismatch made no edits. Initial require-ship status wrapper lost its shell variable and refused its own comparison after the CLI reported the closed gate; a separate native PowerShell status capture confirmed the actual CLI exit was exactly 1. No product guard or admission changed."
+    }
+  ],
+  "checks": {
+    "linux_focused_passed": 210,
+    "linux_ignored": 1,
+    "new_linux_tests": 10,
+    "post_review_named_passed": 7,
+    "repeat_runs": 3,
+    "new_tests_per_repeat": 10,
+    "windows_portable_passed": 28,
+    "windows_linux_named_output_tests_executed": 0,
+    "root_performance_contracts": 81,
+    "root_release_evidence": 13,
+    "root_release_governance": 23,
+    "linux_all_target_check": true,
+    "linux_all_target_all_feature_clippy_warnings_denied": true,
+    "xtask_all_target_all_feature_clippy_warnings_denied": true,
+    "windows_all_target_check": true,
+    "windows_all_target_all_feature_clippy_warnings_denied": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "full_workspace_verify_rerun": false,
+    "ship_expected_red_exit": 1,
+    "post_evidence_registry_passed": 1
+  },
+  "local_scope": {
+    "environment": "Local WSL Ubuntu, owned temporary ext2/ext3 storage and cat helper only; no host/service operation.",
+    "environment_log": "environment.log",
+    "observed_boot_id": "8e10ee6b-5161-4e77-920f-946d8415a901",
+    "boot_scope": "Informational local observation, not proof of an uninterrupted boot across all captures; original process fixtures capture their own fresh boot/generation.",
+    "material": "Cat copy, invented Cargo log and synthetic test signature/policy; retained statement shape is not hosted observer compilation or installed execution.",
+    "substitution_regression": "Same original live process/output inode: inode-only reader accepts, composed fixed-name guard refuses and remains refused after restoration.",
+    "concurrency": "Four named readers each perform 64 revalidations while 256 one-byte chunks append. Not a benchmark."
+  },
+  "commands": {
+    "baseline": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_process --locked",
+    "focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts --test diagnostic_lease --test diagnostic_ipc --test diagnostic_receipts --test diagnostic_spool --test diagnostic_tree --test diagnostic_manager --test host_execution",
+    "new_tests": "--lib diagnostic_named_output; --lib fixture_named; three separate complete repetitions after review",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "step_gate": "Affected all-target check; supervisor and xtask all-target/all-feature clippy -- -D warnings; scoped rustfmt --check",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts; affected all-target check/clippy",
+    "docs": "xtask doc-check; performance-contract-check --release 0.74; node scripts/docs-link-check.mjs; mdbook build docs-site",
+    "build_environment": {
+      "rust": "1.94.0",
+      "dev_debug": 0,
+      "test_debug": 0,
+      "incremental": false,
+      "build_jobs": 2,
+      "wsl_git": "Explicit read-only mounted Git/worktree paths; GIT_OPTIONAL_LOCKS=0"
+    }
+  },
+  "proof_boundaries": {
+    "production_ancestry_proved": false,
+    "production_output_prepared": false,
+    "original_start_authenticated": false,
+    "atomic_namespace_snapshot_proved": false,
+    "same_open_file_description_proved": false,
+    "continuous_exec_identity_proved": false,
+    "writer_revocation_proved": false,
+    "durable_refusal_journal": false,
+    "host_service_changed": false,
+    "unit_created": false,
+    "observer_workload_run": false,
+    "qualification_run": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false,
+    "frozen_inputs_changed": false,
+    "existing_wire_or_persisted_schema_changed": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "next": "Reviewed fixed production output preparation and authenticated manager/process/tree composition, then fenced lifecycle, writer revocation, watchdog and durable reconciliation. No numerical pilot admission.",
+  "retention": {
+    "capture_kind": "Byte-preserved completed WSL tee and native PowerShell combined stdout/stderr logs; local test/check evidence, not raw procfs documents or signed host receipts.",
+    "files": [
+      {
+        "name": "baseline.log",
+        "bytes": 2805,
+        "sha256": "b6a8a78ed60db36e5cbad23d5ffaf39aa0a9136fdc3b74cf28f6ca0114d1d4d0"
+      },
+      {
+        "name": "binding.log",
+        "bytes": 852,
+        "sha256": "69432673ac698a11940c27c9f3df184a4d74067c5ef861bffcd79a52528cd796"
+      },
+      {
+        "name": "check.log",
+        "bytes": 193,
+        "sha256": "3620fa21a177eb5b80a38afeab8b67b79ed0a2f8424e995b5d3e9f2ba624c206"
+      },
+      {
+        "name": "clippy.log",
+        "bytes": 193,
+        "sha256": "876bb0811eccc83b45d0352dbf7886ab3bb1212465e14bf4e1e9e36417d7eb5f"
+      },
+      {
+        "name": "doc-final.log",
+        "bytes": 440,
+        "sha256": "5759590f959419102692b63e53a121568774898b0e2c5ab7d8be703694d43586"
+      },
+      {
+        "name": "environment.log",
+        "bytes": 494,
+        "sha256": "8336a325d8f1149b62929f36c2d69943197844ac7349dcfff976668f901e77f0"
+      },
+      {
+        "name": "final-clippy.log",
+        "bytes": 280,
+        "sha256": "9acfc9a836b11c63d0c9ea4266b8084502ea44dd8d49ebbf68b987399f162ce5"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1211,
+        "sha256": "0434165e2d879b9d82cd1d5a0fceab4a1948c9210dd953d217ace2c39e1ffbf9"
+      },
+      {
+        "name": "focused.log",
+        "bytes": 20951,
+        "sha256": "01c519a2e44d1bc80d79e86c675f593a3b2f5b1d3c35233c415fa0290500b295"
+      },
+      {
+        "name": "format.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "gates.log",
+        "bytes": 440,
+        "sha256": "2307e4621749d47ae82c8c3e9af7c9a57d817d292888de8d7fe064bd85b80b33"
+      },
+      {
+        "name": "guard-red.log",
+        "bytes": 562,
+        "sha256": "90cb7181a21a253d5f7ac0588bf24909f18e6325b96b0cb1970f11053c7a18dd"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "mdbook.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "post-evidence.log",
+        "bytes": 480,
+        "sha256": "d147799907b71b0e06ac3b1b4696faa1fcadc0ea9bbac51a5f6295213f111f96"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 5394,
+        "sha256": "b979118c585a619f77de44330ba2ae3c32866d795a473c6b3b37c52abf11c1ac"
+      },
+      {
+        "name": "review.log",
+        "bytes": 1212,
+        "sha256": "35c28aed3ca38dbfc4a8d8d33978feca6470d6e5bce3d3a1227e9ddf35837784"
+      },
+      {
+        "name": "root-green.log",
+        "bytes": 11088,
+        "sha256": "3ee6cf211afb491af145edeeb4b076333f06adb8884da2051d1ab8aaf2d300bd"
+      },
+      {
+        "name": "root.log",
+        "bytes": 7657,
+        "sha256": "fbb4d39ab78242eddd9ee862867ec293e9e1987d8c137fd8447207639b27c344"
+      },
+      {
+        "name": "ship-final.log",
+        "bytes": 191,
+        "sha256": "fda7f109f86cbf084c21df6cab51fff85988697621132535c10352d93faf618b"
+      },
+      {
+        "name": "test-first.log",
+        "bytes": 14122,
+        "sha256": "8e412c1391c1fc5cc001ac856b4fbcfd9f0153aea540867e89d3587bff285363"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 191,
+        "sha256": "c0c6f65b2e71a4574d62b29a7699be19870557ad38b094a159d0eee5658537dc"
+      },
+      {
+        "name": "windows-clippy.log",
+        "bytes": 191,
+        "sha256": "07d13297e36f2f4b84fa054e70b5ea0f6b63b9c8fbbf7db05eef32484c2360f2"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 2998,
+        "sha256": "a3b7b8ba84abb9a051b2d7f717679ff8f7b9ada6c03da88cca36d3e767131725"
+      }
+    ]
+  }
+}

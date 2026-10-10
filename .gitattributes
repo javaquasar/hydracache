@@ -77,3 +77,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-builder-*/**/*.log -text whi
 docs/testing/performance/0.74/local-runs/diagnostic-start-material-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-loaded-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-io-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-named-output-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

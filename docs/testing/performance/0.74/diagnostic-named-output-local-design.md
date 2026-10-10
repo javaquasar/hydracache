@@ -38,3 +38,60 @@ Sequential observations are not atomic namespace/FD snapshots, continuous
 execution, append-only content, writer revocation, durable failure or start
 authorization. Manager/process/tree composition and backend enrollment remain
 closed. Frozen observer/P0/locks/policy/qualification inputs stay unchanged.
+
+## Implemented boundary
+
+`FixtureOutputRead` retains the full root-to-cell directory chain and private
+read-only streams. Each revalidation compares retained and freshly opened
+parent/child identities, checks exactly two cell entries and advances a per-file
+length high-water mark. Directory modification times and link counts are not
+frozen: unrelated sibling creation must not reject the original path. Owner,
+mode, device and inode remain pinned. O_NONBLOCK prevents a substituted FIFO
+from blocking the read-only open before its nonregular metadata is refused.
+
+`FixtureProcessIoRead` borrows that original output guard and the original
+process reader. Named checks bracket existing IO revalidation, without exporting
+stream FDs. Binding requires the exact original state and fixture start material;
+checked material revalidation still supplies the private signed executable.
+Named or process failure refuses the named capability as well as the composed
+reader, including after the wrapper is dropped. It does not write a durable
+failure journal, continually revalidate the installed bundle, compare a live
+manager invocation or prove the process was launched from that state.
+
+The composition regression leaves an owned cat copy writing into its original
+single-linked inode, moves that file outside the cell and creates a new
+`stdout.json`. The earlier inode-only reader still accepts, while the new
+composed reader refuses and remains refused after restoration. Synthetic policy,
+signature and Cargo log retain their earlier fixture-only meaning.
+
+Do not reuse the stable terminal spool snapshot for this live append observation:
+its exact timestamps/content checks intentionally reject changing bytes. The
+new guard observes names and bounded metadata, never content. It therefore
+does not detect all in-place changes or replacement-and-return between reads.
+Temporary ancestry, explicit UID/GID and successful local checks cannot certify
+the fixed production root, start authority, stopped writers or release readiness.
+
+## Local evidence and preparation refusals
+
+The [retained packet](local-runs/diagnostic-named-output-20261010/manifest.json)
+records the 25-test process/IO baseline at preregistration-only HEAD `2eabe6a3`
+(code unchanged from `5f1f4edc`), absent-API compile refusal and pinned compiler
+diagnostic-renderer panic. The first static root guard also refused a rustfmt
+line break between flags; whitespace normalization corrected the guard without
+changing runtime checks. The initial root target's 80 passes/one failure remain
+retained alongside the successful repeat, not discarded as noise.
+
+Final checks passed 210 Linux tests, with one pre-existing ignored, 28 portable
+Windows tests and 117 root contract/evidence/governance tests. A post-review
+seven-test run and three complete ten-test repetitions additionally verify the
+seek-position assertion and composed binding. Windows executes zero Linux
+named-output tests. Scoped formatting, affected all-target check/all-feature
+lint, xtask lint, documentation/local performance contracts, links and mdbook
+passed. Full workspace milestone verification was not rerun for this slice.
+
+Implementation is `5156c636aa66a0e881b8227c386081e6a338e231`. Captures are
+working-tree diagnostics before that commit, with final documentation checks
+afterward, not clean-source qualification receipts. Stream content, installed
+execution, production preparation and numerical admission remain unproven.
+The offline packet guard checks retained byte lengths/hashes and counts; frozen
+qualification manifest digest remains unchanged.

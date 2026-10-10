@@ -1,0 +1,264 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `DiagnosticState` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:15:16
+   |
+15 | ...e: Diagnosti...e,
+   |       ^^^^^^^^^...^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_lease.rs:52:1
+   |
+52 | ...osticStage {
+   | ...---------- similarly named enum `DiagnosticStage` defined here
+   |
+help: an enum with a similar name exists
+   |
+15 -         state: DiagnosticState,
+15 +         state: DiagnosticStage,
+   |
+help: consider importing this struct
+   |
+ 5 +     use crate::diagnostic_lease::DiagnosticState;
+   |
+
+error[E0422]: cannot find struct, variant or union type `DiagnosticState` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:23:25
+   |
+23 | ... = DiagnosticState {
+   |       ^^^^^^^^^^^^^^^ no...nd in this scope
+   |
+help: consider importing this struct
+   |
+ 5 +     use crate::diagnostic_lease::DiagnosticState;
+   |
+
+error[E0425]: cannot find value `NAMES` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:48:25
+   |
+48 | ...in NAMES {
+   |       ^^^^^ not found in this scope
+
+error[E0425]: cannot find type `FixtureOutputRead` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:56:33
+   |
+56 | ...lt<FixtureOutputRead, N...
+   |       ^^^^^^^^^^^^^^^^^ not foun...is scope
+   |
+help: you might be missing a type parameter
+   |
+19 |     impl<FixtureOutputRead> Fixture {
+   |         +++++++++++++++++++
+
+error[E0425]: cannot find type `NamedOutputError` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:56:52
+   |
+56 | ...d, NamedOutputError> {
+   |       ^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+19 |     impl<NamedOutputError> Fixture {
+   |         ++++++++++++++++++
+
+error[E0425]: cannot find value `NAMES` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:67:62
+   |
+67 | ...in(NAMES[i ...
+   |       ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `NAMES` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:78:32
+   |
+78 | ...in(NAMES[0]);
+   |       ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `NAMES` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:115:36
+    |
+115 | ...in(NAMES[0]);
+    |       ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `NAMES` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:121:41
+    |
+121 | ...in(NAMES[1]...
+    |       ^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `CString`
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:132:32
+    |
+132 | ... = CString::n...
+    |       ^^^^^^^ use of undeclared type `CString`
+    |
+    = note: struct `crate::diagnostic_tree::tests::CString` exists but is inaccessible
+help: a struct with a similar name exists
+    |
+132 -                     let name = CString::new(path.as_os_str().as_bytes()).unwrap();
+132 +                     let name = String::new(path.as_os_str().as_bytes()).unwrap();
+    |
+help: consider importing this struct
+    |
+  5 +     use std::ffi::CString;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Path`
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:151:41
+    |
+151 | ...ts(Path::n...
+    |       ^^^^ use of undeclared type `Path`
+    |
+help: consider importing one of these structs
+    |
+  5 +     use crate::Path;
+    |
+  5 +     use std::path::Path;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Path`
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:154:41
+    |
+154 | ...ts(Path::n...
+    |       ^^^^ use of undeclared type `Path`
+    |
+help: consider importing one of these structs
+    |
+  5 +     use crate::Path;
+    |
+  5 +     use std::path::Path;
+    |
+
+error[E0425]: cannot find value `NAMES` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:171:36
+    |
+171 | ...in(NAMES[0]);
+    |       ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `STREAM_BYTES` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:176:84
+    |
+176 | ...en(STREAM_BYTES + ...
+    |       ^^^^^^^^^^^^ not found in this scope
+    |
+note: constant `crate::diagnostic_process::io::STREAM_BYTES` exists but is inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_process_io.rs:9:1
+    |
+  9 |...TES as u64;
+    |...^^^^^^^^^^^ not accessible
+help: consider importing this constant
+    |
+  5 +     use crate::diagnostic_receipts::STREAM_BYTES;
+    |
+
+error[E0425]: cannot find value `NAMES` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:185:57
+    |
+185 | ...in(NAMES[0]...
+    |       ^^^^^ not found in this scope
+
+
+thread 'rustc' (376) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 26 but ends at 25
+stack backtrace:
+   0:     0x7e053385c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7e0533e0e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7e05352f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7e0533829b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7e0533829993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7e0532810aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7e0533829e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7e0533829c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7e0533823ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7e053380448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7e053038e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7e0530066c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7e05321697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7e05351d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7e05351c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7e05353004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7e0535302cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7e05353023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7e05352fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7e05352f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7e05352f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7e05352f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7e05352f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7e05344fa24c - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate::{closure#0}
+  24:     0x7e05344f054d - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate
+  25:     0x7e05345c3eb0 - rustc_interface[c6a26c9f392246cf]::passes::configure_and_expand
+  26:     0x7e0535002895 - rustc_interface[c6a26c9f392246cf]::passes::resolver_for_lowering_raw
+  27:     0x7e053500260d - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>
+  28:     0x7e05350025e7 - <rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(rustc_middle[f9db403ed88df217]::ty::context::TyCtxt, ())>>::call_once
+  29:     0x7e0535001cdc - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  30:     0x7e0535001846 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::get_query_non_incr::__rust_end_short_backtrace
+  31:     0x7e0535190038 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  32:     0x7e0534f810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  33:     0x7e0534f29b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  34:     0x7e0534f2993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  35:     0x7e0534f2b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  36:     0x7e052e89cb84 - <unknown>
+  37:     0x7e052e929ecc - <unknown>
+  38:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [resolver_for_lowering_raw] getting the resolver for lowering
+end of query stack
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:57:13
+   |
+57 | ...   pin_fi...puts(&s...
+   |       ^^^^^^...^^^^ not found in this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:136:32
+    |
+136 | ...t!(pin_fixture_outputs(&f...
+    |       ^^^^^^^^^^^^^^^^^^^ not ...this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:137:32
+    |
+137 | ...t!(pin_fixture_outputs(&f...
+    |       ^^^^^^^^^^^^^^^^^^^ not ...this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:151:21
+    |
+151 | ...t!(pin_fixture_o......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:154:21
+    |
+154 | ...t!(pin_fixture_o......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:158:17
+    |
+158 | ...t!(pin_fixtu...s(&l...
+    |       ^^^^^^^^^...^ not found in this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:161:17
+    |
+161 | ...t!(pin_fixtu...s(&f...
+    |       ^^^^^^^^^...^ not found in this scope
+
+error[E0425]: cannot find function `pin_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:164:17
+    |
+164 | ...t!(pin_fixtu...s(&f...
+    |       ^^^^^^^^^...^ not found in this scope
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 23 previous errors

@@ -2058,3 +2058,24 @@ three extra IO repetitions, 28 portable Windows passes and 116 root passes.
 Affected check/lint, scoped format, docs and local non-promotable performance
 contracts passed. These are working-tree diagnostics, not qualification receipts;
 the offline guard verifies raw log hashes/counts and the unchanged frozen digest.
+
+The next [fixed named-output fixture guard](diagnostic-named-output-local-design.md)
+derives lease/cell and the two output names from validated state, retains every
+directory binding and rejects replacement of a stream or ancestor. A typed
+fixture-only wrapper brackets original process IO checks with named checks.
+Append growth remains allowed; observed shrink, overflow, unsafe metadata or
+namespace drift permanently refuses the original guard. It performs no stream
+content read or shared seek and exports no raw output descriptors.
+
+This closes the earlier pathname-substitution limitation only for explicitly
+owned local fixtures. Production root ownership/preparation, manager/process/tree
+composition, original start authentication, fenced lifecycle, writer revocation,
+watchdog and durable reconciliation still remain before backend enrollment.
+No production directory, host unit, observer workload or qualification was run.
+
+The [named-output packet](local-runs/diagnostic-named-output-20261010/manifest.json)
+retains 210 Linux passes (one pre-existing ignored), three extra complete
+ten-test repetitions, 28 portable Windows passes and 117 root passes. It retains
+the absent-API/compiler-renderer and whitespace-sensitive static-guard refusals.
+Working-tree captures and explicit fixture positives are not clean-source
+qualification or installed observer receipts. Frozen inputs/digest stay unchanged.

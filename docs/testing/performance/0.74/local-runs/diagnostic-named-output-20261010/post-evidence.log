@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized] target(s) in 5.51s
+     Running tests/performance_contract_074.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/performance_contract_074-a26b883cc8170f60)
+
+running 1 test
+test w12_evidence_skeleton_is_exact_and_fail_closed has been running for over 60 seconds
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 80 filtered out; finished in 94.10s
+

@@ -1,0 +1,15 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 14.26s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 7 tests
+test diagnostic_named_output::tests::fixture_scope_refuses_production_noncanonical_paths_and_nonstartable_state ... ok
+test diagnostic_named_output::tests::replaced_stream_and_repair_cannot_refresh_original_names ... ok
+test diagnostic_named_output::tests::every_fixture_directory_generation_and_ancestor_binding_is_retained ... ok
+test diagnostic_named_output::tests::names_links_special_files_and_owner_modes_refuse ... ok
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+test diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries ... ok
+test diagnostic_named_output::tests::observed_output_shrink_overflow_and_metadata_drift_latch ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 101 filtered out; finished in 0.03s
+

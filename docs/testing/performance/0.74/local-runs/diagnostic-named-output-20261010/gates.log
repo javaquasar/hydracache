@@ -1,0 +1,6 @@
+    Finished `dev` profile [unoptimized] target(s) in 2.96s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask doc-check`
+doc-check: OK (releases.toml is consistent)
+    Finished `dev` profile [unoptimized] target(s) in 5.21s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)

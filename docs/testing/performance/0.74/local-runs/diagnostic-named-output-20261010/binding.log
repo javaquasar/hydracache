@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 19.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 3 tests
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 105 filtered out; finished in 0.16s
+
