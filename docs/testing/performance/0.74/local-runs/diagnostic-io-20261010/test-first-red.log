@@ -1,0 +1,67 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `io::ProcessIoRead`
+  --> tools/long-run-supervisor-074/src/diagnostic_process.rs:16:9
+   |
+16 | ...se io...ssIoRead;
+   |       ^^...^^^^^^^^ no `ProcessIoRead` in `diagnostic_process::io`
+
+
+thread 'rustc' (397) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 28 but ends at 27
+stack backtrace:
+   0:     0x75e729e5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x75e72a40e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x75e72b8f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x75e729e29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x75e729e29993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x75e728e10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x75e729e29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x75e729e29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x75e729e23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x75e729e0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x75e72698e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x75e726666c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x75e7287697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x75e72b7d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x75e72b7c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x75e72b9004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x75e72b902cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x75e72b9023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x75e72b8fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x75e72b8f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x75e72b8f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x75e72b8f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x75e72b8f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x75e72aafa24c - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate::{closure#0}
+  24:     0x75e72aaf054d - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate
+  25:     0x75e72abc3eb0 - rustc_interface[c6a26c9f392246cf]::passes::configure_and_expand
+  26:     0x75e72b602895 - rustc_interface[c6a26c9f392246cf]::passes::resolver_for_lowering_raw
+  27:     0x75e72b60260d - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>
+  28:     0x75e72b6025e7 - <rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(rustc_middle[f9db403ed88df217]::ty::context::TyCtxt, ())>>::call_once
+  29:     0x75e72b601cdc - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  30:     0x75e72b601846 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::get_query_non_incr::__rust_end_short_backtrace
+  31:     0x75e72b790038 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  32:     0x75e72b5810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  33:     0x75e72b529b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  34:     0x75e72b52993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  35:     0x75e72b52b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  36:     0x75e724e9cb84 - <unknown>
+  37:     0x75e724f29ecc - <unknown>
+  38:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [resolver_for_lowering_raw] getting the resolver for lowering
+end of query stack
+Some errors have detailed explanations: E0425, E0432.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

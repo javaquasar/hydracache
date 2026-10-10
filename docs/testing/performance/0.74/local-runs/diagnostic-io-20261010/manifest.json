@@ -1,0 +1,206 @@
+{
+  "schema_version": "diagnostic-io-local-evidence-074-v1",
+  "baseline_source": "862329dc7ca90fdb18ae7a153fb998209aa9f25f",
+  "preregistration_commit": "3104078ecfa31fa34ce09ebe65bfc624e0e1569f",
+  "implementation_commit": "ed7d0535843cfd13df9d75b01f919ff92569dce6",
+  "capture_scope": "Local working-tree code/test captures before implementation commit, plus final documentation checks afterward; not clean-source qualification receipts or installed signed observer execution.",
+  "baseline": {
+    "linux_original_process_tests_passed": 15,
+    "clean_source_at_baseline": true,
+    "raw_log": "baseline.log"
+  },
+  "test_first": [
+    {
+      "file": "test-first-red.log",
+      "result": "Absent IO types/APIs refuse compilation. Rust 1.94.0 also panics in diagnostic rendering after the unresolved import; this is not a runtime correctness failure."
+    },
+    {
+      "file": "contract-red.log",
+      "result": "New root guard refuses missing preregistered IO contract."
+    }
+  ],
+  "retained_preparation_negatives": [
+    {
+      "file": "initial.log",
+      "passed": 6,
+      "failed": 1,
+      "cause": "Owned unittest helper used Rust's buffered stdin, consuming the byte intended for cat after exec. Fixed fixture to use a one-byte libc read; no production guard relaxation."
+    },
+    {
+      "file": "check-clippy-initial.log",
+      "cause": "Pinned Clippy's diagnostic renderer panicked while reporting ineffective_open_options. Removed redundant write(true) beside append(true) in owned fixtures; no lint suppression or toolchain change."
+    }
+  ],
+  "checks": {
+    "linux_focused_passed": 200,
+    "linux_ignored": 1,
+    "new_linux_tests_including_worker_entry": 11,
+    "io_repeat_runs": 3,
+    "io_tests_per_repeat": 10,
+    "post_review_process_and_binding_passed": 26,
+    "windows_portable_passed": 28,
+    "windows_linux_io_tests_executed": 0,
+    "root_performance_contracts": 80,
+    "root_release_evidence": 13,
+    "root_release_governance": 23,
+    "linux_all_target_check": true,
+    "linux_all_target_all_feature_clippy_warnings_denied": true,
+    "windows_all_target_check": true,
+    "windows_all_target_all_feature_clippy_warnings_denied": true,
+    "xtask_all_target_all_feature_clippy_warnings_denied": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "full_workspace_verify_rerun": false
+  },
+  "local_scope": {
+    "environment": "Local WSL Ubuntu; no AX42 connection, unit or product workload.",
+    "environment_log": "environment.log",
+    "observed_boot_id": "85150fb6-67aa-411e-9508-517f01d882ce",
+    "boot_scope": "Informational observation during local checks, not proof of a common uninterrupted boot across the packet. Every owned process fixture freshly captures and revalidates its own original boot/generation.",
+    "nonproduct_helpers": "Owned cat and unittest processes only; EOF cleanup without signaling unrelated processes.",
+    "material_composition": "Cat copy, invented Cargo log, synthetic test signature/policy using retained statement shape. Not the hosted observer or compilation/installation proof.",
+    "concurrency": "Four readonly IO guards, each 32 revalidations, while an owned helper appends 256 seven-byte chunks. Not a performance benchmark.",
+    "limitations_regression": "Renaming stdout and creating a new former pathname is accepted when the process still targets the original single-linked object; named-output preparation remains open."
+  },
+  "commands": {
+    "baseline": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_process",
+    "linux_focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts --test diagnostic_lease --test diagnostic_ipc --test diagnostic_receipts --test diagnostic_spool --test diagnostic_tree --test diagnostic_manager --test host_execution",
+    "io_repeat": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_process::io; three separate repetitions",
+    "post_review": "--lib diagnostic_process; --lib checked_material_io_binding; all-target check; all-target/all-feature clippy -D warnings",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "windows": "cargo test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts -j 2; all-target check and all-target/all-feature clippy -D warnings",
+    "build_environment": {
+      "rust": "1.94.0",
+      "dev_debug": 0,
+      "test_debug": 0,
+      "incremental": false,
+      "build_jobs": 2,
+      "wsl_git": "Read-only explicit mounted Git/worktree paths; GIT_OPTIONAL_LOCKS=0"
+    }
+  },
+  "proof_boundaries": {
+    "output_pathnames_verified": false,
+    "original_start_authenticated": false,
+    "same_open_file_description_proved": false,
+    "continuous_exec_identity_proved": false,
+    "effective_environment_proved": false,
+    "writer_revocation_proved": false,
+    "durable_refusal_journal": false,
+    "host_service_changed": false,
+    "unit_created": false,
+    "observer_workload_run": false,
+    "qualification_run": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false,
+    "frozen_inputs_changed": false,
+    "existing_wire_or_persisted_schema_changed": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "next": "Fixed named-output preparation and manager/process/tree composition before fenced start/stop, writer revocation, durable refusal, watchdog and reconciliation. Numerical pilot remains separately gated.",
+  "retention": {
+    "capture_kind": "Byte-preserved PowerShell combined native-command stdout/stderr captures, sealed after command completion. Not raw DBus/procfs documents or signed host receipts.",
+    "files": [
+      {
+        "name": "baseline.log",
+        "bytes": 1850,
+        "sha256": "4852b4336fb1ad727a9f7fbe340da3dd3938f00fd17c0c0357b9729fb8b65de8"
+      },
+      {
+        "name": "binding.log",
+        "bytes": 612,
+        "sha256": "7848840a039477054ff2cb4b208cfec916b42dbb10da744e263b2fb427319a66"
+      },
+      {
+        "name": "check-clippy-initial.log",
+        "bytes": 14852,
+        "sha256": "72a8ef0afc0c8d4916c7d63995dc070d408019f8f004c1528dc150eebba2cb9e"
+      },
+      {
+        "name": "clippy-green.log",
+        "bytes": 195,
+        "sha256": "d34fe537760ccbebd882ecb6cb7e8f45808bbb0f5fd7e7c74475fb6258273598"
+      },
+      {
+        "name": "contract-red.log",
+        "bytes": 1256,
+        "sha256": "09575a63f9291418c6a13601fcf79a11e5f2da08277257bffea3c31c9465c6fa"
+      },
+      {
+        "name": "doc-final.log",
+        "bytes": 106,
+        "sha256": "0714e8d5de8af9f55a8445fe7c8a32832b50244b077066460f7accb32b5871e0"
+      },
+      {
+        "name": "environment.log",
+        "bytes": 152,
+        "sha256": "c6ba2eba76a50c0989c97855fd2f1f4427b35ddfdac2a2a47241108bcbc568dd"
+      },
+      {
+        "name": "focused-initial.log",
+        "bytes": 19955,
+        "sha256": "8d2628fa9b5a47c716b5aa83c5fea411ca3da82442f6098215d953f461c54836"
+      },
+      {
+        "name": "focused.log",
+        "bytes": 24161,
+        "sha256": "e4e57bbe4e60e95f58e6292cda7f05f9adc99714641d1138541163aab157f2f5"
+      },
+      {
+        "name": "gates.log",
+        "bytes": 1205,
+        "sha256": "cbcfcfa802f445f8b7c0b2371279f618b5a859b297172c32b77c3a887a602bbb"
+      },
+      {
+        "name": "green.log",
+        "bytes": 1148,
+        "sha256": "130f410e9caf1db76be3109c93f89865122afaefedf2da69a90fba1d62f144b0"
+      },
+      {
+        "name": "initial.log",
+        "bytes": 1770,
+        "sha256": "2431a27c7a4805dcc12766c7474f0751aab7754fbda3128ecee0d84946cfaaa7"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "mdbook.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "post-review.log",
+        "bytes": 3839,
+        "sha256": "6cfdb539f5d5690c0f66f00b9578e20eb225192529b9ae99f1522b4d5c2f47fe"
+      },
+      {
+        "name": "root.log",
+        "bytes": 11376,
+        "sha256": "16449e463e60ba4617674da55a90167b60e7639cb4807ddff11ca403a4c145cf"
+      },
+      {
+        "name": "test-first-red.log",
+        "bytes": 7594,
+        "sha256": "9daab83e860c7932cc41faf3b7b602756e7975767f794825352ee134ecef81f8"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 1899,
+        "sha256": "216e3a1f1458cddfb693dd950be5aefca6adc85e2b22571c4c033682c31d2c8d"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 2997,
+        "sha256": "d099029f028fc00df98e069a9ced924b9f30570d35e44f98ceada47ba3786dec"
+      }
+    ]
+  }
+}

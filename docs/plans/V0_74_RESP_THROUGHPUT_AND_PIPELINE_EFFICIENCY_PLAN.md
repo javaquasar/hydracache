@@ -1026,6 +1026,13 @@ fault test may produce more than one workload process, cross a lease boundary, o
 operation, alter duration/seed/thresholds, or convert incomplete evidence into a pass. Process or
 host loss remains a failed retained attempt.
 
+The local [original executable/output object binding](../testing/performance/0.74/diagnostic-io-local-design.md)
+adds read-only point-in-time checks through retained procfs descriptors, with
+sticky refusal on executable/FD/flag/metadata/size drift. It does not certify
+fixed output pathnames, authenticate original start, compose manager and process
+identity, revoke writers or open pilot/qualification admission. Keep those
+remaining backend prerequisites separate from this local observation evidence.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

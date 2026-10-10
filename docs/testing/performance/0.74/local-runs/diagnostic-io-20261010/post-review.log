@@ -1,0 +1,45 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 29.63s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 25 tests
+test diagnostic_process::io::tests::fdinfo_required_fields_are_unique_strict_and_bounded ... ok
+test diagnostic_process::io::tests::worker_fixture ... ok
+test diagnostic_process::io::tests::original_exe_and_append_outputs_accept_growth_without_shared_seek ... ok
+test diagnostic_process::tests::bounded_document_reads_accept_limit_and_refuse_overflow_or_empty ... ok
+test diagnostic_process::tests::diagnostic_scope_refuses_foreign_prefix_boot_and_depth ... ok
+test diagnostic_process::tests::every_read_poll_failure_and_terminal_state_refuses_without_retry ... ok
+test diagnostic_process::io::tests::wrong_exe_alias_swapped_outputs_and_writable_expectations_refuse ... ok
+test diagnostic_process::tests::local_self_pidfd_and_original_proc_descriptors_revalidate ... ok
+test diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail ... ok
+test diagnostic_process::tests::original_generation_group_cgroup_and_boot_drift_never_refresh ... ok
+test diagnostic_process::io::tests::object_binding_does_not_certify_output_pathnames ... ok
+test diagnostic_process::io::tests::observed_shrink_budget_and_exit_are_sticky ... ok
+test diagnostic_process::io::tests::same_generation_fd_retarget_and_exec_refuse_original_objects ... ok
+test diagnostic_process::io::tests::parallel_original_io_readers_allow_concurrent_append_without_seeking ... ok
+test diagnostic_process::tests::stat_dead_unknown_malformed_and_overflow_documents_fail_closed ... ok
+test diagnostic_process::tests::single_read_budget_empty_error_and_declared_size_fail_closed ... ok
+test diagnostic_process::tests::stat_identity_handles_comm_bytes_and_ignores_changing_counters ... ok
+test diagnostic_process::tests::synthetic_documents_cannot_pass_procfs_gate_and_substitution_is_detected ... ok
+test diagnostic_process::tests::unified_cgroup_is_single_canonical_and_bounded ... ok
+test diagnostic_process::tests::local_nonproduct_helper_exit_cannot_recapture_original_generation ... ok
+test diagnostic_process::tests::parallel_readonly_revalidation_has_no_shared_seek_offset ... ok
+test diagnostic_process::io::tests::outputs_require_append_regular_single_link_mode_and_bounded_length ... ok
+test diagnostic_process::tests::pidfd_namespace_mapping_is_exact_and_missing_or_dead_is_refused ... ok
+test diagnostic_process::io::tests::same_generation_append_flag_and_nonregular_fd_drift_refuse ... ok
+test diagnostic_process::tests::seeded_stat_generations_keep_identity_fields_exact ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 73 filtered out; finished in 0.11s
+
+    Finished `test` profile [unoptimized] target(s) in 7.31s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.13s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 31.79s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 30.70s

@@ -2035,3 +2035,26 @@ reads and wrong-boot refusal are separate from synthetic loaded properties.
 Both test-first compiler refusals and the rejected invalid state fixture remain
 retained. Byte hashes and the unchanged qualification digest passed the offline
 packet guard. No numerical performance claim follows from these checks.
+
+The next [original executable/output object binding](diagnostic-io-local-design.md)
+checks the actual fixed procfs `exe` and FD 1/2 targets against retained read-only
+expected files. Bounded fdinfo must show writable append streams; original
+generation checks bracket observations. Growth is allowed, but observed shrink,
+overflow, changed executable, retargeted FD or changed append flags permanently
+refuse the runtime guard. The typed start-material hook privately supplies the
+checked executable and refuses material/process binding failures.
+
+Outputs remain caller assertions. A limitation regression accepts the original
+object after a pathname replacement, so fixed named-output preparation remains
+necessary. Loaded-manager/process/tree composition, original-start authentication,
+writer revocation, durable refusal, watchdog and uncertain-intent reconciliation
+are still open. Tests execute only owned local cat/unittest helpers; a synthetic
+signature on a cat copy does not prove installed observer execution. No product
+performance measurement, service mutation or qualification accompanies this slice.
+
+The [local IO packet](local-runs/diagnostic-io-20261010/manifest.json) retains the
+baseline and negative preparations, 200 Linux passes (one pre-existing ignored),
+three extra IO repetitions, 28 portable Windows passes and 116 root passes.
+Affected check/lint, scoped format, docs and local non-promotable performance
+contracts passed. These are working-tree diagnostics, not qualification receipts;
+the offline guard verifies raw log hashes/counts and the unchanged frozen digest.

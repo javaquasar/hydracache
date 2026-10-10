@@ -4875,3 +4875,62 @@ projections are synthetic; four real local system-bus reads confirmed only
 absence, and an incorrect boot was refused. These results justify continuing
 the process and descriptor binding work, not claiming a successfully launched
 diagnostic or a performance gain.
+
+### A stable PID is not a stable executable or output destination
+
+The next safety hypothesis was narrower than a launch: if the original process
+generation remains alive, can a read-only observer still detect a different
+executable or stdout/stderr target? A pidfd alone cannot answer that question.
+An owned helper can exec another program or redirect an FD without changing the
+generation checked by the existing process reader. Tests exercise both cases:
+generation revalidation succeeds, while the new object guard refuses.
+
+The [object-binding design](../testing/performance/0.74/diagnostic-io-local-design.md)
+retains the original proc directory and follows only its fixed executable and
+FD 1/2 magic links with O_PATH. It compares the resulting objects with retained
+read-only expected descriptors, without reading their content or changing shared
+file positions. The executable's metadata must remain unchanged. Output files
+must stay distinct, regular, single-linked and mode 0600, with writable append
+flags in bounded fdinfo. Their length may grow, but an observed shrink or overflow
+of the existing 8-MiB ceiling refuses. Original pidfd, boot, generation and cgroup
+checks bracket collection; every failed IO observation latches that runtime guard.
+
+The start-material hook supplies the checked bundle's private executable
+descriptor and revalidates exact material/state around binding. Temporary output
+descriptors are still explicit caller assertions. The composition positive uses
+a cat copy, invented Cargo log and synthetic signature: it tests how these
+components join, not the hosted observer's execution, installation or compilation.
+Four parallel readers on an appending helper additionally check that growth does
+not require shared seek or exact equality of sequential size observations.
+
+One negative preparation result was in the fixture, not the observer: buffered
+Rust stdin consumed the byte intended for the helper after exec. A one-byte
+unbuffered control read fixed the handshake without changing production checks.
+Compiler/lint failures are retained too, including the pinned toolchain's
+diagnostic-renderer panic on an ineffective append-open option. Removing the
+redundant write flag fixed that warning; no lint allowance or compiler migration
+was used to pass it.
+
+The limitation regression matters just as much as the positive: renaming an
+output file and replacing its former pathname remains acceptable when the
+process still writes to the original single-linked object. This primitive does
+not certify filenames. Nor do sequential inode/flag reads prove a single open
+file description, unchanged content, uninterrupted executable identity, effective
+environment or absence of other writers. Retarget-and-return, truncate-and-regrow
+and other changes between observations can remain invisible. Refusal is runtime
+state, not restart-safe recovery.
+
+This step removes a specific false-confidence path in future measurement tooling;
+it is not an allocation or throughput improvement. Fixed named-output preparation,
+authenticated manager/process/tree composition, fenced start/stop, writer
+revocation, watchdog and durable uncertain-intent reconciliation remain before
+backend enrollment. No service, product workload or qualification was started.
+
+The [retained local packet](../testing/performance/0.74/local-runs/diagnostic-io-20261010/manifest.json)
+records the clean 15-test baseline and all preparation negatives. Final checks
+passed 200 Linux tests, with one pre-existing ignored; the 10-test IO set also
+passed three additional repetitions. Portable Windows checks passed 28 tests
+without executing Linux IO readers, and 116 root contract/evidence/governance
+tests passed. Formatting, affected package checks/lint and local documentation
+and performance contracts were green. The packet keeps working-tree checks
+distinct from qualification receipts and preserves the frozen manifest digest.

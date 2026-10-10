@@ -43,3 +43,57 @@ Pidfd is task continuity, not an open-file-description identity. The later backe
 still needs fixed named-output preparation, manager/process/tree composition,
 fenced start/stop, writer revocation, durable failure, watchdog and reconciliation.
 All frozen observer/P0/lock/qualification inputs remain unchanged.
+
+## Implemented observation and local test scope
+
+`ProcessIoRead` owns clones of the asserted read-only files and original O_PATH
+targets, retained `fd`/`fdinfo` directories and bounded FD 1/2 documents. It
+revalidates the original `ProcessRead` before and after collection and never
+opens a replacement pidfd. Executable metadata includes mode, ownership, link
+count, size and modification/change times, but not atime. Output metadata pins
+device/inode, ownership, mode and single-link status while allowing append
+timestamps to change. Ordered observations advance a length high-water mark;
+observed shrink or overflow refuses. The ceiling reuses `diagnostic_receipts::STREAM_BYTES`.
+
+Required fdinfo flags and inode are parsed once, with duplicate/malformed/overflow
+fields refused. FD 1/2 must be O_WRONLY with O_APPEND and without O_PATH; unrelated
+kernel fields and the current file position are not treated as policy evidence.
+Each target is checked again around fdinfo collection. These sequential reads
+are deliberately not described as an atomic FD-table snapshot.
+
+`PinnedStartMaterial::bind_asserted_process_io` supplies its private original
+binary descriptor, checks exact state/material before and after pinning, and
+preserves material versus process refusal categories. Its failure latches the
+material; a later IO guard failure latches that guard, not a durable shared journal.
+This hook does not authenticate the process's original start or compose its
+cgroup with the intended manager invocation. Those remain backend obligations.
+
+Local tests use owned cat/unittest children, O_APPEND temporary files and a
+crate-unittest-only process capture seam that is absent from production builds.
+The composition fixture copies `/bin/cat` and signs it with a synthetic test key
+and invented Cargo log. Reusing the retained receipt's statement shape does not
+turn this helper into the hosted observer or prove its stated compilation.
+
+The tests cover growth without shared seek, wrong executable, aliased/swapped or
+writable expectations, wrong mode, hardlinks, missing append mode, overflow,
+observed shrink, exit, same-generation exec, FD retarget, append-flag change and
+pipe replacement. Four readers perform 32 revalidations each while the owned
+helper appends. FD parsing also checks a deterministic 256-inode range.
+
+A limitation regression deliberately renames stdout and creates a new file at
+its former name. The guard accepts the still-linked original object: pathname
+binding is not implemented by this inode observation. Nor does unchanged length
+prove unchanged content or append-only behavior by every writer. A truncate and
+regrow or exec/FD retarget-and-return between observations can remain invisible.
+
+The [retained local packet](local-runs/diagnostic-io-20261010/manifest.json) records
+the clean 15-test baseline, missing-API/compiler-renderer refusal, rejected
+buffered-helper preparation, contract refusal and Clippy-renderer failure.
+Final checks passed 200 Linux tests (one pre-existing ignored), three additional
+10-test IO repetitions, 28 portable Windows tests and 116 root tests. Post-review
+original-process/binding checks, scoped format, affected all-target check and
+all-feature lint, doc-check, local performance contract, links and mdbook passed.
+The full workspace milestone gate was not rerun for this narrow step. Logs are
+byte-hash guarded; captures are working-tree diagnostics, not clean-source
+qualification or installed observer execution receipts. No performance claim
+or admission follows, and the qualification manifest digest is unchanged.
