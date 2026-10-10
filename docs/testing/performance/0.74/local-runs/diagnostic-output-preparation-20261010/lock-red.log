@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 27.72s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_output_preparation::tests::fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor ... FAILED
+
+failures:
+
+---- diagnostic_output_preparation::tests::fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor stdout ----
+
+thread 'diagnostic_output_preparation::tests::fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor' (419) panicked at tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:568:9:
+close alone must not retain the cooperative lock
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_output_preparation::tests::fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 143 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

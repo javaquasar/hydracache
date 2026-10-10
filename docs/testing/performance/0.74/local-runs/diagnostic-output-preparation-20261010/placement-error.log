@@ -1,0 +1,86 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0063]: missing field `unlocked` in initializer of `diagnostic_output_preparation::Stamp`
+  --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:46:9
+   |
+46 | ...   Self {
+   |       ^^^^ missing `unlocked`
+
+error[E0560]: struct `FixtureFence` has no field named `unlocked`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:131:13
+    |
+131 | ...   unlocked: f...
+    |       ^^^^^^^^ `FixtureFence` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0609]: no field `unlocked` on type `FixtureFence`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:159:14
+    |
+159 | ...lf.unlocked = ...
+    |       ^^^^^^^^ unknown field
+    |
+help: some of the expressions' fields have a field of the same name
+    |
+159 |         self.lock_stamp.unlocked = true;
+    |              +++++++++++
+159 |         self.root.stamp.unlocked = true;
+    |              +++++++++++
+
+error[E0609]: no field `unlocked` on type `&mut ...`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:165:18
+    |
+165 | ...lf.unlocked {
+    |       ^^^^^^^^ unknown field
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-0af459e92a3ea86e.long-type-7301584243145474288.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: some of the expressions' fields have a field of the same name
+    |
+165 |         if !self.lock_stamp.unlocked {
+    |                  +++++++++++
+165 |         if !self.root.stamp.unlocked {
+    |                  +++++++++++
+
+error[E0560]: struct `diagnostic_output_preparation::FixtureFence` has no field named `unlocked`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:131:13
+    |
+131 | ...   unlocked: f...
+    |       ^^^^^^^^ `diagnostic_output_preparation::FixtureFence` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0609]: no field `unlocked` on type `FixtureFence`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:159:14
+    |
+159 | ...lf.unlocked = ...
+    |       ^^^^^^^^ unknown field
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-18415343249397783017.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: some of the expressions' fields have a field of the same name
+    |
+159 |         self.lock_stamp.unlocked = true;
+    |              +++++++++++
+159 |         self.root.stamp.unlocked = true;
+    |              +++++++++++
+
+error[E0609]: no field `unlocked` on type `&mut ...`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:165:18
+    |
+165 | ...lf.unlocked {
+    |       ^^^^^^^^ unknown field
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-10478491066514266412.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: some of the expressions' fields have a field of the same name
+    |
+165 |         if !self.lock_stamp.unlocked {
+    |                  +++++++++++
+165 |         if !self.root.stamp.unlocked {
+    |                  +++++++++++
+
+Some errors have detailed explanations: E0063, E0560, E0609.
+For more information about an error, try `rustc --explain E0063`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

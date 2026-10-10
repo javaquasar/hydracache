@@ -2161,3 +2161,23 @@ the earlier 156-test first green remain distinct from reviewed final coverage.
 Check/lint/format and documentation controls pass; full workspace milestone
 verification is not rerun. Ship admission refuses with observed native exit 1;
 the frozen qualification digest remains unchanged. Code is `e1dbae9e`.
+
+The [fenced output preparer](diagnostic-output-preparation-local-design.md)
+adds cooperative local fixture creation only. It requires the actual non-root
+effective UID/GID, private 0700 root, original host lock, exact Reserved state
+and asserted boot/controller/total deadlines. Fixed cell and 0600 stream names
+are created exclusively through retained directory descriptors and synced.
+Complete or partial cells refuse rather than overwrite, repair or replay.
+The result is a read-only fixture guard, never a production guard or stream FD.
+
+Explicit unlock covers retained duplicate descriptions; a deterministic
+cloned-descriptor red precedes the correction. Final coverage passes 172 Linux
+tests with one pre-existing ignored, three fourteen-test repetitions, 28 portable
+Windows tests and 121 root checks. The
+[packet](local-runs/diagnostic-output-preparation-20261010/manifest.json)
+retains initial failures separately, including Busy during fixture setup, the
+compiler renderer, field placement and strict lint. Its checks are local safety
+and byte-retention evidence, not positive production execution or performance.
+Production worker enrollment, root-owned preparation, signed lifecycle admission
+and uncertain-intent/watchdog integration remain closed. Frozen qualification
+inputs are unchanged; no server, observer or product workload is involved.

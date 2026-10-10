@@ -1,0 +1,15 @@
+   Compiling cc v1.2.65
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling rcgen v0.14.8
+   Compiling tokio-rustls v0.26.4
+   Compiling tonic v0.14.6
+   Compiling tonic-prost v0.14.6
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1m 52s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)

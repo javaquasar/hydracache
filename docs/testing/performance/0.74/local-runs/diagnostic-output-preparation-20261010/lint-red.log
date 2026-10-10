@@ -1,0 +1,19 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: all variants have the same prefix: `After`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:173:1
+    |
+173 | / enum...
+174 | |     ...
+175 | |     ...
+176 | |     ...
+177 | | }
+    | |_^
+    |
+    = help: remove the prefixes and use full paths to the variants instead of glob imports
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#enum_variant_names
+    = note: `-D clippy::enum-variant-names` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::enum_variant_names)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

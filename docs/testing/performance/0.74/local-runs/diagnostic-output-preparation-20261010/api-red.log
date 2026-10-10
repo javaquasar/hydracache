@@ -1,0 +1,166 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:74:28
+   |
+74 | ... = prepare_fixture_outputs(&f...
+   |       ^^^^^^^^^^^^^^^^^^^^^...in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:91:17
+   |
+91 | ...   prepare_fi...(&f...
+   |       ^^^^^^^^^^... not found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:111:21
+    |
+111 | ...t!(prepare_fixtu......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:121:21
+    |
+121 | ...t!(prepare_fixtu......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:126:9
+    |
+126 | ...   p...e_outputs(&f...
+    |       ^...^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:146:17
+    |
+146 | ...   prepare_f...s(&f...
+    |       ^^^^^^^^^...^ not found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:158:13
+    |
+158 | ...   prepa...tputs(&f...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationStage`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:164:25
+    |
+164 | ...== PreparationStage::A...
+    |       ^^^^^^^^^^^^^^^^ ... undeclared type `PreparationStage`
+
+error[E0425]: cannot find function `prepare_inner` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:163:9
+    |
+163 | ...   p...are_inner(&f...
+    |       ^...^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:183:27
+    |
+183 | ...ch prepare_fixture_outputs(&f...
+    |       ^^^^^^^^^^^^^^^^^^^...d in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationStage`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:205:14
+    |
+205 | ...  (Prepar...tage::A...
+    |       ^^^^^^...^^^^ use of undeclared type `PreparationStage`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationStage`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:206:14
+    |
+206 | ...  (Prepar...tage::A...
+    |       ^^^^^^...^^^^ use of undeclared type `PreparationStage`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationStage`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:207:14
+    |
+207 | ...  (Prepar...tage::A...
+    |       ^^^^^^...^^^^ use of undeclared type `PreparationStage`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:212:25
+    |
+212 | ...rr(PreparationError::I...
+    |       ^^^^^^^^^^^^^^^^ ... undeclared type `PreparationError`
+
+error[E0425]: cannot find function `prepare_inner` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:210:21
+    |
+210 | ...t!(prepare_inner......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:220:17
+    |
+220 | ...   prepare_f...s(&f...
+    |       ^^^^^^^^^...^ not found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:256:21
+    |
+256 | ...t!(prepare_fixtu......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationStage`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:267:29
+    |
+267 | ...== PreparationStage::A...
+    |       ^^^^^^^^^^^^^^^^ use ...eclared type `PreparationStage`
+
+error[E0425]: cannot find function `prepare_inner` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:266:21
+    |
+266 | ...t!(prepare_inner......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:294:25
+    |
+294 | ... = prepare_fixture_outputs(&f...
+    |       ^^^^^^^^^^^^^^^^^...und in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:315:21
+    |
+315 | ...t!(prepare_fixtu......
+    |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find function `prepare_fixture_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:319:17
+    |
+319 | ...t!(prepare_f...s(&a...
+    |       ^^^^^^^^^...^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+  --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:92:21
+   |
+92 | ...rr(PreparationErr.....
+   |       ^^^^^^^^^^^^^^... of undeclared type `PreparationError`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:159:17
+    |
+159 | ...rr(Preparati...r::B...
+    |       ^^^^^^^^^...^ use of undeclared type `PreparationError`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:221:21
+    |
+221 | ...rr(PreparationEr......
+    |       ^^^^^^^^^^^^^...e of undeclared type `PreparationError`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:185:29
+    |
+185 | ...rr(PreparationError::B...
+    |       ^^^^^^^^^^^^^^^^ use ...eclared type `PreparationError`
+
+error[E0433]: failed to resolve: use of undeclared type `PreparationError`
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:185:54
+    |
+185 | ... | PreparationError::C...
+    |       ^^^^^^^^^^^^^^^^ use of undeclared type `Prepa...Error`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 27 previous errors

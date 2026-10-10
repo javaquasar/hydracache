@@ -1,0 +1,42 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 16.45s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 13 tests
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-9812b2350634447c.exe)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+

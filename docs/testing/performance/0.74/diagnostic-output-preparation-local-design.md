@@ -38,6 +38,12 @@ Reject campaign markers, pending diagnostic/IPC documents and either fixed
 lifecycle fixture context. No revision, duration, heartbeat or controller state
 is changed. Boot and clock arguments remain fixture assertions.
 
+Release the lock explicitly before returning success, propagating an unlock
+error. Error paths also attempt an explicit unlock during Drop. Closing one
+descriptor alone is insufficient when another descriptor retains the same open
+file description. A deterministic cloned-descriptor test covers this without
+forking a test process; it is not a production inherited-FD audit.
+
 ## Exclusive preparation and failure
 
 Only fixed paths `diagnostic-fixture-outputs/<lease>/<surface>/stdout.json` and
@@ -68,3 +74,25 @@ authorization, authenticated worker enrollment or production ownership transfer.
 There is no persistent preparation receipt/schema or admission flag. Production
 preparation requires a separate root-owned capability and enrolled worker policy;
 no install, process, systemd, server, observer or qualification route is enabled.
+
+## Local result
+
+The [retained packet](local-runs/diagnostic-output-preparation-20261010/manifest.json)
+keeps the complete 158-pass Linux baseline before test addition. The initial
+missing-API attempt also triggered the rustc diagnostic renderer; the formatted
+repeat refused on 27 missing-API errors without that renderer panic. Ten initial
+behavior tests passed. The first broader parallel run refused with Busy in
+fixture coordinator setup; its precise scheduling cause was not traced.
+
+A separate cloned-descriptor regression failed deterministically before explicit
+unlock. The corrected fixture uses the retained fence for reservation too, with
+no retry of Busy and no change to the existing coordinator or qualification
+tooling. An accidental field placement compile failure and an enum-name strict
+lint refusal are retained separately rather than labelled expected safety reds.
+
+Final coverage passes 172 Linux tests, one pre-existing ignored and three further
+fourteen-test repetitions. Portable Windows coverage passes 28, with zero Linux
+preparation tests. Root contracts/evidence/governance pass 121 checks before
+packet registration; packet registration receives its own skeleton check.
+Affected checks, strict lint and scoped format use 1.94.0. No full workspace
+milestone verification or performance workload is claimed.

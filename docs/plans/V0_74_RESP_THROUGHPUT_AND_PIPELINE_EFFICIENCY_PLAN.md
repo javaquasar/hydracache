@@ -1068,6 +1068,16 @@ remain synthetic and fixture-origin refusals do not certify production execution
 Worker enrollment, fenced preparation and controlled positive rehearsal remain
 before backend activation. Qualification inputs and thresholds are unchanged.
 
+The [fenced fixture output preparer](../testing/performance/0.74/diagnostic-output-preparation-local-design.md)
+now exercises the shared host lock, exact Reserved state, asserted clock guards
+and exclusive descriptor-relative cell/stream creation locally. Explicit unlock
+handles retained duplicate descriptions; complete and partial cells refuse
+without overwrite or replay. Kernel effective UID/GID checks identify the fixture
+owner, not the production `hydracache-perf` account. Root-owned production
+preparation, authenticated worker enrollment, signed original start and uncertain
+intent/watchdog integration remain prerequisites. This fixture API opens no live
+route or numerical admission and does not alter frozen qualification inputs.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

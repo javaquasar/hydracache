@@ -1,0 +1,187 @@
+{
+  "schema_version": "diagnostic-output-preparation-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "ba3b2fc48d0acb05dd81a3dc82576e056967d54b",
+  "preregistration_commit": "478ae2a2d682eff0ab090a79d5cff2aad8c9f0f5",
+  "implementation_commit": "81b1051b28470085370170ec64d856568cb8ebce",
+  "implementation_tree": "504d560d8ef3948a03a38d11dbae10faa9933c5d",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur effective UID/GID 1000",
+  "checks": {
+    "baseline_linux_passed": 158,
+    "first_green_new_tests": 10,
+    "new_linux_tests": 14,
+    "final_linux_passed": 172,
+    "preexisting_linux_ignored": 1,
+    "final_repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_preparation_tests_executed": 0,
+    "root_passed_before_packet_registration": 121,
+    "post_evidence_registry": true,
+    "ship_expected_red_native_exit": 1,
+    "full_workspace_verify_rerun": false
+  },
+  "negative_results": {
+    "compiler_renderer_red": "Missing API attempt also panicked in rustc diagnostics; not a pure API red. Formatted repeat produced 27 missing API errors without that panic.",
+    "parallel_initial_failure": "141 library passes, 1 failure, 1 ignored; fixture coordinator state read returned Host(Busy), artifact suite not executed. Precise scheduling cause not traced.",
+    "lock_red": "Deterministic cloned descriptor retained shared-description lock after close alone. Explicit unlock corrected this; no fork or automatic retry.",
+    "placement_error": "Implementation edit accidentally placed unlocked field in Stamp; compilation failed. Corrected field belongs to FixtureFence.",
+    "lint_red": "Strict lint rejected repeated After enum prefix. Variants renamed without lint relaxation."
+  },
+  "root_phase": "contract and source/test registration complete; evidence packet registration follows",
+  "proof_boundaries": {
+    "production_preparation": false,
+    "worker_account_authentication": false,
+    "signed_start_authorization": false,
+    "positive_production_execution": false,
+    "atomic_namespace_snapshot": false,
+    "power_loss_recovery": false,
+    "whole_operation_deadline": false,
+    "host_or_systemd_mutation": false,
+    "observer_or_product_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "retention": {
+    "log_count": 27,
+    "files": [
+      {
+        "name": "api-red.log",
+        "bytes": 7162,
+        "sha256": "7f795995b57943a9f5e5db4679a52b2dda12ffb2c3686cb3e8aa0cd60ea70f66"
+      },
+      {
+        "name": "baseline.log",
+        "bytes": 15956,
+        "sha256": "447c264480bff76d48e5d2ecf08500f0d982e1f72a1b041e150486fdd66e763c"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "check.log",
+        "bytes": 280,
+        "sha256": "f4171351f73cc7492b01592ad15bb7991984b8963382397acf1d6ad1e59a16bc"
+      },
+      {
+        "name": "compiler-renderer-red.log",
+        "bytes": 11240,
+        "sha256": "6b1950fc3facbb46330d3ce0289cbf2282613ea28aec9803464dcb7a40df2d43"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 203,
+        "sha256": "2c0cfe6a50b9e69fe906fce073391428b5d5342c9dc3bbaabfea6a4cb7b823fb"
+      },
+      {
+        "name": "doc-final.log",
+        "bytes": 442,
+        "sha256": "b1eeab80f2aad3b92b306f9255e28ec66609b7c0555203f0d7b6859d03124a15"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 844,
+        "sha256": "4840a8c992da1e21dd36f00be26e4142866816cddfcbb898db57680ad098549e"
+      },
+      {
+        "name": "final-check.log",
+        "bytes": 280,
+        "sha256": "73beab4b51a91a0e1906423fe831ad553b03a26261dea9cc3a85b17eba91617a"
+      },
+      {
+        "name": "final-lint.log",
+        "bytes": 280,
+        "sha256": "f5bf7b772548e8006979d1192d0aba154d177a7639ffdbe4748c773ed970c48c"
+      },
+      {
+        "name": "final-repeats.log",
+        "bytes": 5886,
+        "sha256": "0acfb655df6b16dca4bea343d2cbffb96c07ba219a808ef4f7bb4da2f24b69fc"
+      },
+      {
+        "name": "final.log",
+        "bytes": 17719,
+        "sha256": "e48230b847ae85040e3f5feecccabbcf79f42dce9277a45bdc66c85368d3712f"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1610,
+        "sha256": "3fe6795b849c1dee0b33072ef09963d02d041592456f69c348fb3058ec6395a7"
+      },
+      {
+        "name": "format.log",
+        "bytes": 17,
+        "sha256": "8d5197f60c1417da92a5d1a1a9477b857eecfd67e84bd39731d8218dc083a142"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "lint-red.log",
+        "bytes": 972,
+        "sha256": "4da654338dba3c90e837caa0277f1645e9b602c9a189c061d17423d6478ae852"
+      },
+      {
+        "name": "lock-red.log",
+        "bytes": 1260,
+        "sha256": "100180f643d6b2687d6e31039ef930d3c7005dfdee5e25af9b40e05143cddacd"
+      },
+      {
+        "name": "parallel-initial-failure.log",
+        "bytes": 15684,
+        "sha256": "96fc8bee9c66c7f5e4d3ef9815fed0eb32d0da5ca30038dac88c2d32b0dff0ec"
+      },
+      {
+        "name": "placement-error.log",
+        "bytes": 4053,
+        "sha256": "f384d202e2e166238784596b54037a5010b0010433b7b2e386a6490f454b0a90"
+      },
+      {
+        "name": "post-evidence.log",
+        "bytes": 439,
+        "sha256": "21de711d8c7aba02ccfbd3c0862b8a77e2ebb19792dd065258c89be992f36835"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 5886,
+        "sha256": "30f37b8f32198d9cfc2c710b110b04376424a89fc14f4ecad17c2b2ef0ca766d"
+      },
+      {
+        "name": "reviewed.log",
+        "bytes": 17719,
+        "sha256": "12f6b4b25bc6693fb2b96d335d5b65f722a9b1f3dd7d960a558e9a4acc572bed"
+      },
+      {
+        "name": "root.log",
+        "bytes": 19551,
+        "sha256": "308583fa572f01e8870414df24f8f5ac511c61c1282837ca2dc4a5abe8f58810"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 487,
+        "sha256": "5182c0f361c6e240f1d3375b4377e29bf083bcb028d4ab38855cd6309cd819f1"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 191,
+        "sha256": "6aefe8975406f65f462357db501bff426f2fb94947b1d52efacedac70970cc33"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 191,
+        "sha256": "f7d57945258d35963d02d8251609a52d14c72ad1717c7e667b67c33e44c1c3ab"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 2998,
+        "sha256": "19925999304ae2f033b58f5e941e8d3ce711adca06934a41b04a5f1cc1bf78e3"
+      }
+    ]
+  }
+}

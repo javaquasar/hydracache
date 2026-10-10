@@ -5164,3 +5164,59 @@ affected check/lint/format and documentation controls pass. Every invocation use
 labelled. These are working-tree safety observations and retention checks, not
 clean-source qualification, positive unit execution or performance measurements.
 Ship admission stays closed and the frozen qualification digest is unchanged.
+
+### Output preparation must preserve the host fence
+
+Read-only output inspection cannot safely stand in for preparation. The next
+hypothesis concerns cooperative exclusion: compare the exact reserved cell and
+prepare its fixed names while retaining the same host lock used by the campaign
+and diagnostic coordinators. Production preparation additionally needs enrolled
+worker ownership and a root-owned directory capability, so the
+[local preparer](../testing/performance/0.74/diagnostic-output-preparation-local-design.md)
+deliberately remains a separate temporary fixture API.
+
+The fixture uses the actual non-root effective UID and GID, not numeric caller
+assertions or a lookup of `hydracache-perf`. It checks its private 0700 root,
+retains the existing no-follow lock object and creates descendants relative to
+retained directory descriptors. Exact persisted state, Reserved stage and
+asserted boot/monotonic deadlines are checked under the fence. Campaign markers,
+both lifecycle contexts and pending diagnostic or IPC documents refuse before
+cell preparation. No heartbeat, state revision or frozen workload changes.
+
+Each cell must be new. Its only streams are empty, exclusive-created 0600
+`stdout.json` and `stderr.log`; streams and directory entries are synced before
+success. Reusable output/lease parents remain private, while existing complete
+or partial cells refuse. The API neither removes nor truncates them and returns
+only the existing read-only fixture output guard. Failure after cell creation
+therefore leaves visible uncertainty rather than silently repeating preparation.
+
+The first broad parallel test run found a Busy refusal during fixture state
+setup. A separate deterministic test exposed a concrete lock-lifetime issue:
+closing the parent descriptor does not release an advisory lock when a duplicate
+of its open file description remains. The test retained a cloned descriptor and
+failed before the correction, without forking or starting a workload. The new
+fence explicitly unlocks before successful return and propagates that error;
+error exits also attempt unlock during Drop. Fixture reservation now uses the
+same retained fence rather than relying on a close-only handoff. This explains
+the corrected mechanism, not an independently traced cause of the earlier
+parallel scheduling event. No automatic retry or relaxed Busy assertion was added.
+
+The [preparation packet](../testing/performance/0.74/local-runs/diagnostic-output-preparation-20261010/manifest.json)
+separates the 158-test baseline, ten-test first green, initial parallel failure,
+cloned-descriptor red and subsequent correction. Final Linux coverage passes
+172 tests with one pre-existing ignored; all fourteen new tests pass three
+additional repetitions. Eight concurrent preparers create exactly one cell.
+Faults after the cell and either stream preserve partial files and refuse replay;
+root, lock, output-parent, lease and cell replacement refuse further writes.
+The total-deadline test retains a fresh controller heartbeat so that one timeout
+cannot accidentally mask the other. Windows passes 28 portable tests, not Linux
+preparation tests; root contract/evidence/governance coverage passes 121 checks.
+
+The useful result is an explicit cooperative fence and exclusive preparation
+boundary with retained failure state. It is not production ancestry, worker
+account authentication, signed start authorization, power-loss recovery or an
+atomic namespace snapshot. The compiler-renderer failure, accidental field
+placement error and strict-lint refusal are retained alongside corrected checks.
+Production preparation, original-start authentication, watchdog and uncertain
+intent reconciliation still precede a controlled positive rehearsal. These tests
+do not measure allocations, throughput or qualification performance.
