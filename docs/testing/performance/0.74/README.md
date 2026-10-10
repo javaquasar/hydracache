@@ -2325,3 +2325,14 @@ names and metadata remain pinned through two rounds; failure refuses the borrowe
 original policy after wrapper drop. Temporary ownership tests use a distinct
 fixture type and do not certify production ancestry. Caller-asserted context is
 still not kernel host/boot/user/mount enforcement; preparation/start remain closed.
+
+The [observed Linux context guard](diagnostic-worker-context-local-design.md)
+now compares fixed machine/boot documents and separately typed nsfs user/mount
+objects with the original signed pins. It retains original paths/descriptors,
+requires the original reading thread and brackets document reads with namespace
+checks. Failures latch the borrowed policy through wrapper drop; observations
+cannot select trust pins or return a production capability. Local positives use
+actual unprivileged Linux context under synthetic test issuers, not real operator
+enrollment. Account-file/credential composition, durable external epoch/refusal,
+all-thread proof and authenticated start remain separate; preparation/start and
+qualification remain closed.

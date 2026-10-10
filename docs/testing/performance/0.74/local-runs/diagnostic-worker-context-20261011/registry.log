@@ -1,0 +1,9 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 3.72s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-4088f809c28dc3bc.exe)
+
+running 1 test
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 93 filtered out; finished in 15.49s
+

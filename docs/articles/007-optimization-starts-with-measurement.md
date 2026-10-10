@@ -5617,3 +5617,54 @@ explicit Linux-target registration. No gate or qualification threshold was
 weakened. These findings improve test reproducibility and enrollment coverage,
 not product allocations or throughput. Fixed production inspection and actual
 admitted-context enforcement are still not established by temporary fixtures.
+
+## Observed Linux context compared with signed policy pins
+
+The [context guard](../testing/performance/0.74/diagnostic-worker-context-local-design.md)
+tests a narrower safety hypothesis than production host enrollment: a valid
+signature and matching caller assertions must still refuse when actual identity
+documents or namespaces differ. The new reader compares `/etc/machine-id` and
+procfs boot ID with the original signed values. It validates user and mount
+handles separately as nsfs objects of the expected kernel types; a mount
+namespace cannot substitute for a user namespace even with valid signed bytes.
+Issuer key, body digest and epoch remain external expectations. The observation
+API has no mechanism for choosing new trusted pins from what it finds.
+
+Fixed names are opened read-only through retained descriptors with safe root
+ownership, no symlink traversal except deliberate proc magic links, and explicit
+filesystem checks. Machine and boot documents have exact 33/37-byte bounds,
+including LF. Short, interrupted, extra-byte or changed-metadata reads refuse
+without retry. Namespace checks bracket document opening and two later read
+rounds; freshly resolved names and retained objects must still agree. The reader
+neither exports those objects nor upgrades an old numeric/account guard.
+
+Reading-thread identity matters independently of namespace equality. The guard
+records the original thread ID and is neither Send nor Sync: a different thread
+cannot inherit the observation simply because it currently shares namespaces.
+Failure permanently refuses the borrowed original policy, including after the
+wrapper is dropped or original descriptors are restored. External trust changes
+are checked first, so a broken observation cannot hide revocation behind an IO
+error. Successful drop leaves a healthy original policy available.
+
+Actual local Linux positives use synthetic test issuer pins, not enrolled
+operator keys. The result is sequential context consistency, not physical-host
+attestation, an initial-host namespace proof, all-thread authority or a continuous
+snapshot. Root ownership is interpreted inside the observed user namespace;
+device/inode expectations require the externally approved boot. Regular-file IO
+has no deadline proof and privileged writer revocation is unchanged. Durable
+epoch/refusal, account-file/credential composition and authenticated original
+start remain separate prerequisites. This safety change makes no cache allocation
+or throughput claim and opens no production preparation, workload or ship route.
+
+The [retained context packet](../testing/performance/0.74/local-runs/diagnostic-worker-context-20261011/manifest.json)
+records 295 passing Linux tests with one existing system-bus case ignored, 43
+Windows regressions and 130 root contracts/evidence/governance checks. Five new
+integration and seven unit tests pass three additional repetitions. Seed
+`0x7542026` exercises 64 well-formed re-signed foreign namespace values per run;
+the new live comparison refuses every one after policy-byte verification accepts
+them. Wrong namespace types, changed original descriptors/thread, short reads,
+metadata growth and restoration are also covered. Check, strict lint, format
+and documentation pass; the qualification pin and closed ship gate are unchanged.
+The hypothesis is supported at this local safety boundary, not at production
+enrollment. The next step must compose context with account-file opening and
+kernel credentials; independent readers used in sequence cannot supply that proof.

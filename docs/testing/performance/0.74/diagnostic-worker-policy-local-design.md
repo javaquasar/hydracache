@@ -111,3 +111,9 @@ borrows this checked policy under the same current trust/envelope/context gates.
 It adds separate Linux file consistency without changing the signed schemas or
 turning asserted context into live host proof. The policy-byte results above are
 the historical first slice; real issuer/context/start enrollment remains closed.
+
+The later [observed Linux context guard](diagnostic-worker-context-local-design.md)
+compares actual fixed identity documents and typed reading-thread namespaces
+with those original expectations. It does not alter this verifier's assertion
+API, choose external trust pins or turn local observations into initial-host
+authority. Composition with account files and credentials remains separate.

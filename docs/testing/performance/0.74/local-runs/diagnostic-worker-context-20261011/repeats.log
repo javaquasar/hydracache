@@ -1,0 +1,81 @@
+    Finished `test` profile [unoptimized] target(s) in 3.71s
+     Running tests/diagnostic_worker_context.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_context-c5231e98024dbf30)
+
+running 5 tests
+worker context mutation seed=0x7542026
+test worker_context_trust_and_envelope_failure_latch_through_drop ... ok
+test worker_context_independent_concurrent_readers_keep_thread_local_refusal ... ok
+test worker_context_actual_reader_roundtrip_keeps_original_policy_healthy ... ok
+test worker_context_valid_resigned_foreign_context_refuses_original_policy ... ok
+test worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.71s
+
+    Finished `test` profile [unoptimized] target(s) in 2.42s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 7 tests
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.16s
+
+    Finished `test` profile [unoptimized] target(s) in 2.27s
+     Running tests/diagnostic_worker_context.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_context-c5231e98024dbf30)
+
+running 5 tests
+worker context mutation seed=0x7542026
+test worker_context_trust_and_envelope_failure_latch_through_drop ... ok
+test worker_context_independent_concurrent_readers_keep_thread_local_refusal ... ok
+test worker_context_valid_resigned_foreign_context_refuses_original_policy ... ok
+test worker_context_actual_reader_roundtrip_keeps_original_policy_healthy ... ok
+test worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+    Finished `test` profile [unoptimized] target(s) in 2.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 7 tests
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.14s
+
+    Finished `test` profile [unoptimized] target(s) in 3.21s
+     Running tests/diagnostic_worker_context.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_context-c5231e98024dbf30)
+
+running 5 tests
+worker context mutation seed=0x7542026
+test worker_context_trust_and_envelope_failure_latch_through_drop ... ok
+test worker_context_independent_concurrent_readers_keep_thread_local_refusal ... ok
+test worker_context_actual_reader_roundtrip_keeps_original_policy_healthy ... ok
+test worker_context_valid_resigned_foreign_context_refuses_original_policy ... ok
+test worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.67s
+
+    Finished `test` profile [unoptimized] target(s) in 4.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 7 tests
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.15s
+

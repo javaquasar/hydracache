@@ -94,3 +94,10 @@ These are working-tree local safety gates, not full-workspace or release
 qualification. No positive production ancestry/context, real issuer enrollment,
 host mutation or performance result is established. Next: observe and enforce
 actual admitted kernel/host context before composing this reader with credentials.
+
+The subsequent [observed Linux context guard](diagnostic-worker-context-local-design.md)
+adds a separate read-only comparison of real machine/boot and typed user/mount
+namespace observations against the original policy. This account reader still
+accepts assertions; sequentially dropping one wrapper and constructing another
+is not an atomic context/account/credential join. That composition is the next
+prerequisite, with production preparation and start still closed.

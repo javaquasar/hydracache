@@ -1,0 +1,180 @@
+{
+  "schema_version": "diagnostic-worker-context-local-evidence-074-v1",
+  "state": "retained-local-observed-context-not-host-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "2a27e34ebf8c13ede7b8a2cdac146edfc4fbedee",
+  "preregistered_design_commit": "68954c01287cd6b1c7e810b7b8849945943a9ba6",
+  "implementation_commit": "f861e460137d6a35ba2dc519310d4796f79aefdd",
+  "implementation_tree": "c7479506f3fffe70ffc3de0a92196e68652d2ae7",
+  "source_scope": "Implementation and working-tree documentation/evidence. Scoped local gates are not clean-source qualification.",
+  "toolchain": "1.94.0",
+  "fixtures": "Actual unprivileged WSL/Linux fixed identity observations under synthetic issuer pins; private owned-file fault fixtures. No real issuer or host enrollment.",
+  "seed": "0x7542026",
+  "valid_mutations_per_seeded_run": 64,
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "windows_new_linux_target_tests": 0,
+    "first_green_integration_passed": 5,
+    "linux_final_passed": 295,
+    "linux_existing_ignored": 1,
+    "new_integration_tests": 5,
+    "new_unit_tests": 7,
+    "additional_linux_repetitions": 3,
+    "root_final_passed": 130,
+    "linux_new_root_guard_passed": 1
+  },
+  "retained_negatives": [
+    "Missing local_context API before implementation gives ordinary E0432 under short diagnostics; WSL wrapper exit 1.",
+    "Re-signed valid foreign context values verify as policy bytes but actual observation refuses them and latches the original.",
+    "Short/overrun/EINTR/mid-read-growth, wrong namespace types, substituted original descriptors and thread mismatch refuse; restoration cannot clear refusal.",
+    "require-ship remains closed with native exit 1."
+  ],
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+      "name": "worker_context_actual_reader_roundtrip_keeps_original_policy_healthy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+      "name": "worker_context_valid_resigned_foreign_context_refuses_original_policy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+      "name": "worker_context_trust_and_envelope_failure_latch_through_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+      "name": "worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs",
+      "name": "worker_context_independent_concurrent_readers_keep_thread_local_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_guard_cannot_be_sent_or_shared"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_namespace_descriptors_are_typed_readonly_cloexec"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_original_descriptor_and_thread_restoration_stay_refused"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_policy_failure_precedes_broken_probe_io"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_single_read_refuses_short_overrun_error_and_midread_growth"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_fixed_security_and_nofollow_refuse_owned_fixtures"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs",
+      "name": "worker_context_original_directory_and_named_document_objects_are_not_refreshed"
+    }
+  ],
+  "new_root_guard": "diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_start",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "real_issuer_enrollment": false,
+    "physical_host_attestation": false,
+    "initial_host_namespace_proved": false,
+    "atomic_cross_file_snapshot": false,
+    "continuous_context_or_writer_revocation": false,
+    "regular_file_io_deadline": false,
+    "all_threads_proved": false,
+    "durable_epoch_or_refusal_registry": false,
+    "context_account_credential_composition": false,
+    "production_preparation": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_measurement": false,
+    "qualification": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "api-red.log": {
+      "bytes": 496,
+      "sha256": "c122d51155ebb1b81e8c3915c13105b976a95f295e89d222d0aa476afb322398"
+    },
+    "baseline.log": {
+      "bytes": 4366,
+      "sha256": "b7f5c296448856984ab1e0125b77871361d775f29114678a00b8c5bd222dcc2a"
+    },
+    "docs.log": {
+      "bytes": 662,
+      "sha256": "c23cc3afa397fe3914d6641eeb873326743e6d9f030d715e804fc8afb43a8159"
+    },
+    "first-green.log": {
+      "bytes": 908,
+      "sha256": "8c31bb8fbfee80921b4b333a00cfcdd74b98d75da385c1b6dce4c2ed48fa3293"
+    },
+    "format.log": {
+      "bytes": 30,
+      "sha256": "2803b5b23718022bc026f93ea4bcb725efab1d10ebaa976db015c85db25bafcf"
+    },
+    "isolation.log": {
+      "bytes": 206,
+      "sha256": "847568148cead07ffffb439ec19fb965f552fb03801ce3b254d025c6fa7b2f1b"
+    },
+    "linux-check.log": {
+      "bytes": 280,
+      "sha256": "3bc90eb806788e4137a03aca51f305cf63152b288906bcccf74d44628ed9e73c"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "1a79e45dd7d0a0ede4e9224a67f54784a781f06d3c74ce22b0abbfec698c8eb3"
+    },
+    "linux-root.log": {
+      "bytes": 644,
+      "sha256": "8b17d579096e6bd7be3b536bba12461b23c5d0df0dba7a7d705353c21cfe3b5c"
+    },
+    "linux.log": {
+      "bytes": 32798,
+      "sha256": "b41937bc93b4ee6fd76a19609ea7faf147618f7953821223e25e6d31946d3fa2"
+    },
+    "repeats.log": {
+      "bytes": 5937,
+      "sha256": "da890284bcebcfbf8ccb6dc8f1713bfa82a5fcbb72adcc0ac7edc2ec88a8de72"
+    },
+    "root.log": {
+      "bytes": 11369,
+      "sha256": "d68f228a877c7ee52b61539ea782acf897cc7c0273b671a44d7c6dadf0240527"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "efc7c6196dbd3587ba93d272abbcdd85c2c9fd698b81ff6ac5f6a0b27328a1e6"
+    },
+    "windows-check.log": {
+      "bytes": 275,
+      "sha256": "dbe14dcb8c6270e201e4df493a7ce339afa80f0de3be8672f8696ff607fa9edc"
+    },
+    "windows-lint.log": {
+      "bytes": 275,
+      "sha256": "f3496b5da88d0551dbe7d9fc9271e85869d66c73faba79ca917361a947f14038"
+    },
+    "windows.log": {
+      "bytes": 4830,
+      "sha256": "c78da2e2661c168b5680f1da3477a14c97a94ad62b01ca91c56cac60642aa720"
+    },
+    "docs-final.log": {
+      "bytes": 662,
+      "sha256": "b7a44edd0a7f850b65050a3dba504a530bb51ff82ecb219d69edb930f5a29249"
+    },
+    "registry.log": {
+      "bytes": 439,
+      "sha256": "7848a1003ecd04ab4e03100fa193468de8553b15a3a7beb2e206a951f15c961e"
+    }
+  }
+}

@@ -57,3 +57,36 @@ and Windows regressions, affected check/lint, root evidence/governance contracts
 format, doc/local performance contract, links/book and expected-red require-ship.
 Retain immutable raw logs and frozen qualification input identity. No workload,
 server mutation, performance claim or production capability follows this guard.
+
+## Implemented guard and retained results
+
+Implementation `f861e460137d6a35ba2dc519310d4796f79aefdd` adds the Linux
+`local_context` child with a privately constructed borrowed `WorkerContextRead`.
+Only refusal status and revalidation are exported. Existing policy schemas and
+assertion APIs stay intact, as do account-file, NSS, numeric, namespace and
+production paths. Opening, named-object comparison, typed namespace checks and
+sticky policy refusal follow the preregistered sequence.
+
+The [packet](local-runs/diagnostic-worker-context-20261011/manifest.json) retains
+the 43-pass Windows baseline and missing-API E0432 before implementation.
+First green passes five integration tests. Final Linux passes 295 (230 library,
+29 artifacts, 2 manager, 3 account, 5 context, 13 files and 13 policy), with one
+existing system-bus test ignored. Windows passes 43 portable cases; root contracts,
+evidence and governance pass 130. The new root contract also passes on Linux.
+All five integration and seven unit cases pass three further repetitions.
+Seed `0x7542026` checks 64 valid re-signed namespace mutations per run: byte
+verification succeeds under synthetic pins, actual context observation refuses.
+
+Wrong namespace types, original descriptor/thread substitution, short/overrun/
+interrupted reads, mid-read growth, unsafe owned fixtures and named-object
+replacement refuse. Original restoration never clears a latched policy. A
+compile-time test checks both negative Send and Sync properties. Scoped package
+check/strict lint, format and documentation gates pass; require-ship remains
+expected native exit 1. No test mutates real identity documents or namespaces.
+The frozen qualification digest remains unchanged. These are local safety gates,
+not full-workspace qualification, real issuer enrollment or performance data.
+
+Next: open account files inside this original context and compose their mapping
+with namespace-checked kernel credentials, preserving all original refusals.
+Dropping independent readers in sequence is not that composition. Durable
+external authority and authenticated lifecycle activation remain separate.

@@ -1,0 +1,151 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 29.80s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-4088f809c28dc3bc.exe)
+
+running 94 tests
+test diagnostic_live_identity_composition_keeps_lifecycle_and_admission_closed ... ok
+test diagnostic_asserted_worker_binding_keeps_trusted_policy_and_start_closed ... ok
+test diagnostic_fixture_preparation_keeps_production_and_launch_closed ... ok
+test diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed ... ok
+test diagnostic_fixed_account_lookup_keeps_trusted_enrollment_and_launch_closed ... ok
+test diagnostic_namespace_worker_binding_keeps_original_mapping_and_trusted_policy_closed ... ok
+test checked_in_w0_contract_is_valid_and_non_promotable ... ok
+test diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_start ... ok
+test diagnostic_user_namespace_keeps_host_enrollment_and_credential_view_closed ... ok
+test diagnostic_worker_files_preserve_fixed_names_original_policy_and_closed_start ... ok
+test diagnostic_live_execution_composition_keeps_enrollment_and_admission_closed ... ok
+test diagnostic_namespace_credentials_keep_sequential_opening_and_admission_closed ... ok
+test embedded_scheduled_control_is_independent_public_api_not_a_b0_retry ... ok
+test get_response_owner_d2_preserves_one_hypothesis_and_future_guards ... ok
+test diagnostic_worker_policy_keeps_asserted_context_and_production_closed ... ok
+test get_response_owner_d3a_is_finite_isolated_and_cannot_admit_a_candidate ... ok
+test diagnostic_process_binding_cannot_signal_recapture_or_release_host ... ok
+test bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations ... ok
+test loaded_diagnostic_settings_projection_keeps_execution_closed ... ok
+test independent_native_batches_preserve_denominators_and_expose_hc2_semantic_difference ... ok
+test get_owner_phase_b0_separates_unprofiled_timing_without_waiving_full_d3 ... ok
+test diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution ... ok
+test host_observation_workflow_is_read_only_fixed_scope_and_socket_bound ... ok
+test local_harness_freezes_placement_abba_and_noise_policy ... ok
+test get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enrolled_in_ci ... ok
+test local_diagnostic_ipc_keeps_production_and_numerical_admission_closed ... ok
+test matched_receipt_is_accepted ... ok
+test missing_outcomes_final_sample_and_nonfinite_metric_are_rejected ... ok
+test local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0 ... ok
+test named_fixture_outputs_keep_production_preparation_and_execution_closed ... ok
+test observer_hosted_ci_is_only_semantics_and_never_a_product_campaign ... ok
+test original_process_io_binding_keeps_start_and_pathname_proof_closed ... ok
+test pooled_or_missing_native_surface_is_rejected ... ok
+test proc_documents_use_one_bounded_read_without_retry_or_parser_relaxation ... ok
+test local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution ... ok
+test proposal_admission_requires_w1_attribution_and_evidence ... ok
+test published_b73_requires_exact_tag_archive_and_runtime_relationship ... ok
+test redis_tool_mismatch_and_mixed_binary_are_rejected ... ok
+test release_admission_expected_red_canary ... ok
+test non_product_start_bundle_workflow_is_observation_bound_and_does_not_start ... ok
+test production_output_inspection_keeps_preparation_and_worker_enrollment_closed ... ok
+test reordered_blocks_and_candidate_thresholds_are_rejected ... ok
+test local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed ... ok
+test resp_mtls_extension_is_opt_in_auth_bound_and_non_promotable ... ok
+test resp_security_audit_preserves_mtls_gap_without_lowering_comparison_guard ... ok
+test local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof ... ok
+test response_reduction_d1_is_separate_bounded_and_cannot_authorize_a_candidate ... ok
+test resp3_controls_require_hello_without_waiving_security_or_numeric_guards ... ok
+test scheduled_multikey_controls_preserve_command_denominators_and_product_limits ... ok
+test scheduled_resp_connections_keep_local_order_and_do_not_admit_product_changes ... ok
+test scheduled_resp_fifo_and_high_concurrency_controls_do_not_claim_performance ... ok
+test rental_preflight_and_pilot_draft_never_open_numerical_or_host_admission ... ok
+test rental_pilot_preparation_cannot_bypass_supervisor_or_authorize_execution ... ok
+test long_run_controller_workflow_is_manual_serialized_and_signs_off_host ... ok
+test scheduled_native_controls_preserve_offers_without_admitting_full_d3 ... ok
+test socket_boundary_attribution_keeps_local_product_work_admitted ... ok
+test trace_workload_security_and_persistence_drift_are_rejected ... ok
+test unmatched_surface_trace_and_three_percent_native_regression_are_rejected ... ok
+test secure_observer_and_memory_lane_do_not_admit_timing_or_allocator_retention ... ok
+test enrolled_public_builder_policy_keeps_execution_admission_closed ... ok
+test w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal ... ok
+test w11_host_capability_probe_is_read_only_and_serialized ... ok
+test unprofiled_timing_instrumentation_preserves_closed_cohort_and_memory_admission ... ok
+test w11_host_observation_evidence_is_exact_non_mutating_and_non_promotable ... ok
+test w11_linux_fixture_harness_cli_is_platform_gated ... ok
+test w11_live_role_reboot_is_fail_closed_and_non_promotable ... ok
+test w11_lease_expiry_host_rehearsal_is_exact_and_non_promotable ... ok
+test separate_diagnostic_builder_does_not_enroll_host_execution ... ok
+test w11_non_product_role_rehearsal_is_complete_but_role_budget_stays_closed ... ok
+test w11_schema_hashes_and_local_completion_flags_are_exact ... ok
+test w12_internal_workspace_tools_inherit_reviewed_license ... ok
+test secure_memory_packet_retains_all_attempts_without_allocator_or_timing_admission ... ok
+test w12_ordinary_ci_preserves_explicit_infrastructure_boundary ... ok
+test w12_release_admission_contract_is_fail_closed ... ok
+test w12_release_note_retains_draft_claim_rollback_and_gate_boundaries ... ok
+test w12_workspace_fast_gate_covers_every_work_item_without_budget_drift ... ok
+test w12_live_registries_preserve_frozen_baseline_inputs ... ok
+test response_reduction_d1_retains_exact_packet_without_reopening_rejected_scratch ... ok
+test w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds ... ok
+test w2_through_w9_terminal_dispositions_are_exact_and_non_promotable ... ok
+test w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate ... ok
+test w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes ... ok
+test w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers ... ok
+test w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates ... ok
+test w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates ... ok
+test w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained ... ok
+test w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable ... ok
+test w9e_allocator_attribution_is_linux_only_complete_and_non_promotable ... ok
+test unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch ... ok
+test timing_instrumentation_receipts_bind_raw_logs_without_admitting_a_cohort ... ok
+test w9b_owner_receipts_preserve_all_registered_cells_without_product_claims ... ok
+test get_response_owner_d3a_retains_all_raw_hashes_without_acceptance ... ok
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+test w12_generic_evidence_report_retains_closed_ship_admission ... ok
+
+test result: ok. 94 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.74s
+
+     Running tests\release_evidence.rs (target\debug\deps\release_evidence-911f8eddc24064ca.exe)
+
+running 13 tests
+test active_ship_blocker_artifact_is_preserved_by_the_manifest_schema ... ok
+test fast_receipts_reject_one_millisecond_over_the_unchanged_cadence_budget ... ok
+test release_evidence_rejects_dirty_receipts_and_path_traversal ... ok
+test release_evidence_rejects_handwritten_green_status_and_tampered_artifact_hash ... ok
+test final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes ... ok
+test release_evidence_template_cannot_borrow_equal_w_ids_from_the_0_64_registry ... ok
+test release_evidence_template_preserves_dynamic_canary_selection ... ok
+test release_evidence_template_rejects_a_mislabeled_release_registry ... ok
+test release_evidence_reports_every_manifest_work_item_exactly_once ... ok
+test release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release ... ok
+test release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green ... ok
+test cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes ... ok
+test explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.27s
+
+     Running tests\release_governance.rs (target\debug\deps\release_governance-91af24d8e4a931d1.exe)
+
+running 23 tests
+test publish_order_keeps_workspace_dev_and_build_dependencies ... ok
+test crates_io_probe_identifies_itself_and_retries_transient_responses ... ok
+test canary_release_0671_governance_accepts_a_missing_stage_gate ... ok
+test canary_release_governance_accepts_a_missing_mandatory_gate ... ok
+test canary_release_governance_accepts_a_missing_deferred_performance_gate ... ok
+test post_publish_consumer_tracks_the_current_public_api ... ok
+test release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha ... ok
+test release_066_registered_heavy_gates_are_mandatory_and_fail_closed ... ok
+test release_0671_governance_contract_is_fail_closed ... ok
+test release_067_deferred_performance_gates_remain_registered_and_fail_closed ... ok
+test release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c ... ok
+test release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry ... ok
+test release_governance_check_rejects_an_unwired_or_missing_meta_gate ... ok
+test release_governance_rejects_coverage_receipts_bound_to_an_older_release ... ok
+test release_governance_requires_complete_072_dynamic_canary_wiring ... ok
+test runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts ... ok
+test release_069_receipt_and_admission_commands_are_fail_closed ... ok
+test performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency ... ok
+test ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands ... ok
+test release_governance_check_accepts_the_explicit_0_66_fast_wiring ... ok
+test release_governance_check_accepts_release_069_independent_evidence_wiring ... ok
+test release_governance_check_accepts_current_structural_meta_gates ... ok
+test release_governance_check_accepts_the_explicit_0_70_fast_wiring ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.47s
+
