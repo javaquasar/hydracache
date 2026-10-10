@@ -1,0 +1,157 @@
+{
+  "schema_version": "diagnostic-worker-policy-local-evidence-074-v1",
+  "state": "retained-local-policy-bytes-not-host-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "089e94a73891d06b8fddc1722c47fd01ee5399f9",
+  "preregistered_design_commit": "7cbdc5348f7da1be82e9e01e7c7d18679f259420",
+  "implementation_commit": "fd93def1013c78a60a0765844213207c71c737e1",
+  "implementation_tree": "e498c8f9e2e181d10592eb6d3380d4272a9ffdcb",
+  "source_scope": "Implementation commit plus uncommitted documentation/evidence; not clean-source qualification.",
+  "toolchain": "1.94.0",
+  "authority_model_approved": true,
+  "fixtures": "Synthetic issuer keys, account mapping, file digests and caller-asserted host/boot/namespaces; no real enrollment.",
+  "seed": "0x7512026",
+  "mutations_per_seeded_run": 256,
+  "results": {
+    "windows_baseline_passed": 30,
+    "first_green_new_tests_passed": 12,
+    "windows_final_passed": 43,
+    "linux_final_passed": 269,
+    "linux_existing_ignored": 1,
+    "linux_additional_full_repetitions": 3,
+    "root_contract_evidence_governance_passed": 128,
+    "final_registry_passed": 1
+  },
+  "check_scope": "Windows and Linux supervisor/xtask check all-targets and strict clippy all-targets/all-features; scoped rustfmt; documentation, links, book and local performance contract. Root guard constants additionally checked and linted after review.",
+  "new_tests": [
+    "worker_policy_roundtrip_is_idempotent_not_host_enrollment",
+    "worker_policy_unsigned_field_changes_never_adopt_new_values",
+    "worker_policy_resigned_invalid_identity_and_context_refuse",
+    "worker_policy_canonical_strict_json_and_budgets_refuse",
+    "worker_policy_external_trust_rejects_weak_keys_and_invalid_pins",
+    "worker_policy_signatures_and_foreign_domains_refuse",
+    "worker_policy_asserted_host_boot_and_both_namespaces_match_exactly",
+    "worker_policy_group_rules_preserve_exact_lists_and_union_bound",
+    "worker_policy_revocation_is_first_error_and_cannot_restore",
+    "worker_policy_context_and_envelope_drift_latch_without_refresh",
+    "worker_policy_oversized_revalidation_and_key_pin_changes_latch",
+    "worker_policy_seeded_valid_resigned_mutations_keep_original_pin",
+    "worker_policy_concurrent_guards_share_no_refusal_or_authority"
+  ],
+  "missing_api_native_exit": 101,
+  "require_ship_native_exit": 1,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "real_issuer_key_enrollment": false,
+    "fixed_local_account_files_observed": false,
+    "trusted_host_namespace_proved": false,
+    "all_threads_proved": false,
+    "durable_pin_epoch_or_refusal_registry": false,
+    "production_preparation": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_measurement": false,
+    "qualification": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "api-red.log": {
+      "bytes": 723,
+      "sha256": "5b2b6a1c06185e9514f3ec82482939db5bcfb477f0189c4138cc38bb23ebd3d1"
+    },
+    "baseline.log": {
+      "bytes": 3174,
+      "sha256": "4c65883914534cae3cb0965f73dcbffe4d8d806d9dc788b53d1cd51a24b56362"
+    },
+    "book.log": {
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    "contract.log": {
+      "bytes": 203,
+      "sha256": "551ad4663a00e27cbd4378bf7875000d51478150887c0be94b3a68685203cc2a"
+    },
+    "doc.log": {
+      "bytes": 239,
+      "sha256": "aca65776aae70fb19e060b8483082f0ce679ddd4c18869afd11f9a0593619cf2"
+    },
+    "docs-final.log": {
+      "bytes": 662,
+      "sha256": "e5f8804f12f86dd23405616c727ad4fce860bc3806a1bd8d8e4f071ec5f23d98"
+    },
+    "first-green.log": {
+      "bytes": 1353,
+      "sha256": "17424dc8716c5c5fd6d1644e7d4e6d2d4af74d4d8cb75a7116c24ba49bbd717a"
+    },
+    "format.log": {
+      "bytes": 30,
+      "sha256": "2803b5b23718022bc026f93ea4bcb725efab1d10ebaa976db015c85db25bafcf"
+    },
+    "isolation.log": {
+      "bytes": 288,
+      "sha256": "c5b53fccf58addbfa2985db92a4d36d244a5d836acc8def9530a5f0360f7c64a"
+    },
+    "links.log": {
+      "bytes": 69,
+      "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+    },
+    "linux-check.log": {
+      "bytes": 280,
+      "sha256": "6fd7152e8a4aa23f486f5d6178cd7734380859f406850beec5812fa3db158fb2"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "ef5452fce731a10dffa74506ae2a405a9240026fb48af7ae7559c7c83554ac4e"
+    },
+    "linux-reviewed-check.log": {
+      "bytes": 147,
+      "sha256": "6092dd823c6492dfa1c4620db897581147afc118332bf142f56933e785e58492"
+    },
+    "linux-reviewed-lint.log": {
+      "bytes": 148,
+      "sha256": "ead97bdb0dbad494120734c8a362dc47dcb2e94b18c1f8fbc7bdb33313fa91a7"
+    },
+    "linux.log": {
+      "bytes": 29780,
+      "sha256": "2521ae9bd7c0c2c93757b7bd03c2f65b895a49a387daab5de304eaa5bc0b3eaf"
+    },
+    "registry.log": {
+      "bytes": 439,
+      "sha256": "9c62c9f130fc90f11fd10d034e635d7dd884d47533c5756795bb2296e8d48317"
+    },
+    "repeats.log": {
+      "bytes": 3966,
+      "sha256": "6ed014e5c279cf159de5138256dfd4140e6b7b15573e425232de97294b820800"
+    },
+    "reviewed-check.log": {
+      "bytes": 145,
+      "sha256": "646d2deb432d96a840794eb898b3ae719c57ae9cc48973244b522e18027abb37"
+    },
+    "reviewed-lint.log": {
+      "bytes": 145,
+      "sha256": "d1fc76bc9ffcbd0a54969b59a18a7eea336fa354838b532c7d37a75d6f756fe5"
+    },
+    "root.log": {
+      "bytes": 11184,
+      "sha256": "95783e8cc492d1655c988f5d93bb81520da49b860864c028f41e2ed2739cb441"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "69afea766f7fb10f411bfc5b2b44fb64c384bd1b608bdda28a765e3f3c88d70e"
+    },
+    "windows-check.log": {
+      "bytes": 275,
+      "sha256": "1f0b212a799cd2082045063cd8883be22e4dbc2bdd473351760d86f0d825d668"
+    },
+    "windows-lint.log": {
+      "bytes": 275,
+      "sha256": "046b01bde46fa3146249ff4d6908c14baf49cb298276909dabcfb7ce589e2216"
+    },
+    "windows.log": {
+      "bytes": 4410,
+      "sha256": "611db56c43c90e126598c58a4116831388124cf56d442354774af7b62c8b7541"
+    }
+  }
+}

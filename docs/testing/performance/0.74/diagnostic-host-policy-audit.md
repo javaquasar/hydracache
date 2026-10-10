@@ -1,13 +1,15 @@
 # Worker identity authority before production preparation
 
-## Decision required
+## Approved model and remaining admission boundaries
 
 The existing provisioning and host observation receipts do not enroll a trusted
 diagnostic worker identity. The namespace-checked account binder proves agreement
 between retained observations, not their authority. Production preparation and
 authenticated start must remain closed until the identity authority and admitted
-host context are explicitly selected. This is an architecture proposal, not an
-implemented policy or permission to mutate the host.
+host context are explicitly selected. The user approved the fixed local account
+model after this audit; the [policy verifier design](diagnostic-worker-policy-local-design.md)
+records the first implementation scope. Approval is not permission to mutate the
+host or treat policy-byte verification as positive production enrollment.
 
 Audit baseline is `8e16117b94ab6a3b60a182ef5f33e2c5aaeb6893`. Retain the seven
 existing portable host-receipt tests before adding regression coverage. Test that
@@ -63,8 +65,8 @@ and refuse ambiguity, unsafe ownership, replacement, drift or refusal. It would
 not consult general NSS to establish authority or change system-wide NSS rules.
 The existing NSS observer and binders remain separate consistency tools.
 
-This recommendation needs approval because it selects local files rather than
-general NSS as the worker account source. It does not assert that files alone
+The user's approval selects local files rather than general NSS as the worker
+account source. It does not assert that files alone
 authenticate the host. The enrollment issuer, key/policy trust pin, admitted
 user/mount context, reboot revocation and helper context enforcement must be
 specified before positive production use. Comparing with the current reader or
@@ -103,4 +105,5 @@ raw captures and the read-only integrity verifier. Root contracts/evidence/
 governance pass 127 checks, followed by a final registry check. Documentation,
 local performance contract, links and book gates pass; require-ship refuses with
 native exit 1. This local audit performs no host operation or performance
-measurement and leaves the proposed authority model awaiting explicit approval.
+measurement. Its retained packet records the historical awaiting-approval
+checkpoint; subsequent user approval does not retroactively enroll a real host.

@@ -5515,14 +5515,54 @@ The proposed narrow alternative is an explicitly approved local enrollment for
 the fixed diagnostic worker: canonical nonroot UID/GID/groups under an external
 policy pin and admitted host/boot context, followed by bounded inspection of
 fixed local account files. General NSS remains a separate consistency diagnostic;
-system-wide NSS need not change. This selects an authority model and therefore
-requires approval. Its verifier, trust enrollment, namespace/context enforcement,
-reboot revocation, all-thread requirements and production integration remain
-unimplemented. Local parser and reader fixtures would not become real host
-admission. No allocation/throughput gain follows from these safety checks.
+system-wide NSS need not change. The user approved this authority model for local
+implementation; that decision does not enroll a real issuer or host. Kernel
+namespace/context enforcement, durable reboot/revocation handling, all-thread
+requirements and production integration remain separate. Local parser and reader
+fixtures cannot become real host admission. No allocation/throughput gain follows
+from these safety checks.
 
 Two regression tests protect the current v1 boundaries: added worker-authority
 fields must refuse, including canonical host-observation bytes with a matching
 digest. These tests exercise existing strict decoding, not a new authenticated
 policy. Production output preparation, signed diagnostic start and qualification
 remain closed until their separate authority and lifecycle gates are complete.
+
+## Signed local worker policy under external pins
+
+The [first policy verifier](../testing/performance/0.74/diagnostic-worker-policy-local-design.md)
+accepts only a separate diagnostic policy/envelope schema, never an extension
+of provisioning or host-observation v1. Sorted canonical JSON with one LF,
+4096-byte body and 8192-byte envelope ceilings makes the signed representation
+explicit. A distinct signature domain and strict Ed25519 verification bind it
+to an issuer key supplied outside the document. The externally supplied body
+digest and current policy epoch are separate admission pins; no embedded key
+or signature can select its own trust root.
+
+The policy fixes the diagnostic-only local account source, account/group names,
+nonroot UID/GID, exact sorted supplementary groups and complete passwd/group
+document digests. Its group union with primary GID fits the existing 32-member
+ceiling. Host/boot and user/mount namespace values must match explicit caller
+assertions. This comparison authenticates no live host: fixed-file inspection
+and kernel context enforcement remain separate work.
+
+The runtime guard retains original policy, trust, context and envelope digest.
+Changing an external key/pin/epoch refuses rather than refreshing the guard;
+context or envelope drift and every other revalidation failure are sticky.
+Reverification of the same valid policy is idempotent, not launch authorization.
+The epoch is equality to an external current pin, not a durable monotonic ledger;
+a fresh guard given stale operator configuration cannot detect that rollback.
+Neither a policy extractor nor a conversion into a process/start capability is
+exposed. No signer CLI, account mutation, NSS lookup or production route is added.
+
+The [retained local packet](../testing/performance/0.74/local-runs/diagnostic-worker-policy-20261010/manifest.json)
+records a 30-pass Windows baseline and missing-module refusal before implementation.
+Twelve initial cases pass; reviewed coverage has thirteen, including oversized
+revalidation and key/pin revocation. Final scope passes 43 Windows and 269 Linux
+tests, with one pre-existing system-bus case ignored. All thirteen new tests pass
+three further Linux repetitions. Seed `0x7512026` drives 256 re-signed valid
+mapping/file-digest changes per repetition, first accepted under their own pins
+then refused under the original pin. Signatures and host context remain synthetic.
+Root gates pass 128 checks; scoped lint/check/format and documentation gates pass.
+The frozen qualification digest and closed release admission remain unchanged.
+These are policy safety results, not cache allocation or throughput evidence.

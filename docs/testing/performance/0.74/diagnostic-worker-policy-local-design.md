@@ -6,8 +6,8 @@ The user approved the fixed local account model after the
 [authority audit](diagnostic-host-policy-audit.md). This first implementation
 verifies policy bytes only. Baseline is `089e94a73891d06b8fddc1722c47fd01ee5399f9`.
 It adds no NSS lookup, file reader, host installation, production preparation,
-signing CLI, live helper/IPC mode or start route. Use write-page for the design,
-evidence and article update, preserving the existing repository documentation.
+signing CLI, live helper/IPC mode or start route. The verifier is portable; actual
+fixed-file and namespace observation remain separate Linux work.
 
 ## Separate schema and external trust
 
@@ -28,7 +28,7 @@ nonroot supplementary GIDs; their union with primary GID also fits 32. Never
 reinterpret the supplementary list as NSS memberships. Bind approved hashes of
 the complete passwd/group documents for later fixed-file inspection.
 
-Bind canonical nonzero machine ID and boot UUID plus distinct typed user/mount
+Bind canonical nonzero machine ID and boot UUID plus separately named user/mount
 namespace identities (device/inode). These context values are explicit caller
 assertions in this slice, not kernel observations or initial namespace proof.
 Namespace identity objects require nonzero device/inode; verification compares
@@ -72,3 +72,36 @@ retain raw hashes. Preserve frozen qualification input bytes and all existing
 numeric, NSS, namespace and production receipt APIs. The next slice is bounded
 fixed-file inspection followed by actual admitted-context enforcement, not
 production permission from successful policy decoding alone.
+
+## Implemented verifier and retained local results
+
+Implementation `fd93def1013c78a60a0765844213207c71c737e1` adds the portable
+`diagnostic_worker_policy` module, strict unverified wire models, independently
+constructed `WorkerPolicyTrust` and privately constructed `CheckedWorkerPolicy`.
+The guard exposes only original policy digest, refusal status and revalidation.
+Existing account/numeric/namespace APIs, receipt v1, production routes,
+provisioning assets and workflows remain unchanged. The account-file hashes are
+approved expectations only; no file inspection is implemented in this module.
+
+The [packet](local-runs/diagnostic-worker-policy-20261010/manifest.json) retains
+the 30-pass Windows baseline, E0432 missing-module refusal with native exit 101,
+twelve-case first green and reviewed thirteen-case coverage. Final Windows scope
+passes 43; Linux passes 269 with one existing system-bus case ignored. Three
+additional Linux repetitions pass all thirteen cases. Seed `0x7512026` checks
+256 valid re-signed UID/GID or account-document-digest changes per repetition:
+each verifies under its own new pin and refuses under the original pin. This
+distinguishes trust-pin refusal from invalid policy or signature construction.
+
+Tests also cover weak/wrong keys, other signature domains, malformed signatures,
+strict canonical/duplicate/future fields, budgets, nonroot exact group/union
+rules, exact asserted host/boot/namespace context, trust/key/pin/epoch revocation,
+oversized revalidation, first error, sticky restoration refusal, idempotence and
+independent concurrent guards. These positives use local synthetic operator keys
+and assertions; none enrolls a real issuer, host, namespace or process.
+
+Root contracts/evidence/governance pass 128 checks. Windows/Linux scoped
+check/strict lint and format pass, including repeated xtask check/lint after
+review strengthened the schema/domain/budget assertions. Doc/local performance
+contract, links/book pass; require-ship remains expected native exit 1. The frozen
+qualification digest is unchanged. No performance measurement, host mutation,
+product workload, qualification or full workspace milestone gate ran.

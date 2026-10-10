@@ -2301,8 +2301,18 @@ pass; unchanged qualification and expected-red ship admission remain closed.
 
 The [worker authority audit](diagnostic-host-policy-audit.md) distinguishes
 installed-source and host-observation receipts from worker enrollment. Existing
-v1 schemas reject added authority fields; no new trusted policy is implemented.
+v1 schemas reject added authority fields; at the audit checkpoint no new trusted
+policy was implemented.
 The proposed next slice is opt-in fixed local account enrollment under an
 externally pinned policy, not system-wide NSS changes. That source-of-authority
-choice requires explicit approval before implementation. Production preparation,
+choice has now been approved for local implementation. Production preparation,
 authenticated start and qualification stay closed.
+
+The [signed worker policy verifier](diagnostic-worker-policy-local-design.md)
+implements the first approved slice: strict canonical bounded policy/envelope,
+external issuer key/body digest/epoch and exact diagnostic account/UID/GID/groups,
+account-document digests and asserted host/boot/user/mount context. It retains
+the original envelope/trust/context and permanently refuses any revalidation
+failure without refreshing them. Context remains an explicit caller assertion;
+no account file or kernel namespace is observed by this portable verifier. A
+valid signature does not create a production preparation or start capability.

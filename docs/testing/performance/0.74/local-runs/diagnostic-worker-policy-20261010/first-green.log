@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 10.10s
+     Running tests\diagnostic_worker_policy.rs (target\debug\deps\diagnostic_worker_policy-4a19612bf3999c04.exe)
+
+running 12 tests
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+worker-policy seed=0x7512026; mutations=256
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s
+
