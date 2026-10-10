@@ -648,6 +648,109 @@ mod io_binding_tests {
             let (uid, gid) = unsafe { (libc::getuid(), libc::getgid()) };
             prepare_fixture_start_material(&self.root, uid, gid, &self.state, &self.policy).unwrap()
         }
+        fn named_outputs(&self) -> (PathBuf, crate::diagnostic_named_output::FixtureOutputRead) {
+            let output_root = self.temporary.path().join("outputs");
+            let lease = output_root.join(&self.state.identity.lease_id);
+            let cell = lease.join("embedded");
+            fs::create_dir_all(&cell).unwrap();
+            for dir in [&output_root, &lease, &cell] {
+                fs::set_permissions(dir, fs::Permissions::from_mode(0o700)).unwrap();
+            }
+            fs::rename(
+                self.temporary.path().join("stdout"),
+                cell.join("stdout.json"),
+            )
+            .unwrap();
+            fs::rename(
+                self.temporary.path().join("stderr"),
+                cell.join("stderr.log"),
+            )
+            .unwrap();
+            // SAFETY: read-only identity queries for explicit fixture ownership.
+            let (uid, gid) = unsafe { (libc::geteuid(), libc::getegid()) };
+            let outputs = crate::diagnostic_named_output::pin_fixture_outputs(
+                &output_root,
+                &self.state,
+                uid,
+                gid,
+            )
+            .unwrap();
+            (cell, outputs)
+        }
+    }
+    #[test]
+    fn fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts() {
+        let f = Fixture::new();
+        let mut material = f.material();
+        let mut inode_only = material
+            .bind_asserted_process_io(&f.state, &f.process, &f.stdout, &f.stderr)
+            .unwrap();
+        let (cell, mut outputs) = f.named_outputs();
+        let mut composed = outputs
+            .bind_fixture_process_io(&mut material, &f.state, &f.process)
+            .unwrap();
+        assert!(composed.is_fixture());
+        composed.revalidate().unwrap();
+        let path = cell.join("stdout.json");
+        let displaced = f.temporary.path().join("displaced-stdout");
+        fs::rename(&path, &displaced).unwrap();
+        OpenOptions::new()
+            .create_new(true)
+            .append(true)
+            .mode(0o600)
+            .open(&path)
+            .unwrap();
+        inode_only.revalidate().unwrap();
+        assert!(composed.revalidate().is_err());
+        assert!(composed.is_refused());
+        fs::remove_file(&path).unwrap();
+        fs::rename(&displaced, &path).unwrap();
+        assert!(composed.revalidate().is_err());
+        drop(composed);
+        assert!(outputs
+            .bind_fixture_process_io(&mut material, &f.state, &f.process)
+            .is_err());
+    }
+    #[test]
+    fn fixture_named_binding_refuses_state_mismatch_and_process_exit() {
+        let f = Fixture::new();
+        let (_, mut outputs) = f.named_outputs();
+        let mut material = f.material();
+        let mut wrong = f.state.clone();
+        wrong.revision += 1;
+        assert!(outputs
+            .bind_fixture_process_io(&mut material, &wrong, &f.process)
+            .is_err());
+        assert!(outputs.is_refused());
+        assert!(outputs
+            .bind_fixture_process_io(&mut material, &f.state, &f.process)
+            .is_err());
+
+        let mut f = Fixture::new();
+        let (_, mut outputs) = f.named_outputs();
+        let mut material = f.material();
+        let mut composed = outputs
+            .bind_fixture_process_io(&mut material, &f.state, &f.process)
+            .unwrap();
+        f.child.stdin.take();
+        f.child.wait().unwrap();
+        assert!(composed.revalidate().is_err());
+        assert!(composed.is_refused());
+        assert!(composed.revalidate().is_err());
+    }
+    #[test]
+    fn fixture_named_binding_propagates_material_refusal_without_new_capability() {
+        let f = Fixture::new();
+        let (_, mut outputs) = f.named_outputs();
+        let mut material = f.material();
+        let mut wrong = f.state.clone();
+        wrong.revision += 1;
+        assert!(material.revalidate_for(&wrong).is_err());
+        assert!(matches!(
+            outputs.bind_fixture_process_io(&mut material, &f.state, &f.process),
+            Err(crate::diagnostic_named_output::NamedOutputError::Binding(_))
+        ));
+        assert!(outputs.is_refused());
     }
     #[test]
     fn checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift() {

@@ -1011,6 +1011,86 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn named_fixture_outputs_keep_production_preparation_and_execution_closed() {
+    let c = contract("diagnostic-named-output-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-named-output-local-074-v1")
+    );
+    for (field, expected) in [
+        ("maximum_stream_bytes", 8388608),
+        ("maximum_path_bytes", 4096),
+        ("maximum_directory_depth", 64),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(expected), "{field}");
+    }
+    for field in [
+        "first_refusal_is_sticky",
+        "fixed_names_from_validated_state",
+        "retained_ancestor_bindings",
+        "readonly_stream_descriptors",
+        "append_growth_allowed",
+        "observed_shrink_refused",
+        "fixture_origin_explicit",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "production_ancestry_proved",
+        "production_output_preparation_allowed",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "atomic_namespace_snapshot_proved",
+        "same_open_file_description_proved",
+        "continuous_exec_identity_proved",
+        "writer_revocation_proved",
+        "durable_refusal_journal",
+        "original_start_authenticated",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_named_output.rs"),
+    )
+    .unwrap();
+    let code = source.split("#[cfg(test)]").next().unwrap();
+    let code = code.split_whitespace().collect::<Vec<_>>().join(" ");
+    for forbidden in [
+        "Command::new",
+        "O_CREAT",
+        "O_TRUNC",
+        "write_all(",
+        "read_to_end(",
+        "seek(",
+        "StartTransientUnit",
+        "StopUnit",
+        "Serialize",
+        "pub fn streams",
+        "pub fn file",
+        "pin_fixed_outputs",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        "diagnostic_start_intent(state)",
+        "O_RDONLY | libc::O_NOFOLLOW",
+        "self.check_directories()",
+        "check_entries(leaf)",
+        "meta.len() < self.high_water[i]",
+        "self.refused = true",
+        "self.outputs.refused = true",
+        "self.io.revalidate()?",
+        "!material.is_fixture()",
+        "STREAM_BYTES: u64 = crate::diagnostic_receipts::STREAM_BYTES as u64",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+}
+
+#[test]
 fn original_process_io_binding_keeps_start_and_pathname_proof_closed() {
     assert_eq!(
         hydracache_long_run_supervisor_074::diagnostic_receipts::STREAM_BYTES,
