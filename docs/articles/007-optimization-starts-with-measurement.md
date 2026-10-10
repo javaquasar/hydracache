@@ -5038,3 +5038,67 @@ are preserved; the final order puts both source checks between manager reads.
 These working-tree checks and their byte/hash verifier support the scoped safety
 result. Positive live composition and numerical performance admission remain
 separate, and no frozen qualification input is regenerated.
+
+### Fixed output names also need trusted ancestors
+
+A retained filename is not enough if an untrusted owner can replace its parent
+directory. The temporary named-output tests proved replacement refusal, but their
+explicit fixture ownership could not establish the production ancestry policy.
+The next hypothesis therefore concerns ownership, not speed: require a stronger
+fixed-root reader without granting it permission to prepare or launch anything.
+
+The [production output inspector](../testing/performance/0.74/diagnostic-production-output-local-design.md)
+derives one diagnostics path from validated lease and cell state. Root owns the
+ancestor chain and the private lease directory; the asserted nonroot worker owns
+the private cell and two regular single-linked streams.
+The lease permits known-path search with mode 0711, but only root can list or
+change its entries. Ancestors also require search permission for the worker;
+cell and stream privacy remain 0700 and 0600. Unsafe write/special bits,
+wrong owners, links, namespace drift, observed shrink and the unchanged 8 MiB
+stream ceiling refuse observation. The separate reader exposes revalidation and
+refusal status, not file descriptors or conversion into a fixture capability.
+
+All 4096 permission/special-bit combinations are checked for each directory role.
+These policy positives are invented metadata, not measurements of a server's
+filesystem. The private wrapper test likewise proves propagation of a refused
+temporary reader, not production provenance. Existing append, concurrency and
+replacement fixtures verify the shared reader behavior. A positive production
+observation will still require the real fixed path and independently established
+worker account identity.
+
+Review also found a subtle validation gap: reading root metadata once to validate
+ownership and again to retain the stamp can retain a different observation. The
+implementation now stores exactly the stamp it validated. Later checks compare
+that original stamp and parent-child binding; they do not refresh it to recover
+from a refusal. The walk remains sequential, so change-and-return between checks
+and continuous writer identity remain outside its proof.
+
+This is progress toward trustworthy diagnostic attribution, not an allocation
+or throughput improvement. Numeric UID/GID inputs remain caller assertions;
+account enrollment, fenced preparation, original-start authentication and joining
+executable/output evidence to the live identity guard remain before execution.
+The inspector creates no directories, changes no ownership and runs no workload.
+
+The [retained local packet](../testing/performance/0.74/local-runs/diagnostic-production-output-20261010/manifest.json)
+contains the initial 150 Linux passes with one pre-existing ignored, three additional
+eleven-test repetitions, 28 portable Windows passes and 119 root checks before
+the traversal correction.
+The initial commands used the default nightly; final controls explicitly use
+1.94.0. Their passing behavior tests do not establish a numerical comparison
+across toolchains. The absent-API compile refusal and pre-review run are retained
+separately, and the frozen qualification digest remains unchanged.
+
+A final compatibility review found that the initially accepted root-owned 0700
+lease would block a nonroot worker's WorkingDirectory. [Systemd 255](https://github.com/systemd/systemd/blob/v255/src/core/exec-invoke.c#L4477-L4518)
+changes UID before applying that directory. The new test first rejected the old
+policy; the correction requires searchable root-owned ancestors and lease 0711.
+Only traversal is added, not listing, writes or access to the private cell's
+content. This source/policy check still does not constitute a positive unit launch.
+
+The corrected policy passes 151 Linux tests with one pre-existing ignored and
+three further twelve-test repetitions. Portable Windows tests remain 28; the
+updated root policy guard, affected check/lint and scoped format pass again.
+The earlier 119-test root suite stays labelled pre-correction rather than being
+reused as full final-source coverage. The useful result is a stricter ownership
+observation that also accounts for nonroot pathname traversal; execution and
+numerical admission still require their separate gates.

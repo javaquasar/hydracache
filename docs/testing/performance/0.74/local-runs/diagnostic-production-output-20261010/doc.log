@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized] target(s) in 3.90s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask doc-check`
+doc-check: OK (releases.toml is consistent)

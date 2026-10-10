@@ -1,0 +1,57 @@
+    Finished `test` profile [unoptimized] target(s) in 2.73s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_named_output::tests::production_directory_policy_exhaustively_refuses_special_or_writable_modes ... ok
+test diagnostic_named_output::tests::production_ancestry_policy_requires_root_and_private_worker_cell ... ok
+test diagnostic_named_output::tests::production_reader_refuses_invalid_owner_and_state_before_filesystem ... ok
+test diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal ... ok
+test diagnostic_named_output::tests::replaced_stream_and_repair_cannot_refresh_original_names ... ok
+test diagnostic_named_output::tests::fixture_scope_refuses_production_noncanonical_paths_and_nonstartable_state ... ok
+test diagnostic_named_output::tests::synthetic_production_wrapper_retains_shared_reader_refusal ... ok
+test diagnostic_named_output::tests::every_fixture_directory_generation_and_ancestor_binding_is_retained ... ok
+test diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries ... ok
+test diagnostic_named_output::tests::observed_output_shrink_overflow_and_metadata_drift_latch ... ok
+test diagnostic_named_output::tests::names_links_special_files_and_owner_modes_refuse ... ok
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 111 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized] target(s) in 2.79s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_named_output::tests::production_ancestry_policy_requires_root_and_private_worker_cell ... ok
+test diagnostic_named_output::tests::production_directory_policy_exhaustively_refuses_special_or_writable_modes ... ok
+test diagnostic_named_output::tests::fixture_scope_refuses_production_noncanonical_paths_and_nonstartable_state ... ok
+test diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal ... ok
+test diagnostic_named_output::tests::replaced_stream_and_repair_cannot_refresh_original_names ... ok
+test diagnostic_named_output::tests::every_fixture_directory_generation_and_ancestor_binding_is_retained ... ok
+test diagnostic_named_output::tests::production_reader_refuses_invalid_owner_and_state_before_filesystem ... ok
+test diagnostic_named_output::tests::synthetic_production_wrapper_retains_shared_reader_refusal ... ok
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+test diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries ... ok
+test diagnostic_named_output::tests::observed_output_shrink_overflow_and_metadata_drift_latch ... ok
+test diagnostic_named_output::tests::names_links_special_files_and_owner_modes_refuse ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 111 filtered out; finished in 0.03s
+
+    Finished `test` profile [unoptimized] target(s) in 2.63s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_named_output::tests::production_directory_policy_exhaustively_refuses_special_or_writable_modes ... ok
+test diagnostic_named_output::tests::production_ancestry_policy_requires_root_and_private_worker_cell ... ok
+test diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal ... ok
+test diagnostic_named_output::tests::production_reader_refuses_invalid_owner_and_state_before_filesystem ... ok
+test diagnostic_named_output::tests::replaced_stream_and_repair_cannot_refresh_original_names ... ok
+test diagnostic_named_output::tests::synthetic_production_wrapper_retains_shared_reader_refusal ... ok
+test diagnostic_named_output::tests::fixture_scope_refuses_production_noncanonical_paths_and_nonstartable_state ... ok
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+test diagnostic_named_output::tests::every_fixture_directory_generation_and_ancestor_binding_is_retained ... ok
+test diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries ... ok
+test diagnostic_named_output::tests::observed_output_shrink_overflow_and_metadata_drift_latch ... ok
+test diagnostic_named_output::tests::names_links_special_files_and_owner_modes_refuse ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 111 filtered out; finished in 0.02s
+

@@ -2103,3 +2103,36 @@ synthetic joins, the actual foreign-scope refusal and earlier preparation
 observations. Code is committed as `44b62afe`; checks are working-tree observations,
 not a clean-source qualification. Check/lint/format, local docs/performance
 contracts, links and book build pass; the frozen qualification digest is unchanged.
+
+The [fixed production output inspector](diagnostic-production-output-local-design.md)
+now enforces a read-only ownership policy for the fixed diagnostics root: root
+owns every ancestor and the private lease, while explicitly asserted nonzero
+worker UID/GID own the private cell and its two bounded streams. It retains the
+original directory chain and names, permits append growth and permanently refuses
+observed drift. A separate capability exposes no arbitrary path, output creation,
+stream descriptors or fixture/process-binding conversion.
+
+Policy positives and the wrapper seam are synthetic; temporary filesystem tests
+cannot certify a real production directory or worker account. Account enrollment,
+fenced output preparation and typed executable/output/live-identity composition
+remain prerequisites. No server operation, observer, product workload or
+qualification was run for this step.
+
+The [production-output packet](local-runs/diagnostic-production-output-20261010/manifest.json)
+retains the initial 150 Linux passes (one pre-existing ignored), three eleven-test
+repetitions, 28 portable Windows passes and 119 root checks. It distinguishes the
+default-nightly baseline/first green from explicit 1.94.0 final controls and keeps
+the absent-API compile refusal. These are behavior checks, not a cross-toolchain
+performance comparison or positive production filesystem proof.
+
+The subsequent traversal review rejects the initial root-owned 0700 lease:
+systemd applies WorkingDirectory after dropping UID. The current policy requires
+searchable root-owned ancestors and lease 0711, without directory listing/write
+for others. Worker cell/streams remain 0700/0600. Its test-first refusal and final
+policy checks are retained separately; no real unit or production path is claimed.
+
+Final correction `687c0c8e` passes 151 Linux tests (one pre-existing ignored),
+three twelve-test repetitions, 28 portable Windows tests and the updated root
+policy guard. Check/lint/format are repeated; the 119-test broad root run remains
+labelled pre-correction. Account enrollment, preparation and live composition
+are still not enabled by this result.

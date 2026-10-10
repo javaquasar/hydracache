@@ -1,0 +1,181 @@
+   Compiling syn v2.0.118
+   Compiling serde v1.0.228
+   Compiling serde_core v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling syn v3.0.6
+   Compiling enumflags2_derive v0.7.12
+   Compiling jobserver v0.1.34
+   Compiling crossbeam-utils v0.8.21
+   Compiling cc v1.2.65
+   Compiling zvariant_utils v4.2.0
+   Compiling endi v1.1.1
+   Compiling pkg-config v0.3.33
+   Compiling zvariant_derive v5.15.0
+   Compiling rustix v1.1.4
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling linux-raw-sys v0.12.1
+   Compiling concurrent-queue v2.5.0
+   Compiling enumflags2 v0.7.12
+   Compiling zcheapstr v1.1.0
+   Compiling zvariant v5.15.0
+   Compiling event-listener v5.4.1
+   Compiling errno v0.3.14
+   Compiling zstd-safe v7.2.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling event-listener-strategy v0.5.4
+   Compiling zbus_names v4.3.4
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling tracing-attributes v0.1.31
+   Compiling subtle v2.6.1
+   Compiling zeroize v1.9.0
+   Compiling serde_json v1.0.150
+   Compiling futures-io v0.3.32
+   Compiling curve25519-dalek v4.1.3
+   Compiling futures-lite v2.6.1
+   Compiling tokio v1.52.3
+   Compiling tracing v0.1.44
+   Compiling zbus_macros v5.19.0
+   Compiling async-broadcast v0.7.2
+   Compiling ordered-stream v0.2.0
+   Compiling xattr v1.6.1
+   Compiling async-recursion v1.2.0
+   Compiling serde_repr v0.1.20
+   Compiling thiserror-impl v2.0.18
+   Compiling async-trait v0.1.89
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling uuid v1.23.4
+   Compiling serde_spanned v1.1.1
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling hex v0.4.3
+   Compiling memchr v2.8.2
+   Compiling toml v1.1.2+spec-1.1.0
+   Compiling zbus v5.19.0
+   Compiling thiserror v2.0.18
+   Compiling tar v0.4.46
+   Compiling ed25519-dalek v2.2.0
+   Compiling tempfile v3.27.0
+   Compiling zstd v0.13.3
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:380:23
+    |
+380 | ...n [Produ...Level::A...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:380:50
+    |
+380 | ...r, Produ...Level::L...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:383:21
+    |
+383 | ...t!(produ...valid(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:393:26
+    |
+393 | ...!(!produ...valid(&b...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:397:51
+    |
+397 | ...l, Produ...Level::C...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:397:17
+    |
+397 | ...t!(produ...valid(&c...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:398:52
+    |
+398 | ...l, Produ...Level::C...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:398:18
+    |
+398 | ...!(!produ...valid(&c...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:399:52
+    |
+399 | ...l, Produ...Level::C...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:399:18
+    |
+399 | ...!(!produ...valid(&c...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:406:59
+    |
+406 | ...p, Produ...Level::A...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:406:24
+    |
+406 | ...q!(produ...valid(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:407:59
+    |
+407 | ...p, Produ...Level::L...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:407:24
+    |
+407 | ...q!(produ...valid(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:409:58
+    |
+409 | ...l, Produ...Level::C...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+error[E0425]: cannot find function `production_directory_valid` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:409:24
+    |
+409 | ...q!(produ...valid(&c...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0425]: cannot find function `pin_production_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:417:30
+    |
+417 | ...s!(pin_p...tputs(&f...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0425]: cannot find function `pin_production_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:421:26
+    |
+421 | ...s!(pin_p...tputs(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0425]: cannot find function `pin_production_outputs` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:425:26
+    |
+425 | ...s!(pin_p...tputs(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0433]: cannot find type `ProductionLevel` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_named_output.rs:382:32
+    |
+382 | ...l, Produ...Level::L...
+    |       ^^^^^...^^^^^ use of undeclared type `ProductionLevel`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 20 previous errors

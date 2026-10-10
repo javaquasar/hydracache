@@ -1,0 +1,342 @@
+{
+  "schema_version": "diagnostic-production-output-local-evidence-074-v1",
+  "baseline_code_source": "b76c56eeca7f59b5ba34872ed773b499be68520a",
+  "preregistration_commit": "af5fdc7e63c409fcd4de229fe15a001d62ecb0cb",
+  "implementation_commit": "687c0c8e1044679b717622bd9dac17d98ff252f3",
+  "implementation_tree": "ee4a98343903b6e5cf82332cab37843a8168b8ec",
+  "capture_scope": "Working-tree behavior checks before their implementation commits, never clean-source qualification. reviewed-* covers root validated-stamp fix at df54bdca; traversal-* covers 687c0c8e corrected permission policy. root.log broad 119 checks is PRE-traversal correction; updated policy guard and registry/doc checks are separately repeated afterward. Evidence/docs completion afterward; no positive installed-output or unit execution proof.",
+  "local_scope": "WSL Ubuntu as existing artur; temporary filesystem only for runtime fixtures. Policy metadata and private wrapper positives are synthetic. No production root created or inspected successfully. Windows executes zero Linux named-output tests.",
+  "toolchains": {
+    "initial_baseline_test_first_first_green": "Unqualified Cargo/rustc default was nightly 1.98.0 (nightly-2026-07-01). Seven-test code baseline and ten-test first green use that same default, not a performance comparison.",
+    "final_gates": "Explicit Rust/Cargo 1.94.0, including both 150-test runs, three 11-test repeats, root contracts, check/lint/format, Windows and documentation controls.",
+    "environment_capture": "environment.log"
+  },
+  "preparation_observations": [
+    {
+      "file": "test-first.log",
+      "result": "Initial compilation overlapped adding test-first tests; original target name production-output-baseline.log is misleading. Retained as test-first compile refusal: 20 missing API/type/function errors, not baseline. Removed only new tests through apply_patch, repeated seven original tests, then restored new tests before implementation."
+    },
+    {
+      "file": "baseline.log",
+      "result": "Seven unchanged named fixture tests at preregistration code baseline. No production filesystem positive."
+    },
+    {
+      "scope": "Tool console only",
+      "result": "Unqualified nightly rustfmt unavailable; no component installed. Explicit rustfmt +1.94.0 applied. Wrong initial source paths and one multi-file patch context mismatch made no edits; corrected context. Trailing whitespace removed before staging."
+    },
+    {
+      "files": [
+        "initial-focused.log",
+        "reviewed-focused.log",
+        "repeats.log"
+      ],
+      "result": "Review stores exactly the root metadata stamp validated for ownership instead of a second root read. Reviewed 150-test run and three eleven-test repeats cover final code. Earlier passes retained but not cited for this later fix."
+    },
+    {
+      "files": [
+        "traversal-red.log",
+        "traversal-focused.log",
+        "traversal-repeats.log"
+      ],
+      "result": "Compatibility review of official systemd 255 src/core/exec-invoke.c shows UID drop before chdir. Initial root-owned lease 0700 and no ancestor search requirement do not support a nonroot WorkingDirectory. Test-first expected-red observed native Cargo exit 101. Correction preserves root ownership and no namespace write/list access, requires ancestor search and lease 0711; cell/streams stay 0700/0600. Final 151 tests and three 12-test repeats cover correction, not real unit launch.",
+      "source": "https://github.com/systemd/systemd/blob/v255/src/core/exec-invoke.c#L4477-L4518"
+    }
+  ],
+  "checks": {
+    "baseline_passed": 7,
+    "linux_focused_passed": 151,
+    "linux_ignored": 1,
+    "new_linux_tests": 5,
+    "named_reader_tests_per_repeat": 12,
+    "repeat_runs": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_output_tests_executed": 0,
+    "linux_supervisor_and_xtask_all_target_check": true,
+    "linux_supervisor_and_xtask_all_target_all_feature_clippy_warnings_denied": true,
+    "windows_supervisor_check_and_clippy": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "full_workspace_verify_rerun": false,
+    "ship_expected_red_exit": 1,
+    "post_evidence_registry_passed": 1,
+    "initial_linux_focused_passed": 150,
+    "initial_new_linux_tests": 4,
+    "initial_named_reader_tests_per_repeat": 11,
+    "broad_root_suite_before_traversal": {
+      "performance_contracts": 83,
+      "release_evidence": 13,
+      "release_governance": 23
+    },
+    "final_policy_root_guard_passed": 1,
+    "final_traversal_registry_passed": 1,
+    "final_doc_check": true,
+    "traversal_test_first_expected_red_exit": 101,
+    "final_ship_expected_red_exit": 1
+  },
+  "commands": {
+    "linux_focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_artifacts --locked",
+    "repeats": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_named_output --locked (three runs); final traversal repetition executes 12 named-reader tests per run",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance; pre-traversal broad suite only. Final corrected root guard and w12_evidence_skeleton_is_exact_and_fail_closed separately pass once each.",
+    "check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --locked",
+    "lint": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked -- -D warnings",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_artifacts; affected all-target check/all-feature clippy",
+    "docs": "xtask doc-check; performance-contract-check --release 0.74; node scripts/docs-link-check.mjs; mdbook build docs-site",
+    "ship": "performance-contract-check --release 0.74 --require-ship; native PowerShell verifies exit exactly 1",
+    "format": "rustfmt +1.94.0 --edition 2021 --check two changed Rust files",
+    "build_environment": {
+      "cargo_target_dir": "/home/artur/.cache/hydracache-074-manager-local-target",
+      "dev_debug": "0",
+      "test_debug": "0",
+      "incremental": "0",
+      "build_jobs": "2"
+    }
+  },
+  "proof_boundaries": {
+    "worker_account_enrolled": false,
+    "positive_production_ancestry_observed": false,
+    "original_start_authenticated": false,
+    "process_identity_composed": false,
+    "production_output_prepared": false,
+    "atomic_snapshot_proved": false,
+    "continuous_execution_proved": false,
+    "same_open_file_description_proved": false,
+    "writer_revocation_proved": false,
+    "durable_refusal_journal": false,
+    "host_operation_performed": false,
+    "product_workload_performed": false,
+    "qualification_performed": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "retention": {
+    "kind": "Byte-preserved native Tee captures; lengths and SHA-256. Empty format logs mean successful silent checks; not performance measurements.",
+    "files": [
+      {
+        "sha256": "5fe4260270f4c1c8565e8984e0bb11c8084f130c559db03b42cdfe5eb44f18e9",
+        "name": "baseline.log",
+        "bytes": 1212
+      },
+      {
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+        "name": "book-after-evidence.log",
+        "bytes": 151
+      },
+      {
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+        "name": "book-final.log",
+        "bytes": 151
+      },
+      {
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+        "name": "book.log",
+        "bytes": 151
+      },
+      {
+        "sha256": "5c1ac306e4624d6967ded295808499765ce3afd29d3cb8f3ee77f06fc0a8fae9",
+        "name": "check.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "d98b27b8ad246f189552828cad902c4cf669cb05223feec7d0401b75d5436ea7",
+        "name": "contract.log",
+        "bytes": 244
+      },
+      {
+        "sha256": "668d8ed6bd2c723eda709eff76eb0cd9bdb4f55e1a8c4aedf7ca463741bb9106",
+        "name": "doc-final.log",
+        "bytes": 440
+      },
+      {
+        "sha256": "c5a33f8add42a166a4beb390ea3bd68a65f8e52a43fe327c49ba290ba68f2dc4",
+        "name": "doc.log",
+        "bytes": 196
+      },
+      {
+        "sha256": "b9a6703caabf00a4e55d1f28e104f350f9521828bf07cbe87049a221d0df9b14",
+        "name": "environment.log",
+        "bytes": 164
+      },
+      {
+        "sha256": "97c62972d28426b7b507f125ab8f35598c3a28f6284c9dc7f88eada8392b3653",
+        "name": "first-green.log",
+        "bytes": 1554
+      },
+      {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name": "format.log",
+        "bytes": 0
+      },
+      {
+        "sha256": "b85f4335ed8ecd8eaa16ea884cd5746634a6a568e42a5986ac28072fb252fc16",
+        "name": "initial-focused.log",
+        "bytes": 15162
+      },
+      {
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+        "name": "links-after-evidence.log",
+        "bytes": 69
+      },
+      {
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+        "name": "links-final.log",
+        "bytes": 69
+      },
+      {
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+        "name": "links.log",
+        "bytes": 69
+      },
+      {
+        "sha256": "1b6ccb2aaf2dfcc0276b42cdc6e68975505fc696d9042777cdcd9dec8da3765b",
+        "name": "lint.log",
+        "bytes": 334
+      },
+      {
+        "sha256": "e3ebea67660dc5e4ac1c810043b9d11c25c315df3fc7c94f35ee81eb3eb8b0b6",
+        "name": "post-evidence.log",
+        "bytes": 701
+      },
+      {
+        "sha256": "09fe5b3711b35c3320ba5416ac290d0b5c18c3f3f457a5ad3ac7aa5595116fee",
+        "name": "repeats.log",
+        "bytes": 4572
+      },
+      {
+        "sha256": "c94c75870cbba085a7f68fd989a22bafb9e91b17029087a256dbeb62b9b64b16",
+        "name": "reviewed-check.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "afb4ecd7581723b9c24c442121cebcf6ea887f2d82cef558c0bd9375b7bc74fd",
+        "name": "reviewed-focused.log",
+        "bytes": 15162
+      },
+      {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name": "reviewed-format.log",
+        "bytes": 0
+      },
+      {
+        "sha256": "8c4b1bddbc6732603595a16f78711c1b7569b970dda235045c1dcd53daa5864e",
+        "name": "reviewed-lint.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "62644c3a222c92dea236939229b309e723ac44f8de73cb2a74da8fd122398f9f",
+        "name": "root.log",
+        "bytes": 11303
+      },
+      {
+        "sha256": "31282c086245f743fb99a6aedafce68a73ee9c16e1658886a583f69d6e033d20",
+        "name": "ship.log",
+        "bytes": 446
+      },
+      {
+        "sha256": "2619e0ac45c8ef64f9fe71dd0479e3e6160514a3cc8a99fb03244f2dae96aeaf",
+        "name": "test-first.log",
+        "bytes": 7047
+      },
+      {
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+        "name": "traversal-book.log",
+        "bytes": 151
+      },
+      {
+        "sha256": "9780b5247decb8052b40cff6f8d8d999fddb6b9ee831f69b41cbfd60b2328066",
+        "name": "traversal-check.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "ed333a50f3f97da3ec7840928d0eb24e7c10328bb4959bed8e8618e46993a6b4",
+        "name": "traversal-doc-final.log",
+        "bytes": 440
+      },
+      {
+        "sha256": "051895e0521be55050d5afe588a299ef4d5c40c25e3a2654a58c325e2e7cffd4",
+        "name": "traversal-focused.log",
+        "bytes": 15277
+      },
+      {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name": "traversal-format.log",
+        "bytes": 0
+      },
+      {
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a",
+        "name": "traversal-links.log",
+        "bytes": 69
+      },
+      {
+        "sha256": "711ab8f25d3606f45d3546c64475e96700b61357ab23ba16b9aa10e701c6955f",
+        "name": "traversal-lint.log",
+        "bytes": 280
+      },
+      {
+        "sha256": "098ee51751e3daf34a4285b40b36957d94b97fcecd5b9827ec65d8f755d81c9d",
+        "name": "traversal-post-evidence.log",
+        "bytes": 481
+      },
+      {
+        "sha256": "206276f5d077166141bb5939f65aa918ae225716e7959027c374d1b94292554c",
+        "name": "traversal-red.log",
+        "bytes": 1282
+      },
+      {
+        "sha256": "90664b50261f4b89d188f985ad384cfeb9a4ab4f531a002cfa11a29d14ed96c2",
+        "name": "traversal-repeats.log",
+        "bytes": 4917
+      },
+      {
+        "sha256": "9363908f76bc33931e6604516b327539e1edd1b57ec9771eb7f0002f7b7b2da6",
+        "name": "traversal-root-guard.log",
+        "bytes": 639
+      },
+      {
+        "sha256": "03ba26f9b1b6c051cc9c293f86de2b2965b0d458d9bb1f7dffd022a7fac613db",
+        "name": "traversal-ship.log",
+        "bytes": 388
+      },
+      {
+        "sha256": "b944155538dd49f8a58c09f24bc23f78077a9ff6beb49add0fe0ffa78a7c9db4",
+        "name": "traversal-windows-check.log",
+        "bytes": 73
+      },
+      {
+        "sha256": "6de055016fa9d501967165a1d1f3100abcccc8eab1d6a01b1b6ace6c22f6e983",
+        "name": "traversal-windows-lint.log",
+        "bytes": 73
+      },
+      {
+        "sha256": "1bcedd81bb33d2ca36d032f3ca8f0d2fb5705b5dadef138a1182febafb64bfdd",
+        "name": "traversal-windows.log",
+        "bytes": 2881
+      },
+      {
+        "sha256": "0aef07631beb7bf8b442f840e324e82a3939d640a0a4dc0a97328a6bf591d6f1",
+        "name": "windows-check.log",
+        "bytes": 73
+      },
+      {
+        "sha256": "d8fba2d79fc1071b3c3a9557decae0042e898c3889b9fe91029d21ad2314a1cb",
+        "name": "windows-lint.log",
+        "bytes": 73
+      },
+      {
+        "sha256": "6ca8702c4b49ed3d75606db1c469f8b93846ca1f551b4548a6a77c63987e1721",
+        "name": "windows.log",
+        "bytes": 2880
+      }
+    ],
+    "log_count": 43
+  },
+  "initial_implementation_commit": "df54bdca4238d12f7817ce2332ba07d75f30480b",
+  "initial_implementation_tree": "96a978c710277e34529cf3949dd9e7ad37c28efc",
+  "traversal_preregistration_commit": "bcfbc25da19357e4ba4a2e2e792efaf69c2667d5"
+}

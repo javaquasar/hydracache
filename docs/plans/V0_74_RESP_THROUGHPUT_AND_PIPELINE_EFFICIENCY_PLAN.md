@@ -1049,6 +1049,14 @@ conservative: membership changes refuse. Original start/root-inode provenance,
 production outputs, executable/environment binding and fenced lifecycle remain
 before backend enrollment or numerical admission.
 
+The [fixed production output inspector](../testing/performance/0.74/diagnostic-production-output-local-design.md)
+adds root-owned searchable ancestors/0711 lease and asserted-worker cell/stream policy to
+the retained read-only named guard. It cannot prepare directories, expose streams,
+convert to a fixture or authorize execution. Synthetic policy/wrapper positives
+and temporary filesystem tests do not prove production ancestry or account
+enrollment. Fenced preparation and executable/output/live-identity composition
+remain before backend enrollment; frozen qualification inputs stay unchanged.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

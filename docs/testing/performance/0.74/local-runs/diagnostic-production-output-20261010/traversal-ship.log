@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized] target(s) in 6.97s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask performance-contract-check --release 0.74 --require-ship`
+performance-contract-check 0.74: 0.74 ship admission is closed while candidate identity and release qualification are incomplete
+Error: "performance-contract-check 0.74 found 1 problem(s)"

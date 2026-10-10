@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 14.34s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal ... FAILED
+
+failures:
+
+---- diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal stdout ----
+
+thread 'diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal' (537) panicked at tools/long-run-supervisor-074/src/diagnostic_named_output.rs:466:9:
+assertion failed: !production_directory_valid(&s, ProductionLevel::Ancestor, 1000, 1000)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 122 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

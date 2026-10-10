@@ -7,9 +7,9 @@ capability can enforce ownership of every ancestor without promoting a temporary
 fixture's weaker ancestry assertions.
 
 Derive only `/var/lib/hydracache-performance/diagnostics/<lease>/<surface>`
-from validated startable state. Require root UID/GID zero and no special,
-group-write or world-write bits for `/` through the diagnostics root. Require a
-root-owned 0700 lease and a 0700 cell owned by explicitly asserted nonzero worker
+from validated startable state. The initial policy required root UID/GID zero
+and no special, group-write or world-write bits for `/` through the diagnostics
+root, a root-owned 0700 lease and a 0700 cell owned by explicitly asserted nonzero worker
 UID/GID. Require the existing two distinct regular single-link 0600 streams,
 that worker ownership and the unchanged 8 MiB per-stream ceiling. Numeric worker
 identity is a caller assertion, not account enrollment or NSS authentication.
@@ -98,3 +98,22 @@ allows known-path traversal, not directory listing or namespace writes; cell
 mutation or launch authority. It is a policy/source compatibility check, not a
 positive systemd execution or production directory observation. Retain the first
 implementation and its tests rather than rewriting them as final-policy evidence.
+
+## Current traversal policy and checks
+
+Correction `687c0c8e1044679b717622bd9dac17d98ff252f3` implements searchable
+root-owned ancestors and a root-owned 0711 lease. Root alone can list or change
+lease entries; knowing a cell name does not grant access to the worker-owned
+0700 cell or 0600 streams. Root ownership, no unsafe write/special bits and the
+existing descriptor/namespace checks remain required. Neither ownership nor
+permissions are changed by the inspector itself.
+
+The new test first fails against `df54bdca` (observed Cargo exit 101), then passes
+with the correction. Final checks pass 151 Linux tests (one pre-existing ignored),
+three additional twelve-test repetitions and 28 portable Windows tests. Affected
+all-target checks, strict all-feature lint and scoped format pass again. The
+updated root policy guard passes separately; the earlier 119-test root suite is
+retained as pre-correction coverage, not relabelled as a full final-source repeat.
+Registry and doc/local-contract checks are also repeated after the correction.
+These synthetic policy checks establish the intended search-bit rule, not
+successful systemd execution, worker enrollment or positive production ancestry.
