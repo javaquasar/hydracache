@@ -1,0 +1,178 @@
+{
+  "schema_version": "diagnostic-worker-credentials-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "6c0191e2fb2a2108e5b0ae1502b6fc5ac4e031c0",
+  "preregistration_commit": "d8a1521602939f04339123162955049b38347780",
+  "implementation_commit": "ea407bfeb47062ad3a1d778dc3f45568ee201806",
+  "implementation_tree": "88126ff60d5e208db69d1b6bf98a847ffea9362b",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur effective UID/GID 1000; parent NoNewPrivs 0 required for the negative owned-helper fixture",
+  "checks": {
+    "baseline_linux_passed": 172,
+    "first_green_new_tests": 13,
+    "initial_reviewed_linux_passed": 187,
+    "new_linux_tests": 16,
+    "final_linux_passed": 188,
+    "preexisting_linux_ignored": 1,
+    "final_repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_credential_tests_executed": 0,
+    "root_passed_before_packet_registration": 122,
+    "post_evidence_registry": true,
+    "ship_expected_red_native_exit": 1,
+    "full_workspace_verify_rerun": false,
+    "documentation_final_passed": true
+  },
+  "negative_results": {
+    "baseline_wrong_target": "Nonexistent diagnostic_artifacts_linux integration target: zero tests executed. Corrected baseline uses diagnostic_artifacts.",
+    "api_renderer_red": "Missing-API test compilation also panicked in rustc diagnostic rendering; 28 prior errors. Not a pure behavioral red.",
+    "api_check_red": "Separate pre-implementation library check refused one unresolved-import error without renderer panic.",
+    "metadata_read_error": "Unquoted HEAD^{tree} was parsed incorrectly by PowerShell after the implementation commit succeeded. Quoted read-only retry obtained the exact tree; no Git state was changed by this read failure."
+  },
+  "proof_boundaries": {
+    "worker_account_authentication": false,
+    "all_threads_credentials": false,
+    "trusted_user_namespace_enrollment": false,
+    "atomic_or_continuous_observation": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "whole_operation_deadline": false,
+    "host_or_systemd_mutation": false,
+    "observer_or_product_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "disk_maintenance": {
+    "method": "Cargo clean on six checked obsolete ignored target subdirectories",
+    "logical_bytes": 13204308432,
+    "files": 19703,
+    "free_before_bytes": 1577193472,
+    "free_after_bytes": 14032842752,
+    "physical_deletion_bytes_claimed": false,
+    "evidence_and_worktrees_preserved": true,
+    "recovery": "rebuild caches; not trash recovery"
+  },
+  "retention": {
+    "log_count": 23,
+    "files": [
+      {
+        "name": "api-check-red.log",
+        "bytes": 1335,
+        "sha256": "f7c051e30542e4979b56f45a9bd7c08d158a817c15035a3e1f8adcbc4af51713"
+      },
+      {
+        "name": "api-renderer-red.log",
+        "bytes": 13321,
+        "sha256": "0d953f2bb0b10337efc9d886df375fd6d0161c4435a49d8902a60177ce3b8774"
+      },
+      {
+        "name": "baseline-wrong-target.log",
+        "bytes": 780,
+        "sha256": "b38a6cde7d60612b971a130b5257eaa917a0f975ec6de9e8249c77483d00111c"
+      },
+      {
+        "name": "baseline.log",
+        "bytes": 17586,
+        "sha256": "3c122ba68e428cb042a42ab67033b3d20dcc92e15549cffca08d80eccb629077"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 262,
+        "sha256": "649f6ef76dd792cf1dae54b0137ac8e263af52407510baeecf1179614804151c"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 298,
+        "sha256": "0c81514969e359bd855a701bf9b5a6a9390398ccdac7a21c1c600602d965e30d"
+      },
+      {
+        "name": "docs-final.log",
+        "bytes": 662,
+        "sha256": "83fed6c424a6472e3175f5975ef8aa747b914c6c5fc93c90036a955863016669"
+      },
+      {
+        "name": "final-linux.log",
+        "bytes": 19525,
+        "sha256": "225520a97a35894ed60a23395f6b42676aff0ce310b6eda1f933e0e23022d2e0"
+      },
+      {
+        "name": "final-repeats.log",
+        "bytes": 6519,
+        "sha256": "2ab67a77c34277426c222b3232b184ff1c2465364356aba8c2fe843ade10c2df"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1932,
+        "sha256": "4153bc21d58c976d39c9a192680a3a041183a9fc73359f348bb2d808fd741ebb"
+      },
+      {
+        "name": "format.log",
+        "bytes": 18,
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92"
+      },
+      {
+        "name": "initial-repeats.log",
+        "bytes": 6150,
+        "sha256": "9edb5709734028f973d247974a3217b5a6253fd3d2d8f29b6df8865a5528add9"
+      },
+      {
+        "name": "initial-reviewed-linux.log",
+        "bytes": 19402,
+        "sha256": "7f976331baf22193e00247f3f6b75735dec34d48b0280e56baee3c5ae721775a"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "linux-check.log",
+        "bytes": 280,
+        "sha256": "29cb3eb39b186ae68086371cdfc97f01db75a0ab7f9e4c1f8b76b747e484a08b"
+      },
+      {
+        "name": "linux-lint.log",
+        "bytes": 280,
+        "sha256": "1e661d5f030d7cebbc148782980e34786f754dbc7005e703530794127d032e8e"
+      },
+      {
+        "name": "post-registry.log",
+        "bytes": 439,
+        "sha256": "b84d95c485c1258185e19414bbf334fe391b4c1ee6081c3a4309190f69f8dfa4"
+      },
+      {
+        "name": "root.log",
+        "bytes": 10521,
+        "sha256": "5a3655f91f1714490e392c20dc283530b42e3e568ee1677761668134e2d67114"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 487,
+        "sha256": "884f9c07e2b15a8af8fe62e81128c98e42ed419537cb1be88bad4a07ffd8f85b"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 7960,
+        "sha256": "6d304424a6b3af719b19ca8bf4c339d5f87e49a3bf76828f9c95a0ce4eff0c61"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 1614,
+        "sha256": "339af678ac9faaad66555a896c771cf72626159772fbc9ced7f6345b34ddecd9"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 2868,
+        "sha256": "1dd47fc94c4d257f02ff1c189d3653793ab37d4dd3d47ee71d9b065782b2244c"
+      }
+    ]
+  }
+}

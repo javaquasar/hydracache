@@ -1,0 +1,256 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved imports `credentials::pin_asserted_worker_credentials`, `credentials::AssertedWorkerCredentials`, `credentials::CredentialError`, `credentials::ProcessCredentialRead`
+  --> tools/long-run-supervisor-074/src/diagnostic_process.rs:21:5
+   |
+21 |     ...redentials, AssertedWorkerCred...tialError, ProcessCredentialRead,
+   |     ...^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^...^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^ no `ProcessCredentialRead` in `diagnostic_process::credentials`
+   |     |                                |                          |
+   |     |                                |                          no `CredentialError` in `diagnostic_process::credentials`
+   |     |                                no `AssertedWorkerCredentials` in `diagnostic_process::credentials`
+   |     no `pin_asserted_worker_credentials` in `diagnostic_process::credentials`
+
+error[E0425]: cannot find type `AssertedWorkerCredentials` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:11:20
+   |
+11 | ...-> AssertedWorkerCredentials {
+   |       ^^^^^^^^^^^^^...t found in this scope
+
+error[E0425]: cannot find value `FIELDS` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:63:20
+   |
+63 | ...in FIELDS {
+   |       ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `DOCUMENT_BYTES` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:89:38
+   |
+89 | ...'; DOCUMENT_BYTES + ...
+   |       ^^^^^^^^^^^^^^ not found in thi...ope
+   |
+help: consider importing this constant
+   |
+ 5 +     use crate::diagnostic_process::DOCUMENT_BYTES;
+   |
+
+error[E0425]: cannot find type `CredentialError` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:176:58
+    |
+176 | ...), CredentialError> {
+    |       ^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+167 |     impl<CredentialError> Fake {
+    |         +++++++++++++++++
+
+error[E0405]: cannot find trait `CredentialProbe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:187:10
+    |
+187 | ...pl Cr...ialProbe fo...
+    |       ^^...^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `CredentialError` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:188:41
+    |
+188 | ...), CredentialError> {
+    |       ^^^^^^^^^^^^^^^ not found in this...e
+    |
+help: you might be missing a type parameter
+    |
+187 |     impl<CredentialError> CredentialProbe for Fake {
+    |         +++++++++++++++++
+
+error[E0425]: cannot find type `Projection` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:191:36
+    |
+191 | ...lt<Projection, C...
+    |       ^^^^^^^^^^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+187 |     impl<Projection> CredentialProbe for Fake {
+    |         ++++++++++++
+
+error[E0425]: cannot find type `CredentialError` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:191:48
+    |
+191 | ...n, CredentialError> {
+    |       ^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: you might be missing a type parameter
+    |
+187 |     impl<CredentialError> CredentialProbe for Fake {
+    |         +++++++++++++++++
+
+error[E0425]: cannot find value `FIELDS` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:254:23
+    |
+254 | ... = FIELDS[rn...
+    |       ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `FIELDS` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:254:45
+    |
+254 | ... % FIELDS.le...
+    |       ^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `AssertedWorkerCredentials` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:293:27
+    |
+293 | ...-> AssertedWorkerCredentials {
+    |       ^^^^^^^^^^^^^^^^^^^...d in this scope
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:5:9
+  |
+5 | ...se super::*;
+  |       ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:12:9
+   |
+12 | ...   As...dentials::n...
+   |       ^^...^^^^^^^^ use of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:42:21
+   |
+42 | ...t!(AssertedWorker.....
+   |       ^^^^^^^^^^^^^^... of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:44:9
+   |
+44 | ...   As...dentials::n...
+   |       ^^...^^^^^^^^ use of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:45:9
+   |
+45 | ...   As...dentials::n...
+   |       ^^...^^^^^^^^ use of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:57:18
+   |
+57 | ...  &AssertedWor...:n...
+   |       ^^^^^^^^^^^...use of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:181:21
+    |
+181 | ...rr(CredentialErr......
+    |       ^^^^^^^^^^^^^...e of undeclared type `CredentialError`
+
+error[E0433]: failed to resolve: use of undeclared type `Gate`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:204:24
+    |
+204 | ... = Gate::n...
+    |       ^^^^ use of undeclared type `Gate`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:213:51
+    |
+213 | ...rr(CredentialError::D...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Cre...alError`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:215:51
+    |
+215 | ...rr(CredentialError::R...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Cre...alError`
+
+error[E0433]: failed to resolve: use of undeclared type `Gate`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:222:28
+    |
+222 | ... = Gate::n...
+    |       ^^^^ use of undeclared type `Gate`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:225:55
+    |
+225 | ...rr(CredentialError::I...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Credent...ror`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:229:55
+    |
+229 | ...rr(CredentialError::R...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Credent...ror`
+
+error[E0433]: failed to resolve: use of undeclared type `Gate`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:236:24
+    |
+236 | ... = Gate::n...
+    |       ^^^^ use of undeclared type `Gate`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:241:51
+    |
+241 | ...rr(CredentialError::D...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Cre...alError`
+
+error[E0433]: failed to resolve: use of undeclared type `AssertedWorkerCredentials`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:309:9
+    |
+309 | ...   A...edentials::n...
+    |       ^...^^^^^^^^^ use of undeclared type `AssertedWorkerCredentials`
+
+error[E0433]: failed to resolve: use of undeclared type `CredentialError`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs:357:50
+    |
+357 | ...rr(CredentialError::R...
+    |       ^^^^^^^^^^^^^^^ use of undeclared type `Cr...ialError`
+
+
+thread 'rustc' (394) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 28 but ends at 27
+stack backtrace:
+   0:     0x7f34ce85c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7f34cee0e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7f34d02f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7f34ce829b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7f34ce829993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7f34cd810aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7f34ce829e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7f34ce829c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7f34ce823ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7f34ce80448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7f34cb38e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7f34cb066c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7f34cd1697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7f34d01d5d8f - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7f34d01c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7f34d03004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7f34d0302cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7f34d03023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7f34d02fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7f34d02f9ede - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7f34d02f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7f34cfe2d88f - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_stashed_diagnostics
+  22:     0x7f34cff834ad - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_stashed_diagnostics
+  23:     0x7f34cff831b5 - <rustc_session[eab982bd009dcc5a]::session::Session>::finish_diagnostics
+  24:     0x7f34cff81159 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  25:     0x7f34cff29b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  26:     0x7f34cff2993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  27:     0x7f34cff2b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  28:     0x7f34c989cb84 - <unknown>
+  29:     0x7f34c9929ecc - <unknown>
+  30:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+end of query stack
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 28 previous errors; 1 warning emitted

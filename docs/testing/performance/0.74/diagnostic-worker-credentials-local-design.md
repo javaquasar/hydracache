@@ -70,3 +70,28 @@ the difference is an observation, not an exact physical deletion measurement.
 Current caches, evidence and all worktrees were retained. Removed caches can be
 rebuilt, not restored from trash. The preceding 27-capture evidence packet still
 passed its offline verifier. This maintenance is not performance evidence.
+
+## Local result
+
+The completed baseline passed 172 Linux tests with one pre-existing ignored.
+The first command selected a nonexistent integration target and executed no
+tests; the corrected command uses `--test diagnostic_artifacts`. The missing-API
+test attempt also hit a rustc diagnostic-renderer panic. A separate library check
+captured one unresolved-import error without a panic before implementation.
+
+Thirteen initial tests passed, then the reviewed suite grew to sixteen. Final
+Linux coverage passes 188 tests with one pre-existing ignored, plus three
+sixteen-test repetitions. Seed `0x74c2026` exercises 256 syntactically valid
+single-field mutations per repetition, including bounding-set drift. Real
+owned-helper tests cover original retained status, four independent parallel
+readers, wrong numeric assertions, NoNewPrivs refusal, process exit and private
+descriptor substitution followed by restoration. Portable Windows coverage
+passes 28 tests; it executes no Linux credential tests. Root contracts, evidence
+and governance pass 122 checks before packet registration.
+
+The result supports the narrow read-only mechanism, not positive fixed-unit
+execution, account-name authentication, all-thread credentials or namespace
+enrollment. These are safety checks; allocations and goodput were not measured.
+The [retained packet](local-runs/diagnostic-worker-credentials-20261010/manifest.json)
+records raw captures and the unchanged qualification digest. No full workspace
+milestone verification or expensive workload is claimed.

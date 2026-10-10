@@ -5220,3 +5220,54 @@ placement error and strict-lint refusal are retained alongside corrected checks.
 Production preparation, original-start authentication, watchdog and uncertain
 intent reconciliation still precede a controlled positive rehearsal. These tests
 do not measure allocations, throughput or qualification performance.
+
+### Kernel credentials are not account enrollment
+
+The next question is narrower than whether a worker may start: does the original
+retained process still have the credentials we explicitly expected? An account
+name in a unit and UID/GID arguments passed to an output inspector cannot answer
+that question. The
+[credential observer](../testing/performance/0.74/diagnostic-worker-credentials-local-design.md)
+reads `status` relative to the original retained proc directory, without accepting
+a second PID or replacing the original document. Original-generation checks
+bracket two bounded positional reads; selected fields must match both the policy
+and the original projection. The first failure latches refusal, even if a test
+restores the substituted descriptor afterward.
+
+The policy checks real, effective, saved and filesystem UID/GID values, exact
+supplementary groups and zero inheritable, permitted, effective and ambient
+capabilities. It requires NoNewPrivs, but does not confuse that flag with complete
+privilege confinement: the [kernel contract](https://docs.kernel.org/userspace-api/no_new_privs.html)
+primarily constrains privilege gains through exec. Likewise, the bounding set is
+retained and checked for drift, not treated as an active capability set or forced
+to zero without a corresponding unit policy. The
+[proc reference](https://docs.kernel.org/filesystems/proc.html) distinguishes those
+fields. A non-UTF8 process name remains irrelevant to the byte-level credential
+projection. Missing, duplicate, malformed, oversized or uncertain inputs refuse.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-worker-credentials-20261010/manifest.json)
+retains the 172-pass Linux baseline, initial thirteen-test green and final
+188-pass Linux run with one pre-existing ignored. All sixteen new tests pass
+three more repetitions. Seed `0x74c2026` drives 256 valid single-field mutations,
+so rejection is not explained merely by malformed input. Owned cat helpers
+exercise real retained documents, repeated and parallel reads, incorrect
+assertions, NoNewPrivs refusal and exit. Private descriptor substitution verifies
+that restoration cannot repair a refused guard. Windows passes 28 portable
+tests, not these Linux tests; root contracts/evidence/governance pass 122 checks
+before packet registration. The invalid target command and diagnostic-renderer
+failure remain visible beside the clean pre-implementation API refusal.
+
+The hypothesis is supported for this original-process, point-in-time observation.
+It is not evidence of continuous or all-thread credentials, trusted user
+namespace enrollment, authenticated account-name mapping or positive production
+execution. Fixed `hydracache-perf` enrollment and composition with the existing
+execution guard are still needed before signed original-start authorization.
+No account, unit, supervisor host, observer or product workload was changed;
+these results measure safety behavior, not allocations or throughput.
+
+Before the baseline, six obsolete ignored Cargo caches were cleaned after exact
+path, reparse-point and active-compiler checks. Their inventory contained about
+12.3 GiB of logical data; C: free space rose from about 1.5 to 13.1 GiB at those
+observations. Current caches, raw evidence and all worktrees remained intact,
+and the previous packet passed its verifier again. This is operational disk
+maintenance, not a performance result; deleted caches are recoverable by rebuild.

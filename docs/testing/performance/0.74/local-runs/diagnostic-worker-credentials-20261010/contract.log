@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `dev` profile [unoptimized] target(s) in 1m 07s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)

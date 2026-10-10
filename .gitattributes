@@ -82,3 +82,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-live-identity-*/**/*.log -te
 docs/testing/performance/0.74/local-runs/diagnostic-production-output-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-live-execution-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-output-preparation-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof

@@ -1078,6 +1078,17 @@ preparation, authenticated worker enrollment, signed original start and uncertai
 intent/watchdog integration remain prerequisites. This fixture API opens no live
 route or numerical admission and does not alter frozen qualification inputs.
 
+The [original-process credential guard](../testing/performance/0.74/diagnostic-worker-credentials-local-design.md)
+now checks retained kernel status against explicit non-root numeric assertions.
+All real/effective/saved/filesystem UID/GID slots, exact supplementary groups,
+zero active capability sets and NoNewPrivs are required. Original generation
+checks bracket two bounded positional status reads; any failure is sticky and
+bounding-set drift refuses. Local owned helpers and synthetic ordering tests
+do not authenticate `hydracache-perf`, every thread or a user namespace. Fixed
+account enrollment, production composition and authenticated original start
+remain prerequisites; no new helper/IPC, launch, mutation or qualification route
+is enabled and the frozen inputs remain unchanged.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

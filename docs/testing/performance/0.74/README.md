@@ -2181,3 +2181,21 @@ and byte-retention evidence, not positive production execution or performance.
 Production worker enrollment, root-owned preparation, signed lifecycle admission
 and uncertain-intent/watchdog integration remain closed. Frozen qualification
 inputs are unchanged; no server, observer or product workload is involved.
+
+The [original-process credential guard](diagnostic-worker-credentials-local-design.md)
+adds a bounded Linux status reader for the already retained process. It requires
+an explicit non-root numeric policy, all four UID/GID slots, exact supplementary
+groups, zero active capability sets and NoNewPrivs. Generation checks bracket
+two status reads; bounding-set or other selected-field drift permanently refuses
+the guard. It exports no raw status or descriptors and adds no live route.
+
+Final local coverage passes 188 Linux tests with one pre-existing ignored,
+three sixteen-test repetitions, 28 portable Windows tests and 122 root checks
+before packet registration. The
+[packet](local-runs/diagnostic-worker-credentials-20261010/manifest.json)
+separates the bad target invocation, compiler-renderer failure and clean API red
+from corrected results. Owned cat helpers bypass production cgroup admission
+only through a test-only seam; they do not authenticate `hydracache-perf` or a
+production start. Account enrollment, namespace/thread policy and production
+composition remain separate. No allocation or throughput result is claimed;
+qualification admission remains closed.
