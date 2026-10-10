@@ -4,6 +4,13 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 same-user-namespace guard is opt-in Linux runtime-only. It compares
+retained nsfs user namespace objects for an original process and the reading
+thread, with generation brackets and sticky refusal. It adds no helper mode,
+IPC or serialized artifact, accepts no replacement PID/namespace/FD and cannot
+join namespaces. It does not authenticate an initial host namespace, bind an
+already-open credential document's view or alter the numeric-only credential API.
+
 The 0.74 asserted worker binding is Linux runtime-only. It borrows the original
 fixed-account and retained-process credential guards, compares the existing
 numeric policy and brackets credential observation with account checks. It adds

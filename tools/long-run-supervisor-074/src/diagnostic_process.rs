@@ -22,6 +22,10 @@ pub use credentials::{
     ProcessCredentialRead,
 };
 
+#[path = "diagnostic_user_namespace.rs"]
+mod user_namespace;
+pub use user_namespace::{pin_same_user_namespace, NamespaceError, SameUserNamespaceRead};
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]

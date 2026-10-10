@@ -1560,6 +1560,127 @@ fn diagnostic_asserted_worker_binding_keeps_trusted_policy_and_start_closed() {
 }
 
 #[test]
+fn diagnostic_user_namespace_keeps_host_enrollment_and_credential_view_closed() {
+    let c = contract("diagnostic-user-namespace-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-user-namespace-local-074-v1")
+    );
+    let order = c["revalidation_order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        order,
+        [
+            "generation",
+            "namespace",
+            "generation",
+            "namespace",
+            "generation"
+        ]
+    );
+    for field in [
+        "original_process_only",
+        "reading_thread_not_process_leader",
+        "nsfs_and_user_type_required",
+        "kernel_device_inode_identity_retained",
+        "fixed_magic_links_only",
+        "readonly_cloexec_namespace_descriptors",
+        "process_generation_required_after_namespace_pin",
+        "first_error_preserved",
+        "refusal_sticky",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "observation_after_refusal_allowed",
+        "replacement_pid_or_namespace_input_allowed",
+        "namespace_fd_or_token_exported",
+        "setns_or_unshare_allowed",
+        "numeric_credential_policy_changed",
+        "credential_opener_namespace_bound",
+        "trusted_host_or_initial_namespace_proved",
+        "trusted_nss_provider_proved",
+        "all_threads_namespace_proved",
+        "atomic_or_continuous_observation_proved",
+        "other_original_guards_latched",
+        "original_start_authenticated",
+        "new_helper_or_ipc_route",
+        "host_install_or_unit_mutation_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_user_namespace.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "process: &'a ProcessRead",
+        "process: &ProcessRead",
+        "process.revalidate()?",
+        "self.probe.process.revalidate()?",
+        "libc::NSFS_MAGIC",
+        "libc::NS_GET_NSTYPE",
+        "libc::CLONE_NEWUSER",
+        "FileId::of(&file.metadata()?)",
+        "c\"thread-self\"",
+        "c\"user\"",
+        "libc::O_RDONLY | libc::O_CLOEXEC",
+        "self.refused = true",
+        "Err(NamespaceError::Refused)",
+        "require_same(namespace_id(&worker)?, original)?",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "libc::setns",
+        "libc::unshare",
+        "Command::new",
+        "c\"self\"",
+        "pin_kernel_process",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn descriptor",
+        "pub fn namespace_id",
+        "write_all(",
+        "setuid(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_process_credentials.rs",
+    ] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("pin_same_user_namespace"),
+            "no live/credential route in {path}"
+        );
+    }
+    // Source shape only; namespace/kernel behavior has separate Linux tests.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(
