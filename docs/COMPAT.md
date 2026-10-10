@@ -4,6 +4,14 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 asserted worker binding is Linux runtime-only. It borrows the original
+fixed-account and retained-process credential guards, compares the existing
+numeric policy and brackets credential observation with account checks. It adds
+no serialized artifact or helper/IPC mode, and exports no PID/policy replacement
+or descriptors. Refusal propagates to both original inputs, including constructor
+failure and after wrapper drop. Mapping consistency is not trusted provider or
+namespace enrollment, authenticated original start, durable refusal or admission.
+
 The 0.74 original-process credential guard is Linux runtime-only. It reads the
 retained original status under bounded generation brackets and sticky refusal,
 checking explicit numeric assertions, not an enrolled account name. No raw FD,

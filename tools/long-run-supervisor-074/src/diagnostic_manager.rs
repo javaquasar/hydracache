@@ -31,6 +31,7 @@ const SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
 #[path = "diagnostic_worker_account.rs"]
 mod account;
 pub use account::{account_worker_main, WorkerAccountRead, WorkerAccountSnapshot};
+pub use account::{bind_asserted_worker, AssertedWorkerBindingRead, WorkerBindingError};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ManagerScope {

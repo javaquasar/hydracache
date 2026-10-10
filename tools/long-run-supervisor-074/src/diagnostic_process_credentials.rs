@@ -152,6 +152,21 @@ pub struct ProcessCredentialRead<'a> {
     gate: Gate,
 }
 impl ProcessCredentialRead<'_> {
+    pub(crate) fn refuse(&mut self) {
+        self.gate.refused = true;
+    }
+    pub(crate) fn matches_account(
+        &self,
+        account: &crate::diagnostic_manager::WorkerAccountRead,
+    ) -> bool {
+        !self.gate.refused
+            && self.gate.original.is_some()
+            && account.matches_assertions(
+                self.gate.policy.uid,
+                self.gate.policy.gid,
+                &self.gate.policy.groups,
+            )
+    }
     pub fn revalidate(&mut self) -> Result<(), CredentialError> {
         self.gate.observe(&OriginalProbe {
             process: self.process,

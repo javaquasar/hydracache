@@ -13,6 +13,10 @@ const SNAPSHOT_BYTES: usize = 4096;
 const NSS_BYTES: usize = 16_384;
 const MEMBERSHIPS: usize = 32;
 
+#[path = "diagnostic_worker_binding.rs"]
+mod binding;
+pub use binding::{bind_asserted_worker, AssertedWorkerBindingRead, WorkerBindingError};
+
 /// Local NSS projection only: not authenticated host policy or process credentials.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct WorkerAccountSnapshot {
@@ -78,6 +82,30 @@ impl WorkerAccountRead {
     }
     pub fn is_refused(&self) -> bool {
         self.refused
+    }
+    pub(crate) fn refuse(&mut self) {
+        self.refused = true;
+    }
+    /// Consistency of caller assertions only; no values are exported or adopted.
+    pub(crate) fn matches_assertions(&self, uid: u32, gid: u32, groups: &[u32]) -> bool {
+        if self.refused
+            || uid != self.original.uid
+            || gid != self.original.gid
+            || groups.len() > MEMBERSHIPS
+            || groups.iter().any(|group| !nonroot_id(*group))
+            || groups.windows(2).any(|pair| pair[0] >= pair[1])
+        {
+            return false;
+        }
+        // Exactly the asserted list, or that list without the separately checked
+        // primary GID. Do not allocate a union or infer kernel supplementary IDs.
+        groups == self.original.membership_gids.as_slice()
+            || groups.iter().copied().eq(self
+                .original
+                .membership_gids
+                .iter()
+                .copied()
+                .filter(|group| *group != gid))
     }
     pub fn revalidate(&mut self, client: &mut ManagerClient) -> Result<(), WorkerFailure> {
         if self.refused {

@@ -1449,6 +1449,117 @@ fn diagnostic_fixed_account_lookup_keeps_trusted_enrollment_and_launch_closed() 
 }
 
 #[test]
+fn diagnostic_asserted_worker_binding_keeps_trusted_policy_and_start_closed() {
+    let c = contract("diagnostic-worker-binding-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-worker-binding-local-074-v1")
+    );
+    assert_eq!(c["membership_limit"].as_integer(), Some(32));
+    let order = c["revalidation_order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(order, ["account", "original-credentials", "account"]);
+    for field in [
+        "borrowed_original_guards_only",
+        "numeric_policy_unchanged",
+        "exact_uid_primary_gid_match_required",
+        "explicit_supplementary_primary_union_required",
+        "zero_supplementary_gid_refused",
+        "mapping_checked_before_observation",
+        "first_error_details_preserved",
+        "both_original_inputs_refused_on_error",
+        "constructor_failure_and_drop_preserve_refusal",
+        "no_observation_after_refusal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "new_pid_or_policy_input_allowed",
+        "raw_status_or_descriptors_exported",
+        "new_helper_or_ipc_route",
+        "worker_account_authenticated",
+        "trusted_nss_provider_proved",
+        "host_namespace_enrollment_proved",
+        "all_threads_credentials_proved",
+        "atomic_or_continuous_observation_proved",
+        "original_start_authenticated",
+        "positive_production_composition_proved",
+        "whole_composition_deadline_proved",
+        "durable_refusal_journal",
+        "unit_mutation_allowed",
+        "account_creation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_binding.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "account: &'guard mut WorkerAccountRead",
+        "credentials: &'guard mut ProcessCredentialRead<'process>",
+        "read.revalidate(manager)?",
+        "[Step::Account, Step::Credentials, Step::Account]",
+        "self.credentials.matches_account(self.account)",
+        "self.account.refuse(); self.credentials.refuse();",
+        "self.revalidate_with(|account| account.revalidate(manager))",
+        "self.credentials.revalidate()",
+        "self.refused = true; return Err(error)",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "Command::new",
+        "getpwnam",
+        "pin_kernel_process",
+        "pin_asserted_worker_credentials",
+        "pub fn refresh",
+        "pub fn reset",
+        "pub fn account",
+        "pub fn credentials",
+        "StartTransientUnit",
+        "setuid(",
+        "setgroups(",
+        "write_all(",
+        "kill(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("bind_asserted_worker"),
+            "no live route in {path}"
+        );
+    }
+    // Source-shape contract, not a trusted account/provider or runtime proof.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(
