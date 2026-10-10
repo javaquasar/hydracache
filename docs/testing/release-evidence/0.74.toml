@@ -480,7 +480,7 @@ function = "w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal"
 
 [[work_item]]
 id = "W11"
-required_sources = ["tools/long-run-supervisor-074/src/state.rs", "tools/long-run-supervisor-074/src/measurement_loss.rs", "tools/long-run-supervisor-074/src/server.rs", "tools/long-run-supervisor-074/src/systemd_spawn.rs", "tools/long-run-supervisor-074/src/campaign_smoke.rs", "tools/long-run-supervisor-074/src/systemd_unit.rs", "tools/long-run-supervisor-074/src/host_receipt.rs", "tools/long-run-supervisor-074/src/diagnostic_lease.rs", "tools/long-run-supervisor-074/src/diagnostic_unit.rs", "tools/long-run-supervisor-074/src/diagnostic_ipc.rs", "docs/testing/performance/0.74/diagnostic-ipc-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs", "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs", "docs/testing/performance/0.74/diagnostic-artifacts-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_receipts.rs", "docs/testing/performance/0.74/diagnostic-receipts-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_spool.rs", "docs/testing/performance/0.74/diagnostic-spool-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_tree.rs", "docs/testing/performance/0.74/diagnostic-tree-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_process.rs", "docs/testing/performance/0.74/diagnostic-process-local-contract.toml", "scripts/ci/monitor-long-run-campaign-074.py", "crates/xtask/src/long_run_campaign.rs", "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_manager.rs", "docs/testing/performance/0.74/diagnostic-manager-local-contract.toml", "docs/testing/performance/0.74/diagnostic-proc-document-contract.toml", "docs/testing/performance/0.74/diagnostic-local-build-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_builder.rs", "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs", "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs", "scripts/perf/diagnostic_builder_074.py", "scripts/perf/test_diagnostic_builder_074.py", ".github/workflows/diagnostic-builder-074.yml", "docs/testing/performance/0.74/diagnostic-builder-local-contract.toml", "docs/testing/performance/0.74/diagnostic-builder-enrollment-contract.toml", "docs/testing/performance/0.74/diagnostic-builder-public-policy.json", "tools/long-run-supervisor-074/src/diagnostic_loaded.rs", "docs/testing/performance/0.74/diagnostic-loaded-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_process_io.rs", "docs/testing/performance/0.74/diagnostic-io-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_named_output.rs", "docs/testing/performance/0.74/diagnostic-named-output-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs", "docs/testing/performance/0.74/diagnostic-live-identity-local-contract.toml", "docs/testing/performance/0.74/diagnostic-production-output-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs", "docs/testing/performance/0.74/diagnostic-live-execution-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs", "docs/testing/performance/0.74/diagnostic-output-preparation-local-contract.toml"]
+required_sources = ["tools/long-run-supervisor-074/src/state.rs", "tools/long-run-supervisor-074/src/measurement_loss.rs", "tools/long-run-supervisor-074/src/server.rs", "tools/long-run-supervisor-074/src/systemd_spawn.rs", "tools/long-run-supervisor-074/src/campaign_smoke.rs", "tools/long-run-supervisor-074/src/systemd_unit.rs", "tools/long-run-supervisor-074/src/host_receipt.rs", "tools/long-run-supervisor-074/src/diagnostic_lease.rs", "tools/long-run-supervisor-074/src/diagnostic_unit.rs", "tools/long-run-supervisor-074/src/diagnostic_ipc.rs", "docs/testing/performance/0.74/diagnostic-ipc-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs", "tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs", "docs/testing/performance/0.74/diagnostic-artifacts-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_receipts.rs", "docs/testing/performance/0.74/diagnostic-receipts-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_spool.rs", "docs/testing/performance/0.74/diagnostic-spool-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_tree.rs", "docs/testing/performance/0.74/diagnostic-tree-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_process.rs", "docs/testing/performance/0.74/diagnostic-process-local-contract.toml", "scripts/ci/monitor-long-run-campaign-074.py", "crates/xtask/src/long_run_campaign.rs", "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_manager.rs", "docs/testing/performance/0.74/diagnostic-manager-local-contract.toml", "docs/testing/performance/0.74/diagnostic-proc-document-contract.toml", "docs/testing/performance/0.74/diagnostic-local-build-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_builder.rs", "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs", "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs", "scripts/perf/diagnostic_builder_074.py", "scripts/perf/test_diagnostic_builder_074.py", ".github/workflows/diagnostic-builder-074.yml", "docs/testing/performance/0.74/diagnostic-builder-local-contract.toml", "docs/testing/performance/0.74/diagnostic-builder-enrollment-contract.toml", "docs/testing/performance/0.74/diagnostic-builder-public-policy.json", "tools/long-run-supervisor-074/src/diagnostic_loaded.rs", "docs/testing/performance/0.74/diagnostic-loaded-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_process_io.rs", "docs/testing/performance/0.74/diagnostic-io-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_named_output.rs", "docs/testing/performance/0.74/diagnostic-named-output-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_live_identity.rs", "docs/testing/performance/0.74/diagnostic-live-identity-local-contract.toml", "docs/testing/performance/0.74/diagnostic-production-output-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_live_execution.rs", "docs/testing/performance/0.74/diagnostic-live-execution-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs", "docs/testing/performance/0.74/diagnostic-output-preparation-local-contract.toml", "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs", "docs/testing/performance/0.74/diagnostic-worker-credentials-local-contract.toml"]
 required_artifacts = ["docs/testing/canary-registry-0.74.json", "docs/testing/performance/0.74/local-runs/w11-controller-canaries-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-measurement-loss-maintenance-local-20261005.json", "docs/testing/performance/0.74/local-runs/w11-campaign-progress-loss-smoke-1de46cac.json", "docs/testing/performance/0.74/local-runs/w11-campaign-measurement-loss-smoke-8d786d8f.json", "docs/testing/performance/0.74/local-runs/w11-campaign-lease-expiry-smoke-187b63fb.json", "docs/testing/performance/0.74/local-runs/w11-windows-canary-guard-compile-rejected-ae32f62c.json", "docs/testing/performance/0.74/local-runs/diagnostic-lease-f4f68ad7/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-ipc-403696a7/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-artifacts-70ca60eb/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-receipts-ceaa8b07/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-spool-88b9b835/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-tree-f555f32a/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-process-b8c626cf/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-manager-c2fdc3f4/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-local-build-62114be0/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-builder-6118219f/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-builder-enrollment-20261009/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-start-material-20261009/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-loaded-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-io-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-named-output-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-live-identity-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-production-output-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-live-execution-20261010/manifest.json", "docs/testing/performance/0.74/local-runs/diagnostic-output-preparation-20261010/manifest.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -1052,6 +1052,74 @@ function = "diagnostic_fixture_preparation_keeps_production_and_launch_closed"
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs"
 function = "fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/performance_contract_074.rs"
+function = "diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "credential_policy_is_nonroot_canonical_and_bounded"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "status_projection_ignores_nonutf8_name_but_checks_all_credentials"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "status_projection_refuses_missing_duplicate_and_malformed_fields"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "status_numeric_tokens_and_group_limits_fail_closed"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "every_uid_gid_slot_and_leader_identity_are_checked"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "active_capabilities_and_missing_no_new_privs_refuse"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "credential_observation_order_and_bounding_drift_are_sticky"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "every_observation_failure_stops_and_preserves_first_error"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "second_status_drift_cannot_update_original_projection"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "seeded_single_field_mutations_never_adopt_changed_credentials"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "status_zero_leader_nul_separator_and_full_group_boundary_refuse_or_bind_exactly"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "independent_credential_guards_keep_refusal_and_assertions_separate"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "owned_no_new_privs_helper_binds_original_status_and_parallel_reads"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "owned_helper_wrong_assertions_and_unhardened_status_refuse"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "original_helper_exit_permanently_refuses_without_replacement"
+
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"
+function = "original_status_descriptor_substitution_latches_even_after_restoration"
 
 [[work_item]]
 id = "W12"

@@ -15,6 +15,13 @@ const PROC_MAGIC: libc::c_long = 0x9fa0;
 mod io;
 pub use io::ProcessIoRead;
 
+#[path = "diagnostic_process_credentials.rs"]
+mod credentials;
+pub use credentials::{
+    pin_asserted_worker_credentials, AssertedWorkerCredentials, CredentialError,
+    ProcessCredentialRead,
+};
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]

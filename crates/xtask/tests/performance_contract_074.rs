@@ -1200,6 +1200,130 @@ fn diagnostic_fixture_preparation_keeps_production_and_launch_closed() {
 }
 
 #[test]
+fn diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed() {
+    let c = contract("diagnostic-worker-credentials-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-worker-credentials-local-074-v1")
+    );
+    assert_eq!(c["document_bytes"].as_integer(), Some(65536));
+    assert_eq!(c["supplementary_group_limit"].as_integer(), Some(32));
+    for field in [
+        "original_retained_process_only",
+        "asserted_numeric_policy_only",
+        "nonroot_four_uid_gid_slots_required",
+        "exact_supplementary_groups_required",
+        "zero_active_capability_sets_required",
+        "no_new_privs_required",
+        "original_bounding_set_drift_checked",
+        "first_error_is_sticky",
+        "no_observation_after_refusal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "raw_status_or_descriptors_exported",
+        "worker_account_authenticated",
+        "all_threads_credentials_proved",
+        "user_namespace_enrollment_proved",
+        "atomic_or_continuous_observation_proved",
+        "original_start_authenticated",
+        "production_composition_proved",
+        "whole_operation_deadline_proved",
+        "durable_refusal_journal",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let order: Vec<_> = c["revalidation_order"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect();
+    assert_eq!(order, ["process", "status", "process", "status", "process"]);
+    let fields: Vec<_> = c["required_status_fields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect();
+    assert_eq!(
+        fields,
+        [
+            "Pid",
+            "Tgid",
+            "Uid",
+            "Gid",
+            "Groups",
+            "CapInh",
+            "CapPrm",
+            "CapEff",
+            "CapBnd",
+            "CapAmb",
+            "NoNewPrivs"
+        ]
+    );
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process_credentials.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in ["pub fn pin_asserted_worker_credentials( process: &ProcessRead, policy: AssertedWorkerCredentials,",
+        "Document::open(&process.probe.files.directory, \"status\")?", "self.refused = true; Err(error)",
+        "self.uid != [policy.uid; 4]", "self.gid != [policy.gid; 4]", "self.active != [0; 4]",
+        "!self.no_new_privs", "self.groups != policy.groups", "original != &before", "before != after"] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "Command::new",
+        "getpwnam",
+        "getgrnam",
+        "StartTransientUnit",
+        "kill(",
+        "write_all(",
+        "setuid(",
+        "setgid(",
+        "pub fn status",
+        "pub fn document",
+        "pub fn process",
+        "pub fn refresh",
+        "pub fn reset",
+        "pin_kernel_process(",
+        "File::open(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("pin_asserted_worker_credentials"),
+            "no live route in {path}"
+        );
+    }
+    // Shape guard, not a proof of runtime ordering or account authentication.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(

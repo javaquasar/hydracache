@@ -4,6 +4,13 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 original-process credential guard is Linux runtime-only. It reads the
+retained original status under bounded generation brackets and sticky refusal,
+checking explicit numeric assertions, not an enrolled account name. No raw FD,
+wire/persisted schema, helper mode, credential mutation or launch route is added.
+It proves neither all-thread credentials nor user namespace enrollment,
+continuous privilege confinement, authenticated original start or admission.
+
 The 0.74 fenced output preparer is Linux runtime-only and fixture-only. It adds
 no wire operation or persistent receipt schema. It creates fixed empty streams
 under a temporary non-root owner and the existing cooperative host lock, without
