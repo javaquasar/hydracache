@@ -4,6 +4,13 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 fenced output preparer is Linux runtime-only and fixture-only. It adds
+no wire operation or persistent receipt schema. It creates fixed empty streams
+under a temporary non-root owner and the existing cooperative host lock, without
+changing diagnostic state. Existing or partial cells refuse rather than replay,
+overwrite or repair. This is not production provisioning or worker enrollment;
+it adds no process, host-install or qualification authority.
+
 The 0.74 original execution composition is Linux runtime-only and reuses the
 existing helper and descriptor readers. It adds no wire/persisted schema or launch
 API. Only the original identity's process can bind fixed production outputs and

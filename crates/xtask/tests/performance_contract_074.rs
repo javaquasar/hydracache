@@ -1094,6 +1094,112 @@ fn diagnostic_live_execution_composition_keeps_enrollment_and_admission_closed()
 }
 
 #[test]
+fn diagnostic_fixture_preparation_keeps_production_and_launch_closed() {
+    let c = contract("diagnostic-output-preparation-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-output-preparation-local-074-v1")
+    );
+    assert_eq!(
+        c["output_directory"].as_str(),
+        Some("diagnostic-fixture-outputs")
+    );
+    for field in [
+        "cooperative_fixture_only",
+        "kernel_effective_identity_required",
+        "existing_host_fence_required",
+        "explicit_shared_description_unlock",
+        "exact_reserved_state_required",
+        "asserted_clock_deadlines_checked",
+        "retained_directory_relative_creation",
+        "exclusive_cell_and_stream_creation",
+        "stream_and_directory_sync_required",
+        "partial_cell_retained_without_replay",
+        "readonly_fixture_result_only",
+        "production_paths_refused",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "production_output_preparation_allowed",
+        "worker_account_authenticated",
+        "signed_ipc_authorization_proved",
+        "original_start_authenticated",
+        "atomic_namespace_snapshot_proved",
+        "power_loss_recovery_proved",
+        "whole_operation_deadline_proved",
+        "persistent_preparation_receipt_added",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs"),
+    )
+    .unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "pub fn prepare_fixture_outputs(",
+        "Result<FixtureOutputRead, PreparationError>",
+        "FileExt::try_lock_exclusive(&lock)",
+        "fence.release()?",
+        "HOST_EXECUTION_LOCK_NAME",
+        "read_active(&fence.path)",
+        "libc::mkdirat(",
+        "libc::openat(",
+        "libc::O_EXCL",
+        "libc::O_NOFOLLOW",
+        "libc::O_NONBLOCK",
+        "libc::geteuid()",
+        "libc::getegid()",
+        "state.stage != DiagnosticStage::Reserved",
+        "CONTROLLER_LOSS_SECONDS * NS",
+        "TOTAL_SECONDS * NS",
+        "file.sync_all()",
+        "parent.sync_all()",
+        "campaign-lifecycle-smoke-v1.json",
+        "controller-loss-smoke-v1.json",
+        ".diagnostic-requests.pending",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "ProductionOutputRead",
+        "O_TRUNC",
+        "chown(",
+        "remove_file(",
+        "unlinkat(",
+        "StartTransientUnit",
+        "Command::new",
+        "Serialize",
+        "pub fn streams",
+        "pub fn prepare_production",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in ["main.rs", "server.rs", "config.rs", "diagnostic_ipc.rs"] {
+        let text =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(
+            !text.contains("diagnostic_output_preparation"),
+            "no live route in {path}"
+        );
+    }
+    // Source-shape guard only. Runtime lock, collision and fault tests are separate.
+}
+
+#[test]
 fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed() {
     let c = contract("diagnostic-production-output-local-contract.toml");
     assert_eq!(
