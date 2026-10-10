@@ -3,6 +3,7 @@
 use super::*;
 use crate::diagnostic_builder::CheckedBuilderPolicy;
 use crate::diagnostic_lease::DiagnosticState;
+use crate::diagnostic_process::{ProcessError, ProcessIoRead, ProcessRead};
 use crate::diagnostic_unit::{build_diagnostic_unit_spec, diagnostic_start_intent};
 use crate::systemd_unit::TransientUnitSpec;
 use sha2::{Digest, Sha256};
@@ -115,6 +116,14 @@ pub struct PinnedStartMaterial {
     refused: bool,
 }
 
+#[derive(Debug, Error)]
+pub enum ProcessIoBindingError {
+    #[error("checked start material refused: {0}")]
+    Material(#[from] ArtifactError),
+    #[error("original process IO observation refused: {0}")]
+    Process(#[from] ProcessError),
+}
+
 /// Read-only preparation at the fixed install root using an independently
 /// checked policy. Invalid/nonstartable state is refused before filesystem IO.
 pub fn prepare_fixed_start_material(
@@ -162,6 +171,33 @@ fn prepare_material(
 }
 
 impl PinnedStartMaterial {
+    /// Bind the original signed executable to a retained process generation.
+    /// Output FDs are caller assertions, NOT certification of production names,
+    /// safe ancestry or original start. No unit mutation/execution is enabled.
+    pub fn bind_asserted_process_io<'a>(
+        &mut self,
+        state: &DiagnosticState,
+        process: &'a ProcessRead,
+        stdout: &File,
+        stderr: &File,
+    ) -> Result<ProcessIoRead<'a>, ProcessIoBindingError> {
+        self.revalidate_for(state)?;
+        let result = (|| {
+            let binary = self
+                .bundle
+                .files
+                .get("timing-controls-074")
+                .ok_or(ArtifactError::Contents)?;
+            let mut io = process.pin_io(&binary.file, stdout, stderr)?;
+            self.revalidate_for(state)?;
+            io.revalidate()?;
+            Ok(io)
+        })();
+        if result.is_err() {
+            self.refused = true;
+        }
+        result
+    }
     /// Read-only metadata, including after refusal; never a launch permission.
     pub fn intent(&self) -> &CellIntent {
         &self.intent
@@ -434,4 +470,213 @@ fn hash_file(
         },
         bytes,
     ))
+}
+
+#[cfg(test)]
+mod io_binding_tests {
+    use super::*;
+    use crate::diagnostic_builder::{
+        load_policy, policy_bytes, BuilderPolicy, BUILDER_ID, POLICY_SCHEMA, REPOSITORY_ID,
+    };
+    use crate::diagnostic_lease::DiagnosticStage;
+    use ed25519_dalek::{Signer, SigningKey};
+    use std::io::Write;
+    use std::os::unix::fs::PermissionsExt;
+    use std::process::{Child, Command, Stdio};
+    use std::time::{Duration, Instant};
+
+    struct Fixture {
+        child: Child,
+        root: PathBuf,
+        temporary: tempfile::TempDir,
+        state: DiagnosticState,
+        policy: CheckedBuilderPolicy,
+        process: ProcessRead,
+        stdout: File,
+        stderr: File,
+    }
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            self.child.stdin.take();
+            self.child.wait().unwrap();
+            fs::set_permissions(&self.root, fs::Permissions::from_mode(0o755)).unwrap();
+        }
+    }
+    impl Fixture {
+        fn new() -> Self {
+            // SYNTHETIC test signature/log. The real /bin/cat copy is a
+            // non-product helper, not the signed hosted observer or provenance.
+            let temporary = tempfile::tempdir().unwrap();
+            let root = temporary.path().join("bundle");
+            fs::create_dir(&root).unwrap();
+            let binary = fs::read("/bin/cat").unwrap();
+            let receipt: SignedBuild = serde_json::from_slice(include_bytes!(
+                "../../../docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json"
+            )).unwrap();
+            let mut statement = receipt.statement;
+            let log = b"{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///synthetic/tools/get-owner-scheduled-controls-074#get-owner-scheduled-controls-074@0.0.0\",\"target\":{\"name\":\"timing-controls-074\",\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"src_path\":\"/synthetic/tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs\"},\"profile\":{\"opt_level\":\"3\",\"debug_assertions\":false,\"test\":false},\"features\":[],\"executable\":\"/synthetic/tools/get-owner-scheduled-controls-074/target/x86_64-unknown-linux-gnu/release/timing-controls-074\"}\n{\"reason\":\"build-finished\",\"success\":true}\n";
+            statement.binary = ArtifactDigest::of(&binary);
+            statement.build_log = ArtifactDigest::of(log);
+            let key = SigningKey::from_bytes(&[74; 32]);
+            let signed = receipt_bytes(&SignedBuild {
+                signature_hex: crate::hex(
+                    &key.sign(&signing_message(&statement).unwrap()).to_bytes(),
+                ),
+                statement: statement.clone(),
+            })
+            .unwrap();
+            for (name, bytes) in [
+                ("timing-controls-074", binary.as_slice()),
+                ("build-log.jsonl", log.as_slice()),
+                ("build-receipt-v1.json", signed.as_slice()),
+                (
+                    "Cargo.lock.root",
+                    include_bytes!("../../../Cargo.lock").as_slice(),
+                ),
+                (
+                    "Cargo.lock.observer",
+                    include_bytes!("../../get-owner-scheduled-controls-074/Cargo.lock").as_slice(),
+                ),
+                (
+                    "embedded.json",
+                    include_bytes!(
+                        "../../../docs/testing/performance/0.74/rental-pilot-draft/embedded.json"
+                    )
+                    .as_slice(),
+                ),
+                (
+                    "direct.json",
+                    include_bytes!(
+                        "../../../docs/testing/performance/0.74/rental-pilot-draft/direct.json"
+                    )
+                    .as_slice(),
+                ),
+                (
+                    "resp2.json",
+                    include_bytes!(
+                        "../../../docs/testing/performance/0.74/rental-pilot-draft/resp2.json"
+                    )
+                    .as_slice(),
+                ),
+                (
+                    "resp3.json",
+                    include_bytes!(
+                        "../../../docs/testing/performance/0.74/rental-pilot-draft/resp3.json"
+                    )
+                    .as_slice(),
+                ),
+            ] {
+                fs::write(root.join(name), bytes).unwrap();
+                fs::set_permissions(
+                    root.join(name),
+                    fs::Permissions::from_mode(if name == "timing-controls-074" {
+                        0o555
+                    } else {
+                        0o444
+                    }),
+                )
+                .unwrap();
+            }
+            fs::set_permissions(&root, fs::Permissions::from_mode(0o555)).unwrap();
+            let writer = |name: &str| {
+                OpenOptions::new()
+                    .create_new(true)
+                    .append(true)
+                    .mode(0o600)
+                    .open(temporary.path().join(name))
+                    .unwrap()
+            };
+            let mut child = Command::new(root.join("timing-controls-074"))
+                .stdin(Stdio::piped())
+                .stdout(writer("stdout"))
+                .stderr(writer("stderr"))
+                .spawn()
+                .unwrap();
+            child.stdin.as_mut().unwrap().write_all(b"ready\n").unwrap();
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while fs::read(temporary.path().join("stdout")).unwrap() != b"ready\n" {
+                assert!(Instant::now() < deadline, "helper handshake");
+                assert!(child.try_wait().unwrap().is_none());
+                std::thread::sleep(Duration::from_millis(2));
+            }
+            let process = crate::diagnostic_process::pin_owned_test_helper(child.id());
+            let state = DiagnosticState {
+                identity: DiagnosticIdentity {
+                    lease_id: "a".repeat(64),
+                    boot_id: process.observation().expected().boot_id.clone(),
+                    binary_sha256: statement.binary.sha256,
+                    build_provenance_sha256: sha256_hex(&signed),
+                },
+                revision: 1,
+                stage: DiagnosticStage::Reserved,
+                completed_cells: 0,
+                reserved_monotonic_ns: 1,
+                last_observed_monotonic_ns: 1,
+                controller_monotonic_ns: 1,
+                cell_started_monotonic_ns: None,
+                cgroup_inode: None,
+                reason: None,
+                cleanup_confirmed: true,
+                promotable: false,
+                admission_allowed: false,
+            };
+            let controller = SigningKey::from_bytes(&[12; 32]).verifying_key();
+            let bytes = policy_bytes(&BuilderPolicy {
+                schema_version: POLICY_SCHEMA.into(),
+                repository_id: REPOSITORY_ID,
+                builder_id: BUILDER_ID.into(),
+                builder_key_hex: crate::hex(key.verifying_key().as_bytes()),
+                controller_key_hex: crate::hex(controller.as_bytes()),
+            })
+            .unwrap();
+            let policy = load_policy(&bytes, &sha256_hex(&bytes), &controller).unwrap();
+            let stdout = File::open(temporary.path().join("stdout")).unwrap();
+            let stderr = File::open(temporary.path().join("stderr")).unwrap();
+            Self {
+                child,
+                root,
+                temporary,
+                state,
+                policy,
+                process,
+                stdout,
+                stderr,
+            }
+        }
+        fn material(&self) -> PinnedStartMaterial {
+            // SAFETY: side-effect-free identity queries for explicit fixture ownership.
+            let (uid, gid) = unsafe { (libc::getuid(), libc::getgid()) };
+            prepare_fixture_start_material(&self.root, uid, gid, &self.state, &self.policy).unwrap()
+        }
+    }
+    #[test]
+    fn checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift() {
+        let f = Fixture::new();
+        let mut material = f.material();
+        assert!(material.is_fixture());
+        material
+            .bind_asserted_process_io(&f.state, &f.process, &f.stdout, &f.stderr)
+            .unwrap()
+            .revalidate()
+            .unwrap();
+        let mut wrong_state = f.state.clone();
+        wrong_state.revision += 1;
+        assert!(matches!(
+            material.bind_asserted_process_io(&wrong_state, &f.process, &f.stdout, &f.stderr),
+            Err(ProcessIoBindingError::Material(_))
+        ));
+        assert!(material
+            .bind_asserted_process_io(&f.state, &f.process, &f.stdout, &f.stderr)
+            .is_err());
+        let mut material = f.material();
+        assert!(matches!(
+            material.bind_asserted_process_io(&f.state, &f.process, &f.stderr, &f.stdout),
+            Err(ProcessIoBindingError::Process(_))
+        ));
+        assert!(material
+            .bind_asserted_process_io(&f.state, &f.process, &f.stdout, &f.stderr)
+            .is_err());
+        // The output location is an explicit temporary caller assertion.
+        assert!(f.temporary.path().exists());
+    }
 }

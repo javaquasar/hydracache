@@ -4,6 +4,11 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 original executable/output descriptor binding is Linux runtime-only:
+no process/helper wire or persisted schema changes. Its sticky refusal is not a
+durable journal; caller-asserted output objects are not certified pathnames or
+authenticated original start. Existing versioned manager projections are unchanged.
+
 ## Versioned Artifacts
 
 | Artifact | Current Version | Writer | Reader Compatibility | Failure Mode |

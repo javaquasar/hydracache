@@ -11,6 +11,10 @@ const MAX_DEPTH: usize = 8;
 const MAX_COMPONENT: usize = 128;
 const PROC_MAGIC: libc::c_long = 0x9fa0;
 
+#[path = "diagnostic_process_io.rs"]
+mod io;
+pub use io::ProcessIoRead;
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]
@@ -243,6 +247,7 @@ fn pin(expected: ExpectedGeneration) -> Result<ProcessRead, ProcessError> {
     result.revalidate()?;
     Ok(result)
 }
+
 fn check(probe: &impl Probe, observation: &GenerationObservation) -> Result<(), ProcessError> {
     probe.live()?;
     if probe.boot()? != observation.expected.boot_id {
@@ -512,6 +517,20 @@ fn read_boot(root: &File) -> Result<String, ProcessError> {
         return Err(ProcessError::Invalid);
     }
     Ok(boot.into())
+}
+
+// Crate unittest seam only; never compiled into the supervisor/production API.
+#[cfg(test)]
+pub(crate) fn pin_owned_test_helper(pid: u32) -> ProcessRead {
+    let files = ProcFiles::open(pid).unwrap();
+    let fields = files.inspect().unwrap();
+    pin(ExpectedGeneration {
+        boot_id: read_boot(&files.root).unwrap(),
+        pid,
+        start_ticks: fields.stat.start_ticks,
+        cgroup_path: fields.cgroup,
+    })
+    .unwrap()
 }
 
 #[cfg(test)]

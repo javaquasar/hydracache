@@ -1011,6 +1011,83 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn original_process_io_binding_keeps_start_and_pathname_proof_closed() {
+    assert_eq!(
+        hydracache_long_run_supervisor_074::diagnostic_receipts::STREAM_BYTES,
+        8_388_608
+    );
+    let c = contract("diagnostic-io-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-io-local-074-v1")
+    );
+    assert_eq!(c["maximum_document_bytes"].as_integer(), Some(65536));
+    assert_eq!(c["maximum_stream_bytes"].as_integer(), Some(8388608));
+    for field in [
+        "first_refusal_is_sticky",
+        "readonly_expected_descriptors",
+        "fixed_proc_targets_only",
+        "observed_shrink_refused",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "output_pathnames_verified",
+        "same_open_file_description_proved",
+        "continuous_exec_identity_proved",
+        "effective_environment_proved",
+        "writer_revocation_proved",
+        "durable_refusal_journal",
+        "original_start_authenticated",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process_io.rs"),
+    )
+    .unwrap();
+    let production = source.split("#[cfg(test)]").next().unwrap();
+    for forbidden in [
+        "SYS_pidfd_open",
+        "Command::new",
+        "kill(",
+        "O_CREAT",
+        "O_TRUNC",
+        "O_WRONLY |",
+        "write_all(",
+        "read_link(",
+        "StartTransientUnit",
+        "StopUnit",
+    ] {
+        assert!(!production.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        "O_PATH | libc::O_CLOEXEC",
+        "readonly_clone",
+        "observe_stream",
+        "parse_fdinfo",
+        "O_APPEND",
+        "self.process.revalidate()",
+        "self.refused = true",
+        "STREAM_BYTES: u64 = crate::diagnostic_receipts::STREAM_BYTES as u64",
+    ] {
+        assert!(production.contains(required), "{required}");
+    }
+    let artifact = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs"),
+    )
+    .unwrap();
+    assert!(artifact.contains("pub fn bind_asserted_process_io"));
+    assert!(artifact.contains("self.revalidate_for(state)?"));
+    assert!(!artifact.contains("pub fn binary_file"));
+}
+
+#[test]
 fn loaded_diagnostic_settings_projection_keeps_execution_closed() {
     let c = contract("diagnostic-loaded-local-contract.toml");
     assert_eq!(
