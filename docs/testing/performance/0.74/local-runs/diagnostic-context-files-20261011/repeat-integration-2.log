@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized] target(s) in 2.17s
+     Running tests/diagnostic_context_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_context_files-0ab637bef6b10d3f)
+
+running 9 tests
+test context_files_actual_context_failure_precedes_missing_file_path ... ok
+context files mutation seed=0x7552026; mutations=64
+test context_files_refusal_and_revocation_precede_any_account_path_access ... ok
+test context_files_policy_failure_after_open_latches_through_drop ... ok
+test context_files_changed_names_contents_and_restoration_cannot_refresh ... ok
+test context_files_constructor_open_mapping_and_document_failures_latch_original ... ok
+test context_files_fixture_cannot_claim_fixed_root_owner_or_symlink_origin ... ok
+test context_files_owned_roundtrip_and_successful_drop_preserve_policy ... ok
+test context_files_independent_concurrent_guards_do_not_share_refusal ... ok
+test context_files_seeded_resigned_foreign_context_cannot_enroll_owned_files ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.47s
+

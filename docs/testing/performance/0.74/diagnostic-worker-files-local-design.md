@@ -101,3 +101,9 @@ namespace observations against the original policy. This account reader still
 accepts assertions; sequentially dropping one wrapper and constructing another
 is not an atomic context/account/credential join. That composition is the next
 prerequisite, with production preparation and start still closed.
+
+The subsequent [context-bound account reader](diagnostic-context-files-local-design.md)
+opens this same private FileSet inside the original observed-context bracket.
+Only module-private adapters are added; the standalone reader, parser, mapping
+rules, budgets and safe descriptor operations retain their behavior. This is a
+sequential context/account composition, not the kernel-credential join.

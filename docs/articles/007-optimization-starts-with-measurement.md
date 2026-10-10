@@ -5668,3 +5668,47 @@ and documentation pass; the qualification pin and closed ship gate are unchanged
 The hypothesis is supported at this local safety boundary, not at production
 enrollment. The next step must compose context with account-file opening and
 kernel credentials; independent readers used in sequence cannot supply that proof.
+
+## Account opening inside the original observed context
+
+Two successful independent checks do not establish where account files were
+opened: dropping a context reader and then creating an account reader loses
+that relationship. The [new composition](../testing/performance/0.74/diagnostic-context-files-local-design.md)
+tests the narrower hypothesis that the original observed context must bracket
+account opening and every later account observation. No existing file guard can
+be imported, and observations cannot choose new trust pins.
+
+The constructor owns the original context guard, checks it, opens account files,
+checks context again, reads the account mapping, then checks context once more.
+Later revalidation is context/files/context without adopting replacement objects.
+The private FileSet implementation is reused: descriptor safety, whole-document
+hashes, strict local mapping, two account-read rounds and fixed budgets do not
+change. Fixed root-owned input and explicitly owned temporary fixtures have
+separate public types; neither exposes descriptors, mapping or start authority.
+
+The first typed error ends the sequence. Context drift, failed opening, changed
+file contents or names, revoked policy and bad mapping all refuse the original
+policy. Restoring files or dropping the wrapper cannot reset it. Both origin
+wrappers remain neither Send nor Sync, preserving the original reading-thread
+constraint. This avoids transferring an observation to another thread; it does
+not attest every worker thread or the kernel credentials that opened the files.
+
+The [retained packet](../testing/performance/0.74/local-runs/diagnostic-context-files-20261011/manifest.json)
+records 308 passing Linux tests (one existing system-bus test ignored), 43 Windows
+regressions and 131 root contract/evidence/governance tests. Nine new integration
+and four unit cases pass three additional repetitions. Seed `0x7552026` tests
+64 valid re-signed foreign namespace values per run; byte verification accepts
+the synthetic policy, actual context comparison refuses it before account access.
+Tests cover every sequence failure position, first-error preservation, constructor
+IO/mapping failures, replacement/restoration, revocation precedence and independent
+concurrent readers. Scoped check/lint, format, docs and the new Linux root guard
+pass. Require-ship remains expected-red and frozen qualification inputs stay exact.
+
+This supports sequential context/account opening consistency only. Positives use
+actual unprivileged WSL context with owned temporary account files under synthetic
+issuer pins, not enrolled operator keys or a valid production worker account.
+No atomic snapshot, continuous writer revocation, regular-file IO deadline,
+initial-host proof, durable epoch/refusal or performance improvement is claimed.
+The next slice is joining this owned context/account reader to namespace-checked
+kernel credentials without refreshing any original object or clearing a refusal.
+Production preparation, authenticated original start and qualification remain closed.

@@ -1,0 +1,228 @@
+{
+  "schema_version": "diagnostic-context-files-local-evidence-074-v1",
+  "state": "retained-local-context-account-opening-not-kernel-worker-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "81a3a5574121ea807218c23c5694c723dd6e71d8",
+  "preregistered_design_commit": "99abe16df6df3f4bcb8213169914ee69aeb3cd60",
+  "implementation_commit": "fb8ddc733d0815c403a47948ee04a1fe2be9b820",
+  "implementation_tree": "77576c165e4112a7e0ea69a74acb13a147569964",
+  "source_scope": "Implementation and working-tree registry/documentation/evidence, not clean-source qualification.",
+  "toolchain": "1.94.0",
+  "fixtures": "Actual unprivileged WSL context and owned temporary account documents under synthetic issuer pins; no positive production account inspection or operator enrollment.",
+  "seed": "0x7552026",
+  "valid_mutations_per_seeded_run": 64,
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "windows_new_linux_target_tests": 0,
+    "first_green_integration_passed": 9,
+    "linux_final_passed": 308,
+    "linux_existing_ignored": 1,
+    "new_integration_tests": 9,
+    "new_unit_tests": 4,
+    "additional_linux_repetitions": 3,
+    "root_final_passed": 131,
+    "linux_new_root_guard_passed": 1
+  },
+  "retained_negatives": [
+    "Ordinary missing account_files API E0432 before implementation; WSL wrapper exit 1.",
+    "Context/policy failure precedes account path access; each sequence failure stops at the original error.",
+    "Failed opening, unsafe origin, malformed/mismatched mapping and content/object drift refuse original policy after restoration/drop.",
+    "Valid re-signed foreign namespaces cannot enroll owned files.",
+    "require-ship remains expected native exit 1."
+  ],
+  "capture_limitation": "Initial repeat shell suffix was lost; repeat-integration-.log/repeat-unit-.log retain only last successful iterations. Three explicit numbered integration/unit captures independently establish claimed repetitions.",
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_owned_roundtrip_and_successful_drop_preserve_policy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_refusal_and_revocation_precede_any_account_path_access"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_actual_context_failure_precedes_missing_file_path"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_constructor_open_mapping_and_document_failures_latch_original"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_changed_names_contents_and_restoration_cannot_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_policy_failure_after_open_latches_through_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_fixture_cannot_claim_fixed_root_owner_or_symlink_origin"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_seeded_resigned_foreign_context_cannot_enroll_owned_files"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs",
+      "name": "context_files_independent_concurrent_guards_do_not_share_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+      "name": "context_files_opening_and_later_orders_are_exact"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+      "name": "context_files_every_failure_stops_and_preserves_original_error"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+      "name": "context_files_prior_refusal_never_opens_or_reads"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_context_files.rs",
+      "name": "context_files_both_origin_guards_cannot_be_sent_or_shared"
+    }
+  ],
+  "new_root_guard": "diagnostic_context_files_open_inside_original_context_and_keep_start_closed",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "real_issuer_enrollment": false,
+    "positive_fixed_production_account_inspection": false,
+    "kernel_credentials_joined": false,
+    "physical_host_attestation": false,
+    "initial_host_namespace_proved": false,
+    "atomic_cross_file_snapshot": false,
+    "file_opener_credentials_attested": false,
+    "continuous_context_or_writer_revocation": false,
+    "regular_file_io_deadline": false,
+    "all_threads_proved": false,
+    "durable_epoch_or_refusal_registry": false,
+    "production_preparation": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_measurement": false,
+    "qualification": false,
+    "full_workspace_verification": false
+  },
+  "logs": {
+    "api-red.log": {
+      "bytes": 498,
+      "sha256": "18e072ed62063be28dc3300052678670168a0f8122e5d610acc77e3d8764bcda"
+    },
+    "baseline.log": {
+      "bytes": 4236,
+      "sha256": "59f96a63339e0c267a6ce024f0d540ebf6f518dddc6f02e181cd4a46f0176f6c"
+    },
+    "book.log": {
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    "contract.log": {
+      "bytes": 203,
+      "sha256": "dd7e8a4f7922d7e47b3d1ba900ef96e23d52fbb06e2ab2d8fe5182d6f38ddc28"
+    },
+    "docs.log": {
+      "bytes": 292,
+      "sha256": "7100e2f7647a59b4e57b631b9da555a46796292c47847374afc4178c6d5024c5"
+    },
+    "first-green.log": {
+      "bytes": 1235,
+      "sha256": "9c849a4c844174312874b93e954718b507f56857162d9bfc8b7df3814393541d"
+    },
+    "format.log": {
+      "bytes": 30,
+      "sha256": "2803b5b23718022bc026f93ea4bcb725efab1d10ebaa976db015c85db25bafcf"
+    },
+    "isolation.log": {
+      "bytes": 215,
+      "sha256": "6fa6ee9b4df625d5e109c6382f2561193e1a34a69c1d6073b5981800cfaa5ca5"
+    },
+    "links.log": {
+      "bytes": 69,
+      "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+    },
+    "linux-check.log": {
+      "bytes": 280,
+      "sha256": "cf176abb58b55e16d9dec917343c715587faf08075a8c44733c7f674dd68e82b"
+    },
+    "linux-lint.log": {
+      "bytes": 280,
+      "sha256": "402b343f6a3496636863293cdb8a228c51921446b114b494e153bec7b026a4a4"
+    },
+    "linux-root.log": {
+      "bytes": 696,
+      "sha256": "de64155855ed13692e8f3b9c75cd551a178bdb9d992f59139b225f3cd6677846"
+    },
+    "linux-tests.log": {
+      "bytes": 34358,
+      "sha256": "b93713356d748dadc607c1fc90eef90a004a16534c4d11fc33e264b913428f42"
+    },
+    "repeat-integration-.log": {
+      "bytes": 1102,
+      "sha256": "8a7245b6e078a53d5b40ed8e822701eb708b00302ff11048b6c26010755c6318"
+    },
+    "repeat-integration-1.log": {
+      "bytes": 1102,
+      "sha256": "3591b4014079c618688eec6646b2c75968daab1b7827fbda3b19e487c02e0c13"
+    },
+    "repeat-integration-2.log": {
+      "bytes": 1102,
+      "sha256": "0032494a167631ddd1129b18198e72bd4b7113bc78f44873b977129307c3fdfb"
+    },
+    "repeat-integration-3.log": {
+      "bytes": 1102,
+      "sha256": "50b98fa396d2ef94dbb4076737f48b4668021af581b201b6494297b1827de927"
+    },
+    "repeat-unit-.log": {
+      "bytes": 849,
+      "sha256": "d2723285038234c0d768d9cbb28cb9b465ea57c5ebf1750b4dadbc1716da3bc4"
+    },
+    "repeat-unit-1.log": {
+      "bytes": 849,
+      "sha256": "b8e9f8c9d06d300d3447f935843f686e95a6e69417de1a977f1496b76021c282"
+    },
+    "repeat-unit-2.log": {
+      "bytes": 849,
+      "sha256": "f3bb238cd84a150612703ca29904d2d7f8b305723d22396e6c395d096cea6940"
+    },
+    "repeat-unit-3.log": {
+      "bytes": 849,
+      "sha256": "c11756b49459b4b19beadf299ac6630f41d30e93340f884601f38a596828c071"
+    },
+    "root-tests.log": {
+      "bytes": 11328,
+      "sha256": "0489e985ab5b54410a0d92da2c5b46293f7970c731060e26518d60e4046209b6"
+    },
+    "ship.log": {
+      "bytes": 515,
+      "sha256": "5440ca7659e34be5341704ed4421b2c2dc37931879d5911f568d96d672159342"
+    },
+    "windows-check.log": {
+      "bytes": 274,
+      "sha256": "e9dfbee42e3bac7b3b01aa1d084d683197b7e93878225c4aa5bec6763450cd14"
+    },
+    "windows-lint.log": {
+      "bytes": 274,
+      "sha256": "2a6e33c6a7ec5e88f00ddaf8002387b570c8389d44aa2443184c86854923734d"
+    },
+    "windows-tests.log": {
+      "bytes": 5061,
+      "sha256": "34ed1125296998bdf2c958d3047f609905e8ae2fef3116cc1a292104dc6c7b42"
+    },
+    "docs-final.log": {
+      "bytes": 578,
+      "sha256": "66ea15f6b1a4e4ef48328f5565760a5295ee897cfba301614b06e44f7bd25e0e"
+    },
+    "registry.log": {
+      "bytes": 439,
+      "sha256": "878314833fe30e12d959e8f857846346ba4dec3a3408e8129b8625d334c9c836"
+    }
+  }
+}

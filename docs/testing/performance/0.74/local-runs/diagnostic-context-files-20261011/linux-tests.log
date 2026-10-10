@@ -1,0 +1,371 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 23.41s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 235 tests
+test campaign_smoke::tests::derived_request_id_is_a_lowercase_v4_uuid ... ok
+test campaign_smoke::tests::fixture_cpuset_parser_is_exact_and_rejects_overlap ... ok
+test campaign_smoke::tests::lifecycle_resume_switches_only_after_the_frozen_lease_deadline ... ok
+test campaign_smoke::tests::lifecycle_resume_switches_only_after_the_frozen_progress_deadline ... ok
+test campaign_smoke::tests::measurement_fault_window_follows_the_progress_rehearsal_and_is_bounded ... ok
+test campaign_smoke::tests::start_rehearsal_role_is_exact_and_bounded_to_campaign_roles ... ok
+test campaign_smoke::tests::fixture_diagnostic_reads_only_the_bounded_role_stderr ... ok
+test abort_backend::tests::quarantine_recovery_accepts_only_the_exact_failed_empty_unit ... ok
+test abort_backend::tests::diagnostic_limit_and_existing_byte_drift_fail_closed ... ok
+test abort_backend::tests::measurement_loss_diagnostic_and_stop_ownership_are_cause_bound ... ok
+test abort_backend::tests::diagnostic_is_canonical_bounded_and_exactly_replayed ... ok
+test abort_backend::tests::lease_expiry_diagnostic_is_cause_bound_and_exactly_replayed ... ok
+test abort_backend::tests::progress_loss_diagnostic_is_cause_bound_and_exactly_replayed ... ok
+test campaign_smoke::tests::start_rehearsal_terminal_publication_rejects_unsafe_manifest_head_before_append ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_live_execution::tests::synthetic_every_execution_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_builder::linux::tests::builder_cli_refuses_unprotected_key_files_and_existing_outputs ... ok
+test diagnostic_live_execution::tests::synthetic_execution_guards_are_independent_under_concurrency ... ok
+test diagnostic_live_execution::tests::synthetic_preexisting_execution_refusal_never_reads_or_repairs ... ok
+test diagnostic_live_execution::tests::synthetic_execution_order_brackets_io_with_all_original_inputs ... ok
+test diagnostic_live_identity::tests::synthetic_both_manager_failures_retain_details_and_latch ... ok
+test diagnostic_live_identity::tests::synthetic_four_cells_bind_exact_root_and_descendant_membership ... ok
+test diagnostic_live_identity::tests::actual_owned_helper_and_fixture_tree_cannot_be_promoted ... ok
+test diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts ... ok
+test diagnostic_live_identity::tests::synthetic_manager_checks_bracket_both_original_source_checks ... ok
+test diagnostic_live_identity::tests::synthetic_process_and_tree_failures_at_both_positions_latch ... ok
+test diagnostic_live_identity::tests::synthetic_scope_generation_origin_and_root_mismatch_refuse ... ok
+test diagnostic_live_identity::tests::synthetic_pid_in_wrong_node_missing_duplicate_or_frozen_refuses ... ok
+test diagnostic_live_identity::tests::synthetic_independent_guards_do_not_share_refusal_state ... ok
+test diagnostic_live_identity::tests::synthetic_same_invocation_pid_and_status_drift_is_sticky ... ok
+test diagnostic_live_identity::tests::synthetic_second_pid_or_invocation_change_cannot_be_adopted ... ok
+test diagnostic_loaded::tests::loaded_helper_failure_latches_guard_without_adopting_later_success ... ok
+test diagnostic_loaded::tests::loaded_projection_distinguishes_setter_names_and_extended_exec_flags ... ok
+test diagnostic_loaded::tests::loaded_invocation_guard_refuses_replacement_owner_object_or_absence ... ok
+test diagnostic_loaded::tests::loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status ... ok
+test diagnostic_manager::account::binding::tests::binding_bracket_has_exact_account_credential_account_order ... ok
+test diagnostic_manager::account::binding::tests::binding_every_failure_preserves_first_error_and_stops_the_bracket ... ok
+test diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation ... ok
+test diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget ... ok
+test diagnostic_manager::account::binding::tests::binding_prior_refusal_and_mapping_mismatch_perform_no_observation ... ok
+test campaign_smoke::tests::start_rehearsal_terminal_publication_preserves_c74_role_and_paths ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_refuses_wrong_ids_missing_foreign_root_and_invalid_groups ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_full_bound_does_not_grow_or_drop_membership ... ok
+test diagnostic_manager::account::binding::tests::mapping_union_keeps_explicit_primary_inclusion_or_omission ... ok
+test campaign_smoke::tests::start_rehearsal_terminal_publication_is_resolver_ready_and_non_promotable ... ok
+test diagnostic_manager::account::binding::tests::owned_original_credentials_and_synthetic_account_bind_without_refresh ... ok
+test diagnostic_manager::account::binding::tests::owned_original_exit_refuses_account_and_credentials_after_wrapper_drop ... ok
+test diagnostic_manager::account::binding::tests::public_binding_mapping_mismatch_latches_both_original_inputs ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pre_refused_input_latches_the_other_without_helper_reads ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_refuses_state_mismatch_and_process_exit ... ok
+binding mutation seed=0x74b2026
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_order_keeps_original_reader_between_accounts ... ok
+test diagnostic_manager::account::binding::tests::owned_concurrent_bindings_keep_independent_refusal_state ... ok
+test diagnostic_manager::account::binding::tests::public_binding_pending_helper_cleanup_is_preserved_and_latches_inputs ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_every_failure_keeps_typed_first_error_and_details ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_prior_refusal_and_mismatch_make_no_observations ... ok
+test diagnostic_manager::account::binding::tests::seeded_valid_mapping_mutations_cannot_be_adopted ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_exit_preserves_namespace_error_and_refuses_account ... ok
+test diagnostic_loaded::tests::loaded_settings_each_projected_property_drift_is_sticky ... ok
+namespace binding mutation seed=0x7502026
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_prior_refusal_latches_other_without_helper ... ok
+test diagnostic_manager::account::tests::account_guard_preserves_typed_worker_error_and_independent_state ... ok
+test diagnostic_manager::account::tests::account_guard_refuses_drift_and_never_observes_after_restoration ... ok
+test diagnostic_manager::account::tests::account_mapping_checks_each_forward_reverse_name_and_id ... ok
+test diagnostic_manager::account::tests::account_snapshot_wire_refuses_invalid_identity_and_noncanonical_input ... ok
+test diagnostic_manager::account::tests::account_two_complete_rounds_bind_forward_reverse_and_memberships ... ok
+test diagnostic_manager::account::tests::every_nss_failure_stops_without_fallback_or_retry ... ok
+test diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes ... ok
+test diagnostic_manager::account::tests::membership_capacity_duplicates_sentinel_and_primary_are_exact ... ok
+test diagnostic_manager::account::tests::nss_name_pointer_is_bounded_inside_its_original_buffer ... ok
+test diagnostic_manager::account::tests::nss_result_and_group_count_errors_are_never_partial_success ... ok
+test diagnostic_manager::account::tests::refused_account_guard_preserves_pending_owned_helper_without_observation ... ok
+account mutation seed=0x74a2026
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_pending_cleanup_preserves_exact_owned_helper ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_public_mapping_mismatch_refuses_without_helper ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_first_and_second_account_drift_latch_after_drop ... ok
+test diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_seeded_valid_mapping_drift_cannot_be_adopted ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_success_drop_preserves_healthy_original_inputs ... ok
+test diagnostic_manager::tests::both_output_streams_share_one_budget_and_overflow_is_retained ... ok
+test diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_concurrent_bindings_do_not_share_refusal ... ok
+test diagnostic_manager::tests::deadline_is_checked_inside_unending_output_drain ... ok
+test diagnostic_manager::tests::dbus_property_type_missing_and_invocation_size_refuse ... ok
+test diagnostic_manager::tests::full_unit_property_decode_uses_service_cgroup_and_exact_invocation ... ok
+test diagnostic_manager::tests::loaded_unit_identity_never_accepts_foreign_cgroup_or_generation ... ok
+test diagnostic_manager::tests::invalid_input_and_spawn_failure_do_not_adopt_a_helper ... ok
+test diagnostic_manager::tests::snapshot_principal_scope_schema_and_canonical_binding_fail_closed ... ok
+test diagnostic_manager::tests::reply_origin_and_error_name_are_checked_before_absence_or_body_decode ... ok
+test diagnostic_manager::tests::retained_live_helper_refuses_second_operation ... ok
+test diagnostic_manager::tests::failed_exit_and_unexpected_stderr_are_not_success ... ok
+test diagnostic_manager::tests::worker_fixture ... ok
+test diagnostic_manager::tests::bounded_worker_success_closes_input_drains_and_reaps ... ok
+test diagnostic_manager::tests::worker_resource_limits_apply_only_in_owned_test_child ... ok
+test diagnostic_named_output::tests::fixture_scope_refuses_production_noncanonical_paths_and_nonstartable_state ... ok
+test diagnostic_named_output::tests::production_ancestry_policy_requires_root_and_private_worker_cell ... ok
+test diagnostic_named_output::tests::production_directory_policy_exhaustively_refuses_special_or_writable_modes ... ok
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+test diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries ... ok
+test diagnostic_named_output::tests::production_reader_refuses_invalid_owner_and_state_before_filesystem ... ok
+test diagnostic_named_output::tests::production_search_policy_preserves_nonroot_working_directory_traversal ... ok
+test diagnostic_named_output::tests::synthetic_output_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_named_output::tests::synthetic_production_wrapper_retains_shared_reader_refusal ... ok
+test diagnostic_named_output::tests::replaced_stream_and_repair_cannot_refresh_original_names ... ok
+test diagnostic_named_output::tests::every_fixture_directory_generation_and_ancestor_binding_is_retained ... ok
+test diagnostic_named_output::tests::names_links_special_files_and_owner_modes_refuse ... ok
+test diagnostic_named_output::tests::observed_output_shrink_overflow_and_metadata_drift_latch ... ok
+test diagnostic_output_preparation::tests::fixture_fence_drop_releases_lock_with_retained_duplicate_descriptor ... ok
+test diagnostic_manager::tests::stalled_worker_retains_prefix_and_is_reaped_without_wait ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_concurrent_duplicates_create_exactly_one_cell ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_changed_state_after_stdout_retains_incomplete_cell ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_campaign_pending_and_lifecycle_contexts_refuse ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_production_and_noncanonical_paths_refuse ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_exact_state_and_asserted_clock_refuse_before_outputs ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_total_deadline_refuses_despite_fresh_controller ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_links_and_unsafe_modes_never_redirect_writes ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_binding_reader_refusal_reaches_all_owned_guards ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_shares_coordinator_host_fence ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_open_failure_stops_and_never_reopens ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_read_failure_preserves_credential_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_invalid_private_open_state_refuses_without_reopening ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_open_and_read_orders_are_distinct ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_exit_latches_both_and_constructor_refuses ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_concurrent_owned_readers_have_independent_refusal ... ok
+test diagnostic_output_preparation::tests::fixture_prepared_guard_refuses_substitution_and_stays_refused ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse ... ok
+namespace credential mutation seed=0x74f2026
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_seeded_first_error_and_stage_are_sticky ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_status_substitution_restoration_cannot_refresh ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_original_reads_and_numeric_api_stay_separate ... ok
+test diagnostic_process::credentials::tests::credential_observation_order_and_bounding_drift_are_sticky ... ok
+test diagnostic_process::credentials::tests::credential_policy_is_nonroot_canonical_and_bounded ... ok
+test diagnostic_process::credentials::tests::active_capabilities_and_missing_no_new_privs_refuse ... ok
+test diagnostic_process::credentials::tests::every_observation_failure_stops_and_preserves_first_error ... ok
+test diagnostic_process::credentials::tests::every_uid_gid_slot_and_leader_identity_are_checked ... ok
+test diagnostic_process::credentials::tests::independent_credential_guards_keep_refusal_and_assertions_separate ... ok
+test diagnostic_process::credentials::tests::original_helper_exit_permanently_refuses_without_replacement ... ok
+test diagnostic_process::credentials::tests::original_status_descriptor_substitution_latches_even_after_restoration ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_pre_refused_component_latches_the_other ... ok
+test diagnostic_process::credentials::tests::second_status_drift_cannot_update_original_projection ... ok
+credential mutation seed=0x74c2026
+test diagnostic_process::credentials::tests::owned_helper_wrong_assertions_and_unhardened_status_refuse ... ok
+test diagnostic_process::credentials::tests::status_numeric_tokens_and_group_limits_fail_closed ... ok
+test diagnostic_process::credentials::tests::status_projection_ignores_nonutf8_name_but_checks_all_credentials ... ok
+test diagnostic_process::credentials::tests::status_projection_refuses_missing_duplicate_and_malformed_fields ... ok
+test diagnostic_process::credentials::tests::status_zero_leader_nul_separator_and_full_group_boundary_refuse_or_bind_exactly ... ok
+test diagnostic_process::io::tests::fdinfo_required_fields_are_unique_strict_and_bounded ... ok
+test diagnostic_process::credentials::tests::owned_no_new_privs_helper_binds_original_status_and_parallel_reads ... ok
+test diagnostic_process::io::tests::object_binding_does_not_certify_output_pathnames ... ok
+test diagnostic_process::io::tests::observed_shrink_budget_and_exit_are_sticky ... ok
+test diagnostic_process::io::tests::original_exe_and_append_outputs_accept_growth_without_shared_seek ... ok
+test diagnostic_process::credentials::tests::seeded_single_field_mutations_never_adopt_changed_credentials ... ok
+test diagnostic_process::io::tests::outputs_require_append_regular_single_link_mode_and_bounded_length ... ok
+test diagnostic_process::io::tests::same_generation_append_flag_and_nonregular_fd_drift_refuse ... ok
+test diagnostic_process::io::tests::worker_fixture ... ok
+test diagnostic_process::io::tests::wrong_exe_alias_swapped_outputs_and_writable_expectations_refuse ... ok
+test diagnostic_process::tests::bounded_document_reads_accept_limit_and_refuse_overflow_or_empty ... ok
+test diagnostic_process::tests::diagnostic_scope_refuses_foreign_prefix_boot_and_depth ... ok
+test diagnostic_process::tests::every_read_poll_failure_and_terminal_state_refuses_without_retry ... ok
+test diagnostic_process::io::tests::same_generation_fd_retarget_and_exec_refuse_original_objects ... ok
+test diagnostic_process::tests::local_nonproduct_helper_exit_cannot_recapture_original_generation ... ok
+test diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail ... ok
+test diagnostic_process::tests::original_generation_group_cgroup_and_boot_drift_never_refresh ... ok
+test diagnostic_process::tests::local_self_pidfd_and_original_proc_descriptors_revalidate ... ok
+test diagnostic_process::tests::pidfd_namespace_mapping_is_exact_and_missing_or_dead_is_refused ... ok
+test diagnostic_process::io::tests::parallel_original_io_readers_allow_concurrent_append_without_seeking ... ok
+test diagnostic_process::tests::single_read_budget_empty_error_and_declared_size_fail_closed ... ok
+test diagnostic_process::tests::stat_dead_unknown_malformed_and_overflow_documents_fail_closed ... ok
+test diagnostic_process::tests::stat_identity_handles_comm_bytes_and_ignores_changing_counters ... ok
+test diagnostic_process::tests::synthetic_documents_cannot_pass_procfs_gate_and_substitution_is_detected ... ok
+test diagnostic_process::tests::unified_cgroup_is_single_canonical_and_bounded ... ok
+test diagnostic_process::user_namespace::tests::namespace_bracket_is_generation_namespace_generation_namespace_generation ... ok
+test diagnostic_process::tests::seeded_stat_generations_keep_identity_fields_exact ... ok
+test diagnostic_process::user_namespace::tests::namespace_constructor_refuses_original_process_after_exit ... ok
+test diagnostic_process::user_namespace::tests::namespace_every_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_process::user_namespace::tests::namespace_identity_comparison_refuses_actual_distinct_objects ... ok
+test diagnostic_process::user_namespace::tests::namespace_mismatch_at_each_namespace_read_cannot_refresh ... ok
+test diagnostic_process::tests::parallel_readonly_revalidation_has_no_shared_seek_offset ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_descriptor_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_exit_refuses_even_though_namespace_fd_survives ... ok
+test diagnostic_process::user_namespace::tests::namespace_original_directory_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_real_wrong_type_and_ordinary_files_refuse ... ok
+namespace mutation seed=0x74e2026
+test diagnostic_process::user_namespace::tests::namespace_seeded_valid_inode_mutations_are_not_adopted ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_process::user_namespace::tests::namespace_concurrent_original_guards_do_not_share_refusal ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_original_and_reader_match_repeatedly ... ok
+test diagnostic_tree::tests::scope_is_fixed_and_rejects_untrusted_namespace_inputs ... ok
+test diagnostic_tree::tests::aggregate_document_budget_and_parser_boundaries_are_exact ... ok
+test diagnostic_tree::tests::temporary_filesystem_cannot_pass_kernel_gate ... ok
+test diagnostic_worker_policy::local_context::account_files::tests::context_files_both_origin_guards_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::account_files::tests::context_files_every_failure_stops_and_preserves_original_error ... ok
+test diagnostic_worker_policy::local_context::account_files::tests::context_files_opening_and_later_orders_are_exact ... ok
+test diagnostic_worker_policy::local_context::account_files::tests::context_files_prior_refusal_never_opens_or_reads ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_spool::tests::exclusive_write_and_rename_primitives_never_replace_existing_names ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_directory_and_lock_replacement_refuse_after_cell ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+test diagnostic_worker_policy::local_files::tests::account_positional_read_refuses_short_overrun_error_and_midread_drift ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::mountinfo_parser_selects_longest_mount_and_unescapes ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test process_identity::tests::cgroup_file_path_cannot_escape_the_unified_hierarchy ... ok
+test process_identity::tests::cgroup_parser_accepts_only_one_unified_absolute_path ... ok
+test process_identity::tests::stat_parser_handles_spaces_and_closing_parentheses_in_comm ... ok
+test process_identity::tests::status_parser_requires_one_nonempty_bounded_value ... ok
+test role_overhead_smoke::tests::first_allowed_cpu_accepts_only_bounded_canonical_first_cpu ... ok
+test role_overhead_smoke::tests::schedule_is_exactly_counterbalanced_for_five_pairs ... ok
+test diagnostic_tree::tests::seeded_unordered_pid_sets_reconcile_without_deduplicating_ambiguity ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test start_evidence::tests::symlink_and_hardlink_inputs_are_rejected ... ok
+test systemd_smoke::tests::controller_loss_spec_is_long_enough_to_outlive_its_caller_and_stays_non_product ... ok
+test systemd_smoke::tests::smoke_spec_is_bounded_hardened_and_has_no_product_command ... ok
+test systemd_spawn::tests::exact_original_process_pair_is_admitted ... ok
+test systemd_spawn::tests::pending_observation_never_hides_a_terminal_unit_mismatch ... ok
+test systemd_spawn::tests::startup_is_pending_but_extra_executor_and_identity_drift_are_terminal ... ok
+test systemd_unit::tests::attachable_unit_accepts_exact_live_and_successful_terminal_shapes ... ok
+test systemd_unit::tests::attachable_unit_rejects_failed_or_ambiguous_terminal_shapes ... ok
+test systemd_unit::tests::reads_a_real_loaded_service_over_dbus ... ignored, requires a local systemd system bus
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_serial_cells_reuse_private_parents_without_overwrite ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_partial_faults_retain_without_replay_or_cleanup ... ok
+test diagnostic_output_preparation::tests::fixture_preparation_four_cells_keep_state_and_return_readonly_guards ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+
+test result: ok. 234 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.27s
+
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-6ff3a485e5abd487)
+
+running 29 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test linux_tests::fixed_install_reader_requires_checked_builder_policy ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test linux_tests::independent_parallel_start_materials_remain_fixture_only ... ok
+test linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary ... ok
+test linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement ... ok
+test linux_tests::pinned_start_material_refuses_wrong_builder_and_identity ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test linux_tests::pinned_start_material_state_drift_is_sticky ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.18s
+
+     Running tests/diagnostic_context_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_context_files-0ab637bef6b10d3f)
+
+running 9 tests
+test context_files_refusal_and_revocation_precede_any_account_path_access ... ok
+context files mutation seed=0x7552026; mutations=64
+test context_files_actual_context_failure_precedes_missing_file_path ... ok
+test context_files_policy_failure_after_open_latches_through_drop ... ok
+test context_files_fixture_cannot_claim_fixed_root_owner_or_symlink_origin ... ok
+test context_files_owned_roundtrip_and_successful_drop_preserve_policy ... ok
+test context_files_constructor_open_mapping_and_document_failures_latch_original ... ok
+test context_files_changed_names_contents_and_restoration_cannot_refresh ... ok
+test context_files_independent_concurrent_guards_do_not_share_refusal ... ok
+test context_files_seeded_resigned_foreign_context_cannot_enroll_owned_files ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.41s
+
+     Running tests/diagnostic_manager.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_manager-c8e457a9f1ca4c86)
+
+running 2 tests
+test linux::scope_wire_refuses_future_unknown_duplicate_and_noncanonical_input ... ok
+test linux::manager_scope_has_only_fixed_diagnostic_units ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/diagnostic_worker_context.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_context-c5231e98024dbf30)
+
+running 5 tests
+worker context mutation seed=0x7542026
+test worker_context_trust_and_envelope_failure_latch_through_drop ... ok
+test worker_context_independent_concurrent_readers_keep_thread_local_refusal ... ok
+test worker_context_valid_resigned_foreign_context_refuses_original_policy ... ok
+test worker_context_actual_reader_roundtrip_keeps_original_policy_healthy ... ok
+test worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.53s
+
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_files-4cda4e28574e6b42)
+
+running 13 tests
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.96s
+
+     Running tests/diagnostic_worker_policy.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_policy-9774c02c639ebee3)
+
+running 13 tests
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+worker-policy seed=0x7512026; mutations=256
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.22s
+

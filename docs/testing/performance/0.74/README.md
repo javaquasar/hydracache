@@ -2336,3 +2336,14 @@ actual unprivileged Linux context under synthetic test issuers, not real operato
 enrollment. Account-file/credential composition, durable external epoch/refusal,
 all-thread proof and authenticated start remain separate; preparation/start and
 qualification remain closed.
+
+The [context-bound account reader](diagnostic-context-files-local-design.md)
+now opens account files under the original observed Linux context: context/open/
+context/files/context, then context/files/context on revalidation. It owns the
+original objects, stops at the first typed failure and latches the original
+policy through restoration/drop. Existing standalone readers and signed schemas
+are unchanged. Local positives use synthetic issuer pins and owned file fixtures;
+no production account inspection or worker credentials are enrolled. The
+[packet](local-runs/diagnostic-context-files-20261011/manifest.json) is local safety
+evidence only. Kernel-credential composition, durable external authority and
+original authenticated start remain outstanding.

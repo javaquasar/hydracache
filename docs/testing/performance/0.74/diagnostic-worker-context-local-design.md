@@ -90,3 +90,9 @@ Next: open account files inside this original context and compose their mapping
 with namespace-checked kernel credentials, preserving all original refusals.
 Dropping independent readers in sequence is not that composition. Durable
 external authority and authenticated lifecycle activation remain separate.
+
+The subsequent [context-bound account reader](diagnostic-context-files-local-design.md)
+owns this context guard and opens account names inside its observation bracket;
+it never adopts a preopened account reader. Later account checks remain bracketed
+by the original context. Kernel-credential binding and lifecycle activation are
+still separate prerequisites.

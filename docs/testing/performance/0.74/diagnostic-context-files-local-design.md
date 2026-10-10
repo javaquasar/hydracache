@@ -51,3 +51,29 @@ issuer pins; they do not inspect a valid production worker account. Run scoped
 Windows/Linux tests, affected check/strict lint, format, root contracts/evidence/
 governance, docs/links/book and expected-red require-ship. Retain immutable raw
 logs, preserve frozen qualification inputs, then commit code and evidence separately.
+
+## Implemented composition and retained local results
+
+Implementation `fb8ddc733d0815c403a47948ee04a1fe2be9b820` owns the original context reader and opens
+the same private account FileSet inside its fixed five-step bracket. Only private
+FileSet adapters/visibility and the opt-in child module are added to existing
+readers. No parser, mapping, IO budget, signed schema or production route changes.
+The [evidence packet](local-runs/diagnostic-context-files-20261011/manifest.json)
+retains the 43-pass Windows baseline and ordinary missing-API E0432 before code.
+Nine integration cases pass first green. Final Linux passes 308 (234 library,
+29 artifacts, 9 new composition, 2 manager, 3 account, 5 context, 13 files and
+13 policy), with one existing system-bus test ignored. Windows passes 43 portable
+tests, with zero cases in Linux-only targets. Root contracts/evidence/governance
+pass 131; the new contract also passes on Linux. All nine integration and four
+unit cases pass three dedicated logged repetitions. Seed `0x7552026` exercises
+64 valid re-signed foreign namespace mutations per run.
+
+Exact order/first failure, non-transferability, prior refusal, context-before-open,
+constructor IO/document/mapping failure, replacement/content drift, restoration,
+trust precedence and independent concurrency pass. Check and strict lint on both
+platforms, scoped formatting and documentation gates pass; require-ship remains
+expected native exit 1. Qualification inputs and manifest digest stay unchanged.
+Actual unprivileged context and owned synthetic account fixtures do not establish
+a valid production account or real issuer enrollment. No cache workload or
+performance measurement is made. Next: join this retained context/account reader
+to namespace-checked kernel credentials without replacing any original input.
