@@ -7,6 +7,109 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn diagnostic_worker_policy_keeps_asserted_context_and_production_closed() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::{
+        MAX_SIGNED_WORKER_POLICY_BYTES, MAX_WORKER_POLICY_BYTES, SIGNED_WORKER_POLICY_SCHEMA,
+        WORKER_POLICY_DOMAIN, WORKER_POLICY_SCHEMA,
+    };
+    let c = contract("diagnostic-worker-policy-local-contract.toml");
+    assert_eq!(c["policy_schema"].as_str(), Some(WORKER_POLICY_SCHEMA));
+    assert_eq!(
+        c["envelope_schema"].as_str(),
+        Some(SIGNED_WORKER_POLICY_SCHEMA)
+    );
+    assert_eq!(
+        c["signature_domain"].as_str(),
+        Some(std::str::from_utf8(WORKER_POLICY_DOMAIN).unwrap())
+    );
+    assert_eq!(MAX_WORKER_POLICY_BYTES, 4096);
+    assert_eq!(MAX_SIGNED_WORKER_POLICY_BYTES, 8192);
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-worker-policy-local-074-v1")
+    );
+    assert_eq!(c["max_policy_bytes"].as_integer(), Some(4096));
+    assert_eq!(c["max_envelope_bytes"].as_integer(), Some(8192));
+    assert_eq!(c["max_membership_union"].as_integer(), Some(32));
+    for field in [
+        "authority_model_approved",
+        "external_key_digest_epoch_required",
+        "strict_domain_separated_signature",
+        "canonical_unknown_duplicate_future_refusal",
+        "nonroot_exact_sorted_groups_required",
+        "whole_passwd_and_group_digests_bound",
+        "host_boot_user_and_mount_context_bound",
+        "context_values_are_caller_assertions",
+        "original_policy_retained_without_refresh",
+        "external_trust_change_refuses",
+        "refusal_sticky_before_validation",
+        "same_valid_policy_reverification_is_idempotent",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "real_issuer_key_enrolled",
+        "local_account_files_observed",
+        "trusted_host_namespace_proved",
+        "helper_context_enforcement_complete",
+        "all_threads_proved",
+        "durable_pin_epoch_or_refusal_journal",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_signer_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs"),
+    )
+    .unwrap();
+    let code = source.split_whitespace().collect::<Vec<_>>().join(" ");
+    for expected in [
+        ".verify_strict(&message, &signature)",
+        "if self.refused",
+        "self.refused = true",
+        "current_trust != &self.trust",
+        "asserted_context != &self.context",
+        "observed != self.original",
+        "sha256_hex(bytes) != self.envelope_sha256",
+        "sha256_hex(&body_bytes) != trust.policy_sha256",
+        "policy.policy_epoch != trust.epoch",
+        "#[serde(deny_unknown_fields)]",
+        "const GROUP_LIMIT: usize = 32",
+    ] {
+        assert!(code.contains(expected), "{expected}");
+    }
+    for forbidden in [
+        "std::fs",
+        "libc::",
+        "SigningKey",
+        "ManagerClient",
+        "ProcessRead",
+        "Command::",
+        "setns",
+        "unshare",
+        "pub fn reset",
+        "pub fn into_",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let checked = code
+        .split("pub struct CheckedWorkerPolicy")
+        .nth(1)
+        .unwrap()
+        .split("pub fn verify_worker_policy")
+        .next()
+        .unwrap();
+    assert!(!checked.contains("Serialize"));
+    assert!(!checked.contains("pub original"));
+}
+
+#[test]
 fn enrolled_public_builder_policy_keeps_execution_admission_closed() {
     use hydracache_long_run_supervisor_074::diagnostic_builder::{decode_key, load_policy};
     let c = contract("diagnostic-builder-enrollment-contract.toml");
