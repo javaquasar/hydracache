@@ -1139,11 +1139,10 @@ mod tests {
         }
     }
 
-    #[test]
-    fn provisioning_source_is_strict_and_binary_bound() {
+    fn provisioning_document() -> serde_json::Value {
         let binary = "e".repeat(64);
         let source = "f".repeat(40);
-        let mut value = serde_json::json!({
+        serde_json::json!({
             "schema_version": "hydracache-w11-host-provisioning-v1",
             "source_commit": source,
             "created_at_utc": "2026-10-06T00:00:00Z",
@@ -1168,7 +1167,81 @@ mod tests {
             "unit_properties_sha256": "6".repeat(64),
             "machine_id_sha256": "7".repeat(64),
             "boot_id_sha256": "8".repeat(64),
-        });
+        })
+    }
+
+    fn worker_authority_extensions() -> [(&'static str, serde_json::Value); 8] {
+        [
+            ("worker_uid", serde_json::json!(986)),
+            ("worker_gid", serde_json::json!(986)),
+            ("worker_membership_gids", serde_json::json!([986])),
+            ("worker_policy_sha256", serde_json::json!("a".repeat(64))),
+            ("nss_policy_sha256", serde_json::json!("b".repeat(64))),
+            (
+                "user_namespace_identity",
+                serde_json::json!({"device": 4, "inode": 5}),
+            ),
+            (
+                "mount_namespace_identity",
+                serde_json::json!({"device": 4, "inode": 6}),
+            ),
+            ("helper_namespace_attested", serde_json::json!(true)),
+        ]
+    }
+
+    #[test]
+    fn host_observation_v1_rejects_worker_authority_extensions() {
+        let original = receipt();
+        let encoded = encode_canonical(&original).unwrap();
+        assert_eq!(
+            parse_and_validate(&encoded, &sha256_hex(&encoded)).unwrap(),
+            original
+        );
+        for (field, value) in worker_authority_extensions() {
+            let mut extended = serde_json::to_value(&original).unwrap();
+            assert!(extended
+                .as_object_mut()
+                .unwrap()
+                .insert(field.into(), value)
+                .is_none());
+            let bytes = serde_json::to_vec(&extended).unwrap();
+            assert_eq!(
+                parse_and_validate(&bytes, &sha256_hex(&bytes)),
+                Err(HostReceiptError::Document),
+                "a matching digest does not enroll {field}"
+            );
+        }
+    }
+
+    #[test]
+    fn provisioning_v1_rejects_worker_authority_extensions() {
+        let original = provisioning_document();
+        assert!(parse_installed_provisioning_identity(
+            &serde_json::to_vec(&original).unwrap(),
+            &"e".repeat(64)
+        )
+        .is_ok());
+        for (field, value) in worker_authority_extensions() {
+            let mut extended = original.clone();
+            assert!(extended
+                .as_object_mut()
+                .unwrap()
+                .insert(field.into(), value)
+                .is_none());
+            assert_eq!(
+                parse_installed_provisioning_identity(
+                    &serde_json::to_vec(&extended).unwrap(),
+                    &"e".repeat(64)
+                ),
+                Err(HostReceiptError::Invariant),
+                "installed source projection does not enroll {field}"
+            );
+        }
+    }
+
+    #[test]
+    fn provisioning_source_is_strict_and_binary_bound() {
+        let mut value = provisioning_document();
         let bytes = serde_json::to_vec(&value).unwrap();
         let identity = parse_installed_provisioning_identity(&bytes, &"e".repeat(64)).unwrap();
         assert_eq!(identity.source_commit, "f".repeat(40));
