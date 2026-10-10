@@ -190,6 +190,9 @@ pub struct TreeRead {
     snapshot: TreeSnapshot,
 }
 impl TreeRead {
+    pub(crate) fn is_kernel_scope(&self, scope: &DiagnosticTreeScope) -> bool {
+        self.kernel && self.path == scope.path && self.boot.as_deref() == Some(scope.boot_id())
+    }
     pub fn snapshot(&self) -> &TreeSnapshot {
         &self.snapshot
     }

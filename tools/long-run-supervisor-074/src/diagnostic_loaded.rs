@@ -371,6 +371,9 @@ pub(crate) fn decode_settings(
 }
 
 #[cfg(test)]
+pub(crate) use tests::fixture as synthetic_loaded_fixture;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
@@ -398,7 +401,7 @@ mod tests {
             admission_allowed: false,
         }
     }
-    fn fixture(index: usize) -> (DiagnosticState, LoadedSnapshot) {
+    pub(crate) fn fixture(index: usize) -> (DiagnosticState, LoadedSnapshot) {
         let state = state(index);
         let intent = diagnostic_start_intent(&state).unwrap();
         let scope = ManagerScope::new(&intent.lease_id, &intent.boot_id, &intent.surface).unwrap();

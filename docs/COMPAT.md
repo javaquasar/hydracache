@@ -4,6 +4,11 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The 0.74 original manager/process/tree identity join is Linux runtime-only and
+reuses the existing bounded loaded-manager helper. No new wire, persisted schema
+or launch operation is added. Its refusal latch is not a durable journal, and
+stable sequential observations do not authenticate original start or cleanup.
+
 The 0.74 fixed named-output fixture guard and its composed process IO guard are
 Linux runtime-only. They add no serialized artifact, helper mode or launch API;
 explicit temporary ownership assertions do not certify production ancestry.

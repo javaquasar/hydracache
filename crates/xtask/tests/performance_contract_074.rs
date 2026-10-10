@@ -1011,6 +1011,93 @@ fn bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations() {
 }
 
 #[test]
+fn diagnostic_live_identity_composition_keeps_lifecycle_and_admission_closed() {
+    let c = contract("diagnostic-live-identity-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-live-identity-local-074-v1")
+    );
+    for field in [
+        "first_refusal_is_sticky",
+        "original_readers_borrowed",
+        "kernel_tree_required",
+        "fixed_boot_and_tree_scope_required",
+        "original_main_pid_required",
+        "exact_member_node_required",
+        "frozen_tree_refused",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "positive_local_kernel_composition_proved",
+        "original_start_authenticated",
+        "root_inode_authenticated_by_manager",
+        "atomic_snapshot_proved",
+        "dynamic_tree_refresh_allowed",
+        "output_and_executable_composed",
+        "production_output_preparation_allowed",
+        "unit_mutation_allowed",
+        "host_install_allowed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+        "writer_revocation_proved",
+        "durable_refusal_journal",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    for field in [
+        "manager_observations_per_revalidation",
+        "source_checks_per_revalidation",
+    ] {
+        assert_eq!(c[field].as_integer(), Some(2));
+    }
+    for (field, value) in [
+        ("active_state", "active"),
+        ("sub_state", "running"),
+        ("result", "success"),
+    ] {
+        assert_eq!(c[field].as_str(), Some(value));
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_live_identity.rs"),
+    )
+    .unwrap();
+    let code = source.split("#[cfg(test)]").next().unwrap();
+    let code = code.split_whitespace().collect::<Vec<_>>().join(" ");
+    for forbidden in [
+        "Command::new",
+        "StartTransientUnit",
+        "StopUnit",
+        "Serialize",
+        "SYS_pidfd_open",
+        "read_fixture_tree",
+        "pin_owned_test_helper",
+        "TreeObservation",
+        "kill(",
+        "refresh(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for required in [
+        ".pin_for(state)",
+        "tree.is_kernel_scope(scope)",
+        "self.process.revalidate()?",
+        "self.tree.revalidate()?",
+        "manager.inspect_original(invocation)",
+        "self.invocation.refuse()",
+        "unit.main_pid != self.generation.pid",
+        "self.generation.cgroup_path != expected_path",
+        "node.frozen",
+        "members.next().is_some()",
+        "process: &'a ProcessRead",
+        "tree: &'a TreeRead",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+}
+
+#[test]
 fn named_fixture_outputs_keep_production_preparation_and_execution_closed() {
     let c = contract("diagnostic-named-output-local-contract.toml");
     assert_eq!(
