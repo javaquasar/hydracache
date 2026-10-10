@@ -82,7 +82,7 @@ struct PinnedFile {
     file: File,
     stamp: FileStamp,
 }
-struct FileSet {
+pub(super) struct FileSet {
     path: PathBuf,
     fixture: bool,
     uid: u32,
@@ -214,6 +214,19 @@ impl FixtureWorkerFilesRead<'_> {
 }
 
 impl FileSet {
+    // Restricted to sibling policy readers; no descriptor or capability is exported.
+    pub(super) fn open_fixed() -> Result<Self, WorkerFilesError> {
+        Self::open(Path::new(FIXED_DIRECTORY), false, 0, 0)
+    }
+    pub(super) fn open_fixture(path: &Path, uid: u32, gid: u32) -> Result<Self, WorkerFilesError> {
+        if path.starts_with(FIXED_DIRECTORY)
+            || matches!(uid, 0 | u32::MAX)
+            || matches!(gid, 0 | u32::MAX)
+        {
+            return Err(WorkerFilesError::Security);
+        }
+        Self::open(path, true, uid, gid)
+    }
     fn open(path: &Path, fixture: bool, uid: u32, gid: u32) -> Result<Self, WorkerFilesError> {
         let directories = open_directories(path, fixture, uid, gid)?;
         let parent = &directories.last().ok_or(WorkerFilesError::Security)?.0;
@@ -259,7 +272,7 @@ impl FileSet {
         }
         Ok(())
     }
-    fn observe(&self, policy: &WorkerPolicy) -> Result<(), WorkerFilesError> {
+    pub(super) fn observe(&self, policy: &WorkerPolicy) -> Result<(), WorkerFilesError> {
         // Two bounded sequential rounds, not an atomic cross-file or kernel context proof.
         for _ in 0..2 {
             self.check_names()?;

@@ -14,6 +14,9 @@ use thiserror::Error;
 pub const MACHINE_DOCUMENT_BYTES: usize = 33;
 pub const BOOT_DOCUMENT_BYTES: usize = 37;
 
+#[path = "diagnostic_context_files.rs"]
+pub mod account_files;
+
 #[derive(Debug, Error)]
 pub enum WorkerContextError {
     #[error("original worker context or policy previously refused")]

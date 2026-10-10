@@ -7,6 +7,115 @@ fn root() -> PathBuf {
 }
 
 #[test]
+fn diagnostic_context_files_open_inside_original_context_and_keep_start_closed() {
+    let c = contract("diagnostic-context-files-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-context-files-local-074-v1")
+    );
+    for (key, order) in [
+        (
+            "opening_order",
+            vec!["context", "open", "context", "files", "context"],
+        ),
+        ("later_order", vec!["context", "files", "context"]),
+    ] {
+        assert_eq!(
+            c[key]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap())
+                .collect::<Vec<_>>(),
+            order
+        );
+    }
+    for key in [
+        "policy_gate_before_io",
+        "original_context_and_files_owned",
+        "first_error_stops_sequence",
+        "failure_latches_original_policy",
+        "fixture_has_distinct_type",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "preopened_account_guard_allowed",
+        "guard_send_or_sync",
+        "account_budgets_or_mapping_changed",
+        "real_issuer_enrolled",
+        "positive_fixed_production_account_inspection",
+        "kernel_credentials_joined",
+        "initial_host_namespace_proved",
+        "atomic_cross_file_snapshot",
+        "file_opener_credentials_attested",
+        "continuous_context_or_writer_revocation",
+        "regular_file_io_deadline",
+        "all_threads_proved",
+        "durable_epoch_or_refusal_registry",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source = std::fs::read_to_string(base.join("diagnostic_context_files.rs")).unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "context: WorkerContextRead<'policy>", "files: FileSet", "gate: Gate",
+        "const OPENING: [Step; 5] = [ Step::Context, Step::Open, Step::Context, Step::Files, Step::Context, ]",
+        "const LATER: [Step; 3] = [Step::Context, Step::Files, Step::Context]",
+        "inspect_worker_context(policy, bytes, trust, host)?", "context.policy.refused = true",
+        "FileSet::open_fixed", "FileSet::open_fixture", "observe(&context.policy.original)",
+        "observe(&self.context.policy.original)", "open.take()", "if self.refused || input_refused",
+        "return Err(error)", "pub struct ContextFixedFilesRead", "pub struct ContextFixtureFilesRead",
+    ] { assert!(code.contains(required), "{required}"); }
+    for forbidden in [
+        "pub fn reset",
+        "pub fn into_",
+        "pub fn descriptor",
+        "pub fn adopt",
+        "Serialize",
+        "ManagerClient",
+        "ProcessRead",
+        "Command::",
+        "setns",
+        "unshare",
+        "SigningKey",
+        "write_all(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for name in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_output_preparation.rs",
+    ] {
+        let live = std::fs::read_to_string(base.join(name)).unwrap();
+        assert!(
+            !live.contains("inspect_context_fixed_files")
+                && !live.contains("inspect_context_fixture_files"),
+            "no live route in {name}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_worker_policy_keeps_asserted_context_and_production_closed() {
     use hydracache_long_run_supervisor_074::diagnostic_worker_policy::{
         MAX_SIGNED_WORKER_POLICY_BYTES, MAX_WORKER_POLICY_BYTES, SIGNED_WORKER_POLICY_SCHEMA,
