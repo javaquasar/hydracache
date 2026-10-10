@@ -110,6 +110,147 @@ fn diagnostic_worker_policy_keeps_asserted_context_and_production_closed() {
 }
 
 #[test]
+fn diagnostic_worker_files_preserve_fixed_names_original_policy_and_closed_start() {
+    let c = contract("diagnostic-worker-files-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-worker-files-local-074-v1")
+    );
+    assert_eq!(c["fixed_directory"].as_str(), Some("/etc"));
+    assert_eq!(
+        c["fixed_files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["passwd", "group"]
+    );
+    for (key, value) in [
+        ("max_file_bytes", 1048576),
+        ("max_line_bytes", 4096),
+        ("max_records", 16384),
+        ("observation_rounds", 2),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    #[cfg(target_os = "linux")]
+    {
+        use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_files::{
+            MAX_ACCOUNT_FILE_BYTES, MAX_ACCOUNT_LINE_BYTES, MAX_ACCOUNT_RECORDS,
+        };
+        assert_eq!(
+            (
+                MAX_ACCOUNT_FILE_BYTES,
+                MAX_ACCOUNT_LINE_BYTES,
+                MAX_ACCOUNT_RECORDS
+            ),
+            (1048576, 4096, 16384)
+        );
+    }
+    for key in [
+        "policy_gate_before_io",
+        "whole_documents_digest_bound",
+        "exact_supplementary_list_not_primary_union",
+        "strict_unique_local_names_and_numeric_ids",
+        "readonly_descriptor_relative_nofollow",
+        "original_directories_and_files_retained",
+        "replacement_and_metadata_drift_refuse",
+        "partial_positional_reads_refuse",
+        "failure_latches_borrowed_policy",
+        "fixture_has_distinct_type",
+        "root_owned_fixed_ancestry_required",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "real_issuer_enrolled",
+        "positive_fixed_production_inspection",
+        "trusted_host_namespace_proved",
+        "atomic_cross_file_snapshot",
+        "continuous_context_or_writer_revocation",
+        "regular_file_io_deadline",
+        "all_threads_proved",
+        "durable_epoch_or_refusal_registry",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source = std::fs::read_to_string(base.join("diagnostic_worker_files.rs")).unwrap();
+    let code = source
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "const FIXED_DIRECTORY: &str = \"/etc\"",
+        "const NAMES: [&str; 2] = [\"passwd\", \"group\"]",
+        "MAX_ACCOUNT_FILE_BYTES: usize = 1_048_576",
+        "MAX_ACCOUNT_LINE_BYTES: usize = 4096",
+        "MAX_ACCOUNT_RECORDS: usize = 16_384",
+        "policy: &'policy mut CheckedWorkerPolicy",
+        "policy.revalidate(bytes, trust, host)?",
+        "policy.refused = true",
+        "libc::O_NOFOLLOW",
+        "libc::O_NONBLOCK",
+        "libc::openat",
+        "m.nlink() != 1",
+        "m.mode() & 0o7133",
+        "pinned.file.read_at(bytes, 0)",
+        "for _ in 0..2",
+        "sha256_hex(&passwd) != policy.passwd_sha256",
+        "supplementary != policy.supplementary_gids",
+        "pub struct FixedWorkerFilesRead",
+        "pub struct FixtureWorkerFilesRead",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "O_CREAT",
+        "O_TRUNC",
+        "getpwnam",
+        "getgrnam",
+        "chown(",
+        "setns",
+        "unshare",
+        "Command::",
+        "Serialize",
+        "pub fn reset",
+        "pub fn into_",
+        "pub fn descriptor",
+        "pub fn mapping",
+        "write_all(",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_output_preparation.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("inspect_fixed_worker_files"),
+            "no live route in {path}"
+        );
+    }
+}
+
+#[test]
 fn enrolled_public_builder_policy_keeps_execution_admission_closed() {
     use hydracache_long_run_supervisor_074::diagnostic_builder::{decode_key, load_policy};
     let c = contract("diagnostic-builder-enrollment-contract.toml");

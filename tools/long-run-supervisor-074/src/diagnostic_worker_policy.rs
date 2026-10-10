@@ -1,4 +1,4 @@
-//! Opt-in signed policy bytes under external pins; no host/account observation.
+//! Signed policy bytes under external pins; Linux file consistency is a separate child.
 use crate::{canonical_json, is_hash, sha256_hex};
 use ed25519_dalek::{Signature, VerifyingKey};
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,10 @@ pub const MAX_WORKER_POLICY_BYTES: usize = 4096;
 pub const MAX_SIGNED_WORKER_POLICY_BYTES: usize = 8192;
 const REPOSITORY_ID: u64 = 1_217_101_761;
 const GROUP_LIMIT: usize = 32;
+
+#[cfg(target_os = "linux")]
+#[path = "diagnostic_worker_files.rs"]
+pub mod local_files;
 
 /// Values in a policy or caller assertion, not verified kernel namespace handles.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

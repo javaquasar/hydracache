@@ -7568,6 +7568,38 @@ platform = "any"
 
 
 [[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-worker-files"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_worker_files.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_worker_files"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Read-only account-file guards use owned unprivileged temporary fixtures and synthetic issuer/context; no production account or admitted host is needed"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_worker_files", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.abort-lifecycle"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/abort_lifecycle.rs"
