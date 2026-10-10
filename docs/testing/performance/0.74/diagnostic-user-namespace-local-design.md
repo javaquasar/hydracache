@@ -33,10 +33,12 @@ original process's named namespace directory and namespace, and the current
 reader namespace before/after that named observation. Every failure permanently
 refuses this guard; later restoration cannot refresh it. No FD/namespace token
 export, reset, setns/unshare, writer revocation or execution capability exists.
-This standalone guard does not latch other guards and is not yet composed with
-the credential reader. Credential-file opener namespace must be bound explicitly
-in that later composition; a guard captured afterwards cannot retroactively
-certify the view used when status was opened.
+This standalone guard does not latch other guards. The separate
+[namespace-checked credential reader](diagnostic-namespace-credentials-local-design.md)
+owns it alongside a credential reader and checks namespace before opening status
+and around subsequent reads. A guard captured afterwards cannot retroactively
+certify the view used when status was opened; the new bracket is sequential,
+not kernel-attested or atomic opening-context proof.
 
 ## Tests and proof boundaries
 
@@ -86,9 +88,9 @@ formatting/check/lint and documentation gates pass; full workspace milestone
 verification and numerical performance measurement are outside this local step.
 The qualification digest and expected-red ship admission remain unchanged.
 
-Same-namespace consistency is implemented, not trusted host enrollment. Binding
-the credential document's opener namespace must precede later credential
-composition; earlier numeric observations are not retroactively certified.
+Same-namespace consistency is implemented, not trusted host enrollment. The
+separate namespace-checked reader establishes a sequential opening/read bracket;
+earlier numeric observations are not retroactively certified.
 Trusted NSS provider/configuration, initial/host and all-thread policy, fenced
 production preparation, authenticated original start and watchdog recovery still
 precede a positive production lifecycle rehearsal.

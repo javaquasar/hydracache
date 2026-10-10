@@ -48,3 +48,34 @@ performance/evidence/governance tests, documentation/link/book checks, and
 expected-red require-ship admission. Retain exact raw captures and SHA-256
 verification. Do not change the frozen qualification manifest, thresholds or
 existing packets. No host install, workload, qualification or performance claim.
+
+## Local results and remaining boundary
+
+The [packet](local-runs/diagnostic-namespace-credentials-20261010/manifest.json)
+retains the 230-pass baseline, missing-API capture, ten-test first green and
+242-test final Linux suite with one pre-existing ignored. Review adds the
+pre-refused component and corrupted private opener-state cases; all twelve new
+tests pass three repetitions. Seed `0x74f2026` varies 256 modeled first-error
+and stage cases per repetition. Constructor-stage injection is modeled; real
+kernel cases use owned NNP cat helpers, the original-process test pin and current
+reading thread. No foreign user namespace is created or joined.
+
+Status FD and named-document substitutions, namespace FD substitution and
+original process exit all propagate refusal to both privately owned components.
+Restoration cannot refresh them. Independent concurrent readers and the existing
+numeric API remain usable after another reader refuses. Wrong numeric policy
+and a helper without NNP refuse during construction. Private-state corruption
+refuses without reopening the retained status document.
+
+Windows passes 28 portable tests and executes no Linux cases. Root contracts,
+evidence and governance pass 126 tests. Scoped formatting/check/clippy and
+documentation gates pass; require-ship stays expected red with native exit 1.
+The API-red command wrapper initially lost its exit variable, then incorrectly
+expected 1 where Cargo returned 101; both raw captures and the wrapper failures
+are recorded separately from implementation tests. The qualification digest is
+unchanged. No full workspace milestone gate or numerical measurement ran.
+
+This step implements the sequential context bracket only. Trusted NSS provider
+and host/initial namespace policy, all-thread proof, root-owned fenced output
+preparation, authenticated original start and watchdog recovery still precede
+production composition and a positive lifecycle rehearsal.

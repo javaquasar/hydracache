@@ -2249,7 +2249,8 @@ now retains user namespace objects for the original process and current reading
 thread. Nsfs/type and device/inode checks accompany original generation brackets;
 exit or drift permanently refuses the guard. This is opt-in consistency only,
 not initial host namespace or trusted NSS enrollment. The credential document's
-opener view remains a separate prerequisite; existing numeric APIs are unchanged.
+opener view requires the separate opt-in composition below; existing numeric
+APIs are unchanged.
 
 The [packet](local-runs/diagnostic-user-namespace-20261010/manifest.json)
 retains the 218-pass baseline, API refusal, missing-import correction, eleven
@@ -2260,3 +2261,21 @@ foreign-user-namespace drift cases remain synthetic. Windows passes 28 portable
 tests and root contracts/evidence/governance pass 125 before registration. No
 namespace/account/unit mutation, product workload or performance measurement ran;
 qualification inputs and closed ship admission are unchanged.
+
+The [namespace-checked credential reader](diagnostic-namespace-credentials-local-design.md)
+pins the original process/reading-thread namespace before opening status,
+checks it again before the first credential read, and brackets later credential
+revalidation with namespace checks. It owns both guards and refuses both on any
+error. Preopened readers cannot be enrolled, and neither guard/FD is exported or
+refreshed. The old numeric API and account binder remain separate. Sequential
+opening-context checks do not attest the kernel file's credentials or establish
+atomic/continuous, host/initial namespace, all-thread or trusted NSS authority.
+
+Its [packet](local-runs/diagnostic-namespace-credentials-20261010/manifest.json)
+retains a 230-pass baseline, API refusal, ten initial passes and final 242 Linux
+passes with one pre-existing ignored. All twelve new cases pass three repeated
+runs; Windows passes 28 portable tests and root checks pass 126. Seeded stage
+variations are modeled; owned-helper exit, substitution/restoration, NNP and
+concurrency checks exercise real local kernel readers. Command-wrapper exit
+capture mistakes are retained as negative evidence. Frozen qualification and
+closed production/ship admission are unchanged; no numerical gain is claimed.

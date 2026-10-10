@@ -1117,8 +1117,15 @@ reading thread under generation brackets, with sticky refusal on exit/drift.
 Fixed proc magic links are followed deliberately; wrong filesystem/type refuses.
 Real owned-helper checks establish local same-namespace consistency only, not
 initial host/NSS policy or production cgroup identity. Credential-file opener
-binding remains explicit future work; no existing numeric API, helper/IPC route,
-namespace join, host mutation or qualification admission changes.
+binding is now addressed by the separate
+[namespace-checked credential reader](../testing/performance/0.74/diagnostic-namespace-credentials-local-design.md),
+which owns both guards and opens status inside a namespace/open/namespace/
+credentials/namespace bracket. Later reads use namespace/credentials/namespace;
+errors refuse both guards with no further IO or reopening. This sequential
+context check is not kernel-attested file credentials, atomic/continuous proof,
+initial host/NSS policy or all-thread authority. Preopened numeric readers cannot
+be enrolled. No existing numeric API, account binder, helper/IPC route, namespace
+join, host mutation or qualification admission changes.
 
 ## W12. Release evidence, documentation, and rollback
 

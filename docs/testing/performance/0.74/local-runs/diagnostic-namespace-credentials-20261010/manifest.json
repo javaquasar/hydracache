@@ -1,0 +1,180 @@
+{
+  "schema_version": "diagnostic-namespace-credentials-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "b087ae92825cc3b3d1fbf64742e90b28b966ae26",
+  "preregistration_commit": "5a099b61dae8db8e2701395b290a9dfdb54da351",
+  "implementation_commit": "af2cb978abdf2873ed29246851a8001c04b6f62c",
+  "implementation_tree": "300775a8b208a1f2b786b38c2a1dd552ab642814",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur non-root; owned non-product NNP cat helpers only",
+  "checks": {
+    "baseline_linux_passed": 230,
+    "first_green_new_tests": 10,
+    "final_linux_passed": 242,
+    "new_namespace_credential_tests": 12,
+    "preexisting_linux_ignored": 1,
+    "repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_namespace_tests_executed": 0,
+    "root_passed_before_packet_registration": 126,
+    "api_red_confirmed_cargo_native_exit": 101,
+    "ship_expected_red_native_exit": 1,
+    "post_evidence_registry": true,
+    "documentation_final_passed": true,
+    "full_workspace_verify_rerun": false
+  },
+  "real_kernel_test_boundary": "owned-nnp-cat-original-process-test-pin-and-current-reading-thread",
+  "new_test_functions": [
+    "namespace_credentials_open_and_read_orders_are_distinct",
+    "namespace_credentials_every_open_failure_stops_and_never_reopens",
+    "namespace_credentials_every_read_failure_preserves_credential_error",
+    "namespace_credentials_seeded_first_error_and_stage_are_sticky",
+    "namespace_credentials_owned_original_reads_and_numeric_api_stay_separate",
+    "namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse",
+    "namespace_credentials_owned_exit_latches_both_and_constructor_refuses",
+    "namespace_credentials_status_substitution_restoration_cannot_refresh",
+    "namespace_credentials_namespace_substitution_latches_credentials_too",
+    "namespace_credentials_pre_refused_component_latches_the_other",
+    "namespace_credentials_invalid_private_open_state_refuses_without_reopening",
+    "namespace_credentials_concurrent_owned_readers_have_independent_refusal"
+  ],
+  "negative_results": {
+    "api_red": "Cargo refused unresolved opt-in API imports before implementation. The first shell wrapper lost the exit variable; capture retains the empty observed-native-exit. A second capture records actual Cargo native exit 101, after which its surrounding PowerShell wrapper incorrectly expected 1 and threw. Neither command wrapper failure is a behavioral test failure or a passing check.",
+    "real_nss": "Fixed real account operator still refuses with exit 9, empty stdout and confirmed helper cleanup. New reader does not claim trusted NSS enrollment.",
+    "private_open_state": "Test-only scheduling-state corruption refuses before any reopening, retaining the original document ID and latching both guards."
+  },
+  "implemented_mechanisms": {
+    "same_call_namespace_checked_status_opening": true,
+    "namespace_checks_before_first_credential_read": true,
+    "original_status_not_reopened": true,
+    "namespace_checked_subsequent_reads": true,
+    "both_owned_guards_sticky_on_error": true,
+    "numeric_only_api_and_account_binder_unchanged": true
+  },
+  "proof_boundaries": {
+    "kernel_attested_file_credential_namespace": false,
+    "trusted_host_or_initial_namespace": false,
+    "trusted_nss_provider": false,
+    "all_thread_namespace_proof": false,
+    "atomic_or_continuous_observation": false,
+    "real_foreign_user_namespace_transition": false,
+    "production_cgroup_identity": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "whole_operation_deadline": false,
+    "namespace_creation_or_join": false,
+    "host_account_or_unit_mutation": false,
+    "host_install": false,
+    "product_or_observer_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "retention": {
+    "log_count": 20,
+    "files": [
+      {
+        "name": "api-red-confirmed.log",
+        "bytes": 989,
+        "sha256": "0c49c2fa936385995ac10834124bfc05523bb39fcf5a208c4b494ccf4c6de986"
+      },
+      {
+        "name": "api-red.log",
+        "bytes": 985,
+        "sha256": "cc239715c5f2d0d16c625119791adeadd249e6b1be88d73f2fed0733313ed9d4"
+      },
+      {
+        "name": "baseline.log",
+        "bytes": 24850,
+        "sha256": "8de0b33c354639233fb38bb4c33b391d34c72b2e098a1917b339b5be937a7453"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 203,
+        "sha256": "bbe01c62b210a261153c1199232061604b9066be59244255506fb873b50b3946"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 239,
+        "sha256": "02acc95a1034fae24dfd8396613f0ce86b26f879147c14cada64033b8d24898c"
+      },
+      {
+        "name": "docs-final.log",
+        "bytes": 578,
+        "sha256": "deb79b1741302643f5ecee5e0c571061974eb1a546e53028b0343e97e6014bf3"
+      },
+      {
+        "name": "final-linux.log",
+        "bytes": 26691,
+        "sha256": "59fe8666ee75b05057acd4c04d74f6c34f3aaa34eaeeacc62413f8dd9179149d"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1894,
+        "sha256": "413d63f87121f320b7d9a4f5df08dbaaeebb87a60d24b6c405f7d0c51358f969"
+      },
+      {
+        "name": "format.log",
+        "bytes": 18,
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "linux-check.log",
+        "bytes": 280,
+        "sha256": "cb47fa79669bf35553f53238db222600e3e25a03d30e7bbd03a084c45d56cb88"
+      },
+      {
+        "name": "linux-lint.log",
+        "bytes": 280,
+        "sha256": "4d3eff8b264b7b9ea1d142e13d41c2de7889c398cb053b4a8dae3232f5be9194"
+      },
+      {
+        "name": "post-registry.log",
+        "bytes": 439,
+        "sha256": "67036420e80765378aec9be38fdc6f0610d21f9ef308f383b04beb875b93245c"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 6120,
+        "sha256": "0da2ab0e6d88c0c922ea2a3e5bb931a3088ca383260c5f64d0c5d23279318871"
+      },
+      {
+        "name": "root.log",
+        "bytes": 11226,
+        "sha256": "ae09c3e3d182bbbe53c715b22dec856e64e6b320ff7393c5b2e2d999766bdbdd"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 569,
+        "sha256": "f1f5daee1dd953597b84d7f511267692d13a410721a0822c4481d73eba44f653"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 146,
+        "sha256": "4e574acc3a2a91e8cb53fb8de4f0d6fb76dcb44bd140a561e9188cd6b077eceb"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 145,
+        "sha256": "a8f6360fcc5012d9bc2b3619c6174829780638d321546938a651ac6c1875fd91"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 3323,
+        "sha256": "204f2784f03c81f38dc9b2b426929ac605c3b6683aa2bb014a8ad4391bb3520c"
+      }
+    ]
+  }
+}

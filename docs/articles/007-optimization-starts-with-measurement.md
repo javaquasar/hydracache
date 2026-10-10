@@ -5407,3 +5407,46 @@ open an existing credential document; that binding must precede later
 composition. Production output preparation, authenticated original start and
 watchdog recovery remain separate. No product workload or numeric allocation,
 CPU/op or throughput result follows from these local safety checks.
+
+## Checking namespace context when credentials are opened
+
+Namespace checks performed after a credential document was opened leave an
+important gap. Linux [task_state](https://github.com/torvalds/linux/blob/v6.6/fs/proc/array.c)
+projects numeric UID, GID and group values through
+[seq_user_ns](https://github.com/torvalds/linux/blob/v6.6/include/linux/seq_file.h),
+which uses the file's retained credential user namespace. A later namespace
+snapshot cannot retroactively establish that opening context.
+
+The [separate opt-in reader](../testing/performance/0.74/diagnostic-namespace-credentials-local-design.md)
+therefore pins the original process and current thread's namespace first.
+It checks namespace, opens the original status document once, checks namespace
+again, validates credentials, and checks namespace once more. Later observations
+use namespace, credentials, namespace without reopening status. Both component
+guards keep their original generation, descriptor, document and namespace
+checks. Any failure stops the sequence and refuses both guards; restoring a
+substituted input cannot recover either. No preopened credential reader, new
+PID, path, FD or namespace identity can replace these inputs.
+
+The local hypothesis is a safe opening/read sequence rather than a new launch
+authority. It preserves the numeric-only credential API and account binder;
+no helper or IPC route is added. The bracket does not inspect or attest kernel
+file credentials and cannot detect every unobserved transition between reads.
+Trusted host/initial namespace and NSS configuration, all-thread policy,
+production output preparation, authenticated original start and watchdog
+recovery remain prerequisites for production composition. These safety checks
+provide no numerical allocation, CPU/op or throughput gain.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-namespace-credentials-20261010/manifest.json)
+retains a 230-pass Linux baseline, missing-API refusal, ten initial new passes,
+and a 242-pass final suite with one pre-existing ignored. All twelve new cases
+pass three further runs. Real owned NNP cat helpers cover original exit, wrong
+policy, unhardened credentials, status FD/named-document and namespace FD
+substitution, restoration and independent concurrent readers. The refusal of
+both guards and preservation of the original status identity support the
+bounded mechanism; no production cgroup or foreign namespace transition is
+claimed. Seed `0x74f2026` varies 256 modeled first-error/stage cases per run.
+Windows passes 28 portable tests and root contracts/evidence/governance pass
+126 checks. Raw API captures also retain command-wrapper exit-reporting mistakes;
+they are separate from the green implementation tests. Scoped lint/check and
+documentation gates pass, while require-ship remains expected red and the
+qualification manifest remains unchanged.

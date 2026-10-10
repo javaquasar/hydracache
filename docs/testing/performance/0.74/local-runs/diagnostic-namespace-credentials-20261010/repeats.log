@@ -1,0 +1,60 @@
+    Finished `test` profile [unoptimized] target(s) in 4.27s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_open_failure_stops_and_never_reopens ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_read_failure_preserves_credential_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_open_and_read_orders_are_distinct ... ok
+namespace credential mutation seed=0x74f2026
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_seeded_first_error_and_stage_are_sticky ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_invalid_private_open_state_refuses_without_reopening ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_status_substitution_restoration_cannot_refresh ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_exit_latches_both_and_constructor_refuses ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_pre_refused_component_latches_the_other ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_concurrent_owned_readers_have_independent_refusal ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_original_reads_and_numeric_api_stay_separate ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.05s
+
+    Finished `test` profile [unoptimized] target(s) in 3.70s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_open_failure_stops_and_never_reopens ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_read_failure_preserves_credential_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_open_and_read_orders_are_distinct ... ok
+namespace credential mutation seed=0x74f2026
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_seeded_first_error_and_stage_are_sticky ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_invalid_private_open_state_refuses_without_reopening ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_concurrent_owned_readers_have_independent_refusal ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_exit_latches_both_and_constructor_refuses ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_status_substitution_restoration_cannot_refresh ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_pre_refused_component_latches_the_other ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_original_reads_and_numeric_api_stay_separate ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.07s
+
+    Finished `test` profile [unoptimized] target(s) in 3.52s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_open_failure_stops_and_never_reopens ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_read_failure_preserves_credential_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_open_and_read_orders_are_distinct ... ok
+namespace credential mutation seed=0x74f2026
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_seeded_first_error_and_stage_are_sticky ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_exit_latches_both_and_constructor_refuses ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_invalid_private_open_state_refuses_without_reopening ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_status_substitution_restoration_cannot_refresh ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_pre_refused_component_latches_the_other ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_original_reads_and_numeric_api_stay_separate ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_concurrent_owned_readers_have_independent_refusal ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.07s
+
