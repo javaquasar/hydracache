@@ -3,6 +3,113 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed() {
+    let c = contract("diagnostic-mount-namespace-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-mount-namespace-local-074-v1")
+    );
+    assert_eq!(
+        c["order"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "generation",
+            "namespace",
+            "generation",
+            "namespace",
+            "generation"
+        ]
+    );
+    for key in [
+        "original_process_borrowed",
+        "original_worker_and_observer_objects_retained",
+        "original_observer_tid_required",
+        "nsfs_mount_type_required",
+        "exact_device_inode_required",
+        "first_typed_error_stops",
+        "refusal_latches_without_refresh",
+        "read_only_cloexec",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "guard_send_or_sync",
+        "public_descriptor_identity_or_reset",
+        "arbitrary_path_or_namespace_selector",
+        "signed_policy_composition",
+        "all_threads_proved",
+        "initial_host_namespace_proved",
+        "mount_content_immutability_proved",
+        "kernel_foreign_namespace_mutation_tested",
+        "atomic_or_continuous_proof",
+        "file_opener_credentials_attested",
+        "real_issuer_enrolled",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let path = root().join("tools/long-run-supervisor-074/src/diagnostic_mount_namespace.rs");
+    let raw = std::fs::read_to_string(path).unwrap();
+    let code = raw
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for required in [
+        "process: &'a ProcessRead",
+        "PhantomData<Rc<()>>",
+        "observer_tid: libc::pid_t",
+        "libc::SYS_gettid",
+        "libc::NS_GET_NSTYPE",
+        "libc::CLONE_NEWNS",
+        "libc::NSFS_MAGIC",
+        "libc::O_RDONLY | libc::O_CLOEXEC",
+        "if self.refused",
+        "if !original_thread",
+        "self.refused = true",
+        "actual != self.original",
+        "Step::Generation, Step::Namespace, Step::Generation, Step::Namespace, Step::Generation",
+        "FileId::of(&named_meta) != self.directory_id",
+        "FileId::of(&retained_meta) != self.directory_id",
+        "c\"thread-self\"",
+        "c\"mnt\"",
+        "pub fn pin_same_mount_namespace",
+        "process: &ProcessRead",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn reset",
+        "pub fn into_",
+        "pub fn descriptor",
+        "pub fn identity",
+        "Serialize",
+        "ManagerClient",
+        "Command::new",
+        "kill(",
+        "libc::setns",
+        "libc::unshare",
+        "unsafe impl Send",
+        "unsafe impl Sync",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+}
+
+#[test]
 fn diagnostic_signed_opening_keeps_projection_after_original_context_and_start_closed() {
     let c = contract("diagnostic-signed-opening-local-contract.toml");
     assert_eq!(

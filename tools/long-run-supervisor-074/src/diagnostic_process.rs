@@ -30,6 +30,10 @@ pub use credentials::{
 mod user_namespace;
 pub use user_namespace::{pin_same_user_namespace, NamespaceError, SameUserNamespaceRead};
 
+#[path = "diagnostic_mount_namespace.rs"]
+mod mount_namespace;
+pub use mount_namespace::{pin_same_mount_namespace, MountNamespaceError, SameMountNamespaceRead};
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]
