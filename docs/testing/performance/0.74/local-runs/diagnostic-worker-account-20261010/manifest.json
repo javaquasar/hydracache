@@ -1,0 +1,201 @@
+{
+  "schema_version": "diagnostic-worker-account-local-evidence-074-v1",
+  "state": "retained-local-safety-evidence",
+  "baseline_source": "0ba5811cdb3f5053dca524e88009607a17fdad99",
+  "preregistration_commit": "7807025dae647da64a3e93f77a688d3d49aa18e9",
+  "implementation_commit": "1a4ae71a6d0109092a102eca8bc2d35cf2973d61",
+  "implementation_tree": "055384aa7ba019dd6ddf3a072e644a3e525bc876",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "observation_class": "working-tree-local-safety-not-clean-source-qualification",
+  "toolchain": "1.94.0",
+  "linux_identity": "WSL Ubuntu artur effective UID/GID 1000; no production account creation",
+  "checks": {
+    "baseline_linux_passed": 190,
+    "first_green_new_unit_tests": 11,
+    "first_green_new_integration_tests": 3,
+    "final_linux_passed": 205,
+    "new_linux_unit_tests": 12,
+    "new_linux_integration_tests": 3,
+    "preexisting_linux_ignored": 1,
+    "final_repetitions": 3,
+    "windows_portable_passed": 28,
+    "windows_linux_account_tests_executed": 0,
+    "root_passed_before_packet_registration": 123,
+    "post_evidence_registry": true,
+    "ship_expected_red_native_exit": 1,
+    "full_workspace_verify_rerun": false,
+    "documentation_final_passed": true
+  },
+  "real_account_observation": {
+    "exit": 9,
+    "kind": "Exit",
+    "helper_cleanup_confirmed": true,
+    "raw_stdout_empty": true,
+    "cause_detail_not_exported": true,
+    "positive_real_nss_enrollment_proved": false
+  },
+  "negative_results": {
+    "api_check_red": "Pre-implementation library check refused one unresolved-import error without compiler renderer panic; API red, not behavioral failure.",
+    "mutation_test_review_gap": "Initial GID mutations did not update primary group membership and could describe invalid projections. Test-only review corrects the membership list and requires canonical decoding of all 256 changed snapshots before refusal assertions. Initial and reviewed captures are separate."
+  },
+  "proof_boundaries": {
+    "worker_account_authentication": false,
+    "trusted_nss_provider": false,
+    "host_namespace_enrollment": false,
+    "actual_process_group_binding": false,
+    "all_threads_credentials": false,
+    "atomic_or_continuous_observation": false,
+    "original_start_authentication": false,
+    "positive_production_composition": false,
+    "durable_refusal": false,
+    "whole_operation_deadline": false,
+    "host_or_systemd_mutation": false,
+    "account_creation": false,
+    "observer_or_product_workload": false,
+    "numerical_performance_measurement": false,
+    "qualification_admission": false
+  },
+  "disk_maintenance": {
+    "method": "Cargo clean on two checked exact target directories",
+    "removed_paths": [
+      "target/debug/incremental",
+      "target/canary-sweep/cargo-target"
+    ],
+    "cargo_reported_files": [
+      111829,
+      12533
+    ],
+    "free_before_bytes": 13487009792,
+    "free_after_bytes": 87652687872,
+    "exact_physical_deletion_bytes_claimed": false,
+    "evidence_and_worktrees_preserved": true,
+    "recovery": "rebuild caches; not trash recovery"
+  },
+  "retention": {
+    "log_count": 24,
+    "files": [
+      {
+        "name": "api-red.log",
+        "bytes": 865,
+        "sha256": "d6fc06aaacee70f4c5bc81e064967bf99d6171668166ab874425ae0e0c0820ca"
+      },
+      {
+        "name": "baseline.log",
+        "bytes": 19933,
+        "sha256": "51dd488558b73202d9b53b7424a6f952d3246a27385c46ae9f2141ecaca15d18"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 315,
+        "sha256": "e6befae86d685a8eddf5f212b40dd81d5a23d5b15c81a14230df7b336b3723f0"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 239,
+        "sha256": "c74369ce8e4100f18dbb555c341617118da3c55dd981be9016137786e9db3d76"
+      },
+      {
+        "name": "docs-final.log",
+        "bytes": 662,
+        "sha256": "59b81f3dbe2e1c87652a9bcbab087a22c9e1956677e43c13927de9a5906a8220"
+      },
+      {
+        "name": "final-linux.log",
+        "bytes": 21950,
+        "sha256": "395a04e038ab9e07fb735aa464de65bd981a45efdf079434bd309edfd9feb95c"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 1714,
+        "sha256": "8c675a6a2c51d7d239e8db6b459d99ea112fbcf411bcfca6c4c1cca64dbb3b1e"
+      },
+      {
+        "name": "format.log",
+        "bytes": 18,
+        "sha256": "bb9042b0fe0d92d5691d7c8c312678b7f66388c559155cf72d6e70849432fb92"
+      },
+      {
+        "name": "integration-first.log",
+        "bytes": 805,
+        "sha256": "d340bfcfa2c9920aec37543b14f38e0604f13d4a1c24cc734746388de7c69c3f"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "linux-check.log",
+        "bytes": 280,
+        "sha256": "9acfc9a836b11c63d0c9ea4266b8084502ea44dd8d49ebbf68b987399f162ce5"
+      },
+      {
+        "name": "linux-lint.log",
+        "bytes": 280,
+        "sha256": "05e76c7aff04a329139e4db72136104d82121dc18c995086641542707ea9b1f6"
+      },
+      {
+        "name": "post-registry.log",
+        "bytes": 439,
+        "sha256": "a27f3d73ca19a617cbb2d3e1862fd2ed8962a84cae42e3aae40e751fe04c74f4"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 7122,
+        "sha256": "bdf31faa6b8961af3c34ecc84fb268bf16572f13dacd7583e5d7e537ce5fc04a"
+      },
+      {
+        "name": "reviewed-check.log",
+        "bytes": 193,
+        "sha256": "1bbe2cc533204459892c1380f0e02ca9d037115003f59523d45cf09482610c2d"
+      },
+      {
+        "name": "reviewed-lint.log",
+        "bytes": 193,
+        "sha256": "9855f62814be1537ea20d193981a007eb868be6f9fc2c6514edf3afbc7b62051"
+      },
+      {
+        "name": "reviewed-linux.log",
+        "bytes": 21950,
+        "sha256": "1a9952583da4b13c5a44f73a43c0bc8ebcfe9b78cfc619653b7e6c5648448711"
+      },
+      {
+        "name": "reviewed-repeats.log",
+        "bytes": 7122,
+        "sha256": "142d1c7ddeeab07a597388b0becc0b76309d7264d505ca04942a886af7ae866d"
+      },
+      {
+        "name": "root.log",
+        "bytes": 10609,
+        "sha256": "02248ae41c797f7994610dda31a3502d690feab59e3ff59e46ad30b568c57db7"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 511,
+        "sha256": "107b6e06dcb061eaa9f1b7a9ba5bd1e8c3c81df1b5e2ce52980ab5fbc1d4b8dd"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 275,
+        "sha256": "e49e25135281970ff4589d306d300a2cc94315010266676c820454e3f92d65f4"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 328,
+        "sha256": "a0ab16d6328131f0ac5a7197835364f6daec49bf1cbad9226e9c38ead17704e3"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 3452,
+        "sha256": "9b16825fe2fc5fbebbee813c3b79cccbc5bce4c872732c4b3cc67ed0713e8d91"
+      }
+    ]
+  },
+  "reviewed_commit": "cb6cb241d7e2fccea66aa7b09722301c18f2f8be",
+  "reviewed_tree": "6043c8cc06e039b2cc88add951eeac3ad6041144"
+}

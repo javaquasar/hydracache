@@ -1089,6 +1089,17 @@ account enrollment, production composition and authenticated original start
 remain prerequisites; no new helper/IPC, launch, mutation or qualification route
 is enabled and the frozen inputs remain unchanged.
 
+The [fixed account observer](../testing/performance/0.74/diagnostic-worker-account-local-design.md)
+now performs bounded read-only NSS lookup in a separate fixed helper, using two
+matching forward/reverse/membership rounds and sticky original-snapshot refusal.
+It exports only fixed names, numeric IDs and bounded sorted memberships; older
+binaries reject the new mode. This is not trusted provider/configuration or
+host namespace enrollment and cannot establish actual process groups, mutate
+an account or authorize a start. Real WSL inspection refuses explicitly; positive
+mapping tests are synthetic. Trusted host policy and the kernel credential join
+remain before production output preparation and signed lifecycle activation.
+Qualification inputs, thresholds and closed admission remain unchanged.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

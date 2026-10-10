@@ -1,0 +1,12 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved imports `account::account_worker_main`, `account::WorkerAccountRead`, `account::WorkerAccountSnapshot`
+  --> tools/long-run-supervisor-074/src/diagnostic_manager.rs:33:19
+   |
+33 | ...::{account_work...WorkerAccountRead, WorkerAccoun...
+   |       ^^^^^^^^^^^^...^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^...o `WorkerAccountSnapshot` in `diagnostic_manager::account`
+   |       |                    |
+   |       |                    no `WorkerAccountRead` in `diagnostic_manager::account`
+   |       no `account_worker_main` in `diagnostic_manager::account`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error

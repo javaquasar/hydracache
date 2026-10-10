@@ -1,0 +1,96 @@
+    Finished `test` profile [unoptimized] target(s) in 2.99s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_manager::account::tests::account_mapping_checks_each_forward_reverse_name_and_id ... ok
+test diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes ... ok
+test diagnostic_manager::account::tests::membership_capacity_duplicates_sentinel_and_primary_are_exact ... ok
+test diagnostic_manager::account::tests::nss_name_pointer_is_bounded_inside_its_original_buffer ... ok
+account mutation seed=0x74a2026
+test diagnostic_manager::account::tests::nss_result_and_group_count_errors_are_never_partial_success ... ok
+test diagnostic_manager::account::tests::account_guard_refuses_drift_and_never_observes_after_restoration ... ok
+test diagnostic_manager::account::tests::refused_account_guard_preserves_pending_owned_helper_without_observation ... ok
+test diagnostic_manager::account::tests::account_guard_preserves_typed_worker_error_and_independent_state ... ok
+test diagnostic_manager::account::tests::account_two_complete_rounds_bind_forward_reverse_and_memberships ... ok
+test diagnostic_manager::account::tests::every_nss_failure_stops_without_fallback_or_retry ... ok
+test diagnostic_manager::account::tests::account_snapshot_wire_refuses_invalid_identity_and_noncanonical_input ... ok
+test diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 160 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 2.36s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 2.46s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_manager::account::tests::account_guard_refuses_drift_and_never_observes_after_restoration ... ok
+test diagnostic_manager::account::tests::account_guard_preserves_typed_worker_error_and_independent_state ... ok
+test diagnostic_manager::account::tests::account_snapshot_wire_refuses_invalid_identity_and_noncanonical_input ... ok
+test diagnostic_manager::account::tests::account_two_complete_rounds_bind_forward_reverse_and_memberships ... ok
+test diagnostic_manager::account::tests::account_mapping_checks_each_forward_reverse_name_and_id ... ok
+test diagnostic_manager::account::tests::every_nss_failure_stops_without_fallback_or_retry ... ok
+test diagnostic_manager::account::tests::membership_capacity_duplicates_sentinel_and_primary_are_exact ... ok
+test diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes ... ok
+test diagnostic_manager::account::tests::nss_result_and_group_count_errors_are_never_partial_success ... ok
+test diagnostic_manager::account::tests::nss_name_pointer_is_bounded_inside_its_original_buffer ... ok
+account mutation seed=0x74a2026
+test diagnostic_manager::account::tests::refused_account_guard_preserves_pending_owned_helper_without_observation ... ok
+test diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 160 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 5.89s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 2.69s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_manager::account::tests::account_guard_preserves_typed_worker_error_and_independent_state ... ok
+test diagnostic_manager::account::tests::account_mapping_checks_each_forward_reverse_name_and_id ... ok
+test diagnostic_manager::account::tests::every_nss_failure_stops_without_fallback_or_retry ... ok
+test diagnostic_manager::account::tests::account_guard_refuses_drift_and_never_observes_after_restoration ... ok
+account mutation seed=0x74a2026
+test diagnostic_manager::account::tests::nss_name_pointer_is_bounded_inside_its_original_buffer ... ok
+test diagnostic_manager::account::tests::account_snapshot_wire_refuses_invalid_identity_and_noncanonical_input ... ok
+test diagnostic_manager::account::tests::account_two_complete_rounds_bind_forward_reverse_and_memberships ... ok
+test diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes ... ok
+test diagnostic_manager::account::tests::nss_result_and_group_count_errors_are_never_partial_success ... ok
+test diagnostic_manager::account::tests::membership_capacity_duplicates_sentinel_and_primary_are_exact ... ok
+test diagnostic_manager::account::tests::refused_account_guard_preserves_pending_owned_helper_without_observation ... ok
+test diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 160 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized] target(s) in 2.38s
+     Running tests/diagnostic_worker_account.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_account-00f01fc631da1b56)
+
+running 3 tests
+test linux::operator_rejects_account_or_helper_selectors ... ok
+test linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget ... ok
+account operator exit=Some(9) stdout= stderr=worker account observation refused: Exit; helper cleanup=true
+
+test linux::operator_fixed_account_observation_is_explicit_not_enrollment ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

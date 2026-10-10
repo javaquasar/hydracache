@@ -2199,3 +2199,27 @@ only through a test-only seam; they do not authenticate `hydracache-perf` or a
 production start. Account enrollment, namespace/thread policy and production
 composition remain separate. No allocation or throughput result is claimed;
 qualification admission remains closed.
+
+The [fixed account observer](diagnostic-worker-account-local-design.md)
+adds a separate read-only Linux helper for `hydracache-perf`, not enrollment or
+a production route. Two forward/reverse/membership rounds must agree; fixed
+16 KiB lookup buffers and 32 membership slots refuse exhaustion without growth
+or retry. Canonical checked snapshots bind a sticky original guard. The existing
+manager envelope supplies the deadline, output budget and cleanup reservation.
+No password/home/shell/member names or raw NSS buffers are exported.
+
+The [packet](local-runs/diagnostic-worker-account-20261010/manifest.json)
+retains the 190-pass baseline, missing-API check, initial eleven unit/three
+integration passes and final 205 Linux passes with one pre-existing ignored.
+All fifteen new tests pass three further repetitions; Windows passes 28 portable
+checks and no Linux account tests. Root contracts/evidence/governance pass 123
+checks before packet registration. Actual WSL inspection refuses with exit 9,
+empty stdout and confirmed helper cleanup; synthetic positive mapping checks
+do not certify a production account.
+
+Trusted NSS provider/configuration and host namespace policy still precede the
+join to original kernel credentials. The NSS membership list is not the process
+supplementary-group policy. No host/account/unit mutation, product workload or
+performance measurement occurred; ship admission and frozen qualification inputs
+are unchanged. The two checked Cargo caches were removed before baseline, while
+current caches, evidence and all worktrees were preserved.

@@ -5271,3 +5271,62 @@ path, reparse-point and active-compiler checks. Their inventory contained about
 observations. Current caches, raw evidence and all worktrees remained intact,
 and the previous packet passed its verifier again. This is operational disk
 maintenance, not a performance result; deleted caches are recoverable by rebuild.
+
+### Fixed account lookup needs a bounded helper and a separate trust policy
+
+The next safety hypothesis addressed the other half of worker identity. Kernel
+status can confirm numeric credentials of an original process, but it cannot
+prove that those numbers belong to the intended `hydracache-perf` account. A
+name lookup is therefore needed before enrollment, yet calling NSS directly in
+the long-lived controller would put provider latency and allocation on that
+controller's path. The
+[fixed account observer](../testing/performance/0.74/diagnostic-worker-account-local-design.md)
+executes lookup in the existing bounded child envelope instead. No selector,
+helper pathname, account creation or worker launch is accepted.
+
+Two complete rounds compare forward and reverse user/group mappings with a
+canonical membership list. Each reentrant lookup uses a fixed 16 KiB buffer,
+without ERANGE growth or retry; membership capture accepts at most 32 IDs and
+rejects duplicates, invalid counts and sentinel values. Only the fixed names,
+non-root UID/primary GID and sorted membership IDs leave the helper. A runtime
+guard retains the original projection and refuses permanently after drift or
+an observation error, preserving the first typed failure and cleanup status.
+The existing parent deadline, output budget and pending-child reservation apply
+to this new fixed mode.
+
+The distinction between caller and provider memory matters here. A 32-entry
+array does not constrain NSS-internal allocation. Child resource limits and the
+parent envelope supply the outer limits; the fixed caller buffer is not an
+allocation-performance claim. The [GNU libc group API](https://ftp.gnu.org/old-gnu/Manuals/glibc/html_node/Setting-Groups.html)
+also includes the primary group in `getgrouplist`, which is not proof of the
+kernel supplementary groups configured for a particular process.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-worker-account-20261010/manifest.json)
+retains the 190-pass baseline, clean missing-API refusal and initial eleven unit
+plus three integration passes. Final coverage passes 205 Linux tests with one
+pre-existing ignored; all fifteen new tests pass three additional repetitions.
+Seed `0x74a2026` changes valid identities rather than relying only on malformed
+documents. Review corrected a primary-GID mutation to keep its group list
+consistent, then required every changed projection to pass canonical decoding
+before testing sticky refusal. The earlier captures remain separate because
+their GID cases did not establish that stronger property. The real WSL operator
+mode consistently returns a refused observation,
+exit 9 with confirmed helper cleanup and empty stdout. Positive name/ID mapping
+checks use a private deterministic seam; they are not a real host enrollment.
+Windows passes 28 portable checks, with no Linux account tests executed. Root
+contracts, evidence and governance pass 123 checks before packet registration.
+
+The bounded lookup and sticky refusal hypothesis is supported within that
+scope. Trust still requires a reviewed provider/configuration and namespace
+policy, followed by composition with the original process credential guard.
+Sequential matching reads neither freeze NSS nor prove all-thread or continuous
+credentials. Root-owned production output preparation, authenticated signed
+start, watchdog recovery and a controlled positive lifecycle rehearsal remain
+before production activation. No product workload ran and no throughput,
+CPU/op or allocation improvement is claimed from these safety checks.
+
+Before this baseline, only the 0.74 incremental cache and canary Cargo target
+were cleaned. C: free space rose from about 12.6 to 81.6 GiB at those observations;
+the current build caches, canary process capture, raw evidence and all worktrees
+were retained. These are disk-maintenance observations, not an exact physical
+deletion size or a performance result.
