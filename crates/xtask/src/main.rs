@@ -50,6 +50,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("fast-suite-check") => xtask::fast_suite::run(args.collect())?,
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
+        Some("imap-contract-check") => xtask::imap_contract::run(args.collect())?,
+        Some("imap-distributed-correctness") => {
+            xtask::imap_distributed_correctness::run(args.collect())?
+        }
+        Some("imap-foundation-evidence-check") => {
+            xtask::imap_foundation_evidence::run(args.collect())?
+        }
+        Some("imap-foundation-evidence-generate") => {
+            xtask::imap_foundation_generate::run(args.collect())?
+        }
+        Some("imap-hazelcast-source-check") => xtask::imap_hazelcast_source::run(args.collect())?,
+        Some("imap-value-plane-model") => xtask::imap_value_plane_model::run(args.collect())?,
         Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("long-run-campaign-check") => xtask::long_run_campaign::run(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
@@ -138,6 +150,12 @@ fn print_usage() {
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \
          cargo xtask fast-suite-check --release 0.64  # validate fast-suite budgets and receipts\n  \
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
+         cargo xtask imap-contract-check --release 0.75  # validate the provisional Extended IMap W0 contracts\n  \
+         cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
+         cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
+         cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \
+         cargo xtask imap-foundation-evidence-generate --release 0.75 --output <dir> [--seed <u64>]  # execute all local foundation probes and emit thirteen receipts\n  \
+         cargo xtask imap-hazelcast-source-check --release 0.75 [--upstream <path>]  # validate the pinned Hazelcast provenance map and optional checkout hashes\n  \
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \

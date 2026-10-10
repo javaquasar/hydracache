@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hydracache.imap.linearizability-receipt.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "release", "source_sha", "history", "history_sha256", "complete", "result"],
+  "properties": {
+    "schema": {"const": "hydracache.imap.linearizability-receipt.v1"}, "release": {"const": "0.75"},
+    "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "history": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "history_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "complete": {"const": true}, "result": {"const": "passed"}
+  }
+}

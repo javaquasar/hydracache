@@ -1,0 +1,24 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "mappings": [
+    {"id_prefix":"imap075::operation::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"history_oracle_accepts_atomic_conditionals_and_ambiguous_response_loss"},
+    {"id_prefix":"imap075::collection_operation::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"bounded_collection_api_covers_lifecycle_and_views"},
+    {"id_prefix":"imap075::collection_error::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"collection_bounds_fail_closed_before_visible_mutation"},
+    {"id_prefix":"imap075::collection_bound::","path":"crates/hydracache-cluster-testkit/tests/value_plane_collection_075.rs","test":"collection_bounds_fail_closed_before_visible_mutation"},
+    {"id_prefix":"imap075::collection_surface::","path":"crates/xtask/tests/imap_contract_075.rs","test":"collection_surface_matrix_is_explicit_and_fail_closed"},
+    {"id_prefix":"imap075::errors::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"request_history_dedup_and_bulk_bounds_fail_closed_negative_canary"},
+    {"id_prefix":"imap075::ttl::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"logical_ttl_never_depends_on_wall_clock"},
+    {"id_prefix":"imap075::bounds::","path":"crates/hydracache-cluster-testkit/tests/value_plane_admission_075.rs","test":"all_admission_dimensions_are_finite_and_enforced"},
+    {"id_prefix":"imap075::mutation::","path":"crates/hydracache-cluster-testkit/tests/value_plane_model_075.rs","test":"canonical_mutation_reaches_ack_only_after_replica_proof"},
+    {"id_prefix":"imap075::retry::","path":"crates/hydracache-cluster-testkit/tests/value_plane_dedup_075.rs","test":"replay_transfer_and_safe_eviction_preserve_exact_outcomes"},
+    {"id_prefix":"imap075::failure::","path":"crates/hydracache-cluster-testkit/tests/distributed_value_plane_075.rs","test":"seeded_chaos_sweep_preserves_invariants"},
+    {"id_prefix":"imap075::rpo_rto::","path":"crates/hydracache-cluster-testkit/tests/value_plane_durable_075.rs","test":"durable_acknowledgements_survive_all_admitted_restart_classes"},
+    {"id_prefix":"imap075::surface::","path":"crates/hydracache-cluster-testkit/tests/value_plane_surface_075.rs","test":"every_surface_projects_into_one_value_and_accounting_owner"},
+    {"id_prefix":"HC-IMAP-075-SEC-","path":"crates/hydracache-cluster-testkit/tests/value_plane_security_075.rs","test":"security_collections_fail_closed_at_capacity"},
+    {"id_prefix":"HC-IMAP-075-KEY-RUST-","path":"crates/hydracache-cluster-testkit/tests/canonical_key_075.rs","test":"checked_in_cross_language_vectors_are_generated_by_the_rust_reference"},
+    {"id_prefix":"HC-IMAP-075-KEY-JAVA-","path":"tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/ReferenceCanonicalKeyCodecTest.java","test":"matchesTheRustAsciiAndEmptyKeyGolden"},
+    {"id_prefix":"HC-IMAP-075-KEY-NO-NORMALIZATION","path":"tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/ReferenceCanonicalKeyCodecTest.java","test":"preservesUtf8WithoutUnicodeNormalization"}
+  ]
+}

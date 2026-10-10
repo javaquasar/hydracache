@@ -2356,6 +2356,7 @@ dependencies = [
  "hydracache-cluster-raft",
  "raft",
  "serde_json",
+ "sha2 0.11.0",
  "tokio",
 ]
 
@@ -7097,6 +7098,7 @@ dependencies = [
  "flate2",
  "hydracache",
  "hydracache-client-plane-spike",
+ "hydracache-cluster-testkit",
  "hydracache-loadgen",
  "hydracache-long-run-supervisor-074",
  "jsonschema",
