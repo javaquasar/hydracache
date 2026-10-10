@@ -87,8 +87,12 @@ fn production_directory_valid(s: &Stable, level: ProductionLevel, uid: u32, gid:
         return false;
     }
     match level {
-        ProductionLevel::Ancestor => s.uid == 0 && s.gid == 0 && s.mode & 0o7022 == 0,
-        ProductionLevel::Lease => s.uid == 0 && s.gid == 0 && s.mode & 0o7777 == 0o700,
+        ProductionLevel::Ancestor => {
+            s.uid == 0 && s.gid == 0 && s.mode & 0o7022 == 0 && s.mode & 0o001 != 0
+        }
+        // Root alone may list or change lease entries. The worker still needs
+        // known-path search after systemd drops UID before applying its cwd.
+        ProductionLevel::Lease => s.uid == 0 && s.gid == 0 && s.mode & 0o7777 == 0o711,
         ProductionLevel::Cell => s.uid == uid && s.gid == gid && s.mode & 0o7777 == 0o700,
     }
 }
@@ -461,6 +465,56 @@ mod tests {
     }
 
     #[test]
+    fn production_search_policy_preserves_nonroot_working_directory_traversal() {
+        let mut s = Stable {
+            dev: 1,
+            ino: 2,
+            uid: 0,
+            gid: 0,
+            mode: libc::S_IFDIR | 0o700,
+        };
+        assert!(!production_directory_valid(
+            &s,
+            ProductionLevel::Ancestor,
+            1000,
+            1000
+        ));
+        assert!(!production_directory_valid(
+            &s,
+            ProductionLevel::Lease,
+            1000,
+            1000
+        ));
+        s.mode = libc::S_IFDIR | 0o711;
+        assert!(production_directory_valid(
+            &s,
+            ProductionLevel::Ancestor,
+            1000,
+            1000
+        ));
+        assert!(production_directory_valid(
+            &s,
+            ProductionLevel::Lease,
+            1000,
+            1000
+        ));
+        assert_eq!(s.mode & 0o077, 0o011); // Search only: no listing or namespace writes.
+        s.mode = libc::S_IFDIR | 0o710;
+        assert!(!production_directory_valid(
+            &s,
+            ProductionLevel::Ancestor,
+            1000,
+            1000
+        ));
+        assert!(!production_directory_valid(
+            &s,
+            ProductionLevel::Lease,
+            1000,
+            1000
+        ));
+    }
+
+    #[test]
     fn production_ancestry_policy_requires_root_and_private_worker_cell() {
         let root = Stable {
             dev: 1,
@@ -472,7 +526,7 @@ mod tests {
         for level in [ProductionLevel::Ancestor, ProductionLevel::Lease] {
             let mut stamp = root.clone();
             if matches!(level, ProductionLevel::Lease) {
-                stamp.mode = libc::S_IFDIR | 0o700;
+                stamp.mode = libc::S_IFDIR | 0o711;
             }
             assert!(production_directory_valid(&stamp, level, 1000, 1000));
             for case in 0..5 {
@@ -525,11 +579,11 @@ mod tests {
             };
             assert_eq!(
                 production_directory_valid(&stamp, ProductionLevel::Ancestor, 1000, 1000),
-                mode & 0o7022 == 0
+                mode & 0o7022 == 0 && mode & 0o001 != 0
             );
             assert_eq!(
                 production_directory_valid(&stamp, ProductionLevel::Lease, 1000, 1000),
-                mode == 0o700
+                mode == 0o711
             );
             let cell = Stable {
                 uid: 1000,

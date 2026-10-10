@@ -1025,6 +1025,7 @@ fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed()
     for field in [
         "root_owned_ancestors_required",
         "root_owned_private_lease_required",
+        "nonroot_ancestor_search_required",
         "nonroot_worker_cell_required",
         "distinct_production_capability",
         "first_refusal_is_sticky",
@@ -1049,6 +1050,7 @@ fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed()
     ] {
         assert_eq!(c[field].as_bool(), Some(false), "{field}");
     }
+    assert_eq!(c["root_owned_lease_mode"].as_str(), Some("0711"));
     let source = std::fs::read_to_string(
         root().join("tools/long-run-supervisor-074/src/diagnostic_named_output.rs"),
     )
@@ -1079,6 +1081,8 @@ fn production_output_inspection_keeps_preparation_and_worker_enrollment_closed()
         "s.uid == 0 && s.gid == 0",
         "s.mode & 0o7022 == 0",
         "s.mode & 0o7777 == 0o700",
+        "s.mode & 0o7777 == 0o711",
+        "s.mode & 0o001 != 0",
         "ProductionLevel::Lease",
         "self.inner.revalidate()",
         "if self.production || state != &self.state",
