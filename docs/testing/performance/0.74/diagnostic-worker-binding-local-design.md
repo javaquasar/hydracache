@@ -45,8 +45,10 @@ details, prior refusal, restoration after drift, wrapper-drop propagation and
 independent concurrent guards. Seed identity mutations and validate changed
 snapshots before asserting refusal. Owned non-product NoNewPrivs cat helpers can
 exercise real original kernel credentials with synthetic fixed-account snapshots;
-these are not real NSS enrollment positives. A public-constructor check must
-retain actual NSS refusal, rather than create the account or substitute the caller.
+these are not real NSS enrollment positives. Public-constructor checks cover
+pre-refusal, mapping mismatch and pending helper cleanup with those owned readers.
+The existing operator integration retains actual NSS refusal independently; no
+production helper selector is added merely to obtain a synthetic positive.
 
 Trusted provider/configuration and namespace policy still precede production use.
 Root-owned output preparation, authenticated signed start, watchdog/uncertain-intent
