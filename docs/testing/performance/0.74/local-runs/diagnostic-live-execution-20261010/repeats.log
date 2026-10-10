@@ -1,0 +1,36 @@
+
+running 7 tests
+test diagnostic_live_execution::tests::synthetic_every_execution_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_live_execution::tests::synthetic_execution_order_brackets_io_with_all_original_inputs ... ok
+test diagnostic_live_execution::tests::synthetic_preexisting_execution_refusal_never_reads_or_repairs ... ok
+test diagnostic_live_execution::tests::synthetic_execution_guards_are_independent_under_concurrency ... ok
+test diagnostic_named_output::tests::synthetic_output_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 123 filtered out; finished in 0.86s
+
+
+running 7 tests
+test diagnostic_live_execution::tests::synthetic_execution_order_brackets_io_with_all_original_inputs ... ok
+test diagnostic_live_execution::tests::synthetic_every_execution_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_live_execution::tests::synthetic_preexisting_execution_refusal_never_reads_or_repairs ... ok
+test diagnostic_live_execution::tests::synthetic_execution_guards_are_independent_under_concurrency ... ok
+test diagnostic_named_output::tests::synthetic_output_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 123 filtered out; finished in 0.75s
+
+
+running 7 tests
+test diagnostic_live_execution::tests::synthetic_execution_order_brackets_io_with_all_original_inputs ... ok
+test diagnostic_live_execution::tests::synthetic_preexisting_execution_refusal_never_reads_or_repairs ... ok
+test diagnostic_live_execution::tests::synthetic_every_execution_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_named_output::tests::synthetic_output_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_live_execution::tests::synthetic_execution_guards_are_independent_under_concurrency ... ok
+test diagnostic_artifacts::linux::io_binding_tests::synthetic_material_origin_and_exact_execution_state_cannot_drift ... ok
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 123 filtered out; finished in 0.87s
+

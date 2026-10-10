@@ -1,0 +1,144 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `ExecutionError` in this scope
+ --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:7:21
+  |
+7 | ...-> ExecutionError {
+  |       ^^^^^^^^^^^^^^ ...found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:20:28
+   |
+20 | ..., [Step::I...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:20:44
+   |
+20 | ...y, Step::O...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:20:59
+   |
+20 | ...s, Step::M...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:20:75
+   |
+20 | ...l, Step::Io,
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:21:13
+   |
+21 | ...   Step::M...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:21:29
+   |
+21 | ...l, Step::O...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:21:44
+   |
+21 | ...s, Step::I...
+   |       ^^^^ use of undeclared type `Step`
+   |
+help: consider importing this trait
+   |
+ 3 +     use std::range::Step;
+   |
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:3:9
+  |
+3 | ...se super::*;
+  |       ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionError`
+ --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:8:9
+  |
+8 | ...   Exe...onError::I...
+  |       ^^^...^^^^^^^ use of undeclared type `ExecutionError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:17:25
+   |
+17 | ... = ExecutionGuard::d...
+   |       ^^^^^^^^^^^^^^ use...undeclared type `ExecutionGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:27:29
+   |
+27 | ... = ExecutionGuard::d...
+   |       ^^^^^^^^^^^^^^ use of ...clared type `ExecutionGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:49:25
+   |
+49 | ... = ExecutionGuard::d...
+   |       ^^^^^^^^^^^^^^ use...undeclared type `ExecutionGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionGuard`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:60:37
+   |
+60 | ... = ExecutionGuard::d...
+   |       ^^^^^^^^^^^^^^ use of undeclar...ype `ExecutionGuard`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionError`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:34:17
+   |
+34 | ...et ExecutionE...::I...
+   |       ^^^^^^^^^^... use of undeclared type `ExecutionError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionError`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:51:17
+   |
+51 | ...rr(ExecutionE...::R...
+   |       ^^^^^^^^^^... use of undeclared type `ExecutionError`
+
+error[E0433]: failed to resolve: use of undeclared type `ExecutionError`
+  --> tools/long-run-supervisor-074/src/diagnostic_live_execution.rs:44:21
+   |
+44 | ...rr(ExecutionError.....
+   |       ^^^^^^^^^^^^^^... of undeclared type `ExecutionError`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 16 previous errors; 1 warning emitted

@@ -1057,6 +1057,17 @@ and temporary filesystem tests do not prove production ancestry or account
 enrollment. Fenced preparation and executable/output/live-identity composition
 remain before backend enrollment; frozen qualification inputs stay unchanged.
 
+The [original execution observation composition](../testing/performance/0.74/diagnostic-live-execution-local-design.md)
+now binds the identity reader's original process to retained fixed production
+outputs and signed material without accepting another process or caller stream
+FDs. Exact state and production origins are required; any construction or
+observation failure latches all three original guards, even after wrapper drop.
+The read-only seven-step bracket is sequential evidence, not original-start
+authentication, writer revocation, durable refusal or admission. Local positives
+remain synthetic and fixture-origin refusals do not certify production execution.
+Worker enrollment, fenced preparation and controlled positive rehearsal remain
+before backend activation. Qualification inputs and thresholds are unchanged.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

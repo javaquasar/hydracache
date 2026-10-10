@@ -5102,3 +5102,65 @@ The earlier 119-test root suite stays labelled pre-correction rather than being
 reused as full final-source coverage. The useful result is a stricter ownership
 observation that also accounts for nonroot pathname traversal; execution and
 numerical admission still require their separate gates.
+
+### Independent successful observations still need an execution join
+
+Checking the manager, process, output names and signed executable separately can
+leave an important attribution gap: each check may be valid while describing a
+different execution. The next hypothesis therefore concerns their binding, not
+speed. A single read-only composition must refer to the original process already
+held by the manager/process/tree identity guard and the original output/material
+objects, without accepting substitute evidence.
+
+The [execution composition](../testing/performance/0.74/diagnostic-live-execution-local-design.md)
+borrows the three original guards and obtains the process only from the identity
+reader. Its public entry point accepts no second process, arbitrary output FD or
+pathname. Full state equality includes revision and clocks, not just lease and
+binary hashes. Fixed production origin is required for both named outputs and
+signed material before manager observation; a temporary fixture cannot become
+production evidence merely by agreeing on those strings.
+
+The existing material hook supplies the retained signed executable, and a private
+named-output hook supplies its retained streams. Revalidation checks identity,
+outputs and material before original process IO, then checks material, outputs
+and identity again. Each identity observation retains the original manager and
+process/tree bracket. This establishes a stricter sequential observation, not an
+atomic snapshot or uninterrupted execution proof. Per-helper limits remain, but
+four manager observations and bundle hashing do not create a whole-operation
+deadline or a performance improvement.
+
+The useful regression is refusal that survives destruction of the wrapper. A
+first construction or observation failure latches identity, outputs and material,
+not only the temporary composite. Subsequent checks do no observations and
+restoring a path or the caller's state does not reset those objects. The first
+returned error keeps its typed category; manager failures keep bounded output and
+helper cleanup status. This runtime latch is not a durable failure record and
+does not revoke writers or release a lease.
+
+Private synthetic tests exercise all seven observation positions, stop at the
+first error and verify independent guards under concurrency. State tests vary
+revision, clocks, cell and identity fields; invented origin flags are used only
+to test their private predicates, never for a binding. Actual owned cat fixtures
+exercise early origin refusal and the common finish path after original IO
+binding. Their invented identity holder and temporary output wrapper remain
+negative-only test seams. Neither they nor passing tests authenticate a fixed
+production unit, worker account or original launch.
+
+The hypothesis is supported locally at that narrower boundary: retained inputs
+can be composed without reopening substitute-process or fixture-promotion APIs,
+and refusal remains shared after wrapper drop. Controlled positive production
+composition still requires worker enrollment and fenced output preparation.
+Original-start authentication, effective environment, writer revocation, durable
+refusal, watchdog and uncertain-intent reconciliation remain separate gates.
+No allocation, throughput or qualification claim follows from these safety checks.
+
+The [retained execution packet](../testing/performance/0.74/local-runs/diagnostic-live-execution-20261010/manifest.json)
+supports implementation `e1dbae9e`: the completed baseline passes 151 Linux tests,
+reviewed coverage passes 158 with one pre-existing ignored, and all seven new
+tests pass three more repetitions. Windows has 28 portable passes and no Linux
+composition execution. The root suite passes 120 checks before packet registration;
+affected check/lint/format and documentation controls pass. Every invocation uses
+1.94.0. The two missing-API refusals and earlier first green remain separately
+labelled. These are working-tree safety observations and retention checks, not
+clean-source qualification, positive unit execution or performance measurements.
+Ship admission stays closed and the frozen qualification digest is unchanged.

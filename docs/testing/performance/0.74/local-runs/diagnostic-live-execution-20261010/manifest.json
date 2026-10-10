@@ -1,0 +1,221 @@
+{
+  "schema_version": "diagnostic-live-execution-local-evidence-074-v1",
+  "baseline_code_source": "1dc6dd7876d2828a6ddbfcc6b43472c30e75bc3d",
+  "preregistration_commit": "81de1dd4c3be1dcbd633e0d8ffcaa69e678eca4d",
+  "implementation_commit": "e1dbae9eecd85c9769d24b967cb7038cff3643a1",
+  "implementation_tree": "d903c33a62b3f038877d1b1a59902d152a5591da",
+  "capture_scope": "Working-tree behavior checks before the implementation commit, never clean-source qualification. Baseline completed before any new tests; first-green has five new tests; focused and reviewed-focused have all seven. Reviewed tests exercise six error categories through concrete shared finish and seven observation positions separately through private synthetic callbacks. Broad root run is on final code before evidence registration; the registered packet/registry is subsequently checked by one native Windows W12 skeleton test. Final doc/local-contract checks repeat after prose/packet registration. The capture inventory is completed afterward without a production or admission claim.",
+  "local_scope": "WSL Ubuntu, existing artur UID/GID 1000, temporary files and owned non-product cat helpers only. Synthetic origins/identity holders never certify fixed production/kernel composition. No host calls, unit mutation, fixed-root preparation, observer or product/qualification workload.",
+  "toolchain": "Every Cargo/rustc/rustfmt command explicitly uses existing 1.94.0. Environment captured in environment.log. Compiled final library binary repeats all seven new tests three times; no timing comparison.",
+  "preparation_observations": [
+    {
+      "file": "red.log",
+      "result": "Test-first absent sequencer/API compile refusal: 16 errors; no successful execution."
+    },
+    {
+      "file": "binding-red.log",
+      "result": "Test-first early-binding refusal test and negative-only holders added before implementation: 20 missing API/field/method errors. Both WSL command results observed exit 1 in the tool; no unobserved native Cargo exit is asserted."
+    },
+    {
+      "scope": "Tool console only",
+      "result": "Initial source read used nonexistent crates/ prefix; corrected to tools/. One multi-file patch context mismatch made no edits, then corrected. No other user's files or production paths changed."
+    },
+    {
+      "files": [
+        "focused.log",
+        "reviewed-focused.log",
+        "repeats.log"
+      ],
+      "result": "Supplementary exact-state/origin regressions added after first green. Review moves the cfg(test) output holder behind production code so existing source guards can inspect it, and covers six distinct refusal error categories rather than repeated identical injected IO errors. Only private negative holders are constructed; no positive public production join is claimed."
+    }
+  ],
+  "checks": {
+    "baseline_passed": 151,
+    "linux_focused_passed": 158,
+    "linux_ignored": 1,
+    "new_linux_tests": 7,
+    "repeat_runs": 3,
+    "tests_per_repeat": 7,
+    "windows_portable_passed": 28,
+    "windows_linux_execution_tests_executed": 0,
+    "root_performance_contracts": 84,
+    "root_release_evidence": 13,
+    "root_release_governance": 23,
+    "linux_affected_all_target_check": true,
+    "linux_affected_all_feature_clippy_warnings_denied": true,
+    "windows_supervisor_check_and_clippy": true,
+    "scoped_format": true,
+    "doc_check": true,
+    "local_performance_contract": "pass; non-promotable",
+    "links": {
+      "markdown_files": 51,
+      "external_includes": 20
+    },
+    "mdbook": true,
+    "ship_expected_red_native_exit": 1,
+    "post_evidence_registry": true,
+    "final_doc_contract": true,
+    "full_workspace_verify_rerun": false,
+    "post_evidence_registry_passed": 1,
+    "post_evidence_registry_platform": "Windows, explicit Cargo 1.94.0"
+  },
+  "commands": {
+    "linux_focused": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_artifacts --locked",
+    "repeats": "Final compiled Linux library test binary with OR filters diagnostic_live_execution::, synthetic_material_origin_and_exact_execution_state_cannot_drift, synthetic_output_origin_and_exact_execution_state_cannot_drift, fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs; three runs, seven tests each.",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test release_governance",
+    "check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --locked",
+    "lint": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked -- -D warnings",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_artifacts --locked; affected all-target check and all-feature strict clippy",
+    "format": "rustfmt +1.94.0 --edition 2021 --check changed source files and xtask test; lib.rs separately with skip_children=true",
+    "docs": "cargo +1.94.0 xtask doc-check; cargo +1.94.0 xtask performance-contract-check --release 0.74; node scripts/docs-link-check.mjs; mdbook build docs-site",
+    "ship": "cargo +1.94.0 xtask performance-contract-check --release 0.74 --require-ship; native PowerShell requires LASTEXITCODE exactly 1",
+    "build_environment": {
+      "cargo_target_dir": "/home/artur/.cache/hydracache-074-manager-local-target",
+      "dev_debug": "0",
+      "test_debug": "0",
+      "incremental": "0",
+      "build_jobs": "2"
+    },
+    "post_evidence": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 w12_evidence_skeleton_is_exact_and_fail_closed (native Windows; after packet registration)"
+  },
+  "proof_boundaries": {
+    "positive_production_composition_proved": false,
+    "worker_account_authenticated": false,
+    "original_start_authenticated": false,
+    "production_outputs_prepared": false,
+    "atomic_snapshot_proved": false,
+    "continuous_execution_proved": false,
+    "same_open_file_description_proved": false,
+    "whole_operation_deadline_proved": false,
+    "writer_revocation_proved": false,
+    "durable_refusal_journal": false,
+    "host_operation_performed": false,
+    "observer_executed": false,
+    "product_workload_performed": false,
+    "qualification_performed": false,
+    "numerical_performance_claim": false,
+    "admission_allowed": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "retention": {
+    "kind": "Byte-preserved Tee captures with length/SHA256. Empty format logs mean successful silent checks, not performance measurements.",
+    "files": [
+      {
+        "name": "baseline.log",
+        "bytes": 15144,
+        "sha256": "f1aebc850aeabee6f8b7263b9ef7e8eb8bc75f0de042d2ef61df40d8ceb9ed2e"
+      },
+      {
+        "name": "binding-red.log",
+        "bytes": 7065,
+        "sha256": "299aa2db93465250ddf44c8f7f5a6e21c0f11f3dfd7fa8afe1d39be237e02531"
+      },
+      {
+        "name": "book.log",
+        "bytes": 151,
+        "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+      },
+      {
+        "name": "check.log",
+        "bytes": 280,
+        "sha256": "a75b5b483161d607a035fd677b5ac2d4fbf041adcf93011751a30960efbd883f"
+      },
+      {
+        "name": "contract.log",
+        "bytes": 215,
+        "sha256": "cf582693d7a2503b8006b80164734aa8368f1457452db4d48d1d22973f388c48"
+      },
+      {
+        "name": "doc-final.log",
+        "bytes": 525,
+        "sha256": "56d0ba5e7f2cbe8c5205bb9f984ed16a27f61ba363ec8d90cd2892c7a0a7ea47"
+      },
+      {
+        "name": "doc.log",
+        "bytes": 252,
+        "sha256": "72dc5f975d4d8ec99c73212cb5215e5416b0ed51c8182f0ef07f630950bccef8"
+      },
+      {
+        "name": "environment.log",
+        "bytes": 491,
+        "sha256": "f2921ee8adae568df9906878e20d8bc00446b060f2dff68f7c1606ff6b9d4a21"
+      },
+      {
+        "name": "first-green.log",
+        "bytes": 15858,
+        "sha256": "bf2bbdf8318bc529a4bb93c957c37be0bfdccbeaeb36b59c7a41691846ed44a9"
+      },
+      {
+        "name": "focused.log",
+        "bytes": 16089,
+        "sha256": "0628e7ebd2197193404ddd2b039b2fab47d67c086eff4d13a219d966cd840257"
+      },
+      {
+        "name": "format-lib.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "format.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "links.log",
+        "bytes": 69,
+        "sha256": "adc78316580761cc310d874facfdcd809f8acdc40214b9a6a734fe9ce004941a"
+      },
+      {
+        "name": "lint.log",
+        "bytes": 334,
+        "sha256": "c741f0e43789c4fb7cfbae63fb74859200b43ab79018cd32ef90d60c184d1482"
+      },
+      {
+        "name": "post-evidence.log",
+        "bytes": 581,
+        "sha256": "836df6d9246624b22c9b528d6d63cf76b49a8a842f7601fa5c414a98eaa89175"
+      },
+      {
+        "name": "red.log",
+        "bytes": 4950,
+        "sha256": "2511a7f2e44a5f579911767fd21f094d660153f4804aeac78f44826945f5af0f"
+      },
+      {
+        "name": "repeats.log",
+        "bytes": 2781,
+        "sha256": "a4cd131e94d874a063607aa4e635648cdddc5ec2a48fb08a2796574303b980ef"
+      },
+      {
+        "name": "reviewed-focused.log",
+        "bytes": 16089,
+        "sha256": "f0a32808530eaa5f5f735d5d3972b1dc8a34906efb89071aea8e0247df717951"
+      },
+      {
+        "name": "root.log",
+        "bytes": 11630,
+        "sha256": "c21a0f25ac788e3555a64e44f5ae8f278153627c3744436cd901ac31159cbe39"
+      },
+      {
+        "name": "ship.log",
+        "bytes": 499,
+        "sha256": "646c01c574f3cebad9e5203dc21c90f9fcbc536f3921e67eb9977224d4a2e8fd"
+      },
+      {
+        "name": "windows-check.log",
+        "bytes": 202,
+        "sha256": "4d65dd271f152663442f3c2f10fc2b6993322ca8950c3159766b93b404b3ba3b"
+      },
+      {
+        "name": "windows-lint.log",
+        "bytes": 202,
+        "sha256": "0dc3e1b42064793af1092a5db2af07da5aabab1f1341cdcc992be752e956dd10"
+      },
+      {
+        "name": "windows.log",
+        "bytes": 3010,
+        "sha256": "668924974b84b86d556f8f11018934e4da48493bb0118d2595fd68e1b7fd3466"
+      }
+    ],
+    "log_count": 23
+  }
+}

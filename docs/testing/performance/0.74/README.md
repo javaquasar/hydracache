@@ -2136,3 +2136,28 @@ three twelve-test repetitions, 28 portable Windows tests and the updated root
 policy guard. Check/lint/format are repeated; the 119-test broad root run remains
 labelled pre-correction. Account enrollment, preparation and live composition
 are still not enabled by this result.
+
+The [original execution composition](diagnostic-live-execution-local-design.md)
+now joins the retained identity, fixed production outputs and signed material
+through the identity reader's original process only. No independent process or
+caller stream FD can enter this API. Exact original state, including revision and
+clocks, and production origins are required before manager observation. The
+seven-step bracket checks identity, outputs and material around the original IO.
+Any construction or observation failure latches all three borrowed guards; wrapper
+drop and later restoration cannot repair them. This remains read-only runtime
+code, not a production start route or durable failure journal.
+
+Private synthetic ordering/state tests and actual cat fixture refusals do not
+prove positive fixed-unit execution. Worker enrollment, fenced output preparation,
+original-start authentication and the remaining lifecycle/reconciliation gates
+still precede controlled production composition and workload admission. No server,
+observer or qualification workload is opened by this step.
+
+The [execution packet](local-runs/diagnostic-live-execution-20261010/manifest.json)
+retains the completed 151-test baseline, final 158 Linux passes (one pre-existing
+ignored), three seven-test repeats, 28 portable Windows passes and 120 root
+checks. All toolchain commands explicitly use 1.94.0. Missing-API refusals and
+the earlier 156-test first green remain distinct from reviewed final coverage.
+Check/lint/format and documentation controls pass; full workspace milestone
+verification is not rerun. Ship admission refuses with observed native exit 1;
+the frozen qualification digest remains unchanged. Code is `e1dbae9e`.
