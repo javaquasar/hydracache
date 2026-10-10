@@ -110,6 +110,14 @@ pub fn pin_namespace_checked_credentials(
     })
 }
 impl NamespaceCredentialRead<'_> {
+    pub(crate) fn matches_worker_policy(
+        &self,
+        policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+    ) -> bool {
+        !self.is_refused()
+            && !self.namespace.is_refused()
+            && self.credentials.matches_worker_policy(policy)
+    }
     pub(crate) fn refuse(&mut self) {
         self.gate.refused = true;
         self.namespace.refuse();
@@ -148,6 +156,52 @@ mod tests {
     use std::fs::File;
     use std::os::unix::process::CommandExt;
     use std::process::{Child, Command, Stdio};
+
+    #[test]
+    fn namespace_policy_matching_requires_original_projection_and_both_guards() {
+        let child = Owned::new(true);
+        let process = pin_owned_test_helper(child.0.id());
+        let mut read = pin_namespace_checked_credentials(&process, policy()).unwrap();
+        let original = &read.credentials.gate.policy;
+        let signed = crate::diagnostic_worker_policy::WorkerPolicy {
+            schema_version: crate::diagnostic_worker_policy::WORKER_POLICY_SCHEMA.into(),
+            repository_id: 1_217_101_761,
+            purpose: "diagnostic-worker-only".into(),
+            account_source: "local-files".into(),
+            account: "hydracache-perf".into(),
+            group: "hydracache-perf".into(),
+            policy_epoch: 7,
+            uid: original.uid,
+            gid: original.gid,
+            supplementary_gids: original.groups.clone(),
+            machine_id: "a".repeat(32),
+            boot_id: "00000000-0000-0000-0000-000000000001".into(),
+            user_namespace: crate::diagnostic_worker_policy::NamespaceIdentity {
+                device: 1,
+                inode: 1,
+            },
+            mount_namespace: crate::diagnostic_worker_policy::NamespaceIdentity {
+                device: 1,
+                inode: 2,
+            },
+            passwd_sha256: "b".repeat(64),
+            group_sha256: "c".repeat(64),
+        };
+        // This private boolean test is numeric consistency, not byte verification/enrollment.
+        assert!(read.matches_worker_policy(&signed));
+        let projection = read.credentials.gate.original.take();
+        assert!(!read.matches_worker_policy(&signed));
+        read.credentials.gate.original = projection;
+        assert!(read.matches_worker_policy(&signed));
+        read.namespace.refuse();
+        assert!(!read.matches_worker_policy(&signed));
+        read.refuse();
+        assert!(read.namespace.is_refused() && read.credentials.is_refused());
+        refused(&mut read);
+        let mut read = pin_namespace_checked_credentials(&process, policy()).unwrap();
+        read.credentials.refuse();
+        assert!(!read.matches_worker_policy(&signed));
+    }
 
     #[test]
     fn namespace_binding_reader_refusal_reaches_all_owned_guards() {

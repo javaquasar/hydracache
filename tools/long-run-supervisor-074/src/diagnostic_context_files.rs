@@ -5,6 +5,9 @@ use super::{inspect_worker_context, WorkerContextError, WorkerContextRead};
 use std::path::Path;
 use thiserror::Error;
 
+#[path = "diagnostic_policy_credentials.rs"]
+pub mod kernel_binding;
+
 #[derive(Debug, Error)]
 pub enum ContextFilesError {
     #[error("original context/account composition previously refused")]

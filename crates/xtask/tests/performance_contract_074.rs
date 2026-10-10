@@ -2,6 +2,140 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
+#[test]
+fn diagnostic_policy_credentials_bind_exact_original_mapping_and_keep_start_closed() {
+    let c = contract("diagnostic-policy-credentials-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-policy-credentials-local-074-v1")
+    );
+    assert_eq!(
+        c["order"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "context-account",
+            "namespace-credentials",
+            "context-account"
+        ]
+    );
+    for key in [
+        "original_inputs_borrowed",
+        "exact_supplementary_list_not_primary_union",
+        "original_projection_required",
+        "prior_refusal_and_mismatch_before_io",
+        "first_typed_error_stops",
+        "failure_latches_original_policy_and_both_credential_guards",
+        "fixed_fixture_types_distinct",
+        "already_namespace_checked_reader_accepted",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "raw_numeric_or_process_input_allowed",
+        "guard_send_or_sync",
+        "old_parser_budgets_mapping_or_opening_changed",
+        "real_issuer_enrolled",
+        "positive_fixed_production_inspection",
+        "signed_context_at_status_open_attested",
+        "worker_mount_namespace_proved",
+        "initial_host_namespace_proved",
+        "file_opener_credentials_attested",
+        "atomic_cross_file_snapshot",
+        "continuous_context_or_writer_revocation",
+        "regular_file_io_deadline",
+        "all_threads_proved",
+        "durable_epoch_or_refusal_registry",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let normalize = |name: &str| {
+        std::fs::read_to_string(base.join(name))
+            .unwrap()
+            .split("#[cfg(test)]")
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+    };
+    let code = normalize("diagnostic_policy_credentials.rs");
+    for required in [
+        "if self.refused || input_refused",
+        "if !mapping_matches",
+        "[Step::Account, Step::Credentials, Step::Account]",
+        "return Err(error)",
+        "reader.context.policy.refused = true",
+        "self.account.refuse()",
+        "self.credentials.refuse()",
+        "matches_worker_policy(&self.account.reader().context.policy.original)",
+        "credentials: &'guard mut NamespaceCredentialRead<'process>",
+        "Fixed(&'guard mut ContextFixedFilesRead<'policy>)",
+        "Fixture(&'guard mut ContextFixtureFilesRead<'policy>)",
+        "pub struct FixedPolicyCredentialRead",
+        "pub struct FixturePolicyCredentialRead",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "Serialize",
+        "pub fn reset",
+        "pub fn into_",
+        "pub fn descriptor",
+        "pub fn adopt",
+        "AssertedWorkerCredentials",
+        "ProcessRead",
+        "ManagerClient",
+        "SigningKey",
+        "Command::",
+        "setns",
+        "unshare",
+        "write_all(",
+        "Vec<",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let numeric = normalize("diagnostic_process_credentials.rs");
+    for required in [
+        "self.gate.original.is_some()",
+        "self.gate.policy.uid == policy.uid",
+        "self.gate.policy.gid == policy.gid",
+        "self.gate.policy.groups == policy.supplementary_gids",
+    ] {
+        assert!(numeric.contains(required), "{required}");
+    }
+    let namespace = normalize("diagnostic_namespace_credentials.rs");
+    assert!(namespace.contains("!self.namespace.is_refused()"));
+    assert!(namespace.contains("self.credentials.matches_worker_policy(policy)"));
+    for path in [
+        "main.rs",
+        "server.rs",
+        "config.rs",
+        "diagnostic_ipc.rs",
+        "diagnostic_live_execution.rs",
+        "diagnostic_output_preparation.rs",
+    ] {
+        let live = std::fs::read_to_string(base.join(path)).unwrap();
+        assert!(
+            !live.contains("bind_context_fixed_credentials")
+                && !live.contains("bind_context_fixture_credentials"),
+            "no live route in {path}"
+        );
+    }
+}
+
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }

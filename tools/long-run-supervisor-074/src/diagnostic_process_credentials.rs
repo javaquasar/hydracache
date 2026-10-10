@@ -158,6 +158,17 @@ pub struct ProcessCredentialRead<'a> {
     gate: Gate,
 }
 impl ProcessCredentialRead<'_> {
+    // Boolean consistency only; callers cannot extract or replace retained assertions.
+    pub(crate) fn matches_worker_policy(
+        &self,
+        policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+    ) -> bool {
+        !self.gate.refused
+            && self.gate.original.is_some()
+            && self.gate.policy.uid == policy.uid
+            && self.gate.policy.gid == policy.gid
+            && self.gate.policy.groups == policy.supplementary_gids
+    }
     pub(crate) fn refuse(&mut self) {
         self.gate.refused = true;
     }
