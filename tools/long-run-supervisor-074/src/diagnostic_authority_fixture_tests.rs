@@ -141,7 +141,16 @@ fn authority_fixture_original_path_file_and_descriptor_drift_latch_without_refre
             0 => {
                 fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
                 fs::write(&path, &registry.entries[0].record.raw).unwrap();
+                // A same-byte rewrite can share the original filesystem clock tick.
+                // Force observable metadata drift; no claim of transient owner tamper detection.
+                File::open(&path)
+                    .unwrap()
+                    .set_times(fs::FileTimes::new().set_modified(std::time::SystemTime::UNIX_EPOCH))
+                    .unwrap();
                 fs::set_permissions(&path, fs::Permissions::from_mode(0o400)).unwrap();
+                assert!(
+                    Stamp::of(&fs::metadata(&path).unwrap()) != registry.entries[0].record.stamp
+                );
             }
             1 => registry.entries[0].record.file = File::open("/dev/null").unwrap(),
             2 => fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o755)).unwrap(),
