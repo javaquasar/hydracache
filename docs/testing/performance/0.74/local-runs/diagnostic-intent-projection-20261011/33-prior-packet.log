@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\diagnostic-fixture-recovery-20261011\verify-packet.py", line 99, in <module>
+    assert (source.parent / target).is_file(), (relative, target)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+AssertionError: ('docs/articles/007-optimization-starts-with-measurement.md', '../testing/performance/0.74/local-runs/diagnostic-intent-projection-20261011/README.md')

@@ -2478,3 +2478,19 @@ outputs are not repaired, removed or replayed. Quiet Reserved/Terminal data is
 not execution permission. The [packet](local-runs/diagnostic-fixture-recovery-20261011/README.md)
 records local checks only. This is not fixed-host enrollment, authenticated
 production intent, reboot recovery, watchdog/cleanup or a production start route.
+## Signed intent projection: expected bytes, not a start
+
+The [local contract](diagnostic-intent-projection-local-contract.toml) and
+[design](diagnostic-intent-projection-local-design.md) add separate-domain
+controller signatures binding full Reserved state, original worker policy
+digest/epoch and boot, and the existing fixed typed unit specification.
+Construction/revalidation retains the original worker exclusively, refuses
+controller/state/peer/envelope drift and never refreshes a refused intent.
+Malformed controller packets do not revoke an unrelated healthy worker policy.
+
+The [packet](local-runs/diagnostic-intent-projection-20261011/README.md) retains
+18 new tests, three repeated integration runs, Linux/Windows lint and MSRV checks,
+root contracts and the failed baseline/registration attempts. It is byte-level
+safety evidence with synthetic keys/assertions, not production enrollment,
+kernel peer/clock authentication, durable intent, anti-replay or execution proof.
+No product measurement, server operation or qualification is performed.

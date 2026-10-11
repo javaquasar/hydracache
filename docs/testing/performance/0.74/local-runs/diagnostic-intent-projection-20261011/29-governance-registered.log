@@ -1,0 +1,110 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 3.38s
+     Running tests\release_governance.rs (target\debug\deps\release_governance-91af24d8e4a931d1.exe)
+
+running 23 tests
+test publish_order_keeps_workspace_dev_and_build_dependencies ... ok
+test crates_io_probe_identifies_itself_and_retries_transient_responses ... ok
+test post_publish_consumer_tracks_the_current_public_api ... ok
+test release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c ... ok
+test canary_release_governance_accepts_a_missing_mandatory_gate ... FAILED
+test canary_release_0671_governance_accepts_a_missing_stage_gate ... FAILED
+test canary_release_governance_accepts_a_missing_deferred_performance_gate ... FAILED
+test release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha ... ok
+test release_066_registered_heavy_gates_are_mandatory_and_fail_closed ... FAILED
+test release_0671_governance_contract_is_fail_closed ... FAILED
+test release_067_deferred_performance_gates_remain_registered_and_fail_closed ... FAILED
+test release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry ... ok
+test release_governance_check_rejects_an_unwired_or_missing_meta_gate ... FAILED
+test release_governance_rejects_coverage_receipts_bound_to_an_older_release ... ok
+test release_governance_requires_complete_072_dynamic_canary_wiring ... ok
+test runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts ... FAILED
+test release_069_receipt_and_admission_commands_are_fail_closed ... ok
+test performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency ... ok
+test ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands ... ok
+test release_governance_check_accepts_release_069_independent_evidence_wiring ... FAILED
+test release_governance_check_accepts_the_explicit_0_66_fast_wiring ... FAILED
+test release_governance_check_accepts_current_structural_meta_gates ... FAILED
+test release_governance_check_accepts_the_explicit_0_70_fast_wiring ... FAILED
+
+failures:
+
+---- canary_release_governance_accepts_a_missing_mandatory_gate stdout ----
+
+thread 'canary_release_governance_accepts_a_missing_mandatory_gate' (12856) panicked at crates\xtask\tests\release_governance.rs:427:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- canary_release_0671_governance_accepts_a_missing_stage_gate stdout ----
+
+thread 'canary_release_0671_governance_accepts_a_missing_stage_gate' (16584) panicked at crates\xtask\tests\release_governance.rs:747:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- canary_release_governance_accepts_a_missing_deferred_performance_gate stdout ----
+
+thread 'canary_release_governance_accepts_a_missing_deferred_performance_gate' (14992) panicked at crates\xtask\tests\release_governance.rs:704:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_066_registered_heavy_gates_are_mandatory_and_fail_closed stdout ----
+
+thread 'release_066_registered_heavy_gates_are_mandatory_and_fail_closed' (48984) panicked at crates\xtask\tests\release_governance.rs:336:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_0671_governance_contract_is_fail_closed stdout ----
+
+thread 'release_0671_governance_contract_is_fail_closed' (43392) panicked at crates\xtask\tests\release_governance.rs:727:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_067_deferred_performance_gates_remain_registered_and_fail_closed stdout ----
+
+thread 'release_067_deferred_performance_gates_remain_registered_and_fail_closed' (24312) panicked at crates\xtask\tests\release_governance.rs:452:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_governance_check_rejects_an_unwired_or_missing_meta_gate stdout ----
+
+thread 'release_governance_check_rejects_an_unwired_or_missing_meta_gate' (20460) panicked at crates\xtask\tests\release_governance.rs:93:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts stdout ----
+
+thread 'runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts' (14496) panicked at crates\xtask\tests\release_governance.rs:667:61:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_governance_check_accepts_release_069_independent_evidence_wiring stdout ----
+
+thread 'release_governance_check_accepts_release_069_independent_evidence_wiring' (45480) panicked at crates\xtask\tests\release_governance.rs:891:66:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_governance_check_accepts_the_explicit_0_66_fast_wiring stdout ----
+
+thread 'release_governance_check_accepts_the_explicit_0_66_fast_wiring' (47928) panicked at crates\xtask\tests\release_governance.rs:86:66:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_governance_check_accepts_current_structural_meta_gates stdout ----
+
+thread 'release_governance_check_accepts_current_structural_meta_gates' (13848) panicked at crates\xtask\tests\release_governance.rs:42:66:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+---- release_governance_check_accepts_the_explicit_0_70_fast_wiring stdout ----
+
+thread 'release_governance_check_accepts_the_explicit_0_70_fast_wiring' (28708) panicked at crates\xtask\tests\release_governance.rs:872:66:
+called `Result::unwrap()` on an `Err` value: "parsing docs/testing/gated-test-registry.toml: TOML parse error at line 8103, column 1\n     |\n8103 | mode = \"workspace\"\r\n     | ^^^^\nunknown field `mode`, expected one of `workflow`, `job`, `step`\n"
+
+
+failures:
+    canary_release_0671_governance_accepts_a_missing_stage_gate
+    canary_release_governance_accepts_a_missing_deferred_performance_gate
+    canary_release_governance_accepts_a_missing_mandatory_gate
+    release_066_registered_heavy_gates_are_mandatory_and_fail_closed
+    release_0671_governance_contract_is_fail_closed
+    release_067_deferred_performance_gates_remain_registered_and_fail_closed
+    release_governance_check_accepts_current_structural_meta_gates
+    release_governance_check_accepts_release_069_independent_evidence_wiring
+    release_governance_check_accepts_the_explicit_0_66_fast_wiring
+    release_governance_check_accepts_the_explicit_0_70_fast_wiring
+    release_governance_check_rejects_an_unwired_or_missing_meta_gate
+    runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts
+
+test result: FAILED. 11 passed; 12 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.77s
+
+error: test failed, to rerun pass `-p xtask --test release_governance`

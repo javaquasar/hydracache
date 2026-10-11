@@ -1,0 +1,270 @@
+{
+  "schema_version": "diagnostic-intent-projection-local-evidence-074-v1",
+  "state": "retained-local-signed-projection-not-production-intent",
+  "evidence_class": "working-tree-local-safety-not-exact-candidate-release-receipt",
+  "baseline_source": "1b45dc2b9ee2df21ecd244361b0ec471313f9516",
+  "baseline_tree": "7bcd0831da2e64a82bcfe58a0f4f2eeefbc74cf4",
+  "preregistration_source": "8cba5f18cd2e078b6275aaea155eb390d45200f5",
+  "implementation_source": "6f40dba19a8bcd4c2d373dfa31e4dbec3ce5345c",
+  "implementation_tree": "53afa68fddd26b3108ea8f747a97d2333a34debb",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "results": {
+    "baseline_serial_passed": 433,
+    "baseline_existing_ignored": 1,
+    "linux_scoped_passed": 451,
+    "linux_existing_ignored": 1,
+    "windows_portable_passed": 195,
+    "new_integration_tests": 16,
+    "new_unit_tests": 2,
+    "compile_fail_doctests": 5,
+    "serial_integration_repeats": 3,
+    "root_contract": 106,
+    "root_evidence": 13,
+    "root_governance": 23
+  },
+  "new_integration_test_names": [
+    "four_cells_bind_exact_projection_without_execution",
+    "signed_binding_mutations_are_not_authority",
+    "malformed_noncanonical_unknown_duplicate_and_oversize_refuse",
+    "signature_domain_key_and_lowercase_encoding_are_strict",
+    "window_is_positive_bounded_and_expiry_exclusive",
+    "controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope",
+    "state_projection_rejects_interrupted_expired_and_admission_states",
+    "state_hash_includes_every_field_and_unit_hash_changes_with_budget",
+    "checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily",
+    "original_worker_refusal_survives_intent_drop_and_restoration",
+    "boot_change_never_rebinds_an_original_worker",
+    "independent_concurrent_checks_are_not_a_replay_ledger",
+    "authenticated_worker_trust_drift_revokes_original_not_just_wrapper",
+    "controller_fields_and_bounded_configuration_fail_closed",
+    "body_budget_nested_schema_and_hash_encoding_are_strict",
+    "seeded_state_mutations_bind_full_state_not_only_cell"
+  ],
+  "new_unit_test_names": [
+    "typed_projection_preserves_all_variants_and_array_order",
+    "command_fields_and_property_types_cannot_share_a_projection"
+  ],
+  "implementation_source_sha256": {
+    "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs": "403c7af6030b9bd5cc1690b0315753bf9db0c8c276f61bb9419708c523f5e2f5",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_projection_tests.rs": "9e90a85ad9c35c2744d2725a96ef1c7093a1985e0daa105772fbe7839bf6efec",
+    "tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs": "65c75f7052df42410cd641736338fa94fadfb60d487274ec532a468113508118",
+    "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs": "873c2368a8ad4311053c5caed8592f9428ea193d238cc68bdcf62e235c19518a",
+    "tools/long-run-supervisor-074/src/diagnostic_unit.rs": "a017f9d22b60ca59ab5e2fc4a7b0a542c82a0a64549b780b9779d91131e0c3fd",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "ade0d366c14b63212955db852cd70605219554b23fbaa6f24bdbeadf8edd3c5b",
+    "tools/long-run-supervisor-074/src/diagnostic_ipc.rs": "e861d439c5969fe135bbd089f776aef497e951ffafee4d2ce34198ef2d9ef32b",
+    "tools/long-run-supervisor-074/src/systemd_unit.rs": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac",
+    "tools/long-run-supervisor-074/src/lib.rs": "e78b6b61e2e67c0560ce8379ff594b857a4f710f18d36ada04f511f708e6283d",
+    "crates/xtask/tests/performance_contract_074.rs": "443d1365a46fad720a4dd521f682d171b56325d82366c5b641c686290c3cae54",
+    "docs/testing/performance/0.74/diagnostic-intent-projection-local-contract.toml": "a5b1c81ad027a16fa759e9544df5ba4943064a79dfa4d0b802af14a8ea645a59"
+  },
+  "proof_boundaries": {
+    "signed_expected_projection_bound": true,
+    "exclusive_original_worker_borrow": true,
+    "synthetic_keys_only": true,
+    "live_peer_or_clock_proved": false,
+    "durable_intent": false,
+    "replay_prevention": false,
+    "production_start_or_restart": false,
+    "crash_or_reboot_lifecycle": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_claim_allowed": false,
+    "qualification_allowed": false,
+    "ship_allowed": false
+  },
+  "notes": [
+    "Initial parallel baseline ETXTBSY failure retained; serial baseline passes without test/runtime changes.",
+    "Missing API red precedes implementation. Missing cfg target and unsupported mode registration failures remain retained; final entry uses the existing Linux CI step.",
+    "Prior packet verifier first ran before the new README existed; corrected link verification passes.",
+    "Full frozen inputs and manifest unchanged; inherited committed plan digest mismatch remains. Local structural green is not qualification."
+  ],
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 49116,
+      "sha256": "e0bd73e7845508f68442b1779e92e14400e50ec1ea842efdb79acf776905aa77"
+    },
+    {
+      "name": "02-missing-api.log",
+      "bytes": 647,
+      "sha256": "7748588099f9ad76e34fc43b9df0e33c6d602f5b73195e729a40202b07d9c954"
+    },
+    {
+      "name": "03-baseline-serial.log",
+      "bytes": 53802,
+      "sha256": "9e7d0646f2a7a492766029fffa40a6b6053936d27b584bdb158b55146c0975d3"
+    },
+    {
+      "name": "04-first-tests.log",
+      "bytes": 1309,
+      "sha256": "5a5883be03991c321398b824650869f073d7a513729fec1d1799e0f4380f6f27"
+    },
+    {
+      "name": "05-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "06-scoped-linux.log",
+      "bytes": 55574,
+      "sha256": "45e31dc025b3bbf3ab2b345301f3c7921b4ea6e70cdb5f0c4183db51af01b106"
+    },
+    {
+      "name": "07-windows-check.log",
+      "bytes": 191,
+      "sha256": "f598d59514f8bae87069d9faab87a8f5a74b0717e343b5043cc96cba0657de8c"
+    },
+    {
+      "name": "08-format-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "09-windows-clippy.log",
+      "bytes": 191,
+      "sha256": "b7469fd50032a198a628732fc49726a7eed771f5b9b8867858877ead0a7c9d5a"
+    },
+    {
+      "name": "10-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "68ee02c38ba0b4c321b42d2366aa8f1a7bfc4e84012f0ea59908a449a26cf2b1"
+    },
+    {
+      "name": "11-intent-final.log",
+      "bytes": 1455,
+      "sha256": "1eed56f47514f556a80514604308e5abe180251189bafeeeb2c2d5146a47e8f6"
+    },
+    {
+      "name": "12-unit-final.log",
+      "bytes": 574,
+      "sha256": "adb1a3e38a228df4ee69bff36f09e7eba3ed33038a452ee3026deae5118b0d02"
+    },
+    {
+      "name": "13-doctests.log",
+      "bytes": 1394,
+      "sha256": "55c6bfde6d48b7e42072f5a77f3acd72de7762d6dc98ba6df8db6ab8a4775056"
+    },
+    {
+      "name": "14-linux-check.log",
+      "bytes": 193,
+      "sha256": "3d3e17180fe0db96892121f61011e7ee658db80c49f2dc0869f0fda01916465e"
+    },
+    {
+      "name": "15-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "22b903efb1f2c272304d3e54c7111ca5f8b40723a833227a1fac7962549eb0c6"
+    },
+    {
+      "name": "16-windows-tests.log",
+      "bytes": 25084,
+      "sha256": "8a3c975097113bdb8e86331cf038aec243e4c6dc0075f47951b175413c3d2a12"
+    },
+    {
+      "name": "17-windows-msrv.log",
+      "bytes": 191,
+      "sha256": "cef7aa4aa5c092b687026a36504a8186328d09af590dc9180594fbdc5e342559"
+    },
+    {
+      "name": "18-root-tests.log",
+      "bytes": 14889,
+      "sha256": "851679917e8276ba88e4f5449cfe73afead0498b3d798d7db72299d89b0761c8"
+    },
+    {
+      "name": "19-repeat-1.log",
+      "bytes": 1512,
+      "sha256": "f9ce52c7c5f304cbe2c45430301679349a3fdded4f71343aa99deb2372fd1769"
+    },
+    {
+      "name": "20-repeat-2.log",
+      "bytes": 1455,
+      "sha256": "873203417b5fdb76070b9f400fd6ecad7dfd6e3f946faa65abcd01b1b3ea5af2"
+    },
+    {
+      "name": "21-repeat-3.log",
+      "bytes": 1455,
+      "sha256": "28123182f1b736e818b30e0b96f3d05840bd84b67b4f9e4df5df87f6f81e35fb"
+    },
+    {
+      "name": "22-linux-rustdoc.log",
+      "bytes": 460,
+      "sha256": "4012c26fdbadb04ffb5f1c3ce5219d8ffc7aa756ad3dda4aebb0b196f48428a0"
+    },
+    {
+      "name": "23-format-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "24-diff-check.log",
+      "bytes": 428,
+      "sha256": "2edf7ee60ffc97477953f3b1cb62b973fc8b4ffcb3436af8d9ed702402d5f278"
+    },
+    {
+      "name": "25-xtask-clippy.log",
+      "bytes": 330,
+      "sha256": "d64f75c98dd52925ee2dcad4700ac5116a16223f55e7c4bf4512587df251edbe"
+    },
+    {
+      "name": "26-local-contract.log",
+      "bytes": 287,
+      "sha256": "bd7c3df66e7f6776d27f7b4a0645dc1b569fd19d52ab62dbd720190cb5c4144e"
+    },
+    {
+      "name": "27-ship-red.log",
+      "bytes": 487,
+      "sha256": "eb2322c2862ac93d1976da35ad90e10efa9dd3359a0da07ce38298ea4e1acad4"
+    },
+    {
+      "name": "28-qualification-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44"
+    },
+    {
+      "name": "29-governance-registered.log",
+      "bytes": 9017,
+      "sha256": "84f74422ea0fada2be0d324819b345cbcb827c7c2b6bf50d84fc1268ad8bbaef"
+    },
+    {
+      "name": "30-governance-corrected.log",
+      "bytes": 2074,
+      "sha256": "1fdb0c3f25ada749373cecee4479d73e561ea53703a2dc2618588ce3eb2bd3af"
+    },
+    {
+      "name": "31-doc-check.log",
+      "bytes": 239,
+      "sha256": "d19d1a38e154112489e1d46b0ba7abac08ebefc11bbe29453fb5c3dd51da786c"
+    },
+    {
+      "name": "32-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    {
+      "name": "33-prior-packet.log",
+      "bytes": 487,
+      "sha256": "7ca4622f9e7a16639bb9abcc41c2d3996776f1c82173e5f9841fbea7d5cc1bb4"
+    },
+    {
+      "name": "34-final-root-tests.log",
+      "bytes": 12316,
+      "sha256": "157acfb6026d99ad49d2054404cb91b7d416dbe0d90848c405970dc3992febd0"
+    },
+    {
+      "name": "35-final-doc-check.log",
+      "bytes": 239,
+      "sha256": "5650dcc8d8d368142c6882001b87cd8c0bbada73ba7d9196ad4a07fd566d3346"
+    },
+    {
+      "name": "36-final-local-contract.log",
+      "bytes": 203,
+      "sha256": "dbdad6e124f6c377d690be1d89458de0a316e6f1528a0d21f7d5e1ceab23f19f"
+    },
+    {
+      "name": "37-prior-packet-corrected.log",
+      "bytes": 141,
+      "sha256": "21fc1a97827e0ac557191faf637c0315e24a0ce4b64075d2cd2bb4e87837ddcb"
+    }
+  ]
+}

@@ -68,6 +68,19 @@ and reboot lifecycle remain required, followed by controlled enrollment under
 real external pins. No fixed-host diagnostic start is introduced by this slice.
 No effective-root check authenticates the initial host namespace.
 
+The subsequent [signed intent projection](diagnostic-intent-projection-local-design.md)
+implements only a bounded canonical signed byte contract. It binds the exact
+asserted Reserved state, original worker policy digest/epoch/boot and expected
+fixed unit specification under separate external controller pins. Checked
+intent drift/expiry is sticky; original worker failures survive wrapper drop.
+The [packet](local-runs/diagnostic-intent-projection-20261011/README.md) uses
+synthetic issuer/controller keys and does not create a production route.
+Its state, peer and clocks are still assertions; signatures do not attest kernel
+objects, stream/executable identities, actual environment, replay history or
+durable fenced intent. All production rows above remain open. Next, bind this
+contract to durable reservation/one-start recovery and the original material,
+output and runtime guards, without enrolling a test key or reusing an old receipt.
+
 ## Extended local checks completed
 
 The separate [readiness packet](local-runs/production-readiness-local-20261011/README.md)

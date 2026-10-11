@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized] target(s) in 3.62s
+     Running tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_intent_projection-0e2b6539d3131b74)
+
+running 16 tests
+test authenticated_worker_trust_drift_revokes_original_not_just_wrapper ... ok
+test body_budget_nested_schema_and_hash_encoding_are_strict ... ok
+test boot_change_never_rebinds_an_original_worker ... ok
+test checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily ... ok
+test controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope ... ok
+test controller_fields_and_bounded_configuration_fail_closed ... ok
+test four_cells_bind_exact_projection_without_execution ... ok
+test independent_concurrent_checks_are_not_a_replay_ledger ... ok
+test malformed_noncanonical_unknown_duplicate_and_oversize_refuse ... ok
+test original_worker_refusal_survives_intent_drop_and_restoration ... ok
+test seeded_state_mutations_bind_full_state_not_only_cell ... ok
+test signature_domain_key_and_lowercase_encoding_are_strict ... ok
+test signed_binding_mutations_are_not_authority ... ok
+test state_hash_includes_every_field_and_unit_hash_changes_with_budget ... ok
+test state_projection_rejects_interrupted_expired_and_admission_states ... ok
+test window_is_positive_bounded_and_expiry_exclusive ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.09s
+

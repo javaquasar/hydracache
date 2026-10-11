@@ -6283,3 +6283,48 @@ worktree pointer, and a global metadata override would be unsafe for tests that
 create temporary repositories. Failed/interrupted attempts are retained and not
 counted as successful proof. Qualification dry-run and ship admission remain red;
 no cache workload or numerical performance claim accompanies this safety slice.
+### A signed configuration is not an authenticated running worker
+
+The [next local contract](../testing/performance/0.74/diagnostic-intent-projection-local-design.md)
+tests a narrower hypothesis: can a controller's signed intent be tied to the
+same original worker policy and exact reserved cell without introducing another
+start path? The byte verifier uses a separate signature domain and strict
+canonical JSON. It checks independent controller pins and principal allowlists,
+then binds the full state digest, original policy digest/epoch, boot and a digest
+of the existing fixed unit builder. Typed properties and ordered arrays preserve
+differences in environment, argv, limits, output paths and command flags. A
+different numeric type must not hash as the same property.
+
+The checked intent exclusively borrows the original worker policy. Revalidation
+cannot adopt another cell, controller configuration, peer or re-signed replacement
+envelope. An expired or drifted checked intent stays refused after restoration.
+A worker-policy refusal remains on the original worker after the wrapper is
+dropped. In contrast, a malformed incoming controller packet does not revoke a
+healthy unrelated policy: rejecting a request and revoking worker authority are
+different decisions. Neither operation starts, stops or writes anything here.
+
+This hypothesis is supported as a local byte-binding prerequisite. The
+[retained packet](../testing/performance/0.74/local-runs/diagnostic-intent-projection-20261011/README.md)
+contains 16 new integration tests, two unit tests and three repeated integration
+runs, including 64 fixed-seed state mutations, all four cells and signature,
+schema, budget, deadline, boot and trust failures. Linux scoped tests pass
+451 cases with one existing ignored; portable Windows tests pass 195. Five
+compile-fail doctests, strict lint, MSRV 1.88 and local documentation/contract
+checks pass. These totals describe the chosen local scopes, not unique release
+coverage or an exact-candidate qualification receipt.
+
+The initial parallel baseline retained an existing `Text file busy` failure;
+the serial baseline passes 433 tests with one ignored, without changing that
+test or its validator. Governance first refuses the missing cfg-gated target
+registration, then an invalid registry field; the corrected entry uses the
+existing Linux supervisor CI step. Both failed attempts remain visible. No
+threshold, frozen plan input or admission rule was weakened to pass a check.
+
+The important negative conclusion is unchanged: signature validity is not live
+host attestation. Peer and time are asserted, state is not retained under a
+production fence, and unit hashing says nothing about effective runtime or
+original file descriptors. Identical requests can be checked independently;
+there is deliberately no replay ledger or execution capability. Durable signed
+intent, crash/reboot rules, original material/output/runtime composition and
+controlled enrollment remain before production. No cache benchmark is run and
+no allocation, goodput or latency improvement is claimed by this safety work.

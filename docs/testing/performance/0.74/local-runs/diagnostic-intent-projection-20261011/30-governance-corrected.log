@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized] target(s) in 0.76s
+     Running tests\release_governance.rs (target\debug\deps\release_governance-91af24d8e4a931d1.exe)
+
+running 23 tests
+test crates_io_probe_identifies_itself_and_retries_transient_responses ... ok
+test publish_order_keeps_workspace_dev_and_build_dependencies ... ok
+test post_publish_consumer_tracks_the_current_public_api ... ok
+test release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c ... ok
+test canary_release_governance_accepts_a_missing_deferred_performance_gate ... ok
+test canary_release_governance_accepts_a_missing_mandatory_gate ... ok
+test canary_release_0671_governance_accepts_a_missing_stage_gate ... ok
+test release_066_registered_heavy_gates_are_mandatory_and_fail_closed ... ok
+test release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha ... ok
+test release_0671_governance_contract_is_fail_closed ... ok
+test release_067_deferred_performance_gates_remain_registered_and_fail_closed ... ok
+test release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry ... ok
+test release_governance_check_rejects_an_unwired_or_missing_meta_gate ... ok
+test release_governance_rejects_coverage_receipts_bound_to_an_older_release ... ok
+test release_governance_requires_complete_072_dynamic_canary_wiring ... ok
+test runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts ... ok
+test release_069_receipt_and_admission_commands_are_fail_closed ... ok
+test performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency ... ok
+test ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands ... ok
+test release_governance_check_accepts_release_069_independent_evidence_wiring ... ok
+test release_governance_check_accepts_current_structural_meta_gates ... ok
+test release_governance_check_accepts_the_explicit_0_70_fast_wiring ... ok
+test release_governance_check_accepts_the_explicit_0_66_fast_wiring ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 26.85s
+
