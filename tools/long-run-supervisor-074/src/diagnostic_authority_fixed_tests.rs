@@ -26,7 +26,7 @@ fn modeled_directory(dir: &TempDir, uid: u32, gid: u32) -> Result<Directory, Aut
         .read(true)
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(dir.path())?;
-    walk(root, uid, gid)
+    walk(root, uid, gid, dir.path())
 }
 fn leaf(dir: &TempDir) -> std::path::PathBuf {
     dir.path()
@@ -159,6 +159,23 @@ fn authority_fixed_named_ancestor_replacement_is_not_adopted() {
         assert!(writer.is_failed());
         assert_eq!(fs::read_dir(path).unwrap().count(), 0);
     }
+}
+
+#[test]
+fn authority_fixed_named_root_replacement_is_not_hidden_by_original_descriptor() {
+    let (dir, uid, gid) = modeled_tree();
+    let mut writer = modeled_initialize(&dir, uid, gid);
+    let backup = tempfile::Builder::new()
+        .prefix("hydracache-fixed-authority-backup-")
+        .tempdir_in("/tmp")
+        .unwrap();
+    fs::rename(dir.path(), backup.path().join("original")).unwrap();
+    fs::create_dir(dir.path()).unwrap();
+    fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let p = checked(7);
+    assert!(writer.inspect(&p.trust, &p.context).is_err());
+    assert!(writer.is_failed());
+    assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 0);
 }
 
 #[test]

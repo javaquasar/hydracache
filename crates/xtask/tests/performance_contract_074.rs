@@ -44,7 +44,7 @@ fn diagnostic_fixed_authority_backend_keeps_host_enrollment_and_launch_closed() 
     .unwrap();
     let runtime = source.split("#[cfg(test)]").next().unwrap();
     for marker in [
-        "walk(root, 0, 0)",
+        "walk(root, 0, 0, Path::new(\"/\"))",
         "libc::geteuid() } != 0",
         "libc::getegid() } != 0",
         "stamp.mode & 0o7022 == 0",

@@ -11,12 +11,19 @@ struct Ancestor {
     stamp: Stamp,
 }
 pub(super) struct Ancestry {
+    root_name: std::path::PathBuf,
     root_stamp: Stamp,
     ancestors: Vec<Ancestor>,
 }
 impl Ancestry {
     pub(super) fn revalidate(&self, root: &File) -> Result<(), AuthorityError> {
-        if !self.root_stamp.directory_matches(&root.metadata()?) {
+        let named_root = fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&self.root_name)?;
+        if !self.root_stamp.directory_matches(&root.metadata()?)
+            || !self.root_stamp.directory_matches(&named_root.metadata()?)
+        {
             return Err(AuthorityError::Invalid);
         }
         let mut parent = root;
@@ -46,7 +53,7 @@ fn safe_directory(stamp: &Stamp, uid: u32, gid: u32, leaf: bool) -> bool {
 }
 
 // Private engine walker; only the fixed constructor can select a production origin.
-fn walk(root: File, uid: u32, gid: u32) -> Result<Directory, AuthorityError> {
+fn walk(root: File, uid: u32, gid: u32, root_name: &Path) -> Result<Directory, AuthorityError> {
     let root_stamp = Stamp::of(&root.metadata()?);
     if !safe_directory(&root_stamp, uid, gid, false) {
         return Err(AuthorityError::Invalid);
@@ -84,6 +91,7 @@ fn walk(root: File, uid: u32, gid: u32) -> Result<Directory, AuthorityError> {
         uid,
         gid,
         fixed_ancestry: Some(Ancestry {
+            root_name: root_name.into(),
             root_stamp,
             ancestors,
         }),
@@ -100,7 +108,7 @@ fn fixed_directory() -> Result<Directory, AuthorityError> {
         .read(true)
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open("/")?;
-    walk(root, 0, 0)
+    walk(root, 0, 0, Path::new("/"))
 }
 
 /// Non-cloneable original-thread journal writer, not a production start capability.
