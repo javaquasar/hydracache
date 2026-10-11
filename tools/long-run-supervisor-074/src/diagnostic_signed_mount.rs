@@ -61,6 +61,9 @@ enum Original<'binding, 'guard, 'policy, 'process> {
     Fixture(&'binding mut FixtureSignedCredentialRead<'guard, 'policy, 'process>),
 }
 impl<'guard, 'policy, 'process> Original<'_, 'guard, 'policy, 'process> {
+    fn is_refused(&self) -> bool {
+        self.reader().is_refused() || self.reader().credentials.original_mount_inputs_refused()
+    }
     fn reader(&self) -> &SignedReader<'guard, 'policy, 'process> {
         match self {
             Self::Fixed(r) => &r.reader,
@@ -97,7 +100,7 @@ fn check_mount(
 }
 impl Reader<'_, '_, '_, '_> {
     fn is_refused(&self) -> bool {
-        self.gate.refused || self.original.reader().is_refused() || self.mount.is_refused()
+        self.gate.refused || self.original.is_refused() || self.mount.is_refused()
     }
     fn revalidate(
         &mut self,
@@ -134,7 +137,7 @@ fn construct<'binding, 'guard, 'policy, 'process>(
     let mut gate = Gate::default();
     let mut mount = None;
     let mut open = Some(open);
-    let result = gate.observe(original.reader().is_refused(), true, |step| match step {
+    let result = gate.observe(original.is_refused(), true, |step| match step {
         Step::Signed => original
             .reader_mut()
             .revalidate(bytes, trust, host)

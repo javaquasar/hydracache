@@ -196,37 +196,47 @@ fn signed_mount_owned_roundtrip_and_healthy_drop_keep_original_usable() {
 
 #[test]
 fn signed_mount_prior_refusal_never_opens_and_latches_policy() {
-    let child = Owned::new();
-    let process = pin_owned_test_helper(child.0.id());
-    let f = Fixture::new();
-    let mut p = f.checked();
-    {
-        let mut account = f.account(&mut p);
+    for component in 0..3 {
+        let child = Owned::new();
+        let process = pin_owned_test_helper(child.0.id());
+        let f = Fixture::new();
+        let mut p = f.checked();
         {
-            let mut signed = open_signed_fixture_credentials(
-                &mut account,
-                &process,
-                &f.bytes,
-                &f.trust,
-                &f.host,
-            )
-            .unwrap();
-            signed.reader.credentials.refuse();
-            assert!(matches!(
-                construct(
-                    Original::Fixture(&mut signed),
+            let mut account = f.account(&mut p);
+            {
+                let mut signed = open_signed_fixture_credentials(
+                    &mut account,
+                    &process,
                     &f.bytes,
                     &f.trust,
                     &f.host,
-                    |_| panic!("no open")
-                ),
-                Err(SignedMountError::Refused)
-            ));
-            assert!(signed.reader.account.reader().is_refused());
+                )
+                .unwrap();
+                if component == 0 {
+                    signed.reader.credentials.refuse();
+                } else {
+                    signed
+                        .reader
+                        .credentials
+                        .refuse_mount_component_for_test(component == 1);
+                }
+                fs::remove_file(f.dir.path().join("group")).unwrap();
+                assert!(matches!(
+                    construct(
+                        Original::Fixture(&mut signed),
+                        &f.bytes,
+                        &f.trust,
+                        &f.host,
+                        |_| panic!("no open")
+                    ),
+                    Err(SignedMountError::Refused)
+                ));
+                assert!(signed.reader.account.reader().is_refused());
+            }
+            assert!(account.is_refused());
         }
-        assert!(account.is_refused());
+        assert!(p.is_refused());
     }
-    assert!(p.is_refused());
 }
 
 #[test]

@@ -184,16 +184,29 @@ impl NamespaceCredentialRead<'_> {
 }
 
 impl<'a> NamespaceCredentialRead<'a> {
+    pub(crate) fn original_mount_inputs_refused(&self) -> bool {
+        self.is_refused() || self.namespace.is_refused() || self.credentials.is_refused()
+    }
     pub(crate) fn pin_original_mount(
         &self,
     ) -> Result<
         crate::diagnostic_process::SameMountNamespaceRead<'a>,
         crate::diagnostic_process::MountNamespaceError,
     > {
-        if self.is_refused() || self.namespace.is_refused() || self.credentials.is_refused() {
+        if self.original_mount_inputs_refused() {
             return Err(crate::diagnostic_process::MountNamespaceError::Refused);
         }
         crate::diagnostic_process::pin_same_mount_namespace(self.credentials.process)
+    }
+}
+#[cfg(test)]
+impl NamespaceCredentialRead<'_> {
+    pub(crate) fn refuse_mount_component_for_test(&mut self, namespace: bool) {
+        if namespace {
+            self.namespace.refuse();
+        } else {
+            self.credentials.refuse();
+        }
     }
 }
 #[cfg(test)]
@@ -625,11 +638,13 @@ mod tests {
             let mut read = pin_namespace_checked_credentials(&process, policy()).unwrap();
             let mut mount = read.pin_original_mount().unwrap();
             mount.revalidate().unwrap();
+            assert!(!read.original_mount_inputs_refused());
             if namespace {
                 read.namespace.refuse();
             } else {
                 read.credentials.refuse();
             }
+            assert!(read.original_mount_inputs_refused());
             assert!(matches!(
                 read.pin_original_mount(),
                 Err(crate::diagnostic_process::MountNamespaceError::Refused)
