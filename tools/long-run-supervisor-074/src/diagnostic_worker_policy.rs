@@ -12,6 +12,9 @@ pub const MAX_SIGNED_WORKER_POLICY_BYTES: usize = 8192;
 const REPOSITORY_ID: u64 = 1_217_101_761;
 const GROUP_LIMIT: usize = 32;
 
+#[path = "diagnostic_authority_registry.rs"]
+pub mod authority_registry;
+
 #[cfg(target_os = "linux")]
 #[path = "diagnostic_worker_files.rs"]
 pub mod local_files;

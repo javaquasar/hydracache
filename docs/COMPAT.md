@@ -4,6 +4,19 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The opt-in 0.74 local diagnostic authority fixture journal registers
+`diagnostic-authority-record-074-v1`: canonical JSON plus LF, at most 2048 bytes,
+128 contiguous generations, with a 65-byte SHA-256-plus-LF marker for each record.
+The predecessor digest chains exact bytes. Refusal preserves the exact original
+issuer/policy/epoch/context; later activation requires a refused predecessor,
+a strictly higher epoch, the same issuer/machine and a new policy digest.
+Unknown schemas, extra fields, gaps, changed refusal bindings, incomplete pairs
+and exhausted bounds fail closed. No automatic migration, tail repair, eviction
+or key rotation exists in v1. Independent current pins remain mandatory.
+This is a distinct nonroot Linux temporary-fixture backend, not a root-owned
+production registry, historical signature attestation, whole-host snapshot
+rollback detector, signed worker lifecycle or start/admission capability.
+
 The separate 0.74 asserted task reader is opt-in Linux runtime-only. It retains
 at most 128 original tasks and their generation/status/user/mount objects under
 bounded membership scans, generation brackets and sticky refusal. It adds no

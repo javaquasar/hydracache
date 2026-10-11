@@ -3,6 +3,108 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_authority_journal_bounds_and_closed_production_authority_are_frozen() {
+    let c = contract("diagnostic-authority-registry-local-contract.toml");
+    assert_eq!(
+        c["record_schema"].as_str(),
+        Some("diagnostic-authority-record-074-v1")
+    );
+    for (key, value) in [
+        ("max_generations", 128),
+        ("max_record_bytes", 2048),
+        ("commit_marker_bytes", 65),
+        ("max_named_entries", 256),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for key in [
+        "independent_operator_pins_required",
+        "contiguous_predecessor_hash_chain",
+        "refusal_retains_exact_binding",
+        "activation_requires_refused_predecessor_and_higher_epoch",
+        "same_issuer_and_machine_required",
+        "explicit_empty_fixture_initialization",
+        "create_new_only",
+        "file_and_directory_fsync_required",
+        "exclusive_nonblocking_writer",
+        "incomplete_tail_refuses",
+        "failure_latches_original_writer",
+        "no_retry_repair_overwrite_or_eviction",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "whole_host_snapshot_rollback_detection",
+        "root_or_owner_tampering_detection",
+        "physical_power_loss_proved",
+        "regular_file_io_deadline_proved",
+        "root_owned_production_backend",
+        "real_issuer_enrolled",
+        "signed_worker_durable_composition",
+        "production_preparation_or_start",
+        "watchdog_or_writer_revocation",
+        "host_mutation_allowed",
+        "new_helper_ipc_or_live_route",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_or_admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::authority_registry::*;
+    assert_eq!(MAX_GENERATIONS, 128);
+    assert_eq!(MAX_RECORD_BYTES, 2048);
+    assert_eq!(COMMIT_MARKER_BYTES, 65);
+    assert_eq!(
+        AUTHORITY_RECORD_SCHEMA,
+        c["record_schema"].as_str().unwrap()
+    );
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "FileExt::try_lock_exclusive",
+        "libc::O_EXCL",
+        "libc::O_NOFOLLOW",
+        "libc::O_CLOEXEC",
+        "libc::O_NONBLOCK",
+        "self.directory.leaf.sync_all()?",
+        "file.sync_all()?",
+        "self.failed = true",
+        "PhantomData<Rc<()>>",
+        "hydracache-authority-",
+        "uid == 0",
+        "gid == 0",
+    ] {
+        assert!(
+            runtime.contains(marker),
+            "missing journal invariant {marker}"
+        );
+    }
+    for forbidden in [
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "impl Clone",
+        "Command::new",
+        "fs::rename",
+        "fs::remove",
+        ".truncate(",
+        "libc::O_TRUNC",
+        "WorkerPolicyTrust::new",
+        "verify_worker_policy(",
+        "/var/lib/hydracache",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "journal cannot add {forbidden}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_signed_tasks_preserve_original_chain_and_closed_production_authority() {
     let contract: toml::Value = toml::from_str(
         &std::fs::read_to_string(

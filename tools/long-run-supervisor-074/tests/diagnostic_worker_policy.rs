@@ -472,3 +472,12 @@ fn worker_policy_concurrent_guards_share_no_refusal_or_authority() {
         thread.join().unwrap();
     }
 }
+#[test]
+fn authority_registry_api_is_inspection_not_start_authority() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::authority_registry::{
+        inspect_registry_history, AuthorityView,
+    };
+    let _ = inspect_registry_history;
+    fn view_only(_: &AuthorityView) {}
+    let _ = view_only;
+}
