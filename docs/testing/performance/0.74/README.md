@@ -2530,3 +2530,25 @@ The old fixed authority backend also requires a root:root parent, unlike current
 root:hydracache-perf provisioning. A common reviewed ownership policy and the
 original authority/fence/state join still precede a fixed intent publisher.
 Neither provisioning nor the old authority predicate is changed by this slice.
+
+## Server storage preflight
+
+The subsequent [preregistered amendment](diagnostic-storage-preflight-design.md)
+now aligns both readers with the existing root-owned, nonwritable performance
+parent, retaining its exact original GID. All other ancestors and private leaves
+remain root:root. Signed tmpfiles input adds two 0700 leaves without changing
+campaign ownership; the installer refuses unsafe existing objects before mutation.
+It does not initialize journals or enroll operator keys.
+
+The fixed Linux `diagnostic-storage-preflight` command checks both original
+storage ancestries and emits a bounded versioned JSON result. Success explicitly
+does not verify journals, bind authority, enroll the host or permit execution,
+qualification or ship. It creates no storage or lock. The
+[packet](local-runs/diagnostic-storage-preflight-20261011/README.md) retains local
+baseline, negative checks and regressions. The
+[server instructions](production-readiness-and-server-launch-20261011.md#read-only-server-storage-check)
+require a fresh signed installed-source receipt and separate host approval.
+The fixed publisher and original authority/fence/state/output/runtime lifecycle
+remain unimplemented. Historical packets stay bound to their old Git source;
+they are not proof that current provisioning is unchanged. Frozen qualification
+inputs, the inherited plan-digest refusal and closed admission are unchanged.

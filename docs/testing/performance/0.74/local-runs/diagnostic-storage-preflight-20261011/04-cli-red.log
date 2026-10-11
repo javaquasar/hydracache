@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 8.43s
+     Running tests/diagnostic_task_api.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_task_api-7ae46c3345e9c53c)
+
+running 1 test
+test diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors ... FAILED
+
+failures:
+
+---- diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors stdout ----
+
+thread 'diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors' (420) panicked at tools/long-run-supervisor-074/tests/diagnostic_task_api.rs:9:9:
+assertion `left == right` failed
+  left: Some(2)
+ right: Some(9)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_task_api`

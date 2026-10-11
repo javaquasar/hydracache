@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find function `safe_ancestor` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs:298:13
+    |
+298 | ...t!(safe_...estor(&s...
+    |       ^^^^^...^^^^^ not found in this scope
+
+error[E0425]: cannot find function `safe_ancestor` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs:299:43
+    |
+299 | ...!(!safe_ancestor(&s...
+    |       ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `safe_ancestor` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs:303:18
+    |
+303 | ...!(!safe_ances...(&s...
+    |       ^^^^^^^^^^... not found in this scope
+
+error[E0425]: cannot find function `safe_ancestor` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs:307:14
+    |
+307 | ...!(!safe_a...stor(&s...
+    |       ^^^^^^...^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

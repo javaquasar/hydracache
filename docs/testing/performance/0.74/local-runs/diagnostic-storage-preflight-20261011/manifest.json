@@ -1,0 +1,465 @@
+{
+  "schema_version": 1,
+  "state": "retained-storage-preflight-not-worker-pilot",
+  "baseline_source": "7119644eeb5c4536a9cbcc06254520cef5545923",
+  "baseline_tree": "d9c85a5245ce0f184cb529720d3ed1bd913ff985",
+  "preregistration_source": "7db503c07dbea15a488e21c63ef20f1b9d51ed52",
+  "implementation_source": "537517122d308a89e0808849360d5a78fab78bf6",
+  "implementation_tree": "c6dfeee62ed38584d6b226c8a9bdfede6cc83e67",
+  "pre_facade_source": "3d99f6a8fb8e0ab667421bf4c7cd04faed0832b0",
+  "implementation_source_sha256": {
+    "crates/xtask/tests/performance_contract_074.rs": "df7e94fe80db9fd582f7c0a06747bc24123fe3eecaaae52c6bb47480e454215f",
+    "docs/COMPAT.md": "e2e81e719cd72eb4a5f47317053998876202f56bbe6df03d64875632663809c3",
+    "docs/testing/release-evidence/0.74.toml": "5dff92aa36e9cc840f2a6aac610dbaaf079c849ccf5fc676eaf21e1a436f2811",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf": "8e3b5a3df9085ae9ad493ab9b4211b0f7ea710ea433f94c15e7945b83d52d2f0",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh": "a37c9abcdfc2bfa84ec960f80883c42373552abbc9e9aa0c53068344fe9833fa",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": "073cef45c4bbd8fbd3404fced3eb80c88ad63f315b826514968824ce519a3125",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs": "848a31bc3ff546d66a22ae4920ebd894e192061b9dda11b5482b858c68bf9354",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "c4703b1d49c49c5e4ede41f5b5a6621c02fffff9addcc1963a6fa8fe3b6f55f0",
+    "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs": "3c46ba41dcedd6846eb109c367dc109283ace22bc33ace4429d12988f8281932",
+    "tools/long-run-supervisor-074/src/main.rs": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd",
+    "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs": "1002d24d4a565e40e71a3acd0c80975b4ca9dfc782b4678ead448a522dbd542c",
+    "tools/long-run-supervisor-074/tests/provisioning.rs": "d179a84838d196b6da083de30c8ff5c58e6fc7fb979142e45cd74ddacf36a6f3",
+    "tools/long-run-supervisor-074/src/lib.rs": "3f44076ce1f17a3bdbc83441a56c6b32ffa4afe2951818053aa38343929532d1",
+    "docs/testing/performance/0.74/diagnostic-storage-preflight-contract.toml": "4024e3a98ee2d8e04ad97d6caa6ef76b63efdc79ed669dd75ef44c0d283f1d89",
+    "docs/testing/performance/0.74/diagnostic-storage-preflight-design.md": "8abdf2bd0b8ef816d93d839cc7d834ebf752f0c89d966dc9819ba6b63621e1e0"
+  },
+  "host_operation_performed": false,
+  "execution_allowed": false,
+  "performance_claim_allowed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-intent-fixed-storage-20261011",
+  "historical_manifest_sha256": "b7ac7a6164d297b3eb3fe844a271cc2e33d44515973f77636be400974c563b3b",
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed_tests.rs",
+      "function": "authority_fixed_parent_group_policy_matches_nonwritable_provisioning"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+      "function": "storage_preflight_order_and_scope_cannot_be_launch_permission"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+      "function": "storage_preflight_each_failure_stops_without_report_or_later_io"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+      "function": "storage_preflight_modeled_two_leaves_are_readonly_and_neither_is_optional"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs",
+      "function": "storage_preflight_modeled_each_ancestry_substitution_and_gid_drift_latches"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs",
+      "function": "diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/provisioning.rs",
+      "function": "private_storage_is_checked_before_installation_without_metadata_repair"
+    },
+    {
+      "source": "crates/xtask/tests/performance_contract_074.rs",
+      "function": "diagnostic_storage_preflight_cannot_authorize_execution_or_repair_storage"
+    }
+  ],
+  "repeated_unit_test_names": [
+    "storage_preflight_order_and_scope_cannot_be_launch_permission",
+    "storage_preflight_each_failure_stops_without_report_or_later_io",
+    "storage_preflight_modeled_two_leaves_are_readonly_and_neither_is_optional",
+    "storage_preflight_modeled_each_ancestry_substitution_and_gid_drift_latches"
+  ],
+  "test_totals": {
+    "01-authority-baseline.log": [
+      12,
+      0
+    ],
+    "02-intent-baseline.log": [
+      7,
+      0
+    ],
+    "05-first-green.log": [
+      414,
+      1
+    ],
+    "07-installer-green.log": [
+      5,
+      0
+    ],
+    "08-modeled-green.log": [
+      4,
+      0
+    ],
+    "11-doctests.log": [
+      8,
+      0
+    ],
+    "16-linux-scoped.log": [
+      451,
+      1
+    ],
+    "17-root-new-test.log": [
+      1,
+      0
+    ],
+    "21-windows-supervisor.log": [
+      196,
+      0
+    ],
+    "27-root-green.log": [
+      151,
+      0
+    ],
+    "28-final-cli.log": [
+      7,
+      0
+    ],
+    "34-repeat-1.log": [
+      4,
+      0
+    ],
+    "34-repeat-2.log": [
+      4,
+      0
+    ],
+    "34-repeat-3.log": [
+      4,
+      0
+    ],
+    "35-final-linux-scoped.log": [
+      451,
+      1
+    ]
+  },
+  "required_log_markers": {
+    "03-missing-policy-red.log": "cannot find function `safe_ancestor`",
+    "04-cli-red.log": "Some(2)",
+    "06-installer-guard-red.log": "FAILED",
+    "22-root-tests.log": "no live route in main.rs",
+    "20-qualification-red.log": "contract input digest mismatch",
+    "24-ship-red.log": "ship admission is closed",
+    "23-local-contract.log": "OK (local, non-promotable)",
+    "25-doc-check.log": "doc-check: OK",
+    "26-book.log": "Book building has started",
+    "37-final-doc-check.log": "doc-check: OK",
+    "38-final-book.log": "Book building has started",
+    "39-final-local-contract.log": "OK (local, non-promotable)"
+  },
+  "green_compile_logs": [
+    "09-linux-clippy.log",
+    "10-linux-msrv.log",
+    "12-linux-rustdoc.log",
+    "14-windows-clippy.log",
+    "15-windows-msrv.log",
+    "18-xtask-clippy.log",
+    "29-final-linux-clippy.log",
+    "30-final-linux-msrv.log",
+    "31-final-rustdoc.log",
+    "32-final-windows-clippy.log",
+    "33-final-windows-msrv.log"
+  ],
+  "files": [
+    {
+      "name": "01-authority-baseline.log",
+      "bytes": 2365,
+      "sha256": "e452963a4b6493b74be0e9f29bc2176bedb7688042ce2b79db924f16b0099708",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib authority_fixed -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "02-intent-baseline.log",
+      "bytes": 1311,
+      "sha256": "0d7f9a8e985e845e44696827971d6eb6a8b0f321ad25320165a8e0a11e5bb951",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_fixed_storage -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "03-missing-policy-red.log",
+      "bytes": 1250,
+      "sha256": "9c3acfa5b0d066009f0ac5cfb522ea8a1ec76b56fb4158597510d001cb2457ac",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib authority_fixed_parent_group_policy_matches_nonwritable_provisioning",
+      "observed_wrapper_exit_code": 1
+    },
+    {
+      "name": "04-cli-red.log",
+      "bytes": 1162,
+      "sha256": "6d9f3651353b014783a52d5c5481640ce586bbb83c2066247424824f4a2d74a5",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_task_api diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors",
+      "observed_wrapper_exit_code": 1
+    },
+    {
+      "name": "05-first-green.log",
+      "bytes": 53885,
+      "sha256": "b11c09629002e48aec7e550457d0c01d18f128b6fc917ac591c893567b1106bc",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_task_api --test provisioning -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "06-installer-guard-red.log",
+      "bytes": 1067,
+      "sha256": "7c4b60746538deee90ed68d4edc97121fa5a24b0c3fc8e9a8889b75f96115dc7",
+      "command": "Windows cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test provisioning private_storage_is_checked_before_installation_without_metadata_repair",
+      "observed_wrapper_exit_code": 101
+    },
+    {
+      "name": "07-installer-green.log",
+      "bytes": 763,
+      "sha256": "ac8adee8c87847495497a5e3b1d80fcd3540e38e5cec90589276949fdcb2f6f3",
+      "command": "Windows cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test provisioning",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "08-modeled-green.log",
+      "bytes": 1070,
+      "sha256": "3fdb17555d514c3f02d321a76d064f6a9cbae236de42ea53e59a6a955bc82d30",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib storage_preflight -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "09-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "9fb1525a631c3a15c4ae0363c7104b6199c5d2fa451f037742f2d02ba631f757",
+      "command": "Linux cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets -- -D warnings",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "10-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "356e1f86fb4ec31306aa8306266481cb7ad559961ee4d604cc9e3c8822f76b0d",
+      "command": "Linux cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "11-doctests.log",
+      "bytes": 2069,
+      "sha256": "ea3eb002a2ca9133e9725d7942ddbcc2c84f39c8f608ef0c61b8ac7782551919",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "12-linux-rustdoc.log",
+      "bytes": 460,
+      "sha256": "a87bf73e02e5b1e610580617cfc16ea60feb18421b777c248aec5b0c08913e80",
+      "command": "Linux RUSTDOCFLAGS=-Dwarnings cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "13-shell-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "Linux bash -n scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "14-windows-clippy.log",
+      "bytes": 190,
+      "sha256": "608349bd041602ec5c437af27d3f5efb16e893d2a8ba929281b7ad112d403e97",
+      "command": "Windows cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets -- -D warnings",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "15-windows-msrv.log",
+      "bytes": 190,
+      "sha256": "ea107ccc8913964c812e43faa9ead130a589b7814b5041ce226c94f2935c9d82",
+      "command": "Windows cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "16-linux-scoped.log",
+      "bytes": 57602,
+      "sha256": "ad6e98bbd367a385200d654791336736736ae3d3f3bb616cb872a2c261f36466",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "17-root-new-test.log",
+      "bytes": 466,
+      "sha256": "7f721a8796be0547d30b2e66792ac16402f5a0e3ce1b6767340cbe1ac284f714",
+      "command": "Windows cargo +1.94.0 test -p xtask --locked --test performance_contract_074 diagnostic_storage_preflight_cannot_authorize_execution_or_repair_storage",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "18-xtask-clippy.log",
+      "bytes": 145,
+      "sha256": "edc1de0ac21f69bda51a6d38d667462cb787ad5e11b354150d3b2474c26174ca",
+      "command": "Windows cargo +1.94.0 clippy -p xtask --locked --all-targets -- -D warnings",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "19-format-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "Windows cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "20-qualification-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "command": "Windows Python313 performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output owned-temporary/qualification.json --dry-run",
+      "observed_wrapper_exit_code": 1
+    },
+    {
+      "name": "21-windows-supervisor.log",
+      "bytes": 25333,
+      "sha256": "941d6676577d45d0d68913cad894fd2414215b8fea62ad961cd39b9bb83a07c4",
+      "command": "Windows cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "22-root-tests.log",
+      "bytes": 10354,
+      "sha256": "6d0c99b2bd6ba95060b3e7577c3770cc08f65dbaf5113d8b2e039a81ae0e9aa7",
+      "command": "Windows cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "observed_wrapper_exit_code": 101
+    },
+    {
+      "name": "23-local-contract.log",
+      "bytes": 287,
+      "sha256": "73fb8889bb7fd3112aa0dd3c10a82f61718244db8e796aded885d4d6ccad37b5",
+      "command": "Windows cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "24-ship-red.log",
+      "bytes": 487,
+      "sha256": "82879183f18f1a34d51d6899074cb8a71f9ac337e1ec0a599adbe7bb6af677dd",
+      "command": "Windows cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+      "observed_wrapper_exit_code": 1
+    },
+    {
+      "name": "25-doc-check.log",
+      "bytes": 155,
+      "sha256": "59c303104f26926b386326ec3c5cc3cd95808d9a0876d76fe7e7f06f37d2b4fa",
+      "command": "Windows cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "26-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "Windows mdbook build docs-site",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "27-root-green.log",
+      "bytes": 13345,
+      "sha256": "e8242a82030f260afee08b54b1bccc900e1803edb547a0ebb39788a5db8f8d52",
+      "command": "Windows cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "28-final-cli.log",
+      "bytes": 985,
+      "sha256": "421ccd1612b69cd2cc3cc5a83ccf52c9ca44fe0b3c8feeb8753af3eb55b16e9d",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_task_api",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "29-final-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "a53d2b6d90a9ac5a5273068cce1363a4b1fcd3dd2d0a8dcb36b8f837454a9fd9",
+      "command": "Linux cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets -- -D warnings",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "30-final-linux-msrv.log",
+      "bytes": 247,
+      "sha256": "d14db536873c2d2fd746254ae3c4201da363dce78c40ffe5bf4b3bc79b32f426",
+      "command": "Linux cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "31-final-rustdoc.log",
+      "bytes": 460,
+      "sha256": "bdbc861f44e0df91882d505d5019d6ce0ca18c904047c7c1b7e4a01f4ee4cf10",
+      "command": "Linux RUSTDOCFLAGS=-Dwarnings cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "32-final-windows-clippy.log",
+      "bytes": 191,
+      "sha256": "d635c202dd367524260691edf76e8852531c31400eb1341feaca7c999c20c6b2",
+      "command": "Windows cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets -- -D warnings",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "33-final-windows-msrv.log",
+      "bytes": 191,
+      "sha256": "8293e59bb9840156ba7a0f20466683bc879e274ad683d27e553136207b72d0c6",
+      "command": "Windows cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "34-repeat-1.log",
+      "bytes": 1127,
+      "sha256": "0f0d46a8b869ef0c9be7a5e2f84eb7ff0561149daa63b15c4d5adfa4d19563b5",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib storage_preflight -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "34-repeat-2.log",
+      "bytes": 995,
+      "sha256": "172d710d46b70cbe879bd7552d0da419455b782931327a220691cea59a50bae7",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib storage_preflight -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "34-repeat-3.log",
+      "bytes": 995,
+      "sha256": "fa6a65d0cbe9ebb5e0d9fd1c608dce2dd5bfa2e66d5c59ebbdd41e9471fbcf48",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib storage_preflight -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "35-final-linux-scoped.log",
+      "bytes": 57544,
+      "sha256": "9450f553303d94ccc783cc84cba59ce6a69b13e2b3c3b4bd41311bffc665e16e",
+      "command": "Linux cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning -- --test-threads=1",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "36-final-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "Windows cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "37-final-doc-check.log",
+      "bytes": 239,
+      "sha256": "ffd39d4ba4d6400235ac8cdcf9aa37a907e33039297bc3db3a760b7123ff6143",
+      "command": "Windows cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "38-final-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "Windows mdbook build docs-site",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "39-final-local-contract.log",
+      "bytes": 203,
+      "sha256": "86eded53f0483befde46dd3a5265ea7721854b6ba8aa4cdf7b81a9c411e1891d",
+      "command": "Windows cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "observed_wrapper_exit_code": 0
+    },
+    {
+      "name": "repeat-.log",
+      "bytes": 937,
+      "sha256": "a537fad3c54831fcaf5f6266cec47f1ef00ad531365126511b870e661c25809e",
+      "command": "Initial Linux repeat loop, last overwritten survivor only; not evidence for three repetitions",
+      "observed_wrapper_exit_code": 0
+    }
+  ],
+  "scope_notes": [
+    "05-first-green precedes the two additional modeled tests; 16/21 are pre-facade source scopes, 28/29/30/31/32/33/34/35/27 verify final facade source.",
+    "repeat-.log is only last survivor of a mistaken repeat capture; 34-repeat-N are separate retained repeats.",
+    "Initial red/early green runs used test-first working trees; they are development evidence, not immutable source receipts.",
+    "No installed root-path positive, physical power-loss, privileged chown, production issuer enrollment or cache performance evidence."
+  ],
+  "ownership_amendment_source": "48d406d76b5d4ed572c7448f5e747dae71a185dc"
+}

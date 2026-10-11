@@ -1,5 +1,10 @@
 # Production readiness and dedicated-server launch boundaries
 
+Current continuation: the code now has a Linux read-only storage preflight and
+prospective signed provisioning for its two private leaves. It is ready for a
+controlled storage check after a fresh reviewed installation, not for a diagnostic
+worker start. See the [storage design](diagnostic-storage-preflight-design.md).
+
 This is a repository audit on 2026-10-11, not a server inspection, installation
 approval or release acceptance. The original signed leader mount composition is
 implemented at `1a7d946ed542908ca04c1aa3d4c5572973d90c4d`, with reviewed early
@@ -229,3 +234,42 @@ bundle. Resolve that ownership policy in a preregistered composition contract
 before deployment, rather than silently changing permissions or a reader predicate.
 The real fixed publisher, lease retention, original authority/fence/state join
 and production lifecycle remain open. Frozen qualification inputs are unchanged.
+
+## Read only server storage check
+
+The preregistered ownership amendment now resolves the parent-GID conflict above.
+Both readers accept only the root-owned nonwritable common parent and retain its
+exact original GID. Other ancestors and both 0700 private leaves stay root:root.
+Campaign ownership is unchanged. Before installation mutation, the signed
+installer refuses unsafe existing ancestry/leaves rather than allowing tmpfiles
+to repair metadata. Safe existing leaf contents are not journal validation.
+
+The new code command, executed through a separately approved root operator path,
+is:
+
+```sh
+/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 diagnostic-storage-preflight
+```
+
+It takes no arguments and returns one JSON line on success. Require exit 0,
+schema `diagnostic-storage-preflight-074-v1`, scope `storage-ancestry-only` and
+`storage_ancestry_verified=true`. Every other proof/permission field must be false.
+Failure exits nonzero; the CLI creates no directory, journal, lock or worker.
+No new sudoers permission or provisioning-entrypoint mode is introduced.
+
+Before this check, obtain approval for a fresh signed bundle installation and
+verify its source receipt. Confirm the host has no active campaign or lifecycle
+fixture, follow the exact stable-supervisor maintenance boundary above if needed,
+and restore/verify that service afterward. Retain the installed source identity,
+stdout/stderr and exit code. Do not run an old binary and attribute its result to
+these changes. Positive fixed-root execution remains a host test, not a local
+nonroot model result.
+
+The [local packet](local-runs/diagnostic-storage-preflight-20261011/README.md)
+covers both modeled leaves, substitutions, missing paths, metadata drift, sticky
+refusal, report scope, CLI refusal, provisioning invariants and toolchain checks.
+The next code package remains the fixed publisher with original authority,
+fence and state composition, then production output/start/watchdog/owned cleanup.
+Real worker/controller issuer pins and initial-host admission remain operator
+prerequisites. The inherited plan-digest mismatch and closed ship admission are
+unchanged. Passing the storage check authorizes none of those later operations.

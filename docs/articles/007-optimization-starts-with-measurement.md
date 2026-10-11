@@ -6418,3 +6418,56 @@ directory inspection is not continuous confinement or physical power-loss proof.
 No server, cache workload, frozen qualification input or performance threshold
 changes accompany this step; its benefit is an explicit storage trust boundary,
 not measured throughput or allocation improvement.
+
+### Preparing a storage check on the server
+
+The subsequent [storage preflight](../testing/performance/0.74/diagnostic-storage-preflight-design.md)
+resolves the ownership mismatch rather than changing deployed campaign ownership.
+Only the common root-owned performance parent's group requirement is amended:
+the provisioned GID is accepted when group/other write and special bits are
+absent, then captured and compared exactly on every recheck. The remaining
+ancestors and the two private 0700 leaves still require root:root. Changing the
+group later is an identity change, not a harmless refresh. Journal formats,
+issuer pins, epoch rules and cache product behavior are unaffected.
+
+The signed provisioning input now includes both private leaves. A new read-only
+guard runs before installation mutation and refuses unsafe existing ancestors,
+symlinks or incorrectly owned/permitted leaves. This ordering matters because
+tmpfiles can otherwise adjust an existing directory's metadata, hiding the very
+condition the runtime should refuse. Safe existing leaf contents remain in place;
+neither installer nor ancestry preflight authenticates their journal records.
+
+The fixed Linux CLI opens independent original authority-storage and intent-storage
+guards and rechecks authority, intent, authority and intent. It emits a bounded
+JSON schema with one positive fact, `storage_ancestry_verified`; journal proof,
+authority binding, host enrollment, execution, qualification and ship remain
+false. Missing paths and nonroot execution refuse, rather than initializing
+storage. There is no path selector, key enrollment, helper, shell, lock or worker
+start hidden behind a successful check.
+
+Local modeled tests exercise both leaves and every ancestry level with directory
+replacement, symlinks, mode changes and synthetic GID-stamp drift. They verify
+permanent refusal and tolerate unrelated directory growth. Separate order/failure
+tests prove that a failed observation stops the bracket and produces no success
+report. CLI and provisioning regressions cover the refusal and installation
+boundaries. The [packet](../testing/performance/0.74/local-runs/diagnostic-storage-preflight-20261011/README.md)
+retains baseline, failing tests and scoped checks; modeled GID drift does not
+claim privileged chown coverage or positive fixed-host enrollment.
+
+This prepares a controlled read-only server test after a fresh signed installation.
+It is not the missing diagnostic worker pilot. The fixed intent publisher still
+needs the original authority, fence and Reserved state, followed by production
+output creation, start, watchdog and owned cleanup. Real issuer/host admission
+also remains necessary. Historical evidence is checked against its original Git
+source, not rewritten to match the amended code. The qualification plan-digest
+refusal remains visible. No throughput or allocation gain is inferred from these
+safety checks.
+
+The root contract initially refused importing the output-preparation namespace
+into the CLI. A separate public read-only facade exposes only storage inspection;
+the original no-preparation route check remains intact. Final root checks pass
+109 performance contracts, 13 evidence, six gated-target and 23 governance tests.
+The selected Linux scope passes 451 tests with one existing ignored, the portable
+Windows run passes 196, and eight compile-fail doctests pass. The four new
+preflight cases have three separately retained repeats. These are scoped local
+results, not exact-candidate qualification or unique release-wide test counts.
