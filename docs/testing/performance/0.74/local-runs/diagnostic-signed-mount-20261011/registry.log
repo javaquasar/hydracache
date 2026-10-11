@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized] target(s) in 9.20s
+     Running tests/performance_contract_074.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/performance_contract_074-a26b883cc8170f60)
+
+running 1 test
+
+thread 'w12_evidence_skeleton_is_exact_and_fail_closed' (456) panicked at crates/xtask/tests/performance_contract_074.rs:7403:79:
+called `Result::unwrap()` on an `Err` value: "git rev-parse HEAD failed"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test w12_evidence_skeleton_is_exact_and_fail_closed ... FAILED
+
+failures:
+
+failures:
+    w12_evidence_skeleton_is_exact_and_fail_closed
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 98 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

@@ -1,0 +1,3 @@
+doc-check: OK (releases.toml is consistent)
+performance-contract-check 0.74: OK (local, non-promotable)
+bash: line 1: node: command not found

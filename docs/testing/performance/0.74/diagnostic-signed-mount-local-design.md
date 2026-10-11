@@ -48,3 +48,45 @@ lint, root contracts/evidence/governance, format, docs/links/book, registry and
 expected-red ship. Retain raw logs/negative results and frozen qualification bytes.
 No infrastructure/product workload, qualification or full-workspace milestone is
 authorized. Rollback is the earlier binary without this optional composition.
+
+## Implementation and expanded local readiness request
+
+Implementation `1a7d946ed542908ca04c1aa3d4c5572973d90c4d` uses a separate child
+module of the signed opener. The namespace-credential adapter derives mount
+opening from its private original process reference and refuses either inner
+credential component. The mount guard exposes only crate-private policy equality
+and refusal, not a process, descriptor or identity getter. Test FD replacement is
+compiled only under cfg(test), after all production observations in the source.
+The old public constructors and observation bodies are unchanged.
+
+The first missing-module E0432 was captured before implementation. Thirteen new
+composition tests and one adapter test exercise the real owned process and private
+ordering seams. The final scoped Linux suite passes 370 with one existing ignored;
+Windows passes 43 portable regressions and executes zero Linux composition tests.
+Root contracts/evidence/governance pass 135 before packet registration. Three
+parallel and three serial repetitions pass all 13 tests before the follow-up;
+three further serial repetitions cover the hardened source. The serial captures
+make seed output unambiguous. Seed `0x7592026` covers 256
+modeled first-failure positions, not 256 live namespace races. Device/inode pin
+drift has two deterministic private equality cases.
+
+Retain the first strict-lint range-loop failure and two source-shape contract
+failures. Move the test-only mount adapter after production functions and keep the
+old namespace implementation block intact; no contract assertion is weakened.
+The later context-restoration test strengthens all-component refusal after a
+healthy constructor; it was added after the first 12-test green.
+
+Reviewed follow-up `7cd8b43061638a66b10a3df431a642cd95f19cb3` checks either inner
+credential guard's refusal at the outer gate before any account IO, not only in
+the private mount opener. A test-only seam independently refuses each component
+and removes the account file; the constructor must still return Refused without
+opening. Final scoped Linux counts remain 370 with one existing ignored.
+
+The user's broader production-readiness request additionally authorizes local
+fast milestone checks, not deployment or qualification. An initial Linux verify
+stops at Windows-format Git worktree metadata; the metadata is not rewritten.
+Run the native Windows verifier and record its actual terminal result separately
+from the scoped evidence. The [production audit](production-readiness-and-server-launch-20261011.md)
+lists the remaining authority/code/host/release prerequisites. No positive fixed
+production enrollment, durable issuer, all-thread proof or authenticated start is
+claimed by the composition packet.

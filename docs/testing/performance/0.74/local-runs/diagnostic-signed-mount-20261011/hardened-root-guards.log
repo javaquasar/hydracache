@@ -1,0 +1,35 @@
+    Finished `test` profile [unoptimized] target(s) in 7.51s
+     Running tests/performance_contract_074.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/performance_contract_074-a26b883cc8170f60)
+
+running 28 tests
+test diagnostic_live_identity_composition_keeps_lifecycle_and_admission_closed ... ok
+test diagnostic_live_execution_composition_keeps_enrollment_and_admission_closed ... ok
+test diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed ... ok
+test diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed ... ok
+test diagnostic_fixed_account_lookup_keeps_trusted_enrollment_and_launch_closed ... ok
+test diagnostic_asserted_worker_binding_keeps_trusted_policy_and_start_closed ... ok
+test diagnostic_fixture_preparation_keeps_production_and_launch_closed ... ok
+test diagnostic_context_files_open_inside_original_context_and_keep_start_closed ... ok
+test diagnostic_signed_mount_derives_original_process_and_keeps_launch_closed ... ok
+test diagnostic_signed_opening_keeps_projection_after_original_context_and_start_closed ... ok
+test diagnostic_namespace_credentials_keep_sequential_opening_and_admission_closed ... ok
+test diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_start ... ok
+test diagnostic_namespace_worker_binding_keeps_original_mapping_and_trusted_policy_closed ... ok
+test diagnostic_policy_credentials_bind_exact_original_mapping_and_keep_start_closed ... ok
+test diagnostic_worker_policy_keeps_asserted_context_and_production_closed ... ok
+test loaded_diagnostic_settings_projection_keeps_execution_closed ... ok
+test diagnostic_user_namespace_keeps_host_enrollment_and_credential_view_closed ... ok
+test diagnostic_recursive_tree_reader_cannot_authorize_cleanup_or_execution ... ok
+test diagnostic_process_binding_cannot_signal_recapture_or_release_host ... ok
+test diagnostic_worker_files_preserve_fixed_names_original_policy_and_closed_start ... ok
+test local_diagnostic_lease_cannot_enable_production_execution_or_weaken_p0 ... ok
+test local_diagnostic_ipc_keeps_production_and_numerical_admission_closed ... ok
+test local_raw_diagnostic_receipts_cannot_claim_spool_or_live_execution ... ok
+test local_diagnostic_spool_cannot_open_host_execution_or_claim_power_loss_proof ... ok
+test bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations ... ok
+test local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed ... ok
+test separate_diagnostic_builder_does_not_enroll_host_execution ... ok
+test unsigned_local_build_audit_cannot_authorize_a_diagnostic_launch ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 71 filtered out; finished in 0.76s
+

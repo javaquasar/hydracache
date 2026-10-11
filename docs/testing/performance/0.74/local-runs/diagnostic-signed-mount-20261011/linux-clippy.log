@@ -1,0 +1,19 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: the loop variable `failed` is used to index `expected`
+  --> tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs:29:23
+   |
+29 | ...in 0..expected.len() {
+   |       ^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+29 -         for failed in 0..expected.len() {
+29 +         for (failed, <item>) in expected.iter().enumerate() {
+   |
+
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

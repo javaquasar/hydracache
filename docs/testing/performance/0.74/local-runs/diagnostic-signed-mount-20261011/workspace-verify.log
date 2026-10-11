@@ -1,0 +1,8 @@
+    Finished `dev` profile [unoptimized] target(s) in 23.35s
+     Running `/home/artur/.cache/hydracache-074-manager-local-target/debug/xtask verify`
+== doc-check ==
+doc-check: OK
+== management-center-check 0.72 ==
+management-center-check: OK
+== performance-contract-check 0.73 ==
+Error: "git diff --name-status v0.72.0..1f63494889d50a4e41018159710e5286a887ebf7 failed: fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074"

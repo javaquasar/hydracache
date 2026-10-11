@@ -5854,3 +5854,60 @@ code and frozen qualification inputs remain unchanged. Next, the signed composit
 must derive the mount guard's process from the original credential reader without
 allowing a substitute argument. Bounded all-thread observations, durable issuer
 enrollment and authenticated lifecycle still have independent requirements.
+
+## Joining signed credentials with the same original leader mount
+
+A healthy credential observation and a healthy mount observation are not enough
+if callers can select two different processes. The new
+[signed composition](../testing/performance/0.74/diagnostic-signed-mount-local-design.md)
+borrows the original signed credential reader and privately opens the mount guard
+from that reader's retained process. Its public binders accept no ProcessRead,
+PID/path or already opened mount guard. An observed namespace never becomes a
+new trusted assertion: original device/inode must match the original checked
+signed policy.
+
+Construction orders signed/open-mount/signed/mount/signed. Each signed stage
+retains the original context/files/context and account/credentials/account checks,
+including user-namespace observations. The inner mount opener preserves its own
+generation checks; the outer mount stage follows the post-open signed check.
+Subsequent observations use signed/mount/signed without reopening. First typed
+failure stops, refuses the original signed reader, account/context/policy and both
+credential components, and refuses any newly owned mount guard. Restoring files,
+dropping the wrapper or supplying old pins cannot repair that original guard.
+Healthy drop leaves the original inputs usable. Fixed and fixture origins stay
+distinct and neither wrapper is Send nor Sync.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-signed-mount-20261011/manifest.json)
+records the missing-API failure before implementation, real owned helpers and
+deterministic private boundary failures. Thirteen composition tests cover original
+exit, post-open account failure before a bad mount, revocation precedence, mount
+substitution/restoration, prior refusal, independent concurrent readers and sticky
+refusal after drop. One component test verifies original-process derivation and
+refusal of either inner credential guard. The final scoped suite passes 370 Linux
+checks with one existing ignored, 43 portable Windows checks and 135 root
+contract/evidence/governance checks. Parallel and serial repetitions each
+pass the 13 tests three times before reviewed hardening; three more serial
+repetitions pass afterward. The follow-up checks inner guard refusal before
+account IO as well as mount opening, with each inner component independently
+refused while the fixture account file is missing. The serial logs retain seed
+`0x7592026` and 256 modeled failing positions without stdout/stderr interleaving.
+
+Two inherited source-shape contracts and a new lint initially failed. The fix
+preserves their assertions and public observation bodies; the failed captures
+remain alongside the corrected checks. The first 12-test green is an earlier
+observation, not a replacement for the later context-restoration regression.
+
+This is safety evidence, not a cache speedup. Three retained mount FDs and repeated
+signed/mount observations have diagnostic costs; none is reported as measured
+CPU/op, allocation or goodput improvement. Leader equality still does not inspect
+every task or freeze mount contents. Synthetic issuers and temporary fixtures
+still do not prove production ancestry or durable revocation: a fresh guard under
+restored external pins is outside in-memory sticky refusal.
+
+The [production readiness audit](../testing/performance/0.74/production-readiness-and-server-launch-20261011.md)
+therefore separates local implementation, controlled host enrollment and product
+release. Bounded all-task checks, real issuer/durable epoch authority, fenced
+production preparation, authenticated original diagnostic start, writer revocation
+and watchdog/reconciliation must precede a host pilot. Exact C74/native/Redis and
+long-run/supply-chain evidence must precede product release. A green local reader
+cannot bridge either boundary by renaming a fixture or flipping an admission flag.

@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 15.41s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+signed mount mutation seed=0x7592026; mutations=256
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_api_requires_original_signed_reader ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_fixed_fixture_types_are_not_send_or_sync ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_orders_first_errors_and_seeded_refusal_are_exact ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_policy_pin_drift_is_not_adopted ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_prior_refusal_never_opens_and_latches_policy ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_post_open_signed_error_precedes_invalid_mount_and_is_sticky ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_revocation_precedes_dead_process_and_bad_mount ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_original_exit_latches_owned_mount_after_drop ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_open_failure_and_original_exit_never_adopt_replacement ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_independent_concurrent_readers_share_no_latch ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_owned_roundtrip_and_healthy_drop_keep_original_usable ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::tests::signed_mount_substitution_restoration_and_component_refusal_latch_all ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 284 filtered out; finished in 1.54s
+

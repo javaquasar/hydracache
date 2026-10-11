@@ -1,0 +1,308 @@
+{
+  "schema_version": "diagnostic-signed-mount-local-evidence-074-v1",
+  "state": "retained-local-original-signed-leader-mount-not-production-enrollment",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "b07a655bb42237b3eb80e774b953017e39850dd3",
+  "preregistered_design_commit": "2f9da9e07fcce93309488b7d12ea1c80e483cac9",
+  "initial_implementation_commit": "1a7d946ed542908ca04c1aa3d4c5572973d90c4d",
+  "initial_implementation_tree": "3911114f6e6dacddf5318956f955025e97c9ea33",
+  "implementation_commit": "7cd8b43061638a66b10a3df431a642cd95f19cb3",
+  "implementation_tree": "d6e7904fe644d8f1a784ba44650d8cd474ba3a33",
+  "toolchain": "1.94.0",
+  "portable_msrv_check_toolchain": "1.88.0",
+  "fixtures": "Owned unprivileged NNP cat helpers and actual Linux leader/reading-thread namespace objects; synthetic issuer/account authority and private boundary/descriptor/pin mutations. No real foreign namespace mutation.",
+  "results": {
+    "windows_baseline_passed": 43,
+    "windows_final_passed": 43,
+    "windows_linux_target_tests": 0,
+    "first_green_passed": 12,
+    "linux_final_passed": 370,
+    "linux_existing_ignored": 1,
+    "new_composition_tests": 13,
+    "new_adapter_tests": 1,
+    "root_before_registration_passed": 135,
+    "hardened_root_guards_passed": 28,
+    "final_registry_passed": 1,
+    "hardened_serial_repetitions": 3
+  },
+  "seed": "0x7592026",
+  "modeled_iterations_per_seeded_run": 256,
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_api_requires_original_signed_reader"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_context_restoration_refuses_mount_credentials_and_policy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_orders_first_errors_and_seeded_refusal_are_exact"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_fixed_fixture_types_are_not_send_or_sync"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_owned_roundtrip_and_healthy_drop_keep_original_usable"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_prior_refusal_never_opens_and_latches_policy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_post_open_signed_error_precedes_invalid_mount_and_is_sticky"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_open_failure_and_original_exit_never_adopt_replacement"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_substitution_restoration_and_component_refusal_latch_all"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_revocation_precedes_dead_process_and_bad_mount"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_original_exit_latches_owned_mount_after_drop"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_policy_pin_drift_is_not_adopted"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_signed_mount_tests.rs",
+      "name": "signed_mount_independent_concurrent_readers_share_no_latch"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_namespace_credentials.rs",
+      "name": "namespace_credentials_original_mount_adapter_refuses_either_component_and_exit"
+    }
+  ],
+  "retained_negatives": [
+    "Missing mount_binding import before implementation: E0432, WSL wrapper exit 1.",
+    "Initial strict lint: needless_range_loop; corrected without lint suppression.",
+    "Initial root contracts: 97 passes, 2 source-shape failures; corrected source structure, same assertions.",
+    "Linux cargo-deny missing; native Windows policy passes with duplicate warnings.",
+    "Linux verify and initial registry refuse Windows Git worktree metadata; corrected registry uses per-command GIT_DIR/GIT_WORK_TREE without rewriting metadata.",
+    "Expected-red ship admission: native exit 1."
+  ],
+  "capture_phases": {
+    "first_green_and_repeat": "12 tests before context-restoration addition and reviewed hardening",
+    "reviewed_and_serial_repeat": "13 tests before reviewed inner-input hardening; parallel output may interleave seed/test labels",
+    "hardened": "13 tests including independently refused inner inputs before account IO; 3 serial repetitions",
+    "root_tests_final": "135 before final hardening/packet registration; 28 hardened diagnostic guards and final registry checked separately",
+    "windows_msrv": "Portable all-target compile only; Linux namespace code is not compiled on Windows",
+    "full_workspace_verify": "Separate broader native Windows run pending at this scope capture; not a registered exact-candidate nextest receipt"
+  },
+  "proof_boundaries": {
+    "replacement_process_or_mount_argument": false,
+    "public_process_descriptor_pin_or_reset": false,
+    "guard_send_or_sync": false,
+    "old_public_api_behavior_changed": false,
+    "all_threads_proved": false,
+    "initial_host_namespace_proved": false,
+    "mount_content_immutability_proved": false,
+    "atomic_or_continuous_proof": false,
+    "file_opener_credentials_attested": false,
+    "durable_issuer_epoch_or_refusal": false,
+    "real_issuer_enrolled": false,
+    "positive_fixed_production_inspection": false,
+    "production_preparation_allowed": false,
+    "authenticated_original_start": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation_allowed": false,
+    "product_workload_allowed": false,
+    "performance_claim_allowed": false,
+    "qualification_allowed": false,
+    "admission_allowed": false,
+    "full_workspace_verification": false
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "missing_api_wsl_exit": 1,
+  "require_ship_native_exit": 1,
+  "logs": {
+    "adapter-repeat.log": {
+      "sha256": "9fb63cfe15fb43c59b2eeac396321e82bee651209f01d3e03e79aa6271ad9a04",
+      "bytes": 479
+    },
+    "registry.log": {
+      "sha256": "f40dc21c761441f3395366da77d76330cd0b0624fc363618830b910d7f5427ae",
+      "bytes": 830
+    },
+    "docs-final.log": {
+      "sha256": "44c454b10ecbc292934215566999c2f4d35ca800fa232eccef28fcd965100c60",
+      "bytes": 356
+    },
+    "serial-repeat-1.log": {
+      "sha256": "04113abafa2353d1c58425c08c83e077cd94355e3d0baec678134012517fc093",
+      "bytes": 2672
+    },
+    "workspace-verify.log": {
+      "sha256": "c430f00bbadbd3443d8d9c506347ad8f68e6b07e762cb0f6352f8482debbd6a3",
+      "bytes": 512
+    },
+    "msrv-windows.log": {
+      "sha256": "5f1f85643c96cc13c0fcb0559889f7999f1e333c69a33e27c07fe41c582c858f",
+      "bytes": 2291
+    },
+    "repeat-1.log": {
+      "sha256": "7a1590b98c0ed8dc5ac89b73caab9a17e98c6ae794a4d982d7eb1238b107c447",
+      "bytes": 2620
+    },
+    "reviewed-repeat-2.log": {
+      "sha256": "41b7edfe9bd96ce515ad3be736e4ba15c2ce4fbd1480bd4bb2810bb987d6d03b",
+      "bytes": 2672
+    },
+    "hardened-linux-clippy.log": {
+      "sha256": "9acfc9a836b11c63d0c9ea4266b8084502ea44dd8d49ebbf68b987399f162ce5",
+      "bytes": 280
+    },
+    "serial-repeat-3.log": {
+      "sha256": "5783cfa2ffb7f859595ef49ad347f83d26a8e309888e6b8ce1dd7242adfdf81e",
+      "bytes": 2672
+    },
+    "docs-windows.log": {
+      "sha256": "bd2407c861a2dd00561bf7ffbd5c35b1cea60c245ed007847bcd0cfcaa1ba347",
+      "bytes": 280
+    },
+    "docs.log": {
+      "sha256": "6899ebb12d1d272b85c598c964a7cff12276c874faaaffc1476a8c9fb16733d8",
+      "bytes": 142
+    },
+    "hardened-repeat-2.log": {
+      "sha256": "0f5b8c3ba5bd4f135c5b7d9ba58b73f567c72cfea28042c93fcf9f8b466440aa",
+      "bytes": 2672
+    },
+    "hardened-repeat-1.log": {
+      "sha256": "70e6e5f2d0afbf3276656bf3c3cde1283326038dd6ad3a4876e17e429c8f18c3",
+      "bytes": 2672
+    },
+    "linux-tests.log": {
+      "sha256": "01aeab64de4d63391b8b53d405492a9e87ca8952682f641da3c76c077064b41b",
+      "bytes": 43722
+    },
+    "dependency-policy.log": {
+      "sha256": "52fc67bd2ca7f421818b08fb7eeb03a966240723433e256736a5f02422b7e783",
+      "bytes": 209
+    },
+    "hardened-root-guards.log": {
+      "sha256": "4d713dfaa4bdc8abc91dba340e1cc74f6b66f3afaea3eb2f8ea94d88d00f0f99",
+      "bytes": 2714
+    },
+    "linux-tests-final.log": {
+      "sha256": "078fde232b5ab6ed280b722f51f8a036723993634bbc4fad662a070953ad04cc",
+      "bytes": 43779
+    },
+    "repeat-3.log": {
+      "sha256": "d983b6ac4fd5daedd843c4df81e8a02f3dd7babc4d5c9d2e5da86a7e6973d2c0",
+      "bytes": 2487
+    },
+    "baseline.log": {
+      "sha256": "559d16157eae0f6f7a2d7e8fe080104985c1674fb739c7df72d270881f0a4348",
+      "bytes": 4281
+    },
+    "isolation.log": {
+      "sha256": "d66735e46d2b6598ce926ca51b79dda70c283e4d9b237b46d62cebb93364b24f",
+      "bytes": 375
+    },
+    "linux-check.log": {
+      "sha256": "16f896ab13ef8426ea9030d533b9e3743b838987730332f9b4965922b677ac4b",
+      "bytes": 280
+    },
+    "api-red.log": {
+      "sha256": "038d0e852fdf1c3d9806639bb55e7f64e4625b669970a1c18de138e1f3da9df2",
+      "bytes": 528
+    },
+    "dependency-policy-windows.log": {
+      "sha256": "7bd0650e40b5a82c24b05998142e3d80165916fa4ab6eec890ccbef81c134d90",
+      "bytes": 507706
+    },
+    "first-green.log": {
+      "sha256": "95e92880de20ed1c1585422b510ce8101bf215db6e5ad8a33759561a0939450e",
+      "bytes": 2620
+    },
+    "root-tests.log": {
+      "sha256": "383df3bf29d95305fd9b419c0f0918183d0e3b0cc90092c102f124d29b1989f5",
+      "bytes": 9259
+    },
+    "repeat-2.log": {
+      "sha256": "7ef0ae18f7b224f6e1a020d44f1f94cf1e1af3d7cb8af87d1575a8e2f070638d",
+      "bytes": 2487
+    },
+    "reviewed-linux-tests.log": {
+      "sha256": "f45c41988cbfd3b32fbc4337b11450b733c4dc3899869016eea2e87228071e4c",
+      "bytes": 43907
+    },
+    "hardened-linux-tests.log": {
+      "sha256": "c3b35a11aa2d7f997727c6eaf9266d0869f191fcd72f85cd967df5908026520c",
+      "bytes": 43907
+    },
+    "ship.log": {
+      "sha256": "53bfdb17581be60fd72ec2a6dfd2aa02861b8ffb1e4e641cbabf929072945446",
+      "bytes": 574
+    },
+    "hardened-root.log": {
+      "sha256": "e2122e7da2280fcb6bfd914e79d1c15d3bd78b9d5033beabed9bbde8586fea87",
+      "bytes": 636
+    },
+    "reviewed-repeat-3.log": {
+      "sha256": "8fd2a12d9128cbed1d1e3e9f354aea049b104e256596f63a2ed4a3eabb2b0c59",
+      "bytes": 2672
+    },
+    "windows-check.log": {
+      "sha256": "30c6943aa759ba1bd71aedf24e66a7ed9863415e7737236c3375a0c61dd4f61d",
+      "bytes": 145
+    },
+    "windows-clippy.log": {
+      "sha256": "27b9cd8679e7a742567fdba1d515030f2f276b5aaa52058ccc1ec52ae242d3a8",
+      "bytes": 145
+    },
+    "serial-repeat-2.log": {
+      "sha256": "fc8da6ab25104ab2a0ccdbd0fce37a435b40b222ddc2d83d1786292b6aa9037d",
+      "bytes": 2672
+    },
+    "hardened-repeat-3.log": {
+      "sha256": "cf5ba6f094887733f34224f219ad0a607d217e0d4d153f52d000f30c92dc1de8",
+      "bytes": 2672
+    },
+    "registry-final.log": {
+      "sha256": "feca3d98447016c46793212bbec20ac8e4f8915e660a9d322f161d50df4040d9",
+      "bytes": 481
+    },
+    "linux-clippy.log": {
+      "sha256": "2ee10bdc61894df6a23914703e8692e537bb50fb38e4160c6b9032a14ee278d5",
+      "bytes": 1034
+    },
+    "windows-tests.log": {
+      "sha256": "e27bd6b52b1b0e0b51c54c4d0676cb96789dc1e7f63edbc3a0ade89c34bfe890",
+      "bytes": 4513
+    },
+    "reviewed-linux-clippy.log": {
+      "sha256": "ece5e97c73afcbc60294b6ad747d497d35503d07703ae46cf3dc38059130da7a",
+      "bytes": 193
+    },
+    "linux-clippy-final.log": {
+      "sha256": "9acfc9a836b11c63d0c9ea4266b8084502ea44dd8d49ebbf68b987399f162ce5",
+      "bytes": 280
+    },
+    "reviewed-repeat-1.log": {
+      "sha256": "3df8260e95d71ba4359c79e87fb32922f9ce80e60ba88ea1cf575b44201d2005",
+      "bytes": 2672
+    },
+    "root-tests-final.log": {
+      "sha256": "30fc6da48bc81a26caf8e7725b4dd39e029c8c677ec3c223ba5badcbbb5876b7",
+      "bytes": 12061
+    },
+    "linux-root.log": {
+      "sha256": "c246c284fbb1f5472f104dc0715e2e5c8dbef2b06ce95152cd5c9b71640d8a32",
+      "bytes": 636
+    }
+  }
+}

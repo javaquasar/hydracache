@@ -2376,3 +2376,18 @@ join or mutation occurs. The [packet](local-runs/diagnostic-mount-namespace-2026
 is standalone local consistency, not signed mount enrollment or all-thread proof.
 Shared namespace identity does not guarantee immutable mount contents. The next
 step is an original-process-only signed composition, then bounded all-thread checks.
+
+The [signed mount composition](diagnostic-signed-mount-local-design.md) now derives
+the process privately from the original signed credential reader; public binders
+accept no substitute process or preopened mount. Construction checks signed/open/
+signed/mount/signed; later checks signed/mount/signed. First failure latches the
+original account/context/policy, credential components and new mount guard.
+Fixed/fixture origins remain distinct and non-transferable. Its
+[packet](local-runs/diagnostic-signed-mount-20261011/manifest.json) is local safety
+evidence, not all-thread, durable authority, authenticated start or production proof.
+
+The [production audit and dedicated-server checklist](production-readiness-and-server-launch-20261011.md)
+separates diagnostic pilot enrollment from product release. Both remain closed:
+all-thread inspection, durable issuer/epoch authority, production preparer and
+authenticated diagnostic lifecycle are still prerequisites. Full local gates and
+controlled positive host evidence cannot substitute for each other.
