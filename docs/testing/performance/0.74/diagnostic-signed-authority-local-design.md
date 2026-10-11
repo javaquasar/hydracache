@@ -48,3 +48,10 @@ uncertain execution as durably refused. No account, issuer, initial namespace,
 server, production workload or physical power-loss test is introduced here.
 Qualification remains closed, including the inherited frozen-plan digest
 mismatch; this slice does not refresh its manifest or thresholds.
+
+The subsequent [fixture recovery slice](diagnostic-fixture-recovery-local-design.md)
+now composes existing diagnostic state/IPC intent checks with this original
+fixture bridge. It durably refuses only safe exact-bound original authority and
+never replays or repairs lifecycle state. This later local addition is not the
+authenticated production intent protocol or controlled fixed-root enrollment
+required above; the original preregistered contract remains historical.

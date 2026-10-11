@@ -1,0 +1,16 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_output_preparation::recovery`
+ --> tools/long-run-supervisor-074/tests/diagnostic_task_api.rs:5:76
+  |
+5 | ...n::recovery::{
+  |       ^^^^^^^^ could not find `recovery` in `diagnostic_output_preparation`
+
+error[E0599]: no function or associated item named `check_fixture_lifecycle` found for struct `FixtureAuthorityBoundRead<'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+  --> tools/long-run-supervisor-074/tests/diagnostic_task_api.rs:10:40
+   |
+10 | ...d::check_fixture_lifecycle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^ function ... item not found in `FixtureAuthorityBoundRead<'_, '_, '_, '_, '_, '_>`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_task_api") due to 2 previous errors

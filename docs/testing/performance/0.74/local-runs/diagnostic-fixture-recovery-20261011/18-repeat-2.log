@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized] target(s) in 37.72s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 16 tests
+test abort_backend::tests::quarantine_recovery_accepts_only_the_exact_failed_empty_unit ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_callback_holds_host_fence_and_errors_release_it ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_canonical_hash_schema_and_invalid_ipc_shape_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_exact_identity_missing_state_and_production_paths_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_pending_names_and_conflicts_never_follow_or_remove ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_quiet_observations_keep_every_byte_and_fence ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_replacements_and_absent_ledger_creation_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_unsafe_documents_and_competing_fence_refuse ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_corrupt_lifecycle_refuses_without_repair ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_foreign_boot_and_identity_cannot_select_new_authority ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_four_publication_faults_keep_first_failure_and_no_retry ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_interrupted_and_pending_intents_durably_refuse_original ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_quiet_state_does_not_mutate_or_grant_start ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::tests::lifecycle_tests::recovery_authority_unsafe_journal_stops_before_lifecycle_without_append ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 23.63s
+

@@ -6227,3 +6227,59 @@ local contracts, docs and book checks pass. These are local safety results, not
 full-workspace release receipts. Unsupported command options are retained as
 usage failures and are followed by separate corrected invocations; actual ship
 admission and the inherited qualification dry-run still refuse.
+
+### Interrupted diagnostic intent must not become a second start
+
+The next [local recovery check](../testing/performance/0.74/diagnostic-fixture-recovery-local-design.md)
+tests whether an interrupted diagnostic can refuse the same original signed
+authority without repairing or replaying its lifecycle. The existing coordinator
+already publishes Starting before calling its backend, and the IPC model writes
+an intent before mutation and acknowledges it afterward. Introducing another
+journal would duplicate these local boundaries. This slice instead reuses their
+existing canonical decoders and the authority journal's existing Policy refusal.
+No persisted format or epoch transition changes.
+
+The fixture check retains the original cooperative host lock through inspection
+and refusal handling. It reads only the two fixed journal names relative to the
+retained root, with no-follow/nonblocking opens, bounded reads and exact private
+metadata checks. A second observation checks original objects, named objects,
+bytes and previously absent files. Pending names are detected without following
+them, including dangling symlinks. Corrupt or future-schema documents cannot
+become a quiet result merely because their hashes were rewritten.
+
+Pending publication, an IPC entry without an acknowledgement, and Starting,
+Running or Stopping refuse recovery. Missing state, wrong identity/boot, a
+competing lock or unsafe metadata fail explicitly. The bridge first checks its
+original signed guard and authority under retained original pins. On a lifecycle
+failure it latches the whole chain, then appends only to a freshly inspected,
+safe matching authority journal. A failed append preserves both the original
+failure and publication uncertainty; later calls neither retry nor inspect
+replacement files. Lifecycle documents and output remain retained unchanged.
+
+The hypothesis pays off as bounded safety composition, not cache throughput or
+allocation reduction. Reserved and Terminal yield observation data only: neither
+authorizes starting a worker, adopting a live process or removing a marker. A
+compile-fail test excludes the fixture check from the fixed-origin API. Real
+issuer enrollment, authenticated production intent, reboot handling, watchdog
+and owned-tree cleanup remain separate work. A crash before any durable intent
+exists is still outside this proof.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-fixture-recovery-20261011/README.md)
+retains the missing-API red and all implementation attempts. Initial fixture
+ledger creation used the default 0644 mode; the required private 0600 check
+correctly refused it. Correcting the fixture restores the expected results
+without relaxing metadata validation. A structural contract check also initially
+mistook rustfmt's line break before `read_at` for a missing positional read; its
+marker now matches the complete call independently of that line break. These
+findings are test-construction errors, not measured product regressions.
+
+The completed packet retains 37 raw captures: 494 scoped Linux passes with one
+existing ignored, 195 portable Windows passes, and 105/13/23 root contract,
+evidence and governance passes. Fourteen new unit tests pass three serial
+repetitions alongside two existing recovery tests. Three compile-fail doctests,
+strict lint, MSRV 1.88, rustdoc, formatting, docs, local contracts and book checks
+pass. Final root checks use native Windows: Linux Git cannot parse the Windows
+worktree pointer, and a global metadata override would be unsafe for tests that
+create temporary repositories. Failed/interrupted attempts are retained and not
+counted as successful proof. Qualification dry-run and ship admission remain red;
+no cache workload or numerical performance claim accompanies this safety slice.

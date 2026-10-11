@@ -23,7 +23,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
 | Every worker task | Bounded original-task reader plus exclusive original signed mount composition; exact signed numeric/user/mount pins, membership-churn refusal and whole-chain latch | Controlled positive fixed-host checks; sequential observations are not continuous confinement |
-| Worker policy authority | Signature verification against external key/digest/epoch; bounded typed journals; original signed-task runtime bridge persists refusal only to safe exact-bound storage | Controlled positive root-path enrollment; uncertain-publication/restart intent and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
+| Worker policy authority | Signature verification against external key/digest/epoch; bounded typed journals; original signed-task runtime bridge and fixture-only interrupted-intent refusal persist only to safe exact-bound storage | Controlled positive root-path enrollment; authenticated production intent and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
 | Failure and cleanup | Lease/IPC/spool models and separate historical campaign rehearsals | Production diagnostic backend, autonomous watchdog, writer revocation, retained uncertain intent, exact owned empty-cgroup proof before release |
@@ -59,8 +59,13 @@ The [runtime bridge](diagnostic-signed-authority-local-design.md) subsequently
 implements exclusive original signed-guard composition and safe refusal
 publication, with typed uncertainty and no retry. It does not cover crash before
 publication or turn an unsafe-storage in-memory latch into durable refusal.
-The remaining authority implementation is uncertain-publication/restart intent
-and reboot lifecycle, followed by controlled enrollment under real external pins.
+The [fixture recovery slice](diagnostic-fixture-recovery-local-design.md) now
+detects existing pending state/IPC intent and interrupted stages under the
+original cooperative fixture host fence. Its fixture-only bridge persists safe
+original-authority refusal without replay, cleanup or adoption. Quiet observations
+are not launch permission. Authenticated production intent, crash-before-any-intent
+and reboot lifecycle remain required, followed by controlled enrollment under
+real external pins. No fixed-host diagnostic start is introduced by this slice.
 No effective-root check authenticates the initial host namespace.
 
 ## Extended local checks completed

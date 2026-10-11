@@ -1,0 +1,314 @@
+{
+  "schema_version": "diagnostic-fixture-recovery-local-evidence-074-v1",
+  "state": "retained-local-fixture-recovery-not-production-intent",
+  "evidence_class": "working-tree-local-safety-not-exact-candidate-release-receipt",
+  "baseline_source": "fcd4d011806d728ffa1d332a4f313ec81e4fda35",
+  "baseline_tree": "686d35a822d5afe26016db308bfb60d40465c014",
+  "preregistration_source": "6b8933de14ed51e90a65821a7710d07153245648",
+  "implementation_source": "a8791b68429c949008bdfc550c8fd781c3903111",
+  "implementation_tree": "4d1248e7477eba613f5fe00b82afa730fd4f40bc",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "results": {
+    "baseline_passed": 403,
+    "baseline_ignored": 1,
+    "linux_scoped_passed": 494,
+    "linux_existing_ignored": 1,
+    "windows_package_passed": 195,
+    "root_contract_passed": 105,
+    "root_evidence_passed": 13,
+    "root_governance_passed": 23,
+    "new_unit_tests": 14,
+    "new_api_tests": 1,
+    "new_root_contract_tests": 1,
+    "serial_repetitions": 3,
+    "serial_recovery_filter_passed": 16,
+    "compile_fail_doctests": 3
+  },
+  "new_unit_test_names": [
+    "fixture_recovery_quiet_observations_keep_every_byte_and_fence",
+    "fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses",
+    "fixture_recovery_pending_names_and_conflicts_never_follow_or_remove",
+    "fixture_recovery_exact_identity_missing_state_and_production_paths_refuse",
+    "fixture_recovery_canonical_hash_schema_and_invalid_ipc_shape_refuse",
+    "fixture_recovery_unsafe_documents_and_competing_fence_refuse",
+    "fixture_recovery_replacements_and_absent_ledger_creation_refuse",
+    "fixture_recovery_callback_holds_host_fence_and_errors_release_it",
+    "recovery_authority_quiet_state_does_not_mutate_or_grant_start",
+    "recovery_authority_interrupted_and_pending_intents_durably_refuse_original",
+    "recovery_authority_foreign_boot_and_identity_cannot_select_new_authority",
+    "recovery_authority_unsafe_journal_stops_before_lifecycle_without_append",
+    "recovery_authority_corrupt_lifecycle_refuses_without_repair",
+    "recovery_authority_four_publication_faults_keep_first_failure_and_no_retry"
+  ],
+  "proof_boundaries": {
+    "fixture_pending_intent_refusal_composed": true,
+    "existing_durable_formats_unchanged": true,
+    "quiet_observation_grants_start": false,
+    "authenticated_production_intent": false,
+    "fixed_root_enrollment": false,
+    "real_issuer_enrolled": false,
+    "crash_before_any_intent_covered": false,
+    "unsafe_storage_refusal_always_durable": false,
+    "physical_power_loss_proved": false,
+    "production_start_or_restart": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_claim_eligible": false,
+    "qualification_allowed": false,
+    "ship_allowed": false
+  },
+  "notes": [
+    "The recovery filter includes fourteen new unit tests and two existing model recovery tests; three serial repetitions are not additional unique tests.",
+    "Fixture ledger files originally had default mode 0644; the validator was unchanged and the fixture corrected to 0600.",
+    "A rustfmt line break broke a structural marker; matching the complete positional read call fixes the test without changing runtime checks.",
+    "Four existing logical authority publication stages are not actual power-loss tests.",
+    "Frozen inputs and manifest remain unchanged; the inherited committed plan digest mismatch remains the qualification blocker.",
+    "The initial Linux root suite cannot parse the Windows absolute worktree Git pointer. Safe-directory alone is insufficient. Explicit metadata preflight resolves HEAD, but the mixed suite is stopped before scratch-repository tests to avoid directing their temporary Git writes into real metadata. Final root, book and packet verification use native Windows without the override."
+  ],
+  "files": [
+    {
+      "name": "01-baseline-linux.log",
+      "bytes": 51033,
+      "sha256": "d50b615a260619eea27beb090aa5b79c987b1b6cb2e2afebdd26285d966d9788",
+      "outcome": "green"
+    },
+    {
+      "name": "02-missing-api-red.log",
+      "bytes": 1085,
+      "sha256": "a7a8f0b30cbe0c47d0e2d1f832e4ea1a8ee5e5fee25ef42b86f9b9a1074a7fe8",
+      "outcome": "expected-red"
+    },
+    {
+      "name": "03-fixture-tests-attempt.log",
+      "bytes": 2478,
+      "sha256": "93a0bab2f209cf4f625664725583ab9f542723c311794fbb4e2d9581ac1a37f4",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "04-recovery-tests-attempt.log",
+      "bytes": 4776,
+      "sha256": "c8c84cee281167240d6d2c03b21033f2daeafd902271cca30cd044dd9be9ec6c",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "05-recovery-tests-corrected-fixture.log",
+      "bytes": 3429,
+      "sha256": "e40d529d4cffc49ee74669adefc2fab5eed81dcb1117c3eabbefe8fd3715eb80",
+      "outcome": "green"
+    },
+    {
+      "name": "06-linux-check.log",
+      "bytes": 193,
+      "sha256": "7f5f7c17c485774b38be6db5cca741664eb0778ae8d92b0547e8631f9e0b8508",
+      "outcome": "green"
+    },
+    {
+      "name": "07-linux-clippy-attempt.log",
+      "bytes": 193,
+      "sha256": "fcd77f6fce1c8150b3506c638c5d4a8f1a3b578db04982b9736e97d867baabd1",
+      "outcome": "green"
+    },
+    {
+      "name": "08-linux-scoped-tests.log",
+      "bytes": 61628,
+      "sha256": "260a3e7ab56b5b2f6763204503fe390574f7d87a8801ae4010d380aae7314281",
+      "outcome": "green"
+    },
+    {
+      "name": "09-windows-tests.log",
+      "bytes": 24844,
+      "sha256": "3f57b884967def4308abb62a7750ed33a3570c0774a6ecedc06504a65db7d61f",
+      "outcome": "green"
+    },
+    {
+      "name": "10-windows-check.log",
+      "bytes": 246,
+      "sha256": "5186849fc4929d3318fb478d70895e6934a85eaa99b0e1582e79639b36a161cd",
+      "outcome": "green"
+    },
+    {
+      "name": "11-windows-clippy.log",
+      "bytes": 246,
+      "sha256": "2526971d768d81ab61345001aab8dbb35b64b725a3ae5a08c7c4624efbeae519",
+      "outcome": "green"
+    },
+    {
+      "name": "12-root-contract.log",
+      "bytes": 9691,
+      "sha256": "39eca982f38c235a3ed51cf5e70c8874d78246368f16f60f53e307f27878effa",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "14-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "2ef21947863800e8997ad4458071e1c5d87cd6b8f358e7ae530b5a1327ed373c",
+      "outcome": "green"
+    },
+    {
+      "name": "15-linux-doctests.log",
+      "bytes": 1104,
+      "sha256": "3b98c01022da7385ae5e4e11f58129bb2baeb8c339e547465c0e1aaf3c9a9d45",
+      "outcome": "green"
+    },
+    {
+      "name": "16-linux-doc.log",
+      "bytes": 512,
+      "sha256": "a92adc67ffc41cedde45871a5909e12e59fa32848a9a38f92368ff0f01cfc4f3",
+      "outcome": "green"
+    },
+    {
+      "name": "17-repeat-1.log",
+      "bytes": 2959,
+      "sha256": "014045777ea0856c9299ea92fcf208f56fccc2b602bac3c197793ce0be130e08",
+      "outcome": "green"
+    },
+    {
+      "name": "18-repeat-2.log",
+      "bytes": 3069,
+      "sha256": "6dbdcafd3d43e48fbe63fbcaac05f13c7a3f0ee46cfb29cba14954e32da03be6",
+      "outcome": "green"
+    },
+    {
+      "name": "19-repeat-3.log",
+      "bytes": 2960,
+      "sha256": "e7d0606e82198801549402e3e9fd24e7aea336f1c1bc6f214a466105ecd8c845",
+      "outcome": "green"
+    },
+    {
+      "name": "20-linux-fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "green"
+    },
+    {
+      "name": "21-linux-final-clippy.log",
+      "bytes": 193,
+      "sha256": "4856afbcf60f9bc24dcc7f4f4a94cb0279a4c1389778b3f2a490574b5cbed644",
+      "outcome": "green"
+    },
+    {
+      "name": "22-windows-msrv.log",
+      "bytes": 246,
+      "sha256": "dcc72e00dd9b0f8c6b26daa231f88e19264383a0a080a7500c732dff2913e1a4",
+      "outcome": "green"
+    },
+    {
+      "name": "23-xtask-clippy.log",
+      "bytes": 275,
+      "sha256": "de759964e63cb6c6d79090fff810eec9598cce33f49e235163734d081aeaad65",
+      "outcome": "green"
+    },
+    {
+      "name": "24-qualification-dry-red.log",
+      "bytes": 134,
+      "sha256": "b5457bf4955bae337c5a531f9504a678e95d7f2b862bc2673b2385cab4607110",
+      "outcome": "expected-red"
+    },
+    {
+      "name": "25-root-contract-corrected.log",
+      "bytes": 8988,
+      "sha256": "0fde36bfa65b8fe49bde8a0126a3e5050cc28b451c6731f43cf5e08e8345c682",
+      "outcome": "green"
+    },
+    {
+      "name": "26-root-registries.log",
+      "bytes": 3452,
+      "sha256": "053ebb278b08fc26be6836d8634dd378c9567f695f349597f55dd2438b253596",
+      "outcome": "green"
+    },
+    {
+      "name": "27-doc-check.log",
+      "bytes": 239,
+      "sha256": "6ccf6a67d6f0df6f5b7bfde2a79d6371c3eb016d99be9b283f77611adde85c46",
+      "outcome": "green"
+    },
+    {
+      "name": "28-local-performance-contract.log",
+      "bytes": 203,
+      "sha256": "380911c39fbdb9c2f1e14d22756f884a1a216a58268b0be0d88ca1e1997625be",
+      "outcome": "green"
+    },
+    {
+      "name": "29-ship-contract-red.log",
+      "bytes": 487,
+      "sha256": "a9cda84d865b9e57394fafa072f5906bd629d637ac19ba3c8e7568599cd3fdb4",
+      "outcome": "expected-red"
+    },
+    {
+      "name": "30-ship-admission-red.log",
+      "bytes": 2807,
+      "sha256": "e27bedbbb3a56208c1aeaa8f73259ed684c28662afecca2b2f3049eb05a42aff",
+      "outcome": "expected-red"
+    },
+    {
+      "name": "31-final-root-tests-linux.log",
+      "bytes": 9859,
+      "sha256": "1f08a867890356a98f7854086f89cf3ed8f4f38c68efa3c6c0488bbbade1a5c5",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "34-linux-git-preflight-red.log",
+      "bytes": 141,
+      "sha256": "8498045f53e880c2c47ffa84cfb8f6eb04ec2149a5061c58e82eeb0616ce4699",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "35-linux-git-scoped-preflight.log",
+      "bytes": 141,
+      "sha256": "8498045f53e880c2c47ffa84cfb8f6eb04ec2149a5061c58e82eeb0616ce4699",
+      "outcome": "retained-failed-attempt"
+    },
+    {
+      "name": "39-linux-git-explicit-metadata.log",
+      "bytes": 41,
+      "sha256": "dc208535941669d50ac1b50ad75d8125e62516e26a8bef611ce31cf68582076d",
+      "outcome": "green"
+    },
+    {
+      "name": "40-final-root-tests-linux-explicit-git.log",
+      "bytes": 8797,
+      "sha256": "3f2f4dc1b90b8cd8f050d8621b74ffca0f59c805dfe60d4123c9a3f9a511b198",
+      "outcome": "interrupted-unaccepted"
+    },
+    {
+      "name": "43-final-root-tests-windows.log",
+      "bytes": 12235,
+      "sha256": "aca7df83974ed737cc92c56050f75ff09804bf65ad80784716387ba2fec49702",
+      "outcome": "green"
+    },
+    {
+      "name": "44-book-windows.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "outcome": "green"
+    },
+    {
+      "name": "45-prior-packet-windows.log",
+      "bytes": 90,
+      "sha256": "5b38949f74323f825eb71c86783332d40a01717286e27012d81f21b034c9a843",
+      "outcome": "green"
+    }
+  ],
+  "verification_commands": {
+    "baseline_linux": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_lease --test diagnostic_ipc --test diagnostic_task_api --locked -- --nocapture",
+    "scoped_linux": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_artifacts --test diagnostic_context_files --test diagnostic_manager --test diagnostic_task_api --test diagnostic_worker_account --test diagnostic_worker_context --test diagnostic_worker_files --test diagnostic_worker_policy --test diagnostic_lease --test diagnostic_ipc --locked -- --nocapture",
+    "serial_linux": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --locked recovery -- --nocapture --test-threads=1",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --all-targets --locked",
+    "root_windows": "cargo +1.94.0 test -p xtask --test performance_contract_074 --test release_evidence --test release_governance --locked",
+    "check_both": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "clippy_both": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "msrv_both": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "doc_linux": "RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --no-deps --locked",
+    "doctests_linux": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --doc --locked",
+    "fmt_linux": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask --check",
+    "clippy_xtask_windows": "cargo +1.94.0 clippy -p xtask --all-targets --all-features --locked -- -D warnings",
+    "doc_check_windows": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+    "local_contract_windows": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+    "ship_contract_expected_red": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+    "ship_evidence_expected_red": "cargo +1.94.0 run -p xtask --locked -- release-evidence --release 0.74 --require-ship",
+    "qualification_expected_red": "python3 scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <fresh-temp>/qualification-dry.json --dry-run",
+    "book_windows": "mdbook build docs-site"
+  }
+}

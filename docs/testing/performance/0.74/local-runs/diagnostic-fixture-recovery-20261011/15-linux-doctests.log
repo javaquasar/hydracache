@@ -1,0 +1,11 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized] target(s) in 13.96s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 3 tests
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead (line 246) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead (line 239) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead<'_,'_,'_,'_,'_,'_>::check_fixture_lifecycle (line 322) - compile fail ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+

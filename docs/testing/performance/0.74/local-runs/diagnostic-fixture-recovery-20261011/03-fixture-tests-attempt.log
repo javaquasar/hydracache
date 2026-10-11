@@ -1,0 +1,30 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 20.02s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+
+thread 'diagnostic_output_preparation::recovery::tests::fixture_recovery_quiet_observations_keep_every_byte_and_fence' (427) panicked at tools/long-run-supervisor-074/src/diagnostic_fixture_recovery_tests.rs:81:36:
+called `Result::unwrap()` on an `Err` value: Document
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_callback_holds_host_fence_and_errors_release_it ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_exact_identity_missing_state_and_production_paths_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_quiet_observations_keep_every_byte_and_fence ... FAILED
+
+thread 'diagnostic_output_preparation::recovery::tests::fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses' (424) panicked at tools/long-run-supervisor-074/src/diagnostic_fixture_recovery_tests.rs:100:5:
+assertion failed: matches!(f.inspect(), Err(FixtureRecoveryError::Uncertain))
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses ... FAILED
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_replacements_and_absent_ledger_creation_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_pending_names_and_conflicts_never_follow_or_remove ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_unsafe_documents_and_competing_fence_refuse ... ok
+test diagnostic_output_preparation::recovery::tests::fixture_recovery_canonical_hash_schema_and_invalid_ipc_shape_refuse ... ok
+
+failures:
+
+failures:
+    diagnostic_output_preparation::recovery::tests::fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses
+    diagnostic_output_preparation::recovery::tests::fixture_recovery_quiet_observations_keep_every_byte_and_fence
+
+test result: FAILED. 6 passed; 2 failed; 0 ignored; 0 measured; 359 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

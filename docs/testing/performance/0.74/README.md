@@ -2466,3 +2466,15 @@ Uncertain-restart intent, controlled fixed-host and real-issuer enrollment,
 production preparation, watchdog, cleanup and authenticated start remain open.
 The record format, frozen qualification inputs and admission state are unchanged.
 Frozen qualification inputs and their inherited plan-digest blocker are unchanged.
+
+The subsequent [fixture recovery slice](diagnostic-fixture-recovery-local-design.md)
+reuses existing schema-1 diagnostic state and IPC ledger validation. Under the
+retained cooperative host fence, descriptor-relative bounded reads detect pending
+publication, unacknowledged IPC entries, interrupted stages and unsafe documents.
+The original fixture signed-authority bridge refuses its whole original chain
+and persists an existing Policy refusal only to safe matching authority storage.
+First error and unacknowledged refusal remain separate; lifecycle state and
+outputs are not repaired, removed or replayed. Quiet Reserved/Terminal data is
+not execution permission. The [packet](local-runs/diagnostic-fixture-recovery-20261011/README.md)
+records local checks only. This is not fixed-host enrollment, authenticated
+production intent, reboot recovery, watchdog/cleanup or a production start route.
