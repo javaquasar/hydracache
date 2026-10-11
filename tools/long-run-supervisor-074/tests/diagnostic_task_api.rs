@@ -1,6 +1,16 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn signed_intent_journal_api_is_fixture_data_not_execution() {
+    use hydracache_long_run_supervisor_074::diagnostic_output_preparation::intent_journal::{
+        inspect_fixture_intents, retain_fixture_intent, FixtureIntentObservation,
+    };
+    let _ = (inspect_fixture_intents, retain_fixture_intent);
+    fn data_only(_: FixtureIntentObservation) {}
+    let _ = data_only;
+}
+
+#[test]
 fn fixture_lifecycle_recovery_api_is_readonly_and_fixture_origin_only() {
     use hydracache_long_run_supervisor_074::diagnostic_output_preparation::recovery::{
         inspect_fixture_recovery, FixtureRecoveryObservation,

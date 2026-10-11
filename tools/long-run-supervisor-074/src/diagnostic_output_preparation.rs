@@ -19,6 +19,9 @@ const OUTPUT_ROOT: &str = "diagnostic-fixture-outputs";
 #[path = "diagnostic_fixture_recovery.rs"]
 pub mod recovery;
 
+#[path = "diagnostic_intent_journal.rs"]
+pub mod intent_journal;
+
 #[derive(Debug, Error)]
 pub enum PreparationError {
     #[error("fixture preparation path, identity, state or asserted clock refused")]

@@ -9264,3 +9264,84 @@ fn diagnostic_intent_projection_stays_bytes_only_under_original_worker() {
         assert_eq!(MAX_SIGNED_INTENT_BYTES, 8192);
     }
 }
+#[test]
+fn diagnostic_intent_journal_preserves_consumption_without_execution() {
+    let c = contract("diagnostic-intent-journal-local-contract.toml");
+    for key in [
+        "fixture_host_fence",
+        "exact_persisted_reserved_state",
+        "original_checked_intent_required",
+        "historical_signatures_and_original_binding_rechecked",
+        "exclusive_append_only_record_marker_pairs",
+        "same_cell_replay_refused",
+        "partial_or_unacknowledged_publication_never_retried",
+        "boot_or_controller_drift_refused",
+        "all_failures_latch_checked_intent",
+        "no_automatic_cleanup_or_repair",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "production_root_backend",
+        "live_peer_clock_or_reboot_proved",
+        "actual_once_only_execution_proved",
+        "owner_tampering_or_snapshot_rollback_covered",
+        "physical_power_loss_proved",
+        "host_mutation_allowed",
+        "qualification_or_admission_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["max_record_bytes"].as_integer(), Some(16384));
+    assert_eq!(c["max_cells"].as_integer(), Some(4));
+    assert_eq!(c["marker_bytes"].as_integer(), Some(65));
+    assert_eq!(c["max_directory_entries"].as_integer(), Some(64));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "guard.revalidate(bytes, check)?",
+        "FixtureFence::acquire(root)?",
+        "guard.latch_refusal()",
+        "guard.verify_consumed",
+        "created_matches",
+        "FileStamp::of(&file.metadata()?) != *stamp",
+        "self.state.revalidate(fence)?",
+        "super::recovery::observe",
+        "MAX_DIRECTORY_ENTRIES",
+        "previous_record_sha256",
+        "libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL",
+        "file.sync_all()?",
+        "fence.root.file.sync_all()?",
+        "fs::Permissions::from_mode(0o400)",
+    ] {
+        assert!(source.contains(marker), "missing invariant {marker}");
+    }
+    for forbidden in [
+        "pub fn start",
+        "Command::new",
+        "StartTransientUnit",
+        "fs::remove",
+        "fs::rename",
+        "truncate(true)",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+    ] {
+        assert!(
+            !source.contains(forbidden),
+            "fixture journal adds authority: {forbidden}"
+        );
+    }
+    #[cfg(target_os = "linux")]
+    {
+        use hydracache_long_run_supervisor_074::diagnostic_output_preparation::intent_journal::*;
+        assert_eq!(c["record_schema"].as_str(), Some(RECORD_SCHEMA));
+        assert_eq!(MAX_RECORD_BYTES, 16384);
+        assert_eq!(MAX_CELLS, 4);
+        assert_eq!(MARKER_BYTES, 65);
+        assert_eq!(MAX_DIRECTORY_ENTRIES, 64);
+    }
+}

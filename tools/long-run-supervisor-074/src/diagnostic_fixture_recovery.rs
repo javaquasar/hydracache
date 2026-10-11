@@ -151,7 +151,7 @@ fn check_conflicts(fence: &FixtureFence, parent: &File) -> Result<(), FixtureRec
     }
     Ok(())
 }
-fn observe(
+pub(super) fn observe(
     fence: &FixtureFence,
     expected: &DiagnosticIdentity,
     checkpoint: impl FnOnce(&FixtureFence),

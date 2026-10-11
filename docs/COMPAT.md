@@ -4,6 +4,20 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The opt-in Linux temporary-fixture intent journal registers
+`diagnostic-retained-intent-074-v1`. Four fixed `diagnostic-intent-cell-N.json`
+and `.commit` pairs (N=1..4) are append-only canonical sorted-key JSON plus LF,
+at most 16384 bytes per record and exactly 65 bytes per lowercase digest marker.
+A record contains full Reserved state, exact signed intent UTF-8 bytes, asserted
+peer UID/groups and previous-record digest. Readers reject unknown/duplicate
+fields, future schemas, gaps, partial pairs, unsafe metadata and hash/signature
+or original-binding drift. There is no overwrite, cleanup, migration or replay;
+a complete late-unacknowledged pair remains consumed. Signature-window grammar
+for historical records is checked at their signed issue instant, not renewed.
+This deduplication scope is one retained fixture journal, not multiple roots or
+a production once-only executor. The existing request/state formats are unchanged.
+See [design](testing/performance/0.74/diagnostic-intent-journal-local-design.md).
+
 The opt-in Linux-only 0.74 signed diagnostic intent projection registers
 `diagnostic-intent-projection-074-v1` and
 `diagnostic-signed-intent-projection-074-v1`. These are canonical sorted-key JSON

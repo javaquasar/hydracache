@@ -104,10 +104,49 @@ pub struct CheckedIntentProjection<'worker> {
     controller_sha256: String,
     peer_uid: u32,
     peer_gids: Vec<u32>,
+    controller: DiagnosticController,
     refused: bool,
 }
 
 impl CheckedIntentProjection<'_> {
+    pub(crate) fn latch_refusal(&mut self) {
+        self.refused = true;
+    }
+    /// Historical signature/binding only, never renewal of launch eligibility.
+    pub(crate) fn verify_consumed(
+        &mut self,
+        bytes: &[u8],
+        state: &DiagnosticState,
+        peer: &DiagnosticPeer,
+        check: &IntentCheck<'_>,
+    ) -> Result<IntentProjectionBody, IntentProjectionError> {
+        if self.is_refused() {
+            return Err(IntentProjectionError::Refused);
+        }
+        if bytes.len() > MAX_SIGNED_INTENT_BYTES {
+            return Err(IntentProjectionError::Document);
+        }
+        if peer.uid != self.peer_uid
+            || peer.gids != self.peer_gids
+            || controller_digest(check.controller_policy)? != self.controller_sha256
+        {
+            return Err(IntentProjectionError::Drift);
+        }
+        let document: SignedIntentProjection =
+            serde_json::from_slice(bytes).map_err(|_| IntentProjectionError::Document)?;
+        let historical = IntentCheck {
+            state,
+            peer,
+            now_unix_seconds: document.intent.issued_at_unix_seconds,
+            ..*check
+        };
+        let body = authenticate(bytes, &historical)?;
+        if body.controller != self.controller {
+            return Err(IntentProjectionError::Binding);
+        }
+        bind_worker(self.worker, &body, &historical)?;
+        Ok(body)
+    }
     pub fn intent_sha256(&self) -> &str {
         &self.envelope_sha256
     }
@@ -163,6 +202,7 @@ pub fn verify_intent_projection<'worker>(
         controller_sha256: controller_digest(check.controller_policy)?,
         peer_uid: check.peer.uid,
         peer_gids: check.peer.gids.clone(),
+        controller: body.controller,
         refused: false,
     })
 }
