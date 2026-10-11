@@ -4,6 +4,16 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The original-authority signed-intent composition is runtime-only and preserves
+all registered request, state, signature and journal formats. It exclusively
+borrows the original authority guard; fixed and fixture types remain distinct.
+Invalid unbound intent does not revoke a healthy worker. After binding, drift
+refuses the original chain and attempts only an exact-bound safe Policy refusal
+record in the existing authority format. Publication uncertainty retains the
+projection error, never allowing a retry or execution. No fixed intent publisher,
+live fence/state proof, migration or start route is introduced.
+See [design](testing/performance/0.74/diagnostic-authority-intent-local-design.md).
+
 The Linux read-only `diagnostic-storage-preflight` CLI emits the bounded JSON
 schema `diagnostic-storage-preflight-074-v1`. Success means storage ancestry only;
 journal verification, authority binding, enrollment, execution, qualification and

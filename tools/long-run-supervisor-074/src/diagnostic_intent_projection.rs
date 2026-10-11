@@ -307,6 +307,14 @@ fn bind_worker(
     check: &IntentCheck<'_>,
 ) -> Result<(), IntentProjectionError> {
     worker.revalidate(check.worker_bytes, check.worker_trust, check.worker_host)?;
+    bind_projection(worker, body, check)
+}
+
+fn bind_projection(
+    worker: &CheckedWorkerPolicy,
+    body: &IntentProjectionBody,
+    check: &IntentCheck<'_>,
+) -> Result<(), IntentProjectionError> {
     let projection = project_reserved_state(check.state)?;
     if check.state.identity.boot_id != worker.context.boot_id
         || body.boot_id != worker.context.boot_id
@@ -318,6 +326,44 @@ fn bind_worker(
         return Err(IntentProjectionError::Binding);
     }
     Ok(())
+}
+
+// Private immutable data only. The original runtime authority must bracket its
+// use; this helper cannot mint a checked worker, runtime object or start permit.
+#[derive(PartialEq, Eq)]
+pub(crate) struct BoundIntentPins {
+    envelope_sha256: String,
+    state: DiagnosticState,
+    controller_sha256: String,
+    controller: DiagnosticController,
+    peer_uid: u32,
+    peer_gids: Vec<u32>,
+}
+pub(crate) fn capture_bound_intent(
+    worker: &CheckedWorkerPolicy,
+    bytes: &[u8],
+    check: &IntentCheck<'_>,
+) -> Result<BoundIntentPins, IntentProjectionError> {
+    if worker.is_refused() {
+        return Err(WorkerPolicyError::Refused.into());
+    }
+    if check.worker_trust != &worker.trust
+        || check.worker_host != &worker.context
+        || check.worker_bytes.len() > super::MAX_SIGNED_WORKER_POLICY_BYTES
+        || sha256_hex(check.worker_bytes) != worker.envelope_sha256
+    {
+        return Err(IntentProjectionError::Binding);
+    }
+    let body = authenticate(bytes, check)?;
+    bind_projection(worker, &body, check)?;
+    Ok(BoundIntentPins {
+        envelope_sha256: sha256_hex(bytes),
+        state: check.state.clone(),
+        controller_sha256: controller_digest(check.controller_policy)?,
+        controller: body.controller,
+        peer_uid: check.peer.uid,
+        peer_gids: check.peer.gids.clone(),
+    })
 }
 
 fn bounded_sorted<T: Ord>(values: &[T], valid: impl Fn(&T) -> bool) -> bool {

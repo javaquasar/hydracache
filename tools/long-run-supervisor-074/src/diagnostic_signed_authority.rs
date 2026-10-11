@@ -1,4 +1,6 @@
 //! Runtime refusal bridge and fixture recovery checks; no production launch protocol.
+#[path = "diagnostic_authority_intent.rs"]
+pub mod intent_binding;
 use super::{
     FixedSignedTasksRead, FixtureSignedTasksRead, Reader as TasksReader, SignedTasksError,
 };

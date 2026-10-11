@@ -9471,3 +9471,65 @@ fn diagnostic_storage_preflight_cannot_authorize_execution_or_repair_storage() {
         assert!(!production.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_authority_intent_borrows_original_without_publisher_or_start() {
+    let c = contract("diagnostic-authority-intent-local-contract.toml");
+    for key in [
+        "exclusive_original_authority_borrow",
+        "original_worker_is_not_cloned_or_reopened",
+        "fixed_and_fixture_types_remain_distinct",
+        "authority_intent_authority_bracket_required",
+        "exact_envelope_state_controller_and_peer_retained",
+        "unbound_invalid_intent_does_not_revoke_healthy_worker",
+        "bound_projection_failure_refuses_original_chain",
+        "safe_exact_authority_refusal_publication_required",
+        "publication_uncertainty_preserves_first_error",
+        "no_retry_or_io_after_bound_refusal",
+        "existing_wire_and_journal_schemas_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "fixed_intent_publication_implemented",
+        "supervisor_host_fence_or_persisted_state_proved",
+        "kernel_peer_clock_or_initial_host_enrolled",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "original: &'intent mut Reader",
+        "[Step::Authority, Step::Intent, Step::Authority]",
+        "if pins == self.pins",
+        "if self.is_refused()",
+        "self.original.latch_original()",
+        "self.original.persist_with(RefusalReason::Policy, publish)",
+        "failure: Box::new(failure)",
+        "bind_fixed_intent",
+        "bind_fixture_intent",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "verify_worker_policy",
+        "Command::new",
+        "StartTransientUnit",
+        "pub fn start",
+        "pub fn reset",
+        "pub fn into_",
+        "write_all",
+        "O_CREAT",
+        "create_dir",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}

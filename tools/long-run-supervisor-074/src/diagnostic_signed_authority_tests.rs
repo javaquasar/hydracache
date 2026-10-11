@@ -1,4 +1,5 @@
-use super::super::{open_signed_fixture_tasks, tests::with_mount};
+use super::super::open_signed_fixture_tasks;
+pub(super) use super::super::tests::with_mount;
 use super::*;
 use crate::diagnostic_worker_policy::authority_registry::{
     fixture::{initialize_fixture_registry, open_fixture_registry},
@@ -11,7 +12,7 @@ use tempfile::TempDir;
 #[path = "diagnostic_recovery_authority_tests.rs"]
 mod lifecycle_tests;
 
-fn changed_checked(
+pub(super) fn changed_checked(
     f: &Fixture,
     kind: usize,
 ) -> crate::diagnostic_worker_policy::CheckedWorkerPolicy {
@@ -171,7 +172,7 @@ fn signed_authority_concurrent_independent_chains_share_no_refusal() {
     });
 }
 
-fn journal(f: &Fixture) -> (TempDir, FixtureAuthorityRegistry) {
+pub(super) fn journal(f: &Fixture) -> (TempDir, FixtureAuthorityRegistry) {
     let dir = tempfile::Builder::new()
         .prefix("hydracache-authority-")
         .tempdir_in("/tmp")
@@ -181,10 +182,13 @@ fn journal(f: &Fixture) -> (TempDir, FixtureAuthorityRegistry) {
         initialize_fixture_registry(dir.path(), f.policy.uid, f.policy.gid, &f.checked()).unwrap();
     (dir, registry)
 }
-fn reopen(dir: &TempDir, f: &Fixture) -> Result<FixtureAuthorityRegistry, AuthorityError> {
+pub(super) fn reopen(
+    dir: &TempDir,
+    f: &Fixture,
+) -> Result<FixtureAuthorityRegistry, AuthorityError> {
     open_fixture_registry(dir.path(), f.policy.uid, f.policy.gid, &f.trust, &f.host)
 }
-fn inventory(dir: &TempDir) -> Vec<(String, Vec<u8>)> {
+pub(super) fn inventory(dir: &TempDir) -> Vec<(String, Vec<u8>)> {
     let mut entries: Vec<_> = fs::read_dir(dir.path())
         .unwrap()
         .map(|entry| {

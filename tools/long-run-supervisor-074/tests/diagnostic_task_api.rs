@@ -1,6 +1,30 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn authority_intent_api_borrows_original_without_fixture_promotion_or_start() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::{
+        intent_binding::{bind_fixed_intent, bind_fixture_intent, FixedAuthorityIntentRead, FixtureAuthorityIntentRead},
+        FixedAuthorityBoundRead, FixtureAuthorityBoundRead,
+    };
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::intent_projection::IntentCheck;
+    fn fixed<'i, 'a, 't, 'b, 'g, 'p, 'r>(
+        original: &'i mut FixedAuthorityBoundRead<'a, 't, 'b, 'g, 'p, 'r>,
+        bytes: &[u8],
+        check: &IntentCheck<'_>,
+    ) -> FixedAuthorityIntentRead<'i, 'a, 't, 'b, 'g, 'p, 'r> {
+        bind_fixed_intent(original, bytes, check).unwrap()
+    }
+    fn fixture<'i, 'a, 't, 'b, 'g, 'p, 'r>(
+        original: &'i mut FixtureAuthorityBoundRead<'a, 't, 'b, 'g, 'p, 'r>,
+        bytes: &[u8],
+        check: &IntentCheck<'_>,
+    ) -> FixtureAuthorityIntentRead<'i, 'a, 't, 'b, 'g, 'p, 'r> {
+        bind_fixture_intent(original, bytes, check).unwrap()
+    }
+    let _ = (fixed, fixture);
+}
+
+#[test]
 fn diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors() {
     use std::process::Command;
     let bin = env!("CARGO_BIN_EXE_hydracache-long-run-supervisor-074");
