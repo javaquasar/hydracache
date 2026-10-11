@@ -4,6 +4,21 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The opt-in Linux-only 0.74 signed diagnostic intent projection registers
+`diagnostic-intent-projection-074-v1` and
+`diagnostic-signed-intent-projection-074-v1`. These are canonical sorted-key JSON
+plus LF, bounded at 4096/8192 bytes. The controller signature covers
+`hydracache-diagnostic-intent-projection-074-v1`, NUL and the canonical body.
+Unknown/duplicate fields, future schemas and noncanonical envelopes refuse.
+The body binds request/nonce, controller IDs/window, full Reserved state digest,
+original worker policy digest/epoch, boot and a fixed typed ordered unit digest.
+Unit projection is `{unit_name, properties}` with ordered `[name, {type, value}]`
+pairs and tags text/boolean/unsigned/bytes/strings/commands; command objects
+retain path/argv/ignore_failure. Both projections hash canonical JSON plus LF.
+This byte contract does not change the existing diagnostic request protocol,
+persist an intent, prevent replay, authenticate live state or authorize execution.
+See [design](testing/performance/0.74/diagnostic-intent-projection-local-design.md).
+
 The opt-in 0.74 local diagnostic authority fixture journal registers
 `diagnostic-authority-record-074-v1`: canonical JSON plus LF, at most 2048 bytes,
 128 contiguous generations, with a 65-byte SHA-256-plus-LF marker for each record.

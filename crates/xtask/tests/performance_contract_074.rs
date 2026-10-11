@@ -9178,3 +9178,89 @@ fn diagnostic_worker_context_preserves_external_pins_typed_threads_and_closed_st
         assert!(tests.contains(marker), "missing test {marker}");
     }
 }
+#[test]
+fn diagnostic_intent_projection_stays_bytes_only_under_original_worker() {
+    let contract: toml::Value = toml::from_str(
+        &std::fs::read_to_string(root().join(
+            "docs/testing/performance/0.74/diagnostic-intent-projection-local-contract.toml",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(contract["max_body_bytes"].as_integer(), Some(4096));
+    assert_eq!(contract["max_envelope_bytes"].as_integer(), Some(8192));
+    assert_eq!(contract["max_window_seconds"].as_integer(), Some(60));
+    assert_eq!(contract["max_principals"].as_integer(), Some(32));
+    for field in [
+        "canonical_json_lf",
+        "reserved_state_only",
+        "exclusive_original_worker_borrow",
+        "fixed_typed_ordered_unit_projection",
+        "bad_packet_does_not_revoke_worker",
+        "checked_intent_failure_is_sticky",
+        "worker_revalidation_failure_remains_sticky",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "live_clock_or_peer_proved",
+        "durable_intent_or_replay_prevention",
+        "production_start_or_restart",
+        "host_mutation_allowed",
+        "qualification_or_admission_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "&'worker mut CheckedWorkerPolicy",
+        "self.refused = true",
+        "verify_strict",
+        "build_diagnostic_unit_spec(state)",
+        "DiagnosticStage::Reserved",
+        "body.worker_policy_epoch != worker.original.policy_epoch",
+        "body.boot_id != worker.context.boot_id",
+        "check.state != &self.state",
+        "check.peer.gids != self.peer_gids",
+        "MAX_SIGNED_INTENT_BYTES: usize = 8192",
+        "CONTROLLER_LOSS_SECONDS",
+        "body.expires_at_unix_seconds - body.issued_at_unix_seconds > 60",
+    ] {
+        assert!(source.contains(marker), "missing invariant {marker}");
+    }
+    for forbidden in [
+        "pub fn start",
+        "pub fn refresh",
+        "pub fn reset",
+        "pub fn into_",
+        "Command::new",
+        "std::fs",
+        "StartTransientUnit",
+        "DiagnosticBackend",
+        "unsafe",
+    ] {
+        assert!(
+            !source.contains(forbidden),
+            "byte verifier adds authority: {forbidden}"
+        );
+    }
+    #[cfg(target_os = "linux")]
+    {
+        use hydracache_long_run_supervisor_074::diagnostic_worker_policy::intent_projection::*;
+        assert_eq!(contract["body_schema"].as_str(), Some(INTENT_SCHEMA));
+        assert_eq!(
+            contract["envelope_schema"].as_str(),
+            Some(SIGNED_INTENT_SCHEMA)
+        );
+        assert_eq!(
+            contract["signature_domain"].as_str().unwrap().as_bytes(),
+            INTENT_DOMAIN
+        );
+        assert_eq!(MAX_INTENT_BODY_BYTES, 4096);
+        assert_eq!(MAX_SIGNED_INTENT_BYTES, 8192);
+    }
+}

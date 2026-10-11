@@ -8078,3 +8078,34 @@ cwd = "."
 platform = "linux"
 
 [gate.command.env]
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-intent-projection"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_intent_projection"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Synthetic signed intent byte projection; no enrollment, filesystem or production start"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_intent_projection", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
