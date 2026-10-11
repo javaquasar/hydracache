@@ -22,6 +22,9 @@ pub mod preflight;
 #[path = "diagnostic_reserved_state.rs"]
 pub mod reserved_state;
 
+#[path = "diagnostic_fixed_campaign_admission.rs"]
+pub(crate) mod campaign_admission;
+
 #[derive(Clone, Copy)]
 enum StorageLeaf {
     Intent,

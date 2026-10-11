@@ -39,7 +39,7 @@ pub enum FixedReservedStateError {
 }
 
 #[derive(PartialEq, Eq)]
-struct Stamp {
+pub(super) struct Stamp {
     device: u64,
     inode: u64,
     uid: u32,
@@ -53,7 +53,7 @@ struct Stamp {
     ctime_ns: i64,
 }
 impl Stamp {
-    fn of(m: &Metadata) -> Self {
+    pub(super) fn of(m: &Metadata) -> Self {
         Self {
             device: m.dev(),
             inode: m.ino(),

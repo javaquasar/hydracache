@@ -9668,3 +9668,88 @@ fn diagnostic_original_fence_is_existing_short_lock_not_durable_admission() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_fixed_admission_blocks_context_without_publication_or_enrollment() {
+    let c = contract("diagnostic-fixed-admission-local-contract.toml");
+    for key in [
+        "canonical_production_campaign_root_dispatch",
+        "all_fixed_leaf_entries_block_campaign_admission",
+        "missing_or_unsafe_storage_refuses_without_repair",
+        "original_storage_directories_and_common_lock_retained",
+        "admission_and_recovery_check_under_original_common_lock",
+        "pre_and_post_marker_checks_required",
+        "late_failure_retains_existing_or_created_marker",
+        "legacy_diagnostic_lock_entry_checks_fixed_context",
+        "readonly_absence_is_not_a_fenced_capability",
+        "fresh_descriptor_relative_directory_scan_each_check",
+        "unknown_pending_terminal_symlink_context_is_not_ignored",
+        "nonproduction_fixtures_and_nonlinux_behavior_unchanged",
+        "legacy_campaign_ownership_is_not_root_authority",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "installer_or_ownership_changed",
+        "trusted_state_publication_implemented",
+        "authority_intent_join_implemented",
+        "fixed_intent_publication_implemented",
+        "positive_host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let host =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/host_execution.rs"))
+            .unwrap();
+    for marker in [
+        "DiagnosticAdmission::open",
+        "crate::config::PRODUCTION_CAMPAIGN_ROOT",
+        "let mut admission = admission(&root, &lock)?",
+        "admission.present(&root, &lock)?",
+        "admission.post_present(&root, &lock)?",
+        "admission(&root, &lock)?.fixed_present(&root, &lock)?",
+        "fixed || state.is_some()",
+        "fn acquire_inner_with(",
+        "fn recover_active_with(",
+    ] {
+        assert!(host.contains(marker), "{marker}");
+    }
+    assert!(!host.contains("pub fn acquire_inner_with"));
+    assert!(!host.contains("pub fn recover_active_with"));
+    let backend = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "open_fixed_intent_storage()",
+        "self.storage.is_refused()",
+        "self.storage.refused = true",
+        "self.check_objects(root, lock)?",
+        "LockStamp::of(&lock.metadata()?)",
+        "LockStamp::of(&m)",
+        "open_at(leaf, \".\",",
+        "libc::fdopendir(fd)",
+        "libc::readdir(stream.0)",
+        "libc::__errno_location()",
+        "libc::close(fd)",
+        "libc::closedir(self.0)",
+    ] {
+        assert!(backend.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "O_CREAT",
+        "create_dir",
+        "write_all",
+        "Command::new",
+        "StartTransientUnit",
+        "pub fn",
+        "pub struct",
+    ] {
+        assert!(!backend.contains(forbidden), "{forbidden}");
+    }
+}

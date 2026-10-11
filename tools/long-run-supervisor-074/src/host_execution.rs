@@ -50,6 +50,68 @@ pub enum HostExecutionError {
     Io(#[from] std::io::Error),
 }
 
+/// Private original-object predicate. No public factory or fixture conversion.
+struct DiagnosticAdmission {
+    #[cfg(target_os = "linux")]
+    fixed: Option<crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::FixedCampaignAdmission>,
+    #[cfg(all(test, target_os = "linux"))]
+    checkpoint: Option<Box<dyn FnMut(u32)>>,
+    #[cfg(all(test, target_os = "linux"))]
+    checks: u32,
+}
+impl DiagnosticAdmission {
+    fn open(_root: &Path, _lock: &File) -> Result<Self, HostExecutionError> {
+        Ok(Self {
+            #[cfg(target_os = "linux")]
+            fixed: if _root == Path::new(crate::config::PRODUCTION_CAMPAIGN_ROOT) {
+                Some(crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::FixedCampaignAdmission::open(_root, _lock)?)
+            } else {
+                None
+            },
+            #[cfg(all(test, target_os = "linux"))]
+            checkpoint: None,
+            #[cfg(all(test, target_os = "linux"))]
+            checks: 0,
+        })
+    }
+    fn fixed_present(&mut self, _root: &Path, _lock: &File) -> Result<bool, HostExecutionError> {
+        #[cfg(all(test, target_os = "linux"))]
+        {
+            self.checks += 1;
+            if let Some(checkpoint) = self.checkpoint.as_mut() {
+                checkpoint(self.checks);
+            }
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(fixed) = self.fixed.as_mut() {
+            return fixed.present(_root, _lock);
+        }
+        Ok(false)
+    }
+    fn present(&mut self, root: &Path, lock: &File) -> Result<bool, HostExecutionError> {
+        let fixed = self.fixed_present(root, lock)?;
+        let legacy = crate::diagnostic_lease::read_active(root)
+            .map(|state| state.is_some())
+            .map_err(|_| HostExecutionError::Path)?;
+        Ok(fixed || legacy)
+    }
+    fn post_present(&mut self, _root: &Path, _lock: &File) -> Result<bool, HostExecutionError> {
+        #[cfg(target_os = "linux")]
+        if self.fixed.is_some() {
+            return self.present(_root, _lock);
+        }
+        // Keep the old single observation for nonproduction and portable routes.
+        Ok(false)
+    }
+    #[cfg(all(test, target_os = "linux"))]
+    fn modeled(origin: &Path, root: &Path, lock: &File) -> Result<Self, HostExecutionError> {
+        Ok(Self {
+            fixed: Some(crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::FixedCampaignAdmission::modeled(origin, root, lock)?),
+            checkpoint: None, checks: 0,
+        })
+    }
+}
+
 #[derive(Debug)]
 pub struct HostExecutionClaim {
     lock: File,
@@ -68,6 +130,13 @@ impl HostExecutionClaim {
     }
 
     pub fn recover_active(campaign_root: &Path) -> Result<Option<Self>, HostExecutionError> {
+        Self::recover_active_with(campaign_root, DiagnosticAdmission::open)
+    }
+
+    fn recover_active_with(
+        campaign_root: &Path,
+        admission: impl FnOnce(&Path, &File) -> Result<DiagnosticAdmission, HostExecutionError>,
+    ) -> Result<Option<Self>, HostExecutionError> {
         let metadata = fs::symlink_metadata(campaign_root)?;
         if !metadata.is_dir() || metadata.file_type().is_symlink() {
             return Err(HostExecutionError::Path);
@@ -75,7 +144,8 @@ impl HostExecutionClaim {
         let root = fs::canonicalize(campaign_root)?;
         let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
-        if diagnostic_present(&root)? {
+        let mut admission = admission(&root, &lock)?;
+        if admission.present(&root, &lock)? {
             if fs::symlink_metadata(root.join(ACTIVE_CAMPAIGN_NAME)).is_ok() {
                 return Err(HostExecutionError::Path);
             }
@@ -87,6 +157,9 @@ impl HostExecutionClaim {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
             Err(error) => return Err(error.into()),
         };
+        if admission.post_present(&root, &lock)? {
+            return Err(HostExecutionError::Path);
+        }
         Ok(Some(Self {
             lock,
             root,
@@ -100,6 +173,20 @@ impl HostExecutionClaim {
         campaign_id: &str,
         create_if_missing: bool,
     ) -> Result<Self, HostExecutionError> {
+        Self::acquire_inner_with(
+            campaign_root,
+            campaign_id,
+            create_if_missing,
+            DiagnosticAdmission::open,
+        )
+    }
+
+    fn acquire_inner_with(
+        campaign_root: &Path,
+        campaign_id: &str,
+        create_if_missing: bool,
+        admission: impl FnOnce(&Path, &File) -> Result<DiagnosticAdmission, HostExecutionError>,
+    ) -> Result<Self, HostExecutionError> {
         if !is_hash(campaign_id) {
             return Err(HostExecutionError::Path);
         }
@@ -111,7 +198,8 @@ impl HostExecutionClaim {
         let lock_path = root.join(HOST_EXECUTION_LOCK_NAME);
         let lock = open_lock(&lock_path)?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
-        if diagnostic_present(&root)? {
+        let mut admission = admission(&root, &lock)?;
+        if admission.present(&root, &lock)? {
             return Err(HostExecutionError::DiagnosticConflict);
         }
 
@@ -136,6 +224,10 @@ impl HostExecutionClaim {
             }
             Err(error) => return Err(error.into()),
         };
+        if admission.post_present(&root, &lock)? {
+            // Preserve any durable marker on uncertainty; never repair/retry here.
+            return Err(HostExecutionError::DiagnosticConflict);
+        }
         Ok(Self {
             lock,
             root,
@@ -203,6 +295,13 @@ impl HostExecutionClaim {
 /// Only supervisor-owned diagnostic transactions use this fence. It must not
 /// be retained while a workload runs; the durable typed marker owns that lease.
 pub(crate) fn lock_host_root(campaign_root: &Path) -> Result<(PathBuf, File), HostExecutionError> {
+    lock_host_root_with(campaign_root, DiagnosticAdmission::open)
+}
+
+fn lock_host_root_with(
+    campaign_root: &Path,
+    admission: impl FnOnce(&Path, &File) -> Result<DiagnosticAdmission, HostExecutionError>,
+) -> Result<(PathBuf, File), HostExecutionError> {
     let metadata = fs::symlink_metadata(campaign_root)?;
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
         return Err(HostExecutionError::Path);
@@ -210,12 +309,23 @@ pub(crate) fn lock_host_root(campaign_root: &Path) -> Result<(PathBuf, File), Ho
     let root = fs::canonicalize(campaign_root)?;
     let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
     FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
+    if admission(&root, &lock)?.fixed_present(&root, &lock)? {
+        return Err(HostExecutionError::DiagnosticConflict);
+    }
     Ok((root, lock))
 }
 
 fn diagnostic_present(root: &Path) -> Result<bool, HostExecutionError> {
+    #[cfg(target_os = "linux")]
+    let fixed = if root == Path::new(crate::config::PRODUCTION_CAMPAIGN_ROOT) {
+        crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe()?
+    } else {
+        false
+    };
+    #[cfg(not(target_os = "linux"))]
+    let fixed = false;
     crate::diagnostic_lease::read_active(root)
-        .map(|state| state.is_some())
+        .map(|state| fixed || state.is_some())
         .map_err(|_| HostExecutionError::Path)
 }
 
@@ -331,3 +441,7 @@ fn sync_directory(path: &Path) -> Result<(), HostExecutionError> {
 fn sync_directory(_path: &Path) -> Result<(), HostExecutionError> {
     Ok(())
 }
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "host_execution_fixed_admission_tests.rs"]
+mod fixed_admission_tests;

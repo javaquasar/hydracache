@@ -4,14 +4,28 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+Linux campaign admission for the canonical production campaigns root now
+checks existing root-owned fixed intent storage under the original common lock.
+Every fixed-leaf entry, including unknown, pending, terminal or symlink context,
+blocks admission and recovery; missing/unsafe storage explicitly refuses.
+Original storage/campaign/lock objects survive the pre/post marker checks, and
+a late refusal retains any created marker. Unlocked absence is not admission.
+This strengthens the 0.74 supervisor read-side contract without a new persisted
+format, ownership migration, publisher or launch API. Older supervisor binaries
+do not know this namespace; a future publisher requires coordinated reviewed
+deployment and trusted ownership enrollment first. Empty safe storage preserves
+the legacy route but does not turn its worker-owned lock into root authority.
+See [design](testing/performance/0.74/diagnostic-fixed-admission-local-design.md).
+
 The original campaign-fence binding is runtime-only. It borrows the existing
 fixed Reserved-state reader and locks only the existing campaigns
 `.host-execution.lock`, with original-object checks and conservative legacy
 context refusal. It requires a private trusted-owner directory and lock; the
 deployed worker-owned campaigns layout is not silently enrolled or repaired.
-No durable format, installer, campaign admission, publisher or start route
-changes. The legacy route still ignores fixed state after the short guard drops;
-durable campaign exclusion is not established.
+That initial binding changed no durable format, installer, campaign admission,
+publisher or start route. Its nonproduction legacy fixture still ignores fixed
+state after guard drop; the production read-side check is registered above.
+The binding alone does not establish durable campaign exclusion.
 See [design](testing/performance/0.74/diagnostic-original-fence-local-design.md).
 
 The fixed Reserved state inspector reuses the exact schema-1 diagnostic state
