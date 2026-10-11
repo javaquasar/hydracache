@@ -1,0 +1,19 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 20.42s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_concurrent_independent_open_cannot_bypass_same_flock ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_named_lock_replacement_never_adopted_and_original_remains_held ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_policy_types_and_error_seams_remain_fail_closed ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_private_descriptor_substitutions_latch_without_refresh ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points ... ok
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_seeded_bound_identity_state_and_metadata_failures_latch ... seed=0x746
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 429 filtered out; finished in 0.06s
+

@@ -6582,3 +6582,43 @@ An expanded private test initially shadowed a helper name; all-target compilatio
 caught it, and only the test variable was renamed. Early runs remain intermediate
 proof, not substituted for the final repeated source. These overlapping scopes
 are not release qualification or numerical performance evidence.
+
+## The existing campaign lock must also guard original state
+
+A Reserved-state snapshot alone cannot serialize diagnostic work against a
+campaign. An independent lock would protect only its own participants. The next
+local control-plane hypothesis was narrower: can the original state reader
+retain the very same lock used by both legacy campaign admission paths, reject
+object substitution and release cleanly without altering state?
+
+The new guard exclusively borrows the original Reserved reader. From its
+retained performance-parent descriptor it opens the fixed campaigns directory
+and existing `.host-execution.lock`; it never creates another lock. The directory
+must have private trusted ownership, and the lock must be an empty private
+single-link regular file on the directory's device. Both original and named
+identities remain pinned. State observations are bracketed by lock checks and
+conservative refusal of legacy campaign, diagnostic, pending IPC and lifecycle
+contexts. Busy on initial acquisition is ordinary contention, not revocation;
+unsafe or bound drift permanently refuses the original storage.
+
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-original-fence-20261011/README.md)
+checks acquisition in both orders against the real legacy flock entry points,
+concurrent independent opens, replaced descriptors and names, unsafe locks,
+directory/state drift, dangling conflict links, sticky refusal and healthy drop.
+Ten unit cases pass three separately captured repetitions. No fixed-host
+enrollment or performance improvement follows from these functional models.
+
+The negative test matters as much as the lock-contention success. After the
+short guard drops, legacy campaign admission can acquire a claim while the
+fixed Reserved file still exists, because that route does not read the new
+state location. The binding proves short transaction interoperation, not
+durable mutual exclusion. The deployed worker-owned campaigns layout is
+deliberately refused; the implementation does not chmod it, migrate it or copy
+state from it.
+
+Before a trusted reservation publisher can proceed, campaign admission must
+consult the same fixed state under the same lock, and a quiescent enrollment
+must establish ownership for every participant. Holding an external lock during
+the workload would stall supervisor maintenance and is not a solution. Original
+authority/intent/state composition, fixed consumption publication and the
+output/start/watchdog/owned-cleanup lifecycle remain subsequent packages.

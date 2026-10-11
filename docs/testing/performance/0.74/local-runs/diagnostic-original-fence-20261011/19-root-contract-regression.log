@@ -1,0 +1,29 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 9.04s
+     Running tests\gated_tests.rs (target\debug\deps\gated_tests-954ee57f648d9326.exe)
+
+running 6 tests
+test redis_multinode_gate_cannot_drift_to_the_generic_daemon_target ... ok
+test registry_rejects_stale_entries_that_no_longer_resolve_to_a_test ... ok
+test wildcard_registration_does_not_hide_a_new_ignored_test ... ok
+test registry_rejects_missing_command_ci_tier_owner_or_timeout ... ok
+test registry_accepts_only_a_complete_set_of_environment_gate_shards ... ok
+test gated_test_registry_covers_every_ignored_cfg_and_env_gated_test ... FAILED
+
+failures:
+
+---- gated_test_registry_covers_every_ignored_cfg_and_env_gated_test stdout ----
+
+thread 'gated_test_registry_covers_every_ignored_cfg_and_env_gated_test' (13104) panicked at crates\xtask\tests\gated_tests.rs:13:5:
+registry problems: [
+    "docs/testing/gated-test-registry.toml: unregistered cfg-gated target hydracache-long-run-supervisor-074/diagnostic_original_fence (target_os = \"linux\") in tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs",
+]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    gated_test_registry_covers_every_ignored_cfg_and_env_gated_test
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.28s
+
+error: test failed, to rerun pass `-p xtask --test gated_tests`

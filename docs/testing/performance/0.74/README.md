@@ -2594,3 +2594,22 @@ become trusted root authority, and a second independent lock cannot provide a
 shared fence. A common supervisor-owned fence, trusted Reserved state publisher
 and original authority/intent/state join remain before fixed intent publication.
 No installer, CLI, product, frozen qualification input or admission changes.
+
+## Existing campaign fence and original state
+
+The [original fence binding](diagnostic-original-fence-local-design.md) borrows
+that original state reader and acquires only the existing campaigns
+`.host-execution.lock`. It retains the original directory and lock descriptors,
+requires private trusted ownership, checks both named and original objects and
+brackets state observations with campaign and lifecycle-context refusal.
+Busy before binding is retryable; unsafe or bound failure latches the original
+storage, even after wrapper drop. It creates, repairs and removes nothing.
+
+The [local packet](local-runs/diagnostic-original-fence-20261011/README.md)
+checks both real legacy flock entry points, descriptor/name replacement,
+metadata drift, unsafe locks, dangling context links and concurrent acquisition.
+Positive cases are nonroot private models, not enrollment of the deployed
+worker-owned campaigns layout. After guard drop the old campaign route can
+still acquire a claim despite fixed Reserved state. Durable exclusion therefore
+requires a coordinated campaign-admission and ownership change before any
+trusted publisher. No server, workload, installer or qualification input changes.

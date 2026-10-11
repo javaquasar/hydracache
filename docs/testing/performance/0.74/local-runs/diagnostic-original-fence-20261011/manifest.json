@@ -1,0 +1,481 @@
+{
+  "schema_version": 1,
+  "state": "retained-original-campaign-fence-short-observation",
+  "date": "2026-10-11",
+  "baseline_source": "7370c51a0ca23f4f9de1b6fad99dadecc201d16a",
+  "baseline_tree": "f31c779120575f6a8a133076f046fa517c93f118",
+  "preregistration_source": "8cd8dc71bd8b4d517b3661353bf6f62e085432e7",
+  "implementation_source": "6723f065cd4b06fd6c2a5695b4b0b9880ab692a5",
+  "implementation_tree": "392b11f77be25e863da1dfd1547755eba1238ba5",
+  "implementation_source_sha256": {
+    ".gitattributes": "2173ac1fdcbfd5bc99abb73b61558d59724e48ce0c95e2a2dad3680adeb17626",
+    "crates/xtask/tests/performance_contract_074.rs": "e3628198132d59f6d44634b3b91a6638ac5f12d08272258987dd1a4ed17abaa3",
+    "docs/COMPAT.md": "67ac1aef275ddf3f4843bc38682040b2278c425d175d84bbec4727e6a9cb6854",
+    "docs/testing/gated-test-registry.toml": "e1f23ed8b094c540d01911ef46f12c93a22081e3f9a92cda98e543658902c388",
+    "docs/testing/release-evidence/0.74.toml": "925841966df66ff74cd3cbf0f3d235af3f8321fa879d7b03a33c49d384a449be",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs": "fae217e188e123cfdccbb03f43d43010269031c6eb276f5591ddd161169f47d8",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs": "3f92872a7cfb6da57fddd48d4f8f4d21f8d39013bb32d3510cbc5dfb0032cf30",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs": "fbb3a9135953b8a582f9de0bed070638e70443195ace647c957b300f71c1a1bb",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs": "5cb4d415f230a9004295a2049109fb7347c26c967d77ea9948398501c20c57d5",
+    "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs": "a83afe19a495a2a38ede52174490fdf2e54325473713c8ca327604d1f78815e7",
+    "docs/testing/performance/0.74/diagnostic-original-fence-local-contract.toml": "baca4189eef4a477fb62e0a828dfc9c362168a2143862506e1f6742c30a3b973",
+    "docs/testing/performance/0.74/diagnostic-original-fence-local-design.md": "4fc40dcf60d0708f9222989a50667d92dea26d61c246b85848ddbb9d9929a19d",
+    "tools/long-run-supervisor-074/src/host_execution.rs": "807e14590bf67a9cdceab42b5cbc09c14f4470a696996f1edcc944ebf766c534",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "ade0d366c14b63212955db852cd70605219554b23fbaa6f24bdbeadf8edd3c5b",
+    "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs": "a0948c9c80d82ba282d91ca9adb30424c850956e256170e4086b5deff97be44b",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "23a2ad2f1c1a24deb61422e5dd70621cba0f3b8a0a8f494b937398a16c4c863f",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh": "a37c9abcdfc2bfa84ec960f80883c42373552abbc9e9aa0c53068344fe9833fa",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf": "8e3b5a3df9085ae9ad493ab9b4211b0f7ea710ea433f94c15e7945b83d52d2f0"
+  },
+  "unchanged_legacy_sources": [
+    "tools/long-run-supervisor-074/src/host_execution.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf"
+  ],
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-reserved-state-20261011",
+  "historical_manifest_sha256": "e01938a70c7a85144b84c56a22f8d099a28a84cf995cc2095e74acc040c5ad2b",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "closed_permissions": {
+    "host_operation_performed": false,
+    "worker_execution_allowed": false,
+    "trusted_state_publication_implemented": false,
+    "fixed_publisher_implemented": false,
+    "authority_intent_join_implemented": false,
+    "durable_campaign_exclusion_proved": false,
+    "host_enrollment_proved": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "same_existing_campaign_flock_tested": true,
+  "legacy_claim_after_guard_drop_demonstrated": true,
+  "not_proved": [
+    "deployed host ownership enrollment",
+    "campaign admission observes fixed reservation after guard drop",
+    "trusted state publication",
+    "authority/intent/state join",
+    "kernel peer/clock admission",
+    "continuous confinement",
+    "durable intent publication or worker execution"
+  ],
+  "toolchains": {
+    "current": "1.94.0",
+    "msrv": "1.88.0",
+    "python": "Windows 3.13"
+  },
+  "test_environment": {
+    "root_for_local_tests": false,
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTDOCFLAGS": "-D warnings for Windows rustdoc",
+    "faults": "enumerated private logical seams; seed 0x0746, no cache/product fault injection or power-loss test"
+  },
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_same_legacy_lock_blocks_both_campaign_entry_points"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_named_lock_replacement_never_adopted_and_original_remains_held"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_seeded_bound_identity_state_and_metadata_failures_latch"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_private_descriptor_substitutions_latch_without_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_concurrent_independent_open_cannot_bypass_same_flock"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs",
+      "function": "original_fence_policy_types_and_error_seams_remain_fail_closed"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs",
+      "function": "original_fence_public_entry_has_no_caller_selected_origin"
+    },
+    {
+      "source": "crates/xtask/tests/performance_contract_074.rs",
+      "function": "diagnostic_original_fence_is_existing_short_lock_not_durable_admission"
+    }
+  ],
+  "repeated_unit_test_names": [
+    "original_fence_same_legacy_lock_blocks_both_campaign_entry_points",
+    "original_fence_initial_busy_is_retryable_and_never_unlocks_legacy_owner",
+    "original_fence_missing_or_unsafe_lock_never_created_repaired_or_adopted",
+    "original_fence_deployed_mode_or_unsafe_campaign_directory_requires_enrollment",
+    "original_fence_all_contexts_refuse_initial_and_bound_dangling_symlinks",
+    "original_fence_named_lock_replacement_never_adopted_and_original_remains_held",
+    "original_fence_seeded_bound_identity_state_and_metadata_failures_latch",
+    "original_fence_private_descriptor_substitutions_latch_without_refresh",
+    "original_fence_concurrent_independent_open_cannot_bypass_same_flock",
+    "original_fence_policy_types_and_error_seams_remain_fail_closed"
+  ],
+  "test_totals": {
+    "01-baseline.log": [
+      10,
+      0
+    ],
+    "11-repeat-1.log": [
+      10,
+      0
+    ],
+    "12-repeat-2.log": [
+      10,
+      0
+    ],
+    "13-repeat-3.log": [
+      10,
+      0
+    ],
+    "14-linux-regression.log": [
+      487,
+      1
+    ],
+    "15-linux-doctests.log": [
+      18,
+      0
+    ],
+    "18-windows-regression.log": [
+      196,
+      0
+    ],
+    "30-final-root-regression.log": [
+      154,
+      0
+    ]
+  },
+  "required_log_markers": {
+    "02-missing-api-red.log": "error[E0432]",
+    "04-repeat-1.log": "error[E0425]",
+    "19-root-contract-regression.log": "unregistered cfg-gated target hydracache-long-run-supervisor-074/diagnostic_original_fence",
+    "24-rustdoc.log": "Generated",
+    "25-local-contract.log": "OK (local, non-promotable)",
+    "26-doc-check.log": "doc-check: OK",
+    "27-mdbook.log": "HTML book written to",
+    "28-qualification-refusal.log": "contract input digest mismatch for docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+    "29-ship-refusal.log": "ship admission is closed",
+    "35-final-doc-check.log": "doc-check: OK",
+    "36-final-mdbook.log": "HTML book written to"
+  },
+  "green_compile_logs": [
+    "16-linux-clippy.log",
+    "17-linux-msrv.log",
+    "20-windows-check.log",
+    "21-windows-clippy.log",
+    "22-windows-msrv.log",
+    "31-xtask-check.log",
+    "32-xtask-clippy.log",
+    "34-linux-current-check.log"
+  ],
+  "notes": {
+    "03-first-tests.log": "Intermediate positive before expanded no-write assertion; not a final-source repetition.",
+    "04-repeat-1.log": "Expanded assertion landed in the fixture helper, leaving original_bytes outside test scope; compiler refused. Test-only scope corrected before final repeated runs.",
+    "19-root-contract-regression.log": "Registry rejected new Linux-only integration target. Target registered without changing frozen qualification inputs; final root regression is log 30.",
+    "28-qualification-refusal.log": "Inherited frozen-plan LF digest mismatch remains unchanged. No qualification output or workload was produced.",
+    "29-ship-refusal.log": "Release admission remains closed; not a converted successful check.",
+    "counts": "Overlapping selected scopes are not a unique release-wide total; no numerical performance measurements."
+  },
+  "documentation_link_sources": [
+    "docs/testing/performance/0.74/README.md",
+    "docs/testing/performance/0.74/production-readiness-and-server-launch-20261011.md",
+    "docs/articles/007-optimization-starts-with-measurement.md",
+    "docs/testing/performance/0.74/local-runs/diagnostic-original-fence-20261011/README.md"
+  ],
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 1926,
+      "sha256": "85028de374321ba4a98597898b7e4b3a984f5f5ef2922bc15e09c4ae71f28c64",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --nocapture",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "02-missing-api-red.log",
+      "bytes": 661,
+      "sha256": "768852c967e8eb1030d837fc8fe5fe295e77a891adb36e4890d9e8ef5a9e199c",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_original_fence",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "name": "03-first-tests.log",
+      "bytes": 2225,
+      "sha256": "ceb35ff8a54f5ce99f5dc5f2873490f8f4dce6aca55c6bfc451d7528a5012561",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence -- --nocapture",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "04-repeat-1.log",
+      "bytes": 965,
+      "sha256": "bc771aedf4f4b5638f2b61236b3cfd82f999e5776face0764e655e247c4621db",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence -- --nocapture --test-threads=1",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "name": "11-repeat-1.log",
+      "bytes": 2225,
+      "sha256": "ad26c079501bdb4fac7380222cfd59330b553be0c9411d180de84aa0c2a31426",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence -- --nocapture --test-threads=1",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "12-repeat-2.log",
+      "bytes": 2092,
+      "sha256": "fdecce85c5a2cd3b5c5043c7a69792adcc9c287d19093d99fbb9199a85353eb1",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence -- --nocapture --test-threads=1",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "13-repeat-3.log",
+      "bytes": 2092,
+      "sha256": "5339091750171033459595851266121a32cf937c1fe213afbc14705a3f27919c",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence -- --nocapture --test-threads=1",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "14-linux-regression.log",
+      "bytes": 64384,
+      "sha256": "4bce6597fa72448fe94d9e0b0767bb57a284c844918ea1f8def7d760b849d609",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "15-linux-doctests.log",
+      "bytes": 4263,
+      "sha256": "a7cf8b11f46dc8e5a4b7a90b5b38194ddb385d816684db6a49b7c5cc6e6af2a5",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "16-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "46cbebacb1e46e5902de70f44d2db7e4327641ba0d167fc3f3aea3ff4bb4064f",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "17-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "5c09648e5b8080e8a2fa2c84cc2f87525ee5c69c53c7ad3973972460efd1d315",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "18-windows-regression.log",
+      "bytes": 25568,
+      "sha256": "1079d62df3f85c9ae0ebb574cf4a6cf23f08dbd2392498239070b6364e8b6d03",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "19-root-contract-regression.log",
+      "bytes": 1523,
+      "sha256": "ab56040fcf7e8005b78f2e96ce7b0a5fe00517ce91ac09992f891c1e82b761be",
+      "command": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "platform": "windows",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "name": "20-windows-check.log",
+      "bytes": 190,
+      "sha256": "0621bc3a1e06cf45d6d603000654ab74a336f945b07a03dbd492fc09f012542a",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "21-windows-clippy.log",
+      "bytes": 190,
+      "sha256": "205094002c63eb53327afe64ca9d9175716e8ff80d07923733907b96715bec3c",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "22-windows-msrv.log",
+      "bytes": 190,
+      "sha256": "c1433de68a6888cf1c424d518e3239a6a2660a0ea6c2f87b7f2b63085d2d9bc2",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "23-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -- --check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "24-rustdoc.log",
+      "bytes": 320,
+      "sha256": "694d30d2d1557344b77eebbad4f51a337d4523f620daf9ac8e328e6b94902a65",
+      "command": "cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "25-local-contract.log",
+      "bytes": 287,
+      "sha256": "0610f6853162ebd307a02845fe8e8d1afc65b24778319da443347a6718eeed4b",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "26-doc-check.log",
+      "bytes": 320,
+      "sha256": "6c05f6e85a3a80f31ad006a89193753b262c53b679bf709f2d03b96c36fe8479",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "27-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "28-qualification-refusal.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "command": "C:/Python313/python.exe scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <owned-temp>/qualification.json --dry-run",
+      "platform": "windows",
+      "expected_exit": 1,
+      "observed_exit": 1
+    },
+    {
+      "name": "29-ship-refusal.log",
+      "bytes": 571,
+      "sha256": "d3c99ba2c70fdcc53e24be5bbd9faa1b9a8dd6effb4ac78374a6a636532fe92d",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+      "platform": "windows",
+      "expected_exit": 1,
+      "observed_exit": 1
+    },
+    {
+      "name": "30-final-root-regression.log",
+      "bytes": 13465,
+      "sha256": "335f82df1880ce147b6ae8216af9997453d647c10431fc3f6356d3e83291fd54",
+      "command": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "31-xtask-check.log",
+      "bytes": 739,
+      "sha256": "6cf94c57f6cc342d830a74dc7410ac9940aa080220936dbf4c07163b2530d724",
+      "command": "cargo +1.94.0 check -p xtask --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "32-xtask-clippy.log",
+      "bytes": 200,
+      "sha256": "723018dd5ec54df23f523f51d9e5fd75433b64cfdb834dca9a333bd556059c88",
+      "command": "cargo +1.94.0 clippy -p xtask --locked --all-targets --all-features -- -D warnings",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "33-final-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "34-linux-current-check.log",
+      "bytes": 193,
+      "sha256": "cee4e8837d184a196059a272925d60c4dbd8f76618df09954dac5477f2ab90db",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "wsl-ubuntu-linux",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "35-final-doc-check.log",
+      "bytes": 155,
+      "sha256": "ac5d7e075b2ca2036d418c937703bfd4babab79f77c79d3781fc1e91546bf92b",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "36-final-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    }
+  ]
+}
