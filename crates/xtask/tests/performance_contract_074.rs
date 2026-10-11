@@ -3,6 +3,129 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_signed_tasks_preserve_original_chain_and_closed_production_authority() {
+    let contract: toml::Value = toml::from_str(
+        &std::fs::read_to_string(
+            root()
+                .join("docs/testing/performance/0.74/diagnostic-signed-tasks-local-contract.toml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(contract["max_tasks"].as_integer(), Some(128));
+    assert_eq!(contract["max_directory_calls"].as_integer(), Some(16));
+    assert_eq!(contract["max_directory_bytes"].as_integer(), Some(65536));
+    for field in [
+        "original_signed_mount_exclusively_borrowed",
+        "original_process_privately_derived",
+        "task_assertions_from_exact_original_signed_policy",
+        "both_task_namespace_pins_match_signed_policy",
+        "fixed_fixture_origins_distinct",
+        "first_typed_error_stops",
+        "refusal_reaches_original_chain_and_survives_drop",
+        "prior_inner_refusal_blocks_account_io",
+        "healthy_drop_preserves_original_reader",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "replacement_pid_path_taskset_or_policy_argument",
+        "refresh_or_reset_allowed",
+        "guard_send_or_sync",
+        "old_public_behavior_changed",
+        "controlled_fixed_host_positive_enrollment",
+        "initial_host_namespace_proved",
+        "atomic_or_continuous_proof",
+        "mount_content_immutability_proved",
+        "file_opener_credentials_attested",
+        "durable_authority_or_refusal",
+        "real_issuer_enrolled",
+        "production_preparation_or_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_or_admission_allowed",
+    ] {
+        assert_eq!(contract[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signed_tasks.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "&'tasks mut FixedSignedMountRead",
+        "&'tasks mut FixtureSignedMountRead",
+        "NamespaceCredentialRead::pin_original_tasks",
+        "self.original.refuse()",
+        "self.tasks.refuse()",
+        "original.reader().is_refused()",
+        "tasks.matches_worker_policy(policy)",
+        "pub struct FixedSignedTasksRead",
+        "pub struct FixtureSignedTasksRead",
+    ] {
+        assert!(
+            runtime.contains(marker),
+            "missing original signed tasks invariant {marker}"
+        );
+    }
+    for forbidden in [
+        "pub fn process",
+        "pub fn policy",
+        "pub fn tasks",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "impl Clone",
+        "Serialize",
+        "Command::new",
+        "WorkerPolicyTrust::new",
+        "verify_worker_policy(",
+        "libc::setns(",
+        "libc::unshare(",
+        "libc::O_WRONLY",
+        "libc::O_CREAT",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "cannot add authority: {forbidden}"
+        );
+    }
+    let tasks = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_tasks.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "policy.user_namespace.device",
+        "policy.user_namespace.inode",
+        "policy.mount_namespace.device",
+        "policy.mount_namespace.inode",
+        "asserted_task_policy_matches",
+    ] {
+        assert!(
+            tasks.contains(marker),
+            "missing exact signed task pin {marker}"
+        );
+    }
+    let tests = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signed_tasks_tests.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "0x7632026",
+        "signed_tasks_real_add_remove_and_restoration_refuse_whole_original_chain",
+        "signed_tasks_open_failure_and_post_open_signed_failure_latch_inputs",
+        "signed_tasks_later_substitution_and_inner_refusal_latch_before_signed_io",
+    ] {
+        assert!(
+            tests.contains(marker),
+            "missing signed tasks coverage {marker}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_task_set_is_bounded_original_readonly_and_not_signed_authority() {
     let c = contract("diagnostic-task-set-local-contract.toml");
     assert_eq!(

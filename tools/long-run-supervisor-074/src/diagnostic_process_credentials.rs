@@ -10,6 +10,15 @@ pub use namespace_checked::{
     pin_namespace_checked_credentials, NamespaceCredentialError, NamespaceCredentialRead,
 };
 
+pub(super) fn asserted_task_policy_matches(
+    assertions: &AssertedWorkerCredentials,
+    policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+) -> bool {
+    assertions.uid == policy.uid
+        && assertions.gid == policy.gid
+        && assertions.groups == policy.supplementary_gids
+}
+
 const GROUPS: usize = 32;
 const FIELDS: [&[u8]; 11] = [
     b"Pid",

@@ -339,6 +339,20 @@ pub fn pin_asserted_worker_tasks(
     Ok(read)
 }
 impl WorkerTasksRead<'_> {
+    pub(crate) fn refuse(&mut self) {
+        self.gate.refused = true;
+    }
+    pub(crate) fn matches_worker_policy(
+        &self,
+        policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+    ) -> bool {
+        !self.is_refused()
+            && super::credentials::asserted_task_policy_matches(&self.probe.policy, policy)
+            && self.probe.user.id
+                == FileId(policy.user_namespace.device, policy.user_namespace.inode)
+            && self.probe.mount.id
+                == FileId(policy.mount_namespace.device, policy.mount_namespace.inode)
+    }
     pub fn is_refused(&self) -> bool {
         self.gate.refused
     }
@@ -447,3 +461,19 @@ fn directory_record(bytes: &[u8]) -> Result<(Option<u32>, usize), TaskError> {
 #[cfg(test)]
 #[path = "diagnostic_worker_tasks_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(crate) use tests::Owned as OwnedTasksHelper;
+
+#[cfg(test)]
+impl WorkerTasksRead<'_> {
+    pub(crate) fn mutate_signed_mapping_for_test(&mut self, case: usize) {
+        match case {
+            0 => self.probe.user.id.1 ^= 1,
+            1 => self.probe.mount.id.1 ^= 1,
+            2 => self.probe.policy = AssertedWorkerCredentials::new(12345, 12345, vec![]).unwrap(),
+            3 => self.probe.tasks[0].status.file = tempfile::tempfile().unwrap(),
+            _ => unreachable!(),
+        }
+    }
+}

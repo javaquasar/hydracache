@@ -199,6 +199,26 @@ impl<'a> NamespaceCredentialRead<'a> {
         crate::diagnostic_process::pin_same_mount_namespace(self.credentials.process)
     }
 }
+impl<'a> NamespaceCredentialRead<'a> {
+    pub(crate) fn pin_original_tasks(
+        &self,
+        policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+    ) -> Result<crate::diagnostic_process::WorkerTasksRead<'a>, crate::diagnostic_process::TaskError>
+    {
+        if self.original_mount_inputs_refused() {
+            return Err(crate::diagnostic_process::TaskError::Refused);
+        }
+        if !self.matches_worker_policy(policy) {
+            return Err(crate::diagnostic_process::TaskError::Drift);
+        }
+        let assertions = AssertedWorkerCredentials::new(
+            policy.uid,
+            policy.gid,
+            policy.supplementary_gids.clone(),
+        )?;
+        crate::diagnostic_process::pin_asserted_worker_tasks(self.credentials.process, assertions)
+    }
+}
 #[cfg(test)]
 impl NamespaceCredentialRead<'_> {
     pub(crate) fn refuse_mount_component_for_test(&mut self, namespace: bool) {

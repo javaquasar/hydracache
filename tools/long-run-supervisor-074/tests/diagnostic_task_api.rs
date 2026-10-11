@@ -1,6 +1,18 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn signed_tasks_api_preserves_fixed_fixture_original_mount_types() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::{
+        open_signed_fixed_tasks, open_signed_fixture_tasks, FixedSignedTasksRead, FixtureSignedTasksRead,
+    };
+    let _ = open_signed_fixed_tasks;
+    let _ = open_signed_fixture_tasks;
+    fn fixed(_: &FixedSignedTasksRead<'_, '_, '_, '_, '_>) {}
+    fn fixture(_: &FixtureSignedTasksRead<'_, '_, '_, '_, '_>) {}
+    let _ = (fixed, fixture);
+}
+
+#[test]
 fn task_set_api_accepts_only_original_process_and_asserted_credentials() {
     use hydracache_long_run_supervisor_074::diagnostic_process::{
         pin_asserted_worker_tasks, WorkerTasksRead,

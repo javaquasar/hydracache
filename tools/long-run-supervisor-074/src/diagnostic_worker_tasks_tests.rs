@@ -37,13 +37,13 @@ for line in sys.stdin:
     print('ready', flush=True)
 while threads: remove()
 "#;
-struct Owned {
-    child: Child,
+pub(crate) struct Owned {
+    pub(crate) child: Child,
     input: ChildStdin,
     output: BufReader<ChildStdout>,
 }
 impl Owned {
-    fn new(threads: usize) -> Self {
+    pub(crate) fn new(threads: usize) -> Self {
         let mut child = Command::new("python3")
             .args(["-u", "-c", HELPER, &threads.to_string()])
             .stdin(Stdio::piped())
@@ -66,7 +66,7 @@ impl Owned {
         self.output.read_line(&mut line).unwrap();
         assert_eq!(line, "ready\n");
     }
-    fn command(&mut self, command: &str) {
+    pub(crate) fn command(&mut self, command: &str) {
         writeln!(self.input, "{command}").unwrap();
         self.input.flush().unwrap();
         self.ready();

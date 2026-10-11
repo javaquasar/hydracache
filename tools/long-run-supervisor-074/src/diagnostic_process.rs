@@ -544,6 +544,8 @@ fn read_boot(root: &File) -> Result<String, ProcessError> {
 
 // Crate unittest seam only; never compiled into the supervisor/production API.
 #[cfg(test)]
+pub(crate) use worker_tasks::OwnedTasksHelper;
+#[cfg(test)]
 pub(crate) fn pin_owned_test_helper(pid: u32) -> ProcessRead {
     let files = ProcFiles::open(pid).unwrap();
     let fields = files.inspect().unwrap();

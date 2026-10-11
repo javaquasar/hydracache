@@ -236,6 +236,8 @@ impl FixtureSignedMountRead<'_, '_, '_, '_> {
         self.reader.revalidate(bytes, trust, host)
     }
 }
+#[path = "diagnostic_signed_tasks.rs"]
+pub mod task_binding;
 #[cfg(test)]
 #[path = "diagnostic_signed_mount_tests.rs"]
 mod tests;

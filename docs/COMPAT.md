@@ -10,7 +10,12 @@ bounded membership scans, generation brackets and sticky refusal. It adds no
 wire/persisted schema, helper/IPC mode or launch operation; existing leader and
 signed APIs are unchanged. Numeric assertions and sequential stable inventories
 are not signed enrollment, atomic/continuous confinement, trusted host authority
-or durable revocation. Original signed composition remains a separate prerequisite.
+or durable revocation. The additional opt-in signed-task wrapper exclusively
+borrows the original typed signed mount reader and privately derives task numeric
+assertions and both namespace pins from its original policy. Fixed/fixture types
+stay distinct. An error refuses the original chain even after wrapper drop;
+healthy drop preserves it. This is runtime-only, not a durable/wire format change.
+Controlled fixed-host enrollment and production lifecycle remain prerequisites.
 
 The 0.74 same-user-namespace guard is opt-in Linux runtime-only. It compares
 retained nsfs user namespace objects for an original process and the reading
