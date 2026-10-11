@@ -8109,3 +8109,35 @@ cwd = "."
 platform = "linux"
 
 [gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-fence"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_original_fence"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Fixed fence entry has no caller-selected origin; nonroot refusal, no enrollment or start"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_original_fence", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]

@@ -17,6 +17,9 @@ const CONFLICTS: [&str; 4] = [
     "diagnostic-requests-v1.json",
 ];
 
+#[path = "diagnostic_original_fence.rs"]
+pub mod original_fence;
+
 #[derive(Debug, Error)]
 pub enum FixedReservedStateError {
     #[error("original fixed storage refused: {0}")]

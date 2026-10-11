@@ -6,7 +6,7 @@ use super::*;
 use std::fs;
 use std::os::unix::fs::{symlink, PermissionsExt};
 
-fn state() -> DiagnosticState {
+pub(super) fn state() -> DiagnosticState {
     use crate::diagnostic_lease::DiagnosticIdentity;
     DiagnosticState {
         identity: DiagnosticIdentity {
@@ -36,7 +36,7 @@ fn encoded(state: &DiagnosticState) -> Vec<u8> {
     raw.push(b'\n');
     raw
 }
-fn persist(root: &std::path::Path, state: &DiagnosticState) {
+pub(super) fn persist(root: &std::path::Path, state: &DiagnosticState) {
     let name = at(root, 4).join(ACTIVE_DIAGNOSTIC_NAME);
     fs::write(&name, encoded(state)).unwrap();
     fs::set_permissions(name, fs::Permissions::from_mode(0o600)).unwrap();

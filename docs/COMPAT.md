@@ -4,6 +4,16 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The original campaign-fence binding is runtime-only. It borrows the existing
+fixed Reserved-state reader and locks only the existing campaigns
+`.host-execution.lock`, with original-object checks and conservative legacy
+context refusal. It requires a private trusted-owner directory and lock; the
+deployed worker-owned campaigns layout is not silently enrolled or repaired.
+No durable format, installer, campaign admission, publisher or start route
+changes. The legacy route still ignores fixed state after the short guard drops;
+durable campaign exclusion is not established.
+See [design](testing/performance/0.74/diagnostic-original-fence-local-design.md).
+
 The fixed Reserved state inspector reuses the exact schema-1 diagnostic state
 envelope and canonical bytes. It reads only the prospective existing
 `active-diagnostic.json` name under root-owned `diagnostic-intents-074` storage,

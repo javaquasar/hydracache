@@ -9602,3 +9602,69 @@ fn diagnostic_reserved_state_is_original_readonly_not_fenced_execution() {
         assert!(!source.contains(marker), "{marker}");
     }
 }
+
+#[test]
+fn diagnostic_original_fence_is_existing_short_lock_not_durable_admission() {
+    let c = contract("diagnostic-original-fence-local-contract.toml");
+    for key in [
+        "original_reserved_reader_exclusively_borrowed",
+        "existing_campaign_lock_name_only",
+        "lock_creation_or_independent_lock_forbidden",
+        "campaign_directory_private_original_owner_required",
+        "lock_regular_empty_private_single_link_same_device_required",
+        "original_descriptor_and_named_object_revalidated",
+        "reserved_state_and_context_bracketed_under_lock",
+        "legacy_campaign_diagnostic_and_parent_fixture_context_refused",
+        "unsafe_or_bound_failure_latches_original_storage",
+        "initial_busy_does_not_revoke_healthy_storage",
+        "no_public_path_owner_fd_selector_or_fixture_conversion",
+        "original_thread_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "new_durable_format",
+        "installer_or_campaign_admission_changed",
+        "continuous_or_durable_campaign_exclusion_proved",
+        "trusted_state_publication_implemented",
+        "authority_intent_join_implemented",
+        "fixed_intent_publication_implemented",
+        "host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_original_fence.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "original: &'read mut FixedReservedStateRead<'storage>",
+        "FileExt::try_lock_exclusive(&lock)",
+        "HOST_EXECUTION_LOCK_NAME",
+        "libc::AT_SYMLINK_NOFOLLOW",
+        "named.metadata()",
+        "self.lock.metadata()",
+        "self.original.storage.refused = true",
+        "OriginalHostFenceError::Busy",
+        "FileExt::unlock(&self.lock)",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "O_CREAT",
+        "write_all",
+        "Command::new",
+        "StartTransientUnit",
+        "create_dir",
+        "pub fn start",
+        "pub fn publish",
+        "pub fn into_",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}
