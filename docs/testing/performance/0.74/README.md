@@ -2576,3 +2576,21 @@ This package adds no fixed intent publication, host fence, trusted persisted
 state, kernel peer/clock authentication or start route. Those original-object
 joins and the output/start/watchdog/owned-cleanup lifecycle remain next.
 Frozen qualification inputs, closed admission and product behavior are unchanged.
+
+## Original fixed Reserved state inspection
+
+The [state reader](diagnostic-reserved-state-local-design.md) exclusively borrows
+original fixed intent storage and retains the existing `active-diagnostic.json`
+file, its exact schema-1 bytes, inode and metadata. Only a full matching valid
+Reserved state in a private single-link same-device file is accepted. Named or
+original-file substitution, byte/metadata drift and same-leaf pending/unhandled
+context refuse. Bound failure latches the original storage through wrapper drop;
+invalid initial expected state refuses before I/O without revocation.
+
+The [packet](local-runs/diagnostic-reserved-state-20261011/README.md) contains
+local nonroot models and API checks, not positive root enrollment. No state is
+created or copied from legacy worker-owned campaigns. Their lock/state cannot
+become trusted root authority, and a second independent lock cannot provide a
+shared fence. A common supervisor-owned fence, trusted Reserved state publisher
+and original authority/intent/state join remain before fixed intent publication.
+No installer, CLI, product, frozen qualification input or admission changes.

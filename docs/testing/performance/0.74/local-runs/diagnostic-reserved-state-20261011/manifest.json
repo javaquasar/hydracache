@@ -1,0 +1,479 @@
+{
+  "schema_version": 1,
+  "state": "retained-original-fixed-reserved-state-not-fenced-start",
+  "date": "2026-10-11",
+  "baseline_source": "61308bc927f930f8641b1275cf3e75591a7ccb17",
+  "baseline_tree": "2ff78604dcf34f00f147076f0331611db7bbfd36",
+  "preregistration_source": "fd48898304543424fe53c4a414dd702466d3b60e",
+  "implementation_source": "6afedec92d29a5bd131dd015127a95a168362af4",
+  "implementation_tree": "8f30210cad0f59444151d0390d0ae09912f34631",
+  "implementation_source_sha256": {
+    ".gitattributes": "16076a4997d878ee588bd6331b0bcdfe4a82973283a8f697ffdaf4e7bcb27341",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs": "80394748a79fae81553d0184d9f76cffd9f54d139a9d50b94706b2450da60ce2",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs": "06b96aa7d23e17ed1fe7427221e1ef52d0bab0b249a53479747ee6fa375b0381",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "23a2ad2f1c1a24deb61422e5dd70621cba0f3b8a0a8f494b937398a16c4c863f",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage_tests.rs": "2fbe2e61d335acbf244f24b040fe288181a299b1ce76c8298deca7b86033204a",
+    "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs": "4a17285977d9f26cb1bd9e4c9ccc231e95074b41f567bdc4cd83a35e3ff70de7",
+    "crates/xtask/tests/performance_contract_074.rs": "a527184f1ead5594cc6aa383b3a046b075c55347cc12926a9fbf0ea58077f1f7",
+    "docs/testing/release-evidence/0.74.toml": "da211c423896cef2421eb98b83f1ef3067e9b9e71ff18bcf41976d8297a07bd3",
+    "docs/COMPAT.md": "aa6fee28007b73699e1823565d998d7add108ce06d83e0936c7f4b980c80b263",
+    "docs/testing/performance/0.74/diagnostic-reserved-state-local-contract.toml": "76a707094bddded417ec4588e53bde6450fd29204e1fb2fd35d9cb32cbb02d6a",
+    "docs/testing/performance/0.74/diagnostic-reserved-state-local-design.md": "bc876f79f5b50f5dcffe017aa8cf88803eb5008d6840427e8b632959319303eb"
+  },
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-authority-intent-20261011",
+  "historical_manifest_sha256": "028bcb16f3e051b5e4eb80bcc3904963f786ecdb2eb3ae8da7b5d87aab7349b2",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "host_operation_performed": false,
+  "execution_allowed": false,
+  "fixed_publisher_implemented": false,
+  "host_fence_implemented": false,
+  "authority_intent_join_implemented": false,
+  "qualification_allowed": false,
+  "ship_allowed": false,
+  "performance_claim_allowed": false,
+  "not_proved": [
+    "positive fixed-root enrollment",
+    "trusted state publication",
+    "shared host fencing",
+    "kernel peer/clock and initial host admission",
+    "continuous confinement",
+    "power-loss durability"
+  ],
+  "toolchains": {
+    "current": "1.94.0",
+    "msrv": "1.88.0",
+    "python": "Windows 3.13"
+  },
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_modeled_original_read_and_healthy_drop_never_write"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_invalid_initial_assertion_refuses_without_revoking_storage"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_missing_unsafe_or_nonregular_documents_latch_without_repair"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_canonical_schema_hash_and_full_snapshot_are_required"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_same_bytes_new_inode_or_original_descriptor_never_adopted"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_seeded_expected_mutations_refuse_without_io_or_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_pending_and_unhandled_context_refuse_before_and_after_binding"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_ancestry_metadata_and_content_drift_remain_refused"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_independent_concurrent_guards_do_not_share_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_reserved_state_tests.rs",
+      "function": "reserved_state_metadata_policy_and_public_type_remain_original_only"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs",
+      "function": "fixed_reserved_state_api_requires_original_storage_without_selectors"
+    },
+    {
+      "source": "crates/xtask/tests/performance_contract_074.rs",
+      "function": "diagnostic_reserved_state_is_original_readonly_not_fenced_execution"
+    }
+  ],
+  "repeated_unit_test_names": [
+    "reserved_state_modeled_original_read_and_healthy_drop_never_write",
+    "reserved_state_invalid_initial_assertion_refuses_without_revoking_storage",
+    "reserved_state_missing_unsafe_or_nonregular_documents_latch_without_repair",
+    "reserved_state_canonical_schema_hash_and_full_snapshot_are_required",
+    "reserved_state_same_bytes_new_inode_or_original_descriptor_never_adopted",
+    "reserved_state_seeded_expected_mutations_refuse_without_io_or_refresh",
+    "reserved_state_pending_and_unhandled_context_refuse_before_and_after_binding",
+    "reserved_state_ancestry_metadata_and_content_drift_remain_refused",
+    "reserved_state_independent_concurrent_guards_do_not_share_refusal",
+    "reserved_state_metadata_policy_and_public_type_remain_original_only"
+  ],
+  "test_totals": {
+    "01-baseline.log": [
+      7,
+      0
+    ],
+    "03-first-tests.log": [
+      10,
+      0
+    ],
+    "04-repeat-1.log": [
+      10,
+      0
+    ],
+    "05-repeat-2.log": [
+      10,
+      0
+    ],
+    "06-repeat-3.log": [
+      10,
+      0
+    ],
+    "07-linux-regression.log": [
+      476,
+      1
+    ],
+    "11-linux-doctests.log": [
+      15,
+      0
+    ],
+    "13-windows-regression.log": [
+      196,
+      0
+    ],
+    "17-root-contracts.log": [
+      153,
+      0
+    ],
+    "21-final-repeat-1.log": [
+      10,
+      0
+    ],
+    "22-final-repeat-2.log": [
+      10,
+      0
+    ],
+    "23-final-repeat-3.log": [
+      10,
+      0
+    ],
+    "24-final-linux-regression.log": [
+      476,
+      1
+    ]
+  },
+  "required_log_markers": {
+    "02-missing-api-red.log": "error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::reserved_state`",
+    "08-linux-clippy.log": "expected function, found `Metadata`",
+    "20-local-contract.log": "OK (local, non-promotable)",
+    "26-doc-check.log": "doc-check: OK",
+    "27-mdbook.log": "HTML book written to",
+    "28-qualification-dry-red.log": "contract input digest mismatch",
+    "29-ship-red.log": "ship admission is closed",
+    "30-final-doc-check.log": "doc-check: OK",
+    "31-final-mdbook.log": "HTML book written to"
+  },
+  "green_compile_logs": [
+    "09-linux-check.log",
+    "10-linux-msrv.log",
+    "12-linux-rustdoc.log",
+    "14-windows-clippy.log",
+    "15-windows-check.log",
+    "16-windows-msrv.log",
+    "18-xtask-clippy.log",
+    "25-corrected-linux-clippy.log"
+  ],
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 1311,
+      "sha256": "a00a38c307a71e970208c7e9d9591e242a317ced7e0a2f5ba7e0bc4fcdd12c05",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_fixed_storage -- --test-threads=1",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "02-missing-api-red.log",
+      "bytes": 640,
+      "sha256": "dabb17ad021209498d993f353019469619e62456a041b0a3b966fda4618997af",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_task_api",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "name": "03-first-tests.log",
+      "bytes": 2048,
+      "sha256": "68bd413cd7747368d60740283228829bf64088bcfef691db40193db68ab2826e",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "note": "Initial ten unit cases before expanding private defensive assertions.",
+      "observed_exit": 0
+    },
+    {
+      "name": "04-repeat-1.log",
+      "bytes": 1926,
+      "sha256": "53a339834b1f6a3059a6761dd96a88afbbd328d393505b58b336c04a993e79d7",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "05-repeat-2.log",
+      "bytes": 1926,
+      "sha256": "f403bb71e249919111e0130fef99b91c7a511ae55acae39b8024237215b1897c",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "06-repeat-3.log",
+      "bytes": 1926,
+      "sha256": "360371e5218c5fea110b5cfceb2ea6eae4d1638957f0a29fe28f516acd8cbad5",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "07-linux-regression.log",
+      "bytes": 62294,
+      "sha256": "26ab0c66449ba51c333ccd26c62314656d7238f0a9b26c4bc27bc54435bbc93d",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "08-linux-clippy.log",
+      "bytes": 2509,
+      "sha256": "6504a6d44143c00af85a35619a06ff99820800c083aa2828171df807f3b04b8c",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 101,
+      "note": "Private test expansion shadowed helper parent with metadata; compilation failed before lint. Corrected in tests only.",
+      "observed_exit": 101
+    },
+    {
+      "name": "09-linux-check.log",
+      "bytes": 193,
+      "sha256": "b7963386cb023eec1fb2c93f5f5b4a85bcbec4fce2767dd7d437b68cfcda27da",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "10-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "cd6c7f606142bed1bb877b3750e2c60abd168a8c15830cc3da0c73fabd5db18a",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "11-linux-doctests.log",
+      "bytes": 3627,
+      "sha256": "4dac18dd799bcd758e7bac7387b6b8e4e366036e1370c19c4560e70210e3e2bb",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "12-linux-rustdoc.log",
+      "bytes": 460,
+      "sha256": "d8e808e6c5e30b0bc95db4ec9ce2d63c70b953ffa07fe48713912664b307cad6",
+      "command": "RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "13-windows-regression.log",
+      "bytes": 25334,
+      "sha256": "71f2a7ee6bc18ceee37db5c215fce38e51a0f7d1fea92fce18517e97b8e972ba",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "14-windows-clippy.log",
+      "bytes": 190,
+      "sha256": "6f0c3884885b09d00b164f695146f7920cf99822bf87964b10f85bb6d735cfb6",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "15-windows-check.log",
+      "bytes": 191,
+      "sha256": "79e2a5944d47eb41b619c2f5cf2410abe0c63bfcec064d05b7e27b9f9238b0c2",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "16-windows-msrv.log",
+      "bytes": 190,
+      "sha256": "e7a81cd024f7d883faa40d5af5c9ef7ce97b3baa32a985eadade94a6edd1ec75",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "17-root-contracts.log",
+      "bytes": 13381,
+      "sha256": "32b9f923a23776701d7f0185d617f69748636f091817caf2f547af1d2e409b25",
+      "command": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "18-xtask-clippy.log",
+      "bytes": 145,
+      "sha256": "d2e1dd2e25695f6b7c5c04e7d475dd6e8993a4c3fe0cc8e8f76e0d8ef3dcfef4",
+      "command": "cargo +1.94.0 clippy -p xtask --locked --all-targets --all-features -- -D warnings",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "19-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "20-local-contract.log",
+      "bytes": 287,
+      "sha256": "1841582197e7ad24adba2354d45b6a392f77dcd74b5cdae8ca05d3af173551fe",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "21-final-repeat-1.log",
+      "bytes": 2059,
+      "sha256": "a49709d389a435445c25dc28a2d4da2f561f9a304efa5ca2d77cca583893a82b",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "22-final-repeat-2.log",
+      "bytes": 1926,
+      "sha256": "ef3300c325ef2e73141382b6e147c9794ea873fe2ced542324732ab8165bde81",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "23-final-repeat-3.log",
+      "bytes": 1926,
+      "sha256": "847779de7ee305be5a086434ec6895e223ff0e37208e94ba5e9ef0584204198b",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reserved_state -- --test-threads=1 --nocapture",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "24-final-linux-regression.log",
+      "bytes": 62161,
+      "sha256": "db1ba743d36db41b27d43741eff2705cc051e4ca0dc6a42adf93323ce1eaef66",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "25-corrected-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "cb34d818ad8f87f571964b530dc0bba8b0016e38c0c6fd96a461f9d7e6a2d21f",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "WSL Ubuntu",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "26-doc-check.log",
+      "bytes": 155,
+      "sha256": "33d9cc1da9b352a706df9d8db4d63193ab132aff4c913402452416c345202540",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "27-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "& 'C:/Users/ArturBuzov/.cargo/bin/mdbook.exe' build docs-site",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "28-qualification-dry-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "command": "& 'C:/Python313/python.exe' scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output 'C:/Users/ArturBuzov/AppData/Local/Temp/hydracache-reserved-state-1791749949836/qualification.json' --dry-run",
+      "platform": "Windows",
+      "expected_exit": 1,
+      "observed_exit": 1
+    },
+    {
+      "name": "29-ship-red.log",
+      "bytes": 487,
+      "sha256": "cdb9ce3d8f776eec56505af25f5c9a4691e60e5705040689345b2af6b282d953",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+      "platform": "Windows",
+      "expected_exit": 1,
+      "observed_exit": 1
+    },
+    {
+      "name": "30-final-doc-check.log",
+      "bytes": 155,
+      "sha256": "c818a6e7e1349a1065d07d382c7a28bd9423db876a14c28531809685838cf296",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "name": "31-final-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "& 'C:/Users/ArturBuzov/.cargo/bin/mdbook.exe' build docs-site",
+      "platform": "Windows",
+      "expected_exit": 0,
+      "observed_exit": 0
+    }
+  ],
+  "notes": [
+    "04..06 and 07 are intermediate test-coverage captures before extra private assertions. 21..24 are final repeated/regression proof.",
+    "The expanded private test shadowed a function name with Metadata; 08 retained compiler failure, corrected only in tests and rerun 21..25.",
+    "State mutations enumerate fields with logged fixed value 0x745; not randomized chaos or exhaustive property proof.",
+    "Positive state and ancestry use the private engine under a nonroot temporary root; synthetic owner/group/device stamps are not privileged host tests.",
+    "State reader is read-only, has no public origin/FD selector or cached-state export and cannot create, migrate, lock, publish or start.",
+    "Current source hashes use LF normalization; raw capture hashes do not normalize bytes.",
+    "Scoped runs overlap; repeats and intermediate runs are not distinct release-wide cases.",
+    "The inherited plan digest mismatch and closed ship admission remain genuine negatives; no qualification JSON is generated.",
+    "Frozen qualification manifest and all eight inputs retain baseline bytes/content, without threshold or digest refresh.",
+    "Verifier initially expected an untruncated missing-module phrase; rustc truncated that detail. Corrected to the intact exact E0432 import path without changing raw capture or expected exit."
+  ]
+}

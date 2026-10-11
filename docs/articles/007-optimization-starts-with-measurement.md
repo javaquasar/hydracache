@@ -6524,3 +6524,61 @@ formatting, rustdoc and local documentation/contract checks also pass. The packe
 retains 29 raw captures, including absent-API and invocation failures plus the
 unchanged qualification and ship refusals. These overlapping local scopes do not
 measure product throughput, unique release-wide coverage or fixed-host readiness.
+
+### Retaining the original Reserved state file
+
+The signed intent binds an expected Reserved snapshot, but an expected value is
+not proof of its persisted owner. The legacy diagnostic state and host lock live
+in worker-owned campaign storage. Promoting that state to root authority or adding
+a separate independent lock would not establish the required shared transaction
+boundary. A trusted publisher and a common supervisor-owned fence remain
+necessary before intent consumption or execution.
+
+The [new read-only guard](../testing/performance/0.74/diagnostic-reserved-state-local-design.md)
+addresses one concrete prerequisite: an existing state file under the original
+fixed root-owned intent storage. It borrows that storage exclusively, opens only
+the fixed name relative to the retained directory and validates the existing
+canonical schema-1 envelope. It compares the entire valid Reserved state, not
+only its lease, stage or cell. The file must be private, single-link and on the
+same device as the original leaf. Reads have a fixed byte limit.
+
+The guard retains the original descriptor, bytes and metadata, including
+timestamps and link count. Rechecks compare both the named object and the
+original file. A new inode containing identical bytes is still a replacement.
+Changing a revision or rewriting content is an owner transition, not an allowed
+refresh. Original ancestry checks bracket the file observations; unrelated
+directory growth remains harmless. Same-leaf pending state, pending IPC, active
+campaign or an IPC ledger not validated by this slice refuses conservatively.
+That is not global campaign or IPC admission.
+
+Invalid initial expected state fails before storage I/O. Once inspection begins,
+failure latches the original storage, including after the wrapper is dropped or
+the caller restores bytes and permissions. No state getter, path/owner/FD selector,
+clone, fixture conversion, mutation, lock or start method is exposed. Existing
+campaign state, lock behavior, installer and state serialization remain unchanged.
+
+The [local proof](../testing/performance/0.74/local-runs/diagnostic-reserved-state-20261011/README.md)
+uses private nonroot modeled ancestry, canonical/hash/schema failures, file
+substitution, symlinks, FIFOs, hardlinks, metadata/size drift, exact-state
+mutations, pending context and independent concurrent guards. Private seams
+exercise read-budget and descriptor errors without adding public selectors.
+These observations do not authenticate an initial host, prove continuous
+confinement or test a physical durability crash.
+
+The reader neither creates nor migrates Reserved state. Its future trusted
+publisher must populate that namespace through the supervisor's common fence;
+copying a worker-owned fixture is not enrollment. The original authority,
+signed intent, persisted state and fence join remains followed by fixed intent
+publication and output/start/watchdog/owned cleanup. No product measurement,
+server operation, qualification input or numerical performance claim accompanies
+this prerequisite.
+
+Ten final unit cases pass three separately retained repetitions. The final
+selected Linux scope passes 476 with one existing ignored, Windows passes 196,
+and root checks pass 111 performance contracts, 13 evidence, six gated-target
+and 23 governance cases. Fifteen compile-fail doctests, strict lint, current/MSRV
+checks and documentation checks pass. The packet retains 31 closed captures.
+An expanded private test initially shadowed a helper name; all-target compilation
+caught it, and only the test variable was renamed. Early runs remain intermediate
+proof, not substituted for the final repeated source. These overlapping scopes
+are not release qualification or numerical performance evidence.

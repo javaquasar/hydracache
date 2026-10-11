@@ -1,8 +1,9 @@
 # Production readiness and dedicated-server launch boundaries
 
-Current continuation: original authority now composes with signed expected intent
-without reopening or cloning worker policy. This remains a read/revalidate guard,
-not a fixed intent publisher, trusted persisted-state join or diagnostic start.
+Current continuation: original authority composes with signed expected intent,
+and a separate original-storage reader now checks an existing fixed Reserved
+state snapshot. They are not yet joined under the common host fence. Neither is
+a trusted state publisher, fixed intent publisher or diagnostic start route.
 The Linux storage preflight is ready for a controlled storage check after a fresh
 reviewed installation. See the [intent composition design](diagnostic-authority-intent-local-design.md)
 and [storage design](diagnostic-storage-preflight-design.md).
@@ -299,3 +300,26 @@ assertions until their trusted owners are connected. Production output creation,
 original executable/streams/runtime binding, dispatch, watchdog and exact owned
 cleanup still precede a diagnostic pilot. This slice changes no installer,
 server command, frozen qualification input or ship admission.
+
+## Existing root owned Reserved state reader
+
+The [fixed reader](diagnostic-reserved-state-local-design.md) requires an existing
+`active-diagnostic.json` under the original root-owned intent leaf. It validates
+the existing canonical schema-1 state envelope, full expected Reserved snapshot,
+private root ownership, single link, same device and bounded bytes. It retains
+the original file rather than adopting a newly opened replacement, and bound
+failures latch the original storage. Same-leaf pending state/IPC, active campaign
+or unhandled IPC ledger refuses.
+
+This does not create that document. Never copy the worker-owned campaign state
+into the root leaf as an enrollment workaround. Its trusted reservation publisher
+and shared supervisor-owned host fence must be implemented together with the
+legacy transaction boundary. A new independent lock would not prevent a legacy
+campaign from running concurrently. The [local packet](local-runs/diagnostic-reserved-state-20261011/README.md)
+uses private nonroot modeled storage and is not a positive fixed-host check.
+
+After the original authority/intent/state/fence join and fixed consumption
+publisher, implement output/start/watchdog/owned cleanup and enroll real issuer
+and initial-host pins. Current installation can still support only the separately
+approved storage-ancestry preflight, not a diagnostic worker pilot. All eight
+qualification inputs and the inherited plan-digest refusal remain unchanged.
