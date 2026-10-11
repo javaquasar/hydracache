@@ -129,6 +129,13 @@ struct Directory {
     uid: u32,
     gid: u32,
 }
+impl Drop for Directory {
+    fn drop(&mut self) {
+        // Closing alone can retain flock through a pre-exec inherited descriptor.
+        // End this owner's cooperative lock explicitly; no retry or handover receipt.
+        let _ = FileExt::unlock(&self.leaf);
+    }
+}
 impl Directory {
     fn open(path: &Path, uid: u32, gid: u32) -> Result<Self, AuthorityError> {
         let mut parts = path.components();

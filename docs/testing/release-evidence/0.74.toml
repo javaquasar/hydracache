@@ -1933,6 +1933,9 @@ source = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.r
 function = "authority_fixture_exclusive_writer_and_thread_local_origin_cannot_be_duplicated"
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs"
+function = "authority_fixture_owner_drop_unlocks_with_inherited_description_still_open"
+[[work_item.required_tests]]
+source = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs"
 function = "authority_fixture_original_path_file_and_descriptor_drift_latch_without_refresh"
 [[work_item.required_tests]]
 source = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs"

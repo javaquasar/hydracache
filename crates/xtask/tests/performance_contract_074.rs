@@ -66,6 +66,7 @@ fn diagnostic_authority_journal_bounds_and_closed_production_authority_are_froze
     let runtime = source.split("#[cfg(test)]").next().unwrap();
     for marker in [
         "FileExt::try_lock_exclusive",
+        "FileExt::unlock(&self.leaf)",
         "libc::O_EXCL",
         "libc::O_NOFOLLOW",
         "libc::O_CLOEXEC",

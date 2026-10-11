@@ -79,6 +79,28 @@ fn authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_wit
 }
 
 #[test]
+fn authority_fixture_owner_drop_unlocks_with_inherited_description_still_open() {
+    let (dir, uid, gid) = fixture();
+    let p = checked(7);
+    let registry = initialize_fixture_registry(dir.path(), uid, gid, &p).unwrap();
+    // Same open file description as a fork-inherited descriptor, without forking.
+    let inherited = registry.directory.leaf.try_clone().unwrap();
+    assert!(matches!(
+        open_fixture_registry(dir.path(), uid, gid, &p.trust, &p.context),
+        Err(AuthorityError::Io(error)) if error.kind() == std::io::ErrorKind::WouldBlock
+    ));
+    drop(registry);
+    let mut reopened = open_fixture_registry(dir.path(), uid, gid, &p.trust, &p.context).unwrap();
+    // Closing the old alias must not release a new writer's independent lock.
+    drop(inherited);
+    assert!(matches!(
+        open_fixture_registry(dir.path(), uid, gid, &p.trust, &p.context),
+        Err(AuthorityError::Io(error)) if error.kind() == std::io::ErrorKind::WouldBlock
+    ));
+    reopened.refuse(RefusalReason::Operator).unwrap();
+}
+
+#[test]
 fn authority_fixture_exclusive_writer_and_thread_local_origin_cannot_be_duplicated() {
     let (dir, uid, gid) = fixture();
     let p = checked(7);
