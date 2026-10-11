@@ -2494,3 +2494,23 @@ root contracts and the failed baseline/registration attempts. It is byte-level
 safety evidence with synthetic keys/assertions, not production enrollment,
 kernel peer/clock authentication, durable intent, anti-replay or execution proof.
 No product measurement, server operation or qualification is performed.
+
+## Durable fixture intent consumption
+
+The [intent journal](diagnostic-intent-journal-local-design.md) now retains exact
+signed envelopes and full Reserved state in four fixed append-only record/marker
+pairs under the existing host fence. File/directory fsync and retained original
+descriptors bracket publication; history rechecks signatures, boot, controller,
+peer, state and predecessor digests. Partial publication refuses without repair
+or retry. A complete pair whose acknowledgment was lost stays consumed. A new
+valid signature cannot reopen the same cell or repeat an earlier nonce/request.
+
+The [packet](local-runs/diagnostic-intent-journal-20261011/README.md) retains 19
+new unit cases with three repeats, 471 scoped Linux passes and one existing
+ignored, 195 portable Windows passes and six compile-fail doctests. A corrected
+test-first inode-substitution regression drives original-created-object checks.
+The journal is a nonroot owned temporary fixture, not the fixed production root;
+deduplication covers only that same journal. Peer, clock and completed-cell state
+remain assertions. Production original-authority/material/output/runtime join,
+watchdog, cleanup and controlled issuer/host enrollment still precede any launch.
+Qualification remains blocked by its inherited frozen plan-digest mismatch.

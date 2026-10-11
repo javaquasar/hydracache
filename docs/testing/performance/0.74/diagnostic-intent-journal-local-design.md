@@ -31,7 +31,8 @@ equal the asserted completed-cell count. Already consumed cells refuse even with
 a new valid signature. Advancing completed cells is an external state assertion,
 not proof that a backend executed or cleaned up.
 
-Publication uses exclusive descriptor-relative create, directory fsync, bounded
+Publication first syncs the already owned temporary ancestry, then uses exclusive
+descriptor-relative create, directory fsync, bounded
 record write, readonly 0400 sealing/file fsync, then an exclusive marker with the
 same sealing/fsync and final directory fsync. Original/named records, state,
 ledger, ancestry and lock are checked again. Logical faults after record creation,
@@ -54,3 +55,35 @@ composition, fenced Starting/watchdog/cleanup and controlled host enrollment.
 An absent journal cannot prove there was no prior execution before this protocol;
 no legacy start is adopted. Frozen qualification inputs and admission remain
 unchanged. No performance workload or numerical claim accompanies this slice.
+
+Deduplication applies only to the same retained fixture journal. A different
+fixture root is independent: the signed projection does not authenticate storage
+root identity or provide global replay history. Only a future fixed original-host
+backend may select the production journal; fixture results cannot be promoted.
+Bounded byte counts are not storage I/O deadlines or bounded syscall counts.
+
+## Local results
+
+The [retained packet](local-runs/diagnostic-intent-journal-20261011/README.md)
+binds implementation `875e89bfbc1e5248db9d7ea71950fc5b10c1decc` and its tree.
+Nineteen new unit tests pass three serial repeats; the final selected Linux scope
+passes 471 tests with one existing ignored, and portable Windows passes 195.
+Six compile-fail doctests, strict lint, Linux/Windows MSRV and local contracts pass.
+Root checks cover 107 contract, 13 evidence, six gated-target and 23 governance tests.
+These are local scopes, not unique release-wide coverage or admission receipts.
+
+Review found that accepting a newly opened named record could adopt a different
+inode with identical bytes. After correcting the private parent fixture to 0700,
+the regression explicitly reached RecordSynced and failed before the fix. The
+implementation now retains each originally created descriptor and compares its
+sealed metadata with both that descriptor and the named object, including final
+marker checks. Replacing old history records also refuses. The earlier green
+test failed before its intended checkpoint and is retained as ineffective proof.
+
+The packet preserves the incomplete-test compiler ICE, a JoinHandle test compile
+error and early fixture failures; none counts as a successful check. Prior signed
+projection evidence remains unchanged: its old verifier correctly rejects current
+source drift, while this packet verifies that historical packet against its own
+recorded Git source. Frozen qualification inputs retain the inherited plan-digest
+mismatch; genuine dry-run and ship admission still refuse. No numerical cache
+measurement or production execution accompanies these safety results.

@@ -1,0 +1,82 @@
+    Finished `test` profile [unoptimized] target(s) in 3.41s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_asserted_reboot_never_adopts_old_lease_history ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_bad_expired_or_production_inputs_never_write ... ok
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_concurrent_requests_consume_only_one_cell ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted ... ok
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_four_cells_reopen_without_second_consumption ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_historical_signature_cannot_change_controller ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_new_valid_signature_does_not_reopen_consumed_cell ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_original_lock_state_and_root_replacement_latch ... ok
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_persisted_state_pending_and_ipc_fail_closed ... ok
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_publication_faults_retain_without_retry_or_replay ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_repeated_nonce_or_request_refuses_before_new_record ... FAILED
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_unknown_slots_gaps_and_directory_budget_refuse ... ok
+
+failures:
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_asserted_reboot_never_adopts_old_lease_history stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_asserted_reboot_never_adopts_old_lease_history' (374) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:505:70:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_concurrent_requests_consume_only_one_cell stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_concurrent_requests_consume_only_one_cell' (376) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:595:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained' (379) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:414:74:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_four_cells_reopen_without_second_consumption stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_four_cells_reopen_without_second_consumption' (381) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:230:87:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_historical_signature_cannot_change_controller stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_historical_signature_cannot_change_controller' (382) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:484:70:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_new_valid_signature_does_not_reopen_consumed_cell stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_new_valid_signature_does_not_reopen_consumed_cell' (383) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:329:70:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_publication_faults_retain_without_retry_or_replay stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_publication_faults_retain_without_retry_or_replay' (386) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:256:9:
+assertion failed: matches!(operate(&root, &mut guard, &packet, &f.check(100), true, |observed,
+    _|
+    {
+        if observed == stage { Err(IntentJournalError::Uncertain) } else
+        { Ok(()) }
+    }), Err(IntentJournalError::Uncertain))
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_repeated_nonce_or_request_refuses_before_new_record stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_repeated_nonce_or_request_refuses_before_new_record' (387) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:352:73:
+called `Result::unwrap()` on an `Err` value: Fence(Invalid)
+
+
+failures:
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_asserted_reboot_never_adopts_old_lease_history
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_concurrent_requests_consume_only_one_cell
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_four_cells_reopen_without_second_consumption
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_historical_signature_cannot_change_controller
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_new_valid_signature_does_not_reopen_consumed_cell
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_publication_faults_retain_without_retry_or_replay
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_repeated_nonce_or_request_refuses_before_new_record
+
+test result: FAILED. 5 passed; 8 failed; 0 ignored; 0 measured; 375 filtered out; finished in 1.25s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

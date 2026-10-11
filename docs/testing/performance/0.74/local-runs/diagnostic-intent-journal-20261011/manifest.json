@@ -1,0 +1,350 @@
+{
+  "schema_version": "diagnostic-intent-journal-local-evidence-074-v1",
+  "state": "retained-local-fixture-consumption-not-execution",
+  "evidence_class": "working-tree-local-safety-not-exact-candidate-release-receipt",
+  "baseline_source": "c690a08b3a52a6545e0d1ea27ef6188e8e6aed16",
+  "baseline_tree": "58b494dade7fa6f8613bc4552b79868056778689",
+  "preregistration_source": "53de447fb01ba1e034d562f55d5e6d01ee3e687a",
+  "implementation_source": "875e89bfbc1e5248db9d7ea71950fc5b10c1decc",
+  "implementation_tree": "2447a9633b7d1146e4309c8fa53c6e672f5e6799",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-intent-projection-20261011",
+  "historical_manifest_sha256": "4b9c0f45114e3710663c3d940a58289c255e689a1b5d98437493de036021829b",
+  "results": {
+    "baseline_serial_passed": 451,
+    "baseline_existing_ignored": 1,
+    "linux_scoped_passed": 471,
+    "linux_existing_ignored": 1,
+    "windows_portable_passed": 195,
+    "new_unit_tests": 19,
+    "serial_unit_repeats": 3,
+    "compile_fail_doctests": 6,
+    "root_contract": 107,
+    "root_evidence": 13,
+    "root_gated_targets": 6,
+    "root_governance": 23
+  },
+  "new_unit_test_names": [
+    "intent_journal_four_cells_reopen_without_second_consumption",
+    "intent_journal_publication_faults_retain_without_retry_or_replay",
+    "intent_journal_bad_expired_or_production_inputs_never_write",
+    "intent_journal_new_valid_signature_does_not_reopen_consumed_cell",
+    "intent_journal_repeated_nonce_or_request_refuses_before_new_record",
+    "intent_journal_persisted_state_pending_and_ipc_fail_closed",
+    "intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained",
+    "intent_journal_unknown_slots_gaps_and_directory_budget_refuse",
+    "intent_journal_historical_signature_cannot_change_controller",
+    "intent_journal_asserted_reboot_never_adopts_old_lease_history",
+    "intent_journal_original_lock_state_and_root_replacement_latch",
+    "intent_journal_concurrent_requests_consume_only_one_cell",
+    "intent_journal_created_record_replacement_is_not_adopted",
+    "intent_journal_marker_replacement_after_sync_is_not_adopted",
+    "intent_journal_symlink_fifo_and_unsafe_parent_refuse_without_writes",
+    "intent_journal_historical_binding_is_checked_after_rehashing",
+    "intent_journal_previous_record_replacement_is_not_adopted",
+    "intent_journal_readonly_inspection_is_not_consumption_permission",
+    "intent_journal_historical_expiry_never_renews_execution_eligibility"
+  ],
+  "implementation_source_sha256": {
+    "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs": "27e3d804a7b52d3c4eb92d397c91a0a84aaec593bafdba737236e8cf2199c6cc",
+    "tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs": "bd5530a6cb776780700d5b9416aab0a35c476ec6e38f2b5e80288c229c961d0f",
+    "docs/testing/performance/0.74/diagnostic-intent-journal-local-contract.toml": "07f827124f714ef548a2fb17870ba0abae0e6bf491a461f6ab6bed4c3f0055e4",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs": "2235ffe702aa93dc36567875c14b62482d7c7fbf4f7f89888d7651218a98fc89",
+    "crates/xtask/tests/performance_contract_074.rs": "4f4b5223c20cdc3256a4ea91534d6abe6ab1d10ef92188f7d87b904c861a1ce3",
+    "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs": "780f09eff01673a6888499007eff5e7eb3c06f4b37822ea20acb6ff5f6523a15",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs": "99197b58fded82bc2a40544647de610155ce7ae09f3a60f576999417737d5e6e",
+    "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs": "f34c0f19c5568601d8a12a0439855eafb531e933095dc1f1e551b24b0e1fd4fe",
+    "docs/COMPAT.md": "86c8e1f44a8ef8de6c15192c507c3b64c3da40ea530a3e78bafc7ba382036154"
+  },
+  "commands": {
+    "linux_scope": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_task_api --test diagnostic_lease --test diagnostic_ipc -- --test-threads=1",
+    "journal_repeats": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_journal -- --test-threads=1",
+    "doctests": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+    "windows_portable": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests; separately --test release_governance",
+    "lint": "cargo +1.94.0 clippy -p <package> --all-targets --all-features --locked -- -D warnings",
+    "msrv": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "rustdoc": "RUSTDOCFLAGS=-D warnings cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --all-features --locked --no-deps",
+    "local_contract": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+    "ship_negative": "same performance-contract-check --require-ship (expected refusal)",
+    "qualification_negative": "python scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <owned temporary path> --dry-run (expected digest refusal)",
+    "doc_check": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+    "book": "mdbook build docs-site",
+    "format": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask --check"
+  },
+  "settings": {
+    "debug_info": 0,
+    "incremental": false,
+    "build_jobs": 2,
+    "linux_target": "/home/artur/.cache/hydracache-074-manager-local-target",
+    "root_checks": "native Windows; no global Git metadata override",
+    "fault_model": "logical publication checkpoints; no physical power-loss test"
+  },
+  "negative_classification": {
+    "37": "nonexistent root test target command selection; corrected in 38/45",
+    "40": "inherited frozen plan digest mismatch; no refresh",
+    "41": "old evidence source differs from current implementation as expected; historical byte/Git binding preserved",
+    "42": "ship admission intentionally closed",
+    "02": "absent API",
+    "04": "compiler ICE while tests incomplete; no runtime proof",
+    "06": "test compile error",
+    "07": "ineffective green regression; incorrect private-parent fixture refused before checkpoint",
+    "08": "fixture mode failures; validator unchanged",
+    "09": "genuine checkpoint-reaching inode substitution regression red before created-descriptor fix"
+  },
+  "production_root_backend": false,
+  "live_peer_clock_or_reboot_proved": false,
+  "actual_once_only_execution_proved": false,
+  "physical_power_loss_proved": false,
+  "host_mutation_allowed": false,
+  "performance_claim_allowed": false,
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 55440,
+      "sha256": "b0256559dbb64f0aa8d8ca92f866883b6ccb371f7a27f071a9b6adf51d556170"
+    },
+    {
+      "name": "02-missing-api.log",
+      "bytes": 624,
+      "sha256": "8cb7033a9d39975aa394c74193875f3732cc05b41ad9b7da3a049a5a2cbafcf8"
+    },
+    {
+      "name": "03-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "04-first-journal.log",
+      "bytes": 10498,
+      "sha256": "424ab7522e39a9e9b9ef9d46fcb74509f7214ce525577840d5414537d8acc1ec"
+    },
+    {
+      "name": "05-format-expanded.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "06-journal-expanded.log",
+      "bytes": 858,
+      "sha256": "bda1b799fbb979995b8da287d36e947c1bf1370276a8f057f6c727316ed257a1"
+    },
+    {
+      "name": "07-created-record-regression-red.log",
+      "bytes": 585,
+      "sha256": "c2162bef6141b367e58fd8dcd4b76151cf987730357d323fd17ab341a52e66bb"
+    },
+    {
+      "name": "08-journal-first-runtime.log",
+      "bytes": 6701,
+      "sha256": "02f911f25c8b2dd788eb93b52133a2dca571e9964253fbacc31935e318fb9013"
+    },
+    {
+      "name": "09-created-record-regression-corrected-fixture.log",
+      "bytes": 1302,
+      "sha256": "8633722a10ece18c7497de6eb072c245f5976aa705d195c4a47892f863b19315"
+    },
+    {
+      "name": "10-format-hardened.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "11-journal-hardened.log",
+      "bytes": 2772,
+      "sha256": "9a5d534c98ac5051244156681dbbab464b85ca742f36a8cf1bcea65b190a09de"
+    },
+    {
+      "name": "12-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "53d04fe1d52ae1b4d10c1481e5b0c274ae61ace49fda392017e86be83413cff1"
+    },
+    {
+      "name": "13-linux-check.log",
+      "bytes": 193,
+      "sha256": "35446da1355e2f2a4dad57408215d3fe4b0d38e8c9a672af139b19f0c72c3e3a"
+    },
+    {
+      "name": "14-windows-clippy.log",
+      "bytes": 190,
+      "sha256": "ae316d867ce45b6ad5a7245f9467dcb6ccf53de18829fbf40829e0b25a1a3279"
+    },
+    {
+      "name": "15-windows-check.log",
+      "bytes": 190,
+      "sha256": "6d20e90f79f5bf8583d5ec59f088dc28c17f1d07ffd17f7c6e9e1a979252c1aa"
+    },
+    {
+      "name": "16-format-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "17-linux-scoped.log",
+      "bytes": 57949,
+      "sha256": "ac671458122d314fe16487e4a3e5477a29adff8d2ad5a8a8209748673fdd44b3"
+    },
+    {
+      "name": "18-doctests.log",
+      "bytes": 1758,
+      "sha256": "c7ef041ce2da1a63c81beee0e5ac7b540cf1cc2d98ad7d4f571588ba06a55733"
+    },
+    {
+      "name": "19-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "6f04ec9dbea4c9727ea189a6a5be7979cabda171f798d2e0e42460bb5cd007e1"
+    },
+    {
+      "name": "20-windows-tests.log",
+      "bytes": 25082,
+      "sha256": "b99163871504149aae3d32b7aed8177ecc5bab2975ea784ee760c2aa2500c934"
+    },
+    {
+      "name": "21-windows-msrv.log",
+      "bytes": 190,
+      "sha256": "57d9196841c7aab08cc8b51d60b9f1c1d7170d99df4d4cf099a86649d3fa3678"
+    },
+    {
+      "name": "22-format-review.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "23-root-tests.log",
+      "bytes": 12395,
+      "sha256": "0149f3b7ebb5f7329d6631b46163f2681ef7a0c521ceee199a73cab02d12b3e9"
+    },
+    {
+      "name": "24-repeat-1.log",
+      "bytes": 2772,
+      "sha256": "6e7ce091e1e047c9d128c315087c71808a05946567b43a65c48d35a7deb826bc"
+    },
+    {
+      "name": "25-repeat-2.log",
+      "bytes": 2696,
+      "sha256": "85f05e4180ac3e0b50305fc08c4ff9bf6e9f5188c533b95d699980e237ca6ecc"
+    },
+    {
+      "name": "26-repeat-3.log",
+      "bytes": 2697,
+      "sha256": "72eac7c67f30126b1f94102d4dba31284750d972a381b1ba9b1c981b7309d988"
+    },
+    {
+      "name": "27-linux-clippy-final.log",
+      "bytes": 193,
+      "sha256": "b1d1ecbea2710b493b3114e138661d8d6ab3ef73959f1c6dd4865403c1e64bc1"
+    },
+    {
+      "name": "28-format-last.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "29-xtask-clippy.log",
+      "bytes": 145,
+      "sha256": "cc582a14c1a02bc1cc4b1e96334940e9830ae38ab22e03031fc9562f3a7227fc"
+    },
+    {
+      "name": "30-repeat-final-1.log",
+      "bytes": 2906,
+      "sha256": "221b166a5510a1d23c9971cc483639acdd0bd9f67d25690a8f46b9caae24e1ab"
+    },
+    {
+      "name": "31-repeat-final-2.log",
+      "bytes": 2773,
+      "sha256": "8c8acc32a4e910ec0bbdde534483e56b9f8b1a2435d7c70e9bb15a9701bcad47"
+    },
+    {
+      "name": "32-repeat-final-3.log",
+      "bytes": 2773,
+      "sha256": "9ded7e4336ce07f45812eabbb1f45e075170d3285164d5f7eed85595a5966f7d"
+    },
+    {
+      "name": "33-final-linux-scoped.log",
+      "bytes": 58081,
+      "sha256": "5da3815bfa72053f29b9d77d5e87a92a1bd1f4e1e100b939274a1e521bb4eafd"
+    },
+    {
+      "name": "34-final-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "07bcd13c7aa4909624a8b93817eaad1195f678802c1d68d853f96780acd2e427"
+    },
+    {
+      "name": "35-final-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "cb1bd3c538fe41d9320be3fd597080fd95f28787233cd2180e1edd614e33b139"
+    },
+    {
+      "name": "36-linux-rustdoc.log",
+      "bytes": 460,
+      "sha256": "0e01ab702af0906ebc9970d533c2054176c6f3f6419b24add533e412545276e6"
+    },
+    {
+      "name": "37-final-root-tests.log",
+      "bytes": 1428,
+      "sha256": "b4e4b65a7baf0df25f02daedf78d4ffad3d04304bf259e694254f1b1a128f306"
+    },
+    {
+      "name": "38-final-root-corrected.log",
+      "bytes": 11036,
+      "sha256": "984ac93737f400f1d75e2ff9db3c59b4f89abaacf121704d19ce98622ab9e953"
+    },
+    {
+      "name": "39-local-contract.log",
+      "bytes": 287,
+      "sha256": "ab75dd04b0ef2c268bf5a957d3261715eb8301f0f43d47c80fa3b2fb6d30c705"
+    },
+    {
+      "name": "40-qualification-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44"
+    },
+    {
+      "name": "41-prior-working-source-red.log",
+      "bytes": 446,
+      "sha256": "5f4b6e75c6cb2d4e79346c2feeafb7e04ba5ca67d41fcf7b8fd1280084e80187"
+    },
+    {
+      "name": "42-ship-red.log",
+      "bytes": 487,
+      "sha256": "b9621f9d7e54e927257b848af766cf4553261c8215ef2f01401e868bf4097678"
+    },
+    {
+      "name": "43-doc-check.log",
+      "bytes": 155,
+      "sha256": "f4bfd733b983d18d193dfeee07bb807113bc45f0668b20c728d6f7034bd3b05b"
+    },
+    {
+      "name": "44-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    {
+      "name": "45-final-governance.log",
+      "bytes": 2158,
+      "sha256": "95e9413501e690d19ff9ecf4d375e109d2ec86594f7e7c0beb40630f0401594b"
+    },
+    {
+      "name": "46-final-doc-check.log",
+      "bytes": 239,
+      "sha256": "7ae3bf5d9370e908ba6f3ee910058971d2c441594e07ccbb8d1e60dbb1c54a3a"
+    },
+    {
+      "name": "47-final-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    {
+      "name": "48-final-local-contract.log",
+      "bytes": 203,
+      "sha256": "898ca3f640a569ef937cc47845deee9ce727b7aaa83510c4f6a2239f72b6252f"
+    },
+    {
+      "name": "49-final-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

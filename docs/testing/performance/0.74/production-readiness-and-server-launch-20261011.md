@@ -192,3 +192,22 @@ No server, workload or qualification operation is performed by this audit.
 The [admission contract](release-admission-contract.toml) and frozen qualification
 inputs remain unchanged. Passing local tests does not complete the host or release
 rows above; no throughput, allocation, CPU or memory improvement is claimed.
+
+## Subsequent local intent journal result
+
+The [fixture journal](diagnostic-intent-journal-local-design.md) completes local
+durable consumption of exact signed intent before any future execution. It
+retains four fixed cells under the existing fence, reauthenticates history and
+refuses duplicate cells, partial pairs, stale boot/controller bindings and
+original file replacement. Lost acknowledgment after a complete commit does not
+permit retry. Nineteen new unit tests pass three repeats; the
+[packet](local-runs/diagnostic-intent-journal-20261011/README.md) separates this
+result from modeled fault checkpoints and the ineffective early regression.
+
+This does not change the launch checklist into a runbook. A fixed root-owned
+production intent backend bound to the original authority is still absent;
+fixture path selection is not global replay protection. Live kernel peer/clock,
+original executable/output/runtime composition, Starting/watchdog/owned cleanup
+and controlled real issuer/host enrollment remain required. Existing frozen
+qualification inputs and their plan-digest blocker are unchanged. No admission,
+worker start or dedicated-host operation is added by this result.

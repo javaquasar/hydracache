@@ -6328,3 +6328,55 @@ there is deliberately no replay ledger or execution capability. Durable signed
 intent, crash/reboot rules, original material/output/runtime composition and
 controlled enrollment remain before production. No cache benchmark is run and
 no allocation, goodput or latency improvement is claimed by this safety work.
+
+### Durable intent consumption before execution
+
+The next hypothesis concerns crash safety rather than throughput: retaining the
+exact signed request before execution should prevent a lost acknowledgment from
+turning a retry into another consumption of the same cell. The
+[local journal](../testing/performance/0.74/diagnostic-intent-journal-local-design.md)
+tests that boundary using owned temporary directories and synthetic controller
+keys. It acquires the existing cooperative host fence, checks the exact persisted
+Reserved state and refuses pending publication or conflicting lifecycle context.
+Four fixed record/marker pairs retain the full state, signed envelope, asserted
+peer and predecessor digest. Canonical byte and directory bounds reject malformed
+or oversized history before appending another record.
+
+Exclusive creation, file sealing and file/directory fsync make publication
+observable as stages. Faults after creation, record sync, marker creation or final
+commit leave the files in place and latch the original checked intent. An
+incomplete pair remains uncertain, without automatic repair. A complete pair
+whose acknowledgment was lost remains consumed: reopening gives inspection data,
+not permission to retry. Historical signatures are authenticated at their signed
+issue instant only to establish what was consumed; that check never renews an
+expired request's eligibility. New signatures cannot bypass cell, nonce or request
+deduplication within the same retained journal.
+
+An inode-substitution regression exposed an important distinction between equal
+bytes and the original object. Reopening a record by name after publication could
+accept a replacement file containing identical bytes. The first test appeared
+green only because an incorrectly permissive parent fixture refused before the
+intended checkpoint. Requiring that the test actually reach RecordSynced, and
+setting the fixture's preregistered 0700 permissions, produced the real failing
+regression. The fix retains the originally created descriptor and sealed metadata,
+then compares that object with the named leaf throughout publication. The same
+rule applies to markers and earlier history records. Validators were not relaxed.
+
+The [retained packet](../testing/performance/0.74/local-runs/diagnostic-intent-journal-20261011/README.md)
+contains 19 new unit tests with three serial repeats, final selected Linux results
+of 471 passes and one existing ignored, 195 portable Windows passes and six
+compile-fail doctests. Strict lint, MSRV 1.88, documentation and local contracts
+pass. The packet also preserves the ineffective green test, incomplete-test
+compiler ICE, test compile error and fixture failures. Earlier projection evidence
+stays bound to its earlier Git source; it is not relabeled as evidence for changed
+code. These counts describe local scopes, not unique release-wide coverage.
+
+The hypothesis is supported for conservative consumption in one fixture journal.
+It does not prove physical power-loss behavior, resistance to owner/root tampering
+or whole-host rollback, or actual once-only execution. Another fixture root has
+independent history because the signed request does not authenticate a production
+storage root. The next boundary is a fixed root-owned intent backend joined to
+the original authority and material/output/runtime guards, followed by watchdog,
+owned cleanup and controlled real issuer/host enrollment. Qualification still
+refuses its inherited frozen plan-digest mismatch. No cache workload or numerical
+allocation, latency, CPU or goodput claim accompanies this safety prerequisite.

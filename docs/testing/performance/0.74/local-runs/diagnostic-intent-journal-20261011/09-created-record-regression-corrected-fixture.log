@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 17.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted ... FAILED
+
+failures:
+
+---- diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted stdout ----
+
+thread 'diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted' (405) panicked at tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:617:5:
+new named inode with identical bytes must not replace created object
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 387 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
