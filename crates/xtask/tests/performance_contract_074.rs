@@ -9345,3 +9345,66 @@ fn diagnostic_intent_journal_preserves_consumption_without_execution() {
         assert_eq!(MAX_DIRECTORY_ENTRIES, 64);
     }
 }
+
+#[test]
+fn diagnostic_fixed_intent_storage_is_readonly_not_backend_enrollment() {
+    let c = contract("diagnostic-intent-fixed-storage-local-contract.toml");
+    for key in [
+        "read_only",
+        "root_owned_ancestry_required",
+        "retained_original_descriptors_required",
+        "named_root_and_ancestors_rechecked",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "caller_path_owner_or_fd_selector",
+        "fixture_conversion",
+        "directory_creation_or_repair",
+        "intent_publication_implemented",
+        "host_fence_or_authority_join_implemented",
+        "host_enrollment_proved",
+        "execution_or_admission_allowed",
+        "host_mutation_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["private_leaf_mode"].as_integer(), Some(0o700));
+    assert_eq!(
+        c["fixed_path"].as_str(),
+        Some("/var/lib/hydracache-performance/diagnostic-intents-074")
+    );
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "libc::geteuid()",
+        "libc::getegid()",
+        "libc::O_NOFOLLOW",
+        "Stamp::of(&named_root.metadata()?)",
+        "Stamp::of(&original.file.metadata()?)",
+        "self.refused = true",
+        "PhantomData<Rc<()>>",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for marker in [
+        "create_dir",
+        "write_all",
+        "O_CREAT",
+        "fs::remove",
+        "fs::rename",
+        "Command::new",
+        "StartTransientUnit",
+        "pub fn start",
+        "pub fn reset",
+        "pub fn into_",
+    ] {
+        assert!(
+            !source.contains(marker),
+            "read-only guard adds mutation: {marker}"
+        );
+    }
+}

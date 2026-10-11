@@ -1,6 +1,17 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn fixed_intent_storage_api_is_readonly_without_public_selectors() {
+    use hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::{
+        open_fixed_intent_storage, FixedIntentStorageRead,
+    };
+    let _: fn() -> Result<FixedIntentStorageRead, _> = open_fixed_intent_storage;
+    if unsafe { libc::geteuid() } != 0 || unsafe { libc::getegid() } != 0 {
+        assert!(open_fixed_intent_storage().is_err());
+    }
+}
+
+#[test]
 fn signed_intent_journal_api_is_fixture_data_not_execution() {
     use hydracache_long_run_supervisor_074::diagnostic_output_preparation::intent_journal::{
         inspect_fixture_intents, retain_fixture_intent, FixtureIntentObservation,

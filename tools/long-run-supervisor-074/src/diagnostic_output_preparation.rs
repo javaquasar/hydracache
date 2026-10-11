@@ -22,6 +22,9 @@ pub mod recovery;
 #[path = "diagnostic_intent_journal.rs"]
 pub mod intent_journal;
 
+#[path = "diagnostic_intent_fixed_storage.rs"]
+pub mod fixed_intent_storage;
+
 #[derive(Debug, Error)]
 pub enum PreparationError {
     #[error("fixture preparation path, identity, state or asserted clock refused")]
