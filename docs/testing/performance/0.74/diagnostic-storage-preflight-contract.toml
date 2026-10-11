@@ -11,6 +11,7 @@ intent_leaf = "/var/lib/hydracache-performance/diagnostic-intents-074"
 leaf_mode = 448
 existing_campaign_and_parent_ownership_unchanged = true
 provisioning_adds_empty_root_owned_leaves = true
+unsafe_existing_storage_refused_before_installation = true
 preflight_read_only = true
 no_directory_creation_or_journal_initialization_in_cli = true
 both_original_storage_guards_required = true

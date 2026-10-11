@@ -20,6 +20,10 @@ No record schema, pin, epoch, rollback assumption or public origin selector chan
 Provisioning adds only empty root:root 0700 worker-authority-074 and
 diagnostic-intents-074 leaves to the existing signed tmpfiles input. It neither
 initializes journals nor enrolls a key/policy. Do not execute the installer here.
+Before any installation mutation, existing ancestry and private leaves must
+already satisfy this ownership policy. Refuse unsafe or symlinked objects rather
+than allowing tmpfiles to repair their metadata. Existing safe leaves may retain
+contents; neither installation nor preflight validates those journal contents.
 An updated bundle must carry a fresh source receipt/signature before later
 installation approval; existing installed receipts cannot cover changed tooling.
 
