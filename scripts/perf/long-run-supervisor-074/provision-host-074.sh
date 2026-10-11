@@ -185,6 +185,32 @@ files_match_active_install() {
     cmp -s "$candidate_config" "$INSTALL_CONFIG"
 }
 
+check_diagnostic_storage() {
+  local path metadata mode uid gid name
+  # Check before tmpfiles or install can alter any existing metadata. Missing
+  # private leaves are created later by the signed tmpfiles input, not here.
+  for path in / /var /var/lib /var/lib/hydracache-performance; do
+    if [[ ! -e "$path" && ! -L "$path" ]]; then
+      [[ "$path" = /var/lib/hydracache-performance ]] || die "missing storage ancestor"
+      continue
+    fi
+    [[ -d "$path" && ! -L "$path" ]] || die "unsafe existing diagnostic storage ancestor"
+    metadata=$(stat -c '%a:%u:%g' -- "$path") || die "storage ancestor stat failed"
+    IFS=: read -r mode uid gid <<< "$metadata"
+    [[ "$mode" =~ ^[0-7]{3,4}$ && "$uid" = 0 ]] || die "unsafe existing diagnostic storage owner"
+    (( (8#$mode & 07022) == 0 )) || die "unsafe existing diagnostic storage mode"
+    [[ "$path" = /var/lib/hydracache-performance || "$gid" = 0 ]] || die "unsafe storage ancestor group"
+  done
+  for name in worker-authority-074 diagnostic-intents-074; do
+    path=/var/lib/hydracache-performance/$name
+    if [[ -e "$path" || -L "$path" ]]; then
+      [[ -d "$path" && ! -L "$path" ]] || die "unsafe existing diagnostic storage leaf"
+      [[ "$(stat -c '%a:%u:%g' -- "$path")" = 700:0:0 ]] || die "unsafe existing diagnostic storage metadata"
+    fi
+  done
+}
+
+check_diagnostic_storage
 already_active=false
 if systemctl is-active --quiet "$SERVICE"; then
   already_active=true

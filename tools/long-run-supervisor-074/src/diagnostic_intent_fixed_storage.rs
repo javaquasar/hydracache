@@ -16,6 +16,23 @@ const COMPONENTS: [&str; 4] = [
     "diagnostic-intents-074",
 ];
 
+#[path = "diagnostic_storage_preflight.rs"]
+pub mod preflight;
+
+#[derive(Clone, Copy)]
+enum StorageLeaf {
+    Intent,
+    Authority,
+}
+impl StorageLeaf {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Intent => "diagnostic-intents-074",
+            Self::Authority => "worker-authority-074",
+        }
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum FixedIntentStorageError {
     #[error("fixed intent storage owner, mode or original object refused")]
@@ -83,6 +100,7 @@ pub struct FixedIntentStorageRead {
     components: Vec<Component>,
     refused: bool,
     _original_thread: PhantomData<Rc<()>>,
+    kind: StorageLeaf,
 }
 impl FixedIntentStorageRead {
     pub fn is_refused(&self) -> bool {
@@ -106,7 +124,12 @@ impl FixedIntentStorageRead {
             return Err(FixedIntentStorageError::Invalid);
         }
         let mut parent = &self.root.file;
-        for (name, original) in COMPONENTS.iter().zip(&self.components) {
+        for (index, original) in self.components.iter().enumerate() {
+            let name = if index == 3 {
+                self.kind.name()
+            } else {
+                COMPONENTS[index]
+            };
             let named = open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
             if Stamp::of(&named.metadata()?) != original.stamp
                 || Stamp::of(&original.file.metadata()?) != original.stamp
@@ -125,6 +148,15 @@ fn walk(
     uid: u32,
     gid: u32,
 ) -> Result<FixedIntentStorageRead, FixedIntentStorageError> {
+    walk_kind(root_name, uid, gid, StorageLeaf::Intent)
+}
+
+fn walk_kind(
+    root_name: &Path,
+    uid: u32,
+    gid: u32,
+    kind: StorageLeaf,
+) -> Result<FixedIntentStorageRead, FixedIntentStorageError> {
     let file = open_root(root_name)?;
     let stamp = Stamp::of(&file.metadata()?);
     if !stamp.safe(uid, gid, 0) {
@@ -132,7 +164,8 @@ fn walk(
     }
     let root = Component { file, stamp };
     let mut components: Vec<Component> = Vec::with_capacity(COMPONENTS.len());
-    for (index, name) in COMPONENTS.iter().enumerate() {
+    for (index, component) in COMPONENTS.iter().enumerate() {
+        let name = if index == 3 { kind.name() } else { component };
         let parent = components.last().map_or(&root.file, |c| &c.file);
         let file = open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
         let stamp = Stamp::of(&file.metadata()?);
@@ -147,9 +180,32 @@ fn walk(
         components,
         refused: false,
         _original_thread: PhantomData,
+        kind,
     };
     read.revalidate()?;
     Ok(read)
+}
+
+/// Read-only authority directory ancestry, not an initialized authority registry.
+pub struct FixedAuthorityStorageRead {
+    read: FixedIntentStorageRead,
+}
+impl FixedAuthorityStorageRead {
+    pub fn revalidate(&mut self) -> Result<(), FixedIntentStorageError> {
+        self.read.revalidate()
+    }
+    pub fn is_refused(&self) -> bool {
+        self.read.is_refused()
+    }
+}
+pub fn open_fixed_authority_storage() -> Result<FixedAuthorityStorageRead, FixedIntentStorageError>
+{
+    if unsafe { libc::geteuid() } != 0 || unsafe { libc::getegid() } != 0 {
+        return Err(FixedIntentStorageError::Invalid);
+    }
+    Ok(FixedAuthorityStorageRead {
+        read: walk_kind(Path::new("/"), 0, 0, StorageLeaf::Authority)?,
+    })
 }
 
 /// Open existing fixed root-owned storage only. Numeric root is not host enrollment.

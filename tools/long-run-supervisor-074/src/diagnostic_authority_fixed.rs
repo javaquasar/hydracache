@@ -52,6 +52,16 @@ fn safe_directory(stamp: &Stamp, uid: u32, gid: u32, leaf: bool) -> bool {
         }
 }
 
+// Only the root-owned nonwritable performance parent retains its provisioned GID.
+fn safe_ancestor(stamp: &Stamp, uid: u32, gid: u32, name: &str) -> bool {
+    let required_gid = if name == "hydracache-performance" {
+        stamp.gid
+    } else {
+        gid
+    };
+    safe_directory(stamp, uid, required_gid, false)
+}
+
 // Private engine walker; only the fixed constructor can select a production origin.
 fn walk(root: File, uid: u32, gid: u32, root_name: &Path) -> Result<Directory, AuthorityError> {
     let root_stamp = Stamp::of(&root.metadata()?);
@@ -63,7 +73,7 @@ fn walk(root: File, uid: u32, gid: u32, root_name: &Path) -> Result<Directory, A
         let parent = ancestors.last().map_or(&root, |ancestor| &ancestor.file);
         let file = open_at(parent, name, true)?;
         let stamp = Stamp::of(&file.metadata()?);
-        if !safe_directory(&stamp, uid, gid, false) {
+        if !safe_ancestor(&stamp, uid, gid, name) {
             return Err(AuthorityError::Invalid);
         }
         ancestors.push(Ancestor {

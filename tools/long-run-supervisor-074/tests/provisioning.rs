@@ -54,6 +54,11 @@ fn accounts_directories_and_unresolved_key_fail_closed() {
         .contains("/var/lib/hydracache-performance           0750 root           hydracache-perf"));
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/campaigns 0750"));
     assert!(tmpfiles.contains("/var/lib/hydracache-performance/staging   0750"));
+    assert!(
+        tmpfiles.contains("/var/lib/hydracache-performance/worker-authority-074 0700 root root -")
+    );
+    assert!(tmpfiles
+        .contains("/var/lib/hydracache-performance/diagnostic-intents-074 0700 root root -"));
     assert!(tmpfiles.contains("/run/hydracache-perf                       0711"));
 
     let template = fs::read_to_string(repository_path(
@@ -91,4 +96,40 @@ fn role_overhead_does_not_expand_the_fixed_root_entrypoint() {
     .unwrap();
     assert!(!entrypoint.contains("--role-overhead-smoke"));
     assert!(!entrypoint.contains("role-overhead-fixture"));
+}
+
+#[test]
+fn private_storage_is_checked_before_installation_without_metadata_repair() {
+    let source = fs::read_to_string(repository_path(
+        "scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+    ))
+    .unwrap();
+    let guard = source
+        .find("check_diagnostic_storage\nalready_active=false")
+        .unwrap();
+    assert!(guard < source.find("systemd-sysusers \"$bundle_dir/").unwrap());
+    assert!(guard < source.find("atomic_install \"$bundle_dir/").unwrap());
+    assert!(guard < source.find("systemd-tmpfiles --create").unwrap());
+    for required in [
+        "[[ -d \"$path\" && ! -L \"$path\" ]]",
+        "700:0:0",
+        "worker-authority-074 diagnostic-intents-074",
+        "unsafe existing diagnostic storage",
+        "8#$mode & 07022",
+    ] {
+        assert!(source.contains(required), "missing {required}");
+    }
+    let function = source
+        .split("check_diagnostic_storage() {")
+        .nth(1)
+        .unwrap()
+        .split("\n}\n")
+        .next()
+        .unwrap();
+    for forbidden in ["chmod", "chown", "mkdir", "rm ", "mv ", "systemctl"] {
+        assert!(
+            !function.contains(forbidden),
+            "guard mutates via {forbidden}"
+        );
+    }
 }

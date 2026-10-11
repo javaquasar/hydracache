@@ -9408,3 +9408,66 @@ fn diagnostic_fixed_intent_storage_is_readonly_not_backend_enrollment() {
         );
     }
 }
+
+#[test]
+fn diagnostic_storage_preflight_cannot_authorize_execution_or_repair_storage() {
+    let c = contract("diagnostic-storage-preflight-contract.toml");
+    for key in [
+        "amends_fixed_authority_parent_group_policy",
+        "parent_root_uid_required",
+        "parent_group_other_write_and_special_bits_refused",
+        "parent_original_gid_retained_exactly",
+        "other_ancestors_and_leaves_root_gid_required",
+        "existing_campaign_and_parent_ownership_unchanged",
+        "unsafe_existing_storage_refused_before_installation",
+        "preflight_read_only",
+        "no_directory_creation_or_journal_initialization_in_cli",
+        "both_original_storage_guards_required",
+        "success_is_storage_ancestry_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "intent_publication_or_authority_join_implemented",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["leaf_mode"].as_integer(), Some(0o700));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_storage_preflight.rs"),
+    )
+    .unwrap();
+    let production = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "open_fixed_authority_storage()?",
+        "open_fixed_intent_storage()?",
+        "storage-ancestry-only",
+        "journal_records_verified: false",
+        "authority_bound: false",
+        "host_enrolled: false",
+        "worker_execution_allowed: false",
+        "qualification_allowed: false",
+        "ship_allowed: false",
+    ] {
+        assert!(production.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "Command::new",
+        "flock",
+        "O_CREAT",
+        "create_dir",
+        "write_all",
+        "initialize_",
+        "StartTransientUnit",
+        "pub fn start",
+        "pub fn reset",
+        "pub fn into_",
+    ] {
+        assert!(!production.contains(forbidden), "{forbidden}");
+    }
+}

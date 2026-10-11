@@ -4,6 +4,17 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The Linux read-only `diagnostic-storage-preflight` CLI emits the bounded JSON
+schema `diagnostic-storage-preflight-074-v1`. Success means storage ancestry only;
+journal verification, authority binding, enrollment, execution, qualification and
+ship fields remain false. There is no input schema, path selector, key enrollment
+or migration. Missing/unsafe paths refuse without journal initialization.
+The associated ownership amendment accepts the original GID of the root-owned,
+nonwritable common performance parent; all other ancestors and private leaves
+remain root:root, with leaves exactly 0700. Original GID changes still refuse.
+The authority journal record schema and epoch/pin rules are unchanged.
+See [design](testing/performance/0.74/diagnostic-storage-preflight-design.md).
+
 The opt-in Linux temporary-fixture intent journal registers
 `diagnostic-retained-intent-074-v1`. Four fixed `diagnostic-intent-cell-N.json`
 and `.commit` pairs (N=1..4) are append-only canonical sorted-key JSON plus LF,
@@ -44,7 +55,8 @@ and exhausted bounds fail closed. No automatic migration, tail repair, eviction
 or key rotation exists in v1. Independent current pins remain mandatory.
 The first backend is a distinct nonroot Linux temporary fixture. A subsequent
 opt-in fixed-path backend uses the same v1 bytes and append-only engine, retaining
-root:root nonwritable ancestry and an exact 0700 leaf. Its constructors accept no
+root-owned nonwritable ancestry (with the common-parent GID amendment above)
+and an exact root:root 0700 leaf. Its constructors accept no
 path/owner/descriptor selector and cannot promote a fixture. Neither backend is
 historical signature attestation, whole-host snapshot rollback detection, signed
 worker lifecycle or a start/admission capability. The fixed backend is implemented

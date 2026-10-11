@@ -287,3 +287,24 @@ fn authority_fixed_guard_is_not_send_sync_or_fixture_conversion() {
         format!("/{}/{}", ANCESTORS.join("/"), FIXED_LEAF)
     );
 }
+
+#[test]
+fn authority_fixed_parent_group_policy_matches_nonwritable_provisioning() {
+    let (dir, _, _) = modeled_tree();
+    let mut stamp = Stamp::of(&fs::metadata(dir.path()).unwrap());
+    stamp.uid = 0;
+    stamp.gid = 986;
+    stamp.mode = libc::S_IFDIR | 0o750;
+    assert!(safe_ancestor(&stamp, 0, 0, "hydracache-performance"));
+    for name in ["var", "lib"] {
+        assert!(!safe_ancestor(&stamp, 0, 0, name));
+    }
+    assert!(!safe_directory(&stamp, 0, 0, true));
+    for mode in [0o770, 0o702, 0o2750, 0o4750, 0o1750] {
+        stamp.mode = libc::S_IFDIR | mode;
+        assert!(!safe_ancestor(&stamp, 0, 0, "hydracache-performance"));
+    }
+    stamp.mode = libc::S_IFDIR | 0o750;
+    stamp.uid = 986;
+    assert!(!safe_ancestor(&stamp, 0, 0, "hydracache-performance"));
+}

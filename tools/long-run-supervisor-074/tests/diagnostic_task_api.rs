@@ -1,6 +1,29 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn diagnostic_storage_preflight_cli_refuses_nonroot_and_selectors() {
+    use std::process::Command;
+    let bin = env!("CARGO_BIN_EXE_hydracache-long-run-supervisor-074");
+    if unsafe { libc::geteuid() } != 0 || unsafe { libc::getegid() } != 0 {
+        let output = Command::new(bin)
+            .arg("diagnostic-storage-preflight")
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(9));
+        assert!(output.stdout.is_empty());
+        assert!(String::from_utf8(output.stderr)
+            .unwrap()
+            .contains("diagnostic storage preflight refused"));
+    }
+    let output = Command::new(bin)
+        .args(["diagnostic-storage-preflight", "/tmp"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+}
+
+#[test]
 fn fixed_intent_storage_api_is_readonly_without_public_selectors() {
     use hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::{
         open_fixed_intent_storage, FixedIntentStorageRead,
