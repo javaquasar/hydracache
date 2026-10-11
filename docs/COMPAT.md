@@ -13,9 +13,13 @@ a strictly higher epoch, the same issuer/machine and a new policy digest.
 Unknown schemas, extra fields, gaps, changed refusal bindings, incomplete pairs
 and exhausted bounds fail closed. No automatic migration, tail repair, eviction
 or key rotation exists in v1. Independent current pins remain mandatory.
-This is a distinct nonroot Linux temporary-fixture backend, not a root-owned
-production registry, historical signature attestation, whole-host snapshot
-rollback detector, signed worker lifecycle or start/admission capability.
+The first backend is a distinct nonroot Linux temporary fixture. A subsequent
+opt-in fixed-path backend uses the same v1 bytes and append-only engine, retaining
+root:root nonwritable ancestry and an exact 0700 leaf. Its constructors accept no
+path/owner/descriptor selector and cannot promote a fixture. Neither backend is
+historical signature attestation, whole-host snapshot rollback detection, signed
+worker lifecycle or a start/admission capability. The fixed backend is implemented
+locally, but real root-path enrollment and issuer selection remain unproved.
 
 The separate 0.74 asserted task reader is opt-in Linux runtime-only. It retains
 at most 128 original tasks and their generation/status/user/mount objects under

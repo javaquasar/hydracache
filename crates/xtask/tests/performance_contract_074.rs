@@ -3,6 +3,85 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_fixed_authority_backend_keeps_host_enrollment_and_launch_closed() {
+    let c = contract("diagnostic-authority-fixed-local-contract.toml");
+    assert_eq!(
+        c["fixed_path"].as_str(),
+        Some("/var/lib/hydracache-performance/worker-authority-074")
+    );
+    assert_eq!(c["ancestor_components"].as_integer(), Some(3));
+    assert_eq!(c["leaf_mode"].as_integer(), Some(0o700));
+    for key in [
+        "root_uid_gid_required",
+        "original_ancestry_retained",
+        "no_group_or_other_writable_ancestor",
+        "no_public_path_owner_or_fd_selector",
+        "shared_append_only_engine",
+        "independent_operator_pins_required",
+        "fixed_fixture_types_distinct",
+        "explicit_existing_empty_leaf_initialization",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "controlled_fixed_host_positive_enrollment",
+        "initial_host_namespace_proved",
+        "real_issuer_enrolled",
+        "signed_worker_durable_composition",
+        "physical_power_loss_proved",
+        "whole_host_snapshot_rollback_detection",
+        "root_or_owner_tampering_detection",
+        "production_preparation_or_start",
+        "host_mutation_allowed",
+        "qualification_or_admission_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "walk(root, 0, 0)",
+        "libc::geteuid() } != 0",
+        "libc::getegid() } != 0",
+        "stamp.mode & 0o7022 == 0",
+        "stamp.mode & 0o7777 == 0o700",
+        "directory.revalidate()?",
+        "initialize_directory(fixed_directory()?, policy)?",
+        "open_directory(fixed_directory()?, trust, host)?",
+        "FileExt::try_lock_exclusive",
+        "libc::O_NOFOLLOW",
+        "libc::O_CLOEXEC",
+    ] {
+        assert!(runtime.contains(marker), "missing fixed invariant {marker}");
+    }
+    for forbidden in [
+        "pub fn walk",
+        "pub fn fixed_directory",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "impl Clone",
+        "impl From",
+        "Command::new",
+        "fs::create_dir",
+        "fs::rename",
+        "fs::remove",
+        ".truncate(",
+        "std::env",
+        "verify_worker_policy(",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "fixed backend cannot add {forbidden}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_authority_journal_bounds_and_closed_production_authority_are_frozen() {
     let c = contract("diagnostic-authority-registry-local-contract.toml");
     assert_eq!(

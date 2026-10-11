@@ -1,4 +1,4 @@
-//! Append-only /tmp fixture journal; no root-owned production authority.
+//! Shared append-only engine and separate /tmp fixture entry points.
 use super::{
     history, AuthorityError, AuthorityView, PublicationStage, Record, RefusalReason,
     COMMIT_MARKER_BYTES, MAX_GENERATIONS, MAX_RECORD_BYTES,
@@ -15,6 +15,9 @@ use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::{Component, Path};
 use std::rc::Rc;
+
+#[path = "diagnostic_authority_fixed.rs"]
+pub mod fixed;
 
 #[derive(Clone, PartialEq, Eq)]
 struct Stamp {
@@ -128,6 +131,7 @@ struct Directory {
     leaf_name: String,
     uid: u32,
     gid: u32,
+    fixed_ancestry: Option<fixed::Ancestry>,
 }
 impl Drop for Directory {
     fn drop(&mut self) {
@@ -189,9 +193,23 @@ impl Directory {
             leaf_name: leaf_name.into(),
             uid,
             gid,
+            fixed_ancestry: None,
         })
     }
     fn revalidate(&self) -> Result<(), AuthorityError> {
+        if let Some(ancestry) = &self.fixed_ancestry {
+            ancestry.revalidate(&self.root)?;
+            let named = open_at(&self.temporary, &self.leaf_name, true)?;
+            if !self
+                .temporary_stamp
+                .directory_matches(&self.temporary.metadata()?)
+                || !self.leaf_stamp.directory_matches(&named.metadata()?)
+                || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)
+            {
+                return Err(AuthorityError::Invalid);
+            }
+            return Ok(());
+        }
         let temporary = open_at(&self.root, "tmp", true)?;
         if !self
             .temporary_stamp
@@ -251,8 +269,14 @@ pub fn initialize_fixture_registry(
     gid: u32,
     policy: &CheckedWorkerPolicy,
 ) -> Result<FixtureAuthorityRegistry, AuthorityError> {
+    initialize_directory(Directory::open(path, uid, gid)?, policy)
+}
+fn initialize_directory(
+    directory: Directory,
+    policy: &CheckedWorkerPolicy,
+) -> Result<FixtureAuthorityRegistry, AuthorityError> {
     let mut read = FixtureAuthorityRegistry {
-        directory: Directory::open(path, uid, gid)?,
+        directory,
         entries: vec![],
         records: vec![],
         failed: false,
@@ -261,7 +285,7 @@ pub fn initialize_fixture_registry(
     if read.directory.inventory()? != 0 {
         return Err(AuthorityError::Invalid);
     }
-    // The fixture directory was created externally; persist that name before publication.
+    // The leaf was provisioned externally; persist its name before publication.
     read.directory.temporary.sync_all()?;
     let record = Record::from_checked(policy)?;
     read.publish(record, None)?;
@@ -274,14 +298,20 @@ pub fn open_fixture_registry(
     trust: &WorkerPolicyTrust,
     host: &AssertedWorkerHost,
 ) -> Result<FixtureAuthorityRegistry, AuthorityError> {
-    let directory = Directory::open(path, uid, gid)?;
+    open_directory(Directory::open(path, uid, gid)?, trust, host)
+}
+fn open_directory(
+    directory: Directory,
+    trust: &WorkerPolicyTrust,
+    host: &AssertedWorkerHost,
+) -> Result<FixtureAuthorityRegistry, AuthorityError> {
     directory.revalidate()?;
     let count = directory.inventory()?;
     if count == 0 {
         return Err(AuthorityError::Invalid);
     }
     let entries = (1..=count)
-        .map(|revision| Entry::open(&directory.leaf, revision, uid, gid))
+        .map(|revision| Entry::open(&directory.leaf, revision, directory.uid, directory.gid))
         .collect::<Result<Vec<_>, _>>()?;
     let records = history(
         &entries

@@ -15,6 +15,9 @@ pub const COMMIT_MARKER_BYTES: usize = 65;
 #[path = "diagnostic_authority_fixture.rs"]
 pub mod fixture;
 
+#[cfg(target_os = "linux")]
+pub use fixture::fixed;
+
 #[derive(Debug, Error)]
 pub enum AuthorityError {
     #[error("authority document, metadata or history is invalid")]

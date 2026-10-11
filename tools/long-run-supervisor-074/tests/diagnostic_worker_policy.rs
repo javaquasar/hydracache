@@ -481,3 +481,33 @@ fn authority_registry_api_is_inspection_not_start_authority() {
     fn view_only(_: &AuthorityView) {}
     let _ = view_only;
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn authority_fixed_api_has_no_path_selector_and_nonroot_cannot_enroll() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::authority_registry::{
+        fixed::{initialize_fixed_registry, open_fixed_registry, FixedAuthorityRegistry},
+        AuthorityError,
+    };
+    let _: fn(&CheckedWorkerPolicy) -> Result<FixedAuthorityRegistry, AuthorityError> =
+        initialize_fixed_registry;
+    let _: fn(
+        &WorkerPolicyTrust,
+        &AssertedWorkerHost,
+    ) -> Result<FixedAuthorityRegistry, AuthorityError> = open_fixed_registry;
+    // This test must never inspect or mutate the real root-owned journal.
+    assert!(unsafe { libc::geteuid() } > 0 && unsafe { libc::getegid() } > 0);
+    let p = policy();
+    let t = trust(&p);
+    let host = context(&p);
+    let checked =
+        verify_worker_policy(&envelope(&p, &key(), WORKER_POLICY_DOMAIN), &t, &host).unwrap();
+    assert!(matches!(
+        initialize_fixed_registry(&checked),
+        Err(AuthorityError::Invalid)
+    ));
+    assert!(matches!(
+        open_fixed_registry(&t, &host),
+        Err(AuthorityError::Invalid)
+    ));
+}
