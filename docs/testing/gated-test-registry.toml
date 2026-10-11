@@ -7600,6 +7600,38 @@ platform = "linux"
 [gate.command.env]
 
 [[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-task-api"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_task_api"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original-task reader public API compile contract; no admitted host or production enrollment"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_task_api", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.diagnostic-worker-context"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs"

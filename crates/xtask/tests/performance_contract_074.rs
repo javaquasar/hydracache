@@ -3,6 +3,121 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_task_set_is_bounded_original_readonly_and_not_signed_authority() {
+    let c = contract("diagnostic-task-set-local-contract.toml");
+    assert_eq!(
+        c["contract_id"].as_str(),
+        Some("diagnostic-task-set-local-074-v1")
+    );
+    assert_eq!(c["max_tasks"].as_integer(), Some(128));
+    assert_eq!(c["max_directory_calls"].as_integer(), Some(16));
+    assert_eq!(c["max_directory_bytes"].as_integer(), Some(65536));
+    assert_eq!(
+        c["observation_order"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "generation",
+            "inventory",
+            "tasks",
+            "generation",
+            "inventory",
+            "tasks",
+            "generation",
+            "inventory",
+            "generation"
+        ]
+    );
+    for key in [
+        "original_task_descriptors_retained",
+        "all_observed_task_credentials_and_namespaces_checked",
+        "membership_change_refuses",
+        "first_typed_error_stops",
+        "refusal_sticky",
+        "original_reading_thread_required",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "replacement_pid_path_taskset_or_namespace_argument",
+        "refresh_or_reset_allowed",
+        "guard_send_or_sync",
+        "old_public_behavior_changed",
+        "original_signed_composition",
+        "initial_host_namespace_proved",
+        "atomic_or_continuous_proof",
+        "mount_content_immutability_proved",
+        "file_opener_credentials_attested",
+        "durable_authority_or_refusal",
+        "real_issuer_enrolled",
+        "production_preparation_or_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_or_admission_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_tasks.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "MAX_TASKS: usize = 128",
+        "MAX_DIRECTORY_CALLS: usize = 16",
+        "MAX_DIRECTORY_BYTES: usize = 65_536",
+        "libc::SYS_getdents64",
+        "child(directory, \".\", true)",
+        "asserted_task_status(",
+        "self.generation.pid",
+        "libc::CLONE_NEWUSER",
+        "libc::CLONE_NEWNS",
+        "self.probe.observe(step)",
+        "PhantomData<Rc<()>>",
+        "self.refused = true",
+    ] {
+        assert!(runtime.contains(marker), "missing {marker}");
+    }
+    let signature = runtime
+        .split("pub fn pin_asserted_worker_tasks")
+        .nth(1)
+        .unwrap()
+        .split('{')
+        .next()
+        .unwrap();
+    assert!(signature.contains("process: &ProcessRead"));
+    assert!(signature.contains("policy: AssertedWorkerCredentials"));
+    for forbidden in ["pid:", "path:", "tasks:", "namespace:", "File", "Fn"] {
+        assert!(!signature.contains(forbidden), "selector {forbidden}");
+    }
+    for forbidden in [
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "pub fn process",
+        "pub fn tasks",
+        "impl Clone",
+        "Serialize",
+        "Command::new",
+        "libc::setns",
+        "libc::unshare",
+        "libc::kill",
+        "libc::setuid",
+        "OpenOptions::new",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "unexpected authority {forbidden}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_signed_mount_derives_original_process_and_keeps_launch_closed() {
     let c = contract("diagnostic-signed-mount-local-contract.toml");
     assert_eq!(

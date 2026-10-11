@@ -332,6 +332,27 @@ fn parse_status(bytes: &[u8]) -> Result<Projection, CredentialError> {
     })
 }
 
+// Reuse the strict bounded parser without changing the leader-only API.
+pub(super) fn asserted_task_status(
+    bytes: &[u8],
+    tid: u32,
+    tgid: u32,
+    policy: &AssertedWorkerCredentials,
+) -> Result<u64, CredentialError> {
+    let value = parse_status(bytes)?;
+    if value.pid != tid
+        || value.tgid != tgid
+        || value.uid != [policy.uid; 4]
+        || value.gid != [policy.gid; 4]
+        || value.groups != policy.groups
+        || value.active != [0; 4]
+        || !value.no_new_privs
+    {
+        return Err(CredentialError::Drift);
+    }
+    Ok(value.bounding)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -34,6 +34,10 @@ pub use user_namespace::{pin_same_user_namespace, NamespaceError, SameUserNamesp
 mod mount_namespace;
 pub use mount_namespace::{pin_same_mount_namespace, MountNamespaceError, SameMountNamespaceRead};
 
+#[path = "diagnostic_worker_tasks.rs"]
+mod worker_tasks;
+pub use worker_tasks::{pin_asserted_worker_tasks, TaskError, WorkerTasksRead};
+
 #[derive(Debug, Error)]
 pub enum ProcessError {
     #[error("diagnostic process scope or proc document is invalid")]
