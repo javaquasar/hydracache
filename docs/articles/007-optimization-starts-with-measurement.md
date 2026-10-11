@@ -6710,3 +6710,43 @@ describe local functional coverage, not a product speedup or installed-host proo
 This joins observations, not authenticated initial host admission or execution.
 Peer/clock authentication, trusted publication and output/start/watchdog/owned
 cleanup remain before a pilot. No server operation or numerical claim follows.
+
+## Initial reservation can inspect empty storage under the common fence
+
+The existing Reserved reader needs a state file before it can borrow the common
+fence. Reusing it to publish the first Reserved record would therefore create a
+circular dependency. The next hypothesis was narrower than publication: the
+existing trusted Fence engine could protect an original empty-storage observation
+without a state file, another lock or ownership migration.
+
+The [new guard](../testing/performance/0.74/diagnostic-empty-reservation-fence-local-design.md)
+exclusively borrows the original fixed storage and acquires only the existing
+trusted campaign lock. Two fresh scans require the fixed leaf to be empty;
+known, pending, terminal, unknown, non-UTF-8 and nonregular entries all refuse.
+Original ancestry and named/original fence checks bracket those scans, and
+legacy campaign/diagnostic/IPC plus parent lifecycle contexts also refuse.
+No file contents are adopted, decoded or repaired.
+
+Initial Busy is ordinary contention and leaves healthy storage and the other
+owner intact. Once bound inspection starts, an object or context failure latches
+the original storage. Restoring files or dropping the wrapper cannot refresh it.
+Healthy drop releases only the guard's own original flock; the empty observation
+then expires and creates no durable reservation.
+
+The [local tests](../testing/performance/0.74/local-runs/diagnostic-empty-reservation-fence-20261012/README.md)
+exercise both lock acquisition orders against legacy campaign APIs, every entry
+kind, unsafe/missing locks, named/original descriptor drift, repeated scans,
+seeded between-scan context and independent concurrency. Positive fixed ancestry
+is a private nonroot model, not physical host enrollment. This removes the
+state-before-lock dependency; signed authority/empty-fence composition and a
+no-overwrite publication transition with partial/uncertain/crash behavior remain
+next. Peer/clock authentication, trusted ownership and original lifecycle proof
+still precede a worker pilot. No numerical or server claim follows.
+
+Final local checks pass 11 focused cases in each of three repeats, 552 Linux
+regression cases with one existing systemd-bus test ignored, 196 Windows cases,
+157 native root contract/registry/governance cases and 26 compile-fail doctests.
+Current/MSRV, warnings-denied Clippy and format pass. A root source guard initially
+expected a one-line shared-fence call that rustfmt split; its structural markers
+were corrected without changing policy or thresholds, and the red log remains.
+These counts establish local functional coverage, not throughput or host admission.

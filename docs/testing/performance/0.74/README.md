@@ -2654,3 +2654,22 @@ confinement or production enrollment. See
 Trusted ownership enrollment, coordinated binary deployment, trusted reservation
 and consumption publication, authenticated peer/clock and the original
 output/start/watchdog/owned-cleanup lifecycle remain before a host pilot.
+
+## Existing fence before initial reservation
+
+The [original empty-fence guard](diagnostic-empty-reservation-fence-local-design.md)
+now borrows fixed intent storage and uses the same trusted campaign Fence engine
+without requiring a preexisting Reserved file. Both fresh fixed-leaf scans and
+the original ancestry, campaigns-directory, named/original lock and legacy/parent
+context checks stay under that flock. Any entry refuses; nothing is decoded,
+created, removed or repaired. Initial Busy preserves the other owner and healthy
+storage. Bound uncertainty latches the original storage through drop/restoration.
+See the [local packet](local-runs/diagnostic-empty-reservation-fence-20261012/README.md).
+
+An empty observation is temporary, not a reservation or publication capability.
+The deployed worker-owned layout is still not trusted enrollment. Next bind the
+same original empty fence to authority/signed expected intent and define its
+no-overwrite reservation transition and partial/uncertain behavior under the
+retained lock. Peer/clock authentication, trusted publication, coordinated
+ownership/binary rollout and output/start/watchdog/owned cleanup remain before
+worker launch. No server or frozen qualification input changed.

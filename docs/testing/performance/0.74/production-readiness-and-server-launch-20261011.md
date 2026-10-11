@@ -14,6 +14,12 @@ sticky refusal. This is read-only consistency, not trusted publication or
 authenticated peer/clock admission. A trusted state publisher, fixed intent
 publisher and diagnostic start route remain open. See the
 [composition design](diagnostic-fenced-intent-local-design.md).
+Initial reservation also has a separate
+[original empty fence](diagnostic-empty-reservation-fence-local-design.md):
+the same lock can inspect empty fixed storage without requiring an already
+published Reserved file. This removes a circular prerequisite, not the publisher
+gap. It still requires trusted private campaigns ownership and is not host
+enrollment, a write capability or a durable reservation.
 The Linux storage preflight is ready for a controlled storage check after a fresh
 reviewed installation. See the [intent composition design](diagnostic-authority-intent-local-design.md)
 and [storage design](diagnostic-storage-preflight-design.md).
