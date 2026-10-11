@@ -2552,3 +2552,27 @@ The fixed publisher and original authority/fence/state/output/runtime lifecycle
 remain unimplemented. Historical packets stay bound to their old Git source;
 they are not proof that current provisioning is unchanged. Frozen qualification
 inputs, the inherited plan-digest refusal and closed admission are unchanged.
+
+## Original authority and signed expected intent
+
+The [composition design](diagnostic-authority-intent-local-design.md) preserves
+one exclusively borrowed original signed worker and authority journal while
+checking signed intent between two authority observations. Each observation
+keeps the existing journal/runtime/journal bracket. Fixed and fixture guards
+remain distinct, noncloneable and original-thread-only.
+
+An invalid unbound controller packet cannot revoke a healthy worker. Once bound,
+the exact envelope, full asserted Reserved state, controller configuration and
+peer must remain unchanged; a new valid signature cannot refresh that binding.
+Projection failure refuses the original chain and publishes only to a safe
+exact-bound authority journal. An uncertain append retains the first failure;
+later calls refuse before further checks or publication.
+
+The [local packet](local-runs/diagnostic-authority-intent-20261011/README.md)
+separates owned Linux runtime fixtures, private fixed-dispatch models and
+compile-fail API checks from positive fixed-host enrollment. The immutable pins
+are crate-private data, not a second verified worker or authority capability.
+This package adds no fixed intent publication, host fence, trusted persisted
+state, kernel peer/clock authentication or start route. Those original-object
+joins and the output/start/watchdog/owned-cleanup lifecycle remain next.
+Frozen qualification inputs, closed admission and product behavior are unchanged.

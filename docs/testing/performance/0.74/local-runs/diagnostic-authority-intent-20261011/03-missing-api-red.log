@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding`
+ --> tools/long-run-supervisor-074/tests/diagnostic_task_api.rs:6:9
+  |
+6 | ...   int...binding::{...
+  |       ^^^...^^^^^^^ could not find `intent_binding` in `authority_binding`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_task_api") due to 1 previous error

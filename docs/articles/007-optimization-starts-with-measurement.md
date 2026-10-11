@@ -6471,3 +6471,56 @@ The selected Linux scope passes 451 tests with one existing ignored, the portabl
 Windows run passes 196, and eight compile-fail doctests pass. The four new
 preflight cases have three separately retained repeats. These are scoped local
 results, not exact-candidate qualification or unique release-wide test counts.
+
+### Composing signed intent with the original authority
+
+The next safety dependency is ownership of the checked worker. The standalone
+intent projection borrows worker policy mutably, but the original signed runtime
+chain already holds that exclusive borrow. Rechecking a second policy object
+would produce another verification, not a binding to the original runtime.
+The [composition](../testing/performance/0.74/diagnostic-authority-intent-local-design.md)
+therefore borrows the original authority guard and captures only private,
+immutable intent pins. Those pins cannot mint a worker or start permit.
+
+Validation brackets the signed expected intent with two original authority
+observations. Each authority observation keeps its existing journal, runtime,
+journal order. The binding retains the exact signed envelope, full asserted
+Reserved state, controller configuration and peer. A changed request, nonce,
+controller attempt or signature window refuses even when the replacement has a
+valid signature. The same original worker and journal remain borrowed throughout.
+Fixed and fixture types cannot convert into one another, clone, cross threads or
+expose a start method.
+
+Unbound input and a previously accepted binding have different failure semantics.
+A malformed initial controller packet cannot revoke an unrelated healthy worker.
+After binding, intent drift or expiry latches the original runtime chain. A safe
+journal with the exact original authority pins receives an append-only Policy
+refusal. Unsafe or advanced storage is not repaired or adopted. If publication
+is partial or its acknowledgment is uncertain, the error keeps both the initial
+projection failure and publication uncertainty. Later calls refuse before
+additional I/O, even after the caller restores the old bytes or permissions.
+
+The [local tests](../testing/performance/0.74/local-runs/diagnostic-authority-intent-20261011/README.md)
+exercise owned Linux helper processes, signature and state changes, authority
+advancement, storage drift, independent concurrent chains and four publication
+fault checkpoints. Compile-fail examples cover exclusive borrowing, cloning,
+fixture promotion and a missing start route. The fixed-dispatch positive case is
+a private nonroot model; the fault checkpoints are not physical power-loss proof.
+
+This establishes an original-authority and expected-intent relationship, not the
+fixed publisher initially targeted by the package. The original host fence and
+trusted persisted Reserved state must still be joined before fixed storage can
+publish a consumed intent. Peer, clock and state remain assertions until their
+trusted owners are connected. Output creation, original start, watchdog, owned
+cleanup and real issuer/host enrollment follow. No cache product, server operation
+or frozen qualification input changes, and no throughput or allocation gain is
+inferred from this control-plane work.
+
+The thirteen new unit cases pass three retained repetitions. The selected Linux
+regression scope passes 465 with one existing ignored; Windows passes 196.
+Root checks pass 110 performance contracts, 13 evidence, six gated-target and 23
+governance cases; twelve compile-fail doctests pass. Strict lint, MSRV 1.88,
+formatting, rustdoc and local documentation/contract checks also pass. The packet
+retains 29 raw captures, including absent-API and invocation failures plus the
+unchanged qualification and ship refusals. These overlapping local scopes do not
+measure product throughput, unique release-wide coverage or fixed-host readiness.

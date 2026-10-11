@@ -1,9 +1,11 @@
 # Production readiness and dedicated-server launch boundaries
 
-Current continuation: the code now has a Linux read-only storage preflight and
-prospective signed provisioning for its two private leaves. It is ready for a
-controlled storage check after a fresh reviewed installation, not for a diagnostic
-worker start. See the [storage design](diagnostic-storage-preflight-design.md).
+Current continuation: original authority now composes with signed expected intent
+without reopening or cloning worker policy. This remains a read/revalidate guard,
+not a fixed intent publisher, trusted persisted-state join or diagnostic start.
+The Linux storage preflight is ready for a controlled storage check after a fresh
+reviewed installation. See the [intent composition design](diagnostic-authority-intent-local-design.md)
+and [storage design](diagnostic-storage-preflight-design.md).
 
 This is a repository audit on 2026-10-11, not a server inspection, installation
 approval or release acceptance. The original signed leader mount composition is
@@ -273,3 +275,27 @@ fence and state composition, then production output/start/watchdog/owned cleanup
 Real worker/controller issuer pins and initial-host admission remain operator
 prerequisites. The inherited plan-digest mismatch and closed ship admission are
 unchanged. Passing the storage check authorizes none of those later operations.
+
+## Original authority and expected intent composition
+
+The [new guard](diagnostic-authority-intent-local-design.md) exclusively borrows
+the original authority chain and checks authority, signed expected intent and
+authority again. It does not reconstruct worker policy to bypass borrowing.
+The existing signed projection formats and old standalone API remain unchanged.
+Invalid packets before binding cannot revoke a healthy worker; after binding,
+envelope/state/controller/peer drift or expiry refuses the original chain.
+
+Only safe storage retaining the exact original authority pins receives a Policy
+refusal record. Partial or late-unacknowledged publication preserves the intent
+failure and typed uncertainty; restoring bytes or permissions cannot refresh the
+same guard. The [packet](local-runs/diagnostic-authority-intent-20261011/README.md)
+tests those boundaries locally, not under enrolled root storage or real issuer
+keys. A private fixed-dispatch model is not a public fixture conversion.
+
+The next code package must join the original supervisor host fence and trusted
+persisted Reserved state with that guard, then implement publication through the
+original fixed intent storage. Caller-supplied state, peer and time remain
+assertions until their trusted owners are connected. Production output creation,
+original executable/streams/runtime binding, dispatch, watchdog and exact owned
+cleanup still precede a diagnostic pilot. This slice changes no installer,
+server command, frozen qualification input or ship admission.
