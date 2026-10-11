@@ -1,6 +1,8 @@
 # Release evidence hashes exact trace bytes; keep them stable across platforms.
 crates/hydracache-cache-sim/traces/*.trace text eol=lf
 *.sh text eol=lf
+# Vite preserves source HTML line endings in generated/embedded artifacts.
+console/index.html text eol=lf
 scripts/perf/*.py text eol=lf
 docs/testing/hc2-compat/artifacts/**/*.pom text eol=lf
 sdks/python/hydracache-client-hc2/src/hydracache_hc2_generated/** text eol=lf
@@ -96,4 +98,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-context-files-*/**/*.log -te
 docs/testing/performance/0.74/local-runs/diagnostic-policy-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-signed-opening-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-mount-namespace-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
-docs/testing/performance/0.74/local-runs/diagnostic-signed-mount-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+# cargo-deny draws trailing spaces; immutable captures must not be reformatted.
+docs/testing/performance/0.74/local-runs/diagnostic-signed-mount-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
