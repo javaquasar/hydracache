@@ -100,3 +100,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signed-opening-*/**/*.log -t
 docs/testing/performance/0.74/local-runs/diagnostic-mount-namespace-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
 # cargo-deny draws trailing spaces; immutable captures must not be reformatted.
 docs/testing/performance/0.74/local-runs/diagnostic-signed-mount-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.json -text whitespace=cr-at-eol,-blank-at-eof

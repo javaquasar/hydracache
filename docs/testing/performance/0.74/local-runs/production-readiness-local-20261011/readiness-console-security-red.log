@@ -1,0 +1,52 @@
+✖ build lock excludes reviewed brace-expansion DoS versions (16.088ms)
+✖ build lock excludes reviewed source-map-js DoS versions (1.7409ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.0085
+
+✖ failing tests:
+
+test at console\tests\package.test.js:28:1
+✖ build lock excludes reviewed brace-expansion DoS versions (16.088ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(lockedVersionAtLeast("brace-expansion", [5, 0, 12]))
+  
+      at TestContext.<anonymous> (file:///C:/Workspace/prj/jq/cashe/hydracache-074/console/tests/package.test.js:30:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1081:25)
+      at Test.start (node:internal/test_runner/test:978:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:332:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at console\tests\package.test.js:33:1
+✖ build lock excludes reviewed source-map-js DoS versions (1.7409ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(lockedVersionAtLeast("source-map-js", [1, 2, 2]))
+  
+      at TestContext.<anonymous> (file:///C:/Workspace/prj/jq/cashe/hydracache-074/console/tests/package.test.js:35:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1081:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:763:18)
+      at Test.postRun (node:internal/test_runner/test:1210:19)
+      at Test.run (node:internal/test_runner/test:1138:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

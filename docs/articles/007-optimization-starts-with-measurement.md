@@ -5911,3 +5911,47 @@ production preparation, authenticated original diagnostic start, writer revocati
 and watchdog/reconciliation must precede a host pilot. Exact C74/native/Redis and
 long-run/supply-chain evidence must precede product release. A green local reader
 cannot bridge either boundary by renaming a fixture or flipping an admission flag.
+
+### Completing local gates exposed a build-supply-chain defect
+
+The broader readiness request adds a different hypothesis: does a successful
+local build conceal a skipped surface or a known dependency issue? The
+[extended readiness packet](../testing/performance/0.74/local-runs/production-readiness-local-20261011/README.md)
+retains the terminal Windows verifier exit 0. Strict lint/allocator, dependency,
+workspace/xtask, doctest, rustdoc and budget gates pass. Its 3,982 passing and 82
+ignored harness executions are not unique tests or a throughput measurement.
+The run spanned development changes, so it is not an immutable exact-candidate
+receipt or a replacement for the unchanged registered fast-gate time budget.
+
+The console gate explicitly skips because native `npm` cannot be found. Running
+the same install/build/test chain through npm.cmd covers the omitted surface:
+16 unit, six package/static/supply-chain and 46 browser tests pass twice. Linux
+supervisor compilation also passes on Rust 1.88 MSRV; scoped Linux rustdoc passes
+with warnings denied. Neither result supplies positive fixed-host enrollment.
+
+The first complete npm audit nevertheless reports two high-severity dev packages.
+They belong to ESLint/Vite/coverage build and test paths, not a demonstrated runtime
+cache exploit. The existing parent ranges admit `brace-expansion` 5.0.12 and
+`source-map-js` 1.2.2. These address the reviewed
+[brace parsing](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr) and
+[indexed source-map offset](https://github.com/advisories/GHSA-68fv-2mgg-jv7q)
+DoS advisories. Two new locked-version regressions first fail on the old lockfile;
+only the two transitive version/URL/integrity records are then updated. npm ci
+and repeated full audit report zero vulnerabilities at capture time. No blanket
+audit fix, dev omission, direct dependency drift or threshold waiver is used.
+
+Review finds a second, test-only weakness: checking a healthy root copy could
+miss an old nested copy. A fixture canary first reproduces that false positive,
+then the guard enumerates all matching lock paths and refuses missing packages.
+The reviewed unit/package chain passes 16 and seven tests. The earlier browser
+runs remain evidence for unchanged UI fixtures, not a new host lifecycle result.
+
+Vite also preserves Windows source HTML line endings. Pinning that input to LF
+and rebuilding removes incidental generated/embedded Git content differences;
+no generated asset blob is committed. Same-host deterministic bundle tests pass,
+but cross-host reproducibility and final source-bound packages remain separate.
+The retained 182-component console SBOM still describes local version-0.73 tooling,
+not an accepted 0.74 product candidate. This work fixes a confirmed supply-chain
+finding and strengthens regression coverage; it establishes no CPU, allocation,
+memory or goodput gain. The remaining server and product boundaries are listed in
+the [launch audit](../testing/performance/0.74/production-readiness-and-server-launch-20261011.md).

@@ -1,0 +1,138 @@
+
+> hydracache-management-console@0.73.0 test
+> npm run build && npm run unit && npm run test:e2e
+
+
+> hydracache-management-console@0.73.0 build
+> vite build && node ./scripts/embed-dist.mjs && node ./scripts/check-static.mjs
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.json               0.18 kB │ gzip:  0.14 kB
+dist/index.html                  0.42 kB │ gzip:  0.28 kB
+dist/assets/index-DlttOFoF.css   7.94 kB │ gzip:  2.48 kB
+dist/assets/index-6Gybws3b.js   53.46 kB │ gzip: 17.46 kB
+
+✓ built in 134ms
+embedded 7 manifest-bound console assets
+console static checks passed (7 manifest-bound assets)
+
+> hydracache-management-console@0.73.0 unit
+> npm run typecheck && npm run lint && npm run test:unit && npm run supply-chain && node --test ./tests/package.test.js
+
+
+> hydracache-management-console@0.73.0 typecheck
+> tsc --noEmit
+
+
+> hydracache-management-console@0.73.0 lint
+> eslint ./src ./vite.config.ts
+
+
+> hydracache-management-console@0.73.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.0 C:/Workspace/prj/jq/cashe/hydracache-074/console
+
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  04:19:28
+   Duration  1.27s (environment 47%, tests 38%, transform 10%, import 4%, worker 1%)
+
+
+> hydracache-management-console@0.73.0 supply-chain
+> node ./scripts/check-supply-chain.mjs
+
+supply-chain checks passed; wrote 182 components to C:\Workspace\prj\jq\cashe\hydracache-074\target\management-center-0.72-sbom.cdx.json
+✔ build lock excludes reviewed brace-expansion DoS versions (2.8304ms)
+✔ build lock excludes reviewed source-map-js DoS versions (0.8553ms)
+✔ static and supply-chain gates validate the generated production bundle (385.4763ms)
+✔ locked Vite build is byte-identical across clean output directories (1092.2202ms)
+✔ candidate bundle is deterministic and verifies every artifact (659.0021ms)
+✔ MC72-W13-MIXED-ARTIFACT rejects one substituted file (346.4343ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2603.7937
+
+> hydracache-management-console@0.73.0 test:e2e
+> playwright test --config ./playwright.config.mjs
+
+[WebServer] (node:27592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:42120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+✔ build lock excludes reviewed brace-expansion DoS versions (5.1052ms)
+✔ build lock excludes reviewed source-map-js DoS versions (1.8361ms)
+✔ static and supply-chain gates validate the generated production bundle (214.4174ms)
+✔ locked Vite build is byte-identical across clean output directories (1475.9117ms)
+✔ candidate bundle is deterministic and verifies every artifact (1593.0672ms)
+✔ MC72-W13-MIXED-ARTIFACT rejects one substituted file (508.43ms)
+
+Running 46 tests using 2 workers
+
+(node:8988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:8988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [desktop-1440x900] › tests\console_readonly.spec.js:27:1 › console_renders_typed_dashboard_and_all_truth_states (3.2s)
+  ok  3 [desktop-1440x900] › tests\console_readonly.spec.js:99:1 › recovery_contract_renders_all_five_outcomes_and_bounded_evidence (2.3s)
+  ok  1 [mobile-390x844] › tests\console_readonly.spec.js:27:1 › console_renders_typed_dashboard_and_all_truth_states (5.7s)
+  ok  5 [mobile-390x844] › tests\console_readonly.spec.js:99:1 › recovery_contract_renders_all_five_outcomes_and_bounded_evidence (1.1s)
+  ok  4 [desktop-1440x900] › tests\console_readonly.spec.js:117:1 › persistence_keeps_runtime_backup_age_separate_from_verified_artifacts (1.5s)
+  ok  6 [mobile-390x844] › tests\console_readonly.spec.js:117:1 › persistence_keeps_runtime_backup_age_separate_from_verified_artifacts (1.9s)
+  ok  7 [desktop-1440x900] › tests\console_readonly.spec.js:142:1 › operation_and_audit_views_preserve_state_progress_retention_and_redaction (2.7s)
+  ok  9 [desktop-1440x900] › tests\console_readonly.spec.js:177:1 › optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring (1.0s)
+  ok  8 [mobile-390x844] › tests\console_readonly.spec.js:142:1 › operation_and_audit_views_preserve_state_progress_retention_and_redaction (2.5s)
+  ok 11 [mobile-390x844] › tests\console_readonly.spec.js:177:1 › optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring (1.4s)
+  ok 10 [desktop-1440x900] › tests\console_readonly.spec.js:189:1 › health_filters_use_server_verdicts_and_keep_unknown_visible (1.7s)
+  ok 13 [desktop-1440x900] › tests\console_readonly.spec.js:201:1 › health_missing_thresholds_remain_visibly_unavailable (1.3s)
+  ok 12 [mobile-390x844] › tests\console_readonly.spec.js:189:1 › health_filters_use_server_verdicts_and_keep_unknown_visible (1.4s)
+  ok 15 [mobile-390x844] › tests\console_readonly.spec.js:201:1 › health_missing_thresholds_remain_visibly_unavailable (415ms)
+  ok 14 [desktop-1440x900] › tests\console_readonly.spec.js:213:1 › placement_outcomes_and_stale_warning_are_rendered_without_inference (2.4s)
+  ok 16 [mobile-390x844] › tests\console_readonly.spec.js:213:1 › placement_outcomes_and_stale_warning_are_rendered_without_inference (2.6s)
+  ok 17 [desktop-1440x900] › tests\console_readonly.spec.js:232:1 › placement_trace_exposes_constraints_identity_progress_and_truncation (1.1s)
+  ok 18 [mobile-390x844] › tests\console_readonly.spec.js:232:1 › placement_trace_exposes_constraints_identity_progress_and_truncation (762ms)
+  ok 19 [desktop-1440x900] › tests\console_readonly.spec.js:252:1 › summary_links_open_read_only_filtered_sections (1.3s)
+  ok 20 [mobile-390x844] › tests\console_readonly.spec.js:252:1 › summary_links_open_read_only_filtered_sections (1.4s)
+  ok 22 [mobile-390x844] › tests\console_readonly.spec.js:267:1 › capabilities hide unavailable views and suppress their request loop (749ms)
+  ok 21 [desktop-1440x900] › tests\console_readonly.spec.js:267:1 › capabilities hide unavailable views and suppress their request loop (1.3s)
+  ok 23 [mobile-390x844] › tests\console_readonly.spec.js:287:1 › console_is_read_only_and_never_scrapes_prometheus (773ms)
+  ok 24 [desktop-1440x900] › tests\console_readonly.spec.js:287:1 › console_is_read_only_and_never_scrapes_prometheus (728ms)
+  ok 25 [mobile-390x844] › tests\console_readonly.spec.js:307:1 › hostile_diagnostic_text_is_rendered_only_as_text (816ms)
+  ok 26 [desktop-1440x900] › tests\console_readonly.spec.js:307:1 › hostile_diagnostic_text_is_rendered_only_as_text (881ms)
+  ok 28 [desktop-1440x900] › tests\console_readonly.spec.js:323:1 › management center passes automated accessibility checks in normal and forced modes (4.2s)
+  ok 27 [mobile-390x844] › tests\console_readonly.spec.js:323:1 › management center passes automated accessibility checks in normal and forced modes (4.2s)
+  ok 30 [mobile-390x844] › tests\console_readonly.spec.js:335:1 › keyboard navigation exposes a visible focus path through management sections (1.9s)
+  ok 29 [desktop-1440x900] › tests\console_readonly.spec.js:335:1 › keyboard navigation exposes a visible focus path through management sections (2.0s)
+  ok 31 [mobile-390x844] › tests\console_readonly.spec.js:351:1 › member formation detail is keyboard operable and keeps current generation evidence (729ms)
+  ok 32 [desktop-1440x900] › tests\console_readonly.spec.js:351:1 › member formation detail is keyboard operable and keeps current generation evidence (1.2s)
+  ok 33 [mobile-390x844] › tests\console_readonly.spec.js:361:1 › modeled_source_and_missing_raft_values_are_never_painted_live_or_zero (961ms)
+  ok 34 [desktop-1440x900] › tests\console_readonly.spec.js:361:1 › modeled_source_and_missing_raft_values_are_never_painted_live_or_zero (707ms)
+  ok 35 [mobile-390x844] › tests\console_readonly.spec.js:371:1 › console_shows_degraded_state_when_required_snapshot_is_unreachable (596ms)
+  ok 36 [desktop-1440x900] › tests\console_readonly.spec.js:371:1 › console_shows_degraded_state_when_required_snapshot_is_unreachable (609ms)
+  ok 37 [mobile-390x844] › tests\console_readonly.spec.js:379:1 › console_render_is_bounded_for_large_clusters (853ms)
+  ok 38 [desktop-1440x900] › tests\console_readonly.spec.js:379:1 › console_render_is_bounded_for_large_clusters (733ms)
+  ok 39 [mobile-390x844] › tests\console_readonly.spec.js:386:1 › offline_and_hidden_lifecycle_pauses_polling_and_aborts_obsolete_work (826ms)
+  ok 41 [mobile-390x844] › tests\console_readonly.spec.js:406:1 › accelerated_browser_soak_respects_frozen_history_budget (2.0s)
+  ok 40 [desktop-1440x900] › tests\console_readonly.spec.js:386:1 › offline_and_hidden_lifecycle_pauses_polling_and_aborts_obsolete_work (4.3s)
+  ok 42 [mobile-390x844] › tests\console_readonly.spec.js:426:1 › responsive dashboard remains usable on configured viewport (1.4s)
+  ok 44 [mobile-390x844] › tests\console_readonly.spec.js:434:1 › tablet layout retains truth at effective 200 percent zoom without page overflow (732ms)
+  ok 43 [desktop-1440x900] › tests\console_readonly.spec.js:406:1 › accelerated_browser_soak_respects_frozen_history_budget (2.1s)
+  ok 45 [desktop-1440x900] › tests\console_readonly.spec.js:426:1 › responsive dashboard remains usable on configured viewport (744ms)
+  ok 46 [desktop-1440x900] › tests\console_readonly.spec.js:434:1 › tablet layout retains truth at effective 200 percent zoom without page overflow (542ms)
+
+  46 passed (52.0s)

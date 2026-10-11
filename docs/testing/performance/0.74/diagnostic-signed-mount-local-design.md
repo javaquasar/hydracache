@@ -90,3 +90,11 @@ from the scoped evidence. The [production audit](production-readiness-and-server
 lists the remaining authority/code/host/release prerequisites. No positive fixed
 production enrollment, durable issuer, all-thread proof or authenticated start is
 claimed by the composition packet.
+
+The [extended local readiness packet](local-runs/production-readiness-local-20261011/README.md)
+now retains the actual native verifier exit 0, with its explicit console skip
+independently covered by npm.cmd checks. Linux MSRV all-targets and strict rustdoc
+also pass. The full verifier spanned development changes and is not a registered
+immutable candidate receipt. The original 44-capture packet and its capture-time
+boundaries remain intact. Console supply-chain remediation is isolated from the
+signed mount code; production issuer/enrollment/start authority remains absent.

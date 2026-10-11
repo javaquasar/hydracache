@@ -2391,3 +2391,12 @@ separates diagnostic pilot enrollment from product release. Both remain closed:
 all-thread inspection, durable issuer/epoch authority, production preparer and
 authenticated diagnostic lifecycle are still prerequisites. Full local gates and
 controlled positive host evidence cannot substitute for each other.
+
+The [extended local readiness packet](local-runs/production-readiness-local-20261011/README.md)
+retains the terminal Windows verifier exit 0, explicit console skip and separate
+successful npm.cmd browser/unit/package checks, plus Linux MSRV and strict rustdoc.
+It also retains original npm security findings, minimal compatible dev-dependency
+fixes, test-first and nested-copy canaries, and the local console SBOM. The long
+working-tree verifier is not an immutable candidate or registered fast receipt.
+Production authority, all-thread/lifecycle implementation and host/release evidence
+remain closed; thresholds and frozen qualification inputs are unchanged.

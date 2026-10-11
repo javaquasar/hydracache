@@ -1,0 +1,45 @@
+
+> hydracache-management-console@0.73.0 unit
+> npm run typecheck && npm run lint && npm run test:unit && npm run supply-chain && node --test ./tests/package.test.js
+
+
+> hydracache-management-console@0.73.0 typecheck
+> tsc --noEmit
+
+
+> hydracache-management-console@0.73.0 lint
+> eslint ./src ./vite.config.ts
+
+
+> hydracache-management-console@0.73.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.0 C:/Workspace/prj/jq/cashe/hydracache-074/console
+
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  04:33:05
+   Duration  1.17s (environment 44%, tests 41%, transform 9%, import 4%, worker 2%)
+
+
+> hydracache-management-console@0.73.0 supply-chain
+> node ./scripts/check-supply-chain.mjs
+
+supply-chain checks passed; wrote 182 components to C:\Workspace\prj\jq\cashe\hydracache-074\target\management-center-0.72-sbom.cdx.json
+✔ build lock excludes reviewed brace-expansion DoS versions (4.6454ms)
+✔ build lock excludes reviewed source-map-js DoS versions (1.2635ms)
+✔ reviewed dependency floor refuses vulnerable nested copies and missing packages (0.9528ms)
+✔ static and supply-chain gates validate the generated production bundle (364.2027ms)
+✔ locked Vite build is byte-identical across clean output directories (1053.5491ms)
+✔ candidate bundle is deterministic and verifies every artifact (561.0631ms)
+✔ MC72-W13-MIXED-ARTIFACT rejects one substituted file (509.9233ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2604.2141

@@ -46,6 +46,39 @@ a root-owned crash-durable registry, explicitly excluding whole-host/root rollba
 from that guarantee. If host rollback must be detected, select a separate external
 monotonic authority before implementing enrollment. No test key may be enrolled.
 
+## Extended local checks completed
+
+The separate [readiness packet](local-runs/production-readiness-local-20261011/README.md)
+retains the terminal native Windows verifier exit 0. Its 532 successful harness
+rows total 3,982 passes and 82 existing ignored executions, not unique tests.
+Workspace/xtask tests, doctests, strict clippy/allocator lanes, dependency policy,
+workspace rustdoc and budget contract pass. The built-in console gate explicitly
+skips missing native `npm`; separate `npm.cmd` runs pass 16 unit, six package and
+46 browser tests twice. After a test-only nested-copy review, 16 unit and seven
+package tests pass. External DB, scheduled/chaos and Linux-only cases skipped by
+the Windows workspace run are not covered by its success.
+
+Linux supervisor all-targets check additionally passes on Rust 1.88 MSRV;
+Linux rustdoc passes on 1.94 with warnings denied. The original scoped packet
+retains 370 Linux passes, one existing ignored and 43 portable Windows passes.
+The full verifier spanned working-tree changes during development. It is not
+an immutable exact-candidate receipt or `fast.workspace-nextest` success;
+840-second cadence and 2400-second hard timeout are unchanged.
+
+Full npm audit initially finds two high-severity dev dependencies. Minimal
+compatible lock updates fix `brace-expansion` 5.0.9 to 5.0.12 and `source-map-js`
+1.2.1 to 1.2.2, with test-first regressions and nested-copy/missing-package canary.
+Repeated full audit reports zero vulnerabilities at capture time, not a future
+guarantee. References: [brace parsing advisories](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr)
+and [indexed source-map offsets](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+The retained 182-component console SBOM is local package-0.73 metadata, not the
+missing final 0.74 source-bound receipt. HTML input LF normalization removes
+incidental generated/embedded content changes; no asset blob is changed.
+
+These completed local checks do not finish any missing production row above.
+Durable authority still needs the operator choice described there; no test issuer
+or synthetic epoch may be promoted to replace it.
+
 ## Required order on the dedicated host
 
 This is a launch checklist, not an executable runbook: production diagnostic

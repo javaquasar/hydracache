@@ -1,0 +1,8 @@
+doc-check: OK (releases.toml is consistent)
+performance-contract-check 0.74: OK (local, non-promotable)
+readiness: 21 exact captures; working-tree verify green, console skip independently covered; production closed
+warning: in the working copy of '.gitattributes', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-signed-mount-local-design.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/production-readiness-and-server-launch-20261011.md', LF will be replaced by CRLF the next time Git touches it

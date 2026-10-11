@@ -1,0 +1,17 @@
+
+> hydracache-management-console@0.73.0 build
+> vite build && node ./scripts/embed-dist.mjs && node ./scripts/check-static.mjs
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.json               0.18 kB │ gzip:  0.14 kB
+dist/index.html                  0.42 kB │ gzip:  0.28 kB
+dist/assets/index-DlttOFoF.css   7.94 kB │ gzip:  2.48 kB
+dist/assets/index-6Gybws3b.js   53.46 kB │ gzip: 17.46 kB
+
+✓ built in 90ms
+embedded 7 manifest-bound console assets
+console static checks passed (7 manifest-bound assets)

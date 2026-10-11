@@ -1,0 +1,21 @@
+{
+  "version": "5.0.12",
+  "dist.integrity": "sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==",
+  "dist.tarball": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz",
+  "license": "MIT",
+  "dependencies": {
+    "balanced-match": "^4.0.2"
+  },
+  "engines": {
+    "node": "20 || >=22"
+  }
+}
+{
+  "version": "1.2.2",
+  "dist.integrity": "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==",
+  "dist.tarball": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz",
+  "license": "BSD-3-Clause",
+  "engines": {
+    "node": ">=0.10.0"
+  }
+}

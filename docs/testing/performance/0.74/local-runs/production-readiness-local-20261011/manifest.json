@@ -1,0 +1,193 @@
+{
+  "schema_version": "production-readiness-local-evidence-074-v1",
+  "state": "retained-local-readiness-not-production",
+  "evidence_class": "working-tree-local-readiness-audit-not-release-qualification",
+  "baseline_source": "b07a655bb42237b3eb80e774b953017e39850dd3",
+  "signed_mount_implementation": "7cd8b43061638a66b10a3df431a642cd95f19cb3",
+  "signed_mount_tree": "d6e7904fe644d8f1a784ba44650d8cd474ba3a33",
+  "scoped_packet": "../diagnostic-signed-mount-20261011/manifest.json",
+  "console_dependency_fix": "9167a56aedd957d4fcfe316357deee6b74987b6e",
+  "byte_stability_commit": "224d5a6db6841bd60b0671ccea064169c8513226",
+  "reviewed_nested_guard_commit": "d32e786ad8946b43e49301eb2838227903ce795d",
+  "reviewed_tree": "53fd845ac4298f7b3839fdc2dd9e38517b839f23",
+  "toolchains": {
+    "rust": "1.94.0",
+    "msrv": "1.88.0",
+    "node": "24.6.0",
+    "npm": "11.6.1"
+  },
+  "full_workspace_verify": {
+    "command": "cargo +1.94.0 run -p xtask --locked -- verify",
+    "native_platform": "x86_64-pc-windows-msvc",
+    "started_at": "2026-10-11T03:25:37.383126+02:00",
+    "exit": 0,
+    "all_gates_passed": true,
+    "harness_rows": 532,
+    "harness_passes": 3982,
+    "harness_ignored": 82,
+    "counts_are_unique_tests": false,
+    "console_gate": "SKIP (npm not found); separately exercised via npm.cmd",
+    "mutable_working_tree_run": true,
+    "provenance": "Started before initial implementation commit; code hardening, documentation, console security and byte-stability commits occurred during execution. Final supervisor scoped checks cover reviewed source independently. Not an immutable exact-candidate receipt; not fast.workspace-nextest; cadence 840s/hard timeout 2400s unchanged."
+  },
+  "console": {
+    "initial_audit_exit": 1,
+    "initial_high_packages": 2,
+    "fixed_audit_exit": 0,
+    "fixed_advisories_reported": 0,
+    "red_lock_tests_exit": 1,
+    "red_lock_tests_failed": 2,
+    "green_lock_tests_passed": 2,
+    "nested_canary_red_exit": 1,
+    "nested_canary_red_failed": 1,
+    "reviewed_unit_exit": 0,
+    "vitest_passed": 16,
+    "reviewed_package_tests_passed": 7,
+    "browser_exit": 0,
+    "browser_passed_per_run": 46,
+    "browser_runs": 2,
+    "browser_before_nested_test_only_followup": true,
+    "sbom_components": 182,
+    "sbom_is_final_release_receipt": false,
+    "locked_changes": {
+      "brace-expansion": [
+        "5.0.9",
+        "5.0.12"
+      ],
+      "source-map-js": [
+        "1.2.1",
+        "1.2.2"
+      ]
+    },
+    "only_two_lock_entries_changed": true,
+    "direct_dependency_versions_changed": false,
+    "generated_and_embedded_git_blobs_changed": false
+  },
+  "linux_extra_checks": {
+    "msrv_all_targets_exit": 0,
+    "rustdoc_strict_exit": 0,
+    "msrv_toolchain_installed_locally": true
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "qualification_inputs_unchanged": 8,
+  "authority_decision_pending": true,
+  "proof_boundaries": {
+    "all_threads_proved": false,
+    "positive_fixed_host_enrollment": false,
+    "durable_issuer_epoch_or_refusal": false,
+    "production_output_preparer": false,
+    "authenticated_original_start": false,
+    "production_diagnostic_backend": false,
+    "server_inspected_or_mutated": false,
+    "product_workload_or_qualification_run": false,
+    "performance_claim_allowed": false,
+    "registered_exact_candidate_fast_receipt": false,
+    "final_release_supply_chain_receipts": false,
+    "ship_admission": false
+  },
+  "captures": {
+    "readiness-console-audit-fixed.json": {
+      "bytes": 386,
+      "sha256": "501eaaee9508a5064ae8e63a70ab8bb59cd6f108ba363dc638d32431ab35e2bc"
+    },
+    "readiness-console-audit.json": {
+      "bytes": 3398,
+      "sha256": "f9488c9362d3f31cdaa0ea7de3d55acd2f3fd1d9639a0e286b6e0445e12d5702"
+    },
+    "readiness-console-build.log": {
+      "bytes": 645,
+      "sha256": "e9533afecd67fdacc90e12255726294e0aea5421562c8a9503068a2690550c10"
+    },
+    "readiness-console-ci-fixed.log": {
+      "bytes": 150,
+      "sha256": "cc74cb3939c9ff60763c9e1b43c768588ce68f2541fa0e11f5689812d1868aed"
+    },
+    "readiness-console-ci.log": {
+      "bytes": 238,
+      "sha256": "953a6ac12acee191b060510e61434fe8bfbf2a591e107dd10e0e9c7c94807468"
+    },
+    "readiness-console-explain.log": {
+      "bytes": 12959,
+      "sha256": "c81986c3498ff3f3c6a997e1d14cf6d52dce66e8068881bfa033612629945151"
+    },
+    "readiness-console-local-sbom.cdx.json": {
+      "bytes": 116897,
+      "sha256": "790ad035d4cd2799b27e3d225814201f1dd361f44a8475fae93862d8a99a71c0"
+    },
+    "readiness-console-nested-red.log": {
+      "bytes": 1014,
+      "sha256": "2c48dd5d80a99788c61fe652054e7f26878b2208b1e8b5b1c3d4f4fb94cdacc5"
+    },
+    "readiness-console-package-metadata.log": {
+      "bytes": 684,
+      "sha256": "d8f478ae88e93a371a8095fb81665a3d62ab4cc453141dfb3465adc301f30673"
+    },
+    "readiness-console-prod-audit.json": {
+      "bytes": 386,
+      "sha256": "501eaaee9508a5064ae8e63a70ab8bb59cd6f108ba363dc638d32431ab35e2bc"
+    },
+    "readiness-console-security-green.log": {
+      "bytes": 266,
+      "sha256": "46162d7431a9052ab6785a463564fe8ff6ead7182ee1dd90fc1856873a1ebd35"
+    },
+    "readiness-console-security-red.log": {
+      "bytes": 2028,
+      "sha256": "eb5d7a49fc10c3ba34f8a36be40096ac73613a4dddbabf8c0b9ffcd1810f1c64"
+    },
+    "readiness-console-test-final.log": {
+      "bytes": 10518,
+      "sha256": "9ac35c98002ed64f2eb3f27a20b27a102f382d679d82445220c388b66cb5ba56"
+    },
+    "readiness-console-test.log": {
+      "bytes": 10509,
+      "sha256": "d5ff755611634db3bef25def0ebfe907c4d06f9132339f86445980fa19750b37"
+    },
+    "readiness-console-unit-reviewed.log": {
+      "bytes": 1552,
+      "sha256": "a40cad36e3e054d431005e1bb7fee772603b6830ce874bd652385ef6db645a49"
+    },
+    "readiness-isolation.log": {
+      "bytes": 288,
+      "sha256": "1705ffa2eed0579f5fff170d345e9fc601769347ac95cb9176e47e689b817754"
+    },
+    "readiness-linux-rustdoc.log": {
+      "bytes": 460,
+      "sha256": "01988c97f75c3a419ad87fa0f8207889092b756fc022c8239f9c92a86714e0f6"
+    },
+    "readiness-msrv-install.log": {
+      "bytes": 314,
+      "sha256": "492c4477d00b758b3c1f5982a0a99d7f2069943ac2dcfb94508a209d06ca870d"
+    },
+    "readiness-msrv-linux.log": {
+      "bytes": 3528,
+      "sha256": "ddb2662f799a1bf71441ccfb37d2b070ea771b399e982fbe6e15db76e73ccb01"
+    },
+    "readiness-toolchains.log": {
+      "bytes": 862,
+      "sha256": "aaad730a27d0d4f77b6c664abbad135c7c0275503a3ab6cbbe07f00ff5ff61aa"
+    },
+    "workspace-verify-windows.log": {
+      "bytes": 1524765,
+      "sha256": "197fa8f7657c9b6b54de61d51fdc959d7cbf211bfbc1dfef665be9454f628459"
+    },
+    "readiness-docs-final.log": {
+      "bytes": 947,
+      "sha256": "2e45e48c488f403e7a29c73fe5c458d9476282d9192e1bc7469214fc64058278"
+    },
+    "readiness-book-final.log": {
+      "bytes": 220,
+      "sha256": "c63aaa86b5a706fab6d94289ad2adfc384fdc5a34eaaed8945cfdbdbc6f27dbe"
+    },
+    "readiness-links-format-final.log": {
+      "bytes": 85,
+      "sha256": "a48299ed15f096862af6119782ddcd40bd6b48ba22f14605a515ef1698bf2e55"
+    }
+  },
+  "final_quality_checks": {
+    "docs_exit": 0,
+    "book_links_exit": 0,
+    "updated_links_and_scoped_fmt_exit": 0,
+    "updated_local_links": 168,
+    "packet_capture_count_at_docs_checkpoint": 21
+  }
+}
