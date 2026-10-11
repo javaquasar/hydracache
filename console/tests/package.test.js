@@ -11,6 +11,31 @@ import { buildBundle, currentSourceCommit, verifyBundle } from "../scripts/packa
 const repoRoot = resolve(import.meta.dirname, "../..");
 const consoleRoot = resolve(repoRoot, "console");
 
+// Reviewed DoS advisories also apply to the build/test supply chain. Keep the
+// locked transitive versions above all reviewed vulnerable ranges, even when
+// the production-only npm audit does not include these dev dependencies.
+function lockedVersionAtLeast(name, minimum) {
+  const lock = JSON.parse(readFileSync(join(consoleRoot, "package-lock.json"), "utf8"));
+  const version = lock.packages[`node_modules/${name}`]?.version;
+  assert.match(version ?? "", /^\d+\.\d+\.\d+$/);
+  const actual = version.split(".").map(Number);
+  for (let index = 0; index < minimum.length; index += 1) {
+    if (actual[index] !== minimum[index]) return actual[index] > minimum[index];
+  }
+  return true;
+}
+
+test("build lock excludes reviewed brace-expansion DoS versions", () => {
+  // Floor covers GHSA-q2hr-2g5m-vwhr, GHSA-qhr7-859c-m2p7
+  // and GHSA-6j4f-fj2g-mc7p.
+  assert.ok(lockedVersionAtLeast("brace-expansion", [5, 0, 12]));
+});
+
+test("build lock excludes reviewed source-map-js DoS versions", () => {
+  // GHSA-68fv-2mgg-jv7q: indexed source-map offset validation.
+  assert.ok(lockedVersionAtLeast("source-map-js", [1, 2, 2]));
+});
+
 test("static and supply-chain gates validate the generated production bundle", () => {
   for (const script of ["check-static.mjs", "check-supply-chain.mjs"]) {
     execFileSync(process.execPath, [join(consoleRoot, "scripts", script)], {
