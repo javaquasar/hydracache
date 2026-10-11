@@ -2409,3 +2409,16 @@ contains owned single/multi-thread checks and modeled mutations. This primitive
 uses numeric assertions; binding it privately to the original signed guard remains
 the next prerequisite. Sequential scans do not establish continuous confinement,
 durable authority, authenticated start or production admission.
+
+The [signed-task composition](diagnostic-signed-tasks-local-design.md) now binds
+the task primitive privately to an exclusive original signed mount reader. It
+derives the original process and exact numeric policy internally and checks both
+namespace pins against the signed policy. Its
+[packet](local-runs/diagnostic-signed-tasks-20261011/README.md) retains 41 exact
+captures and three successful serial repetitions. Fixed/fixture origins stay distinct;
+opening uses signed/open-tasks/signed/tasks/signed and later checks use
+signed/tasks/signed. First error refuses the whole original chain, including after
+wrapper drop; an earlier inner refusal blocks account IO. Healthy drop preserves
+the original mount reader. The local evidence is safety evidence, not controlled
+fixed-host enrollment, continuous confinement, durable authority or production
+start. No product workload or frozen qualification input changes accompany it.

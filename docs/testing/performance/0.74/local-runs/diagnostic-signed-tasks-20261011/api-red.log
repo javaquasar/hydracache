@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: could not find `policy_context` in `diagnostic_worker_policy`
+ --> tools/long-run-supervisor-074/tests/diagnostic_task_api.rs:5:71
+  |
+5 | ...y::policy_context::a...
+  |       ^^^^^^^^^^^^^^ could not find `policy_context` in `diagnostic_wor...policy`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_task_api") due to 1 previous error

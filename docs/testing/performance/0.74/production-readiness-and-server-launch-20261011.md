@@ -22,7 +22,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | Requirement | Current evidence | Remaining before production |
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
-| Every worker task | Separate local bounded original-task reader; per-task generation/credentials/user/mount checks and membership-churn refusal | Original signed composition; controlled positive fixed-host checks; sequential observations are not continuous confinement |
+| Every worker task | Bounded original-task reader plus exclusive original signed mount composition; exact signed numeric/user/mount pins, membership-churn refusal and whole-chain latch | Controlled positive fixed-host checks; sequential observations are not continuous confinement |
 | Worker policy authority | Signature verification against externally supplied key/digest/epoch | Real operator-selected issuer and pins; durable monotonic epoch/refusal lifecycle; reboot/rollback threat model |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
@@ -85,6 +85,13 @@ Owned unprivileged helpers exercise stable multi-thread operation, real addition
 removals and exit; private mutations cover credential and namespace checks.
 This primitive accepts explicit numeric assertions, not an original signed reader.
 It therefore does not close signed worker enrollment or the dedicated-host gate.
+
+The next [signed-task composition](diagnostic-signed-tasks-local-design.md) derives
+that primitive privately from the original signed mount reader. It accepts no
+replacement process, task set or policy. Its fixed/fixture APIs retain distinct
+origins; observed membership or mapping drift refuses every original borrowed
+guard, including after wrapper drop. This closes the local composition gap, not
+the remaining controlled-host enrollment, durable authority or production start.
 
 ## Required order on the dedicated host
 

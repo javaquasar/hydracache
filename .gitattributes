@@ -104,3 +104,5 @@ docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.log -tex
 docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.json -text whitespace=cr-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/diagnostic-task-set-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-task-set-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signed-tasks-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signed-tasks-*/manifest.json -text

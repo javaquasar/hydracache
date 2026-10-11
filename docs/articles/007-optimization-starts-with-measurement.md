@@ -5987,3 +5987,49 @@ step is a private original-signed-reader composition with refusal propagation;
 durable issuer authority and authenticated production lifecycle remain separate.
 No throughput, allocation, CPU or memory improvement follows from these safety
 checks, and frozen qualification inputs are unchanged.
+
+### Binding task observations to the original signed reader
+
+The next hypothesis is about attribution integrity, not speed: can task checks
+be joined to the already verified worker without letting a caller replace the
+process or numeric policy? The
+[signed-task composition](../testing/performance/0.74/diagnostic-signed-tasks-local-design.md)
+answers this locally with an exclusive borrow of the original signed mount
+reader. The process is derived privately through the original credential guard;
+task UID/GID and the exact supplementary group list come from its original signed
+policy. Both retained user and mount namespace pins must match that policy.
+Separate fixed and fixture types cannot be converted or transferred across threads.
+
+Opening brackets bounded task observation with signed checks; later observation
+uses signed/tasks/signed. The task primitive itself retains its generation and
+membership brackets. A failure stops at the first typed error and latches the
+entire account/context/policy/leader-credential/mount/task chain. Dropping the
+wrapper cannot recover it, while a healthy drop leaves the original reader usable.
+Previously refused inner components are tested before account IO, rather than
+being allowed to reach a different error through damaged signed bytes.
+
+Tests exercise real owned nonroot single/multi-thread helpers, additions/removals,
+exit without replacement adoption, independent readers, signed account restoration,
+post-open signed failure and private descriptor/policy/namespace substitutions.
+Seeded modeled schedules check exact order and first-error/no-retry semantics;
+these are not kernel-race or performance samples. An initial API-path mistake and
+a strict test lint finding are retained separately from the absent-API expected
+red and successful reviewed runs. Neither requires weakening a safety predicate.
+
+This closes a local composition gap, not production enrollment. The bounded scans
+can still miss a transient task entirely between observations. No real foreign
+namespace or nonleader credential mutation is demonstrated; namespace identity
+does not freeze mount contents or prove initial-host authority. Operator issuer
+pins, durable revocation and rollback scope, authenticated original start, watchdog
+and exact writer/cgroup cleanup remain separate prerequisites. The change makes
+future attribution harder to misbind; it does not establish a throughput, CPU,
+allocation or memory improvement. Product candidates and ship admission stay closed.
+
+The [retained packet](../testing/performance/0.74/local-runs/diagnostic-signed-tasks-20261011/README.md)
+binds the reviewed implementation `f624df7f9c9da31f18f0ee2841506253df382bc6` and 41
+raw logs. Eleven new unit tests pass in three serial repetitions; reviewed scoped
+Linux checks pass 394 tests with one existing ignored, Windows passes 189 portable
+tests, and root contract/evidence/governance checks pass 101/13/23. Strict clippy,
+all-target checks and MSRV 1.88 pass on both platforms. These counts describe test
+executions and local safety coverage, not unique performance samples or a new
+full-workspace/exact-candidate release receipt.

@@ -11,8 +11,9 @@ wire/persisted schema, helper/IPC mode or launch operation; existing leader and
 signed APIs are unchanged. Numeric assertions and sequential stable inventories
 are not signed enrollment, atomic/continuous confinement, trusted host authority
 or durable revocation. The additional opt-in signed-task wrapper exclusively
-borrows the original typed signed mount reader and privately derives task numeric
-assertions and both namespace pins from its original policy. Fixed/fixture types
+borrows the original typed signed mount reader, privately derives task numeric
+assertions from its original policy and checks both observed namespace pins against
+that policy. Fixed/fixture types
 stay distinct. An error refuses the original chain even after wrapper drop;
 healthy drop preserves it. This is runtime-only, not a durable/wire format change.
 Controlled fixed-host enrollment and production lifecycle remain prerequisites.
