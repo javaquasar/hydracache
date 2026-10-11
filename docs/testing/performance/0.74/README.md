@@ -2398,5 +2398,14 @@ successful npm.cmd browser/unit/package checks, plus Linux MSRV and strict rustd
 It also retains original npm security findings, minimal compatible dev-dependency
 fixes, test-first and nested-copy canaries, and the local console SBOM. The long
 working-tree verifier is not an immutable candidate or registered fast receipt.
-Production authority, all-thread/lifecycle implementation and host/release evidence
-remain closed; thresholds and frozen qualification inputs are unchanged.
+Production authority, signed all-thread/lifecycle implementation and host/release
+evidence remain closed; thresholds and frozen qualification inputs are unchanged.
+
+The separate [original-task guard](diagnostic-task-set-local-design.md) adds a
+bounded retained inventory and checks each observed task's generation, credentials,
+user and mount namespaces. Membership changes refuse without refreshing or
+adopting tasks. Its [local packet](local-runs/diagnostic-task-set-20261011/README.md)
+contains owned single/multi-thread checks and modeled mutations. This primitive
+uses numeric assertions; binding it privately to the original signed guard remains
+the next prerequisite. Sequential scans do not establish continuous confinement,
+durable authority, authenticated start or production admission.

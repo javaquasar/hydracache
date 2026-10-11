@@ -5955,3 +5955,35 @@ not an accepted 0.74 product candidate. This work fixes a confirmed supply-chain
 finding and strengthens regression coverage; it establishes no CPU, allocation,
 memory or goodput gain. The remaining server and product boundaries are listed in
 the [launch audit](../testing/performance/0.74/production-readiness-and-server-launch-20261011.md).
+
+### Observing every worker task requires retained membership
+
+Leader credentials do not establish the credentials or namespaces of another
+thread. The [original-task guard](../testing/performance/0.74/diagnostic-task-set-local-design.md)
+tests this boundary separately from product optimization. It pins a bounded
+inventory of at most 128 tasks through the original process descriptor, retains
+each task's generation and status/namespace objects, and compares two complete
+passes under process-generation and membership brackets. Additions, removals,
+descriptor replacement or policy drift refuse instead of refreshing the inventory.
+
+Real owned unprivileged Python helpers cover one and several threads, additions,
+removals, process exit and independent concurrent readers. A parallel suite exposes
+a fixture synchronization problem: the removal check refuses, but does not always
+return the expected inventory `Drift` error. The original failure lacks the actual
+variant, so its exact cause is not established. The helper now acknowledges removal
+only after the task is absent from procfs, not merely after Python join. This is a
+bounded logical fixture barrier; the observer still performs no retry. Directory
+grammar, all UID/GID slots, TGID, groups, active capabilities, NoNewPrivs, bounding
+set drift and namespace substitution also have focused regression tests.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-task-set-20261011/README.md)
+retains the baseline, absent-API red result, initial fixture failures and reviewed
+checks. Modeled first-error schedules and directory mutations are not live kernel
+race counts. Stable sequential scans can miss tasks that appear and disappear
+entirely between observations, and shared namespace identity does not attest an
+initial host namespace or immutable mount contents. This primitive proves local
+consistency against numeric assertions, not original signed enrollment. The next
+step is a private original-signed-reader composition with refusal propagation;
+durable issuer authority and authenticated production lifecycle remain separate.
+No throughput, allocation, CPU or memory improvement follows from these safety
+checks, and frozen qualification inputs are unchanged.

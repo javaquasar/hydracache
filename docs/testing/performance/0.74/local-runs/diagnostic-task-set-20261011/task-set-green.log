@@ -1,0 +1,19 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 18.52s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+task-set modeled seed=0x7612026; schedules=256
+test diagnostic_process::worker_tasks::tests::task_set_directory_records_are_strict_bounded_and_sorted ... ok
+test diagnostic_process::worker_tasks::tests::task_set_order_first_failure_and_seeded_refusal_are_exact ... ok
+test diagnostic_process::worker_tasks::tests::task_set_enumeration_has_no_retry_and_exact_call_budget ... ok
+test diagnostic_process::worker_tasks::tests::task_set_is_neither_send_nor_sync ... ok
+test diagnostic_process::worker_tasks::tests::task_set_status_checks_tgid_all_slots_groups_capabilities_and_nnp ... ok
+test diagnostic_process::worker_tasks::tests::task_set_concurrent_independent_readers_share_no_latch ... ok
+test diagnostic_process::worker_tasks::tests::task_set_real_single_and_multiple_tasks_remain_original_on_healthy_drop ... ok
+test diagnostic_process::worker_tasks::tests::task_set_retained_substitution_namespace_type_and_thread_drift_refuse ... ok
+test diagnostic_process::worker_tasks::tests::task_set_original_exit_and_dead_construction_never_adopt_replacement ... ok
+test diagnostic_process::worker_tasks::tests::task_set_real_add_remove_and_restoration_never_refresh_inventory ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.15s
+

@@ -1,0 +1,215 @@
+{
+  "schema_version": "diagnostic-task-set-local-evidence-074-v1",
+  "state": "retained-local-original-tasks-not-signed-enrollment",
+  "capture_date": "2026-10-11",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "5efc0cfbe3e1defbefffdfa3dd0ddb012db04a36",
+  "baseline_tree": "49bed06faf8258571d89309a7ccb10259d79a0ee",
+  "preregistration_source": "a2c91dc0de343262e7accddb4928db1fbf205989",
+  "implementation_source": "8c8e55aa68115f7633b9ecfe12367384b37474d3",
+  "implementation_tree": "283e6a48abbeba57a8f4c0e7836a10212610fcc8",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "limits": {
+    "tasks": 128,
+    "directory_calls": 16,
+    "directory_bytes": 65536
+  },
+  "results": {
+    "linux_scoped_passed": 382,
+    "linux_existing_ignored": 1,
+    "new_unit_tests": 11,
+    "new_api_tests": 1,
+    "serial_repetitions": 3,
+    "windows_package_passed": 189,
+    "windows_new_linux_cases": 0,
+    "root_contract_passed": 100,
+    "root_evidence_passed": 13,
+    "final_governance_passed": 23
+  },
+  "new_unit_test_names": [
+    "task_set_directory_records_are_strict_bounded_and_sorted",
+    "task_set_enumeration_has_no_retry_and_exact_call_budget",
+    "task_set_seeded_directory_mutations_never_panic_or_accept_a_selector",
+    "task_set_status_checks_tgid_all_slots_groups_capabilities_and_nnp",
+    "task_set_order_first_failure_and_seeded_refusal_are_exact",
+    "task_set_is_neither_send_nor_sync",
+    "task_set_real_single_and_multiple_tasks_remain_original_on_healthy_drop",
+    "task_set_real_add_remove_and_restoration_never_refresh_inventory",
+    "task_set_original_exit_and_dead_construction_never_adopt_replacement",
+    "task_set_retained_substitution_namespace_type_and_thread_drift_refuse",
+    "task_set_concurrent_independent_readers_share_no_latch"
+  ],
+  "modeled_seeds": {
+    "first_error": "0x7612026",
+    "directory_records": "0x7622026"
+  },
+  "modeled_counts_per_final_repetition": {
+    "first_error": 256,
+    "directory_records": 512
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "proof_boundaries": {
+    "original_signed_composition": false,
+    "initial_host_namespace_proved": false,
+    "atomic_or_continuous_proof": false,
+    "mount_content_immutability_proved": false,
+    "file_opener_credentials_attested": false,
+    "durable_authority_or_refusal": false,
+    "real_issuer_enrolled": false,
+    "positive_fixed_host_enrollment": false,
+    "production_preparation_or_start": false,
+    "authenticated_original_start": false,
+    "autonomous_watchdog_or_writer_revocation": false,
+    "new_helper_ipc_or_live_route": false,
+    "host_mutation_allowed": false,
+    "product_workload_allowed": false,
+    "performance_claim_allowed": false,
+    "qualification_or_admission_allowed": false,
+    "full_workspace_run_for_this_slice": false,
+    "real_foreign_namespace_mutation": false,
+    "real_nonleader_credential_mutation": false,
+    "guard_send_or_sync": false,
+    "public_replacement_or_refresh": false,
+    "old_public_behavior_changed": false
+  },
+  "negative_results_retained": [
+    "absent API E0432",
+    "directory fixture mutated a byte to its unchanged original value",
+    "strict manual-is-multiple-of lint",
+    "parallel removal refused with an unrecorded variant instead of expected Drift",
+    "missing Linux cfg-target registration",
+    "initial repetition filename expansion lost at PowerShell boundary; three fresh retained explicit-name runs replace that capture claim"
+  ],
+  "notes": [
+    "Initial membership-error variant was not recorded; exact cause unestablished. Final helper acknowledges only procfs task absence, with a bounded logical test-only barrier.",
+    "No observer retry, all-task refresh, wall-clock correctness threshold or qualification restart.",
+    "Linux scoped final tests and repeats cover reviewed source; Windows excludes new Linux tasks. Development logs span a working tree and are not a source-bound release receipt.",
+    "Prior full Windows workspace packet is historical; no full workspace run for this slice.",
+    "No live foreign namespace/nonleader credential mutation or TID reuse. Those checks use private retained-object/policy mutations.",
+    "Existing 120-second new API registry timeout inherits the standard fast contract; qualification budgets untouched.",
+    "repeat-.log retains only the last run of the first capture loop. repeat-1/2/3.log are three fresh completed explicit-name captures, not recovered or rewritten earlier logs."
+  ],
+  "logs": {
+    "baseline-linux.log": {
+      "sha256": "79e51ed9e2e87e0350732e6f773fd335cc1fd74c031e8247aa72e51941b4a911",
+      "bytes": 35389
+    },
+    "book-final.log": {
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "bytes": 151
+    },
+    "docs-final.log": {
+      "sha256": "a9cb2fe1d5a23fe4b820bf2a898fa82dc9f1e8580c73efe7b583219ea93e99af",
+      "bytes": 442
+    },
+    "format-links-final.log": {
+      "sha256": "609571188611204864b1dd9186564d1056652e48b92efe2c3a1d980e5934ed5f",
+      "bytes": 69
+    },
+    "governance-final.log": {
+      "sha256": "7a05d08765b116d5e35ce4435603cef7a18fb40369603df9c870cd928586de16",
+      "bytes": 2133
+    },
+    "isolation.log": {
+      "sha256": "841077ac2a4db5f0c8503ea2988d3e1e128ba8dd4dbaade725751ae06860547b",
+      "bytes": 2357
+    },
+    "linux-check.log": {
+      "sha256": "1abc4e98d2960dc85568be5fb1ccfb0ed87083e91e1ad98075796a9db58db470",
+      "bytes": 193
+    },
+    "linux-clippy-final.log": {
+      "sha256": "73af3aeae6330339e60adcd2f3d409e0d00f53c012222cddf19804dc75061ed9",
+      "bytes": 193
+    },
+    "linux-clippy.log": {
+      "sha256": "08312e878b3d5a20bf68a0d8e7862b4d1f7ea00024102c1e194b35d03670426f",
+      "bytes": 901
+    },
+    "linux-msrv.log": {
+      "sha256": "ee4cb900255cc1dd2fe8ad15f0cb5a3306e9030119cebcf738223d5c72e9f6fd",
+      "bytes": 193
+    },
+    "linux-reviewed-tests.log": {
+      "sha256": "78776b984dee1bf02ec1f1ee81d1749cda599d07348ed30cdb78e7b5708c9100",
+      "bytes": 44776
+    },
+    "linux-rustdoc.log": {
+      "sha256": "42cf278caf008adec4111e32f83f9816faeae9b16c0ce70cb82e77e9ea049b4f",
+      "bytes": 460
+    },
+    "linux-tests-final.log": {
+      "sha256": "a3b4ca4075f778563c027c0a3a2d908ab6e8835e605d752edbb1a0aa2f2ce6b6",
+      "bytes": 37355
+    },
+    "linux-tests-membership-diagnosis.log": {
+      "sha256": "e370287ce5d8bfae176def507f054e2b24c393d0b871f0bd65cd8680a7ffd19d",
+      "bytes": 37390
+    },
+    "repeat-.log": {
+      "sha256": "97ddf79b06663cb718960c37a1b2eefb4c0a637c0b24c320755b22f9305bcb07",
+      "bytes": 1762
+    },
+    "repeat-1.log": {
+      "sha256": "1fa2a1b7e72b61fd487f5f052dec983ed64786cce4f0b0c846064befffb837e8",
+      "bytes": 1761
+    },
+    "repeat-2.log": {
+      "sha256": "be07570377e6484676b87e24287e4721e8ef434d8574194fdd3cc0841195869f",
+      "bytes": 1761
+    },
+    "repeat-3.log": {
+      "sha256": "103fccfd3fe64d274a3d9beb135aa5167ef4087fb08b80fbb379cb41ce3e3b76",
+      "bytes": 1761
+    },
+    "root-clippy.log": {
+      "sha256": "980d34f2862fdca6f486b63e5e7a146fead3d9b149eeabfc64c1e05055ca5091",
+      "bytes": 725
+    },
+    "root-new-guard.log": {
+      "sha256": "2ef9d0e68015de0d77c1a9ee3cf44e89a37985c1b810013a96033af2d563e2bb",
+      "bytes": 1045
+    },
+    "root-reviewed-tests.log": {
+      "sha256": "66ddd069b9ce466fdf9b324266eaa7f82f76a060aef6b43f49c43749f034c00e",
+      "bytes": 14250
+    },
+    "ship-refusal.log": {
+      "sha256": "d93a17809059137f3bf4ea19da4b2ba2b2b8822092abc8d80421571289671d78",
+      "bytes": 2828
+    },
+    "task-api-green.log": {
+      "sha256": "7a3f35e7709725dc31fc1234184448d5cf916b3dcd0551a16951c37a8d710a45",
+      "bytes": 533
+    },
+    "task-api-red.log": {
+      "sha256": "0d120ae73979c4d2405d385b020d268c5f2ddd9b2d218cb05f40984e72293d8b",
+      "bytes": 783
+    },
+    "task-set-first.log": {
+      "sha256": "4a5c4e32c03888500db1202fd3b91cc3e4fa25824e0db6019946a908f181c6b9",
+      "bytes": 2141
+    },
+    "task-set-green.log": {
+      "sha256": "aa189c3a8d545a705be9548e1da215998c8b4382a54e14e6cab6e82ae3e92ea6",
+      "bytes": 1644
+    },
+    "windows-check.log": {
+      "sha256": "2d704b8079e20bc263589cbb754e2bda3d942be8d17c9f57ac3ad165af1fbbfa",
+      "bytes": 191
+    },
+    "windows-clippy.log": {
+      "sha256": "9cb8e46ad805df3ce04b4c2d9a3506992cb99684cf4cde174d0cff9c9fb1f436",
+      "bytes": 191
+    },
+    "windows-msrv.log": {
+      "sha256": "578a57d7afbb5359ca830318425d86adb162e7416aab79d6dd6656b24c75cebd",
+      "bytes": 190
+    },
+    "windows-tests.log": {
+      "sha256": "00d76785adf94c00ec1d6189d3d60f32de4cd9ec7a0ab92ce325efe1f5f81496",
+      "bytes": 24371
+    }
+  }
+}

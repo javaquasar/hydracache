@@ -22,7 +22,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | Requirement | Current evidence | Remaining before production |
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
-| Every worker task | Leader checks only | Bounded retained task enumeration, per-task generation/credentials/user/mount checks, membership-churn refusal and original signed composition |
+| Every worker task | Separate local bounded original-task reader; per-task generation/credentials/user/mount checks and membership-churn refusal | Original signed composition; controlled positive fixed-host checks; sequential observations are not continuous confinement |
 | Worker policy authority | Signature verification against externally supplied key/digest/epoch | Real operator-selected issuer and pins; durable monotonic epoch/refusal lifecycle; reboot/rollback threat model |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
@@ -78,6 +78,13 @@ incidental generated/embedded content changes; no asset blob is changed.
 These completed local checks do not finish any missing production row above.
 Durable authority still needs the operator choice described there; no test issuer
 or synthetic epoch may be promoted to replace it.
+
+The subsequent [original-task slice](diagnostic-task-set-local-design.md) now
+retains up to 128 original task objects and refuses inventory or per-task drift.
+Owned unprivileged helpers exercise stable multi-thread operation, real additions,
+removals and exit; private mutations cover credential and namespace checks.
+This primitive accepts explicit numeric assertions, not an original signed reader.
+It therefore does not close signed worker enrollment or the dedicated-host gate.
 
 ## Required order on the dedicated host
 

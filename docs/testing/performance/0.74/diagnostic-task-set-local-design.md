@@ -57,3 +57,26 @@ root-owned output preparation, authenticated start, watchdog/writer revocation
 and positive dedicated-host rehearsal remain required. No helper/IPC mode,
 production route, server mutation, workload, performance claim or release
 admission is enabled.
+
+## Reviewed local result
+
+Implementation: `8c8e55aa68115f7633b9ecfe12367384b37474d3`, tree
+`283e6a48abbeba57a8f4c0e7836a10212610fcc8`; preregistration:
+`a2c91dc0de343262e7accddb4928db1fbf205989`. The
+[packet](local-runs/diagnostic-task-set-20261011/README.md) retains 30 exact raw
+captures, including initial failures. Linux scoped checks pass 382 with one
+existing ignored, eleven new unit tests repeat three times, and the external
+API test passes. Windows full supervisor package passes 189 portable cases with
+zero new Linux cases. Root contracts/evidence pass 100/13 and final governance 23.
+Strict lint, all-target checks, both-platform Rust 1.88 compilation, Linux
+rustdoc, formatting, documentation and local performance contracts pass.
+
+The initial removal-error expectation fails in a parallel suite without recording
+the actual variant. Its exact cause is unestablished; the fixture now acknowledges
+procfs task absence explicitly. The guard still never retries. Missing cfg-target
+registration is fixed under the existing Linux fast lane, without changing its
+workflow or timeout. The first capture loop overwrites its repeat filename at
+the PowerShell boundary; the preserved final capture is supplemental and three
+fresh explicitly named captures supply the repetition result. None of these
+negative results becomes a performance or production pass. Frozen qualification
+inputs remain unchanged, and ship admission still refuses.

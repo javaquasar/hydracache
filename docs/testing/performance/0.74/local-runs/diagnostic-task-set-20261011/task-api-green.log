@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 22.33s
+     Running tests/diagnostic_task_api.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_task_api-7ae46c3345e9c53c)
+
+running 1 test
+test task_set_api_accepts_only_original_process_and_asserted_credentials ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

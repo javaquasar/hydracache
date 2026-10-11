@@ -1,0 +1,12 @@
+    Checking ring v0.17.14
+    Checking rustls-webpki v0.103.15
+    Checking rcgen v0.14.8
+    Checking rustls v0.23.45
+    Checking tokio-rustls v0.26.4
+    Checking tonic v0.14.6
+    Checking tonic-prost v0.14.6
+    Checking hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+    Checking hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1m 34s
