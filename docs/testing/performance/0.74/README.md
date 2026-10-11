@@ -2613,3 +2613,23 @@ worker-owned campaigns layout. After guard drop the old campaign route can
 still acquire a claim despite fixed Reserved state. Durable exclusion therefore
 requires a coordinated campaign-admission and ownership change before any
 trusted publisher. No server, workload, installer or qualification input changes.
+
+## Fixed diagnostic context in campaign admission
+
+The [admission check](diagnostic-fixed-admission-local-design.md) now connects
+the canonical Linux production campaign route to existing fixed intent storage.
+Any entry blocks campaign acquire/recovery and short legacy diagnostic lock
+transactions under the same original flock. Pending, terminal, malformed,
+unknown and nonregular entries are not mistaken for absence. Missing/unsafe
+storage refuses. Original directories and lock identity survive pre/post marker
+checks; late conflict retains any existing or created campaign marker.
+
+Every scan opens a fresh descriptor relative to the original fixed leaf,
+avoiding shared-directory-offset false absence. Empty safe storage preserves
+the legacy route but is not enrollment; its worker-owned lock is not promoted
+to root authority. Nonproduction/portable paths remain separate, so the earlier
+fixture-only negative example remains valid. See the
+[local evidence](local-runs/diagnostic-fixed-admission-20261011/README.md).
+Trusted ownership enrollment and coordinated binary deployment, original
+authority/intent/state composition and publication remain before worker launch.
+No server, installer, product workload or frozen qualification input changed.

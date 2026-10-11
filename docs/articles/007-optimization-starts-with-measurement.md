@@ -6622,3 +6622,51 @@ must establish ownership for every participant. Holding an external lock during
 the workload would stall supervisor maintenance and is not a solution. Original
 authority/intent/state composition, fixed consumption publication and the
 output/start/watchdog/owned-cleanup lifecycle remain subsequent packages.
+
+## Campaign admission now checks retained diagnostic context
+
+The previous short-fence test exposed a concrete gap: the campaign path did not
+consult the fixed state location after the diagnostic guard released its flock.
+The next control-plane hypothesis was that a conservative read-side check in
+the real admission/recovery algorithms could close that gap without a publisher,
+another lock or an ownership migration.
+
+For the canonical Linux production campaign root, those algorithms now open
+existing fixed intent storage after acquiring the common flock. They retain
+the original storage ancestry, campaigns directory and named/original lock
+metadata across marker handling. Any fixed-leaf entry blocks admission,
+including an unknown future name, terminal record, pending publication, FIFO
+or dangling symlink. Absence of active-diagnostic.json alone is insufficient.
+Missing or unsafe storage refuses; no directory or permission repair follows.
+
+Each observation opens a fresh directory descriptor relative to the retained
+leaf before enumeration. Reusing a duplicated descriptor would share its
+directory offset and could make a later scan falsely appear empty. Pre/post
+checks also catch object or context changes around marker creation/recovery.
+A late failure preserves the marker and evidence rather than deleting a partial
+transaction or starting a replacement. The short legacy diagnostic lock entry
+checks fixed context too; its existing legacy-state transactions remain allowed
+when fixed storage is empty.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-fixed-admission-20261011/README.md)
+uses the real claim/recovery algorithms with private nonroot factories. It tests
+valid canonical Reserved state after fence release, every entry type, repeat
+scans, original-object drift, late seeded conflicts, marker retention, normal
+legacy recovery and canonical path handling. The first test wrongly expected a
+symlink root to be accepted; the existing rejection was preserved and the test
+was corrected. No acceptance threshold was changed. The final focused suite
+passes 13 cases in each of three repeats with seed `0x747`; final Linux
+regression passes 526 cases with one pre-existing real-systemd-bus test ignored.
+Windows package tests pass 196 cases and native root contract/registry/governance
+tests pass 155. These are functional counts, not throughput measurements or
+physical host evidence. MSRV 1.88.0, current 1.94.0, warnings-denied Clippy,
+format, rustdoc and compile-fail doctests are retained in the packet.
+
+This closes the production read-side bypass, not the whole diagnostic protocol.
+Empty safe storage is not root authority, and the deployed worker-owned campaign
+layout remains unenrolled for diagnostic publication. Older supervisor binaries
+do not know this predicate. A future publisher therefore requires coordinated
+reviewed deployment and trusted ownership enrollment, then original
+authority/intent/state composition and publication under the same fence.
+Output/start/watchdog/owned cleanup and controlled-host proof remain separate.
+There is no server run, numerical performance result or release admission here.

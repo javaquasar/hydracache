@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized] target(s) in 6.51s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_output_preparation::fixed_intent_storage::campaign_admission::tests::fixed_admission_scan_directory_stream_refuses_non_directory_without_repair ... ok
+test diagnostic_output_preparation::fixed_intent_storage::campaign_admission::tests::fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latches ... ok
+test diagnostic_output_preparation::fixed_intent_storage::campaign_admission::tests::fixed_admission_scan_scan_reopens_offsets_and_nonutf8_entries_also_block ... ok
+test diagnostic_output_preparation::fixed_intent_storage::campaign_admission::tests::fixed_admission_scan_world_writable_hardlinked_lock_or_foreign_root_refuses ... ok
+test host_execution::fixed_admission_tests::fixed_admission_all_known_unknown_and_nonregular_contexts_block_without_decode ... ok
+test host_execution::fixed_admission_tests::fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch ... ok
+test host_execution::fixed_admission_tests::fixed_admission_context_after_fence_drop_blocks_acquire_and_both_recoveries ... ok
+test host_execution::fixed_admission_tests::fixed_admission_empty_storage_preserves_legacy_create_and_recovery ... ok
+test host_execution::fixed_admission_tests::fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence ... ok
+test host_execution::fixed_admission_tests::fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct ... ok
+test host_execution::fixed_admission_tests::fixed_admission_recovery_late_failure_never_removes_existing_marker ... ok
+test host_execution::fixed_admission_tests::fixed_admission_repeated_scans_and_original_refusal_never_refresh ... ok
+test host_execution::fixed_admission_tests::fixed_admission_seeded_late_context_and_object_failures_retain_created_marker ... seed=0x747
+ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 439 filtered out; finished in 0.13s
+

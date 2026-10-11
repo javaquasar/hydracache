@@ -1,22 +1,26 @@
 # Production readiness and dedicated-server launch boundaries
 
 Current continuation: original authority composes with signed expected intent.
-The original fixed Reserved-state reader can now be borrowed under the existing
-campaign flock for a short observation, requiring trusted private campaign
-ownership and refusing legacy context. The deployed worker-owned campaigns
-layout deliberately refuses; no ownership migration is installed. This is not
-durable campaign exclusion: legacy admission ignores fixed state after drop.
+The canonical Linux production campaign path now inspects fixed diagnostic
+storage under its original common flock. Any entry blocks acquire, recovery
+and short legacy diagnostic lock transactions, including after a prior short
+guard drops. Original objects span pre/post marker checks; late refusal retains
+the marker. Missing/unsafe storage is not absence. The original Reserved reader
+and diagnostic fence still require trusted private campaign ownership; the
+deployed worker-owned layout is not silently enrolled or migrated.
 Authority/intent/state composition, a trusted state publisher, fixed intent
 publisher and diagnostic start route remain open.
 The Linux storage preflight is ready for a controlled storage check after a fresh
 reviewed installation. See the [intent composition design](diagnostic-authority-intent-local-design.md)
 and [storage design](diagnostic-storage-preflight-design.md).
 
-The [original fence design](diagnostic-original-fence-local-design.md) requires
-the same existing lock rather than an independent namespace. Before publication,
-campaign admission must check the fixed reservation while holding that lock;
-quiescent ownership enrollment must cover every campaign user. Neither task
-may be replaced by holding an external lock across a workload.
+The [fixed admission design](diagnostic-fixed-admission-local-design.md) closes
+the read-side gap demonstrated by the [original fence](diagnostic-original-fence-local-design.md).
+Empty storage permits legacy admission, not diagnostic enrollment. Before
+publication, coordinated deployment must exclude older supervisor binaries,
+and quiescent trusted ownership enrollment must cover every campaign user.
+No installed-host change or complete publisher serialization is proved here.
+Holding an external lock across a workload cannot replace those requirements.
 
 This is a repository audit on 2026-10-11, not a server inspection, installation
 approval or release acceptance. The original signed leader mount composition is

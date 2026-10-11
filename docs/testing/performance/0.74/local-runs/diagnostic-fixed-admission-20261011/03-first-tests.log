@@ -1,0 +1,37 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: unused import: `AsRawFd`
+ --> tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs:7:19
+  |
+7 | ...::{AsRawFd, I...
+  |       ^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning (run `cargo fix --lib -p hydracache-long-run-supervisor-074 --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 23.75s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 9 tests
+test host_execution::fixed_admission_tests::fixed_admission_all_known_unknown_and_nonregular_contexts_block_without_decode ... ok
+test host_execution::fixed_admission_tests::fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch ... 
+thread 'host_execution::fixed_admission_tests::fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch' (421) panicked at tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:274:6:
+called `Result::unwrap()` on an `Err` value: Path
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test host_execution::fixed_admission_tests::fixed_admission_context_after_fence_drop_blocks_acquire_and_both_recoveries ... ok
+test host_execution::fixed_admission_tests::fixed_admission_empty_storage_preserves_legacy_create_and_recovery ... ok
+test host_execution::fixed_admission_tests::fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence ... ok
+test host_execution::fixed_admission_tests::fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct ... ok
+test host_execution::fixed_admission_tests::fixed_admission_recovery_late_failure_never_removes_existing_marker ... ok
+test host_execution::fixed_admission_tests::fixed_admission_repeated_scans_and_original_refusal_never_refresh ... ok
+test host_execution::fixed_admission_tests::fixed_admission_seeded_late_context_and_object_failures_retain_created_marker ... seed=0x747
+ok
+
+failures:
+
+failures:
+    host_execution::fixed_admission_tests::fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch
+
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 439 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

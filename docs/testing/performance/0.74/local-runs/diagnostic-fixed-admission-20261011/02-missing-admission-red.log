@@ -1,0 +1,403 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find type `DiagnosticAdmission` in this scope
+  --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:24:61
+   |
+24 | ...lt<DiagnosticAdmission, H...
+   |       ^^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+24 | fn model<DiagnosticAdmission>(origin: &Path, root: &Path, lock: &File) -> Result<DiagnosticAdmission, HostExecutionError> {
+   |         +++++++++++++++++++++
+
+error[E0433]: failed to resolve: use of undeclared type `DiagnosticAdmission`
+  --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:25:5
+   |
+25 |     ...cAdmission::m...
+   |     ...^^^^^^^^^^ use of undeclared type `DiagnosticAdmission`
+
+error[E0599]: no function or associated item named `acquire_inner_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:28:25
+    |
+ 28 | ...m::acquire_inner_with(ro...
+    |       ^^^^^^^^^^^^^^^^^...on or associated item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `acquire_inner_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `acquire_inner` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:98:5
+    |
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `recover_active_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:39:33
+    |
+ 39 | ...m::recover_active_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^^ funct...sociated item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `recover_active_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `recover_active` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:70:5
+    |
+ 70 |    ...utionError> {
+    |    ...^^^^^^^^^^^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `acquire_inner_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:42:29
+    |
+ 42 | ...m::acquire_inner_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^ fu...r associated item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `acquire_inner_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `acquire_inner` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:98:5
+    |
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `recover_active_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:46:29
+    |
+ 46 | ...m::recover_active_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^^ f...r associated item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `recover_active_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `recover_active` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:70:5
+    |
+ 70 |    ...utionError> {
+    |    ...^^^^^^^^^^^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0425]: cannot find function `lock_host_root_with` in this scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:49:22
+    |
+ 49 | ...s!(lock_host_root.....
+    |       ^^^^^^^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:205:1
+    |
+205 |...utionError> {
+    |...----------- similarly named function `lock_host_root` defined here
+    |
+help: a function with a similar name exists
+    |
+ 49 -     assert!(matches!(lock_host_root_with(&root, |r, l| model(temp.path(), r, l)), Err(HostExecutionError::DiagnosticConflict)));
+ 49 +     assert!(matches!(lock_host_root(&root, |r, l| model(temp.path(), r, l)), Err(HostExecutionError::DiagnosticConflict)));
+    |
+
+error[E0599]: no function or associated item named `recover_active_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:62:41
+    |
+ 62 | ...m::recover_active_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^^ function or a... item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `recover_active_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `recover_active` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:70:5
+    |
+ 70 |    ...utionError> {
+    |    ...^^^^^^^^^^^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `acquire_inner_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:132:42
+    |
+132 | ...m::acquire_inner_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^ function or ass...item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `acquire_inner_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `acquire_inner` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:98:5
+    |
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `recover_active_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:164:38
+    |
+164 | ...m::recover_active_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^^ function o...ted item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `recover_active_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `recover_active` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:70:5
+    |
+ 70 |    ...utionError> {
+    |    ...^^^^^^^^^^^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `acquire_inner_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:179:38
+    |
+179 | ...m::acquire_inner_with(&r...
+    |       ^^^^^^^^^^^^^^^^^^ function or...ted item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `acquire_inner_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `acquire_inner` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:98:5
+    |
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no function or associated item named `acquire_inner_with` found for struct `HostExecutionClaim` in the current scope
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:184:37
+    |
+184 | ...m::acquire_inner_with(&a...
+    |       ^^^^^^^^^^^^^^^^^^ function o...ated item not found in `HostExecutionClaim`
+    |
+   ::: tools/long-run-supervisor-074/src/host_execution.rs:54:1
+    |
+ 54 |...cutionClaim {
+    |...----------- function or associated item `acquire_inner_with` not found for this struct
+    |
+note: if you're trying to build a new `host_execution::HostExecutionClaim` consider using one of the following associated functions:
+      host_execution::HostExecutionClaim::acquire
+      host_execution::HostExecutionClaim::recover
+      host_execution::HostExecutionClaim::acquire_inner
+   --> tools/long-run-supervisor-074/src/host_execution.rs:62:5
+    |
+ 62 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 66 |    ...ecutionError> {
+    |    ...^^^^^^^^^^^^^
+...
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+help: there is an associated function `acquire_inner` with a similar name
+   --> tools/long-run-supervisor-074/src/host_execution.rs:98:5
+    |
+ 98 | /     fn acquire_inner(
+ 99 | |         campaign_root: &Path,
+100 | |         campaign_id: &str,
+101 | |         create_if_missing: bool,
+102 | |     ) -> Result<Self, HostExecutionError> {
+    | |_________________________________________^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-6358047575985638852.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0433]: failed to resolve: use of undeclared type `DiagnosticAdmission`
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:195:13
+    |
+195 | ...t!(Diagn...ssion::o...
+    |       ^^^^^...^^^^^ use of undeclared type `DiagnosticAdmission`
+
+error[E0433]: failed to resolve: use of undeclared type `DiagnosticAdmission`
+   --> tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs:196:14
+    |
+196 | ...!(!Diagno...sion::o...
+    |       ^^^^^^...^^^^ use of undeclared type `DiagnosticAdmission`
+
+Some errors have detailed explanations: E0425, E0433, E0599.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 14 previous errors

@@ -1,0 +1,657 @@
+{
+  "schema_version": 1,
+  "state": "retained-fixed-context-campaign-admission-local",
+  "date": "2026-10-11",
+  "baseline_source": "f3d9045f36eba442f52fdd94f9c58bb5f20cbaaa",
+  "baseline_tree": "b1bbf00358ab1954e30a32016497b97a914c15dd",
+  "preregistration_source": "fcd5a6a9455fcb756c10fabc49b44e2a6a2a307a",
+  "implementation_source": "f065429749a923628bb1004fd901245731851e66",
+  "implementation_tree": "41d9e2c33d3b14e41bdf1473d1d270099ce35b91",
+  "implementation_source_sha256": {
+    "docs/COMPAT.md": "a71fee00ae8a0100f118ff40903870f6b7ad878376e35c6dd57137f41392cf98",
+    "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission.rs": "c8f609d87386d24a62b5d1adf75caafd8bea380dba8e0b2e91be875af0b343d4",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh": "a37c9abcdfc2bfa84ec960f80883c42373552abbc9e9aa0c53068344fe9833fa",
+    "docs/testing/gated-test-registry.toml": "e1f23ed8b094c540d01911ef46f12c93a22081e3f9a92cda98e543658902c388",
+    "docs/testing/release-evidence/0.74.toml": "d789ded48ab4eb15e83ff638b21ff75949b4d2dc3ea5978d3b23cb1713a2acdb",
+    "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs": "a0948c9c80d82ba282d91ca9adb30424c850956e256170e4086b5deff97be44b",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "0dec46eb20e162150b76ea5c7813ce3c6d41ca116a9de4dc745f713334b603d1",
+    "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs": "fcc4058bcf3c31f51e11a4023ac08ca3c126206592ad7d1ce5a142f4fe1c2b13",
+    "docs/testing/performance/0.74/diagnostic-fixed-admission-local-design.md": "73885d349ffa68ee75d7006b86c6de1339f0ed9577431ff9e7d7f0d0ca621a17",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs": "d55c6ac34b061585b45fc53d6a31a4570ece37c344846c06ffc7f61001ec4e8c",
+    ".gitattributes": "f10a18b22efc0b8f2e12c9b198aec4de4b5187341fc8ee46dff374e78261bb79",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf": "8e3b5a3df9085ae9ad493ab9b4211b0f7ea710ea433f94c15e7945b83d52d2f0",
+    "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs": "70e30fad07f2376ab63b52b4b4af2af7cd0167ea0489d56ef65cfa2c85bd3706",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs": "fbb3a9135953b8a582f9de0bed070638e70443195ace647c957b300f71c1a1bb",
+    "crates/xtask/tests/performance_contract_074.rs": "b7844cefb506579cef115e3f4f88fc3c8d1a1c227c7c1268d87f0de7b0d62c0e",
+    "tools/long-run-supervisor-074/src/host_execution.rs": "6c854501cb813d40a129822a39023d8d4b9160560f952768a2afd23f3985274a",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "ade0d366c14b63212955db852cd70605219554b23fbaa6f24bdbeadf8edd3c5b",
+    "docs/testing/performance/0.74/diagnostic-fixed-admission-local-contract.toml": "26fef246af3a053197cd9d0a33c88c816558f5bad2da9d5c0182393bc6b07f27",
+    "tools/long-run-supervisor-074/src/config.rs": "96ec2527c824e660c2b3816a816dc6293789bb35b11f5d87770578649f0b3661"
+  },
+  "unchanged_legacy_sources": [
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs",
+    "tools/long-run-supervisor-074/src/config.rs",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf",
+    "docs/testing/gated-test-registry.toml"
+  ],
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-original-fence-20261011",
+  "historical_manifest_sha256": "a82918ac738e94cfb0f712eeef3dae7a264ea00beafc821e8b27080aa910ba7f",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "closed_permissions": {
+    "host_operation_performed": false,
+    "installer_or_ownership_changed": false,
+    "trusted_state_publication_implemented": false,
+    "fixed_publisher_implemented": false,
+    "authority_intent_join_implemented": false,
+    "host_enrollment_proved": false,
+    "publisher_serialization_proved": false,
+    "worker_execution_allowed": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "canonical_fixed_predicate_in_real_algorithms_tested": true,
+  "context_after_short_fence_drop_excludes_modeled_campaign": true,
+  "not_proved": [
+    "physical production-path/host enrollment",
+    "older-binary exclusion on installed host",
+    "quiescent trusted campaign ownership",
+    "publisher serialization or durable authenticated intent publication",
+    "authority/intent/state composition",
+    "diagnostic output/start/watchdog/owned cleanup",
+    "continuous confinement or power-loss durability"
+  ],
+  "toolchains": {
+    "current": "1.94.0",
+    "msrv": "1.88.0",
+    "python": "Windows 3.13"
+  },
+  "test_environment": {
+    "root_for_local_tests": false,
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTDOCFLAGS": "-D warnings for Windows rustdoc",
+    "faults": "private enumerated logical checkpoints, seed 0x0747; not a physical race/power-loss test"
+  },
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_context_after_fence_drop_blocks_acquire_and_both_recoveries"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_empty_storage_preserves_legacy_create_and_recovery"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_all_known_unknown_and_nonregular_contexts_block_without_decode"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_repeated_scans_and_original_refusal_never_refresh"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_seeded_late_context_and_object_failures_retain_created_marker"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_recovery_late_failure_never_removes_existing_marker"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/host_execution_fixed_admission_tests.rs",
+      "function": "fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs",
+      "function": "fixed_admission_scan_scan_reopens_offsets_and_nonutf8_entries_also_block"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs",
+      "function": "fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latches"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs",
+      "function": "fixed_admission_scan_world_writable_hardlinked_lock_or_foreign_root_refuses"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs",
+      "function": "fixed_admission_scan_directory_stream_refuses_non_directory_without_repair"
+    },
+    {
+      "source": "crates/xtask/tests/performance_contract_074.rs",
+      "function": "diagnostic_fixed_admission_blocks_context_without_publication_or_enrollment"
+    }
+  ],
+  "repeated_unit_test_names": [
+    "fixed_admission_context_after_fence_drop_blocks_acquire_and_both_recoveries",
+    "fixed_admission_empty_storage_preserves_legacy_create_and_recovery",
+    "fixed_admission_all_known_unknown_and_nonregular_contexts_block_without_decode",
+    "fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence",
+    "fixed_admission_repeated_scans_and_original_refusal_never_refresh",
+    "fixed_admission_seeded_late_context_and_object_failures_retain_created_marker",
+    "fixed_admission_recovery_late_failure_never_removes_existing_marker",
+    "fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch",
+    "fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct",
+    "fixed_admission_scan_scan_reopens_offsets_and_nonutf8_entries_also_block",
+    "fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latches",
+    "fixed_admission_scan_world_writable_hardlinked_lock_or_foreign_root_refuses",
+    "fixed_admission_scan_directory_stream_refuses_non_directory_without_repair"
+  ],
+  "test_totals": {
+    "01-baseline.log": [
+      1,
+      0
+    ],
+    "04-corrected-tests.log": [
+      9,
+      0
+    ],
+    "05-repeat-1.log": [
+      9,
+      0
+    ],
+    "06-repeat-2.log": [
+      9,
+      0
+    ],
+    "07-repeat-3.log": [
+      9,
+      0
+    ],
+    "08-linux-regression.log": [
+      526,
+      1
+    ],
+    "09-linux-doctests.log": [
+      18,
+      0
+    ],
+    "13-scan-repeat-1.log": [
+      4,
+      0
+    ],
+    "14-scan-repeat-2.log": [
+      4,
+      0
+    ],
+    "15-scan-repeat-3.log": [
+      4,
+      0
+    ],
+    "16-final-linux-regression.log": [
+      526,
+      1
+    ],
+    "18-final-repeat-1.log": [
+      13,
+      0
+    ],
+    "19-final-repeat-2.log": [
+      13,
+      0
+    ],
+    "20-final-repeat-3.log": [
+      13,
+      0
+    ],
+    "21-final-linux-regression.log": [
+      526,
+      1
+    ],
+    "25-windows-regression.log": [
+      196,
+      0
+    ],
+    "26-root-regression.log": [
+      155,
+      0
+    ],
+    "39-final-linux-doctests.log": [
+      18,
+      0
+    ]
+  },
+  "required_log_markers": {
+    "01-baseline.log": "original_fence_same_legacy_lock_blocks_both_campaign_entry_points",
+    "02-missing-admission-red.log": "cannot find type `DiagnosticAdmission`",
+    "03-first-tests.log": "test result: FAILED. 8 passed; 1 failed;",
+    "34-local-contract.log": "OK (local, non-promotable)",
+    "35-qualification-refusal.log": "contract input digest mismatch for docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+    "36-ship-refusal.log": "ship admission is closed while candidate identity and release qualification are incomplete",
+    "37-doc-check.log": "doc-check: OK",
+    "38-mdbook.log": "HTML book written to"
+  },
+  "green_compile_logs": [
+    "10-linux-current-check.log",
+    "11-linux-clippy.log",
+    "12-linux-msrv.log",
+    "17-final-linux-clippy.log",
+    "22-final-linux-current-check.log",
+    "23-final-linux-clippy.log",
+    "24-final-linux-msrv.log",
+    "27-windows-current-check.log",
+    "28-windows-clippy.log",
+    "29-windows-msrv.log",
+    "30-xtask-check.log",
+    "31-xtask-clippy.log",
+    "33-rustdoc.log"
+  ],
+  "documentation_link_sources": [
+    "docs/testing/performance/0.74/diagnostic-fixed-admission-local-design.md",
+    "docs/testing/performance/0.74/production-readiness-and-server-launch-20261011.md",
+    "docs/testing/performance/0.74/README.md",
+    "docs/articles/007-optimization-starts-with-measurement.md",
+    "docs/testing/performance/0.74/local-runs/diagnostic-fixed-admission-20261011/README.md",
+    "docs/COMPAT.md"
+  ],
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 499,
+      "sha256": "b9721e100b7b25637bb574bac5b47a4c98b1093e86b11263bf18b85df5ce726b",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "baseline",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib original_fence_same_legacy_lock_blocks_both_campaign_entry_points -- --nocapture"
+    },
+    {
+      "name": "02-missing-admission-red.log",
+      "bytes": 19206,
+      "sha256": "579962cdfdb01400f934402eab81de65d248e7b84f3208d83084ec7324d35481",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "recorded_scope": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission; exact trailing options not retained"
+    },
+    {
+      "name": "03-first-tests.log",
+      "bytes": 2572,
+      "sha256": "f068a9ae88a503ac756062d3ff01dc1345da95538212d05c5ba86ac51642ec68",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "recorded_scope": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission; exact trailing options not retained"
+    },
+    {
+      "name": "04-corrected-tests.log",
+      "bytes": 1582,
+      "sha256": "f464ce86256b98b7b3f3f37a09d384facda641e26e11fc4b4b44a018a0490702",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "recorded_scope": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission; exact trailing options not retained"
+    },
+    {
+      "name": "05-repeat-1.log",
+      "bytes": 1582,
+      "sha256": "928adedf21e6c2d95791c7d9f6d80160b2351e75da6505640386a3b697c88ae4",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "06-repeat-2.log",
+      "bytes": 1449,
+      "sha256": "1867a7500b2e32bb6acbdecd8ed6e271988af62f2f007999f5c687c02b4de1c1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "07-repeat-3.log",
+      "bytes": 1449,
+      "sha256": "64d6208063d9ce2c17b5c525c3e2e6245d40cb947c3f039cbfadc981e107d216",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "08-linux-regression.log",
+      "bytes": 68537,
+      "sha256": "b934130a23a66e4fa055f621c7654e14bbdbb29800fcc4a955b23bca9af85a09",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning"
+    },
+    {
+      "name": "09-linux-doctests.log",
+      "bytes": 4263,
+      "sha256": "7cc8310d3ab6f1d89ad0dc24fb8ef997fa617af8ba4429225842ecca8de49173",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc"
+    },
+    {
+      "name": "10-linux-current-check.log",
+      "bytes": 193,
+      "sha256": "06c1d4292761dce4154b53d11d37a0e7fa08dd315d8db82d53cf4ace728b688b",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "11-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "737d9be1ddc198db1746a32db2bab6308ad7938b9ed17d2773ad5ef7f0f61588",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings"
+    },
+    {
+      "name": "12-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "32cbeb4ef4b51560da5b4bcfeb37253fbd11eda5bd9a538ceb4d1ffc097fc8d0",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "13-scan-repeat-1.log",
+      "bytes": 1111,
+      "sha256": "32e160298844ab3f8e13834e3a98fdef6f6db93049acffe9a2429ce42e10138d",
+      "expected_exit": 0,
+      "observed_exit": null,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_campaign_ -- --nocapture --test-threads=1",
+      "exit_note": "Intermediate closed-output success is retained, but the shell completion receipt is not available; not a final proof."
+    },
+    {
+      "name": "14-scan-repeat-2.log",
+      "bytes": 978,
+      "sha256": "ed486325a2d10d301a57cf5c8e757f40893c4cb2254acb49a82af68d82446fcb",
+      "expected_exit": 0,
+      "observed_exit": null,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_campaign_ -- --nocapture --test-threads=1",
+      "exit_note": "Intermediate closed-output success is retained, but the shell completion receipt is not available; not a final proof."
+    },
+    {
+      "name": "15-scan-repeat-3.log",
+      "bytes": 978,
+      "sha256": "10e9b40e27b144d450c07807a3f610a6e1ad60c33db6d28be07b8c9d03af546c",
+      "expected_exit": 0,
+      "observed_exit": null,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_campaign_ -- --nocapture --test-threads=1",
+      "exit_note": "Intermediate closed-output success is retained, but the shell completion receipt is not available; not a final proof."
+    },
+    {
+      "name": "16-final-linux-regression.log",
+      "bytes": 68398,
+      "sha256": "5682b02414532b098a1c1136298c761089269ec80b5c2a7ca20d5a4e34eaa152",
+      "expected_exit": 0,
+      "observed_exit": null,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "exit_note": "Intermediate closed-output success is retained, but the shell completion receipt is not available; not a final proof."
+    },
+    {
+      "name": "17-final-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "6f2b63e4f2400d15367715f8c70f394a13e8be84876bbad5e84cd6534d3f4d66",
+      "expected_exit": 0,
+      "observed_exit": null,
+      "stage": "intermediate",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "exit_note": "Intermediate closed-output success is retained, but the shell completion receipt is not available; not a final proof."
+    },
+    {
+      "name": "18-final-repeat-1.log",
+      "bytes": 2313,
+      "sha256": "446c80223a899cec198d8a87c4ecd39bf35731c758a79fe06701501e0e731886",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "19-final-repeat-2.log",
+      "bytes": 2123,
+      "sha256": "08cb5d7985249cf5c6f7a7a1949d8466a91d59dbc291d2e9c1c2c929d68918ae",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "20-final-repeat-3.log",
+      "bytes": 2123,
+      "sha256": "7067189ac3d671db155e7c8f3f0fd2380fd85c6cf9f3916ec0991eeea3d4d531",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fixed_admission -- --nocapture --test-threads=1"
+    },
+    {
+      "name": "21-final-linux-regression.log",
+      "bytes": 68422,
+      "sha256": "94998dd99537176d3f2ff874ee8de91f56c25e516fcdb3467b2818253106ff02",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning"
+    },
+    {
+      "name": "22-final-linux-current-check.log",
+      "bytes": 193,
+      "sha256": "b54ff13e3545baf10b540d2d75eca2c19c53e925ffd522941b18f6075ce4e27d",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "23-final-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "b07b4f038965d2c2284eb4a5336301023f25fe73967932944b9ce101bdf76b69",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings"
+    },
+    {
+      "name": "24-final-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "f987fb52c952b65dad7e68e23cc000faab6b9ca932a38b8c92a958d3d50e792b",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "25-windows-regression.log",
+      "bytes": 25569,
+      "sha256": "0c0d0ede4bd74daa8917fe4b578f26377945b5560b0ecf07c8673242c3bc95d0",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked"
+    },
+    {
+      "name": "26-root-regression.log",
+      "bytes": 13684,
+      "sha256": "c677a9e572489491077c012e01a27e60e5fea2c779895e7fb38891831344cae3",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance"
+    },
+    {
+      "name": "27-windows-current-check.log",
+      "bytes": 191,
+      "sha256": "5357b42a749baec4f3df6f36619bc63b9a454afc14ada11f0b9382d773e28c0d",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "28-windows-clippy.log",
+      "bytes": 191,
+      "sha256": "2aaa6221a9e80735a602d4cc4e83e33f1de3a18bd32ba8233224a9e80505d4df",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings"
+    },
+    {
+      "name": "29-windows-msrv.log",
+      "bytes": 191,
+      "sha256": "dd75d69149f518e3a8328001cec15ea1ba502762866142a6aa4de4ade66118cb",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features"
+    },
+    {
+      "name": "30-xtask-check.log",
+      "bytes": 275,
+      "sha256": "68d1d061a48e9b481e84cf609085ef4158b26ef5531a865e07d64ca390901446",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 check -p xtask --locked --all-targets --all-features"
+    },
+    {
+      "name": "31-xtask-clippy.log",
+      "bytes": 275,
+      "sha256": "c33f8b7ee329ba65fb8b984fa29decda6d7550dd797e00990152c32ad0e6223e",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 clippy -p xtask --locked --all-targets --all-features -- -D warnings"
+    },
+    {
+      "name": "32-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check"
+    },
+    {
+      "name": "33-rustdoc.log",
+      "bytes": 320,
+      "sha256": "9117db2fc60ae02a7baeba393ad8c49e962f2f38a0229c8d2315bd0b032053b0",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps"
+    },
+    {
+      "name": "34-local-contract.log",
+      "bytes": 261,
+      "sha256": "312ccb9258a31e178659aeaafafaa41818f65e82b7fa845e2a48957d207a6b9f",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74"
+    },
+    {
+      "name": "35-qualification-refusal.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "C:/Python313/python.exe scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <owned-temporary-directory>/qualification.json --dry-run"
+    },
+    {
+      "name": "36-ship-refusal.log",
+      "bytes": 630,
+      "sha256": "d0f3c57d7b8e21c29f12f4e3473f593d817687740ae2b6f59c504f05dae4b129",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship"
+    },
+    {
+      "name": "37-doc-check.log",
+      "bytes": 155,
+      "sha256": "8ba6951ea1c111639b76aafd649670ddd457a2db1f3db98d5e91f369fff92f31",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check"
+    },
+    {
+      "name": "38-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "native Windows",
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site"
+    },
+    {
+      "name": "39-final-linux-doctests.log",
+      "bytes": 4263,
+      "sha256": "5c2c17035616f8fc0c55338ff354f3d9c3d90746b10905102702446bbdc83884",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "stage": "final",
+      "environment": "WSL Ubuntu nonroot",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc"
+    }
+  ]
+}
