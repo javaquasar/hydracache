@@ -40,3 +40,13 @@ tests, real issuer/pins, reboot/power-loss behavior and production start remain
 unimplemented or unproved. Root/owner tampering and whole-host snapshot rollback
 remain outside this local journal proof. The inherited qualification plan-digest
 mismatch is not reconciled here; all frozen qualification inputs stay unchanged.
+
+## Review observations
+
+The named-root replacement model first fails: the original descriptor remained
+valid while its current name changed. Revalidation now compares a fresh named
+root to the original stamp before walking retained ancestry. This is a temporary
+root model, not an actual host chroot/pivot-root experiment. A separate existing
+same-byte rewrite test exposes clock-granularity assumptions; its setup forces
+observable mtime drift without changing runtime predicates. Both findings and
+their independent fixes are retained in the local packet.

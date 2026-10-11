@@ -23,7 +23,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
 | Every worker task | Bounded original-task reader plus exclusive original signed mount composition; exact signed numeric/user/mount pins, membership-churn refusal and whole-chain latch | Controlled positive fixed-host checks; sequential observations are not continuous confinement |
-| Worker policy authority | Signature verification against external key/digest/epoch; bounded canonical journal core and separate Linux temporary-fixture append-only backend | Root-owned fixed backend, original signed-guard durable failure propagation and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
+| Worker policy authority | Signature verification against external key/digest/epoch; bounded journal core with distinct temporary-fixture and fixed root-path backends | Controlled positive root-path enrollment; original signed-guard durable failure propagation and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
 | Failure and cleanup | Lease/IPC/spool models and separate historical campaign rehearsals | Production diagnostic backend, autonomous watchdog, writer revocation, retained uncertain intent, exact owned empty-cgroup proof before release |
@@ -44,11 +44,20 @@ the real issuer remains an operator choice. The continuation selects the local
 registry rollback boundary: operator-managed issuer key/digest/epoch plus a
 root-owned crash-durable registry as the target, excluding whole-host snapshot
 rollback and root/owner tampering. The
-[local journal slice](diagnostic-authority-registry-local-design.md) implements
-only its canonical core and nonroot temporary-fixture storage; it neither selects
-the real issuer nor supplies the missing root backend. If host rollback must be
+[local journal slice](diagnostic-authority-registry-local-design.md) originally
+implemented only its canonical core and nonroot temporary-fixture storage; it
+selected neither the real issuer nor the root backend. If host rollback must be
 detected, select a separate external monotonic authority before enrollment.
 No test key may be enrolled.
+
+The subsequent [fixed backend slice](diagnostic-authority-fixed-local-design.md)
+now implements fixed root-owned storage without changing the record format or
+installer. Its API has no path/owner selector and retains every original ancestor;
+local modeled-tree checks are not actual root-path enrollment. The original
+journal slice's fixture-only statement above describes that earlier boundary.
+The remaining authority implementation is exclusive durable composition with
+the original signed guard, including uncertain publication/restart semantics.
+No effective-root check authenticates the initial host namespace.
 
 ## Extended local checks completed
 
@@ -80,8 +89,8 @@ missing final 0.74 source-bound receipt. HTML input LF normalization removes
 incidental generated/embedded content changes; no asset blob is changed.
 
 These completed local checks do not finish any missing production row above.
-Durable production authority still needs the fixed backend, original-guard
-composition and real operator issuer/pins; no test issuer or synthetic epoch may
+Durable production authority still needs controlled fixed-backend enrollment,
+original-guard composition and real operator issuer/pins; no test issuer or synthetic epoch may
 be promoted to replace them. The selected local rollback scope is not enrollment.
 
 The subsequent [original-task slice](diagnostic-task-set-local-design.md) now

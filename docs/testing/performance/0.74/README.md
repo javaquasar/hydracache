@@ -2434,7 +2434,21 @@ Independent operator pins remain mandatory. The
 real local persistence/reopening from logical fault models and partial-IO tests.
 Only successful explicit refusal is persisted; unsafe-storage/inspection failures
 currently latch the writer in memory. Active inspection data is not permission
-to launch. Root-owned fixed storage, original signed-guard durable propagation,
-real issuer enrollment and production lifecycle still need implementation.
+to launch. At that slice's boundary, root-owned fixed storage, original signed-guard
+durable propagation, real issuer enrollment and production lifecycle were still
+unimplemented or unproved.
 Physical power-loss behavior and regular-file IO deadlines are not proved.
 No host operation, product benchmark or qualification input is changed.
+
+The subsequent [fixed authority backend](diagnostic-authority-fixed-local-design.md)
+implements the same journal engine behind a separate original-thread type and
+fixed `/var/lib/hydracache-performance/worker-authority-074` constructors. All
+retained ancestors must be root:root, nonwritable by group/other, and free of
+special mode bits; the leaf must be 0700. No path/owner/FD selector, fixture
+conversion, directory creation, repair or launch route is exported. Local
+nonroot modeled-tree tests exercise the actual ancestry walker and shared
+publication protocol, but do not prove positive production-root enrollment.
+The [packet](local-runs/diagnostic-authority-fixed-20261011/README.md) retains
+baseline, absent-API red and repeat checks. Real operator issuer/pins, signed
+worker durable composition and reboot/start lifecycle remain separate gates.
+Frozen qualification inputs and their inherited plan-digest blocker are unchanged.

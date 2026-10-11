@@ -6115,3 +6115,63 @@ The fourteen new unit tests repeat three times serially. Strict lint, affected
 all-target/MSRV checks, formatting, docs and book checks pass. These are local
 safety executions; neither the inherited qualification refusal nor any production
 gate is converted into acceptance by these green results.
+
+### A fixed pathname must retain its original ancestry
+
+The next local hypothesis separates storage mechanics from storage origin. The
+temporary journal already exercises canonical bytes, bounded transitions and
+publication faults. Copying that implementation for production would create two
+protocols to keep consistent. Instead, a distinct fixed-path writer reuses the
+same private engine and cannot be obtained by converting a fixture writer.
+
+The [preregistered scope](../testing/performance/0.74/diagnostic-authority-fixed-local-design.md)
+fixes `/var/lib/hydracache-performance/worker-authority-074`. Public constructors
+accept checked policy or independent trust/context, not caller-selected paths,
+owners or descriptors. Effective root credentials are a preliminary ownership
+gate, not proof of an enrolled initial host namespace. Existing directories must
+already be provisioned; this implementation does not change the installer.
+
+The important change is descriptor ownership across the entire pathname. The
+writer opens each fixed component without following symlinks, retains every
+original object and compares named and retained identities around journal IO.
+Root:root ancestors must not be group/other writable or carry special mode bits;
+the leaf is exactly 0700. Directory timestamp/link-count changes are intentionally
+not identity changes: an unrelated sibling must not spuriously revoke authority.
+Observed mode, ownership, named-object or descriptor replacement does revoke it.
+
+Local tests use the actual bounded walker under nonroot temporary modeled roots
+and synthetic stamps for the root ownership predicate. They cover each ancestor,
+the leaf, a retained parent alias, symlinks, missing/unsafe components, contention,
+reopening and all four publication fault boundaries. The absent exported API is
+retained as test-first red evidence. These tests establish the local API and IO
+behavior; they are not positive production root-path enrollment or physical
+power-loss tests. Cross-filesystem ancestry is allowed, while record files must
+stay on the leaf filesystem; approved mount/context binding remains separate.
+
+The [evidence packet](../testing/performance/0.74/local-runs/diagnostic-authority-fixed-20261011/README.md)
+keeps local repeat checks distinct from release admission. The design pays off
+as a single publication protocol with two non-interchangeable origins, not as a
+numerical cache optimization. Successful explicit refusal is still the only
+durable refusal operation: unsafe storage cannot safely be repaired by appending
+an automatic failure record. The next implementation is the exclusive join to
+the original signed worker guard and its uncertain-restart rules. Real issuer
+enrollment, controlled fixed-host checks, watchdog/cleanup and production start
+remain closed. The inherited qualification plan-digest mismatch is unchanged.
+
+Review yields two additional findings. Holding the original root descriptor alone
+can conceal named-root replacement in the local model. A failing regression now
+requires comparison with a freshly opened named root as well; it passes after
+the fix. This does not simulate a real host `pivot_root` or mount transition.
+Another serial repetition exposes an older fixture test's timestamp assumption:
+an immediate same-byte rewrite can occur within one filesystem clock tick. The
+test now forces and asserts observable mtime drift. Runtime checks are unchanged;
+no sleep, retry, threshold relaxation or transient-owner-tampering claim is added.
+Both red results remain in the packet.
+
+The final local packet retains 51 raw logs: 419 scoped Linux passes with one
+existing ignored, 195 portable Windows passes and 103/13/23 root contract,
+evidence and governance passes. Twenty-three journal unit tests, including nine
+new fixed-backend tests, pass in three separate serial repetitions. Strict lint,
+MSRV 1.88, Linux rustdoc, formatting, local contracts, docs and book checks pass.
+These counts describe local safety tests, not cache performance samples or
+exact-candidate release receipts; no throughput or allocation claim is added.

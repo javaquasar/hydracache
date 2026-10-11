@@ -1,0 +1,381 @@
+{
+  "schema_version": "diagnostic-authority-fixed-local-evidence-074-v1",
+  "state": "retained-local-fixed-backend-not-enrolled-production-authority",
+  "evidence_class": "working-tree-local-safety-not-release-qualification",
+  "baseline_source": "bf08300cbdfa60876dd9b904b3bf8f6b6a5427aa",
+  "baseline_tree": "1cd501b278236be642d0da8e577c03a7b6c84814",
+  "preregistration_source": "a39968e86fbcabcf511f094299e04ec7e1421932",
+  "implementation_source": "69bf28de5598958b3442c002e8db7cbd903ebfc4",
+  "implementation_tree": "fef3f888b2be7efb46b32e1b7a2f344afbf052b3",
+  "named_root_review_source": "7fc627df7b7de0569d912fc68b613c403cd4ceb9",
+  "reviewed_source": "3fa482d400329c045f61c84bc0b305656f087d3f",
+  "reviewed_tree": "ff87cdb108c1b643a4bae6ae03dd69d0be855925",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "results": {
+    "linux_scoped_passed": 419,
+    "linux_existing_ignored": 1,
+    "windows_package_passed": 195,
+    "root_contract_passed": 103,
+    "root_evidence_passed": 13,
+    "root_governance_passed": 23,
+    "new_linux_unit_tests": 9,
+    "new_linux_api_tests": 1,
+    "new_root_contract_tests": 1,
+    "serial_repetitions": 3,
+    "journal_tests_per_repetition": 23,
+    "observable_drift_focused_passes": 5
+  },
+  "new_unit_test_names": [
+    "authority_fixed_metadata_requires_root_owner_safe_ancestors_and_private_leaf",
+    "authority_fixed_modeled_writer_persists_and_exclusively_locks_shared_engine",
+    "authority_fixed_every_original_ancestor_and_root_drift_latches_without_new_record",
+    "authority_fixed_named_ancestor_replacement_is_not_adopted",
+    "authority_fixed_named_root_replacement_is_not_hidden_by_original_descriptor",
+    "authority_fixed_leaf_and_parent_alias_drift_latch_but_benign_parent_entries_do_not",
+    "authority_fixed_walker_rejects_symlinks_missing_unsafe_and_wrong_owner_components",
+    "authority_fixed_modeled_publication_faults_do_not_repair_partial_tail",
+    "authority_fixed_guard_is_not_send_sync_or_fixture_conversion"
+  ],
+  "proof_boundaries": {
+    "fixed_root_backend_implemented": true,
+    "controlled_fixed_host_positive_enrollment": false,
+    "initial_host_namespace_proved": false,
+    "real_issuer_enrolled": false,
+    "signed_worker_durable_composition": false,
+    "automatic_durable_refusal_after_inspection_error": false,
+    "physical_power_loss_proved": false,
+    "regular_file_io_deadline_proved": false,
+    "whole_host_snapshot_rollback_detection": false,
+    "root_or_owner_tampering_detection": false,
+    "production_preparation_or_start": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_claim_eligible": false,
+    "exact_candidate_receipt": false,
+    "qualification_input_digests_match": false,
+    "ship_allowed": false
+  },
+  "capture_limits": {
+    "serial_loop_last_output": "serial-linux-.log; first two outputs overwritten before retention, not three-repeat evidence",
+    "windows_package_scope": "portable code; later changes affect Linux-only modules/tests and one root contract marker; not exact-candidate qualification",
+    "root_registry_scope": "checked local worktree with capture-in-progress artifact; final packet bytes verified separately"
+  },
+  "commands": {
+    "linux_scoped": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --test diagnostic_artifacts --test diagnostic_context_files --test diagnostic_manager --test diagnostic_task_api --test diagnostic_worker_account --test diagnostic_worker_context --test diagnostic_worker_files --test diagnostic_worker_policy --locked -- --nocapture",
+    "repetitions": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib --locked authority_registry:: -- --test-threads=1 --nocapture",
+    "windows": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --all-targets --locked",
+    "root": "cargo +1.94.0 test -p xtask --test performance_contract_074 --test release_evidence --test release_governance --locked -- --nocapture",
+    "lint": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "msrv": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --locked"
+  },
+  "files": [
+    {
+      "name": "baseline-linux.log",
+      "bytes": 14150,
+      "sha256": "136ac173ba2268868899092844be1df0233923dc08484b149961f0058f7aee8a",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "book-windows.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "check-linux.log",
+      "bytes": 193,
+      "sha256": "dd33b4fbe7a60490dca07116f21b4c129ec3f0245618e9421dfdafc2638de653",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "clippy-linux.log",
+      "bytes": 193,
+      "sha256": "d2838ea355f08c4e10358a0e240036279ad3693315856c4ea1ff81e37b39c657",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "clippy-windows.log",
+      "bytes": 191,
+      "sha256": "1a7d6fcb38a79aff7106053ea04c709bda7360132c7dec99dddcf17ba2b07377",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "doc-check-windows.log",
+      "bytes": 239,
+      "sha256": "a18facca5ee121aafb122e8f21377d997aaaa8bf5fd9bb70586b8cd0a9288457",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-book-windows.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-clippy-linux.log",
+      "bytes": 193,
+      "sha256": "411d3650752aaa8d1690aedc1d6a554886324baa757f10a24e39527a8bfb6998",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-clippy-windows.log",
+      "bytes": 61,
+      "sha256": "c204e1879835e70e3d451af0c5addba1d0c5a84b116f42e21d3cb6360af3041c",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-doc-check-windows.log",
+      "bytes": 155,
+      "sha256": "808b0398bb03cb120a830bd555d4dcf683c77fd1f79d9d16e4b4d6c8c32006af",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-format-windows.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-msrv-linux.log",
+      "bytes": 193,
+      "sha256": "f2fe846af451ff556ba8111e480f9aecc362f0f840c4ae4f33c47d8b088f50b8",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-msrv-windows.log",
+      "bytes": 61,
+      "sha256": "3654e98efe30d7c74176fd194525d2b1ae766f6ee1b395d26ae034ae1e2ee11b",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-repeat-linux-1.log",
+      "bytes": 3878,
+      "sha256": "486b6357e32b97e3be9de493aa197c27db4d761553c8c5bac42fcb9a1ac7e7dc",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-repeat-linux-2.log",
+      "bytes": 3878,
+      "sha256": "801954c091b1c1046f7584393e1623d1655e5dff5b0e9a0ca9575055e2aa7c6b",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-repeat-linux-3.log",
+      "bytes": 3878,
+      "sha256": "cbcc198d65b4a67cf7d484a2767466744b3748af9c4e2882de6c105e52a3a740",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-rustdoc-linux.log",
+      "bytes": 460,
+      "sha256": "aa0a94b627a8554a59086e22a20b60fbc49a5adc51349a2a6d530a042d40886b",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "final-supervisor-linux.log",
+      "bytes": 51646,
+      "sha256": "4cca70496597b2452eab2354cd67a52b196b26e393609b1347a3823c7f5085c8",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "first-green-linux.log",
+      "bytes": 15303,
+      "sha256": "f389d3df07f0323169f4a8a17763ced83263369545da94e0e19f07abc400cc16",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "fixed-contract-windows.log",
+      "bytes": 597,
+      "sha256": "ee215eac797193b322e293e32fd3d3fbc3a71d22de6edd79ef2a7ee51986bd46",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "format-windows.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "local-contract-windows.log",
+      "bytes": 287,
+      "sha256": "2dd17a3703d9c7def5dd58f27a007c04bec1e45bbec8d4e11cad271c75414b73",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "local-links-windows.log",
+      "bytes": 26,
+      "sha256": "9c9d37837ee810494c0e11a652af8b03eee4c9f6e00d277743d731005ad84951",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "missing-api-red.log",
+      "bytes": 615,
+      "sha256": "be780993c304cc95a9d62424bd2b0e5c671fb71e71ef5f3f075e355727c76c86",
+      "expected_exit_code": 1
+    },
+    {
+      "name": "msrv-linux.log",
+      "bytes": 193,
+      "sha256": "c010cccc00dd8814e6560bb83b1e0bb01d9c9ff124523ba418556bc84ccf2045",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "msrv-windows.log",
+      "bytes": 191,
+      "sha256": "4b307d1aaa5b1491e7fc250801947375f7e29e23104bf24d71281f639a221896",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "named-root-red.log",
+      "bytes": 1271,
+      "sha256": "985e2ba2312688779597ad74130742190ee88443974b0c6e8b9850b3149102f4",
+      "expected_exit_code": 1
+    },
+    {
+      "name": "observable-drift-linux-1.log",
+      "bytes": 616,
+      "sha256": "279842fbc77e839ee707cb0fa7db6cb19d84bb599dcd6359dfd4fc2ebb11fe5d",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "observable-drift-linux-2.log",
+      "bytes": 483,
+      "sha256": "cb003969ceff2dd2ca49fc35b883ae21ef57191690a5e34458aa9673195ba6b5",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "observable-drift-linux-3.log",
+      "bytes": 483,
+      "sha256": "ec206d8a1589b3a3d9986d98ab0d88094d819c16f66f414342d9e87eee0ab119",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "observable-drift-linux-4.log",
+      "bytes": 483,
+      "sha256": "29af6d5b927473d942e15df8ab91c7b2c6b337ae7ef9be10eaf4df857f738501",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "observable-drift-linux-5.log",
+      "bytes": 483,
+      "sha256": "f3dc084d08018e9c7a67c53e934befb3be1a47677d3064d97a43f6a114f28354",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "prior-packet-verification.log",
+      "bytes": 81,
+      "sha256": "b30547a4f043cdb6fe56e6604c20b650a69978e1578005e2e1a2a26716bb4e06",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "qualification-dry-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "expected_exit_code": 1
+    },
+    {
+      "name": "repeat-linux-1.log",
+      "bytes": 3721,
+      "sha256": "bf86e2d8c0584c49089009f19bc06fe087e334af7dc069f97c12a15a9ea433a6",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "repeat-linux-2.log",
+      "bytes": 3721,
+      "sha256": "a1c33637c240a55061b8ca95d404c57b66501d028078203fa775e5a1fbb8ee84",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "repeat-linux-3.log",
+      "bytes": 3721,
+      "sha256": "0f4d09d38bb8230ab707316ffbfdbec881f1645ee35681710f965cec8efd71e6",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "reviewed-clippy-linux.log",
+      "bytes": 193,
+      "sha256": "eb5fd3480b89a3c561a0194c1f8d400a99456c59a8b1e7b50a368cb7c6965260",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "reviewed-clippy-windows.log",
+      "bytes": 61,
+      "sha256": "0109351cb471125e54a37dfafe736dd87f5257dba71da8968d69525b77c73fb9",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-contracts-windows.log",
+      "bytes": 12507,
+      "sha256": "2f2cac5d44021d34d7de2d743cf0b275df2fee8eb4577f03c7999ab0afeaf3db",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-review-clippy-windows.log",
+      "bytes": 275,
+      "sha256": "9785bb3d12f40b33cbd9737718ea41cf091e8890367a4af6a096e4af332f1896",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-review-contract-windows.log",
+      "bytes": 467,
+      "sha256": "32b0157b2ff3992a91ecaa69a20a8c6aaa83493892e3bf23d989eb201b6b4df8",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-review-green-linux.log",
+      "bytes": 619,
+      "sha256": "e70b30086e8a7ddf0ed894dc6712650dbc5f9f442aa782d5725a9bb7ae560c43",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-review-repeat-linux-1.log",
+      "bytes": 3878,
+      "sha256": "08a573b6f5b41ac4037be8353914b449f479fcd1a58588e91b8a6bfec26a1d75",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "root-review-repeat-linux-2.log",
+      "bytes": 4527,
+      "sha256": "38c97bfd4c5e65514ae40040dbb4d7ca940e21aacd23f328668f110cb9beeb96",
+      "expected_exit_code": 1
+    },
+    {
+      "name": "rustdoc-linux.log",
+      "bytes": 460,
+      "sha256": "aa0835bc5401fd4856333a7e4a2ca8c9737ce6a49fa74c282b9167f942cf5efb",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "serial-linux-.log",
+      "bytes": 3722,
+      "sha256": "6f55cd946c128475b8e75279766001ba68f7eeaa2d4472080ba5d2338902eebe",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "ship-refusal-windows.log",
+      "bytes": 191,
+      "sha256": "fda7f109f86cbf084c21df6cab51fff85988697621132535c10352d93faf618b",
+      "expected_exit_code": 1
+    },
+    {
+      "name": "supervisor-linux.log",
+      "bytes": 51489,
+      "sha256": "1e9cebb281143b32f2524151c45ef14eee940bd81ee3edb39573dfb4b01994f4",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "supervisor-windows.log",
+      "bytes": 24945,
+      "sha256": "dc4177a1ab9d8b7444b769749ea2b0d0c557533f37203922db290e1634dcab19",
+      "expected_exit_code": 0
+    },
+    {
+      "name": "xtask-clippy-windows.log",
+      "bytes": 275,
+      "sha256": "224d39eed416406df24ec8ff0aac93face21373ca32816a75c6e209be683c7cf",
+      "expected_exit_code": 0
+    }
+  ]
+}
