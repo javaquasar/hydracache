@@ -124,3 +124,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-storage-preflight-*/*.log -t
 docs/testing/performance/0.74/local-runs/diagnostic-storage-preflight-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-authority-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-authority-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-reserved-state-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-reserved-state-*/manifest.json -text

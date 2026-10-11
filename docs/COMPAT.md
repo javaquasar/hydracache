@@ -4,6 +4,15 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The fixed Reserved state inspector reuses the exact schema-1 diagnostic state
+envelope and canonical bytes. It reads only the prospective existing
+`active-diagnostic.json` name under root-owned `diagnostic-intents-074` storage,
+requiring root:root 0600 and the original full snapshot. It does not migrate,
+publish or copy legacy worker-owned campaign state into that namespace. Pending
+or unhandled same-leaf context refuses. Bound drift latches the original storage
+guard; no host fence, authority/intent join, installer/CLI or start is added.
+See [design](testing/performance/0.74/diagnostic-reserved-state-local-design.md).
+
 The original-authority signed-intent composition is runtime-only and preserves
 all registered request, state, signature and journal formats. It exclusively
 borrows the original authority guard; fixed and fixture types remain distinct.

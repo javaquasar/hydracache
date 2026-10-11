@@ -19,6 +19,9 @@ const COMPONENTS: [&str; 4] = [
 #[path = "diagnostic_storage_preflight.rs"]
 pub mod preflight;
 
+#[path = "diagnostic_reserved_state.rs"]
+pub mod reserved_state;
+
 #[derive(Clone, Copy)]
 enum StorageLeaf {
     Intent,

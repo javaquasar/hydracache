@@ -2,7 +2,7 @@ use super::*;
 use std::fs;
 use std::os::unix::fs::{symlink, PermissionsExt};
 
-fn tree() -> (tempfile::TempDir, u32, u32) {
+pub(super) fn tree() -> (tempfile::TempDir, u32, u32) {
     let temp = tempfile::Builder::new()
         .prefix("hydracache-fixed-intent-")
         .tempdir_in("/tmp")
@@ -19,7 +19,7 @@ fn tree() -> (tempfile::TempDir, u32, u32) {
     assert!(uid > 0 && gid > 0, "modeled tests must remain nonroot");
     (temp, uid, gid)
 }
-fn at(root: &Path, level: usize) -> PathBuf {
+pub(super) fn at(root: &Path, level: usize) -> PathBuf {
     COMPONENTS
         .iter()
         .take(level)

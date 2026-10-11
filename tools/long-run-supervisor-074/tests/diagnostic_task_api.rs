@@ -1,6 +1,22 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn fixed_reserved_state_api_requires_original_storage_without_selectors() {
+    use hydracache_long_run_supervisor_074::diagnostic_lease::DiagnosticState;
+    use hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::{
+        reserved_state::{bind_fixed_reserved_state, FixedReservedStateRead},
+        FixedIntentStorageRead,
+    };
+    fn bind<'a>(
+        storage: &'a mut FixedIntentStorageRead,
+        expected: &DiagnosticState,
+    ) -> FixedReservedStateRead<'a> {
+        bind_fixed_reserved_state(storage, expected).unwrap()
+    }
+    let _ = bind;
+}
+
+#[test]
 fn authority_intent_api_borrows_original_without_fixture_promotion_or_start() {
     use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::{
         intent_binding::{bind_fixed_intent, bind_fixture_intent, FixedAuthorityIntentRead, FixtureAuthorityIntentRead},

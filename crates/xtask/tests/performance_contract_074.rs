@@ -9533,3 +9533,72 @@ fn diagnostic_authority_intent_borrows_original_without_publisher_or_start() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_reserved_state_is_original_readonly_not_fenced_execution() {
+    let c = contract("diagnostic-reserved-state-local-contract.toml");
+    for key in [
+        "existing_state_schema_unchanged",
+        "original_fixed_storage_exclusively_borrowed",
+        "fixed_name_and_descriptor_relative_read_required",
+        "original_file_identity_metadata_and_bytes_retained",
+        "regular_same_device_single_link_private_owner_required",
+        "full_exact_reserved_state_required",
+        "same_leaf_pending_and_unhandled_ipc_refused",
+        "bound_refusal_latches_original_storage",
+        "no_io_after_refusal_or_refresh_after_drop",
+        "invalid_expected_state_refuses_before_io_without_revocation",
+        "no_public_path_owner_fd_selector_or_fixture_conversion",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "storage_or_state_creation_implemented",
+        "authority_intent_join_implemented",
+        "host_fence_implemented",
+        "fixed_intent_publication_implemented",
+        "host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["read_budget_bytes"].as_integer(), Some(65_536));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "storage: &'storage mut FixedIntentStorageRead",
+        "decode_active(&document.raw)",
+        "self.storage.refused = true",
+        "if self.is_refused()",
+        "if !expected_valid(expected)",
+        "named.stamp != self.stamp",
+        "named.raw != self.raw",
+        "self.links == 1",
+        "self.device == parent.dev()",
+        "libc::AT_SYMLINK_NOFOLLOW",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for marker in [
+        "O_CREAT",
+        "write_all",
+        "create_dir",
+        "Command::new",
+        "flock",
+        "StartTransientUnit",
+        "pub fn reset",
+        "pub fn start",
+        "pub fn state",
+        "pub fn into_",
+        "pub fn clone",
+        "pub fn publish",
+    ] {
+        assert!(!source.contains(marker), "{marker}");
+    }
+}
