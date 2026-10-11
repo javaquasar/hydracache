@@ -36,6 +36,9 @@ pub mod diagnostic_manager;
 pub mod diagnostic_named_output;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_output_preparation;
+// CLI facade exposes only storage inspection, never output preparation or start.
+#[cfg(target_os = "linux")]
+pub use diagnostic_output_preparation::fixed_intent_storage::preflight as diagnostic_storage_preflight;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_process;
 pub mod diagnostic_receipts;

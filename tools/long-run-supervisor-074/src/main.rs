@@ -11,7 +11,7 @@ fn run() -> u8 {
     match args.as_slice() {
         #[cfg(target_os = "linux")]
         [command] if command == "diagnostic-storage-preflight" => {
-            use hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::preflight::inspect_storage;
+            use hydracache_long_run_supervisor_074::diagnostic_storage_preflight::inspect_storage;
             match inspect_storage() {
                 Ok(report) => match serde_json::to_string(&report) {
                     Ok(json) => {
