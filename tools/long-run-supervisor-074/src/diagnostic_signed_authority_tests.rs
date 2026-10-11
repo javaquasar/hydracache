@@ -8,6 +8,9 @@ use crate::diagnostic_worker_policy::local_context::account_files::kernel_bindin
 use std::{fs, os::unix::fs::PermissionsExt};
 use tempfile::TempDir;
 
+#[path = "diagnostic_recovery_authority_tests.rs"]
+mod lifecycle_tests;
+
 fn changed_checked(
     f: &Fixture,
     kind: usize,

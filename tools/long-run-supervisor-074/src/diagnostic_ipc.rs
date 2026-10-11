@@ -259,8 +259,15 @@ fn load(root: &Path) -> Result<Ledger, DiagnosticIpcError> {
     }
     let bytes =
         read_bounded_document(&path, MAX_LEDGER_BYTES).map_err(|_| DiagnosticIpcError::Ledger)?;
+    decode_ledger(&bytes)
+}
+
+fn decode_ledger(bytes: &[u8]) -> Result<Ledger, DiagnosticIpcError> {
+    if bytes.len() as u64 > MAX_LEDGER_BYTES {
+        return Err(DiagnosticIpcError::Capacity);
+    }
     let envelope: Envelope =
-        serde_json::from_slice(&bytes).map_err(|_| DiagnosticIpcError::Ledger)?;
+        serde_json::from_slice(bytes).map_err(|_| DiagnosticIpcError::Ledger)?;
     if envelope.schema_version != 1 || encode(&envelope.ledger)? != bytes {
         return Err(DiagnosticIpcError::Ledger);
     }
@@ -298,6 +305,14 @@ fn load(root: &Path) -> Result<Ledger, DiagnosticIpcError> {
         }
     }
     Ok(envelope.ledger)
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn has_unacknowledged_intent(bytes: &[u8]) -> Result<bool, DiagnosticIpcError> {
+    Ok(decode_ledger(bytes)?
+        .entries
+        .iter()
+        .any(|entry| entry.response.is_none()))
 }
 
 fn publish(root: &Path, ledger: &Ledger) -> Result<(), DiagnosticIpcError> {

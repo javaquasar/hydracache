@@ -594,7 +594,14 @@ pub(crate) fn read_active(root: &Path) -> Result<Option<DiagnosticState>, Diagno
     }
     ensure_absent(&root.join(ACTIVE_CAMPAIGN_NAME))?;
     let bytes = read_document(&path)?;
-    let envelope: Envelope = serde_json::from_slice(&bytes)?;
+    Ok(Some(decode_active(&bytes)?))
+}
+
+pub(crate) fn decode_active(bytes: &[u8]) -> Result<DiagnosticState, DiagnosticError> {
+    if bytes.len() as u64 > MAX_DOCUMENT_BYTES {
+        return Err(DiagnosticError::Invalid);
+    }
+    let envelope: Envelope = serde_json::from_slice(bytes)?;
     validate_state(&envelope.state)?;
     if envelope.schema_version != 1
         || envelope.state_sha256
@@ -603,7 +610,7 @@ pub(crate) fn read_active(root: &Path) -> Result<Option<DiagnosticState>, Diagno
     {
         return Err(DiagnosticError::Invalid);
     }
-    Ok(Some(envelope.state))
+    Ok(envelope.state)
 }
 
 fn encode(state: &DiagnosticState) -> Result<Vec<u8>, DiagnosticError> {

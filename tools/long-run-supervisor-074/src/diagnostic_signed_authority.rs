@@ -1,6 +1,9 @@
-//! Runtime refusal bridge only; no launch capability or crash-intent protocol.
+//! Runtime refusal bridge and fixture recovery checks; no production launch protocol.
 use super::{
     FixedSignedTasksRead, FixtureSignedTasksRead, Reader as TasksReader, SignedTasksError,
+};
+use crate::diagnostic_output_preparation::recovery::{
+    with_fixture_recovery, FixtureRecoveryError, FixtureRecoveryObservation,
 };
 use crate::diagnostic_worker_policy::authority_registry::fixture::{
     fixed::FixedAuthorityRegistry, FixtureAuthorityRegistry,
@@ -13,6 +16,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum SignedAuthorityError {
+    #[error(transparent)]
+    Lifecycle(#[from] FixtureRecoveryError),
     #[error(transparent)]
     Signed(#[from] SignedTasksError),
     #[error(transparent)]
@@ -309,6 +314,54 @@ macro_rules! bound_methods {
 }
 bound_methods!(FixedAuthorityBoundRead);
 bound_methods!(FixtureAuthorityBoundRead);
+
+impl FixtureAuthorityBoundRead<'_, '_, '_, '_, '_, '_> {
+    /// Local fixture refusal check only. A quiet observation cannot authorize
+    /// execution, cleanup, live adoption or production enrollment.
+    ///
+    /// ```compile_fail
+    /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixedAuthorityBoundRead;
+    /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::{WorkerPolicyTrust, AssertedWorkerHost};
+    /// fn fixture_cannot_enroll_fixed(read: &mut FixedAuthorityBoundRead<'_, '_, '_, '_, '_, '_>, trust: &WorkerPolicyTrust, host: &AssertedWorkerHost, root: &std::path::Path, identity: &hydracache_long_run_supervisor_074::diagnostic_lease::DiagnosticIdentity) {
+    ///     let _ = read.check_fixture_lifecycle(&[], trust, host, root, identity);
+    /// }
+    /// ```
+    pub fn check_fixture_lifecycle(
+        &mut self,
+        bytes: &[u8],
+        trust: &WorkerPolicyTrust,
+        host: &AssertedWorkerHost,
+        root: &std::path::Path,
+        expected: &crate::diagnostic_lease::DiagnosticIdentity,
+    ) -> Result<FixtureRecoveryObservation, SignedAuthorityError> {
+        self.check_lifecycle_with(bytes, trust, host, root, expected, |journal, reason| {
+            journal.refuse(reason)
+        })
+    }
+    fn check_lifecycle_with(
+        &mut self,
+        bytes: &[u8],
+        trust: &WorkerPolicyTrust,
+        host: &AssertedWorkerHost,
+        root: &std::path::Path,
+        expected: &crate::diagnostic_lease::DiagnosticIdentity,
+        publish: impl FnOnce(&mut Journal<'_>, RefusalReason) -> Result<(), AuthorityError>,
+    ) -> Result<FixtureRecoveryObservation, SignedAuthorityError> {
+        self.reader.revalidate(bytes, trust, host)?;
+        if expected.boot_id != self.reader.original_host.boot_id {
+            return Err(self
+                .reader
+                .reject_with(FixtureRecoveryError::Identity.into(), publish));
+        }
+        with_fixture_recovery(root, expected, |result| match result {
+            Ok(observation) => {
+                self.reader.revalidate(bytes, trust, host)?;
+                Ok(observation)
+            }
+            Err(error) => Err(self.reader.reject_with(error.into(), publish)),
+        })
+    }
+}
 #[cfg(test)]
 #[path = "diagnostic_signed_authority_tests.rs"]
 mod tests;

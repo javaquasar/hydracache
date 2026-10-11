@@ -16,6 +16,9 @@ use thiserror::Error;
 const NS: u64 = 1_000_000_000;
 const OUTPUT_ROOT: &str = "diagnostic-fixture-outputs";
 
+#[path = "diagnostic_fixture_recovery.rs"]
+pub mod recovery;
+
 #[derive(Debug, Error)]
 pub enum PreparationError {
     #[error("fixture preparation path, identity, state or asserted clock refused")]

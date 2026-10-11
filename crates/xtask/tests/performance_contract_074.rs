@@ -3,6 +3,102 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_fixture_recovery_reuses_intents_without_production_restart_authority() {
+    let c = contract("diagnostic-fixture-recovery-local-contract.toml");
+    for key in [
+        "reuse_existing_state_and_ipc_decoders",
+        "no_new_durable_format",
+        "retained_fixture_host_fence",
+        "descriptor_relative_bounded_reads",
+        "exact_asserted_identity_and_original_boot",
+        "pending_or_interrupted_intent_refuses_original_chain",
+        "safe_original_authority_refusal_only",
+        "first_failure_and_publication_uncertainty_preserved",
+        "no_lifecycle_replay_repair_cleanup_or_adoption",
+        "quiet_observation_is_not_start_permission",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "fixed_root_enrollment",
+        "authenticated_production_intent",
+        "production_start_or_restart",
+        "crash_before_any_intent_covered",
+        "physical_power_loss_proved",
+        "host_mutation_allowed",
+        "qualification_or_admission_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "FixtureFence::acquire(root)",
+        "libc::AT_SYMLINK_NOFOLLOW",
+        ".read_at(&mut buffer, bytes.len() as u64)",
+        "m.nlink() != 1",
+        "m.mode() & 0o7777 != 0o600",
+        "active.revalidate(fence)?",
+        "ledger.revalidate(fence)?",
+        "has_unacknowledged_intent(&ledger.bytes)",
+        "decode_active(&active.bytes)",
+        "&state.identity != expected",
+        "FixtureRecoveryError::Interrupted",
+    ] {
+        assert!(runtime.contains(marker), "missing invariant {marker}");
+    }
+    for forbidden in [
+        "Command::new",
+        "start_once",
+        "stop_tree",
+        "observe_tree",
+        "fs::write",
+        "fs::rename",
+        "remove_file",
+        "write_new",
+        "libc::O_CREAT",
+        "libc::O_WRONLY",
+        "Serialize",
+        "verify_worker_policy(",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "recovery cannot add {forbidden}"
+        );
+    }
+    for (file, names) in [
+        (
+            "diagnostic_fixture_recovery_tests.rs",
+            vec![
+                "fixture_recovery_quiet_observations_keep_every_byte_and_fence",
+                "fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses",
+                "fixture_recovery_replacements_and_absent_ledger_creation_refuse",
+                "fixture_recovery_callback_holds_host_fence_and_errors_release_it",
+            ],
+        ),
+        (
+            "diagnostic_recovery_authority_tests.rs",
+            vec![
+                "recovery_authority_interrupted_and_pending_intents_durably_refuse_original",
+                "recovery_authority_unsafe_journal_stops_before_lifecycle_without_append",
+                "recovery_authority_four_publication_faults_keep_first_failure_and_no_retry",
+            ],
+        ),
+    ] {
+        let tests =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src").join(file))
+                .unwrap();
+        for name in names {
+            assert!(tests.contains(name), "missing test {name}");
+        }
+    }
+}
+
+#[test]
 fn diagnostic_signed_authority_bridge_keeps_uncertain_restart_and_launch_closed() {
     let c = contract("diagnostic-signed-authority-local-contract.toml");
     for key in [

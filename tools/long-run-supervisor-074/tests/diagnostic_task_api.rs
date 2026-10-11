@@ -1,6 +1,18 @@
 #![cfg(target_os = "linux")]
 
 #[test]
+fn fixture_lifecycle_recovery_api_is_readonly_and_fixture_origin_only() {
+    use hydracache_long_run_supervisor_074::diagnostic_output_preparation::recovery::{
+        inspect_fixture_recovery, FixtureRecoveryObservation,
+    };
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead;
+    let _ = inspect_fixture_recovery;
+    let _ = FixtureAuthorityBoundRead::check_fixture_lifecycle;
+    fn data_only(_: FixtureRecoveryObservation) {}
+    let _ = data_only;
+}
+
+#[test]
 fn signed_authority_api_keeps_original_fixed_and_fixture_types_distinct() {
     use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::{
         bind_fixed_authority, bind_fixture_authority, FixedAuthorityBoundRead, FixtureAuthorityBoundRead,

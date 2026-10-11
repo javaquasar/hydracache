@@ -27,6 +27,15 @@ repair. The v1 record bytes and epoch rules are unchanged. Unacknowledged writes
 do not authorize restart; crash-before-publication and lifecycle intent remain
 separate, unimplemented boundaries.
 
+The subsequent fixture-only recovery refusal composition reuses the existing
+schema-1 diagnostic state and IPC ledger decoders and v1 Policy refusal records.
+Pending publication, an unacknowledged IPC intent, interrupted execution stages,
+or unsafe lifecycle documents latch the original signed fixture chain; only a
+safe exact-bound authority journal receives a refusal. Quiet Reserved/Terminal
+observations are data, not start/adoption/cleanup permission. It changes no
+durable bytes, production dispatch or epoch transition. Authenticated production
+intent, fixed-root enrollment and crash-before-any-intent remain open boundaries.
+
 The separate 0.74 asserted task reader is opt-in Linux runtime-only. It retains
 at most 128 original tasks and their generation/status/user/mount objects under
 bounded membership scans, generation brackets and sticky refusal. It adds no
