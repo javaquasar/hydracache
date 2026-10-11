@@ -154,6 +154,15 @@ pub struct FencedReservedStateRead<'read, 'storage> {
     fence: Fence,
 }
 impl FencedReservedStateRead<'_, '_> {
+    pub(crate) fn matches_expected(
+        &self,
+        expected: &crate::diagnostic_lease::DiagnosticState,
+    ) -> bool {
+        expected == &self.original.expected
+    }
+    pub(crate) fn latch_refusal(&mut self) {
+        self.original.storage.refused = true;
+    }
     pub fn is_refused(&self) -> bool {
         self.original.is_refused()
     }
@@ -213,3 +222,6 @@ pub fn bind_original_host_fence<'read, 'storage>(
 #[cfg(test)]
 #[path = "diagnostic_original_fence_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(crate) use tests::with_fence_for_test;

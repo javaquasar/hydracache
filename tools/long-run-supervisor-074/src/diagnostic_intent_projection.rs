@@ -339,6 +339,11 @@ pub(crate) struct BoundIntentPins {
     peer_uid: u32,
     peer_gids: Vec<u32>,
 }
+impl BoundIntentPins {
+    pub(crate) fn matches_state(&self, state: &DiagnosticState) -> bool {
+        state == &self.state
+    }
+}
 pub(crate) fn capture_bound_intent(
     worker: &CheckedWorkerPolicy,
     bytes: &[u8],

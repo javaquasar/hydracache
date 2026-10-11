@@ -4,6 +4,16 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+The original authority/signed-intent reader now has distinct fixed and fixture
+read-only compositions with the original fenced Reserved-state reader. Full
+state snapshots must match before composition I/O. Bound failures latch both
+chains; fence failures publish Policy refusal only through the independently
+exact-safe original authority journal, retaining typed uncertainty on failure.
+This reuses existing state/intent/refusal schemas and changes no installer,
+ownership, publisher, peer/clock authority or start API. Healthy composition
+drop leaves the caller's original fence held. See
+[design](testing/performance/0.74/diagnostic-fenced-intent-local-design.md).
+
 Linux campaign admission for the canonical production campaigns root now
 checks existing root-owned fixed intent storage under the original common lock.
 Every fixed-leaf entry, including unknown, pending, terminal or symlink context,

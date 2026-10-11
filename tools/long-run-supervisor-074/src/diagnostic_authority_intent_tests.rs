@@ -10,6 +10,9 @@ use crate::diagnostic_worker_policy::authority_registry::{PublicationStage, fixt
 use ed25519_dalek::{Signer, SigningKey};
 use std::{fs, os::unix::fs::PermissionsExt};
 
+#[path = "diagnostic_fenced_intent_tests.rs"]
+mod fenced_state_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

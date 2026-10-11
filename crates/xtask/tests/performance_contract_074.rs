@@ -9753,3 +9753,76 @@ fn diagnostic_fixed_admission_blocks_context_without_publication_or_enrollment()
         assert!(!backend.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_fenced_intent_borrows_originals_without_publication_or_start() {
+    let c = contract("diagnostic-fenced-intent-local-contract.toml");
+    for key in [
+        "exclusive_original_intent_and_fenced_state_borrows",
+        "fixed_and_fixture_origins_distinct",
+        "full_expected_reserved_state_matches_before_io",
+        "unbound_join_mismatch_does_not_revoke",
+        "fence_intent_fence_intent_fence_bracket",
+        "first_failure_retained_and_both_inputs_latched",
+        "state_failure_publishes_only_to_independent_exact_safe_authority",
+        "unsafe_or_advanced_authority_is_never_appended",
+        "already_refused_performs_no_io",
+        "healthy_drop_releases_no_original_fence",
+        "no_cached_state_export_clone_or_execution_conversion",
+        "sequential_observation_not_continuous_confinement",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "installer_or_host_ownership_changed",
+        "trusted_state_publication_implemented",
+        "fixed_intent_publication_implemented",
+        "peer_or_clock_authenticated",
+        "positive_host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "FencedReservedStateRead",
+        "FixedAuthorityIntentRead",
+        "FixtureAuthorityIntentRead",
+        "bind_fixed_fenced_intent",
+        "bind_fixture_fenced_intent",
+        "matches_state(check.state)",
+        "matches_expected(check.state)",
+        "self.original.original.latch_original()",
+        "self.fence.latch_refusal()",
+        "persist_with(RefusalReason::Policy, publish)",
+        "self.fence.revalidate()",
+        "self.original.revalidate(bytes, check)",
+        "Err(failure @ FencedIntentError::Intent(_))",
+        "RefusalUncertain",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "Command::new",
+        "StartTransientUnit",
+        "O_CREAT",
+        "create_dir",
+        "write_all",
+        "open_fixed_intent_storage",
+        "verify_worker_policy(",
+        "try_lock_exclusive(",
+        "pub fn start",
+        "pub fn state(",
+        "impl Clone",
+        "impl Drop",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}

@@ -30,6 +30,18 @@ fn fixture() -> (tempfile::TempDir, u32, u32) {
     (temp, uid, gid)
 }
 
+pub(crate) fn with_fence_for_test<R>(
+    expected: &crate::diagnostic_lease::DiagnosticState,
+    run: impl FnOnce(&mut FencedReservedStateRead<'_, '_>, &Path) -> R,
+) -> R {
+    let (temp, uid, gid) = fixture();
+    persist(temp.path(), expected);
+    let mut storage = walk(temp.path(), uid, gid).unwrap();
+    let mut state_read = bind_fixed_reserved_state(&mut storage, expected).unwrap();
+    let mut fence = bind_original_host_fence(&mut state_read).unwrap();
+    run(&mut fence, &campaigns(temp.path()))
+}
+
 #[test]
 fn original_fence_same_legacy_lock_blocks_both_campaign_entry_points() {
     let (temp, uid, gid) = fixture();
