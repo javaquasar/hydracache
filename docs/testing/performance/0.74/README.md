@@ -2633,3 +2633,24 @@ fixture-only negative example remains valid. See the
 Trusted ownership enrollment and coordinated binary deployment, original
 authority/intent/state composition and publication remain before worker launch.
 No server, installer, product workload or frozen qualification input changed.
+
+## Original intent and fenced Reserved state
+
+The [composition](diagnostic-fenced-intent-local-design.md) now exclusively
+borrows the original authority/signed-intent reader and original fenced state
+reader. Complete Reserved snapshots must match before I/O; a wrong unbound
+join assertion cannot revoke healthy inputs. Revalidation observes
+fence/intent/fence/intent/fence, retaining each input's own original-object and
+authority brackets. A bound failure latches both chains through drop/restoration.
+Fence failure publishes Policy refusal only to independently exact-safe original
+authority storage. Unsafe/advanced authority is not appended; the first error
+and failed acknowledgement remain typed. Already refused calls perform no I/O.
+
+Distinct fixed/fixture wrappers cannot promote, clone or start a worker.
+Successful wrapper drop leaves the original caller-owned fence held. These are
+sequential observations with externally asserted peer/clock, not continuous
+confinement or production enrollment. See
+[local evidence](local-runs/diagnostic-fenced-intent-20261011/README.md).
+Trusted ownership enrollment, coordinated binary deployment, trusted reservation
+and consumption publication, authenticated peer/clock and the original
+output/start/watchdog/owned-cleanup lifecycle remain before a host pilot.

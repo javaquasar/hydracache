@@ -8,8 +8,12 @@ guard drops. Original objects span pre/post marker checks; late refusal retains
 the marker. Missing/unsafe storage is not absence. The original Reserved reader
 and diagnostic fence still require trusted private campaign ownership; the
 deployed worker-owned layout is not silently enrolled or migrated.
-Authority/intent/state composition, a trusted state publisher, fixed intent
-publisher and diagnostic start route remain open.
+Original authority/intent/state observation is now composed locally under the
+original common fence, with distinct fixed and fixture APIs and cross-input
+sticky refusal. This is read-only consistency, not trusted publication or
+authenticated peer/clock admission. A trusted state publisher, fixed intent
+publisher and diagnostic start route remain open. See the
+[composition design](diagnostic-fenced-intent-local-design.md).
 The Linux storage preflight is ready for a controlled storage check after a fresh
 reviewed installation. See the [intent composition design](diagnostic-authority-intent-local-design.md)
 and [storage design](diagnostic-storage-preflight-design.md).

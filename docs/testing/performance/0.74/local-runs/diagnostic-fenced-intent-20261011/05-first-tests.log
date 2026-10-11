@@ -1,0 +1,159 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0659]: `Step` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:30:18
+   |
+30 | ...= [Step::F...
+   |       ^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Step` could refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+note: `Step` could also refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+
+error[E0659]: `Step` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:30:31
+   |
+30 | ...e, Step::I...
+   |       ^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Step` could refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+note: `Step` could also refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+
+error[E0659]: `Step` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:30:45
+   |
+30 | ...t, Step::F...
+   |       ^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Step` could refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+note: `Step` could also refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+
+error[E0659]: `Step` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:30:58
+   |
+30 | ...e, Step::I...
+   |       ^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Step` could refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+note: `Step` could also refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+
+error[E0659]: `Step` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:30:72
+   |
+30 | ...t, Step::F...
+   |       ^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `Step` could refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+note: `Step` could also refer to the enum imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `Step` to disambiguate
+
+error[E0659]: `bracket` is ambiguous
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:33:22
+   |
+33 | ... = bracket(|s...
+   |       ^^^^^^^ ambiguous name
+   |
+   = note: ambiguous because of multiple glob imports of a name in the same module
+note: `bracket` could refer to the function imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:1:5
+   |
+ 1 | use super::*;
+   |     ^^^^^^^^
+   = help: consider adding an explicit import of `bracket` to disambiguate
+note: `bracket` could also refer to the function imported here
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:2:5
+   |
+ 2 | use ...d_state::*;
+   |     ...^^^^^^^^^^
+   = help: consider adding an explicit import of `bracket` to disambiguate
+
+error[E0308]: mismatched types
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:35:45
+   |
+35 | ... { Err(FencedIntentError::Binding) }...
+   |       --- ^^^^^^^^^^^^^^^^^^^^^^^^^^ expecte...ntError`, found `FencedIntentError`
+   |       |
+   |       arguments to this enum variant are incorrect
+   |
+help: the type constructed contains `fenced_state::FencedIntentError` due to the type of the argument passed
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:35:41
+   |
+35 | ... { Err(FencedIntentError::Binding) } ...
+   |       ^^^^--------------------------^
+   |           |
+   |           this argument influences the type of `Err`
+note: tuple variant defined here
+  --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/result.rs:566:4
+
+error[E0277]: can't compare `Step` with `Step`
+  --> tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs:37:9
+   |
+37 | ...   as...min(5)]);
+   |       ^^...^^^^^^^^ no implementation for `Step == Step`
+   |
+help: the trait `PartialEq<fenced_state::Step>` is not implemented for `Step`
+      but trait `PartialEq<intent_binding::Step>` is implemented for it
+  --> tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs:25:30
+   |
+25 | ...g, PartialEq, Eq)]
+   |       ^^^^^^^^^
+   = help: for that trait implementation, expected `Step`, found `Step`
+   = note: required for `Vec<...>` to implement `PartialEq<[...]>`
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-14716106248782659951.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0277, E0308, E0659.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 8 previous errors

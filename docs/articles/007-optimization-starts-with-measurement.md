@@ -6670,3 +6670,43 @@ reviewed deployment and trusted ownership enrollment, then original
 authority/intent/state composition and publication under the same fence.
 Output/start/watchdog/owned cleanup and controlled-host proof remain separate.
 There is no server run, numerical performance result or release admission here.
+
+## Original intent and Reserved state share an observation guard
+
+The next control-plane hypothesis was that separately valid authority/intent
+and Reserved-state/fence readers could be joined without recreating either
+chain. Checking equal lease IDs would be insufficient: the complete signed
+Reserved snapshot must match the state reader's original expected snapshot.
+The [composition](../testing/performance/0.74/diagnostic-fenced-intent-local-design.md)
+therefore borrows both original readers exclusively, keeping fixed and fixture
+origins distinct. A wrong unbound join assertion refuses before I/O and leaves
+healthy inputs usable.
+
+Revalidation observes fence/intent/fence/intent/fence. Each intent observation
+still uses the original authority, signed runtime and journal brackets; each
+fence observation retains its original state file, ancestry and common lock.
+A bound failure latches both chains. When the fence fails, the authority journal
+is checked independently before Policy refusal publication. Unsafe or advanced
+authority is not repaired or appended. Failed acknowledgement preserves the
+first fence error and typed uncertainty; later calls do no I/O. Intent failures
+reuse their existing refusal bridge rather than publish a duplicate record.
+
+A successful join drop leaves the caller's original fence held. Tests cover
+that property, full-state mismatch, original name/inode drift, late context
+changes, signed-intent drift, partial refusal publication and independent
+concurrent chains. The durability test initially tried to reopen a journal while
+its original guard still held the lock. Reopen was moved after the original
+guards dropped; production exclusion was kept intact.
+
+Two absent-API attempts hit a Rust 1.94.0 resolver internal compiler error.
+The [evidence](../testing/performance/0.74/local-runs/diagnostic-fenced-intent-20261011/README.md)
+retains those separately from the actual missing-API diagnostic obtained with
+MSRV 1.88.0. Compiler failure is not treated as a semantic or performance result.
+Final focused tests pass 14 cases in each of three repeats. Linux regression
+passes 540 cases with one existing systemd-bus test ignored, Windows passes 196,
+native root contract/registry/governance tests pass 156 and Linux compile-fail
+doctests pass 22. Current/MSRV and warnings-denied Clippy checks pass. The counts
+describe local functional coverage, not a product speedup or installed-host proof.
+This joins observations, not authenticated initial host admission or execution.
+Peer/clock authentication, trusted publication and output/start/watchdog/owned
+cleanup remain before a pilot. No server operation or numerical claim follows.

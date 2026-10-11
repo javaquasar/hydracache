@@ -1,0 +1,680 @@
+{
+  "schema_version": 1,
+  "state": "retained-original-intent-fenced-state-observation-local",
+  "date": "2026-10-11",
+  "baseline_source": "0399d63bc1fb2020a26d522cc007d465ada59018",
+  "baseline_tree": "27e62e09d60832fd3cc45dd9909c15c25efac051",
+  "preregistration_source": "c8505ae3ce1beaf969e6703ba4b52204f7cc4687",
+  "implementation_source": "b99bc642f183ea946724a05b2fceb5e6e597b018",
+  "implementation_tree": "103d449146d33e7810c8d907c608f1151addeb30",
+  "implementation_source_sha256": {
+    "docs/testing/gated-test-registry.toml": "e1f23ed8b094c540d01911ef46f12c93a22081e3f9a92cda98e543658902c388",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs": "a48050e0085b2eae7319286fc1b6d9b482f3d2d4501886e159bce36c2b02fd16",
+    "tools/long-run-supervisor-074/src/host_execution.rs": "6c854501cb813d40a129822a39023d8d4b9160560f952768a2afd23f3985274a",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_intent_tests.rs": "e5679aa8122128ee9e5438a01c2e5af7c9ee553371772786bfca208cefad6443",
+    "docs/testing/performance/0.74/diagnostic-fenced-intent-local-design.md": "894d62ff6982d3740e6f808dd7c90da8a5f9472f8e539a3bacfb06976c049775",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh": "a37c9abcdfc2bfa84ec960f80883c42373552abbc9e9aa0c53068344fe9833fa",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs": "d55c6ac34b061585b45fc53d6a31a4570ece37c344846c06ffc7f61001ec4e8c",
+    "crates/xtask/tests/performance_contract_074.rs": "9ba5c9ad6bccdc64667ee2e1fea6e2c279d93b9409e6923442ae4f128c69aef6",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "ade0d366c14b63212955db852cd70605219554b23fbaa6f24bdbeadf8edd3c5b",
+    ".gitattributes": "396233e61168e738dd159c99e5a3a2213a332c018a219e5be601a05ee00817f2",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs": "8e2be16bec423d75beee636368d1a96d27c9ea4de3046e8e22dcc5343cf322d0",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "0dec46eb20e162150b76ea5c7813ce3c6d41ca116a9de4dc745f713334b603d1",
+    "docs/COMPAT.md": "d0d74b41d696db040db95813b25c7b6007f7058e964d96f5f1cb06d5470b70c6",
+    "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs": "06a511378df78a4883c5f293b73cce0662eac4fe3345a191978748b3a4c67c2d",
+    "docs/testing/performance/0.74/diagnostic-fenced-intent-local-contract.toml": "24b7a034582a6f2339fcb6c822c01fc6fd966666e24a59d4d0c0baa9911f7575",
+    "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs": "9fa67be28d71c843f5c10e0de50cc0307dffc8c7e58b69a4b24ca1dc15311990",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence_tests.rs": "156de6e388c5457a24dad78bb291e86d3f8a2dfac3a3e74285054f7fb5bc6bde",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs": "8ff07b846509345fdc7e6d3f42c8f098712e6736043512555956487b1a56bd60",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf": "8e3b5a3df9085ae9ad493ab9b4211b0f7ea710ea433f94c15e7945b83d52d2f0",
+    "tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs": "35694e84626e3b6febb397989c855737482c15c454d4a886e5786d09db1a396c",
+    "docs/testing/release-evidence/0.74.toml": "afb9a27a4f71cc26e5ab5d894913b28797c682c5de5e1ab4c4d4832d55a592a4"
+  },
+  "unchanged_sources": [
+    "tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs",
+    "tools/long-run-supervisor-074/src/host_execution.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+    "docs/testing/gated-test-registry.toml",
+    "scripts/perf/long-run-supervisor-074/provision-host-074.sh",
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf"
+  ],
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-fixed-admission-20261011",
+  "historical_manifest_sha256": "d38928beb2a0bfe0fde903e042ec0cf8c1ae0e61d0a24917a3e5ef2c01e3ef32",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "original_authority_intent_state_observation_composed": true,
+  "contract_boolean_pins": {
+    "fence_intent_fence_intent_fence_bracket": true,
+    "server_operation_performed": false,
+    "already_refused_performs_no_io": true,
+    "no_cached_state_export_clone_or_execution_conversion": true,
+    "performance_claim_allowed": false,
+    "fixed_intent_publication_implemented": false,
+    "peer_or_clock_authenticated": false,
+    "state_failure_publishes_only_to_independent_exact_safe_authority": true,
+    "unbound_join_mismatch_does_not_revoke": true,
+    "first_failure_retained_and_both_inputs_latched": true,
+    "ship_allowed": false,
+    "positive_host_enrollment_proved": false,
+    "exclusive_original_intent_and_fenced_state_borrows": true,
+    "unsafe_or_advanced_authority_is_never_appended": true,
+    "installer_or_host_ownership_changed": false,
+    "healthy_drop_releases_no_original_fence": true,
+    "qualification_allowed": false,
+    "full_expected_reserved_state_matches_before_io": true,
+    "fixed_and_fixture_origins_distinct": true,
+    "worker_execution_allowed": false,
+    "trusted_state_publication_implemented": false,
+    "sequential_observation_not_continuous_confinement": true
+  },
+  "closed_permissions": {
+    "server_operation_performed": false,
+    "performance_claim_allowed": false,
+    "fixed_intent_publication_implemented": false,
+    "peer_or_clock_authenticated": false,
+    "ship_allowed": false,
+    "positive_host_enrollment_proved": false,
+    "installer_or_host_ownership_changed": false,
+    "qualification_allowed": false,
+    "worker_execution_allowed": false,
+    "trusted_state_publication_implemented": false
+  },
+  "not_proved": [
+    "physical host/issuer/worker enrollment",
+    "quiescent trusted campaign ownership and coordinated installed binary rollout",
+    "authenticated original peer or clock",
+    "trusted state or fixed intent publication",
+    "continuous kernel confinement or whole-host snapshot rollback detection",
+    "original output/start/watchdog/owned cleanup",
+    "product comparison or release qualification"
+  ],
+  "toolchains": {
+    "current": "1.94.0",
+    "msrv": "1.88.0",
+    "python": "Windows 3.13"
+  },
+  "test_environment": {
+    "root_for_local_tests": false,
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTDOCFLAGS": "-D warnings for native Windows rustdoc",
+    "faults": "private enumerated logical seams; seed 0x0748, not a physical race or power-loss trial"
+  },
+  "new_tests": [
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_refused_fence_revokes_original_without_journal_io"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_partial_refusal_preserves_first_fence_error_and_uncertainty"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_public_wrappers_are_original_thread_only"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_bracket_preserves_all_first_error_positions"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_healthy_repeat_and_drop_keep_original_flock_and_bytes"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_unbound_full_state_mismatch_keeps_both_inputs_healthy"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_bound_expiry_signature_state_and_peer_drift_latch_both"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_state_object_drift_preserves_first_error_and_durable_refusal"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_seeded_late_context_failure_latches_originals"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_constructor_storage_failure_revokes_bound_originals"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_unsafe_or_advanced_authority_never_appended_on_fence_failure"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_already_refused_join_latches_counterpart_without_io"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_fixed_dispatch_remains_private_nonroot_model"
+    },
+    {
+      "source": "tools/long-run-supervisor-074/src/diagnostic_fenced_intent_tests.rs",
+      "function": "fenced_intent_independent_concurrent_chains_do_not_share_refusal"
+    },
+    {
+      "source": "crates/xtask/tests/performance_contract_074.rs",
+      "function": "diagnostic_fenced_intent_borrows_originals_without_publication_or_start"
+    }
+  ],
+  "repeated_unit_test_names": [
+    "fenced_intent_refused_fence_revokes_original_without_journal_io",
+    "fenced_intent_partial_refusal_preserves_first_fence_error_and_uncertainty",
+    "fenced_intent_public_wrappers_are_original_thread_only",
+    "fenced_intent_bracket_preserves_all_first_error_positions",
+    "fenced_intent_healthy_repeat_and_drop_keep_original_flock_and_bytes",
+    "fenced_intent_unbound_full_state_mismatch_keeps_both_inputs_healthy",
+    "fenced_intent_bound_expiry_signature_state_and_peer_drift_latch_both",
+    "fenced_intent_state_object_drift_preserves_first_error_and_durable_refusal",
+    "fenced_intent_seeded_late_context_failure_latches_originals",
+    "fenced_intent_constructor_storage_failure_revokes_bound_originals",
+    "fenced_intent_unsafe_or_advanced_authority_never_appended_on_fence_failure",
+    "fenced_intent_already_refused_join_latches_counterpart_without_io",
+    "fenced_intent_fixed_dispatch_remains_private_nonroot_model",
+    "fenced_intent_independent_concurrent_chains_do_not_share_refusal"
+  ],
+  "test_totals": {
+    "01-baseline.log": [
+      13,
+      0
+    ],
+    "08-corrected-expanded-tests.log": [
+      14,
+      0
+    ],
+    "09-repeat-1.log": [
+      14,
+      0
+    ],
+    "10-repeat-2.log": [
+      14,
+      0
+    ],
+    "11-repeat-3.log": [
+      14,
+      0
+    ],
+    "12-linux-regression.log": [
+      540,
+      1
+    ],
+    "13-linux-doctests.log": [
+      22,
+      0
+    ],
+    "17-windows-regression.log": [
+      196,
+      0
+    ],
+    "18-root-regression.log": [
+      156,
+      0
+    ],
+    "31-final-repeat-1.log": [
+      14,
+      0
+    ],
+    "32-final-repeat-2.log": [
+      14,
+      0
+    ],
+    "33-final-repeat-3.log": [
+      14,
+      0
+    ],
+    "34-final-linux-regression.log": [
+      540,
+      1
+    ]
+  },
+  "required_log_markers": {
+    "01-baseline.log": "13 passed; 0 failed",
+    "02-missing-api-red.log": "slice index starts at",
+    "03-isolated-missing-api-red.log": "query stack during panic",
+    "04-msrv-missing-api-red.log": "error[E0433]",
+    "05-first-tests.log": "is ambiguous",
+    "06-corrected-tests.log": "WouldBlock",
+    "07-expanded-tests.log": "WouldBlock",
+    "26-local-contract.log": "OK (local, non-promotable)",
+    "27-qualification-refusal.log": "contract input digest mismatch for docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+    "28-ship-refusal.log": "ship admission is closed while candidate identity and release qualification are incomplete",
+    "29-doc-check.log": "doc-check: OK",
+    "30-mdbook.log": "HTML book written to",
+    "39-final-doc-check.log": "doc-check: OK",
+    "40-final-mdbook.log": "HTML book written to"
+  },
+  "green_compile_logs": [
+    "14-linux-current-check.log",
+    "15-linux-clippy.log",
+    "16-linux-msrv.log",
+    "19-windows-current-check.log",
+    "20-windows-clippy.log",
+    "21-windows-msrv.log",
+    "22-xtask-check.log",
+    "23-xtask-clippy.log",
+    "25-rustdoc.log",
+    "35-final-linux-current-check.log",
+    "36-final-linux-clippy.log",
+    "37-final-linux-msrv.log"
+  ],
+  "documentation_link_sources": [
+    "docs/testing/performance/0.74/diagnostic-fenced-intent-local-design.md",
+    "docs/testing/performance/0.74/production-readiness-and-server-launch-20261011.md",
+    "docs/testing/performance/0.74/README.md",
+    "docs/articles/007-optimization-starts-with-measurement.md",
+    "docs/COMPAT.md",
+    "docs/testing/performance/0.74/local-runs/diagnostic-fenced-intent-20261011/README.md"
+  ],
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 3333,
+      "sha256": "56cf0dfb82528f7888d5cb894b1291c87d3bba62704fcf762727acf4f9b91a19",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib authority_intent_",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "baseline"
+    },
+    {
+      "name": "02-missing-api-red.log",
+      "bytes": 9483,
+      "sha256": "10fcc10aae4dcf3328ac17935c454824ee37fadf37c5fb86c89764cd22097451",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate",
+      "classification": "compiler-incident-not-semantic-red"
+    },
+    {
+      "name": "03-isolated-missing-api-red.log",
+      "bytes": 12688,
+      "sha256": "8542a0ce811e2563fb830ec1c1b8a65b9444fb7170d882092e9caed451a9e93c",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate",
+      "classification": "compiler-incident-not-semantic-red"
+    },
+    {
+      "name": "04-msrv-missing-api-red.log",
+      "bytes": 3342,
+      "sha256": "88b395c718cb540ab6101571d87312760ccefef137e7bffd09830da1a4856003",
+      "command": "cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "05-first-tests.log",
+      "bytes": 6704,
+      "sha256": "abc5d6267e9c810d308e6a4419f0ad3154f1a303f19e388d2f3a30192fad71c2",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "06-corrected-tests.log",
+      "bytes": 4148,
+      "sha256": "aafe89dacfb4439fa305b98d04650e4bf7a7da896dceab8fce72d5fd1a6c107f",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "07-expanded-tests.log",
+      "bytes": 4893,
+      "sha256": "07f43bc93390b73c2c7bdd18310fe62388e655d730c714244bbd966378112226",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "08-corrected-expanded-tests.log",
+      "bytes": 3975,
+      "sha256": "f1bf6e726798a59168a732bbdfcd23f3fcd258d9974689bf3d9c0260b3742a50",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "09-repeat-1.log",
+      "bytes": 3842,
+      "sha256": "db7e6b8fb69f699740a06d136c32efe0fc6c8ec6cacd355706eba8772855454b",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "10-repeat-2.log",
+      "bytes": 3842,
+      "sha256": "08a51493c510eede6abc2396331dac94e967901f4409b387641a4fb40cd2bb91",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "11-repeat-3.log",
+      "bytes": 3842,
+      "sha256": "f657a287b427e6660b207bcdcfbabeef20a78a659ecab04132d438b7c8a7b5c1",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "12-linux-regression.log",
+      "bytes": 72053,
+      "sha256": "d85a8fba0fd92a2393d86b468f3fe5e9d03809cc0347ea93160db42423ca2e2e",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "13-linux-doctests.log",
+      "bytes": 5298,
+      "sha256": "912c6a7b7acf61c8a23409087e38d060b7460182f2272b2e19f9bdafaa6b9476",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "14-linux-current-check.log",
+      "bytes": 193,
+      "sha256": "3f46c94d3ebb9c1cf1fc3743a50cc37dd2cd962468e9df6d0e1eefd3e66f3448",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "15-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "b6cf4c45e58a03f6127cfc192d543ffafc964dd167b22bb58ae016b374549ec4",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "16-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "d42b190c0d2886ddbe37d227de6b90eda8176b0093b795eb7adb5bc4cc1b143e",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "intermediate"
+    },
+    {
+      "name": "17-windows-regression.log",
+      "bytes": 25439,
+      "sha256": "8d9888cde7697174229ef5fb1f7aedaca0c5b4fad0abfc8e7b56c4b64b33fcc2",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "18-root-regression.log",
+      "bytes": 13639,
+      "sha256": "faac7d5f782f0f039d1c713ccc26a8de6090b5a6dfc2725797bc180142c32f41",
+      "command": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "19-windows-current-check.log",
+      "bytes": 61,
+      "sha256": "28fea7e630ebbe534ff4bf7f7c11203e74357bbc6deba47bd0ad5154124ba222",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "20-windows-clippy.log",
+      "bytes": 61,
+      "sha256": "ed169e91488a7537ec7788643bd831abf85aa7bfc91246903e6c3a029eb1d6a2",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "21-windows-msrv.log",
+      "bytes": 61,
+      "sha256": "2468bd50c1d0a96610091af6c514eacf3783a282cadb5daf10106d8721281bb9",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "22-xtask-check.log",
+      "bytes": 145,
+      "sha256": "b2f7e81357831831c865f449159c9268f5f87887e275389aa8c82db78add9f74",
+      "command": "cargo +1.94.0 check -p xtask --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "23-xtask-clippy.log",
+      "bytes": 145,
+      "sha256": "52cfdcc1c5c87b989d602c46c3df42bbfcaf549276adcec71f6a5bd479347632",
+      "command": "cargo +1.94.0 clippy -p xtask --locked --all-targets --all-features -- -D warnings",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "24-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "25-rustdoc.log",
+      "bytes": 320,
+      "sha256": "a4ec5bf6bd24609f082dc6ce866fa90e61dedbb52423f2917f606dd6a60a380d",
+      "command": "cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "26-local-contract.log",
+      "bytes": 287,
+      "sha256": "1140424b8d2304f3453c3273196ff859609a53ff1bb7349d0f1925ea049bd50a",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "27-qualification-refusal.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "command": "C:/Python313/python.exe scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <owned-temporary-directory>/qualification.json --dry-run",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "28-ship-refusal.log",
+      "bytes": 487,
+      "sha256": "59c9fb1cee8514fad8ab09f0645d6b3132635dbd296c45425c114e1a35bd6c38",
+      "command": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "29-doc-check.log",
+      "bytes": 155,
+      "sha256": "f674085dc3e2a57598628204c369929e09fe7a48946f95f189d32dd9a0c7d892",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "30-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "31-final-repeat-1.log",
+      "bytes": 4032,
+      "sha256": "912d248e042c25e6c59e8f3ad5678bb9782ed09282a76bfbb23579446eea0089",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "32-final-repeat-2.log",
+      "bytes": 3899,
+      "sha256": "c17c0fb4c4a9502a2ee956a013d003a2b8449772c3a1d064e4da61c6503f3f28",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "33-final-repeat-3.log",
+      "bytes": 3842,
+      "sha256": "32e62688b8693a5d94231c044c9223e3f9a02a5bf8d97a9cae0419850111f42e",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib fenced_intent_ -- --nocapture --test-threads=1",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "34-final-linux-regression.log",
+      "bytes": 71920,
+      "sha256": "47c1b0986f527b7d6034218ee483f00fd896f7209fbcd1b3da3a9cbdd451d40e",
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "35-final-linux-current-check.log",
+      "bytes": 60,
+      "sha256": "26b8db8b93ca2c896409e455e1cdd0c4f5a6f635c293cddd0ebb4fb5a34b18bb",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "36-final-linux-clippy.log",
+      "bytes": 60,
+      "sha256": "54a59b54ae725eceebc4d197d1ebf38bda68d6991af6e0ae4cb9bf405e027bf0",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "37-final-linux-msrv.log",
+      "bytes": 60,
+      "sha256": "72cd628f4c524e5a7a8ba803ea5d341db9fb39d9b53af008397ac73553a09ac2",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "WSL Ubuntu nonroot",
+      "stage": "final"
+    },
+    {
+      "name": "38-final-format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "39-final-doc-check.log",
+      "bytes": 155,
+      "sha256": "98942d075b24a00ff19d7147dc3e87569a611d16344f6e2c184ca5784ba98ed8",
+      "command": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    },
+    {
+      "name": "40-final-mdbook.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "environment": "native Windows",
+      "stage": "final"
+    }
+  ]
+}
