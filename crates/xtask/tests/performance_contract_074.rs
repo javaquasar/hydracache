@@ -3,6 +3,114 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_signed_mount_derives_original_process_and_keeps_launch_closed() {
+    let c = contract("diagnostic-signed-mount-local-contract.toml");
+    assert_eq!(
+        c["construction_order"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["signed", "open-mount", "signed", "mount", "signed"]
+    );
+    assert_eq!(
+        c["later_order"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["signed", "mount", "signed"]
+    );
+    for field in [
+        "original_signed_reader_borrowed",
+        "original_process_derived_privately",
+        "new_mount_guard_privately_owned",
+        "original_signed_mount_pin_required",
+        "post_open_signed_stage_before_outer_mount",
+        "first_typed_error_stops",
+        "all_owned_and_original_inputs_refused",
+        "fixed_fixture_types_distinct",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "replacement_process_or_mount_argument",
+        "public_process_descriptor_pin_or_reset",
+        "guard_send_or_sync",
+        "old_public_api_behavior_changed",
+        "all_threads_proved",
+        "initial_host_namespace_proved",
+        "mount_content_immutability_proved",
+        "atomic_or_continuous_proof",
+        "file_opener_credentials_attested",
+        "durable_issuer_epoch_or_refusal",
+        "real_issuer_enrolled",
+        "positive_fixed_production_inspection",
+        "production_preparation_allowed",
+        "authenticated_original_start",
+        "new_helper_ipc_or_live_route",
+        "host_mutation_allowed",
+        "product_workload_allowed",
+        "performance_claim_allowed",
+        "qualification_allowed",
+        "admission_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signed_mount.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "NamespaceCredentialRead::pin_original_mount",
+        "original.reader().credentials",
+        "original.account.reader().context.policy.original",
+        "self.original.refuse()",
+        "self.mount.refuse()",
+        "r.credentials.refuse()",
+        "r.account.refuse()",
+    ] {
+        assert!(runtime.contains(marker), "missing {marker}");
+    }
+    for forbidden in [
+        "ProcessRead",
+        "pin_same_mount_namespace(",
+        "pub fn reset",
+        "pub fn refresh",
+        "pub fn into_",
+        "impl Clone",
+        "WorkerPolicyTrust::new",
+        "Command::new",
+        "libc::setns",
+        "libc::unshare",
+        "Serialize",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "unexpected authority {forbidden}"
+        );
+    }
+    for (name, argument) in [
+        ("open_signed_fixed_mount", "FixedSignedCredentialRead"),
+        ("open_signed_fixture_mount", "FixtureSignedCredentialRead"),
+    ] {
+        let signature = runtime
+            .split(&format!("pub fn {name}"))
+            .nth(1)
+            .unwrap()
+            .split('{')
+            .next()
+            .unwrap();
+        assert!(signature.contains(argument));
+        assert!(!signature.contains("SameMountNamespaceRead"));
+        assert!(!signature.contains("process:"));
+    }
+}
+
+#[test]
 fn diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed() {
     let c = contract("diagnostic-mount-namespace-local-contract.toml");
     assert_eq!(

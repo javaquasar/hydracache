@@ -154,6 +154,18 @@ pub fn pin_same_mount_namespace(
     Ok(read)
 }
 impl SameMountNamespaceRead<'_> {
+    pub(crate) fn refuse(&mut self) {
+        self.guard.refused = true;
+    }
+    pub(crate) fn matches_worker_policy(
+        &self,
+        policy: &crate::diagnostic_worker_policy::WorkerPolicy,
+    ) -> bool {
+        !self.is_refused()
+            && self.guard.original == self.probe.original
+            && self.guard.original
+                == FileId(policy.mount_namespace.device, policy.mount_namespace.inode)
+    }
     pub fn is_refused(&self) -> bool {
         self.guard.refused
     }
@@ -230,6 +242,12 @@ fn follow_fixed(directory: &File, name: &CStr, is_dir: bool) -> Result<File, Mou
     }
     // SAFETY: successful openat returns one new owned descriptor.
     Ok(unsafe { File::from_raw_fd(fd) })
+}
+#[cfg(test)]
+impl SameMountNamespaceRead<'_> {
+    pub(crate) fn replace_worker_for_test(&mut self, file: File) -> File {
+        std::mem::replace(&mut self.probe.worker, file)
+    }
 }
 #[cfg(test)]
 #[path = "diagnostic_mount_namespace_tests.rs"]
