@@ -6380,3 +6380,41 @@ the original authority and material/output/runtime guards, followed by watchdog,
 owned cleanup and controlled real issuer/host enrollment. Qualification still
 refuses its inherited frozen plan-digest mismatch. No cache workload or numerical
 allocation, latency, CPU or goodput claim accompanies this safety prerequisite.
+
+### Fixed storage ownership before publishing intent
+
+Durable fixture consumption does not establish that production storage is trusted.
+The next audit found a concrete reason: existing tmpfiles provisioning assigns
+the campaigns directory to `hydracache-perf:hydracache-perf` with mode 0750.
+Its parent is root:hydracache-perf. A worker-owned directory may be appropriate
+for campaign artifacts, but cannot simply become the root authority journal.
+Changing its owner to make a test pass would change the deployed protocol.
+
+The [next local prerequisite](../testing/performance/0.74/diagnostic-intent-fixed-storage-local-design.md)
+therefore inspects a separate prospective fixed intent leaf without creating it.
+The guard opens `/` and each fixed path component with no-follow directory
+descriptors, requiring root ownership, no group/other write or special bits,
+and root:root 0700 at the leaf. The existing performance parent's group is
+permitted only under that nonwritable policy and is captured exactly. Rechecks
+compare every original descriptor with its current named object, including `/`.
+Normal directory timestamps and link-count growth are not identity changes;
+owner, inode, device or exact mode changes refuse permanently.
+
+Seven new local unit cases pass three repetitions. The selected Linux scope
+passes 479 tests with one existing ignored; root checks pass 108 contract, 13
+evidence, six gated-target and 23 governance cases. These modeled nonroot trees
+exercise the actual private walker, not positive root storage enrollment. The
+[packet](../testing/performance/0.74/local-runs/diagnostic-intent-fixed-storage-20261011/README.md)
+retains baseline, absent-API failure and scoped checks. The public guard exposes
+no configurable origin, descriptor, clone or execution conversion. It neither
+publishes intent nor authenticates an issuer, live host, fence or journal records.
+
+The audit also finds that the older fixed authority backend requires root:root
+for the common parent, unlike the current provisioning bundle. The new inspector
+does not quietly relax that older contract or claim the two can already compose
+on the host. A reviewed common ownership policy, lease-specific retention and
+original authority/fence/state join remain before a fixed publisher. Sequential
+directory inspection is not continuous confinement or physical power-loss proof.
+No server, cache workload, frozen qualification input or performance threshold
+changes accompany this step; its benefit is an explicit storage trust boundary,
+not measured throughput or allocation improvement.

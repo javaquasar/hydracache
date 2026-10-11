@@ -1,0 +1,226 @@
+{
+  "schema_version": "diagnostic-intent-fixed-storage-local-evidence-074-v1",
+  "state": "retained-readonly-fixed-intent-storage-not-publisher",
+  "evidence_class": "working-tree-local-safety-not-exact-candidate-release-receipt",
+  "baseline_source": "794d164d26f9c0cbe8bd050eb68588f5b3caffae",
+  "baseline_tree": "99aa85ca74ff706b3d2fb784c4a88e486bbf48ec",
+  "preregistration_source": "1098341437378fd083984bc2ea424c5c40824b8f",
+  "implementation_source": "f8ab72b3765bfa7ec700c0cc42ee620e840ae788",
+  "implementation_tree": "0bb87aa3620b5848fd053748809e2578985bd6f8",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-intent-journal-20261011",
+  "historical_manifest_sha256": "5951e18488a3669379774b54fa23127270630d410e556c57785c160241290948",
+  "implementation_source_sha256": {
+    "scripts/perf/long-run-supervisor-074/hydracache-performance-074.tmpfiles.conf": "ca83a18e56cf7c8789f21c6a038c58b3228e07f536e23fd097d44e6ddafc2ace",
+    "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs": "3a6dcc2605827e7faada45cac601725990a9478ef8e61c8a73a0613b546163b5",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage_tests.rs": "ad46f32224aab805feb7182ca601da79e5dfc397529cb19869d449ea8e626c49",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs": "933c38a8567e79ba8c24c2fa602b15957935b5813565be787e82e72472462f95",
+    "tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs": "a0948c9c80d82ba282d91ca9adb30424c850956e256170e4086b5deff97be44b",
+    "docs/testing/performance/0.74/diagnostic-intent-fixed-storage-local-contract.toml": "25da18503329e1cb9157f874427dbdf4bb1891c64c69581bcfb17461ec45f7f4",
+    "crates/xtask/tests/performance_contract_074.rs": "91932808a42b161717195ab901f83cad3a2abb97aab5e4953fc8e869c35f4667",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": "0155fdd94f80390d9a9a4a84baadeb870b3f79b4d64148b98b716cdb560c2e45"
+  },
+  "new_unit_test_names": [
+    "intent_fixed_storage_metadata_accepts_only_safe_original_root_policy",
+    "intent_fixed_storage_modeled_walk_is_readonly_and_tolerates_directory_growth",
+    "intent_fixed_storage_every_original_descriptor_replacement_latches",
+    "intent_fixed_storage_every_named_directory_replacement_refuses_adoption",
+    "intent_fixed_storage_unsafe_missing_symlink_and_wrong_owner_refuse",
+    "intent_fixed_storage_restoring_modes_cannot_refresh_original_guard",
+    "intent_fixed_storage_public_guard_is_original_thread_only"
+  ],
+  "results": {
+    "unchanged_journal_baseline": 19,
+    "new_unit_tests": 7,
+    "serial_repeats": 3,
+    "linux_scoped_passed": 479,
+    "linux_existing_ignored": 1,
+    "root_contract": 108,
+    "root_evidence": 13,
+    "root_gated_targets": 6,
+    "root_governance": 23,
+    "compile_fail_doctests": 8
+  },
+  "commands": {
+    "05-linux-scoped": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_task_api --test diagnostic_lease --test diagnostic_ipc -- --test-threads=1",
+    "06-repeat-1": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_fixed_storage -- --test-threads=1",
+    "07-repeat-2": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_fixed_storage -- --test-threads=1",
+    "08-repeat-3": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib intent_fixed_storage -- --test-threads=1",
+    "09-linux-clippy": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "10-linux-check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "11-linux-msrv": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "12-doctests": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --doc --locked",
+    "13-linux-rustdoc": "RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --all-features --no-deps --locked"
+  },
+  "other_commands": {
+    "windows_check": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "windows_clippy": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings",
+    "windows_msrv": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked",
+    "root": "cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test release_evidence --test gated_tests --test release_governance",
+    "xtask_clippy": "cargo +1.94.0 clippy -p xtask --all-targets --all-features --locked -- -D warnings",
+    "format": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask --check",
+    "qualification_negative": "python scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output <owned temporary path> --dry-run",
+    "local_contract": "cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+    "ship_negative": "same performance-contract-check with --require-ship (expected refusal)",
+    "docs": "cargo +1.94.0 run -p xtask --locked -- doc-check",
+    "book": "mdbook build docs-site"
+  },
+  "settings": {
+    "debug_info": 0,
+    "incremental": false,
+    "build_jobs": 2,
+    "root_checks": "native Windows, no Git metadata overrides",
+    "linux_tests": "WSL nonroot owned fixtures and synthetic root metadata; no positive production-root enrollment"
+  },
+  "negative_classification": {
+    "20": "inherited frozen plan digest mismatch",
+    "22": "closed ship admission",
+    "02": "absent API, expected compile failure",
+    "03": "formatting refusal before rustfmt"
+  },
+  "read_only": true,
+  "intent_publication_implemented": false,
+  "host_fence_or_authority_join_implemented": false,
+  "host_enrollment_proved": false,
+  "host_mutation_allowed": false,
+  "performance_claim_allowed": false,
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "bytes": 2773,
+      "sha256": "100022dfea2188c2e5f87fc40a3081b3e73abaf498d4ce7af3aecdf716ce1f8c"
+    },
+    {
+      "name": "02-missing-api.log",
+      "bytes": 642,
+      "sha256": "3360d7c3cf96bcd860c421596956f870119d0c1ae8b2d18e44e3439a0eab2036"
+    },
+    {
+      "name": "03-format-red.log",
+      "bytes": 12666,
+      "sha256": "e641fb0d8c39b4e719261bf8b280a0ad97cfbba3dddbbceda3666b7d2cbd45ec"
+    },
+    {
+      "name": "04-first-tests.log",
+      "bytes": 1444,
+      "sha256": "70a7b996ef5aa340a0d860018c429bb0a346997014edcd2d38ac1ff8adb2f9ac"
+    },
+    {
+      "name": "05-linux-scoped.log",
+      "bytes": 59137,
+      "sha256": "7dbc751ca7e947c36a4c0f29a58d00f962d6c5c024086fa1463251e310f23e26"
+    },
+    {
+      "name": "06-repeat-1.log",
+      "bytes": 1311,
+      "sha256": "2cafd170e5eb1f260e5610576b509de3074d466bb6adae2bd1971796849784fe"
+    },
+    {
+      "name": "07-repeat-2.log",
+      "bytes": 1311,
+      "sha256": "0d21197c88390881a25aec3513ba451cdaef47799795d59cfc32c6106a7e6a6d"
+    },
+    {
+      "name": "08-repeat-3.log",
+      "bytes": 1311,
+      "sha256": "a04af5dc252305fb672e84aa64c534fd5c9ba5a3d853e298688d99b2d5aed3e8"
+    },
+    {
+      "name": "09-linux-clippy.log",
+      "bytes": 193,
+      "sha256": "dda6709c5f39fe01efd1d1928c58e361caf506a3793a5d422054a2379fc0945a"
+    },
+    {
+      "name": "10-linux-check.log",
+      "bytes": 193,
+      "sha256": "8c6befd0dbe227a2e38f3ff94e2c4568a1fddf3b4501be1ad80eefdc224c0bae"
+    },
+    {
+      "name": "11-linux-msrv.log",
+      "bytes": 193,
+      "sha256": "500c426439d643af4eb9345cfded2988e5a9bde7eafbaf1958fa6f6c2832bb9d"
+    },
+    {
+      "name": "12-doctests.log",
+      "bytes": 1936,
+      "sha256": "2932efbd3025c6d26306da34bf26a27f75ce471ce705497928bc9e4ad0421e8f"
+    },
+    {
+      "name": "13-linux-rustdoc.log",
+      "bytes": 460,
+      "sha256": "8f4444d72cff0e2d6e56d7cab2a29da6f97a7ec9eaf5dcc2527d332636c6efc6"
+    },
+    {
+      "name": "14-windows-check.log",
+      "bytes": 190,
+      "sha256": "2966f86c4e7f148d13d0441de198481f3133ece87e50ee7c777a4300c66d1dd1"
+    },
+    {
+      "name": "15-windows-clippy.log",
+      "bytes": 190,
+      "sha256": "8ccae2347686360de75dfc46b6561edd38eb302402eb71326a4220077e1546a3"
+    },
+    {
+      "name": "16-windows-msrv.log",
+      "bytes": 190,
+      "sha256": "bdaf43681ecc06af40686ace5b0614fb3dab8ccbaa47ba7dfc8618342bea699d"
+    },
+    {
+      "name": "17-root-tests.log",
+      "bytes": 13128,
+      "sha256": "a70640cf57c5f3cfc35cfb5aa8c5e5c8ea66e84503174e33e5bb514953720340"
+    },
+    {
+      "name": "18-xtask-clippy.log",
+      "bytes": 145,
+      "sha256": "b2f26ebf5ec71ffb6ae87dd249188de4308276ba7fce92397a94106bea735a88"
+    },
+    {
+      "name": "19-format-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "20-qualification-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44"
+    },
+    {
+      "name": "21-local-contract.log",
+      "bytes": 287,
+      "sha256": "7533d037176d7c04a68c43caeff7563e489011ed010fb9239d9e24807b7c4376"
+    },
+    {
+      "name": "22-ship-red.log",
+      "bytes": 699,
+      "sha256": "7b70ac54a93196dbd6cb7b31503c22bb5a3201ae69e27ead86142e778182205a"
+    },
+    {
+      "name": "23-doc-check.log",
+      "bytes": 155,
+      "sha256": "e4a1cbb1d7b7c67f501da72ae645b091c56bdcc52b6dd92a119a6948c8dda6a6"
+    },
+    {
+      "name": "24-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    {
+      "name": "25-final-doc-check.log",
+      "bytes": 155,
+      "sha256": "379ca3721da27a03e617ddac3b41281b2fca895061fbfb7400c3cda5239af9ee"
+    },
+    {
+      "name": "26-final-book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60"
+    },
+    {
+      "name": "27-final-local-contract.log",
+      "bytes": 203,
+      "sha256": "551ad4663a00e27cbd4378bf7875000d51478150887c0be94b3a68685203cc2a"
+    }
+  ]
+}

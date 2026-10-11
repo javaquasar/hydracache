@@ -41,3 +41,22 @@ with the original authority and supervisor-owned fence/state. It may not promote
 the fixture journal or use the worker-owned campaign lock as trusted root
 authority. Lease-specific bounded retention, original signed worker borrowing,
 live peer/clock and Starting/watchdog/cleanup composition remain open.
+
+The older fixed authority backend requires root:root for its performance parent.
+That is stricter than the existing root:hydracache-perf provisioning. This storage
+inspector does not amend that authority predicate or claim both guards can be
+enrolled under the current bundle. A reviewed common ownership policy is needed
+before their production composition; changing deployed ancestry to pass a local
+test is not an alternative. Sequential inspection is not continuous confinement.
+
+## Local results
+
+Implementation `f8ab72b3765bfa7ec700c0cc42ee620e840ae788` is bound in the
+[packet](local-runs/diagnostic-intent-fixed-storage-20261011/README.md).
+Seven unit cases pass three serial repeats; selected Linux scope passes 479 with
+one existing ignored, and root checks pass 150. Eight compile-fail doctests,
+strict Linux/Windows lint, MSRV 1.88, all-target checks, rustdoc, formatting,
+documentation and local non-promotable contracts pass. These are scoped safety
+results, not numerical product measurements or fixed-host enrollment. The
+missing-API and pre-rustfmt failures remain retained. Qualification dry-run and
+ship admission refuse; no frozen input, provisioning or existing predicate changes.

@@ -211,3 +211,21 @@ original executable/output/runtime composition, Starting/watchdog/owned cleanup
 and controlled real issuer/host enrollment remain required. Existing frozen
 qualification inputs and their plan-digest blocker are unchanged. No admission,
 worker start or dedicated-host operation is added by this result.
+
+## Fixed intent ancestry prerequisite
+
+The [fixed storage inspector](diagnostic-intent-fixed-storage-local-design.md)
+now retains and rechecks every original directory up to a prospective root-owned
+0700 intent leaf. No caller-selected path, owner or descriptor is exposed; errors
+are sticky. It does not create storage, publish records, acquire the host fence,
+join authority or start a worker. Modeled nonroot positive tests are not fixed-host
+enrollment. The [packet](local-runs/diagnostic-intent-fixed-storage-20261011/README.md)
+retains the local proof and unchanged admission boundary.
+
+Current provisioning makes campaigns worker-owned and the common parent
+root:hydracache-perf. Campaigns therefore cannot hold trusted root authority; the
+older fixed authority backend's root:root ancestor rule also differs from the
+bundle. Resolve that ownership policy in a preregistered composition contract
+before deployment, rather than silently changing permissions or a reader predicate.
+The real fixed publisher, lease retention, original authority/fence/state join
+and production lifecycle remain open. Frozen qualification inputs are unchanged.

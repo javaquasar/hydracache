@@ -2514,3 +2514,19 @@ deduplication covers only that same journal. Peer, clock and completed-cell stat
 remain assertions. Production original-authority/material/output/runtime join,
 watchdog, cleanup and controlled issuer/host enrollment still precede any launch.
 Qualification remains blocked by its inherited frozen plan-digest mismatch.
+
+## Fixed intent storage inspection
+
+The [read-only storage guard](diagnostic-intent-fixed-storage-local-design.md)
+retains the original `/var/lib/hydracache-performance/diagnostic-intents-074`
+ancestry and rejects replaced names/descriptors or ownership/mode drift. It has
+no public path/owner/FD selector, publication, host fence or start capability.
+Nonroot modeled trees exercise its private walker; they do not enroll root storage.
+The [packet](local-runs/diagnostic-intent-fixed-storage-20261011/README.md) retains
+the baseline, missing-API red and repeated local checks.
+
+Existing campaign storage remains worker-owned and is not root authority.
+The old fixed authority backend also requires a root:root parent, unlike current
+root:hydracache-perf provisioning. A common reviewed ownership policy and the
+original authority/fence/state join still precede a fixed intent publisher.
+Neither provisioning nor the old authority predicate is changed by this slice.

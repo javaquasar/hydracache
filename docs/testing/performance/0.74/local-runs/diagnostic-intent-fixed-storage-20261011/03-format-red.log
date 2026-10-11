@@ -1,0 +1,269 @@
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:9:
+ 
+ pub const FIXED_INTENT_STORAGE_PATH: &str =
+     "/var/lib/hydracache-performance/diagnostic-intents-074";
+-const COMPONENTS: [&str; 4] = ["var", "lib", "hydracache-performance", "diagnostic-intents-074"];
++const COMPONENTS: [&str; 4] = [
++    "var",
++    "lib",
++    "hydracache-performance",
++    "diagnostic-intents-074",
++];
+ 
+ #[derive(Debug, Error)]
+ pub enum FixedIntentStorageError {
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:33:
+ }
+ impl Stamp {
+     fn of(m: &Metadata) -> Self {
+-        Self { device: m.dev(), inode: m.ino(), uid: m.uid(), gid: m.gid(), mode: m.mode() }
++        Self {
++            device: m.dev(),
++            inode: m.ino(),
++            uid: m.uid(),
++            gid: m.gid(),
++            mode: m.mode(),
++        }
+     }
+     fn safe(&self, uid: u32, gid: u32, level: usize) -> bool {
+         self.mode & libc::S_IFMT == libc::S_IFDIR
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:49:
+     stamp: Stamp,
+ }
+ fn open_root(path: &Path) -> Result<File, FixedIntentStorageError> {
+-    Ok(OpenOptions::new().read(true)
++    Ok(OpenOptions::new()
++        .read(true)
+         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
+         .open(path)?)
+ }
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:73:
+     _original_thread: PhantomData<Rc<()>>,
+ }
+ impl FixedIntentStorageRead {
+-    pub fn is_refused(&self) -> bool { self.refused }
++    pub fn is_refused(&self) -> bool {
++        self.refused
++    }
+     pub fn revalidate(&mut self) -> Result<(), FixedIntentStorageError> {
+-        if self.refused { return Err(FixedIntentStorageError::Refused); }
++        if self.refused {
++            return Err(FixedIntentStorageError::Refused);
++        }
+         let result = self.inspect();
+-        if result.is_err() { self.refused = true; }
++        if result.is_err() {
++            self.refused = true;
++        }
+         result
+     }
+     fn inspect(&self) -> Result<(), FixedIntentStorageError> {
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:84:
+         let named_root = open_root(&self.root_name)?;
+         if Stamp::of(&named_root.metadata()?) != self.root.stamp
+-            || Stamp::of(&self.root.file.metadata()?) != self.root.stamp {
++            || Stamp::of(&self.root.file.metadata()?) != self.root.stamp
++        {
+             return Err(FixedIntentStorageError::Invalid);
+         }
+         let mut parent = &self.root.file;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:90:
+         for (name, original) in COMPONENTS.iter().zip(&self.components) {
+             let named = open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
+             if Stamp::of(&named.metadata()?) != original.stamp
+-                || Stamp::of(&original.file.metadata()?) != original.stamp {
++                || Stamp::of(&original.file.metadata()?) != original.stamp
++            {
+                 return Err(FixedIntentStorageError::Invalid);
+             }
+             parent = &original.file;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:100:
+ }
+ 
+ // Caller-selected origin/ownership is private and used only by local modeled tests.
+-fn walk(root_name: &Path, uid: u32, gid: u32) -> Result<FixedIntentStorageRead, FixedIntentStorageError> {
++fn walk(
++    root_name: &Path,
++    uid: u32,
++    gid: u32,
++) -> Result<FixedIntentStorageRead, FixedIntentStorageError> {
+     let file = open_root(root_name)?;
+     let stamp = Stamp::of(&file.metadata()?);
+-    if !stamp.safe(uid, gid, 0) { return Err(FixedIntentStorageError::Invalid); }
++    if !stamp.safe(uid, gid, 0) {
++        return Err(FixedIntentStorageError::Invalid);
++    }
+     let root = Component { file, stamp };
+     let mut components: Vec<Component> = Vec::with_capacity(COMPONENTS.len());
+     for (index, name) in COMPONENTS.iter().enumerate() {
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage.rs:110:
+         let parent = components.last().map_or(&root.file, |c| &c.file);
+         let file = open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
+         let stamp = Stamp::of(&file.metadata()?);
+-        if !stamp.safe(uid, gid, index + 1) { return Err(FixedIntentStorageError::Invalid); }
++        if !stamp.safe(uid, gid, index + 1) {
++            return Err(FixedIntentStorageError::Invalid);
++        }
+         components.push(Component { file, stamp });
+     }
+-    let mut read = FixedIntentStorageRead { root_name: root_name.into(), root, components,
+-        refused: false, _original_thread: PhantomData };
++    let mut read = FixedIntentStorageRead {
++        root_name: root_name.into(),
++        root,
++        components,
++        refused: false,
++        _original_thread: PhantomData,
++    };
+     read.revalidate()?;
+     Ok(read)
+ }
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:3:
+ use std::os::unix::fs::{symlink, PermissionsExt};
+ 
+ fn tree() -> (tempfile::TempDir, u32, u32) {
+-    let temp = tempfile::Builder::new().prefix("hydracache-fixed-intent-").tempdir_in("/tmp").unwrap();
++    let temp = tempfile::Builder::new()
++        .prefix("hydracache-fixed-intent-")
++        .tempdir_in("/tmp")
++        .unwrap();
+     fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+     let mut path = temp.path().to_owned();
+     for name in COMPONENTS {
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:11:
+         fs::create_dir(&path).unwrap();
+         fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
+     }
+-    let uid = unsafe { libc::geteuid() }; let gid = unsafe { libc::getegid() };
++    let uid = unsafe { libc::geteuid() };
++    let gid = unsafe { libc::getegid() };
+     assert!(uid > 0 && gid > 0, "modeled tests must remain nonroot");
+     (temp, uid, gid)
+ }
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:18:
+ fn at(root: &Path, level: usize) -> PathBuf {
+-    COMPONENTS.iter().take(level).fold(root.into(), |p, n| p.join(n))
++    COMPONENTS
++        .iter()
++        .take(level)
++        .fold(root.into(), |p, n| p.join(n))
+ }
+ 
+ #[test]
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:23:
+ fn intent_fixed_storage_metadata_accepts_only_safe_original_root_policy() {
+     let (temp, _, _) = tree();
+     let mut stamp = Stamp::of(&fs::metadata(temp.path()).unwrap());
+-    stamp.uid = 0; stamp.gid = 0;
++    stamp.uid = 0;
++    stamp.gid = 0;
+     for level in 0..=4 {
+-        for mode in [0o700, 0o750, 0o755, 0o555, 0o770, 0o702, 0o1777, 0o2700, 0o4700] {
++        for mode in [
++            0o700, 0o750, 0o755, 0o555, 0o770, 0o702, 0o1777, 0o2700, 0o4700,
++        ] {
+             stamp.mode = libc::S_IFDIR | mode;
+-            assert_eq!(stamp.safe(0, 0, level), if level == 4 {mode == 0o700} else {mode & 0o7022 == 0});
++            assert_eq!(
++                stamp.safe(0, 0, level),
++                if level == 4 {
++                    mode == 0o700
++                } else {
++                    mode & 0o7022 == 0
++                }
++            );
+         }
+         stamp.mode = libc::S_IFDIR | 0o700;
+         stamp.gid = 986;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:34:
+         assert_eq!(stamp.safe(0, 0, level), level == 3);
+-        stamp.gid = 0; stamp.uid = 986;
+-        assert!(!stamp.safe(0, 0, level)); stamp.uid = 0;
++        stamp.gid = 0;
++        stamp.uid = 986;
++        assert!(!stamp.safe(0, 0, level));
++        stamp.uid = 0;
+         stamp.mode = libc::S_IFREG | 0o700;
+         assert!(!stamp.safe(0, 0, level));
+     }
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:56:
+     for level in 0..=4 {
+         let (temp, uid, gid) = tree();
+         let mut read = walk(temp.path(), uid, gid).unwrap();
+-        let original = if level == 0 { &mut read.root } else { &mut read.components[level - 1] };
++        let original = if level == 0 {
++            &mut read.root
++        } else {
++            &mut read.components[level - 1]
++        };
+         let old = std::mem::replace(&mut original.file, File::open("/tmp").unwrap());
+         assert!(read.revalidate().is_err());
+         assert!(read.is_refused());
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:63:
+-        if level == 0 {read.root.file = old;} else {read.components[level - 1].file = old;}
+-        assert!(matches!(read.revalidate(), Err(FixedIntentStorageError::Refused)));
++        if level == 0 {
++            read.root.file = old;
++        } else {
++            read.components[level - 1].file = old;
++        }
++        assert!(matches!(
++            read.revalidate(),
++            Err(FixedIntentStorageError::Refused)
++        ));
+     }
+ }
+ #[test]
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:87:
+             let path = at(temp.path(), level);
+             let backup = path.with_extension("retained");
+             match mutation {
+-                0 => {fs::rename(&path, &backup).unwrap(); symlink(&backup, &path).unwrap();}
+-                1 => {fs::rename(&path, &backup).unwrap();}
++                0 => {
++                    fs::rename(&path, &backup).unwrap();
++                    symlink(&backup, &path).unwrap();
++                }
++                1 => {
++                    fs::rename(&path, &backup).unwrap();
++                }
+                 _ => fs::set_permissions(&path, fs::Permissions::from_mode(0o770)).unwrap(),
+             }
+             assert!(walk(temp.path(), uid, gid).is_err());
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:109:
+         fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
+         assert!(read.revalidate().is_err());
+         fs::set_permissions(path, fs::Permissions::from_mode(0o700)).unwrap();
+-        assert!(matches!(read.revalidate(), Err(FixedIntentStorageError::Refused)));
++        assert!(matches!(
++            read.revalidate(),
++            Err(FixedIntentStorageError::Refused)
++        ));
+     }
+ }
+ #[test]
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:116:
+ fn intent_fixed_storage_public_guard_is_original_thread_only() {
+-    trait AmbiguousSend<A> { fn marker() {} }
++    trait AmbiguousSend<A> {
++        fn marker() {}
++    }
+     impl<T: ?Sized> AmbiguousSend<()> for T {}
+     impl<T: ?Sized + Send> AmbiguousSend<u8> for T {}
+     let _ = <FixedIntentStorageRead as AmbiguousSend<_>>::marker;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:121:
+-    trait AmbiguousSync<A> { fn marker() {} }
++    trait AmbiguousSync<A> {
++        fn marker() {}
++    }
+     impl<T: ?Sized> AmbiguousSync<()> for T {}
+     impl<T: ?Sized + Sync> AmbiguousSync<u8> for T {}
+     let _ = <FixedIntentStorageRead as AmbiguousSync<_>>::marker;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_intent_fixed_storage_tests.rs:125:
+-    assert_eq!(FIXED_INTENT_STORAGE_PATH, format!("/{}", COMPONENTS.join("/")));
++    assert_eq!(
++        FIXED_INTENT_STORAGE_PATH,
++        format!("/{}", COMPONENTS.join("/"))
++    );
+ }
+ 
