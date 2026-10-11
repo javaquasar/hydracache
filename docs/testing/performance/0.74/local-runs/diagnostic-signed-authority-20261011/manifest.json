@@ -1,0 +1,295 @@
+{
+  "schema_version": "diagnostic-signed-authority-local-evidence-074-v1",
+  "state": "retained-local-runtime-refusal-bridge-not-enrollment",
+  "evidence_class": "working-tree-local-safety-not-exact-candidate-release-receipt",
+  "baseline_source": "e515d264df47af9694c500d94fab483963441bd6",
+  "baseline_tree": "54d39f6e784dc7a29d6764e2653d586534340660",
+  "preregistration_source": "3813e614a7852e90848f027dc216e07f2d93d4f9",
+  "implementation_source": "c130b325e6e8b60e3d40ad5637cc841ef542151e",
+  "implementation_tree": "c7234384d1df26cef7ba5e95fcbac1ce30fefeb0",
+  "toolchain": "1.94.0",
+  "msrv": "1.88.0",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "results": {
+    "linux_scoped_passed": 437,
+    "linux_existing_ignored": 1,
+    "windows_package_passed": 195,
+    "root_contract_passed": 104,
+    "root_evidence_passed": 13,
+    "root_governance_passed": 23,
+    "new_linux_unit_tests": 17,
+    "new_linux_api_tests": 1,
+    "new_root_contract_tests": 1,
+    "serial_repetitions": 3,
+    "new_unit_tests_per_repetition": 17,
+    "compile_fail_doctests": 2
+  },
+  "new_unit_test_names": [
+    "signed_authority_changed_binding_and_advanced_epoch_are_not_adopted",
+    "signed_authority_fixed_fixture_guards_are_neither_send_nor_sync",
+    "signed_authority_concurrent_independent_chains_share_no_refusal",
+    "signed_authority_bracket_stops_at_first_error_seeded",
+    "signed_authority_account_restore_cannot_restore_durable_guard",
+    "signed_authority_prior_guard_failure_with_unsafe_storage_is_uncertain_not_repaired",
+    "signed_authority_fixed_dispatch_unsafe_storage_latches_without_append",
+    "signed_authority_healthy_drop_preserves_both_originals",
+    "signed_authority_explicit_refusal_reopens_and_never_retries",
+    "signed_authority_signed_drift_persists_under_original_not_caller_pins",
+    "signed_authority_constructor_failure_and_already_refused_guard_persist",
+    "signed_authority_foreign_journal_binding_is_never_written",
+    "signed_authority_durable_inactive_stops_before_signed_without_append",
+    "signed_authority_task_churn_persists_refusal",
+    "signed_authority_unsafe_storage_refuses_without_append_or_repair",
+    "signed_authority_partial_publications_preserve_first_error_and_refuse_reopen",
+    "signed_authority_fixed_dispatch_model_is_not_root_enrollment"
+  ],
+  "proof_boundaries": {
+    "exclusive_original_runtime_bridge_implemented": true,
+    "safe_exact_bound_refusal_publication_implemented": true,
+    "unsafe_storage_refusal_always_durable": false,
+    "crash_before_publication_covered": false,
+    "uncertain_restart_intent_implemented": false,
+    "controlled_fixed_host_enrollment": false,
+    "real_issuer_enrolled": false,
+    "physical_power_loss_proved": false,
+    "production_preparation_or_start": false,
+    "host_mutation": false,
+    "product_workload": false,
+    "performance_claim_eligible": false,
+    "qualification_allowed": false,
+    "ship_allowed": false
+  },
+  "notes": [
+    "Initial baseline filter selected zero tests; corrected baseline ran the unchanged previous test binary before replacement.",
+    "The first 11-test green precedes added review cases; the 14-test attempt retains a malformed boot UUID fixture finding. Final set contains 17 tests.",
+    "Callback lifetime and strict lint findings are retained; no validator, threshold or frozen qualification input was weakened.",
+    "Unsupported tier and absolute receipt-path usage failures are not admission evidence. Corrected local and require-ship invocations are retained separately.",
+    "Logical publication stages and test-only fixed dispatch are not actual root enrollment or physical power-loss proof.",
+    "The journal may remain active when a refusal cannot safely be published; this explicit gap is not restart permission."
+  ],
+  "files": [
+    {
+      "name": "baseline-journal.log",
+      "bytes": 3878,
+      "sha256": "7ce3296cad6a484171a820bab8cdbfcbc90a1c6c168617bb56fedd0f7a92cea6",
+      "exit_code": 0
+    },
+    {
+      "name": "baseline-tasks-corrected.log",
+      "bytes": 2318,
+      "sha256": "8c93d441b756b7634cf47a4a99bb8b80c3bd350cf83372dcf333ec8461a3defe",
+      "exit_code": 0
+    },
+    {
+      "name": "baseline-tasks.log",
+      "bytes": 330,
+      "sha256": "b325fa8c3445590befd72c144c1eaf096104835f5c54ada3b4d059861d734f49",
+      "exit_code": 0,
+      "acceptance_evidence": false
+    },
+    {
+      "name": "book-windows.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "exit_code": 0
+    },
+    {
+      "name": "bridge-expanded.log",
+      "bytes": 4176,
+      "sha256": "beba4786cdc47e3f9f4eeddf08e1f8f5f53ba7d495e83606c3a42f648b1e8775",
+      "exit_code": 1
+    },
+    {
+      "name": "bridge-first.log",
+      "bytes": 4840,
+      "sha256": "2663c81de4cf5e0a3541f51e44af1983dfa3bee88619a84f28712b4e650189f6",
+      "exit_code": 1
+    },
+    {
+      "name": "bridge-reviewed.log",
+      "bytes": 3417,
+      "sha256": "16645b58a3bfe9b98e34ce16c2c3fbb62685819b8dd2abfb87a1c4375aa4d8f7",
+      "exit_code": 0
+    },
+    {
+      "name": "bridge-second.log",
+      "bytes": 2777,
+      "sha256": "a59dc61107c3825d7e224c500e321ba693a35945544cb78d9f4aadbc6f3691b7",
+      "exit_code": 0
+    },
+    {
+      "name": "doc-check-windows.log",
+      "bytes": 239,
+      "sha256": "2cb58d087d29d4b8d006db9fd320a7fd13c580f18436fb515eac6d46df4ca2c9",
+      "exit_code": 0
+    },
+    {
+      "name": "doctests-linux.log",
+      "bytes": 875,
+      "sha256": "bf9a8a5395e969e3c95e5d70c2b1190f184998cacb37e30b570e2912471eca19",
+      "exit_code": 0
+    },
+    {
+      "name": "final-book-windows.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "exit_code": 0
+    },
+    {
+      "name": "final-doc-check-windows.log",
+      "bytes": 155,
+      "sha256": "1887a0b21f2e91d304f4631337fba100cbc4c180c42782c26821732ba1c8a582",
+      "exit_code": 0
+    },
+    {
+      "name": "final-linux-scoped.log",
+      "bytes": 55337,
+      "sha256": "7917179d584f8fde81d7674e9f7aa263b36f815146f4986137d0546add05fdf8",
+      "exit_code": 0
+    },
+    {
+      "name": "final-performance-contract-windows.log",
+      "bytes": 203,
+      "sha256": "7f2e06e7ccbf8801c41799a4f883dc5cf3758ac699d405a05cfb805568d60c79",
+      "exit_code": 0
+    },
+    {
+      "name": "fmt-windows.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "name": "links-windows.log",
+      "bytes": 42,
+      "sha256": "b67b7c22c651bd36d2a93be94258b01abb5d202c77ac2b8d69d9c1cd3a51bdd7",
+      "exit_code": 0
+    },
+    {
+      "name": "lint-linux-reviewed.log",
+      "bytes": 193,
+      "sha256": "45ae7853e06af54893cddff6db75d4ddde50b4222adc2d997e76f41d01b9a781",
+      "exit_code": 0
+    },
+    {
+      "name": "lint-linux.log",
+      "bytes": 1249,
+      "sha256": "73484fc9fac9dd17a437c4a82abcb83d1a3f94bd7cce76235ad799b5c8a7d70c",
+      "exit_code": 1
+    },
+    {
+      "name": "lint-windows.log",
+      "bytes": 190,
+      "sha256": "de04128e6a73aef570385918c3b31081dab457825748ff31c2c98db0a6733712",
+      "exit_code": 0
+    },
+    {
+      "name": "lint-xtask-windows.log",
+      "bytes": 146,
+      "sha256": "3e72ce00e2d1cb314b24b292b13ef95eb0e3a0e8d70a8aa23233b9aaf3b5b363",
+      "exit_code": 0
+    },
+    {
+      "name": "linux-scoped.log",
+      "bytes": 55338,
+      "sha256": "64c446a95c3beb5efe94c7b5f0248e08623af0307d3ecbbb2034f69fed559429",
+      "exit_code": 0
+    },
+    {
+      "name": "missing-api-red.log",
+      "bytes": 700,
+      "sha256": "c617a8b95ce3a1d5543c981d094a1169138cc6f8a046038c334c7b1c204acc4c",
+      "exit_code": 1
+    },
+    {
+      "name": "msrv-linux.log",
+      "bytes": 193,
+      "sha256": "99fe8a165e4bd2eef46b915eaf5e86fd74d4380228a371197719ae786d293a3b",
+      "exit_code": 0
+    },
+    {
+      "name": "msrv-windows.log",
+      "bytes": 190,
+      "sha256": "53b340d47044829cb7a8a3ce57ac5099bdb6bd88ec66600cc0ffc3b49bbe1201",
+      "exit_code": 0
+    },
+    {
+      "name": "performance-contract-corrected-windows.log",
+      "bytes": 203,
+      "sha256": "c19a838db65e0e0588d32ebb77390d84586a0dcbc159a627ad16858b3c6cea65",
+      "exit_code": 0
+    },
+    {
+      "name": "performance-contract-windows.log",
+      "bytes": 413,
+      "sha256": "f625936fc87d3095851c21bc274c90984701685bea0114df7c033a91069a3eb4",
+      "exit_code": 1
+    },
+    {
+      "name": "qualification-dry-red.log",
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "exit_code": 1
+    },
+    {
+      "name": "root-performance-windows.log",
+      "bytes": 8837,
+      "sha256": "e2de57a3a9a5a02937ae41acb4ec88b4a40ddef52f457c32f006814d59d11b48",
+      "exit_code": 0
+    },
+    {
+      "name": "root-registry-windows.log",
+      "bytes": 3722,
+      "sha256": "ff93e799a8be91a6b1ea2c31793ecec14115f8e5c2d730915b22703157412fbf",
+      "exit_code": 0
+    },
+    {
+      "name": "rustdoc-linux.log",
+      "bytes": 460,
+      "sha256": "2fde7ff1c1f2acdcb25756f1106179f7b11c56332afdf7c118e2c1dfc6a7cbc1",
+      "exit_code": 0
+    },
+    {
+      "name": "serial-linux-1.log",
+      "bytes": 4077,
+      "sha256": "d18d4d5264b12650239b0c3c51f45dcb9d2b4a7c77d847d2513ab122da8a074f",
+      "exit_code": 0
+    },
+    {
+      "name": "serial-linux-2.log",
+      "bytes": 3944,
+      "sha256": "a5544f9c6429984c5cbde5daef601487c589fcfb8814498ed4fb77aa5b744ed7",
+      "exit_code": 0
+    },
+    {
+      "name": "serial-linux-3.log",
+      "bytes": 3944,
+      "sha256": "30ed6bce53b10092932a9d628064123ec9b0e43f32404f7ad9594fe9fccf790b",
+      "exit_code": 0
+    },
+    {
+      "name": "ship-admission-red-windows.log",
+      "bytes": 487,
+      "sha256": "9e7e3e51b5a38e62a5979e851d4e08c8a4d12651ce852c04631c1ac176654bda",
+      "exit_code": 1
+    },
+    {
+      "name": "ship-contract-red-windows.log",
+      "bytes": 2807,
+      "sha256": "e0787b8fc1b76cf75df80fc858e8ff4131adb410bd9cc8d49d91837bb5932ff8",
+      "exit_code": 1
+    },
+    {
+      "name": "ship-refusal-windows.log",
+      "bytes": 702,
+      "sha256": "67bf16bec89d4307650c85ad86f5c98b6b71c2d8c97faaf72a6982158abe6732",
+      "exit_code": 1
+    },
+    {
+      "name": "windows-tests.log",
+      "bytes": 25201,
+      "sha256": "22bc8e84b28d292d124259b1e669c66dd461961a4f465b70937d8203cdebc2f5",
+      "exit_code": 0
+    }
+  ]
+}

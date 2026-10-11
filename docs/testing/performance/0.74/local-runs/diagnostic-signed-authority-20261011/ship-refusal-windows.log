@@ -1,0 +1,5 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `dev` profile [unoptimized] target(s) in 5.20s
+     Running `target\debug\xtask.exe release-evidence --release 0.74 --receipts-dir C:/Users/ArturBuzov/AppData/Local/Temp/hydracache-signed-authority-7857feb3d3934354bea1012cb4de19bc --require-ship`
+Error: "unsafe repository path: \"C:/Users/ArturBuzov/AppData/Local/Temp/hydracache-signed-authority-7857feb3d3934354bea1012cb4de19bc\""
+error: process didn't exit successfully: `target\debug\xtask.exe release-evidence --release 0.74 --receipts-dir C:/Users/ArturBuzov/AppData/Local/Temp/hydracache-signed-authority-7857feb3d3934354bea1012cb4de19bc --require-ship` (exit code: 1)

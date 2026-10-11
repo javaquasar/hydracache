@@ -110,3 +110,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-authority-registry-*/*.log -
 docs/testing/performance/0.74/local-runs/diagnostic-authority-registry-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-authority-fixed-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-authority-fixed-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signed-authority-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signed-authority-*/manifest.json -text

@@ -6175,3 +6175,55 @@ new fixed-backend tests, pass in three separate serial repetitions. Strict lint,
 MSRV 1.88, Linux rustdoc, formatting, local contracts, docs and book checks pass.
 These counts describe local safety tests, not cache performance samples or
 exact-candidate release receipts; no throughput or allocation claim is added.
+
+### A signed check must refuse the same original authority
+
+The next [preregistered bridge](../testing/performance/0.74/diagnostic-signed-authority-local-design.md)
+tests a narrower question than production launch: can failure of the original
+signed task guard reach its original durable journal without accepting a new
+policy, process or storage origin? The wrapper holds both objects exclusively.
+Fixed and fixture constructors remain distinct, and the only saved pins come
+from the already checked original policy, not the current caller's assertions.
+
+Every successful observation is bracketed by journal / signed tasks / journal.
+A signed failure first refuses the entire original guard chain. A fresh safe
+inspection under the original pins then permits one append-only refusal. A
+journal already containing refusal stops before the signed step and receives
+no extra record. Foreign bindings, advanced epochs and unsafe storage refuse
+continuation without writes or repair. When publication fails, the error retains
+both the first failure and the unacknowledged persistence result. Later calls
+return immediately; drop does not hide a retry.
+
+This is useful safety composition, not a measured cache optimization. The local
+tests use real owned helper processes and proc/nsfs observations, synthetic
+signatures and temporary account/journal fixtures. They cover healthy drop,
+policy/context/account drift, task churn, explicit refusal and reopen, stale
+epochs, concurrency and all four journal publication-stage faults. Fixed typed
+dispatch is modeled privately; it does not enroll a root-owned production host.
+
+The most important negative result is intentional: a bridge that cannot safely
+write to changed authority leaves that other journal intact and potentially
+active on reopen. Calling an in-memory latch durable would conceal this gap.
+Partial publication tails already refuse reopen; a complete but unacknowledged
+refusal reopens refused. A crash before any append is a different problem and
+still requires a separately reviewed lifecycle intent protocol, watchdog and
+cleanup. No production start/restart API, real issuer, qualification permission
+or new record format is introduced. The inherited qualification digest mismatch
+is unchanged.
+
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-signed-authority-20261011/README.md)
+keeps failed attempts alongside reviewed checks. The missing API first fails;
+the initial callback form fails Rust lifetime checking; strict lint catches an
+unnecessary borrow. A foreign-context test initially signs an invalid boot ID;
+the fixture is corrected to a valid distinct UUID, without weakening validation.
+An initial baseline filter selects zero tests and is not counted as a pass:
+the unchanged prior test binary subsequently runs all eleven signed-task tests.
+
+The reviewed checks pass 437 scoped Linux tests with one existing ignored,
+195 Windows tests and 104/13/23 root contract/evidence/governance tests. Seventeen
+new unit tests pass three separate serial repetitions; two compile-fail doctests
+confirm no clone or fixture promotion. Strict lint, MSRV 1.88, rustdoc, formatting,
+local contracts, docs and book checks pass. These are local safety results, not
+full-workspace release receipts. Unsupported command options are retained as
+usage failures and are followed by separate corrected invocations; actual ship
+admission and the inherited qualification dry-run still refuse.

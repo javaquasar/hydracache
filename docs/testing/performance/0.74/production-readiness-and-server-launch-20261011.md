@@ -23,7 +23,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
 | Every worker task | Bounded original-task reader plus exclusive original signed mount composition; exact signed numeric/user/mount pins, membership-churn refusal and whole-chain latch | Controlled positive fixed-host checks; sequential observations are not continuous confinement |
-| Worker policy authority | Signature verification against external key/digest/epoch; bounded journal core with distinct temporary-fixture and fixed root-path backends | Controlled positive root-path enrollment; original signed-guard durable failure propagation and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
+| Worker policy authority | Signature verification against external key/digest/epoch; bounded typed journals; original signed-task runtime bridge persists refusal only to safe exact-bound storage | Controlled positive root-path enrollment; uncertain-publication/restart intent and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
 | Failure and cleanup | Lease/IPC/spool models and separate historical campaign rehearsals | Production diagnostic backend, autonomous watchdog, writer revocation, retained uncertain intent, exact owned empty-cgroup proof before release |
@@ -55,8 +55,12 @@ now implements fixed root-owned storage without changing the record format or
 installer. Its API has no path/owner selector and retains every original ancestor;
 local modeled-tree checks are not actual root-path enrollment. The original
 journal slice's fixture-only statement above describes that earlier boundary.
-The remaining authority implementation is exclusive durable composition with
-the original signed guard, including uncertain publication/restart semantics.
+The [runtime bridge](diagnostic-signed-authority-local-design.md) subsequently
+implements exclusive original signed-guard composition and safe refusal
+publication, with typed uncertainty and no retry. It does not cover crash before
+publication or turn an unsafe-storage in-memory latch into durable refusal.
+The remaining authority implementation is uncertain-publication/restart intent
+and reboot lifecycle, followed by controlled enrollment under real external pins.
 No effective-root check authenticates the initial host namespace.
 
 ## Extended local checks completed

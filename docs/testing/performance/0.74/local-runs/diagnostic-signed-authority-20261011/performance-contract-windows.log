@@ -1,0 +1,5 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `dev` profile [unoptimized] target(s) in 1.39s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74 --tier local`
+Error: "unsupported performance-contract-check option --tier"
+error: process didn't exit successfully: `target\debug\xtask.exe performance-contract-check --release 0.74 --tier local` (exit code: 1)

@@ -1,0 +1,66 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:163:24
+    |
+163 |               return Err(self...
+    |  ________________________^
+164 | |                 SignedAutho...
+165 | |                 Journal::re...
+166 | |             ));
+    | |_____________^ implementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {Journal::<'2>::refuse}` must implement `FnOnce<(&mut Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:188:21
+    |
+188 | ...rr(self.reject_with(error, Journal::refuse))
+    |       ^^^^^^^^^^^^^...plementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {Journal::<'2>::refuse}` must implement `FnOnce<(&mut Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:204:9
+    |
+204 | ...   s...::refuse)
+    |       ^...^^^^^^^^^ implementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {Journal::<'2>::refuse}` must implement `FnOnce<(&mut Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:163:24
+    |
+163 |               return Err(self...
+    |  ________________________^
+164 | |                 SignedAutho...
+165 | |                 Journal::re...
+166 | |             ));
+    | |_____________^ implementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut authority_binding::Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {authority_binding::Journal::<'2>::refuse}` must implement `FnOnce<(&mut authority_binding::Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut authority_binding::Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:188:21
+    |
+188 | ...rr(self.reject_with(error, Journal::refuse))
+    |       ^^^^^^^^^^^^^...plementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut authority_binding::Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {authority_binding::Journal::<'2>::refuse}` must implement `FnOnce<(&mut authority_binding::Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut authority_binding::Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs:204:9
+    |
+204 | ...   s...::refuse)
+    |       ^...^^^^^^^^^ implementation of `FnOnce` is not general enough
+    |
+    = note: `for<'a> fn(&'a mut authority_binding::Journal<'2>, authority_registry::RefusalReason) -> Result<(), authority_registry::AuthorityError> {authority_binding::Journal::<'2>::refuse}` must implement `FnOnce<(&mut authority_binding::Journal<'1>, authority_registry::RefusalReason)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(&mut authority_binding::Journal<'2>, authority_registry::RefusalReason)>`, for some specific lifetime `'2`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors

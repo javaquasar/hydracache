@@ -2451,4 +2451,18 @@ publication protocol, but do not prove positive production-root enrollment.
 The [packet](local-runs/diagnostic-authority-fixed-20261011/README.md) retains
 baseline, absent-API red and repeat checks. Real operator issuer/pins, signed
 worker durable composition and reboot/start lifecycle remain separate gates.
+
+The [original signed-authority runtime bridge](diagnostic-signed-authority-local-design.md)
+now exclusively borrows the original signed task guard and matching typed
+journal. Its journal/signed/journal check uses the original checked external
+pins; a signed failure is persisted only after safe exact-bound inspection.
+First failure and publication uncertainty remain distinct. Foreign binding,
+stale epoch or unsafe journal cannot be repaired or adopted, and later bound
+calls perform no I/O. Fixed and fixture public types remain non-interchangeable.
+The [packet](local-runs/diagnostic-signed-authority-20261011/README.md) retains
+test-first red and local safety checks. This runtime bridge does not prove
+durability when storage refuses a write or a crash precedes publication.
+Uncertain-restart intent, controlled fixed-host and real-issuer enrollment,
+production preparation, watchdog, cleanup and authenticated start remain open.
+The record format, frozen qualification inputs and admission state are unchanged.
 Frozen qualification inputs and their inherited plan-digest blocker are unchanged.
