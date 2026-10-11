@@ -14,15 +14,22 @@ const consoleRoot = resolve(repoRoot, "console");
 // Reviewed DoS advisories also apply to the build/test supply chain. Keep the
 // locked transitive versions above all reviewed vulnerable ranges, even when
 // the production-only npm audit does not include these dev dependencies.
-function lockedVersionAtLeast(name, minimum) {
-  const lock = JSON.parse(readFileSync(join(consoleRoot, "package-lock.json"), "utf8"));
-  const version = lock.packages[`node_modules/${name}`]?.version;
-  assert.match(version ?? "", /^\d+\.\d+\.\d+$/);
-  const actual = version.split(".").map(Number);
-  for (let index = 0; index < minimum.length; index += 1) {
-    if (actual[index] !== minimum[index]) return actual[index] > minimum[index];
-  }
-  return true;
+function lockedVersionAtLeast(
+  name,
+  minimum,
+  lock = JSON.parse(readFileSync(join(consoleRoot, "package-lock.json"), "utf8")),
+) {
+  const entries = Object.entries(lock.packages).filter(([path]) =>
+    path === `node_modules/${name}` || path.endsWith(`/node_modules/${name}`));
+  assert.ok(entries.length > 0, `reviewed package missing: ${name}`);
+  return entries.every(([, { version }]) => {
+    assert.match(version ?? "", /^\d+\.\d+\.\d+$/);
+    const actual = version.split(".").map(Number);
+    for (let index = 0; index < minimum.length; index += 1) {
+      if (actual[index] !== minimum[index]) return actual[index] > minimum[index];
+    }
+    return true;
+  });
 }
 
 test("build lock excludes reviewed brace-expansion DoS versions", () => {
@@ -34,6 +41,24 @@ test("build lock excludes reviewed brace-expansion DoS versions", () => {
 test("build lock excludes reviewed source-map-js DoS versions", () => {
   // GHSA-68fv-2mgg-jv7q: indexed source-map offset validation.
   assert.ok(lockedVersionAtLeast("source-map-js", [1, 2, 2]));
+});
+
+test("reviewed dependency floor refuses vulnerable nested copies and missing packages", () => {
+  for (const [name, minimum, patched, vulnerable] of [
+    ["brace-expansion", [5, 0, 12], "5.0.12", "5.0.11"],
+    ["source-map-js", [1, 2, 2], "1.2.2", "1.2.1"],
+  ]) {
+    const fixture = {
+      packages: {
+        [`node_modules/${name}`]: { version: patched },
+        [`node_modules/other/node_modules/${name}`]: { version: vulnerable },
+      },
+    };
+    assert.equal(lockedVersionAtLeast(name, minimum, fixture), false);
+    fixture.packages[`node_modules/other/node_modules/${name}`].version = patched;
+    assert.equal(lockedVersionAtLeast(name, minimum, fixture), true);
+    assert.throws(() => lockedVersionAtLeast(name, minimum, { packages: {} }));
+  }
 });
 
 test("static and supply-chain gates validate the generated production bundle", () => {
