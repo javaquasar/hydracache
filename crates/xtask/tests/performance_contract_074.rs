@@ -3,6 +3,80 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_signed_authority_bridge_keeps_uncertain_restart_and_launch_closed() {
+    let c = contract("diagnostic-signed-authority-local-contract.toml");
+    for key in [
+        "exclusive_original_guard_and_journal",
+        "original_checked_external_pins",
+        "journal_signed_journal_bracket",
+        "fixed_fixture_types_distinct",
+        "persist_refusal_only_after_bound_safe_inspection",
+        "first_failure_preserved",
+        "no_retry_repair_or_refresh",
+        "no_io_after_bound_refusal",
+        "refusal_reopen_test_required",
+        "stale_epoch_and_changed_binding_tests_required",
+        "publication_stage_fault_tests_required",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "unsafe_storage_refusal_always_durable",
+        "crash_before_refusal_publication_covered",
+        "uncertain_restart_intent_implemented",
+        "controlled_fixed_host_positive_enrollment",
+        "real_issuer_enrolled",
+        "physical_power_loss_proved",
+        "production_start_or_restart",
+        "host_mutation_allowed",
+        "qualification_or_admission_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "[Step::Journal, Step::Signed, Step::Journal]",
+        "original.checked_policy()",
+        "checked.trust.clone()",
+        "checked.context.clone()",
+        "if self.refused",
+        "self.original.reader_mut().refuse()",
+        "self.journal.latch_refusal()",
+        "RefusalUncertain",
+        "bind_fixed_authority",
+        "bind_fixture_authority",
+        "&'authority mut FixedAuthorityRegistry",
+        "&'authority mut FixtureAuthorityRegistry",
+    ] {
+        assert!(runtime.contains(marker), "missing invariant {marker}");
+    }
+    for forbidden in [
+        "pub fn advance",
+        "pub fn refresh",
+        "pub fn reset",
+        "impl Clone",
+        "impl From",
+        "Serialize",
+        "Command::new",
+        "verify_worker_policy(",
+        "WorkerPolicyTrust::new",
+        "std::env",
+        "Path::new",
+        "open_fixed_registry(",
+    ] {
+        assert!(
+            !runtime.contains(forbidden),
+            "bridge cannot add {forbidden}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_fixed_authority_backend_keeps_host_enrollment_and_launch_closed() {
     let c = contract("diagnostic-authority-fixed-local-contract.toml");
     assert_eq!(

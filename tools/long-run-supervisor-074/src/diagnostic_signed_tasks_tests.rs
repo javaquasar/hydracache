@@ -5,7 +5,7 @@ use super::*;
 use crate::diagnostic_process::{pin_owned_test_helper, OwnedTasksHelper};
 use std::fs;
 
-fn with_mount(
+pub(super) fn with_mount(
     threads: usize,
     run: impl FnOnce(&mut FixtureSignedMountRead<'_, '_, '_, '_>, &mut OwnedTasksHelper, &Fixture),
 ) {

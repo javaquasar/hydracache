@@ -133,6 +133,9 @@ pub fn open_fixed_registry(
     })
 }
 impl FixedAuthorityRegistry {
+    pub(crate) fn latch_refusal(&mut self) {
+        self.journal.latch_refusal();
+    }
     pub fn is_failed(&self) -> bool {
         self.journal.is_failed()
     }
@@ -156,6 +159,12 @@ impl FixedAuthorityRegistry {
     }
 }
 
+#[cfg(test)]
+pub(crate) fn modeled_registry_for_test(
+    journal: FixtureAuthorityRegistry,
+) -> FixedAuthorityRegistry {
+    FixedAuthorityRegistry { journal }
+}
 #[cfg(test)]
 #[path = "diagnostic_authority_fixed_tests.rs"]
 mod tests;

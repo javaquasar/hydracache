@@ -20,6 +20,12 @@ path/owner/descriptor selector and cannot promote a fixture. Neither backend is
 historical signature attestation, whole-host snapshot rollback detection, signed
 worker lifecycle or a start/admission capability. The fixed backend is implemented
 locally, but real root-path enrollment and issuer selection remain unproved.
+The subsequent runtime-only signed-task bridge exclusively borrows an original
+guard and matching typed journal. A safe exact-bound journal receives an
+append-only refusal after signed failure; unsafe storage is refused without
+repair. The v1 record bytes and epoch rules are unchanged. Unacknowledged writes
+do not authorize restart; crash-before-publication and lifecycle intent remain
+separate, unimplemented boundaries.
 
 The separate 0.74 asserted task reader is opt-in Linux runtime-only. It retains
 at most 128 original tasks and their generation/status/user/mount objects under

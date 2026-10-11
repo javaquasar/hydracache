@@ -3,7 +3,9 @@ use super::{
     FixedSignedMountRead, FixtureSignedMountRead, Reader as MountReader, SignedMountError,
 };
 use crate::diagnostic_process::{NamespaceCredentialRead, TaskError, WorkerTasksRead};
-use crate::diagnostic_worker_policy::{AssertedWorkerHost, WorkerPolicy, WorkerPolicyTrust};
+use crate::diagnostic_worker_policy::{
+    AssertedWorkerHost, CheckedWorkerPolicy, WorkerPolicy, WorkerPolicyTrust,
+};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -79,15 +81,16 @@ impl<'binding, 'guard, 'policy, 'process> Original<'_, 'binding, 'guard, 'policy
         read.original.refuse();
     }
     fn policy(&self) -> &WorkerPolicy {
-        &self
-            .reader()
+        &self.checked_policy().original
+    }
+    fn checked_policy(&self) -> &CheckedWorkerPolicy {
+        self.reader()
             .original
             .reader()
             .account
             .reader()
             .context
             .policy
-            .original
     }
 }
 struct Reader<'tasks, 'binding, 'guard, 'policy, 'process> {
@@ -106,6 +109,11 @@ fn check_tasks(
     Ok(())
 }
 impl Reader<'_, '_, '_, '_, '_> {
+    fn refuse(&mut self) {
+        self.gate.refused = true;
+        self.original.refuse();
+        self.tasks.refuse();
+    }
     fn is_refused(&self) -> bool {
         self.gate.refused || self.original.reader().is_refused() || self.tasks.is_refused()
     }
@@ -245,6 +253,8 @@ impl FixtureSignedTasksRead<'_, '_, '_, '_, '_> {
         self.reader.revalidate(bytes, trust, host)
     }
 }
+#[path = "diagnostic_signed_authority.rs"]
+pub mod authority_binding;
 #[cfg(test)]
 #[path = "diagnostic_signed_tasks_tests.rs"]
 mod tests;

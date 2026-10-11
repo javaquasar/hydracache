@@ -334,6 +334,9 @@ fn open_directory(
     Ok(read)
 }
 impl FixtureAuthorityRegistry {
+    pub(crate) fn latch_refusal(&mut self) {
+        self.failed = true;
+    }
     pub fn is_failed(&self) -> bool {
         self.failed
     }
@@ -560,6 +563,16 @@ fn fail(
     }
 }
 
+#[cfg(test)]
+impl FixtureAuthorityRegistry {
+    pub(crate) fn refuse_at_for_test(
+        &mut self,
+        reason: RefusalReason,
+        stage: PublicationStage,
+    ) -> Result<(), AuthorityError> {
+        self.change(|record| record.refuse(reason), Some(stage))
+    }
+}
 #[cfg(test)]
 #[path = "diagnostic_authority_fixture_tests.rs"]
 mod tests;
