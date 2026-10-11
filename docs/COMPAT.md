@@ -4,6 +4,15 @@ This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.
 
+Initial diagnostic reservation now has a read-only original empty-fence guard.
+It borrows existing fixed intent storage and reuses the same trusted campaign
+lock engine before any Reserved file exists. Any fixed-leaf or legacy/parent
+context refuses; initial Busy does not revoke healthy storage, while bound
+failure is sticky. No state, lock, permissions, schema, installer or execution
+route is created or changed. The empty observation ends with the guard and is
+not a durable reservation or write capability. See
+[design](testing/performance/0.74/diagnostic-empty-reservation-fence-local-design.md).
+
 The original authority/signed-intent reader now has distinct fixed and fixture
 read-only compositions with the original fenced Reserved-state reader. Full
 state snapshots must match before composition I/O. Bound failures latch both

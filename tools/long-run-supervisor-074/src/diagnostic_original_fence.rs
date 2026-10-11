@@ -1,4 +1,6 @@
 //! Short observation under the existing lock, not durable campaign admission.
+#[path = "diagnostic_empty_reservation_fence.rs"]
+pub mod reservation_fence;
 use super::super::Stamp as DirectoryStamp;
 use super::{open_at, FixedReservedStateError, FixedReservedStateRead, Stamp};
 use crate::host_execution::HOST_EXECUTION_LOCK_NAME;

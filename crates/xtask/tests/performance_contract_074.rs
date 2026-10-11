@@ -9826,3 +9826,79 @@ fn diagnostic_fenced_intent_borrows_originals_without_publication_or_start() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_empty_reservation_fence_is_readonly_same_lock_not_publication() {
+    let c = contract("diagnostic-empty-reservation-fence-local-contract.toml");
+    for key in [
+        "original_fixed_storage_exclusively_borrowed",
+        "existing_trusted_campaign_fence_engine_reused",
+        "no_reserved_state_required",
+        "all_fixed_leaf_entries_refuse",
+        "fresh_scan_under_original_lock_repeated",
+        "all_legacy_and_parent_contexts_refuse",
+        "initial_busy_does_not_revoke_healthy_storage",
+        "original_object_or_bound_context_failure_latches_storage",
+        "already_refused_performs_no_io",
+        "healthy_drop_releases_only_owned_lock",
+        "private_nonroot_models_are_not_fixed_host_enrollment",
+        "no_public_path_owner_fd_or_execution_conversion",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "installer_or_host_ownership_changed",
+        "trusted_state_publication_implemented",
+        "fixed_intent_publication_implemented",
+        "authority_intent_empty_fence_join_implemented",
+        "peer_or_clock_authenticated",
+        "positive_host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "OriginalEmptyReservationFence",
+        "FixedIntentStorageRead",
+        "storage: &'storage mut FixedIntentStorageRead",
+        "fence: Fence",
+        "Fence::acquire(",
+        "parent(storage)?",
+        "leaf.stamp.uid",
+        "leaf.stamp.gid",
+        "self.fence.inspect(parent(self.storage)?)?",
+        "leaf_present(self.storage)?",
+        "self.storage.refused = true",
+        "OriginalHostFenceError::Busy",
+        "StorageLeaf::Intent",
+        "bind_original_empty_reservation_fence",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    assert_eq!(source.matches("leaf_present(self.storage)?").count(), 2);
+    for forbidden in [
+        "O_CREAT",
+        "create_dir",
+        "write_all",
+        "set_permissions",
+        "remove_file",
+        "Command::new",
+        "StartTransientUnit",
+        "verify_worker_policy(",
+        "pub fn start",
+        "impl Clone",
+        "impl Drop",
+        "pub fn state(",
+        "pub fn path(",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}

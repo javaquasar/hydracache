@@ -124,7 +124,9 @@ impl FixedCampaignAdmission {
 pub(crate) fn observe() -> Result<bool, HostExecutionError> {
     leaf_present(&mut open_fixed_intent_storage().map_err(refused)?)
 }
-fn leaf_present(storage: &mut FixedIntentStorageRead) -> Result<bool, HostExecutionError> {
+pub(super) fn leaf_present(
+    storage: &mut FixedIntentStorageRead,
+) -> Result<bool, HostExecutionError> {
     if storage.is_refused() {
         return Err(HostExecutionError::Path);
     }

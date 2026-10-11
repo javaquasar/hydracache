@@ -11,3 +11,11 @@ fn original_fence_public_entry_has_no_caller_selected_origin() {
     assert_ne!(unsafe { libc::geteuid() }, 0);
     assert!(open_fixed_intent_storage().is_err());
 }
+
+#[test]
+fn empty_reservation_fence_public_entry_has_no_caller_selected_origin() {
+    use hydracache_long_run_supervisor_074::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::bind_original_empty_reservation_fence;
+    let _entry = bind_original_empty_reservation_fence;
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    assert!(open_fixed_intent_storage().is_err());
+}
