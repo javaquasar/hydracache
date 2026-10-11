@@ -1,0 +1,36 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+warning: associated items `from_checked` and `advance` are never used
+   --> tools\long-run-supervisor-074\src\diagnostic_authority_registry.rs:148:8
+    |
+ 85 | impl Record {
+    | ----------- associated items in this implementation
+...
+148 |     fn from_checked(policy: &CheckedWorkerPolicy) -> Result<Self, AuthorityError> {
+    |        ^^^^^^^^^^^^
+...
+180 |     fn advance(&self, policy: &CheckedWorkerPolicy) -> Result<Self, AuthorityError> {
+    |        ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `hydracache-long-run-supervisor-074` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 20.28s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 5 tests
+authority journal seed=0x7642026; mutations=256
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.72s
+
+     Running tests\diagnostic_worker_policy.rs (target\debug\deps\diagnostic_worker_policy-4a19612bf3999c04.exe)
+
+running 1 test
+test authority_registry_api_is_inspection_not_start_authority ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+

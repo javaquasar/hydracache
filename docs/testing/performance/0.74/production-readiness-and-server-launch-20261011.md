@@ -23,7 +23,7 @@ candidates. Installing current tooling cannot turn it into a 0.74 product releas
 | --- | --- | --- |
 | Original signed context, account files, leader credentials and mount | Fixed/fixture types; original-process-only join; sticky first failure; local tests | Controlled positive fixed-file enrollment on the exact host; no fixture promotion |
 | Every worker task | Bounded original-task reader plus exclusive original signed mount composition; exact signed numeric/user/mount pins, membership-churn refusal and whole-chain latch | Controlled positive fixed-host checks; sequential observations are not continuous confinement |
-| Worker policy authority | Signature verification against externally supplied key/digest/epoch | Real operator-selected issuer and pins; durable monotonic epoch/refusal lifecycle; reboot/rollback threat model |
+| Worker policy authority | Signature verification against external key/digest/epoch; bounded canonical journal core and separate Linux temporary-fixture append-only backend | Root-owned fixed backend, original signed-guard durable failure propagation and reboot lifecycle; real operator-selected issuer/pins; no whole-host snapshot rollback guarantee |
 | Production output creation | `prepare_fixture_outputs` rejects production roots | Root-owned fenced preparer, exact reserved cell, exclusive creation, retained ancestry, ownership, crash/incomplete-cell refusal; no automatic repair |
 | Original diagnostic start | Read-only identity/execution guards; private model seams | Signed diagnostic intent tied to original material, environment, streams, worker, unit/cgroup and observed process; no pathname or process replacement |
 | Failure and cleanup | Lease/IPC/spool models and separate historical campaign rehearsals | Production diagnostic backend, autonomous watchdog, writer revocation, retained uncertain intent, exact owned empty-cgroup proof before release |
@@ -40,11 +40,15 @@ but are neither production service ancestry nor authenticated original starts.
 Worker policy verification currently compares caller-provided trust pins. A guard
 latches refusal in memory; creating a new guard after restoring old external pins
 is not durable revocation. The fixed-local-files account model has been approved;
-the real issuer, durable authority storage and host rollback policy remain separate
-choices. Recommended next decision: operator-managed issuer key/digest/epoch plus
-a root-owned crash-durable registry, explicitly excluding whole-host/root rollback
-from that guarantee. If host rollback must be detected, select a separate external
-monotonic authority before implementing enrollment. No test key may be enrolled.
+the real issuer remains an operator choice. The continuation selects the local
+registry rollback boundary: operator-managed issuer key/digest/epoch plus a
+root-owned crash-durable registry as the target, excluding whole-host snapshot
+rollback and root/owner tampering. The
+[local journal slice](diagnostic-authority-registry-local-design.md) implements
+only its canonical core and nonroot temporary-fixture storage; it neither selects
+the real issuer nor supplies the missing root backend. If host rollback must be
+detected, select a separate external monotonic authority before enrollment.
+No test key may be enrolled.
 
 ## Extended local checks completed
 
@@ -76,8 +80,9 @@ missing final 0.74 source-bound receipt. HTML input LF normalization removes
 incidental generated/embedded content changes; no asset blob is changed.
 
 These completed local checks do not finish any missing production row above.
-Durable authority still needs the operator choice described there; no test issuer
-or synthetic epoch may be promoted to replace it.
+Durable production authority still needs the fixed backend, original-guard
+composition and real operator issuer/pins; no test issuer or synthetic epoch may
+be promoted to replace them. The selected local rollback scope is not enrollment.
 
 The subsequent [original-task slice](diagnostic-task-set-local-design.md) now
 retains up to 128 original task objects and refuses inventory or per-task drift.
@@ -94,6 +99,19 @@ guard, including after wrapper drop. This closes the local composition gap, not
 the remaining controlled-host enrollment, durable authority or production start.
 
 ## Required order on the dedicated host
+
+The subsequent authority-journal audit also identifies an inherited qualification
+input mismatch. The plan last changed at `8e16117b`, while the manifest retains
+its earlier SHA-256. The current plan's committed LF digest is
+`cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828`;
+the declared digest is
+`6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d`.
+Windows checkout CRLF additionally changes its raw file digest. The genuine
+content mismatch exists in the baseline commit, not just checkout normalization.
+The qualification dry-run refuses. Local structural checks do not replace that
+input check. No plan or frozen manifest is altered by this slice; an explicit
+reviewed reconciliation is required before qualification, not a silent digest
+refresh to pass a guard.
 
 This is a launch checklist, not an executable runbook: production diagnostic
 preparation/start entry points do not yet exist. Do not substitute fixture CLI

@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 49.03s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 13 tests
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_bounded_inventory_and_invalid_transition_make_no_new_generation ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_close_reopen_refusal_and_explicit_higher_epoch_are_persistent ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_exclusive_writer_and_thread_local_origin_cannot_be_duplicated ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_without_replay ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_original_path_file_and_descriptor_drift_latch_without_refresh ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_partial_write_errors_preserve_bytes_and_do_not_complete_a_marker ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_unsafe_linked_special_and_oversized_records_refuse ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_wrong_owner_path_and_external_pins_never_choose_authority ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... authority journal seed=0x7642026; mutations=256
+ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 319 filtered out; finished in 2.42s
+

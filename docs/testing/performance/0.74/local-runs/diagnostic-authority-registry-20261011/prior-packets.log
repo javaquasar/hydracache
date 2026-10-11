@@ -1,0 +1,4 @@
+signed tasks: 41 exact local captures; controlled-host enrollment and production remain closed
+task set: 30 exact local captures; signed enrollment and production remain closed
+signed leader mount: 44 exact local captures; all-thread, durable authority and production remain closed
+readiness: 24 exact captures; working-tree verify green, console skip independently covered; production closed

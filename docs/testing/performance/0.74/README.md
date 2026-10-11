@@ -2422,3 +2422,19 @@ wrapper drop; an earlier inner refusal blocks account IO. Healthy drop preserves
 the original mount reader. The local evidence is safety evidence, not controlled
 fixed-host enrollment, continuous confinement, durable authority or production
 start. No product workload or frozen qualification input changes accompany it.
+
+The [local authority journal](diagnostic-authority-registry-local-design.md)
+selects local crash-durable storage as the target, excluding whole-host snapshot
+rollback and root/owner tampering. It adds a strict bounded canonical record core
+and a distinct nonroot /tmp fixture backend: exclusive create-new record/marker
+publication with file/directory fsync, predecessor chaining, explicit refusal,
+strictly higher-epoch reactivation and no overwrite, repair or eviction.
+Independent operator pins remain mandatory. The
+[packet](local-runs/diagnostic-authority-registry-20261011/README.md) separates
+real local persistence/reopening from logical fault models and partial-IO tests.
+Only successful explicit refusal is persisted; unsafe-storage/inspection failures
+currently latch the writer in memory. Active inspection data is not permission
+to launch. Root-owned fixed storage, original signed-guard durable propagation,
+real issuer enrollment and production lifecycle still need implementation.
+Physical power-loss behavior and regular-file IO deadlines are not proved.
+No host operation, product benchmark or qualification input is changed.

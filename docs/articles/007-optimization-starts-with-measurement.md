@@ -6033,3 +6033,85 @@ tests, and root contract/evidence/governance checks pass 101/13/23. Strict clipp
 all-target checks and MSRV 1.88 pass on both platforms. These counts describe test
 executions and local safety coverage, not unique performance samples or a new
 full-workspace/exact-candidate release receipt.
+
+### A refusal must have a durable owner, not just an in-memory guard
+
+The signed worker checks already refuse their original objects permanently, but
+that permanence ends with the process. A new guard given restored old operator
+pins can otherwise repeat the old authority decision. The next local hypothesis
+is therefore about trustworthy attribution: can a bounded journal preserve an
+explicit refusal and prevent same-epoch reactivation across reopening?
+
+The [preregistered design](../testing/performance/0.74/diagnostic-authority-registry-local-design.md)
+selects local durable storage as the target. It deliberately excludes whole-host
+snapshot rollback and owner/root tampering; detecting those needs an independent
+monotonic authority. No actual issuer is selected here. A canonical v1 record
+binds issuer, policy digest, epoch, machine, boot and both namespace assertions.
+Refusal retains that exact binding. A new active record requires a refused
+predecessor, a strictly higher epoch, the same issuer/machine and a new policy
+digest. Revision and predecessor digests make gaps and changed refusal bindings
+invalid; wall-clock time has no role.
+
+The first storage implementation is a separate nonroot Linux /tmp fixture, not
+production-root enrollment. An exclusive nonblocking directory lock prevents
+cooperating concurrent writers. Retained directory and file identities detect
+observed replacement or metadata drift. Each generation uses two exclusive
+create-new files: canonical record and digest marker. File and directory fsync
+order publication; no previous file is overwritten, renamed, deleted, repaired
+or evicted. Bounds are 128 generations, 2048 record bytes, 65 marker bytes and
+256 directory entries. Exhaustion refuses rather than rewriting the history.
+
+The failure cases matter more than the happy path. Real local close/reopen tests
+retain an explicit refusal and accept a later epoch only with newly supplied
+independent pins. Private logical faults after record creation/sync, marker
+creation and final sync leave the original writer refused. Incomplete pairs
+refuse reopening. A late error can leave a complete refused generation visible
+without an acknowledged success: inspecting that state is correct; assuming
+rollback or replaying the write is not. Partial writes followed by ENOSPC exercise
+the shared write helper. Symlinks, hard links, FIFO, unsafe mode/owner, excessive
+bytes/entries, stale pins and original descriptor/path replacement are tested.
+Seeded history mutations are grammar/transition models, not kernel-race counts.
+
+This evidence supports the bounded transition and local fsync protocol, not
+physical power-loss behavior, hardware guarantees or an IO deadline.
+The predecessor hash chain is not historical signature attestation and cannot
+defend against an owner rewriting the entire journal. A crucial remaining gap is
+also explicit: only successful explicit refusal is persisted. Inspection or IO
+failure latches the current writer in memory, without trying to append to unsafe
+storage. Original signed-guard durable failure propagation and refusal on
+uncertain lifecycle restart still need their own composition.
+
+Windows strict lint initially finds Linux-only creation helpers compiled as dead
+code in the portable library. Platform gating fixes the separation; no warning
+or safety check is suppressed. The
+[retained packet](../testing/performance/0.74/local-runs/diagnostic-authority-registry-20261011/README.md)
+keeps the absent-API red, initial lint finding and successful reviewed local
+checks separately. This step improves the reliability of future attribution
+evidence, not cache throughput, allocations, CPU or retained memory. The next
+implementation boundary is root-owned fixed storage and its exclusive join to
+the original signed guard; real issuer enrollment and production start remain
+closed, as do product acceptance and release qualification.
+
+Parallel review then exposes a second finding: a complete late-failure refusal
+occasionally cannot reopen because flock remains held. A deterministic retained
+descriptor duplicate reproduces the same lifetime problem without a fork. The
+owner now explicitly unlocks on drop; closing the old duplicate afterward cannot
+release the new writer's independent lock. The original parallel alias is not
+identified, so this establishes a concrete lifetime weakness rather than claiming
+an observed fork trace. Both negatives and the reviewed fix are retained.
+
+A stricter frozen-input audit finds a separate inherited release blocker. The
+plan changed at `8e16117b`, but the qualification manifest still pins the earlier
+plan digest. LF normalization does not remove this content mismatch; Windows
+CRLF adds a separate raw-byte difference. The qualification dry-run correctly
+refuses even though the structural local contract passes. This slice leaves both
+frozen files unchanged and reports the mismatch instead of refreshing a digest
+to make the guard pass. Future qualification requires an explicit reviewed
+reconciliation of the plan and its identity.
+
+Reviewed local checks pass 409 scoped Linux tests with one existing ignored,
+195 portable Windows tests and 102/13/23 root contract/evidence/governance tests.
+The fourteen new unit tests repeat three times serially. Strict lint, affected
+all-target/MSRV checks, formatting, docs and book checks pass. These are local
+safety executions; neither the inherited qualification refusal nor any production
+gate is converted into acceptance by these green results.

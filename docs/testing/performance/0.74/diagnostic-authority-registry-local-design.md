@@ -43,7 +43,27 @@ hydracache-authority- prefix are writable by this backend. Root-owned production
 paths and the production account are not substituted with fixture ownership.
 Active journal state is inspection data, never a start/admission capability.
 
-## Planned checks and remaining work
+Only an explicit successful `refuse` publication records a durable refusal in
+this slice. An inspection/IO/transition failure latches the current writer in
+memory; it does not automatically append a refusal to possibly unsafe storage.
+Reopening an otherwise intact active journal is therefore not prevented by that
+in-memory latch. Original signed-guard durable failure propagation is still open.
+Hash chaining validates structure and exact predecessors, not historical policy
+signatures or tamper resistance against the journal owner. `view` is a cached
+numeric snapshot; `inspect` revalidates original objects and external pins.
+No operation is replayed after failure; internal partial-write/EINTR handling
+inside `write_all` is not an IO deadline or a bounded syscall-count guarantee.
+
+Parallel review exposes an unacknowledged late-refusal reopen returning
+`WouldBlock`. A deterministic retained duplicate reproduces the lock lifetime
+problem: closing the owner alone leaves flock held by the shared open-file
+description. The owner now explicitly unlocks at drop; no retry is added. The
+test keeps the old duplicate alive and checks that its later close cannot release
+the newly acquired independent writer lock. This models fork inheritance without
+forking; the exact source of the original parallel alias is not observed.
+Drop makes no acknowledged lock-handover guarantee if unlock/close fails.
+
+## Checks and remaining work
 
 Retain unchanged policy baseline and an absent-API compile red. Test canonical
 grammar, all transitions, seeded history mutation, exact external pins/context,
@@ -52,6 +72,14 @@ exclusive writers, linked/special/unsafe files, original path/FD replacement,
 partial IO and faults at logical publication stages without automatic repair.
 Run affected-package tests/check/clippy, MSRV, root contracts/evidence/governance,
 formatting/doc/book and offline packet integrity checks.
+
+The [retained packet](local-runs/diagnostic-authority-registry-20261011/README.md)
+records 409 scoped Linux passes, one existing ignored, 195 portable Windows
+passes and 102/13/23 root contract/evidence/governance passes. Fourteen new unit
+tests pass in three serial repetitions after the explicit-unlock review.
+It preserves the baseline, absent API, lint and parallel/lifetime negatives.
+The stricter qualification input check refuses an inherited plan digest mismatch;
+local green does not reconcile or bypass that separate blocker.
 
 The next layers must add the reviewed root-owned fixed backend, issuer provisioning,
 original signed guard composition and durable failure propagation, plus lifecycle
