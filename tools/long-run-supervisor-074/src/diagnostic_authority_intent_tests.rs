@@ -16,6 +16,9 @@ mod fenced_state_tests;
 #[path = "diagnostic_empty_fenced_intent_tests.rs"]
 mod empty_fence_tests;
 
+#[path = "diagnostic_reservation_publication_tests.rs"]
+mod reservation_publication_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

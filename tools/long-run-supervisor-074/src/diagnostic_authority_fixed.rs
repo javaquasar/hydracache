@@ -143,6 +143,14 @@ pub fn open_fixed_registry(
     })
 }
 impl FixedAuthorityRegistry {
+    #[cfg(test)]
+    pub(crate) fn refuse_at_for_test(
+        &mut self,
+        reason: RefusalReason,
+        stage: crate::diagnostic_worker_policy::authority_registry::PublicationStage,
+    ) -> Result<(), AuthorityError> {
+        self.journal.refuse_at_for_test(reason, stage)
+    }
     pub(crate) fn latch_refusal(&mut self) {
         self.journal.latch_refusal();
     }

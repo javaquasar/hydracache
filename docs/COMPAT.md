@@ -1,5 +1,21 @@
 # HydraCache Compatibility Register
 
+The fixed-only initial Reserved publisher now creates `active-diagnostic.json`
+under the retained original common fence using descriptor-relative O_EXCL
+creation. It reuses the existing canonical schema-one envelope, private 0600
+mode and bounded state reader; no schema or migration changes. Existing records
+are never overwritten or adopted for publication. Empty, partial and unacknowledged
+records are retained as admission-blocking context; schema-one readers refuse
+torn/noncanonical state and unknown versions. A complete existing record can
+be inspected read-only but is not a new publication acknowledgement.
+
+Success follows file and directory sync plus exact original-inode/bytes and
+signed-intent checks. Failure retains the original lock until drop and latches
+bound storage/authority, preserving refusal uncertainty without cleanup.
+No fixture-authority conversion, installer, ownership migration, authenticated
+peer/clock, service route or worker start is added. See
+[design](testing/performance/0.74/diagnostic-reservation-publication-local-design.md).
+
 Original signed intent now also has distinct fixed/fixture read-only compositions
 with the original empty reservation fence. They retain the caller's existing
 lock, match full asserted state before I/O and cross-latch both original chains

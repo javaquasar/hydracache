@@ -30,6 +30,26 @@ fn fixture() -> (tempfile::TempDir, FixedIntentStorageRead, PathBuf, PathBuf) {
     (temp, storage, root, leaf)
 }
 
+pub(crate) fn with_owned_empty_fence_for_test<R>(
+    run: impl FnOnce(OriginalEmptyReservationFence<'_>, &std::path::Path, &std::path::Path) -> R,
+) -> R {
+    let (_temp, mut storage, root, leaf) = fixture();
+    let fence = bind_original_empty_reservation_fence(&mut storage).unwrap();
+    run(fence, &root, &leaf)
+}
+
+pub(crate) fn retained_context_refuses_for_test(root: &std::path::Path) {
+    let origin = root.ancestors().nth(4).unwrap();
+    let mut storage = walk(origin, unsafe { libc::geteuid() }, unsafe {
+        libc::getegid()
+    })
+    .unwrap();
+    assert!(matches!(
+        bind_original_empty_reservation_fence(&mut storage),
+        Err(EmptyReservationFenceError::Conflict)
+    ));
+}
+
 pub(crate) fn with_empty_fence_for_test<R>(
     run: impl FnOnce(&mut OriginalEmptyReservationFence<'_>, &std::path::Path) -> R,
 ) -> R {

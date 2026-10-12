@@ -9978,3 +9978,125 @@ fn diagnostic_empty_fenced_intent_keeps_original_lock_and_cross_refusal() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_reservation_publication_is_exclusive_original_fence_not_activation() {
+    let c = contract("diagnostic-reservation-publication-local-contract.toml");
+    for key in [
+        "fixed_original_authority_intent_required",
+        "original_empty_fence_consumed_without_unlock",
+        "initial_reserved_revision_one_cell_zero_only",
+        "full_expected_state_matches_before_mutation",
+        "descriptor_relative_exclusive_active_creation",
+        "existing_canonical_schema_one_reused",
+        "file_and_directory_sync_before_acknowledgement",
+        "original_created_inode_retained_and_revalidated",
+        "all_other_leaf_and_legacy_contexts_refuse",
+        "bound_failure_cross_latches_originals",
+        "independently_safe_authority_refusal_only",
+        "partial_or_unacknowledged_state_retained",
+        "failure_owns_original_lock_until_drop",
+        "no_overwrite_cleanup_repair_or_automatic_retry",
+        "existing_context_never_adopted_for_publication",
+        "private_checkpoint_failures_not_power_loss_proof",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "fixture_authority_publication_conversion",
+        "peer_or_clock_authenticated",
+        "installer_or_host_ownership_changed",
+        "positive_host_enrollment_proved",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs"),
+    )
+    .unwrap();
+    let engine =
+        std::fs::read_to_string(root().join(
+            "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs",
+        ))
+        .unwrap();
+    for marker in [
+        "publish_fixed_reserved",
+        "FixedAuthorityIntentRead",
+        "OriginalEmptyReservationFence<'storage>",
+        "original.reader.pins.matches_state(check.state)",
+        "check.state.revision != 1",
+        "check.state.completed_cells != 0",
+        "bind_fixed_empty_fenced_intent",
+        "storage.latch_refusal()",
+        "original.original.latch_original()",
+        ".persist_with(RefusalReason::Policy, publish)",
+        "Box::new(storage)",
+        "Box::new(read.storage)",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for marker in [
+        "libc::O_RDWR | libc::O_CREAT | libc::O_EXCL",
+        "0o600",
+        "file.sync_all()",
+        "sync_all()",
+        "PublicationStage::DirectorySynced",
+        "Document {",
+        "self.document = Some(document)",
+        "doc.revalidate(self.leaf()?)?",
+        "libc::fdopendir",
+        "libc::readdir",
+        "only_state(self.leaf()?)?",
+        "self.ancestry()?",
+    ] {
+        assert!(engine.contains(marker), "{marker}");
+    }
+    assert_eq!(source.matches("self.storage.revalidate()?").count(), 3);
+    assert_eq!(
+        source
+            .matches("self.original.revalidate(bytes, check)?")
+            .count(),
+        2
+    );
+    for forbidden in [
+        "pub fn publish_fixture",
+        "FixtureAuthorityIntentRead",
+        "pub fn start",
+        "Fence::acquire(",
+        "open_fixed_intent_storage(",
+        "impl Clone",
+        "O_TRUNC",
+        "fs::rename",
+        "remove_file",
+        "unlinkat",
+        "set_permissions",
+        "pub fn state(",
+        "pub fn path(",
+        "pub fn file(",
+    ] {
+        // Fixture type appears in a compile-fail example, never a function signature.
+        if forbidden == "FixtureAuthorityIntentRead" {
+            assert!(!source
+                .lines()
+                .filter(|l| !l.starts_with("//!"))
+                .collect::<Vec<_>>()
+                .join("\n")
+                .contains(forbidden));
+        } else {
+            assert!(
+                !source.contains(forbidden) && !engine.contains(forbidden),
+                "{forbidden}"
+            );
+        }
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("reservation_publication"));
+}

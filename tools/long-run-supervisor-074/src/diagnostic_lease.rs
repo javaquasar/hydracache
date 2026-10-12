@@ -613,7 +613,7 @@ pub(crate) fn decode_active(bytes: &[u8]) -> Result<DiagnosticState, DiagnosticE
     Ok(envelope.state)
 }
 
-fn encode(state: &DiagnosticState) -> Result<Vec<u8>, DiagnosticError> {
+pub(crate) fn encode(state: &DiagnosticState) -> Result<Vec<u8>, DiagnosticError> {
     validate_state(state)?;
     let envelope = Envelope {
         schema_version: 1,

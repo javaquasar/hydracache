@@ -28,3 +28,11 @@ fn empty_fenced_intent_public_entries_require_original_guard_borrows() {
     assert_ne!(unsafe { libc::geteuid() }, 0);
     assert!(open_fixed_intent_storage().is_err());
 }
+
+#[test]
+fn reservation_publication_entry_requires_fixed_original_intent_and_owned_fence() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication::publish_fixed_reserved;
+    let _publish = publish_fixed_reserved;
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    assert!(open_fixed_intent_storage().is_err());
+}

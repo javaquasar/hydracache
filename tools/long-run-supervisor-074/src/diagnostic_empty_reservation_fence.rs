@@ -1,4 +1,6 @@
 //! Existing common fence before initial state; no publication/write capability.
+#[path = "diagnostic_reservation_publication_storage.rs"]
+pub(crate) mod publication_storage;
 use super::super::super::{
     campaign_admission::leaf_present, FixedIntentStorageError, FixedIntentStorageRead, StorageLeaf,
 };
@@ -144,3 +146,9 @@ mod tests;
 
 #[cfg(test)]
 pub(crate) use tests::with_empty_fence_for_test;
+
+#[cfg(test)]
+pub(crate) use tests::with_owned_empty_fence_for_test;
+
+#[cfg(test)]
+pub(crate) use tests::retained_context_refuses_for_test;

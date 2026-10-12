@@ -3,6 +3,8 @@
 pub mod empty_fence;
 #[path = "diagnostic_fenced_intent.rs"]
 pub mod fenced_state;
+#[path = "diagnostic_reservation_publication.rs"]
+pub mod reservation_publication;
 use super::{FixedAuthorityBoundRead, FixtureAuthorityBoundRead, Reader, SignedAuthorityError};
 use crate::diagnostic_worker_policy::authority_registry::{AuthorityError, RefusalReason};
 use crate::diagnostic_worker_policy::intent_projection::{
