@@ -366,3 +366,21 @@ worker-owned host layout still needs coordinated reviewed trusted ownership
 and binary rollout; no automatic repair or enrollment is introduced.
 The [local packet](local-runs/diagnostic-empty-fenced-intent-20261012/README.md)
 does not admit a server pilot, product workload, qualification or shipping.
+
+## Initial state publication retains the original common fence
+
+The [fixed-only library publisher](diagnostic-reservation-publication-local-design.md)
+now creates the first Reserved state without overwrite or a lock gap. Runtime
+acknowledgement follows file/directory sync and original inode, canonical bytes,
+inventory and signed-intent checks. Errors retain created context and the
+original lock until drop, cross-latch the original chains and preserve uncertain
+authority refusal. Existing state cannot be adopted as a successful new attempt.
+
+This closes the local initial-state publication dependency only. The service is
+not wired to the publisher; peer and time remain assertions, and deployed
+worker-owned storage is not trusted enrollment. The [local evidence](local-runs/diagnostic-reservation-publication-20261012/README.md)
+models interruption boundaries, not machine power loss or a positive installed
+host. Next specify exact intent-consumption publication and restart ambiguity,
+then authenticated peer/clock and coordinated reviewed ownership/binary rollout.
+Original output/start/watchdog/owned cleanup remains before any diagnostic pilot.
+No product workload, qualification, server operation or ship admission follows.

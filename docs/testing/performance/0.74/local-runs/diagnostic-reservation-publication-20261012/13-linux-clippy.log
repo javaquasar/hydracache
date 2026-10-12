@@ -1,0 +1,71 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: unused variable: `dir`
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:11:18
+    |
+ 11 |               let ($dir, f...
+    |                    ^^^^
+...
+146 | /         pair!(i, origina...
+147 | |             let conflict...
+148 | |                 root.joi...
+149 | |             } else {
+...   |
+172 | |             assert_eq!(f...
+173 | |         });
+    | |__________- in this macro invocation
+    |
+help: `dir` is captured in macro and introduced a unused variable
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:11:18
+    |
+ 11 |               let ($dir, f...
+    |                    ^^^^
+...
+146 | /         pair!(i, origina...
+147 | |             let conflict...
+148 | |                 root.joi...
+149 | |             } else {
+...   |
+172 | |             assert_eq!(f...
+173 | |         });
+    | |__________- in this macro invocation
+    = note: `-D unused-variables` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_variables)]`
+    = note: this error originates in the macro `pair` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: the `Err`-variant returned from this function is very large
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs:197:6
+    |
+197 |   ) -> Result<
+    |  ______^
+198 | |     Fixed...
+199 | |         '...
+200 | |         '...
+...   |
+209 | |     Reser...
+210 | | > {
+    | |_^ the `Err`-variant is at least 304 bytes
+    |
+    = help: try reducing the size of `diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication::ReservationPublicationFailure<'_>`, for example by boxing large elements or replacing it with `Box<diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication::ReservationPublicationFailure<'_>>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#result_large_err
+    = note: `-D clippy::result-large-err` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::result_large_err)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs:237:6
+    |
+237 |   ) -> Result<
+    |  ______^
+238 | |     Fixed...
+239 | |         '...
+240 | |         '...
+...   |
+249 | |     Reser...
+250 | | > {
+    | |_^ the `Err`-variant is at least 304 bytes
+    |
+    = help: try reducing the size of `diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication::ReservationPublicationFailure<'_>`, for example by boxing large elements or replacing it with `Box<diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication::ReservationPublicationFailure<'_>>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#result_large_err
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors

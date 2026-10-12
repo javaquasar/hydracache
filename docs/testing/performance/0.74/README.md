@@ -2692,3 +2692,26 @@ no-overwrite publication as a transition under this retained original lock,
 including partial/crash uncertainty. Authenticated peer/clock, coordinated
 trusted ownership/binary rollout and lifecycle proof remain before a host pilot.
 Frozen qualification inputs, thresholds and ship gates remain unchanged.
+
+## Initial Reserved publication without replacing an existing state
+
+The [fixed-only publisher](diagnostic-reservation-publication-local-design.md)
+now consumes the original empty fence and retains its lock throughout the
+state transition. Full signed initial-state pins, revision one and completed
+cell zero are checked before mutation. Descriptor-relative O_EXCL creation
+refuses even a same-name appearance after the last empty observation. The
+existing canonical schema-one state is acknowledged only after file/directory
+sync and exact original-inode, inventory, authority and intent checks.
+
+A publication failure owns the original fence until drop, latches both bound
+chains and retains any created or partial state. No record is overwritten,
+adopted, repaired or cleaned up. Fresh empty-fence acquisition refuses retained
+context. Success owns the original created document and common fence; it has
+no output, FD export, execution or resume conversion.
+
+The [local packet](local-runs/diagnostic-reservation-publication-20261012/README.md)
+uses private nonroot fixed-dispatch models and logical interruption checkpoints,
+not physical enrollment or power-loss evidence. The service has no publication
+entry. Authenticated peer/clock, exact consumption publication, coordinated
+ownership/binary rollout and original output/start/watchdog/owned cleanup remain
+before activation. Frozen qualification inputs and ship gates remain unchanged.

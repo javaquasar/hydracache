@@ -1,0 +1,10 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication`
+  --> tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs:34:190
+   |
+34 | ...binding::intent_binding::reservation_publication::publish_fixed_reserved;
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^ could not find `reservation_publication` in `intent_binding`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_original_fence") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

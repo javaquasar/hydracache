@@ -1,0 +1,66 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0659]: `PublicationStage` is ambiguous
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:100:26
+    |
+100 | ...!= PublicationStage::B...
+    |       ^^^^^^^^^^^^^^^^ a...us name
+    |
+    = note: ambiguous because of multiple glob imports of a name in the same module
+note: `PublicationStage` could refer to the enum imported here
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:2:5
+    |
+  2 | use...lication::*;
+    |    ...^^^^^^^^^^^
+    = help: consider adding an explicit import of `PublicationStage` to disambiguate
+note: `PublicationStage` could also refer to the enum imported here
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:1:5
+    |
+  1 | use super::*;
+    |     ^^^^^^^^
+    = help: consider adding an explicit import of `PublicationStage` to disambiguate
+
+error[E0277]: `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>` doesn't implement `Debug`
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:62:82
+    |
+ 62 | ...k).unwrap_err();
+    |       ^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `Debug` is not implemented for `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs:90:1
+    |
+ 90 | / pub ...
+ 91 | |     ...
+ 92 | |     ...
+ 93 | |     ...
+...   |
+ 99 | |     ...
+100 | | > {
+    | |_^
+    = note: add `#[derive(Debug)]` to `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>` or manually `impl Debug for FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+note: required by a bound in `Result::<T, E>::unwrap_err`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/result.rs:1324:4
+
+error[E0277]: `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>` doesn't implement `Debug`
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication_tests.rs:91:14
+    |
+ 91 | ...  .unwrap_err();
+    |       ^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `Debug` is not implemented for `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+   --> tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs:90:1
+    |
+ 90 | / pub ...
+ 91 | |     ...
+ 92 | |     ...
+ 93 | |     ...
+...   |
+ 99 | |     ...
+100 | | > {
+    | |_^
+    = note: add `#[derive(Debug)]` to `FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>` or manually `impl Debug for FixedReservedPublicationRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+note: required by a bound in `Result::<T, E>::unwrap_err`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/result.rs:1324:4
+
+Some errors have detailed explanations: E0277, E0659.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors

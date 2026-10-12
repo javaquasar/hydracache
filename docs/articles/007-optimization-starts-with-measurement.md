@@ -6799,3 +6799,67 @@ A write followed by empty-guard revalidation necessarily refuses; drop/reacquire
 would leave a race. Partial/crash uncertainty, authenticated peer/time and
 coordinated trusted ownership/binary rollout still precede a worker pilot.
 No product speedup, server admission or release qualification follows.
+
+## Initial Reserved publication keeps the original fence and created inode
+
+The read-only empty-fence join solved observation, not persistence. The next
+hypothesis was that an initial Reserved record could be published under that
+same original lock without overwriting a competing or orphaned record.
+The [fixed-only publisher](../testing/performance/0.74/diagnostic-reservation-publication-local-design.md)
+consumes the original empty fence and retains its lock while exclusively
+borrowing original fixed authority and signed intent. Only a matching initial
+Reserved snapshot with revision one and completed cell zero is eligible.
+
+The initial record uses descriptor-relative O_CREAT and O_EXCL, not the
+existing replacement writer. An existing record is never adopted, even when
+its canonical bytes match. Creation may be visible before writing finishes:
+the campaign admission already rejects every fixed-leaf entry, so a partial
+record is a conservative exclusion barrier rather than evidence of success.
+This requires coordinated deployment of that admission check, not a new lock
+or an automatic ownership repair.
+
+The publisher retains the created descriptor and existing canonical schema-one
+envelope. Private mode, owner, group, device and one link are checked before
+writing. File and directory sync precede acknowledgement, which also requires
+exact original/named inode, bytes, fixed-leaf inventory, ancestry, common fence,
+authority and signed-intent observations. The successful runtime guard retains
+the created document and original lock; no path or stream FD is exported.
+
+A failure keeps any created state and owns the original lock until drop.
+Bound failures block both original chains. Policy refusal reaches only the
+independently exact-safe original authority journal, preserving first error
+and uncertain acknowledgement. Intent refusal is not appended twice.
+Restoring an inode, bytes or permissions cannot revive the same guard.
+Neither successful nor failed drop removes state or cleans up an uncertain
+attempt. A fresh empty-fence guard refuses retained context.
+
+The [local checks](../testing/performance/0.74/local-runs/diagnostic-reservation-publication-20261012/README.md)
+exercise eight logical interruption boundaries, including partial bytes,
+file sync, directory sync and the final acknowledgement boundary. They also
+cover late same-name creation, inode/permissions/link drift, signature/state/
+peer/worker refusal, unsafe or advanced authority, partial Policy publication
+and concurrent independent chains. These are synthetic nonroot fixture
+observations, not machine power-loss or installed-host durability proof.
+Initial test compilation errors are retained separately from the passing suite.
+
+This implements the local initial-state publisher, not backend activation.
+The service has no publication entry and peer/time remain external assertions.
+A surviving valid state can be inspected read-only but cannot recreate a lost
+runtime acknowledgement. Exact intent-consumption publication and restart
+ambiguity need a separate contract, followed by authenticated peer/clock,
+trusted ownership/binary rollout and original output/start/watchdog/owned
+cleanup. No performance result or release qualification follows.
+
+Linux warnings-denied Clippy initially rejected the large error variant because
+it owned the entire fence/storage container, and found a missing test assertion
+using the journal variable. The error now boxes that private owned container only
+when constructing a failure; the success path retains its original storage value.
+The change neither reopens the fence nor changes the write/sync protocol.
+The red lint log is retained, and the final source is rechecked separately.
+
+The final source passes all 15 cases in each of three repeats. Scoped Linux
+regression passes 583 cases with one existing real systemd-bus test ignored;
+Windows passes 196, native root contracts/registry/governance pass 159 and Linux
+compile-fail doctests pass 34. Current/MSRV, warnings-denied Clippy and format
+pass. These counts establish local functional coverage, not throughput,
+allocation improvements or physical-host readiness.
