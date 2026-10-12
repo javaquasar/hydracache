@@ -143,6 +143,14 @@ pre-candidate baseline members.
 
 ## Chaos / soak / Docker (nightly / pre-release)
 
+Release 0.74 P0 diagnostic process-loss proofs are local Linux nonroot manual
+gates, wired through the existing `gated-proof-registry` dispatch job and listed
+in `docs/testing/gated-test-registry.toml`. They remain ignored in the fast suite.
+Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_process_crash_ -- --ignored --nocapture --test-threads=1`
+for all three proofs: Reserved publication, initial consumption and uninterrupted
+controls. They operate only on owned test subprocesses and temporary fixtures;
+passing them does not admit a server, product workload or qualification.
+
 Per RULES R-5 these run behind `#[ignore]` and are not in `verify`:
 
 ```powershell

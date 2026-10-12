@@ -10197,3 +10197,74 @@ fn diagnostic_initial_consumption_retains_original_runtime_not_execution() {
             .unwrap();
     assert!(!server.contains("initial_consumption"));
 }
+
+#[test]
+fn diagnostic_process_crash_proof_requires_owned_signal_and_fresh_inspection() {
+    let c = contract("diagnostic-process-crash-local-contract.toml");
+    for key in [
+        "parent_owns_all_scratch_and_exact_children",
+        "sigkill_via_owned_child_handle_only",
+        "logical_checkpoint_ready_before_signal",
+        "all_eight_publication_stages_required",
+        "all_fourteen_consumption_stages_required",
+        "post_return_ack_loss_cases_required",
+        "healthy_controls_required",
+        "fresh_process_inspection_required",
+        "retained_bytes_and_metadata_unchanged",
+        "original_lock_busy_then_released_required",
+        "no_owned_helper_survives",
+        "no_restart_writer_adoption_repair_or_retry",
+        "before_create_empty_is_not_global_nonce_proof",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "machine_power_loss_proved",
+        "host_reboot_proved",
+        "positive_host_enrollment_proved",
+        "authenticated_peer_or_clock",
+        "later_cells_implemented",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs"),
+    )
+    .expect("actual process-crash proof is not implemented");
+    for marker in [
+        "current_exe()",
+        "child.kill()",
+        "libc::SIGKILL",
+        "signal()",
+        "pidfd_open",
+        "pidfd_send_signal",
+        "ALL_STAGES",
+        "ALL_CONSUMPTION_STAGES",
+        "AfterReturn",
+        "inspect_empty_fence_at_for_test",
+        "lock_host_root",
+        "recv_timeout",
+        "original_snapshot",
+        "restarted_snapshot",
+        "0x074d",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "killall",
+        "pkill",
+        "systemctl",
+        "ssh",
+        "Command::new(\"sh\")",
+        "libc::fork",
+        "std::env::set_var",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}

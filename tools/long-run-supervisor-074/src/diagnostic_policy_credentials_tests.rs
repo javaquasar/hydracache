@@ -57,6 +57,23 @@ impl Fixture {
     }
     pub(super) fn with_ids(uid: u32, gid: u32, groups: Vec<u32>) -> Self {
         let dir = tempfile::tempdir().unwrap();
+        Self::with_directory(uid, gid, groups, dir)
+    }
+    pub(crate) fn in_owned_test_root(root: &std::path::Path) -> Self {
+        let (uid, gid, groups) = ids();
+        let meta = fs::symlink_metadata(root).unwrap();
+        assert!(meta.is_dir() && !meta.file_type().is_symlink());
+        assert_eq!(
+            (meta.uid(), meta.gid(), meta.mode() & 0o7777),
+            (uid, gid, 0o700)
+        );
+        let dir = tempfile::Builder::new()
+            .prefix("account-")
+            .tempdir_in(root)
+            .unwrap();
+        Self::with_directory(uid, gid, groups, dir)
+    }
+    fn with_directory(uid: u32, gid: u32, groups: Vec<u32>, dir: tempfile::TempDir) -> Self {
         fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o700)).unwrap();
         let passwd = format!(
             "root:x:0:0::/root:/bin/sh\nhydracache-perf:x:{uid}:{gid}::/nonexistent:/bin/false\n"

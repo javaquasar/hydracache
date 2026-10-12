@@ -8,16 +8,27 @@ pub(super) fn tree() -> (tempfile::TempDir, u32, u32) {
         .tempdir_in("/tmp")
         .unwrap();
     fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
-    let mut path = temp.path().to_owned();
+    let (uid, gid) = tree_at_for_test(temp.path());
+    (temp, uid, gid)
+}
+pub(super) fn tree_at_for_test(root: &Path) -> (u32, u32) {
+    use std::os::unix::fs::MetadataExt;
+    let uid = unsafe { libc::geteuid() };
+    let gid = unsafe { libc::getegid() };
+    assert!(uid > 0 && gid > 0, "modeled tests must remain nonroot");
+    let metadata = fs::symlink_metadata(root).unwrap();
+    assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
+    assert_eq!(
+        (metadata.uid(), metadata.gid(), metadata.mode() & 0o7777),
+        (uid, gid, 0o700)
+    );
+    let mut path = root.to_owned();
     for name in COMPONENTS {
         path.push(name);
         fs::create_dir(&path).unwrap();
         fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
     }
-    let uid = unsafe { libc::geteuid() };
-    let gid = unsafe { libc::getegid() };
-    assert!(uid > 0 && gid > 0, "modeled tests must remain nonroot");
-    (temp, uid, gid)
+    (uid, gid)
 }
 pub(super) fn at(root: &Path, level: usize) -> PathBuf {
     COMPONENTS

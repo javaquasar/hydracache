@@ -152,3 +152,6 @@ pub(crate) use tests::with_owned_empty_fence_for_test;
 
 #[cfg(test)]
 pub(crate) use tests::retained_context_refuses_for_test;
+
+#[cfg(test)]
+pub(crate) use tests::{inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test};

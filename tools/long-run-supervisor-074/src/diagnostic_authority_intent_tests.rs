@@ -22,6 +22,9 @@ mod reservation_publication_tests;
 #[path = "diagnostic_initial_consumption_tests.rs"]
 mod initial_consumption_tests;
 
+#[path = "diagnostic_process_crash_tests.rs"]
+mod process_crash_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

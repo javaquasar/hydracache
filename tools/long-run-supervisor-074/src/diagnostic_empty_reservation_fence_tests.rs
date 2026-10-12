@@ -38,6 +38,39 @@ pub(crate) fn with_owned_empty_fence_for_test<R>(
     run(fence, &root, &leaf)
 }
 
+pub(crate) fn with_owned_empty_fence_at_for_test<R>(
+    origin: &std::path::Path,
+    run: impl FnOnce(OriginalEmptyReservationFence<'_>, &std::path::Path, &std::path::Path) -> R,
+) -> R {
+    let (uid, gid) = super::super::super::super::tests::tree_at_for_test(origin);
+    let root = at(origin, 3).join("campaigns");
+    let leaf = at(origin, 4);
+    fs::create_dir(&root).unwrap();
+    fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+    fs::write(root.join(HOST_EXECUTION_LOCK_NAME), []).unwrap();
+    fs::set_permissions(
+        root.join(HOST_EXECUTION_LOCK_NAME),
+        fs::Permissions::from_mode(0o600),
+    )
+    .unwrap();
+    let mut storage = walk(origin, uid, gid).unwrap();
+    let fence = bind_original_empty_reservation_fence(&mut storage).unwrap();
+    run(fence, &root, &leaf)
+}
+
+pub(crate) fn inspect_empty_fence_at_for_test(origin: &std::path::Path, empty: bool) {
+    let mut storage = walk(origin, unsafe { libc::geteuid() }, unsafe {
+        libc::getegid()
+    })
+    .unwrap();
+    let result = bind_original_empty_reservation_fence(&mut storage);
+    if empty {
+        result.unwrap().revalidate().unwrap();
+    } else {
+        assert!(matches!(result, Err(EmptyReservationFenceError::Conflict)));
+    }
+}
+
 pub(crate) fn retained_context_refuses_for_test(root: &std::path::Path) {
     let origin = root.ancestors().nth(4).unwrap();
     let mut storage = walk(origin, unsafe { libc::geteuid() }, unsafe {
