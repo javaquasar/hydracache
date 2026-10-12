@@ -1,0 +1,762 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0107]: struct takes 9 lifetime arguments but 10 lifetime arguments were supplied
+  --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:90:6
+   |
+90 | impl Reader<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+   |      ^^^^^^ expected 9 lifetime arguments     ---- help: remove the lifetime argument
+   |
+note: struct defined here, with 9 lifetime parameters: `'join`, `'storage`, `'intent`, `'authority`, `'tasks`, `'binding`, `'guard`, `'policy`, `'process`
+  --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:75:19
+   |
+75 | pub(super) struct Reader<
+   |                   ^^^^^^
+76 |     'join,
+   |     -----
+77 |     'storage,
+   |     --------
+78 |     'intent,
+   |     -------
+79 |     'authority,
+   |     ----------
+80 |     'tasks,
+   |     ------
+81 |     'binding,
+   |     --------
+82 |     'guard,
+   |     ------
+83 |     'policy,
+   |     -------
+84 |     'process,
+   |     --------
+
+error[E0107]: struct takes 9 lifetime arguments but 10 lifetime arguments were supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:261:5
+    |
+246 |         impl $kind<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    |                                                      ---- help: remove the lifetime argument
+...
+261 |    ...dIntentRead,
+    |    ...^^^^^^^^^^^ expected 9 lifetime arguments
+    |
+note: struct defined here, with 9 lifetime parameters: `'join`, `'storage`, `'intent`, `'authority`, `'tasks`, `'binding`, `'guard`, `'policy`, `'process`
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:261:5
+    |
+183 |             'join,
+    |             -----
+184 |             'storage,
+    |             --------
+185 |             'intent,
+    |             -------
+186 |             'authority,
+    |             ----------
+187 |             'tasks,
+    |             ------
+188 |             'binding,
+    |             --------
+189 |             'guard,
+    |             ------
+190 |             'policy,
+    |             -------
+191 |             'process,
+    |             --------
+...
+261 |    ...dIntentRead,
+    |    ...^^^^^^^^^^^
+
+error[E0107]: struct takes 9 lifetime arguments but 10 lifetime arguments were supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:266:5
+    |
+246 |         impl $kind<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    |                                                      ---- help: remove the lifetime argument
+...
+266 |    ...dIntentRead,
+    |    ...^^^^^^^^^^^ expected 9 lifetime arguments
+    |
+note: struct defined here, with 9 lifetime parameters: `'join`, `'storage`, `'intent`, `'authority`, `'tasks`, `'binding`, `'guard`, `'policy`, `'process`
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:266:5
+    |
+183 |             'join,
+    |             -----
+184 |             'storage,
+    |             --------
+185 |             'intent,
+    |             -------
+186 |             'authority,
+    |             ----------
+187 |             'tasks,
+    |             ------
+188 |             'binding,
+    |             --------
+189 |             'guard,
+    |             ------
+190 |             'policy,
+    |             -------
+191 |             'process,
+    |             --------
+...
+266 |    ...dIntentRead,
+    |    ...^^^^^^^^^^^
+
+error[E0282]: type annotations needed
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:144:54
+    |
+144 | ..., |journal, reason| journal.re...
+    |       ^^^^^^^          ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+144 |                 Err(self.reject_fence_with(failure, |journal: /* Type */, reason| journal.refuse(reason)))
+    |                                                             ++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `Reader<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:167:13
+    |
+ 75 | / pub(super) struct Reader<
+ 76 | |     'join,
+ 77 | |     'storage,
+ 78 | |     'intent,
+...   |
+ 84 | |     'process,
+ 85 | | > {
+    | |_- method `is_refused` not found for this struct
+...
+167 |       if read.is_refused() {
+    |               ^^^^^^^^^^ method not found in `Reader<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-13056840883698460129.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: some of the expressions' fields have a method of the same name
+    |
+167 |     if read.fence.is_refused() {
+    |             ++++++
+167 |     if read.original.is_refused() {
+    |             +++++++++
+
+error[E0599]: no method named `latch_both` found for struct `Reader<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:168:14
+    |
+ 75 | / pub(super) struct Reader<
+ 76 | |     'join,
+ 77 | |     'storage,
+ 78 | |     'intent,
+...   |
+ 84 | |     'process,
+ 85 | | > {
+    | |_- method `latch_both` not found for this struct
+...
+168 |           read.latch_both();
+    |                ^^^^^^^^^^ method not found in `Reader<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-13056840883698460129.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+
+thread 'rustc' (376) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 14 but ends at 13
+stack backtrace:
+   0:     0x7ecfb385c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7ecfb3e0e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7ecfb52f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7ecfb3829b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7ecfb3829993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7ecfb2810aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7ecfb3829e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7ecfb3829c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7ecfb3823ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7ecfb380448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7ecfb038e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7ecfb0066c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7ecfb21697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7ecfb51d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7ecfb51c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7ecfb53004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7ecfb5302cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7ecfb53023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7ecfb52fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7ecfb52f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7ecfb52f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7ecfb52f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7ecfb52f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7ecfb2b222e1 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_no_match_method_error
+  24:     0x7ecfb2b0bfce - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_method_error
+  25:     0x7ecfb420a1d4 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  26:     0x7ecfb423df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x7ecfb4260334 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  28:     0x7ecfb423dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  29:     0x7ecfb42334d7 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_match
+  30:     0x7ecfb423f3de - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  31:     0x7ecfb4239158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  32:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  33:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  34:     0x7ecfb4b28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  35:     0x7ecfb4b26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  36:     0x7ecfb4143d2a - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  37:     0x7ecfb4143609 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_non_incr::__rust_end_short_backtrace
+  38:     0x7ecfb4141235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  39:     0x7ecfb4140c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  40:     0x7ecfb4d2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  41:     0x7ecfb4d28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  42:     0x7ecfb4fff963 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  43:     0x7ecfb4fff74e - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_non_incr::__rust_end_short_backtrace
+  44:     0x7ecfb5190111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  45:     0x7ecfb4f810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  46:     0x7ecfb4f29b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  47:     0x7ecfb4f2993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  48:     0x7ecfb4f2b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  49:     0x7ecfae89cb84 - <unknown>
+  50:     0x7ecfae929ecc - <unknown>
+  51:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [typeck] type-checking `diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::empty_fence::construct`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+
+thread 'rustc' (376) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 29 but ends at 28
+stack backtrace:
+   0:     0x7ecfb385c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7ecfb3e0e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7ecfb52f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7ecfb3829b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7ecfb3829993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7ecfb2810aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7ecfb3829e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7ecfb3829c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7ecfb3823ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7ecfb380448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7ecfb038e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7ecfb0066c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7ecfb21697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7ecfb51d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7ecfb51c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7ecfb53004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7ecfb5302cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7ecfb53023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7ecfb52fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7ecfb52f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7ecfb52f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7ecfb52f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7ecfb52f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7ecfb2b222e1 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_no_match_method_error
+  24:     0x7ecfb2b0bfce - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_method_error
+  25:     0x7ecfb420a1d4 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  26:     0x7ecfb423df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x7ecfb4235fa5 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_decl
+  28:     0x7ecfb4238e46 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  29:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  30:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  31:     0x7ecfb4c9f6be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_closure
+  32:     0x7ecfb423f84b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  33:     0x7ecfb4260334 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  34:     0x7ecfb423dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  35:     0x7ecfb4239158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  36:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  37:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  38:     0x7ecfb4c9f6be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_closure
+  39:     0x7ecfb423f84b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  40:     0x7ecfb4260334 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  41:     0x7ecfb423dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  42:     0x7ecfb4239158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  43:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  44:     0x7ecfb4233982 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_match
+  45:     0x7ecfb423f3de - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  46:     0x7ecfb42391e5 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  47:     0x7ecfb4d6668c - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_loop
+  48:     0x7ecfb423f9ea - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  49:     0x7ecfb4233982 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_match
+  50:     0x7ecfb423f3de - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  51:     0x7ecfb423fa4b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  52:     0x7ecfb4238451 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  53:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  54:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  55:     0x7ecfb4b28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  56:     0x7ecfb4b26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  57:     0x7ecfb4143d2a - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  58:     0x7ecfb4143609 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_non_incr::__rust_end_short_backtrace
+  59:     0x7ecfb4141235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  60:     0x7ecfb4140c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  61:     0x7ecfb4d2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  62:     0x7ecfb4d28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  63:     0x7ecfb4fff963 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  64:     0x7ecfb4fff74e - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_non_incr::__rust_end_short_backtrace
+  65:     0x7ecfb5190111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  66:     0x7ecfb4f810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  67:     0x7ecfb4f29b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  68:     0x7ecfb4f2993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  69:     0x7ecfb4f2b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  70:     0x7ecfae89cb84 - <unknown>
+  71:     0x7ecfae929ecc - <unknown>
+  72:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [typeck] type-checking `diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::empty_fence_tests::empty_fenced_intent_partial_refusal_preserves_first_fence_error_and_uncertainty`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:180:18
+    |
+180 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+180 |             read.reader.original.revalidate(&raw, &i.check(f, 101)).unwrap();
+    |                  ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:181:18
+    |
+181 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+181 |             read.reader.original.revalidate(&raw, &i.check(f, 102)).unwrap();
+    |                  ++++++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:182:27
+    |
+182 |   ...ad.is_refused());
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `is_refused` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+182 |             assert!(!read.reader.original.is_refused());
+    |                           ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:241:26
+    |
+241 |   ...ad.revalidate(&b...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+241 |                     read.reader.original.revalidate(&bad, &check),
+    |                          ++++++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:244:30
+    |
+244 |   ...ad.is_refused());
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `is_refused` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+244 |                 assert!(read.reader.original.is_refused());
+    |                              ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:248:26
+    |
+248 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+248 |                     read.reader.original.revalidate(&raw, &i.check(f, 100)),
+    |                          ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:276:26
+    |
+276 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+276 |                     read.reader.original.revalidate(&raw, &i.check(f, 101)),
+    |                          ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:283:26
+    |
+283 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+283 |                     read.reader.original.revalidate(&raw, &i.check(f, 100)),
+    |                          ++++++++++++++++
+
+
+thread 'rustc' (376) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 18 but ends at 17
+stack backtrace:
+   0:     0x7ecfb385c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7ecfb3e0e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7ecfb52f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7ecfb3829b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7ecfb3829993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7ecfb2810aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7ecfb3829e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7ecfb3829c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7ecfb3823ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7ecfb380448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7ecfb038e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7ecfb0066c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7ecfb21697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7ecfb51d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7ecfb51c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7ecfb53004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7ecfb5302cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7ecfb53023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7ecfb52fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7ecfb52f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7ecfb52f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7ecfb52f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7ecfb52f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7ecfb2b222e1 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_no_match_method_error
+  24:     0x7ecfb2b0bfce - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_method_error
+  25:     0x7ecfb420a1d4 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  26:     0x7ecfb423df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x7ecfb42040d5 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  28:     0x7ecfb423df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  29:     0x7ecfb4235fa5 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_decl
+  30:     0x7ecfb4238e46 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  31:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  32:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  33:     0x7ecfb4c9f6be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_closure
+  34:     0x7ecfb423f84b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  35:     0x7ecfb4260334 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  36:     0x7ecfb423dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  37:     0x7ecfb4239158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  38:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  39:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  40:     0x7ecfb4c9f6be - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_closure
+  41:     0x7ecfb423f84b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  42:     0x7ecfb4260334 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_call
+  43:     0x7ecfb423dfb0 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  44:     0x7ecfb4239158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  45:     0x7ecfb423df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  46:     0x7ecfb42177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  47:     0x7ecfb4b28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  48:     0x7ecfb4b26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  49:     0x7ecfb4143d2a - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  50:     0x7ecfb4143609 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_non_incr::__rust_end_short_backtrace
+  51:     0x7ecfb4141235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  52:     0x7ecfb4140c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  53:     0x7ecfb4d2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  54:     0x7ecfb4d28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  55:     0x7ecfb4fff963 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  56:     0x7ecfb4fff74e - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_non_incr::__rust_end_short_backtrace
+  57:     0x7ecfb5190111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  58:     0x7ecfb4f810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  59:     0x7ecfb4f29b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  60:     0x7ecfb4f2993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  61:     0x7ecfb4f2b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  62:     0x7ecfae89cb84 - <unknown>
+  63:     0x7ecfae929ecc - <unknown>
+  64:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C strip=debuginfo
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [typeck] type-checking `diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::empty_fence_tests::empty_fenced_intent_seeded_late_context_failure_latches_originals`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:361:30
+    |
+361 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+361 |             let error = read.reader.original.revalidate(&raw, &i.check(f, 101)).unwrap_err();
+    |                              ++++++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:365:26
+    |
+365 |   ...ad.is_refused());
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `is_refused` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+365 |             assert!(read.reader.original.is_refused());
+    |                          ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:369:22
+    |
+369 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+369 |                 read.reader.original.revalidate(&raw, &i.check(f, 100)),
+    |                      ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixedEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:413:18
+    |
+413 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixedEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-2767824231076991920.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+413 |             read.reader.original.revalidate(&raw, &i.check(f, 101)).unwrap();
+    |                  ++++++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `FixedEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:414:27
+    |
+414 |   ...ad.is_refused());
+    |         ^^^^^^^^^^ method not found in `FixedEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `is_refused` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-2767824231076991920.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+414 |             assert!(!read.reader.original.is_refused());
+    |                           ++++++++++++++++
+
+error[E0599]: no method named `revalidate` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:434:34
+    |
+434 |   ...ad.revalidate(&r...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `revalidate` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+434 |                             read.reader.original.revalidate(&raw, &i.check(f, if fail { 160 } else { 101 }));
+    |                                  ++++++++++++++++
+
+error[E0599]: no method named `is_refused` found for struct `FixtureEmptyFencedIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent_tests.rs:436:41
+    |
+436 |   ...ad.is_refused(),...
+    |         ^^^^^^^^^^ method not found in `FixtureEmptyFencedIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs:182:9
+    |
+182 | /         pub ...
+183 | |             ...
+184 | |             ...
+185 | |             ...
+...   |
+203 | |             >,
+204 | |         }
+    | |_________- method `is_refused` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc.long-type-7682832623592068243.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+help: one of the expressions' fields has a method of the same name
+    |
+436 |                         assert_eq!(read.reader.original.is_refused(), fail);
+    |                                         ++++++++++++++++
+
+Some errors have detailed explanations: E0107, E0282, E0599.
+For more information about an error, try `rustc --explain E0107`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 21 previous errors

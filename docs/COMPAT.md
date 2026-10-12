@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Original signed intent now also has distinct fixed/fixture read-only compositions
+with the original empty reservation fence. They retain the caller's existing
+lock, match full asserted state before I/O and cross-latch both original chains
+on bound failure. Policy refusal uses only the independently exact-safe original
+authority journal; intent failures do not publish twice. No fixed intent state,
+schema, installer, ownership, authentication or start route changes. Empty
+observations are not durable reservation. See
+[design](testing/performance/0.74/diagnostic-empty-fenced-intent-local-design.md).
+
 This file tracks durable and wire-visible artifacts whose versions matter during
 rolling upgrades. Runtime-only Rust types are intentionally out of scope unless
 they are persisted or transmitted across processes.

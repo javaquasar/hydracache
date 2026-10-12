@@ -6750,3 +6750,52 @@ Current/MSRV, warnings-denied Clippy and format pass. A root source guard initia
 expected a one-line shared-fence call that rustfmt split; its structural markers
 were corrected without changing policy or thresholds, and the red log remains.
 These counts establish local functional coverage, not throughput or host admission.
+
+## Signed intent and empty storage can share the original fence
+
+An initial reservation needs two prerequisites at once: signed authority must
+still be valid, and fixed storage must still be empty under the common host
+lock. The existing state-present join cannot supply that proof before a state
+exists. The next local hypothesis was that the original intent and empty-fence
+guards could be composed without reopening either origin or releasing the lock.
+
+The [read-only join](../testing/performance/0.74/diagnostic-empty-fenced-intent-local-design.md)
+borrows both original guards and checks fence, intent, fence, intent, fence.
+Each observation retains its input's original-object and authority brackets.
+The full asserted Reserved snapshot must match the signed-intent pins before
+composition I/O. Empty storage has no persisted snapshot, so this match does
+not establish a durable reservation.
+
+Bound failure latches both original chains. Fence errors attempt Policy refusal
+only through independently exact-safe original authority storage. Unsafe or
+advanced authority is not appended; the first fence error and acknowledgement
+uncertainty remain typed. Intent errors use their existing refusal bridge once,
+not a duplicate append. Already refused inputs cross-latch before I/O. Dropping
+a healthy join leaves the caller's original empty fence held.
+
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-empty-fenced-intent-20261012/README.md)
+covers expiry, a canonical envelope with an invalid signature, state/peer/worker
+drift, new leaf entries, late context, partial Policy publication and independent
+concurrency. All 14 focused cases pass in each of three repeats. Linux regression
+passes 567 cases with one existing real systemd-bus test ignored; Windows passes
+196 and Linux compile-fail doctests pass 30.
+Native root contract/registry/governance tests pass 158; current/MSRV,
+warnings-denied Clippy, format, documentation checks and mdBook also pass.
+These checks preserve the existing qualification and ship refusals.
+The functional observations use synthetic keys and private nonroot modeled
+storage, not physical enrollment,
+continuous confinement or performance measurements.
+
+The initial implementation had a nine-versus-ten lifetime argument error.
+Rust 1.94 also failed while rendering that diagnostic. The corrected source
+passes the focused suite; the initial compiler log is retained separately.
+The actual absent-public-API red was obtained with MSRV 1.88 before implementation,
+rather than inferred from an internal compiler failure.
+
+This confirms the read-only composition hypothesis, not safe initial publication.
+The next step must transition this same original empty fence into no-overwrite
+publication while keeping the lock and retaining the exact published object.
+A write followed by empty-guard revalidation necessarily refuses; drop/reacquire
+would leave a race. Partial/crash uncertainty, authenticated peer/time and
+coordinated trusted ownership/binary rollout still precede a worker pilot.
+No product speedup, server admission or release qualification follows.

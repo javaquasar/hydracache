@@ -347,3 +347,22 @@ publisher, implement output/start/watchdog/owned cleanup and enroll real issuer
 and initial-host pins. Current installation can still support only the separately
 approved storage-ancestry preflight, not a diagnostic worker pilot. All eight
 qualification inputs and the inherited plan-digest refusal remain unchanged.
+
+## Signed intent and empty fence before initial publication
+
+The [original empty-fence join](diagnostic-empty-fenced-intent-local-design.md)
+now binds the existing authority/signed-intent guard to empty fixed storage
+under its retained original common lock. Full asserted state must match intent
+pins before I/O. Fence and intent observations are interleaved; bound failure
+latches both chains, and Policy refusal reaches only independently exact-safe
+original authority. This is read-only composition, not a trusted reservation
+or authenticated peer/time source.
+
+The next implementation needs an explicit no-overwrite publication transition
+that keeps this same original fence and retains the published object's identity.
+Do not write a state and call the empty guard again, or drop/reacquire the lock
+to refresh eligibility. Partial/crash uncertainty must fail closed. Existing
+worker-owned host layout still needs coordinated reviewed trusted ownership
+and binary rollout; no automatic repair or enrollment is introduced.
+The [local packet](local-runs/diagnostic-empty-fenced-intent-20261012/README.md)
+does not admit a server pilot, product workload, qualification or shipping.

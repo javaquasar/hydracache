@@ -2673,3 +2673,22 @@ no-overwrite reservation transition and partial/uncertain behavior under the
 retained lock. Peer/clock authentication, trusted publication, coordinated
 ownership/binary rollout and output/start/watchdog/owned cleanup remain before
 worker launch. No server or frozen qualification input changed.
+
+## Signed intent under the original empty reservation fence
+
+The [read-only join](diagnostic-empty-fenced-intent-local-design.md) now borrows
+both original guards. It checks fence/intent/fence/intent/fence under the already
+held common lock; each input retains its own checks. Bound failures latch both
+chains. Fence refusal publishes Policy only through independently exact-safe
+original authority; unsafe/advanced journals are not appended. Intent errors use
+their existing bridge once. A mismatching unbound full-state assertion leaves
+healthy inputs intact, and already refused inputs cross-latch before I/O.
+
+Distinct fixed/fixture wrappers cannot promote, clone or execute. Successful join
+drop leaves the caller's empty fence locked; no initial Reserved state is created.
+The [local packet](local-runs/diagnostic-empty-fenced-intent-20261012/README.md)
+covers the joins with private nonroot models, not enrollment. Next specify
+no-overwrite publication as a transition under this retained original lock,
+including partial/crash uncertainty. Authenticated peer/clock, coordinated
+trusted ownership/binary rollout and lifecycle proof remain before a host pilot.
+Frozen qualification inputs, thresholds and ship gates remain unchanged.
