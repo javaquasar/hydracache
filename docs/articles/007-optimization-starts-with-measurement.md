@@ -6863,3 +6863,59 @@ Windows passes 196, native root contracts/registry/governance pass 159 and Linux
 compile-fail doctests pass 34. Current/MSRV, warnings-denied Clippy and format
 pass. These counts establish local functional coverage, not throughput,
 allocation improvements or physical-host readiness.
+
+## Consuming one intent does not grant permission to execute
+
+Initial Reserved publication leaves a runtime acknowledgement, not merely a
+readable file. The next hypothesis was that cell-one intent consumption can
+retain that original acknowledgement and common lock across the entire journal
+write, without reopening storage or making a recovered record eligible to start.
+
+The fixed-only library entry consumes the original publisher by value. It checks
+the full initial state and signed intent before mutation, then exclusively creates
+the cell-one JSON record and digest commit under the original directory descriptor.
+It reuses the existing retained-intent schema, canonical newline encoding and size
+bounds. Only those new owned files are sealed from private 0600 to read-only 0400.
+The original Reserved state is unchanged; consumption does not advance a cell.
+
+A private namespace transition permits only the original state and the exact
+objects actually created by this attempt. It does not accept a caller-selected
+allowlist, existing history or a same-name replacement. Checks interleave original
+authority/intent with ancestry, common fence, legacy context, exact inode, owner,
+group, mode, links and bounded bytes. File and directory sync precede the final
+acknowledgement bracket. Both success and failure keep the original lock; failure
+retains every created byte and cross-latches bound originals. Policy refusal uses
+only independently exact-safe original authority and preserves uncertainty.
+
+The [local contract](../testing/performance/0.74/diagnostic-initial-consumption-local-design.md)
+separates this functional hypothesis from performance attribution. Baseline is
+`175d2dae1509d1b664efe0852074665cc99b82b7`; the public API first fails an absent-entry
+test. Fourteen logical checkpoints cover creation, partial bytes, sealing, file
+sync, commit creation, directory sync and acknowledgement. Additional cases cover
+late targets, unknown and legacy context, substitution, hard links, intent expiry,
+signature/peer/worker drift, unsafe or advanced authority, sticky refusal, same-guard replay
+and independent concurrent chains.
+
+An expanded test initially expected the same error class for legacy campaign
+context as for retained intent-leaf context. Both reject admission, but they belong
+to different original-fence checks. The test now preserves the stricter semantic
+requirement that neither permits entry, without inventing a common error variant.
+Warnings-denied Clippy also rejected a test-only manual range pattern; it was
+corrected without a lint waiver. Both negative captures remain in the
+[local evidence](../testing/performance/0.74/local-runs/diagnostic-initial-consumption-20261012/README.md).
+
+This validates only the initial consumption protocol locally. Checkpoint errors
+are not actual SIGKILL, machine power-loss or installed-host evidence. A surviving
+valid pair cannot recreate the lost runtime acknowledgement after restart.
+Actual owned-process interruption testing is next; cells two through four and
+state advancement need their own contract. Authenticated peer/time, trusted
+ownership and binary rollout, original output/start/watchdog/owned cleanup and a
+reviewed host rehearsal still precede activation. No server, product workload,
+qualification, shipping or numerical performance claim is enabled.
+
+All 12 new cases pass in each of three identical-source repeats. Scoped Linux
+regression passes 596 with one existing real systemd-bus case ignored; native
+Windows passes 196 portable cases, root contracts/registry/governance pass 160,
+and Linux compile-fail doctests pass 38. Current/MSRV, warnings-denied lint,
+format, Rustdoc and documentation checks pass. These are local functional
+observations, not throughput, allocation or production-readiness claims.

@@ -384,3 +384,23 @@ host. Next specify exact intent-consumption publication and restart ambiguity,
 then authenticated peer/clock and coordinated reviewed ownership/binary rollout.
 Original output/start/watchdog/owned cleanup remains before any diagnostic pilot.
 No product workload, qualification, server operation or ship admission follows.
+
+## Initial cell-one consumption retains runtime ownership
+
+The [initial consumption library](diagnostic-initial-consumption-local-design.md)
+now consumes the runtime-acknowledged fixed publisher under its uninterrupted
+original common fence. It creates only cell-one retained JSON and digest-commit
+objects, seals new owned files 0400 and acknowledges after file/directory sync
+and original state, object, namespace, authority and intent checks. Errors own the
+same lock until drop, retain partial bytes and fail closed. No existing history
+or recovered Reserved record can become a runtime acknowledgement.
+
+The [local packet](local-runs/diagnostic-initial-consumption-20261012/README.md)
+covers logical interruption boundaries, not actual process kill, power loss or
+positive host enrollment. This closes initial-cell retention only: cells two
+through four, state advancement and actual owned-process interruption tests are
+not complete. Peer and time remain assertions; the service has no consumption
+entry or worker-start conversion. Trusted coordinated ownership/binary rollout
+and original output/start/watchdog/owned cleanup remain before a diagnostic pilot.
+Frozen qualification inputs, the inherited digest refusal and ship gates stay
+unchanged. No server operation or product workload is performed.

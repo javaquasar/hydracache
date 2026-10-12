@@ -2715,3 +2715,21 @@ not physical enrollment or power-loss evidence. The service has no publication
 entry. Authenticated peer/clock, exact consumption publication, coordinated
 ownership/binary rollout and original output/start/watchdog/owned cleanup remain
 before activation. Frozen qualification inputs and ship gates remain unchanged.
+
+## Initial intent consumption without a lock gap
+
+The [cell-one consumer](diagnostic-initial-consumption-local-design.md) now takes
+the runtime-acknowledged Reserved publisher by value and retains its original
+intent borrow, storage and common fence. Descriptor-relative exclusive creation
+reuses the existing retained-intent schema and digest marker. New owned files
+are sealed 0400; original state is not advanced. Exact original objects and
+authority/intent brackets plus file/directory sync precede acknowledgement.
+Failures retain the lock and partial context, never adopt or retry.
+
+The [local packet](local-runs/diagnostic-initial-consumption-20261012/README.md)
+is functional nonroot evidence with logical checkpoints, not actual SIGKILL
+or power-loss proof. Restart cannot recreate an acknowledgement from surviving
+history. Actual owned-process interruptions, later cells/state transitions,
+authenticated peer/time, coordinated trusted host rollout and original output/
+start/watchdog/owned cleanup remain. No production entry, server operation,
+product performance claim, qualification or ship permission is added.

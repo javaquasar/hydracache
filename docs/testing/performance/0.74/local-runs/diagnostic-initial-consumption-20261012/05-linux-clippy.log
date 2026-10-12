@@ -1,0 +1,13 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: this OR pattern can be rewritten using a range
+   --> tools/long-run-supervisor-074/src/diagnostic_initial_consumption_tests.rs:356:17
+    |
+356 | ...   0 | 1 | 2 => {
+    |       ^^^^^^^^^ help: try: `0..=2`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#manual_range_patterns
+    = note: `-D clippy::manual-range-patterns` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_range_patterns)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
