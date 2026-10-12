@@ -127,3 +127,19 @@ separate evidence; update this checklist's status with the exact packet, never
 with a readiness score. Full verification is required at milestones and before
 merge/tag. Keep historical negative results immutable and distinguish local
 functional, real process-loss, exact-host and numerical qualification evidence.
+
+## Status after the local process interruption package
+
+P0 local process-loss proof is complete for implementation
+`921050e3ab8be41b136ada1b3a6e6bf30a950693`; see the
+[exact-source packet](local-runs/diagnostic-process-crash-20261012/README.md).
+All 24 SIGKILL cases and two uninterrupted controls pass in each of three
+repeats, with two fresh read-only process inspections per case. Original lock
+release, helper termination and retained bytes/metadata are confirmed locally.
+Power loss, reboot and positive installed-root enrollment are not established.
+
+P1 through P5 remain open. Next preregister fixed state/cell progression and
+crash before the first durable intent, preserving the no-replay rule rather
+than treating empty-before-create as durable nonce protection. Real production
+issuer/pins and trusted host enrollment remain external prerequisites. This
+status update changes no qualification input, product candidate or ship gate.

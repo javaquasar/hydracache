@@ -1,0 +1,19 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 20.55s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-4088f809c28dc3bc.exe)
+
+running 1 test
+
+thread 'diagnostic_process_crash_proof_requires_owned_signal_and_fresh_inspection' (16524) panicked at crates\xtask\tests\performance_contract_074.rs:10219:126:
+actual process-crash proof is not implemented: Os { code: 2, kind: NotFound, message: "The system cannot find the file specified." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_process_crash_proof_requires_owned_signal_and_fresh_inspection ... FAILED
+
+failures:
+
+failures:
+    diagnostic_process_crash_proof_requires_owned_signal_and_fresh_inspection
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 118 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

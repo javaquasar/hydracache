@@ -6919,3 +6919,51 @@ Windows passes 196 portable cases, root contracts/registry/governance pass 160,
 and Linux compile-fail doctests pass 38. Current/MSRV, warnings-denied lint,
 format, Rustdoc and documentation checks pass. These are local functional
 observations, not throughput, allocation or production-readiness claims.
+
+## Actual SIGKILL at diagnostic journal boundaries
+
+The next check tests process loss, rather than returning an injected error from
+a writer callback. The [intermediate server plan](../testing/performance/0.74/diagnostic-server-readiness-intermediate-plan-20261012.md)
+keeps this local P0 proof separate from later fixed lifecycle, trusted peer/time,
+production execution and installed-host rehearsal.
+
+A nonroot parent owns each test subprocess and all temporary account, authority
+and fixed-storage roots. The child composes the original signed runtime chain,
+holds the existing common fence and stops at a named publication boundary.
+Only after the readiness signal and original lock contention are observed does
+the parent kill that exact child through its owned process handle. It verifies
+signal 9, helper termination through a retained pidfd and original lock release.
+This is a kernel SIGKILL, not a returned storage error or a broad process-name kill.
+
+The matrix covers eight initial-state stages and fourteen consumption stages,
+including empty/partial objects, file sync, sealing, directory sync and the final
+acknowledgement boundary. Death after each successful API return tests loss of
+the runtime acknowledgement. Two uninterrupted controls distinguish normal
+drop from signal death. Every case performs two fresh read-only process
+inspections and compares exact retained bytes, inode, owner/group/mode/link count,
+length and mtime/ctime. Actual atime is deliberately not an identity field.
+Fresh inspection never reconstructs a successful runtime publisher or consumer.
+
+The first process run failed because libtest prefixes readiness output with the
+test name. The strict parser originally expected the marker at the line start
+and timed out; the timeout is a harness failure, not durability evidence.
+The correction accepts the exact libtest framing, rejects malformed/ambiguous
+messages and has separate fast regression cases. A warnings-denied Clippy
+failure then simplified that parser's boolean without suppression. Negative
+captures remain in the [P0 packet](../testing/performance/0.74/local-runs/diagnostic-process-crash-20261012/README.md).
+
+The before-create case has no durable mutation and leaves empty-fence eligibility.
+It does not prove global request/nonce replay protection before the first record.
+That earlier boundary must be specified with P1 lifecycle. For every retained
+state, fresh empty reservation refuses even when the record/digest pair is
+complete. Surviving valid bytes are not the lost runtime acknowledgement.
+This proof does not cover machine power loss, reboot, production issuer keys,
+trusted root enrollment, original worker start or complete cgroup cleanup.
+The product candidate and qualification/ship boundaries remain closed.
+
+The final source passes all 24 SIGKILL cases and two uninterrupted controls in
+each of three repeats, with 52 fresh-process observations per repeat. These are
+local process-loss observations, not throughput, allocation, power-loss or
+production-readiness results. The original writer implementation and durable
+formats are unchanged; new path selectors and process helpers exist only in
+the crate's test build. The manual gates remain separate from ordinary fast CI.

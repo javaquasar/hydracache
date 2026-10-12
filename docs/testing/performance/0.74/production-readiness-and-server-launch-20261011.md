@@ -404,3 +404,22 @@ entry or worker-start conversion. Trusted coordinated ownership/binary rollout
 and original output/start/watchdog/owned cleanup remain before a diagnostic pilot.
 Frozen qualification inputs, the inherited digest refusal and ship gates stay
 unchanged. No server operation or product workload is performed.
+
+## Actual process loss before the diagnostic server pilot
+
+The [intermediate P0–P5 plan](diagnostic-server-readiness-intermediate-plan-20261012.md)
+separates local process-loss proof from fixed lifecycle, trusted inputs,
+production execution, reviewed installation and nonproduct host rehearsal.
+The [P0 packet](local-runs/diagnostic-process-crash-20261012/README.md) exercises
+actual owned SIGKILL at every Reserved/initial-consumption checkpoint and after
+API return, plus uninterrupted controls. Fresh read-only processes inspect
+retained context without replay, repair, adoption or a replacement writer.
+
+This adds local process-loss evidence, not installed-host or power-loss proof.
+Before-create has no durable mutation and is not global nonce protection.
+P1 must still define that boundary, later cells, state transitions and incomplete
+attempt handling. P2 requires real independently selected issuer/pins and
+kernel peer/time context; P3 requires output/start/watchdog/writer revocation/
+owned empty-cgroup proof. P4/P5 remain exact-host installation and rehearsal
+gates. Neither this proof nor its manual CI registration opens a production
+diagnostic entry, finite numerical pilot, product qualification or shipping.
