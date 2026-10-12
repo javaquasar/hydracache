@@ -1,5 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [intermediate diagnostic-server plan](diagnostic-server-readiness-intermediate-plan-20261012.md)
+records the approved P0 process-loss checks, P1 fixed lifecycle, P2 trusted inputs,
+P3 execution/watchdog/cleanup, P4 reviewed host installation and P5 nonproduct
+rehearsal. It is subordinate W11 work, not replacement qualification or product
+release admission. Start with local P0; later stages retain their separate gates.
+
 This directory began W0/W1 from the exact frozen 0.73 product candidate
 `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. Release 0.73 is now published: annotated tag
 `v0.73.0` points to `d1db9937e61295341ac95f289bace275641b1650`, whose product runtime is
