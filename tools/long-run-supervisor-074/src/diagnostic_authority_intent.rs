@@ -3,6 +3,8 @@
 pub mod empty_fence;
 #[path = "diagnostic_fenced_intent.rs"]
 pub mod fenced_state;
+#[path = "diagnostic_initial_consumption.rs"]
+pub mod initial_consumption;
 #[path = "diagnostic_reservation_publication.rs"]
 pub mod reservation_publication;
 use super::{FixedAuthorityBoundRead, FixtureAuthorityBoundRead, Reader, SignedAuthorityError};

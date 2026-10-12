@@ -11,6 +11,11 @@ use std::io::Write;
 use std::os::fd::IntoRawFd;
 use thiserror::Error;
 
+#[path = "diagnostic_initial_consumption_storage.rs"]
+pub(crate) mod initial_consumption_storage;
+use initial_consumption_storage::ConsumptionDocument;
+pub use initial_consumption_storage::ConsumptionStage;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PublicationStage {
     BeforeCreate,
@@ -38,12 +43,21 @@ pub enum StoragePublicationError {
     Io(#[from] std::io::Error),
     #[error("local injected interruption at {0:?}")]
     Interrupted(PublicationStage),
+    #[error("initial retained intent encoding refused: {0}")]
+    Record(#[from] crate::diagnostic_output_preparation::intent_journal::IntentJournalError),
+    #[error("original consumed intent object refused")]
+    ConsumptionDocument,
+    #[error("local injected consumption interruption at {0:?}")]
+    ConsumptionInterrupted(ConsumptionStage),
 }
 pub(crate) struct PublicationStorage<'storage> {
     pub(crate) empty: OriginalEmptyReservationFence<'storage>,
     document: Option<Document>,
     attempted: bool,
     acknowledged: bool,
+    consumption_started: bool,
+    consumption_acknowledged: bool,
+    consumption_documents: [Option<ConsumptionDocument>; 2],
 }
 impl<'storage> PublicationStorage<'storage> {
     pub(crate) fn new(empty: OriginalEmptyReservationFence<'storage>) -> Self {
@@ -52,6 +66,9 @@ impl<'storage> PublicationStorage<'storage> {
             document: None,
             attempted: false,
             acknowledged: false,
+            consumption_started: false,
+            consumption_acknowledged: false,
+            consumption_documents: [None, None],
         }
     }
     pub(crate) fn is_refused(&self) -> bool {
@@ -168,13 +185,13 @@ impl<'storage> PublicationStorage<'storage> {
             .as_ref()
             .ok_or(StoragePublicationError::Refused)?;
         doc.revalidate(self.leaf()?)?;
-        only_state(self.leaf()?)?;
+        self.inspect_consumption_namespace()?;
         self.ancestry()?;
         self.document
             .as_ref()
             .ok_or(StoragePublicationError::Refused)?
             .revalidate(self.leaf()?)?;
-        only_state(self.leaf()?)?;
+        self.inspect_consumption_namespace()?;
         self.ancestry()
     }
     pub(crate) fn revalidate(&mut self) -> Result<(), StoragePublicationError> {

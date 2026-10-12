@@ -36,3 +36,11 @@ fn reservation_publication_entry_requires_fixed_original_intent_and_owned_fence(
     assert_ne!(unsafe { libc::geteuid() }, 0);
     assert!(open_fixed_intent_storage().is_err());
 }
+
+#[test]
+fn initial_consumption_entry_requires_owned_runtime_publication() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::initial_consumption::consume_fixed_initial_intent;
+    let _consume = consume_fixed_initial_intent;
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    assert!(open_fixed_intent_storage().is_err());
+}

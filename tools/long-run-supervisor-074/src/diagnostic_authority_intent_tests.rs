@@ -19,6 +19,9 @@ mod empty_fence_tests;
 #[path = "diagnostic_reservation_publication_tests.rs"]
 mod reservation_publication_tests;
 
+#[path = "diagnostic_initial_consumption_tests.rs"]
+mod initial_consumption_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

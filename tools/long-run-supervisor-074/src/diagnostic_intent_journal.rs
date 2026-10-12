@@ -56,13 +56,13 @@ pub struct FixtureIntentObservation {
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Record {
-    schema_version: String,
-    state: DiagnosticState,
-    signed_intent: String,
-    peer_uid: u32,
-    peer_gids: Vec<u32>,
-    previous_record_sha256: Option<String>,
+pub(crate) struct Record {
+    pub(crate) schema_version: String,
+    pub(crate) state: DiagnosticState,
+    pub(crate) signed_intent: String,
+    pub(crate) peer_uid: u32,
+    pub(crate) peer_gids: Vec<u32>,
+    pub(crate) previous_record_sha256: Option<String>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -353,7 +353,7 @@ fn history(
     }
     Ok(entries)
 }
-fn record_bytes(record: &Record) -> Result<Vec<u8>, IntentJournalError> {
+pub(crate) fn record_bytes(record: &Record) -> Result<Vec<u8>, IntentJournalError> {
     let mut bytes = canonical_json(record).map_err(|_| IntentJournalError::Document)?;
     bytes.push(b'\n');
     if bytes.len() > MAX_RECORD_BYTES {
@@ -361,7 +361,7 @@ fn record_bytes(record: &Record) -> Result<Vec<u8>, IntentJournalError> {
     }
     Ok(bytes)
 }
-fn marker_bytes(record: &[u8]) -> Vec<u8> {
+pub(crate) fn marker_bytes(record: &[u8]) -> Vec<u8> {
     format!("{}\n", sha256_hex(record)).into_bytes()
 }
 fn fixture_path(root: &Path) -> Result<(), IntentJournalError> {

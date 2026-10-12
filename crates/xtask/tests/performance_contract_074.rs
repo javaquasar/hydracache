@@ -10100,3 +10100,100 @@ fn diagnostic_reservation_publication_is_exclusive_original_fence_not_activation
             .unwrap();
     assert!(!server.contains("reservation_publication"));
 }
+
+#[test]
+fn diagnostic_initial_consumption_retains_original_runtime_not_execution() {
+    let c = contract("diagnostic-initial-consumption-local-contract.toml");
+    for key in [
+        "runtime_acknowledged_fixed_publication_consumed",
+        "original_lock_never_released_during_consumption",
+        "initial_cell_one_only",
+        "existing_retained_record_schema_reused",
+        "exclusive_descriptor_relative_record_and_commit",
+        "only_new_owned_files_sealed_read_only",
+        "file_and_directory_sync_before_acknowledgement",
+        "exact_original_created_objects_revalidated",
+        "failure_retains_lock_and_every_created_byte",
+        "bound_failure_cross_latches_originals",
+        "independently_safe_authority_refusal_only",
+        "restart_or_existing_history_never_adopted",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_process_kill_checked",
+        "machine_power_loss_proved",
+        "cells_two_to_four_implemented",
+        "state_advance_implemented",
+        "authenticated_peer_or_clock",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs"),
+    )
+    .unwrap();
+    let engine = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs"),
+    )
+    .unwrap();
+    let compact: String = source.chars().filter(|c| !c.is_whitespace()).collect();
+    for marker in [
+        "consume_fixed_initial_intent",
+        "FixedReservedPublicationRead",
+        "read.original.pins.matches_state(check.state)",
+        "previous_record_sha256:None",
+        "record_bytes(&record)",
+        "read.original.revalidate(bytes,check)?",
+        "reservation_publication::refuse_with",
+        "Box::new(read)",
+    ] {
+        assert!(compact.contains(marker), "{marker}");
+    }
+    for marker in [
+        "libc::O_RDWR | libc::O_CREAT | libc::O_EXCL",
+        "diagnostic-intent-cell-1.json",
+        "diagnostic-intent-cell-1.commit",
+        "libc::fchmod",
+        "0o400",
+        "marker_bytes(raw)",
+        "consumption_started",
+        "consumption_acknowledged",
+        "self.inspect()?",
+        "libc::readdir",
+        "document.inspect(self.leaf()?)?",
+        "sync_all()",
+    ] {
+        assert!(engine.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "O_TRUNC",
+        "remove_file",
+        "unlinkat",
+        "fs::rename",
+        "set_permissions",
+        "Fence::acquire",
+        "open_fixed_intent_storage(",
+        "pub fn start",
+        "pub fn state(",
+        "pub fn path(",
+        "pub fn file(",
+        "pub fn consume_fixture",
+        "impl Clone",
+    ] {
+        assert!(
+            !source.contains(forbidden) && !engine.contains(forbidden),
+            "{forbidden}"
+        );
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("initial_consumption"));
+}

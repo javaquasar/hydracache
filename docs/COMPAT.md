@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Initial fixed intent consumption now consumes the runtime-acknowledged Reserved
+publisher under its uninterrupted original lock. It creates only cell-one JSON
+and digest-commit files, reusing `diagnostic-retained-intent-074-v1`, canonical
+newline bytes and bounded record/marker sizes. New owned files are sealed 0400;
+state remains unchanged. No schema migration, fixture promotion, recovered-history
+adoption, server route or execution permission is added. Retained partial files
+block fresh reservation and cannot become a runtime acknowledgement after restart.
+See [initial consumption design](testing/performance/0.74/diagnostic-initial-consumption-local-design.md).
+
 The fixed-only initial Reserved publisher now creates `active-diagnostic.json`
 under the retained original common fence using descriptor-relative O_EXCL
 creation. It reuses the existing canonical schema-one envelope, private 0600
