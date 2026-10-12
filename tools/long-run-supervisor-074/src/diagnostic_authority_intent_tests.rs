@@ -13,6 +13,9 @@ use std::{fs, os::unix::fs::PermissionsExt};
 #[path = "diagnostic_fenced_intent_tests.rs"]
 mod fenced_state_tests;
 
+#[path = "diagnostic_empty_fenced_intent_tests.rs"]
+mod empty_fence_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

@@ -9902,3 +9902,79 @@ fn diagnostic_empty_reservation_fence_is_readonly_same_lock_not_publication() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_empty_fenced_intent_keeps_original_lock_and_cross_refusal() {
+    let c = contract("diagnostic-empty-fenced-intent-local-contract.toml");
+    for key in [
+        "original_intent_and_empty_fence_exclusively_borrowed",
+        "full_expected_state_matches_before_io",
+        "empty_fence_intent_five_step_bracket",
+        "bound_failure_latches_both_originals",
+        "safe_original_authority_only_policy_refusal",
+        "intent_failure_does_not_duplicate_publication",
+        "first_error_and_publication_uncertainty_retained",
+        "already_refused_cross_latches_without_io",
+        "healthy_join_drop_keeps_original_fence_held",
+        "fixed_fixture_origins_distinct",
+        "private_nonroot_models_not_host_enrollment",
+        "no_path_owner_fd_clone_or_execution_conversion",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "trusted_state_publication_implemented",
+        "reservation_transition_implemented",
+        "peer_or_clock_authenticated",
+        "installer_or_host_ownership_changed",
+        "positive_host_enrollment_proved",
+        "worker_execution_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "server_operation_performed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "OriginalEmptyReservationFence<'storage>",
+        "&'join mut IntentReader",
+        "read.original.pins.matches_state(check.state)",
+        "self.original.original.latch_original()",
+        "self.fence.latch_refusal()",
+        ".persist_with(RefusalReason::Policy, publish)",
+        "failure: Box::new(failure)",
+        "Err(failure @ EmptyFencedIntentError::Intent(_))",
+        "bind_fixed_empty_fenced_intent",
+        "bind_fixture_empty_fenced_intent",
+        "FixedAuthorityIntentRead",
+        "FixtureAuthorityIntentRead",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    assert_eq!(source.matches("Step::Fence,").count(), 3);
+    assert_eq!(source.matches("Step::Intent,").count(), 2);
+    for forbidden in [
+        "O_CREAT",
+        "create_dir",
+        "write_all",
+        "set_permissions",
+        "remove_file",
+        "Command::new",
+        "StartTransientUnit",
+        "verify_worker_policy(",
+        "pub fn start",
+        "impl Clone",
+        "impl Drop",
+        "pub fn state(",
+        "pub fn path(",
+        "Fence::acquire(",
+        "open_fixed_intent_storage(",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+}

@@ -1,4 +1,6 @@
 //! Original authority and signed expected intent only, not publication or start.
+#[path = "diagnostic_empty_fenced_intent.rs"]
+pub mod empty_fence;
 #[path = "diagnostic_fenced_intent.rs"]
 pub mod fenced_state;
 use super::{FixedAuthorityBoundRead, FixtureAuthorityBoundRead, Reader, SignedAuthorityError};

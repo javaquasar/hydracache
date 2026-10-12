@@ -30,6 +30,14 @@ fn fixture() -> (tempfile::TempDir, FixedIntentStorageRead, PathBuf, PathBuf) {
     (temp, storage, root, leaf)
 }
 
+pub(crate) fn with_empty_fence_for_test<R>(
+    run: impl FnOnce(&mut OriginalEmptyReservationFence<'_>, &std::path::Path) -> R,
+) -> R {
+    let (_temp, mut storage, root, _leaf) = fixture();
+    let mut fence = bind_original_empty_reservation_fence(&mut storage).unwrap();
+    run(&mut fence, &root)
+}
+
 #[test]
 fn empty_reservation_fence_healthy_empty_repeat_excludes_legacy_and_releases_only_lock() {
     let (_temp, mut storage, root, leaf) = fixture();

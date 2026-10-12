@@ -61,6 +61,9 @@ pub struct OriginalEmptyReservationFence<'storage> {
     fence: Fence,
 }
 impl OriginalEmptyReservationFence<'_> {
+    pub(crate) fn latch_refusal(&mut self) {
+        self.storage.refused = true;
+    }
     pub fn is_refused(&self) -> bool {
         self.storage.is_refused()
     }
@@ -138,3 +141,6 @@ pub fn bind_original_empty_reservation_fence(
 #[cfg(test)]
 #[path = "diagnostic_empty_reservation_fence_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(crate) use tests::with_empty_fence_for_test;
