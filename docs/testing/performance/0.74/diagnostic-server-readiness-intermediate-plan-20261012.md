@@ -204,3 +204,26 @@ acknowledgement. The outer previous-record hash is not covered by the intent
 signature. Next define the owned state progression and its completion boundary,
 preserving the original fence, authority and attempt rather than reopening or
 rebinding them. Incomplete/reboot refusal, P2 through P5 and ship remain closed.
+
+## P1 Owned initial departure record
+
+Implementation `07008eb43eb6606c7726d7d27799e995d2cddf6b` retains an owned
+revision-two Starting intent after the original attempt, initial state and
+cell-one record/commit have been acknowledged. The
+[Starting contract](diagnostic-starting-intent-local-design.md) consumes that
+original runtime chain by value and preserves its common fence and object
+identities. A new exclusive sealed record binds the original state, cell-one
+record and signed-envelope hashes to the validated adjacent candidate.
+The initial active state is not overwritten or treated as executing.
+
+P1 remains open. No Starting-to-Running conversion, worker start, authenticated
+completion, next-cell intent or recovered acknowledgement is added. Later
+owned progression, expiry/incomplete/reboot refusal and actual completion/
+cleanup boundaries remain before P2 through P5 and server admission.
+
+The [final-source packet](local-runs/diagnostic-starting-intent-20261013/README.md)
+uses `099bb14da0d17069913287a528ca2efc5a05caee`, whose only change after
+the runtime implementation is the existing transition fixtures' original
+fence retention. It includes three complete functional/process repeats and
+the seven-phase SIGKILL regression, preserving all development/scheduling
+negatives. P1 is still not complete; no execution or host boundary is opened.

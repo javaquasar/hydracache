@@ -1,0 +1,5 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `dev` profile [unoptimized] target(s) in 1.00s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)

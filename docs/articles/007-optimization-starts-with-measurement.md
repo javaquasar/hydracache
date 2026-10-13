@@ -7169,3 +7169,84 @@ mutations. Scoped Linux regression passes 644 with seven manual/host cases
 ignored; Windows passes 204, root contracts 165 and Linux doctests 44.
 Formatting, current/MSRV checks, warnings-denied lint/Rustdoc and docs/book
 checks pass. No process-loss or server result is claimed for this read-only API.
+
+## Retaining an owned departure without replacing the initial state
+
+The next P1 slice moves from byte inspection to one owned durable transition.
+The [Starting intent contract](../testing/performance/0.74/diagnostic-starting-intent-local-design.md)
+consumes the acknowledged initial cell-one guard, which already holds the
+original attempt, initial Reserved state, record/commit and common fence.
+The candidate must be the exact adjacent revision-two Starting departure;
+skipped revisions, completed cells, changed identity/origin, cgroup inode,
+stop reason or invalid controller/clock bounds refuse before creation.
+This validation still operates on asserted time, not production clock authority.
+
+The initial active state is deliberately not overwritten. A separate
+`diagnostic-starting-intent-074-v1` record links its full encoded bytes,
+cell-one record and original signed envelope to the complete next state.
+Those hash links are not additional controller signatures. The record
+establishes an owned departure intent, not a live executing state or a completed
+cell. Old readers and fresh reservation reject the retained context rather
+than infer a new permission from it.
+
+Exclusive creation retains the actual descriptor before namespace checks.
+Partial/full writes update the expected owned prefix; sealing to 0400,
+file/directory sync and final original-chain checks precede acknowledgement.
+The directory scan permits the new name only while that exact document is
+owned and revalidated, not through a general allowlist. The old attempt, active
+state and cell-one objects remain byte-for-byte and metadata-stable. Their
+replacement, mode/link/byte drift, foreign objects and late target appearance
+refuse. The original borrow and lock survive in either the result or failure;
+there is no unlock, reacquisition, adoption, repair or duplicate append.
+
+Logical interruptions cover all eight departure publication boundaries.
+Actual SIGKILL also covers death after successful API return, so acknowledgement
+loss cannot be mistaken for an incomplete-only scenario. At BeforeCreate,
+the original attempt/state/cell-one context already exists: fresh reservation
+must refuse even though the departure file is absent. Every terminated case
+checks original lock release, exact owned helper termination and two fresh
+read-only processes with unchanged retained bytes and metadata. The prior
+process matrices remain separate regression coverage.
+
+Development negatives include missing-entry compilation, generic I/O errors
+requiring conversion through the storage error type, a missing test-only
+authority-stage alias and a source guard that depended on formatter line breaks.
+The corrected guard ignores whitespace while requiring the same sync call.
+No transition, refusal requirement, budget or admission threshold was relaxed.
+
+The opaque result only revalidates this original chain; it cannot return a prior
+guard, export a path/descriptor, start a worker or mark completion. Original
+intent expiry remains a refusal, not an opportunity to renew consent from the
+stored hashes. Later lifecycle must distinguish historical origin from current
+cell authorization and authenticated outcome/cleanup before advancing. Fixed
+cells two through four, trusted peer/time/issuer inputs, output/executable/
+process/cgroup binding, autonomous watchdog and host rehearsal remain open.
+This is local tooling correctness and process-loss evidence, not throughput,
+allocation, physical power-loss durability or production-readiness improvement.
+
+The first concurrent repeat batch also retained two readiness-timeout failures
+in the owned-process harness; they are not completed crash matrices. Heavy
+overlapping functional and process checks are an observed scheduling condition,
+not a numerical attribution of the cause. The 60-second readiness timeout and
+release thresholds remain unchanged; final process repeats use bounded
+single-flight scheduling.
+
+A full Linux batch additionally exposed a transient `Busy` in an older
+transition-publisher fixture between reservation and immediate lock
+reacquisition. The fixture now acquires its original fence once and calls
+`reserve_fenced`, holding that same object through candidate validation.
+The invalid/stale-state assertions and underlying product lock are unchanged.
+This removes the fixture's release/reacquire window rather than retrying or
+weakening the lock rule. Its correction is kept separate from the new runtime
+Starting-intent implementation and from final evidence.
+
+The [final-source packet](../testing/performance/0.74/local-runs/diagnostic-starting-intent-20261013/README.md)
+records implementation `07008eb4` and the separate test-only fence correction
+`099bb14d`. All sixteen new functional cases pass in three final-source
+repeats. Each process repeat passes nine SIGKILL cases and one uninterrupted
+control, with twenty fresh read-only inspections. Final regression reruns all
+seven process proofs: 66 signal cases, six controls and 144 fresh inspections.
+Linux scoped functional tests pass 660 with eight manual/host tests ignored;
+Windows passes 204, root contracts 166 and Linux compile-fail doctests 48.
+Current/MSRV checks, warnings-denied lint/Rustdoc, format and docs/book checks
+pass. No inherited negative was removed and no qualification input was changed.

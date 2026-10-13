@@ -2812,3 +2812,27 @@ retains baseline, missing-entry failure, three repeated eleven-test/seeded
 matrices and scoped regressions. No new process-loss test is claimed for an API
 that only checks supplied bytes; existing fixed storage and crash harness are
 unchanged. Qualification inputs and the inherited plan-digest refusal remain.
+
+## Owned first Starting transition intent
+
+The [Starting API](diagnostic-starting-intent-local-design.md) consumes the
+acknowledged initial cell-one guard with its original early attempt. It retains
+one revision-two departure record under the same original authority and fence,
+without changing the initial active-state anchor or releasing the lock.
+Exclusive creation, owned descriptor/prefix checks, sealing to 0400 and sync
+precede acknowledgement. The new filename is permitted only when its actual
+created document is owned; foreign and incomplete context still refuses.
+
+The result can revalidate the original chain, not start a worker, export a
+prior guard or complete a cell. P1 remains open: later state progression,
+authentic outcomes/cleanup, incomplete/reboot handling and cells two through
+four are not supplied by this record. P2 through P5 and qualification remain
+closed. The [compatibility register](../../../COMPAT.md) records the new
+canonical bounded format; there is no adoption, migration or downgrade deletion.
+
+The [local packet](local-runs/diagnostic-starting-intent-20261013/README.md)
+separates the runtime implementation, test-only original-fence correction,
+development/scheduling negatives and final-source proof. Three complete
+process repeats and the full prior-phase regression confirm retained-context
+refusal after actual process loss. This does not establish host reboot,
+power-loss durability, production clock/peer or completion authority.
