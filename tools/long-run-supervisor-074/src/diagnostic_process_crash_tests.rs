@@ -1,6 +1,6 @@
 //! Private nonroot owned-process proof; no production entry or restart writer.
 use super::*;
-use super::super::{attempt_publication, early_attempt, initial_consumption, reservation_publication};
+use super::super::{attempt_publication, early_attempt, initial_consumption, reservation_publication, starting_intent};
 use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test};
 use crate::diagnostic_process::{pin_owned_test_helper, OwnedTasksHelper};
 use crate::diagnostic_worker_policy::authority_registry::fixture::initialize_fixture_registry;
@@ -137,9 +137,18 @@ fn diagnostic_process_crash_child() {
     let target = std::env::var(STAGE).unwrap();
     assert!(matches!(
         phase.as_str(),
-        "reserved" | "consumption" | "attempt" | "attemptreserved" | "attemptconsumption"
+        "reserved"
+            | "consumption"
+            | "attempt"
+            | "attemptreserved"
+            | "attemptconsumption"
+            | "starting"
     ));
-    let permitted = if phase == "attempt" {
+    let permitted = if phase == "starting" {
+        starting_intent::ALL_STARTING_STAGES
+            .iter()
+            .any(|at| format!("{at:?}") == target)
+    } else if phase == "attempt" {
         early_attempt::ALL_ATTEMPT_STAGES
             .iter()
             .any(|at| format!("{at:?}") == target)
@@ -177,7 +186,7 @@ fn diagnostic_process_crash_child() {
     let raw = i.signed(&i.body(&f));
     let mut original = bind_fixed_intent(&mut authority, &raw, &i.check(&f, 100)).unwrap();
     with_owned_empty_fence_at_for_test(&origin, |fence, _, _| {
-        if phase == "attemptreserved" || phase == "attemptconsumption" {
+        if phase == "attemptreserved" || phase == "attemptconsumption" || phase == "starting" {
             let attempt =
                 early_attempt::retain_fixed_attempt(&mut original, fence, &raw, &i.check(&f, 100))
                     .unwrap();
@@ -189,7 +198,30 @@ fn diagnostic_process_crash_child() {
                     Ok(())
                 })
                 .unwrap();
-            if phase == "attemptconsumption" {
+            if phase == "starting" {
+                let consumed = initial_consumption::consume_fixed_initial_intent(
+                    read,
+                    &raw,
+                    &i.check(&f, 100),
+                )
+                .unwrap();
+                let mut next = i.state.clone();
+                next.revision += 1;
+                next.stage = DiagnosticStage::Starting;
+                next.cell_started_monotonic_ns = Some(next.last_observed_monotonic_ns);
+                next.cleanup_confirmed = false;
+                let mut starting =
+                    starting_intent::retain_with(consumed, &raw, &i.check(&f, 100), &next, |at| {
+                        if format!("{at:?}") == target {
+                            ready(&format!("{phase}:{target}"), owned.child.id(), true);
+                        }
+                        Ok(())
+                    })
+                    .unwrap();
+                starting.revalidate(&raw, &i.check(&f, 100)).unwrap();
+                assert_eq!(target, "AfterReturn");
+                ready("starting:AfterReturn", owned.child.id(), true);
+            } else if phase == "attemptconsumption" {
                 let mut consumed =
                     initial_consumption::consume_with(read, &raw, &i.check(&f, 100), |at| {
                         if format!("{at:?}") == target {
@@ -518,6 +550,62 @@ fn checkpoint_contents(s: &Scratch, phase: &str, stage: &str) {
         }
         return;
     }
+    if phase == "starting" {
+        assert_eq!(names.len(), 4 + usize::from(stage != "BeforeCreate"));
+        let anchor = fs::read(s.leaf().join("active-diagnostic.json")).unwrap();
+        let state = crate::diagnostic_lease::decode_active(&anchor).unwrap();
+        assert_eq!(
+            (state.stage, state.revision, state.completed_cells),
+            (DiagnosticStage::Reserved, 1, 0)
+        );
+        let attempt = fs::read(s.leaf().join("diagnostic-attempt-074.json")).unwrap();
+        let cell = fs::read(s.leaf().join("diagnostic-intent-cell-1.json")).unwrap();
+        assert_eq!(attempt, cell);
+        assert_eq!(
+            fs::read(s.leaf().join("diagnostic-intent-cell-1.commit")).unwrap(),
+            format!("{}\n", crate::sha256_hex(&cell)).as_bytes()
+        );
+        if stage == "BeforeCreate" {
+            return;
+        }
+        let path = s.leaf().join("diagnostic-starting-intent-074.json");
+        let raw = fs::read(&path).unwrap();
+        assert_eq!(
+            fs::metadata(path).unwrap().mode() & 0o7777,
+            if matches!(stage, "Created" | "PrefixWritten" | "BytesWritten") {
+                0o600
+            } else {
+                0o400
+            }
+        );
+        match stage {
+            "Created" => assert!(raw.is_empty()),
+            "PrefixWritten" => assert!(serde_json::from_slice::<serde_json::Value>(&raw).is_err()),
+            _ => {
+                let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+                assert_eq!(value["schema_version"], starting_intent::STARTING_SCHEMA);
+                assert_eq!(value["previous_state_sha256"], crate::sha256_hex(&anchor));
+                assert_eq!(
+                    value["initial_intent_record_sha256"],
+                    crate::sha256_hex(&cell)
+                );
+                let retained: serde_json::Value = serde_json::from_slice(&cell).unwrap();
+                assert_eq!(
+                    value["original_signed_intent_sha256"],
+                    crate::sha256_hex(retained["signed_intent"].as_str().unwrap().as_bytes())
+                );
+                assert_eq!(value["next_state"]["stage"], "starting");
+                assert_eq!(value["next_state"]["revision"], 2);
+                assert_eq!(value["next_state"]["completed_cells"], 0);
+                assert_eq!(value["next_state"]["promotable"], false);
+                assert_eq!(value["next_state"]["admission_allowed"], false);
+                let mut canonical = crate::canonical_json(&value).unwrap();
+                canonical.push(b'\n');
+                assert_eq!(raw, canonical);
+            }
+        }
+        return;
+    }
     let inherited_attempt = matches!(phase, "attemptreserved" | "attemptconsumption");
     if inherited_attempt {
         let path = s.leaf().join("diagnostic-attempt-074.json");
@@ -641,7 +729,7 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
     let state_expected = phase != "attempt"
         && !(matches!(phase, "reserved" | "attemptreserved") && stage == "BeforeCreate");
     assert_eq!(state.exists(), state_expected);
-    if matches!(phase, "consumption" | "attemptconsumption")
+    if matches!(phase, "consumption" | "attemptconsumption" | "starting")
         || (phase != "attempt" && stage == "AfterReturn")
     {
         let state = crate::diagnostic_lease::decode_active(&fs::read(&state).unwrap()).unwrap();
@@ -657,7 +745,7 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
         let restarted_snapshot = snapshot(&s);
         assert_eq!(restarted_snapshot, original_snapshot);
     }
-    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
+    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption" | "starting") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
 }
 fn seeded(mut stages: Vec<String>) -> Vec<String> {
     let mut seed = 0x074d_u64;
@@ -742,4 +830,18 @@ fn diagnostic_process_crash_attempt_consumption_all_stages_and_post_return() {
         run_case("attemptconsumption", &stage, true);
     }
     run_case("attemptconsumption", "AfterReturn", false);
+}
+
+#[test]
+#[ignore = "manual local nonroot Linux owned Starting intent SIGKILL proof, no product workload"]
+fn diagnostic_process_crash_starting_all_stages_and_post_return() {
+    let mut stages: Vec<_> = starting_intent::ALL_STARTING_STAGES
+        .iter()
+        .map(|at| format!("{at:?}"))
+        .collect();
+    stages.push("AfterReturn".into());
+    for stage in seeded(stages) {
+        run_case("starting", &stage, true);
+    }
+    run_case("starting", "AfterReturn", false);
 }

@@ -16,7 +16,7 @@ pub const ACTIVE_DIAGNOSTIC_NAME: &str = "active-diagnostic.json";
 
 #[path = "diagnostic_transition.rs"]
 mod transition;
-use transition::validate_transition;
+pub(crate) use transition::validate_transition;
 
 #[cfg(test)]
 #[path = "diagnostic_transition_tests.rs"]

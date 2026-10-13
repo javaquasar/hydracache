@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_starting_intent_tests.rs"]
+mod starting_intent_tests;
 use super::super::{bind_fixture_authority, bind_fixed_authority, Journal, FixedSignedTasksRead};
 use super::super::tests::{journal, reopen, inventory, with_mount, changed_checked};
 use crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::Fixture;

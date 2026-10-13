@@ -11,6 +11,8 @@ pub mod fenced_state;
 pub mod initial_consumption;
 #[path = "diagnostic_reservation_publication.rs"]
 pub mod reservation_publication;
+#[path = "diagnostic_starting_intent.rs"]
+pub mod starting_intent;
 use super::{FixedAuthorityBoundRead, FixtureAuthorityBoundRead, Reader, SignedAuthorityError};
 use crate::diagnostic_worker_policy::authority_registry::{AuthorityError, RefusalReason};
 use crate::diagnostic_worker_policy::intent_projection::{

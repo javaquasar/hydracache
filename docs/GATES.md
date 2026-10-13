@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 owned Starting intent has one additional ignored/manual nonroot Linux gate:
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-starting-all-stages-and-post-return`.
+It kills only the owned test process at all eight departure publication
+boundaries and after return, then checks fresh read-only refusal, original lock
+release and helper termination. It is not ordinary fast execution, a production
+worker start or host enrollment. See the
+[Starting contract](testing/performance/0.74/diagnostic-starting-intent-local-contract.toml).
+
 W11 signed history inspection is covered by fast Linux unit/property tests and
 a compile-fail no-start test. It checks supplied bytes only and adds no manual
 process-loss gate: this API does not write or spawn. Existing fixed storage

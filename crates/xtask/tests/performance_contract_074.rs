@@ -3,6 +3,114 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_starting_intent_retains_original_anchor_without_execution() {
+    let c = contract("diagnostic-starting-intent-local-contract.toml");
+    for key in [
+        "new_durable_record",
+        "consumed_initial_guard_required",
+        "owned_original_attempt_required",
+        "exact_revision_two_starting_cell_zero",
+        "existing_adjacent_transition_validator_reused",
+        "initial_active_state_immutable_anchor",
+        "exclusive_created_original_document_retained",
+        "exact_state_record_envelope_hash_links",
+        "namespace_allows_only_actual_owned_starting_document",
+        "original_authority_intent_ancestry_fence_brackets",
+        "sealed_file_and_directory_synced_before_ack",
+        "failure_retains_original_borrow_fence_context_first_error",
+        "no_unlock_reacquire_adoption_overwrite_repair_retry",
+        "legacy_consumption_without_attempt_refuses",
+        "recovered_bytes_cannot_recreate_acknowledgement",
+        "starting_acknowledgement_is_not_start_permission",
+        "real_process_loss_all_stages_required",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "starting_to_running_implemented",
+        "later_fixed_cells_implemented",
+        "full_fixed_lifecycle_implemented",
+        "completion_or_cgroup_cleanup_authenticated",
+        "authenticated_peer_or_clock",
+        "global_nonce_protection",
+        "machine_power_loss_proved",
+        "host_reboot_proved",
+        "positive_host_enrollment_proved",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["max_record_bytes"].as_integer(), Some(4096));
+    assert_eq!(c["sigkill_cases_per_repeat"].as_integer(), Some(9));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs"),
+    )
+    .unwrap();
+    let storage = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_starting_intent_storage.rs"),
+    )
+    .unwrap();
+    let namespace = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs"),
+    )
+    .unwrap();
+    for required in [
+        "FixedConsumedInitialIntentRead",
+        "pins.matches_state(check.state)",
+        "has_owned_attempt()",
+        "validate_transition(previous, next)",
+        "initial_record_sha256()",
+        "original.revalidate(bytes, check)",
+        "reservation_publication::refuse_with(",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for required in [
+        "self.starting_attempted = true",
+        "ConsumptionDocument::create(",
+        "self.starting_acknowledged = true",
+        "self.starting_boundary(StartingStage::Acknowledging",
+        "sync_owned(&parent)",
+        "sync_all().map_err(StoragePublicationError::from)",
+    ] {
+        assert!(
+            storage
+                .split_whitespace()
+                .collect::<String>()
+                .contains(&required.split_whitespace().collect::<String>()),
+            "{required}"
+        );
+    }
+    assert!(
+        namespace.contains("name == STARTING_NAME.as_bytes() && self.starting_document.is_some()")
+    );
+    assert!(namespace.contains("seen_starting != self.starting_document.is_some()"));
+    for forbidden in [
+        "remove_file",
+        "rename(",
+        "O_TRUNC",
+        "Fence::acquire",
+        "pub fn start",
+        "pub fn path(",
+        "pub fn file(",
+    ] {
+        assert!(
+            !source.contains(forbidden) && !storage.contains(forbidden),
+            "{forbidden}"
+        );
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("starting_intent"));
+}
+
+#[test]
 fn diagnostic_signed_history_is_data_only_not_fixed_progression() {
     let c = contract("diagnostic-signed-history-local-contract.toml");
     for key in [

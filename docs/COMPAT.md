@@ -1,5 +1,20 @@
 # HydraCache Compatibility Register
 
+Owned first Starting departure adds only `diagnostic-starting-intent-074.json`
+inside the original fixed leaf. Canonical LF-terminated
+`diagnostic-starting-intent-074-v1` is bounded by 4096 bytes and includes the
+full revision-two Starting state, original encoded-state hash, exact cell-one
+record hash and original signed-envelope hash. These links add no controller
+signature. The initial schema-one active state remains immutable; the new
+record is not a live executing state. Exclusive 0600 creation, owned descriptor
+and prefix checks, sealing to 0400 and file/directory sync precede runtime
+acknowledgement. Namespace permission requires the actual owned document.
+Readers accept only this version; unknown versions/fields/noncanonical bytes
+are not adopted. Old readers/fresh admission reject retained context. No
+migration, downgrade deletion, retry, restart or execution conversion is added.
+Partial or unacknowledged records remain retained. See the
+[Starting intent design](testing/performance/0.74/diagnostic-starting-intent-local-design.md).
+
 Signed diagnostic history inspection adds a data-only supplied-byte API using
 the existing retained-intent schema, canonical LF encoding, record budget and
 commit digest. It changes no publisher, reader, filename, state or migration.

@@ -1,5 +1,8 @@
 //! Private exact two-object consumption; never reopens a runtime acknowledgement.
-use super::{open_at, DirectoryStream, PublicationStorage, StoragePublicationError, ATTEMPT_NAME};
+use super::{
+    open_at, DirectoryStream, PublicationStorage, StoragePublicationError, ATTEMPT_NAME,
+    STARTING_NAME,
+};
 use crate::diagnostic_lease::ACTIVE_DIAGNOSTIC_NAME;
 use crate::diagnostic_output_preparation::intent_journal::{
     marker_bytes, MARKER_BYTES, MAX_RECORD_BYTES,
@@ -90,7 +93,7 @@ impl ConsumptionDocument {
         }
         Ok(())
     }
-    fn inspect(&self, parent: &File) -> Result<(), StoragePublicationError> {
+    pub(super) fn inspect(&self, parent: &File) -> Result<(), StoragePublicationError> {
         let original = self.file.metadata()?;
         self.safe(parent, &original)?;
         if stamp(&original) != self.stamp {
@@ -113,6 +116,59 @@ impl ConsumptionDocument {
         self.stamp = stamp(&original);
         self.inspect(parent)
     }
+    pub(super) fn create(
+        parent: &File,
+        name: &'static str,
+        budget: usize,
+    ) -> Result<Self, StoragePublicationError> {
+        let file = open_at(
+            parent,
+            name,
+            libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
+            0o600,
+        )?;
+        let document = Self {
+            stamp: stamp(&file.metadata()?),
+            file,
+            name,
+            raw: Vec::new(),
+            mode: 0o600,
+            budget,
+        };
+        Ok(document)
+    }
+    pub(super) fn append_owned(
+        &mut self,
+        parent: &File,
+        bytes: &[u8],
+        seal: bool,
+    ) -> Result<(), StoragePublicationError> {
+        self.inspect(parent)?;
+        if self.mode != 0o600
+            || self.raw.len() + bytes.len() > self.budget
+            || (seal && !bytes.is_empty())
+        {
+            return Err(StoragePublicationError::ConsumptionDocument);
+        }
+        if seal {
+            if unsafe { libc::fchmod(self.file.as_raw_fd(), 0o400) } != 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+            self.mode = 0o400;
+        } else {
+            self.file.write_all(bytes)?;
+            self.raw.extend_from_slice(bytes);
+        }
+        self.refresh_owned_write(parent)
+    }
+    pub(super) fn sync_owned(&self, parent: &File) -> Result<(), StoragePublicationError> {
+        self.inspect(parent)?;
+        self.file.sync_all()?;
+        self.inspect(parent)
+    }
+    pub(super) fn raw_sha256(&self) -> String {
+        crate::sha256_hex(&self.raw)
+    }
 }
 impl PublicationStorage<'_> {
     pub(super) fn inspect_consumption_namespace(&self) -> Result<(), StoragePublicationError> {
@@ -120,6 +176,9 @@ impl PublicationStorage<'_> {
             return self.publication_namespace(true);
         }
         self.inspect_owned_attempt()?;
+        if let Some(document) = &self.starting_document {
+            document.inspect(self.leaf()?)?;
+        }
         for document in self.consumption_documents.iter().flatten() {
             document.inspect(self.leaf()?)?;
         }
@@ -135,6 +194,7 @@ impl PublicationStorage<'_> {
         }
         let stream = DirectoryStream(pointer);
         let mut seen = [false; 4];
+        let mut seen_starting = false;
         loop {
             unsafe {
                 *libc::__errno_location() = 0;
@@ -149,6 +209,13 @@ impl PublicationStorage<'_> {
             }
             let name = unsafe { CStr::from_ptr((*entry).d_name.as_ptr()) }.to_bytes();
             if name == b"." || name == b".." {
+                continue;
+            }
+            if name == STARTING_NAME.as_bytes() && self.starting_document.is_some() {
+                if seen_starting {
+                    return Err(StoragePublicationError::Context);
+                }
+                seen_starting = true;
                 continue;
             }
             let index = if name == ACTIVE_DIAGNOSTIC_NAME.as_bytes() {
@@ -176,6 +243,12 @@ impl PublicationStorage<'_> {
             ]
         {
             return Err(StoragePublicationError::Context);
+        }
+        if seen_starting != self.starting_document.is_some() {
+            return Err(StoragePublicationError::Context);
+        }
+        if let Some(document) = &self.starting_document {
+            document.inspect(self.leaf()?)?;
         }
         self.inspect_owned_attempt()
     }

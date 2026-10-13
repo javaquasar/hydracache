@@ -18,6 +18,10 @@ use thiserror::Error;
 pub(crate) mod initial_consumption_storage;
 use initial_consumption_storage::ConsumptionDocument;
 pub use initial_consumption_storage::ConsumptionStage;
+#[path = "diagnostic_starting_intent_storage.rs"]
+mod starting_intent_storage;
+pub use starting_intent_storage::StartingStage;
+use starting_intent_storage::NAME as STARTING_NAME;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PublicationStage {
@@ -54,6 +58,8 @@ pub enum StoragePublicationError {
     ConsumptionDocument,
     #[error("local injected consumption interruption at {0:?}")]
     ConsumptionInterrupted(ConsumptionStage),
+    #[error("local injected Starting intent interruption at {0:?}")]
+    StartingInterrupted(StartingStage),
 }
 pub(crate) struct PublicationStorage<'storage> {
     pub(crate) empty: OriginalEmptyReservationFence<'storage>,
@@ -64,6 +70,9 @@ pub(crate) struct PublicationStorage<'storage> {
     consumption_started: bool,
     consumption_acknowledged: bool,
     consumption_documents: [Option<ConsumptionDocument>; 2],
+    starting_document: Option<ConsumptionDocument>,
+    starting_attempted: bool,
+    starting_acknowledged: bool,
 }
 impl<'storage> PublicationStorage<'storage> {
     pub(crate) fn new(empty: OriginalEmptyReservationFence<'storage>) -> Self {
@@ -76,6 +85,9 @@ impl<'storage> PublicationStorage<'storage> {
             consumption_started: false,
             consumption_acknowledged: false,
             consumption_documents: [None, None],
+            starting_document: None,
+            starting_attempted: false,
+            starting_acknowledged: false,
         }
     }
     pub(super) fn from_attempt(

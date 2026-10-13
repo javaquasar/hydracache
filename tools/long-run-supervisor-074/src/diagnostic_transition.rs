@@ -4,7 +4,7 @@ use super::{
     DiagnosticStopReason as Reason, CONTROLLER_LOSS_SECONDS, NS, TOTAL_SECONDS,
 };
 
-pub(super) fn validate_transition(
+pub(crate) fn validate_transition(
     previous: &DiagnosticState,
     next: &DiagnosticState,
 ) -> Result<(), DiagnosticError> {
