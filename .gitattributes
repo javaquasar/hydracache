@@ -144,3 +144,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-process-crash-*/*.log -text 
 docs/testing/performance/0.74/local-runs/diagnostic-process-crash-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-transition-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-transition-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-early-attempt-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-early-attempt-*/manifest.json -text

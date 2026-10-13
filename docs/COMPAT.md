@@ -1,5 +1,18 @@
 # HydraCache Compatibility Register
 
+Early diagnostic attempt retention adds only `diagnostic-attempt-074.json` to
+the bound fixed intent leaf. It reuses canonical LF-terminated
+`diagnostic-retained-intent-074-v1`, its 16384-byte limit and initial Reserved
+record fields; it is not cell-one consumption. The original exclusively created
+file is sealed 0400 and acknowledged only after file/directory sync and final
+original authority/object checks. No new schema, commit marker or persisted
+acknowledgement is introduced. Old empty-fence and fixed campaign-admission
+readers refuse any retained leaf context. Partial, uncertain and complete
+attempts block fresh reservation and cannot be adopted, repaired or replayed.
+No downgrade or deletion with unresolved context; a reviewed owned progression
+protocol is still required. Existing state/cell publishers and readers are
+unchanged. See [early attempt design](testing/performance/0.74/diagnostic-early-attempt-local-design.md).
+
 The local diagnostic schema-1 publisher now checks adjacent state transitions
 under its existing transaction fence before writing. Revision must advance by
 exactly one; lease/boot/build/origin, original active-cell start/inode and stop

@@ -10327,3 +10327,90 @@ fn diagnostic_transition_contract_keeps_fixed_execution_closed() {
             .unwrap();
     assert!(!server.contains("validate_transition"));
 }
+
+#[test]
+fn diagnostic_early_attempt_contract_requires_retention_not_replay() {
+    let c = contract("diagnostic-early-attempt-local-contract.toml");
+    for key in [
+        "original_fixed_intent_and_empty_fence_required",
+        "full_initial_state_matches_before_io",
+        "descriptor_relative_exclusive_creation",
+        "only_created_original_is_sealed",
+        "exact_owned_namespace_and_partial_bytes_required",
+        "file_directory_sync_before_acknowledgement",
+        "original_authority_brackets_every_boundary",
+        "failure_retains_original_lock_until_drop",
+        "safe_original_refusal_bridge_only",
+        "retained_attempt_blocks_fresh_reservation",
+        "before_create_is_unadmitted_not_consumed",
+        "recovered_bytes_cannot_recreate_runtime_ack",
+        "real_owned_sigkill_matrix_required",
+        "actual_process_interruption_checked",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "new_record_schema",
+        "global_nonce_protection",
+        "fixed_progression_integration_implemented",
+        "later_fixed_cells_implemented",
+        "authenticated_peer_or_clock",
+        "machine_power_loss_proved",
+        "host_reboot_proved",
+        "positive_host_enrollment_proved",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["attempt_stages"].as_integer(), Some(8));
+    assert_eq!(c["crash_cases_per_repeat"].as_integer(), Some(9));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs"),
+    )
+    .unwrap();
+    let storage = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "O_EXCL",
+        "sync_all()",
+        "libc::fchmod",
+        "0o400",
+        "diagnostic-attempt-074.json",
+        "inspect(parent(self.empty.storage)?)",
+        "BeforeCreate",
+        "Acknowledging",
+    ] {
+        assert!(storage.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "O_TRUNC",
+        "remove_file",
+        "fs::rename",
+        "pub fn start",
+        "pub fn state(",
+        "pub fn path(",
+        "pub fn file(",
+        "impl Clone",
+        "std::process",
+        "set_permissions",
+    ] {
+        assert!(
+            !source.contains(forbidden) && !storage.contains(forbidden),
+            "{forbidden}"
+        );
+    }
+    assert!(source.contains("original.reader.pins.matches_state(check.state)"));
+    assert!(source.contains("bind_fixed_empty_fenced_intent"));
+    assert!(source.contains("persist_with(RefusalReason::Policy"));
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("early_attempt"));
+}

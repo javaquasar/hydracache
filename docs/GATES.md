@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+The W11 early-attempt process-loss proof is registered separately as
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-all-stages-and-post-return`.
+Its ignored/manual nonroot Linux test checks nine exact owned SIGKILL cases and
+one uninterrupted control; ordinary fast tests do not run it. Retained context
+cannot authorize restart or execution. See the
+[local contract](testing/performance/0.74/diagnostic-early-attempt-local-design.md).
+
 This is the single map of every gate that guards `main`, and the one command to run
 the fast gates locally. **Enforcement lives in code/CI, not in prose**: a rule that
 is not in a gate here is not enforced. Fast CI gates and the local

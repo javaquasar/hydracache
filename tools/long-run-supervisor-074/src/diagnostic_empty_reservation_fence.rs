@@ -1,4 +1,6 @@
 //! Existing common fence before initial state; no publication/write capability.
+#[path = "diagnostic_early_attempt_storage.rs"]
+pub(crate) mod attempt_storage;
 #[path = "diagnostic_reservation_publication_storage.rs"]
 pub(crate) mod publication_storage;
 use super::super::super::{

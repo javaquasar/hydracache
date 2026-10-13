@@ -25,6 +25,9 @@ mod initial_consumption_tests;
 #[path = "diagnostic_process_crash_tests.rs"]
 mod process_crash_tests;
 
+#[path = "diagnostic_early_attempt_tests.rs"]
+mod early_attempt_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,
