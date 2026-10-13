@@ -148,4 +148,3 @@ w11 = next(w for w in expected_registry["work_item"] if w["id"] == "W11")
 w11["required_artifacts"].extend("docs/testing/performance/0.74/local-runs/diagnostic-signed-history-20261013/" + name for name in ("README.md", "manifest.json", "verify_packet.py"))
 require(actual_registry == expected_registry, "W11 scoped evidence-only registry addition")
 print("PASS: anchored signed history inspection; 33 primary logs and two supplemental captures; three exact-source repeats; no execution or qualification")
-
