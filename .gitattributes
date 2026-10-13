@@ -160,3 +160,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-context-replay-*/*.log -text
 docs/testing/performance/0.74/local-runs/diagnostic-context-replay-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-completion-boundary-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-completion-boundary-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-collector-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-collector-*/manifest.json -text

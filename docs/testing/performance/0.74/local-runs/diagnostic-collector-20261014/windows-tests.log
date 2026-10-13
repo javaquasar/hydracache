@@ -1,0 +1,36 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 4.30s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 28 tests
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+

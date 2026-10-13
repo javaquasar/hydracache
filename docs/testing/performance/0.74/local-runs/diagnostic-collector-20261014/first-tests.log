@@ -1,0 +1,35 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 15.40s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 14 tests
+test diagnostic_collector::tests::collector_concurrent_creation_has_exactly_one_original_owner ... ok
+test diagnostic_collector::tests::collector_creation_faults_retain_partial_attempt_and_deny_replay ... ok
+test diagnostic_collector::tests::collector_early_finish_consumes_owner_retains_files_without_retry ... ok
+test diagnostic_collector::tests::collector_empty_requires_actual_eof_on_both_streams ... ok
+test diagnostic_collector::tests::collector_exact_ceiling_needs_eof_and_one_extra_byte_refuses ... ok
+test diagnostic_collector::tests::collector_fragmentation_seed_0750_preserves_exact_bytes_and_hashes ... ok
+test diagnostic_collector::tests::collector_invalid_limits_never_create_attempt ... ok
+test diagnostic_collector::tests::collector_leaked_pipe_writer_blocks_eof_and_can_append_late_bytes ... ok
+test diagnostic_collector::tests::collector_metadata_and_named_replacements_refuse_sticky ... ok
+test diagnostic_collector::tests::collector_paths_and_unsafe_roots_refuse_before_creation ... ok
+test diagnostic_collector::tests::collector_pipes_are_cloexec_with_blocking_writers_and_nonblocking_readers ... ok
+test diagnostic_collector::tests::collector_poll_all_65536_masks_refuse_unknown_events ... ok
+test diagnostic_collector::tests::collector_same_length_content_mutation_refuses ... FAILED
+test diagnostic_collector::tests::collector_write_and_finish_faults_never_return_receipt ... ok
+
+failures:
+
+---- diagnostic_collector::tests::collector_same_length_content_mutation_refuses stdout ----
+
+thread 'diagnostic_collector::tests::collector_same_length_content_mutation_refuses' (433) panicked at tools/long-run-supervisor-074/src/diagnostic_collector_tests.rs:180:5:
+assertion failed: c.pump().is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    diagnostic_collector::tests::collector_same_length_content_mutation_refuses
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 615 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

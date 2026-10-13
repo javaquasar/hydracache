@@ -7476,3 +7476,66 @@ pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests
 three repetitions, including foreign-descendant refusal. Scoped process tests
 pass 103, diagnostic integrations 65 and Linux doctests 55. These results verify
 the observation boundary, not an enrolled producer for P1 completion.
+
+### A sole collector writer and the pipe EOF boundary
+
+The next P2/P3 question was not whether the leader had exited, but who could still
+modify its evidence. The old diagnostic unit appends stdout and stderr directly
+to regular files in a worker-owned directory. Killing its cgroup cannot exclude
+an outside holder of an already-open writable descriptor: the
+[kernel cgroup contract](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+limits `cgroup.kill` to the affected subtree. Making the pathname
+read-only does not revoke that descriptor on the selected local filesystem.
+A terminal process observation therefore cannot establish immutable output.
+
+The operator approved a different ownership model on 2026-10-14: the worker
+receives only pipe write ends, while a root-owned collector alone holds the
+evidence-file write descriptors in a private directory. This is an execution
+contract change, not a throughput proposal. Historical regular-file stream
+bindings and signed unit projections remain intact; an enrolled start must use
+a distinct pipe-to-collector projection, not reinterpret the old signature.
+
+The first implementation is an executable local writer, with only a nonroot
+fixture entry. It creates an exclusive attempt and two new evidence files,
+keeps the read ends nonblocking and the worker ends blocking, and pumps at most
+8192 bytes per stream per turn. The existing 8 MiB per-stream and 16 MiB combined
+limits remain fixed. Overflow keeps a bounded prefix and returns failure, not
+a successful receipt with a conveniently truncated report. Neither evidence-file
+descriptors nor a production-start capability leave the collector.
+
+Both streams must yield a real zero-length read after queued bytes drain.
+The [Linux pipe contract](https://man7.org/linux/man-pages/man7/pipe.7.html)
+requires all write-end references to close before read EOF.
+Readable hangup, an empty queue and a dead leader are not substitutes. An owned
+cat fixture is actually killed with SIGKILL while another holder retains a copy
+of its stdout pipe writer. EOF remains absent, and that holder can append late
+bytes. Closing the last copy permits drain and the late bytes enter the exact
+hash. The test demonstrates why every writer copy, including creator or manager
+copies, matters. It does not prove production cgroup ownership or revocation.
+
+The first functional run also rejected a metadata-only assumption. A same-length
+file rewrite on the WSL workspace filesystem did not reliably change the
+observed timestamps. The collector now rereads the original retained files in
+bounded chunks and compares their byte counts and SHA-256 with incremental
+stream hashes before acknowledgement. It syncs the files, converts them to
+read-only, validates the named objects again, syncs the directory and explicitly
+closes its descriptors. This extra I/O must be measured under the existing host
+overhead budget later; correctness success is not evidence that it is cheap.
+
+The local fault matrix covers directory and stream creation/sync, append,
+read-only conversion/sync, final directory sync, close, acknowledgement and
+loss after return. Three exact-source repetitions each interrupt 15 original
+collectors with SIGKILL, retain one uninterrupted control and run 32 fresh
+refusal inspections. Retained bytes and metadata do not change after the owner
+dies. No reopened attempt regains a writer or acknowledgement, even when its
+files look complete. Logical I/O-fault injection remains a separate test family;
+neither family claims physical power-loss durability.
+
+The [collector contract](../testing/performance/0.74/diagnostic-collector-design.md)
+keeps drain data distinct from authenticated completion. The production root
+constructor, kernel sender/time admission, independent issuer and authority
+pins, exact original-start binding, autonomous watchdog and retained-cgroup
+revocation still need connection. Only their joined evidence can publish
+completion, advance cells two through four and admit a host lifecycle rehearsal.
+No product hot path, frozen workload, estimator, threshold or qualification
+input changes in this package.

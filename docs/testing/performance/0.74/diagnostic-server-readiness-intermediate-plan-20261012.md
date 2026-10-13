@@ -69,6 +69,14 @@ root-owned evidence-file writer. Old signed projections remain unchanged. Local
 collector drain is a prerequisite, not authenticated completion or cgroup
 revocation; original start and trusted admission must still join the result.
 
+Implementation `186d30bab68ce541050c8c638c047bdc49021086` adds the bounded
+pipe-to-file writer with a nonroot fixture entry; see its
+[EOF and process-loss evidence](local-runs/diagnostic-collector-20261014/README.md).
+It retains partial attempts and returns local drain data only after both kernel
+EOFs, retained byte/hash reconciliation, sync and explicit descriptor close.
+Root enrollment, the new signed projection, trusted admission, original start
+and watchdog/cgroup revocation are still open. No fixture result advances P1.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

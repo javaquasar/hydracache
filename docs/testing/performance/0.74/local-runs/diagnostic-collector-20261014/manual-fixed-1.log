@@ -1,0 +1,25 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 17.13s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+seed=0x0750 checkpoint=DirectoryCreated actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=Directory actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StdoutCreated actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StdoutSynced actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StderrCreated actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StderrSynced actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=Write actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StdoutSync actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=StderrSync actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=Readonly actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=ReadonlySynced actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=DirectorySync actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=Close actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=Acknowledge actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 checkpoint=AfterReturn actual_sigkill=1 fresh_refusals=2 unchanged_retention=true
+seed=0x0750 sigkill_cases=15 controls=1 fresh_refusals=32 all_owned_helpers_reaped=true production_authority=false
+test diagnostic_collector::crash_tests::collector_owned_sigkill_matrix_retains_without_replay ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 635 filtered out; finished in 0.22s
+

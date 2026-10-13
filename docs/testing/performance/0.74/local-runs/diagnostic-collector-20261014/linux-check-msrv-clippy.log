@@ -1,0 +1,22 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 11.83s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 10.71s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: the loop variable `index` is used to index `writers`
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_tests.rs:149:18
+    |
+149 | ...in 0..2 {
+    |       ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+149 -     for index in 0..2 {
+149 +     for (index, <item>) in writers.iter().enumerate() {
+    |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

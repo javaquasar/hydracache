@@ -1,5 +1,19 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [collector amendment](diagnostic-collector-design.md), approved 2026-10-14,
+keeps worker output in pipes and reserves future evidence-file writing for a
+root-owned collector. The local implementation now moves real pipe bytes into
+exclusive bounded files, requires both actual read EOFs, reconciles retained
+hashes, syncs and closes before returning fixture drain data. It cannot start an
+installed unit, revoke a cgroup or publish completion. Trusted kernel admission,
+independent production issuer/pins, the new signed projection and authenticated
+original-start/watchdog producer remain P2/P3 prerequisites. Historical direct
+output contracts and frozen qualification inputs are unchanged.
+The [local packet](local-runs/diagnostic-collector-20261014/README.md) pins
+implementation `186d30ba` and 39 raw captures, including development failures,
+three fast repeats and three actual owned SIGKILL matrices. It is not a
+production-enrollment receipt or numerical product evidence.
+
 The [intermediate diagnostic-server plan](diagnostic-server-readiness-intermediate-plan-20261012.md)
 records the approved P0 process-loss checks, P1 fixed lifecycle, P2 trusted inputs,
 P3 execution/watchdog/cleanup, P4 reviewed host installation and P5 nonproduct
