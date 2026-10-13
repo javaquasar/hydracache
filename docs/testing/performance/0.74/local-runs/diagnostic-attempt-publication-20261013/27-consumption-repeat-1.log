@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized] target(s) in 1.87s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_consumption_all_stages_and_post_return ... P0 seed=0x074d stages=15
+P1 case=attemptconsumption:DirectorySynced terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:RecordSealed terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:CommitBytesWritten terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:BeforeCommit terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:BeforeRecord terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:CommitSealed terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:Acknowledging terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:CommitPrefixWritten terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:CommitSynced terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:AfterReturn terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:RecordPrefixWritten terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:RecordSynced terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:CommitCreated terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:RecordCreated terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:RecordBytesWritten terminated=SIGKILL signal=9 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+P1 case=attemptconsumption:AfterReturn terminated=control signal=0 fresh_processes=2 retained=unchanged original_lock=released helper=terminal
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 560 filtered out; finished in 265.66s
+

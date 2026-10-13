@@ -7061,3 +7061,58 @@ Windows passes 204, root contracts 163 and Linux compile-fail doctests 41.
 Current/MSRV, warnings-denied lint/Rustdoc, format and documentation checks pass.
 These results establish local refusal/retention behavior, not throughput,
 allocation savings, host power-loss durability or production readiness.
+
+## Moving the original attempt into state publication
+
+The next P1 step connects the accepted attempt to Reserved without treating
+surviving bytes as a new acknowledgement. The
+[transfer contract](../testing/performance/0.74/diagnostic-attempt-publication-local-design.md)
+requires a consuming API: the caller loses the original early-attempt guard,
+and the publisher receives its existing fence and original sealed descriptor,
+stamp and expected bytes. No lock is released/reacquired and no file is opened
+to reconstruct trusted state. Opens during revalidation compare names with the
+already owned descriptor rather than adopting a replacement.
+
+This distinction also governs the namespace. A general allowlist of
+`diagnostic-attempt-074.json` would let an unrelated same-name file survive
+admission. Instead the name is permitted only while its original document is
+held and revalidated. Publication first requires exactly the owned attempt,
+then attempt plus its exclusively created initial state. The cell-one consumer
+inherits the same document and checks it throughout record/commit publication.
+Attempt bytes, inode, ownership, mode, link count and mtime/ctime cannot drift;
+unknown objects or legacy campaign context still refuse.
+
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-attempt-publication-20261013/README.md)
+tests normal ownership transfer, unbound mismatch without revocation, partial
+state retention, late targets, original-object/intent drift and refusal
+uncertainty. It also confirms that unacknowledged internal storage cannot mint a
+publisher and that the legacy publisher does not adopt an attempt filename.
+Actual SIGKILL phases cover both state publication and cell-one continuation,
+including death after each return. Before state creation, the original accepted
+attempt already blocks fresh reservation; all fresh inspection remains read-only.
+
+Clippy rejected the original internal failure representation because it returned
+256 bytes by value. A Box now retains that exact original storage only on the
+failure path, with no altered ownership rule or lint suppression. An older
+source-level guard also required the explicit legacy `only_state` call; the
+call remains explicit in that branch rather than weakening the legacy check.
+These structural corrections are retained as negative observations, not
+allocation or throughput wins.
+
+No durable format or filename changes, and the state remains initial Reserved.
+This completes only the early-attempt-to-initial-state/cell-one connection.
+Fixed cells two through four, signed state/history progression and incomplete/
+reboot semantics remain open. Caller outcomes are not proof of writer cessation
+or an empty cgroup; production inputs, execution/watchdog/cleanup and dedicated
+host rehearsal still precede activation. Product qualification and shipping
+remain separate closed boundaries.
+
+At the frozen source, all fourteen functional cases pass in three repeats.
+Each process repeat passes twenty-four SIGKILL cases and two controls, with
+fifty-two fresh read-only inspections. The full prior-phase regression passes
+six manual tests, covering fifty-seven signal cases and five controls. Scoped
+Linux regression passes 633 with seven manual/host cases ignored; Windows
+passes 204, root contracts 164, and Linux compile-fail doctests 43. Current/MSRV,
+warnings-denied lint/Rustdoc, format and docs checks pass. These are local
+ownership/retention/refusal observations, not throughput, allocation, host
+durability or production-readiness claims.

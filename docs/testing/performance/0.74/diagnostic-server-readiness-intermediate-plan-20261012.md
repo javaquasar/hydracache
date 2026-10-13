@@ -174,3 +174,18 @@ cells without reopening/adoption or weaker original bindings. Signed history,
 incomplete-attempt handling and reboot semantics remain before P2 through P5.
 No fixed execution route, server operation, product candidate or qualification
 input is opened or changed.
+
+## P1 Owned attempt transfer to initial state
+
+Implementation `6363ab7c80efd2af6524a153f56b4ab8db9d12b7` connects the original
+acknowledged attempt to initial Reserved and existing cell-one retention.
+See the [transfer contract](diagnostic-attempt-publication-local-design.md) and
+[exact-source packet](local-runs/diagnostic-attempt-publication-20261013/README.md).
+Original attempt descriptor/stamp/bytes, authority borrow and fence survive the
+consuming transfer; no lock gap, recovered-file adoption or new schema is added.
+Cell-one namespace checks retain and revalidate the inherited original.
+
+P1 remains open. Fixed cells two through four need signed next-state/history
+rules and owned progression, including incomplete/reboot refusal. This package
+does not authenticate caller outcomes or time, establish writer cessation/empty
+cgroup, or open execution, installed-host rehearsal or qualification.

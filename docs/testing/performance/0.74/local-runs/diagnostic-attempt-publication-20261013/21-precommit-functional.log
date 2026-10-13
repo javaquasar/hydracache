@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 14.52s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 15 tests
+attempt publication seed=0x074d
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_already_refused_guard_retains_attempt_without_new_io ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_cell_one_refuses_changed_attempt_before_record_creation ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_expired_or_changed_original_intent_does_not_write_state ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_healthy_transfer_and_cell_one_conserve_original_attempt ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_attempt_drift_during_publication_is_sticky ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_legacy_publisher_refuses_unowned_attempt_filename ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_independent_concurrent_chains_preserve_separate_ownership ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_unacknowledged_storage_cannot_mint_publication ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_late_target_is_never_adopted_or_overwritten ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_unbound_mismatch_keeps_owned_attempt_without_revocation ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_partial_refusal_preserves_original_error ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_publication_all_stages_and_post_return ... ignored, manual local nonroot Linux owned attempt-to-Reserved SIGKILL proof, no product workload
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_unknown_or_legacy_context_is_retained_not_repaired ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_unsafe_or_advanced_authority_is_not_appended ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::attempt_publication_tests::attempt_publication_all_boundaries_keep_attempt_lock_and_partial_state ... ok
+
+test result: ok. 14 passed; 0 failed; 1 ignored; 0 measured; 546 filtered out; finished in 46.00s
+

@@ -2772,3 +2772,21 @@ connected to state publication, later cells or a production route. The next
 P1 step must transfer the owned guard without reopening or replacing the
 original authority, intent, fence or retained attempt. Trusted inputs,
 execution/watchdog/cleanup, installed-host rehearsal and qualification remain.
+
+## Owned early attempt through initial state and cell one
+
+The [transfer API](diagnostic-attempt-publication-local-design.md) now consumes
+the acknowledged original attempt, moving its sealed descriptor and common
+fence into Reserved publication without unlock or path-based adoption.
+Namespace checks permit only the inherited original attempt plus the actual
+owned state/cell-one objects. The existing consumer preserves the attempt
+through its record/commit publication. Schema/filenames and initial state are
+unchanged; legacy publishers still refuse unowned attempt context.
+
+The [local packet](local-runs/diagnostic-attempt-publication-20261013/README.md)
+separates functional, actual process-loss and prior-phase regression evidence.
+Fresh reservation refuses even before state creation because the acknowledged
+attempt already exists. Surviving records cannot recreate a runtime guard.
+Fixed cells two through four and signed state/history progression remain P1
+work; trusted inputs, execution/cleanup and host/qualification admission remain
+closed.
