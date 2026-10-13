@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized] target(s) in 1.91s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 1 test
+test diagnostic_process::terminal::tests::terminal_process_owned_leader_exit_does_not_stop_descendant_writer ... P1 terminal seed=0x074f leader=SIGKILL signal=9 original_pidfd=terminal descendant=live post_exit_write=observed descendant_after_control_eof=terminal completion_authority=absent
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 614 filtered out; finished in 0.01s
+

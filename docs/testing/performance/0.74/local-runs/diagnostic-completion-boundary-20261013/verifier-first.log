@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\diagnostic-completion-boundary-20261013\verify_packet.py", line 74, in <module>
+    assert passed(logs["linux-integrations"]) == 52
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

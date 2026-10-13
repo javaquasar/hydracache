@@ -7411,3 +7411,68 @@ The separate nine-proof regression passes 78 SIGKILL cases, eight controls and
 a regression group, not additional samples merged into the three targeted
 repetitions. The next P1 boundary is authenticated completion and later fixed
 cells; actual reboot semantics and P2 through P5 remain open.
+
+## Original process exit does not prove cell completion
+
+The completion contract needs more than a plausible terminal state. The owner
+must bind its acknowledged Starting record and exact signed intent to the
+authenticated original executable, environment, streams, generation and cgroup.
+Successful output validation, original exit status, revocation of all writers
+and emptiness of the original owned cgroup must precede a completion
+acknowledgement. A signature over caller assertions does not establish those
+facts, and a fresh reader cannot recover the dead owner's acknowledgement.
+
+The [completion boundary design](../testing/performance/0.74/diagnostic-completion-boundary-local-design.md)
+exposes a dependency in the implementation sequence. FixedStartingIntentRead
+retains the first intent but has no authenticated start producer.
+LiveExecutionRead checks consistency only; TreeSnapshot.empty_at_read is an
+observation, not revocation. Authenticated P1 outcome therefore depends on P2
+trusted admission and the P3 original-start/writer-revocation producer. Changing
+the state validator or appending a Completed record cannot fill that gap.
+
+ProcessRead now has a strict read-only terminal observer. It uses only the
+original zero-flag pidfd, checks retained/named procfs root and boot before and
+after one nonblocking poll, and revalidates the original generation if no event
+is present. Exactly three terminal masks are recognized: POLLIN, POLLHUP and
+their union. Unknown bits, inconsistent counts and observation failures refuse.
+After exit it does not open a replacement /proc/PID, signal, reap or write.
+Its generation is cached original-pin data, not proof of final cgroup membership;
+its terminal view contains no successful outcome or release capability.
+
+The [Linux manual](https://man7.org/linux/man-pages/man2/pidfd_open.2.html)
+describes exit and hangup readiness for the retained process. It does not extend
+that notification to descendants. The local manual fixture holds pidfds for
+both an owned Python leader and its descendant, then kills only the leader.
+After signal-nine death and a terminal original pidfd, the descendant still
+responds to its retained control pipe and writes to stdout. Three same-source
+repetitions observe that post-exit write. Only explicit control EOF terminates
+the descendant; this is fixture cleanup, not production cgroup-release proof.
+The hypothesis that leader exit alone establishes writer cessation is rejected.
+
+The fixture does not trust the child-supplied numeric PID as ownership. Kernel
+PPid is checked between both retained generation checks before the descendant
+is placed in the signal cleanup set. A separate negative test keeps two owned
+but unrelated processes alive and rejects adopting either as the other's child.
+The control pipe remains independent of leader wait until explicit closure,
+so leader cleanup does not silently stop the writer and mask the counterexample.
+
+The first fast run retained a separate negative result: two tests expected
+hangup immediately after owner wait, but WSL kernel 6.6.87.2 continued returning
+readable exit. Owner wait and exact readiness are now checked independently;
+the accepted masks and error refusals are unchanged. Synthetic masks exercise
+hangup classification without pretending that this kernel supplied a hangup.
+All 65536 masks are covered, along with first-error ordering, late boot drift,
+live-generation refusal, actual graceful/SIGKILL exit and replacement exclusion.
+
+No new persistent write boundary is added. The old Starting publication
+regression passes nine SIGKILL cases, one control and twenty fresh inspections.
+Later-cell publication, authenticated outcome and new completion-boundary
+SIGKILL/lost-acknowledgement matrices remain implementation work after the
+original-start producer is connected. Product hot paths and frozen numerical
+qualification inputs remain unchanged.
+
+The [exact-source packet](../testing/performance/0.74/local-runs/diagnostic-completion-boundary-20261013/README.md)
+pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
+three repetitions, including foreign-descendant refusal. Scoped process tests
+pass 103, diagnostic integrations 65 and Linux doctests 55. These results verify
+the observation boundary, not an enrolled producer for P1 completion.

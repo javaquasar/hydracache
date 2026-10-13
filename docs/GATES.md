@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+W11 terminal-process evidence has an ignored/manual nonroot Linux gate:
+`tool.hydracache-long-run-supervisor-074.terminal-process-owned-leader-exit-does-not-stop-descendant-writer`.
+It owns both fixture pidfds, kills only the leader and proves an actual
+descendant stream write afterward. Its 180-second budget is separate from the
+unchanged prior process-loss gates. This is a false-completion refusal proof,
+not cgroup emptiness or resource-release authority.
+
 W11 fresh-reader context replay has one ignored/manual Linux gate:
 `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-context-replay-refuses-after-loss`.
 It inspects eight explicit profiles after six owned SIGKILL cases and one

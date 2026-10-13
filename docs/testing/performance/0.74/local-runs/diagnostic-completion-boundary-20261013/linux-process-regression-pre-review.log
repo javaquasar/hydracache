@@ -1,0 +1,119 @@
+    Finished `test` profile [unoptimized] target(s) in 4.44s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 103 tests
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_open_failure_stops_and_never_reopens ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_every_read_failure_preserves_credential_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_open_and_read_orders_are_distinct ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_invalid_private_open_state_refuses_without_reopening ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_exit_latches_both_and_constructor_refuses ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_binding_reader_refusal_reaches_all_owned_guards ... oknamespace credential mutation seed=0x
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... 74f2026ok
+
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_wrong_policy_and_unhardened_helper_refuse ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_original_mount_adapter_refuses_either_component_and_exit ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_pre_refused_component_latches_the_other ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_seeded_first_error_and_stage_are_sticky ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_status_substitution_restoration_cannot_refresh ... ok
+test diagnostic_process::credentials::tests::credential_observation_order_and_bounding_drift_are_sticky ... ok
+test diagnostic_process::credentials::tests::active_capabilities_and_missing_no_new_privs_refuse ... ok
+test diagnostic_process::credentials::tests::credential_policy_is_nonroot_canonical_and_bounded ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_policy_matching_requires_original_projection_and_both_guards ... ok
+test diagnostic_process::credentials::tests::every_observation_failure_stops_and_preserves_first_error ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_concurrent_owned_readers_have_independent_refusal ... ok
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_owned_original_reads_and_numeric_api_stay_separate ... ok
+test diagnostic_process::credentials::tests::every_uid_gid_slot_and_leader_identity_are_checked ... ok
+test diagnostic_process::credentials::namespace_checked::tests::signed_status_private_opener_defers_projection_until_revalidation ... okcredential mutation seed=0x
+74c2026
+test diagnostic_process::credentials::tests::independent_credential_guards_keep_refusal_and_assertions_separate ... ok
+test diagnostic_process::credentials::tests::original_helper_exit_permanently_refuses_without_replacement ... ok
+test diagnostic_process::credentials::tests::original_status_descriptor_substitution_latches_even_after_restoration ... ok
+test diagnostic_process::credentials::tests::owned_helper_wrong_assertions_and_unhardened_status_refuse ... ok
+test diagnostic_process::credentials::tests::second_status_drift_cannot_update_original_projection ... ok
+test diagnostic_process::credentials::tests::owned_no_new_privs_helper_binds_original_status_and_parallel_reads ... ok
+test diagnostic_process::credentials::tests::status_numeric_tokens_and_group_limits_fail_closed ... ok
+test diagnostic_process::credentials::tests::status_projection_ignores_nonutf8_name_but_checks_all_credentials ... ok
+test diagnostic_process::credentials::tests::status_projection_refuses_missing_duplicate_and_malformed_fields ... ok
+test diagnostic_process::credentials::tests::status_zero_leader_nul_separator_and_full_group_boundary_refuse_or_bind_exactly ... ok
+test diagnostic_process::io::tests::fdinfo_required_fields_are_unique_strict_and_bounded ... ok
+test diagnostic_process::credentials::tests::seeded_single_field_mutations_never_adopt_changed_credentials ... ok
+test diagnostic_process::io::tests::object_binding_does_not_certify_output_pathnames ... ok
+test diagnostic_process::io::tests::observed_shrink_budget_and_exit_are_sticky ... ok
+test diagnostic_process::io::tests::original_exe_and_append_outputs_accept_growth_without_shared_seek ... ok
+test diagnostic_process::io::tests::outputs_require_append_regular_single_link_mode_and_bounded_length ... ok
+test diagnostic_process::io::tests::worker_fixture ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_every_first_error_stops_with_original_type ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_constructor_refuses_dead_original_generation ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_guard_is_neither_send_nor_sync ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_identity_drift_never_adopts_device_or_inode ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_named_directory_pin_drift_cannot_refresh ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_observer_tid_drift_precedes_dead_process_and_bad_fd ... ok
+test diagnostic_process::io::tests::wrong_exe_alias_swapped_outputs_and_writable_expectations_refuse ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_distinct_identity_check_is_not_initial_host_attestation ... ok
+test diagnostic_process::io::tests::same_generation_append_flag_and_nonregular_fd_drift_refuse ... ok
+test diagnostic_process::io::tests::same_generation_fd_retarget_and_exec_refuse_original_objects ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_concurrent_readers_construct_on_own_threads ... mount namespace mutation seed=0xok
+7582026; mutations=256
+test diagnostic_process::io::tests::parallel_original_io_readers_allow_concurrent_append_without_seeking ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_order_brackets_both_observations_with_generation ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_original_directory_substitution_cannot_restore ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_owned_exit_refuses_despite_retained_namespace ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_owned_roundtrip_readonly_flags_and_healthy_drop ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_prior_refusal_and_foreign_thread_never_observe ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_type_is_kernel_checked_not_link_text ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_seeded_failure_and_identity_are_sticky ... ok
+test diagnostic_process::terminal::tests::terminal_process_late_boot_drift_and_unknown_poll_never_become_exit ... ok
+terminal-mask exhaustive=65536 accepted=3 unknown_or_inconsistent=refused
+test diagnostic_process::terminal::tests::terminal_process_actual_sigkill_reports_readiness_not_successful_outcome ... ok
+test diagnostic_process::mount_namespace::tests::mount_namespace_wrong_objects_and_restoration_latch ... ok
+test diagnostic_process::terminal::tests::terminal_process_actual_graceful_exit_reap_and_replacement_stay_separate ... ok
+test diagnostic_process::terminal::tests::terminal_process_no_event_requires_original_live_generation ... ok
+test diagnostic_process::terminal::tests::terminal_process_owned_leader_exit_does_not_stop_descendant_writer ... ignored, manual local nonroot owned leader/descendant exit proof; no product workload or cgroup authority
+test diagnostic_process::terminal::tests::terminal_process_sequence_preserves_first_error_without_late_reads ... ok
+test diagnostic_process::terminal::tests::terminal_process_poll_masks_exhaustive_fail_closed ... ok
+test diagnostic_process::tests::bounded_document_reads_accept_limit_and_refuse_overflow_or_empty ... ok
+test diagnostic_process::tests::every_read_poll_failure_and_terminal_state_refuses_without_retry ... ok
+test diagnostic_process::tests::diagnostic_scope_refuses_foreign_prefix_boot_and_depth ... ok
+test diagnostic_process::tests::local_nonproduct_helper_exit_cannot_recapture_original_generation ... ok
+test diagnostic_process::tests::local_self_pidfd_and_original_proc_descriptors_revalidate ... ok
+test diagnostic_process::tests::one_positional_read_never_splices_a_regenerated_document_tail ... ok
+test diagnostic_process::tests::original_generation_group_cgroup_and_boot_drift_never_refresh ... ok
+test diagnostic_process::tests::pidfd_namespace_mapping_is_exact_and_missing_or_dead_is_refused ... ok
+test diagnostic_process::tests::parallel_readonly_revalidation_has_no_shared_seek_offset ... ok
+test diagnostic_process::tests::single_read_budget_empty_error_and_declared_size_fail_closed ... ok
+test diagnostic_process::tests::seeded_stat_generations_keep_identity_fields_exact ... ok
+test diagnostic_process::tests::stat_dead_unknown_malformed_and_overflow_documents_fail_closed ... ok
+test diagnostic_process::tests::stat_identity_handles_comm_bytes_and_ignores_changing_counters ... ok
+test diagnostic_process::tests::synthetic_documents_cannot_pass_procfs_gate_and_substitution_is_detected ... ok
+test diagnostic_process::tests::unified_cgroup_is_single_canonical_and_bounded ... ok
+test diagnostic_process::user_namespace::tests::namespace_bracket_is_generation_namespace_generation_namespace_generation ... ok
+test diagnostic_process::user_namespace::tests::namespace_every_failure_preserves_first_error_and_stops_reads ... ok
+test diagnostic_process::user_namespace::tests::namespace_constructor_refuses_original_process_after_exit ... ok
+test diagnostic_process::user_namespace::tests::namespace_identity_comparison_refuses_actual_distinct_objects ... ok
+test diagnostic_process::user_namespace::tests::namespace_mismatch_at_each_namespace_read_cannot_refresh ... oknamespace mutation seed=0x
+74e2026
+test diagnostic_process::user_namespace::tests::namespace_concurrent_original_guards_do_not_share_refusal ... ok
+test diagnostic_process::user_namespace::tests::namespace_original_directory_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_descriptor_substitution_and_restoration_stays_refused ... ok
+test diagnostic_process::user_namespace::tests::namespace_owned_exit_refuses_even_though_namespace_fd_survives ... ok
+test diagnostic_process::user_namespace::tests::namespace_real_wrong_type_and_ordinary_files_refuse ... ok
+task-set modeled seed=0xtest diagnostic_process::user_namespace::tests::namespace_seeded_valid_inode_mutations_are_not_adopted ... ok7612026; schedules=256
+
+test diagnostic_process::user_namespace::tests::namespace_owned_original_and_reader_match_repeatedly ... ok
+test diagnostic_process::worker_tasks::tests::task_set_directory_records_are_strict_bounded_and_sorted ... ok
+test diagnostic_process::worker_tasks::tests::task_set_enumeration_has_no_retry_and_exact_call_budget ... ok
+test diagnostic_process::worker_tasks::tests::task_set_is_neither_send_nor_sync ... oktask directory modeled seed=0x
+test diagnostic_process::worker_tasks::tests::task_set_order_first_failure_and_seeded_refusal_are_exact ... 7622026; mutations=512
+ok
+test diagnostic_process::worker_tasks::tests::task_set_status_checks_tgid_all_slots_groups_capabilities_and_nnp ... ok
+test diagnostic_process::worker_tasks::tests::task_set_seeded_directory_mutations_never_panic_or_accept_a_selector ... ok
+test diagnostic_process::worker_tasks::tests::task_set_concurrent_independent_readers_share_no_latch ... ok
+task membership add=true: Err(Drift)
+test diagnostic_process::worker_tasks::tests::task_set_retained_substitution_namespace_type_and_thread_drift_refuse ... ok
+test diagnostic_process::worker_tasks::tests::task_set_original_exit_and_dead_construction_never_adopt_replacement ... ok
+task membership add=false: Err(Drift)
+test diagnostic_process::worker_tasks::tests::task_set_real_single_and_multiple_tasks_remain_original_on_healthy_drop ... ok
+test diagnostic_process::worker_tasks::tests::task_set_real_add_remove_and_restoration_never_refresh_inventory ... ok
+
+test result: ok. 102 passed; 0 failed; 1 ignored; 0 measured; 511 filtered out; finished in 0.32s
+

@@ -1,5 +1,11 @@
 # HydraCache Compatibility Register
 
+Original pidfd termination adds a Linux read-only runtime API only. The result
+contains retained generation and strict exit/hangup readiness, never an exit
+code, authenticated outcome or cleanup authority. Existing live admission and
+all durable/wire formats are unchanged. See the
+[completion boundary](testing/performance/0.74/diagnostic-completion-boundary-local-design.md).
+
 Fresh-reader context replay extends only the private test harness. Seven
 single-component mutations exercise the existing authority Binding refusal,
 while partial journal tails continue to fail Invalid before binding. No

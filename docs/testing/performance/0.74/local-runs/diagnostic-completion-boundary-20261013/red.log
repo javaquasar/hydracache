@@ -1,0 +1,193 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0405]: cannot find trait `TerminalProbe` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:44:6
+   |
+44 | impl ...minalProbe fo...
+   |      ...^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `observe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:54:9
+    |
+ 54 | ...   observe(&f...
+    |       ^^^^^^^ not found in this scope
+    |
+note: these functions exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs:154:1
+    |
+154 | / pub(...
+155 | |     ...
+156 | |     ...
+157 | |     ...
+...   |
+199 | |     })
+200 | | }
+    | |_^ `crate::diagnostic_output_preparation::recovery::observe`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:30:1
+    |
+ 30 |...icationStage) {
+    |...^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::publication_checkpoint::observe`: not accessible
+help: consider importing this function
+    |
+  1 + use crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe;
+    |
+
+error[E0425]: cannot find function `observe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:58:30
+    |
+ 58 | ...s!(observe(&f...
+    |       ^^^^^^^ not found in this scope
+    |
+note: these functions exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs:154:1
+    |
+154 | / pub(...
+155 | |     ...
+156 | |     ...
+157 | |     ...
+...   |
+199 | |     })
+200 | | }
+    | |_^ `crate::diagnostic_output_preparation::recovery::observe`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:30:1
+    |
+ 30 |...icationStage) {
+    |...^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::publication_checkpoint::observe`: not accessible
+help: consider importing this function
+    |
+  1 + use crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe;
+    |
+
+error[E0425]: cannot find function `observe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:67:26
+    |
+ 67 | ...s!(observe(&f...
+    |       ^^^^^^^ not found in this scope
+    |
+note: these functions exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs:154:1
+    |
+154 | / pub(...
+155 | |     ...
+156 | |     ...
+157 | |     ...
+...   |
+199 | |     })
+200 | | }
+    | |_^ `crate::diagnostic_output_preparation::recovery::observe`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:30:1
+    |
+ 30 |...icationStage) {
+    |...^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::publication_checkpoint::observe`: not accessible
+help: consider importing this function
+    |
+  1 + use crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe;
+    |
+
+error[E0425]: cannot find function `observe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:71:26
+    |
+ 71 | ...s!(observe(&f...
+    |       ^^^^^^^ not found in this scope
+    |
+note: these functions exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs:154:1
+    |
+154 | / pub(...
+155 | |     ...
+156 | |     ...
+157 | |     ...
+...   |
+199 | |     })
+200 | | }
+    | |_^ `crate::diagnostic_output_preparation::recovery::observe`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:30:1
+    |
+ 30 |...icationStage) {
+    |...^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::publication_checkpoint::observe`: not accessible
+help: consider importing this function
+    |
+  1 + use crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe;
+    |
+
+error[E0405]: cannot find trait `TerminalProbe` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:78:10
+   |
+78 | ...pl Ter...alProbe fo...
+   |       ^^^...^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `observe` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:84:22
+    |
+ 84 | ...s!(observe(&d...
+    |       ^^^^^^^ not found in this scope
+    |
+note: these functions exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_fixture_recovery.rs:154:1
+    |
+154 | / pub(...
+155 | |     ...
+156 | |     ...
+157 | |     ...
+...   |
+199 | |     })
+200 | | }
+    | |_^ `crate::diagnostic_output_preparation::recovery::observe`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_authority_checkpoint.rs:30:1
+    |
+ 30 |...icationStage) {
+    |...^^^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::context_replay::publication_checkpoint::observe`: not accessible
+help: consider importing this function
+    |
+  1 + use crate::diagnostic_output_preparation::fixed_intent_storage::campaign_admission::observe;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `TerminalState`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:13:16
+   |
+13 | ...Ok(TerminalS...e::E...
+   |       ^^^^^^^^^...^ use of undeclared type `TerminalState`
+
+error[E0433]: failed to resolve: use of undeclared type `TerminalState`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:14:16
+   |
+14 | ...Ok(TerminalS...e::R...
+   |       ^^^^^^^^^...^ use of undeclared type `TerminalState`
+
+error[E0433]: failed to resolve: use of undeclared type `TerminalState`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:126:37
+    |
+126 | ...), TerminalState::E...
+    |       ^^^^^^^^^^^^^ use of undeclar...type `TerminalState`
+
+error[E0433]: failed to resolve: use of undeclared type `TerminalState`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:130:31
+    |
+130 | ...), TerminalState::R...
+    |       ^^^^^^^^^^^^^ use of un...lared type `TerminalState`
+
+error[E0433]: failed to resolve: use of undeclared type `TerminalState`
+   --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:145:34
+    |
+145 | ...), TerminalState::R...
+    |       ^^^^^^^^^^^^^ use of undec...ed type `TerminalState`
+
+error[E0425]: cannot find function `classify` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:12:15
+   |
+12 | ...ch classify(1,...
+   |       ^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `classify` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs:21:21
+   |
+21 | ...t!(classify(co...
+   |       ^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0405, E0425, E0433.
+For more information about an error, try `rustc --explain E0405`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 14 previous errors

@@ -294,3 +294,20 @@ The separate nine-proof regression passes 78 SIGKILL cases, eight controls and
 270 fresh inspections, preserving every prior process-loss proof. The next P1
 slice must establish authenticated outcome/progression before implementing
 cells two through four; a retained reader cannot supply that authority.
+
+## P1 Completion prerequisites and original terminal observation
+
+The [completion boundary](diagnostic-completion-boundary-local-design.md) fixes
+the prerequisite ordering: authenticated completion requires P2 trusted
+admission and P3 original-start/writer-revocation authority. P1 grammar and
+negative tests can precede those producers; durable Running/completion and
+next-cell publication cannot. This does not enroll any new execution policy.
+
+ProcessRead.observe_terminal now distinguishes exact retained pidfd exit/hangup
+readiness from errors. It does not obtain an exit code or final cgroup context,
+reap, signal, start or authorize cleanup. A nonproduct leader/descendant fixture
+proves an actual stream write after the leader's SIGKILL. Descendant signal
+ownership is acquired only after kernel-parent and original-generation checks.
+This closes a necessary observation gap, not P1 completion or cells two through
+four. The next implementation must own and authenticate original start and
+writer revocation, then journal completion under the retained authority/fence.

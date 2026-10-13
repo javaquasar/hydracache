@@ -2908,3 +2908,26 @@ The separate nine-proof process regression passes 78 SIGKILL cases, eight
 controls and 270 fresh inspections. No recovered observation authorizes cell
 progression or cleanup. Server admission and numerical qualification stay
 closed.
+
+## Original process exit and completion prerequisites
+
+The [completion contract](diagnostic-completion-boundary-local-contract.toml)
+requires authenticated original start, exit status, validated output, writer
+revocation and original empty cgroup before completion/next-cell publication.
+Those producers are not replaced by read-only observations.
+
+ProcessRead.observe_terminal uses the retained process pidfd under procfs/boot
+checks; its generation is cached pin data, not final cgroup membership. Exact
+terminal readiness is not successful outcome or cleanup permission. A bounded
+owned leader/descendant fixture proves a post-leader-exit stream write. Unknown
+poll events and foreign descendant adoption refuse; all signals use owned
+retained pidfds. No CLI, durable schema or persistent write boundary is added.
+
+P1 authenticated outcome and cells two through four require P2/P3 producers
+before their new SIGKILL/lost-acknowledgement publication matrix can run.
+
+The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
+pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
+three repetitions; three manual repetitions prove the post-exit write. Process
+regression passes 103, diagnostic integrations 65 and Linux doctests 55. The
+existing Starting SIGKILL matrix remains green; server admission stays closed.
