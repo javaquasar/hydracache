@@ -269,3 +269,28 @@ six-SIGKILL/control repeats and the eight-proof process regression; see the
 [final-source packet](local-runs/diagnostic-quarantine-crash-20261013/README.md).
 The normal non-test library has no observer symbols. The local authority
 process-loss matrix is complete; P1 and server admission remain open.
+
+## P1 Fresh reader context replay refusal
+
+The [context replay slice](diagnostic-context-replay-local-design.md) checks
+modeled boot, machine, namespace and trust changes in fresh processes after
+owned SIGKILL. It uses the existing journal Binding refusal and does not mutate
+retained files to fit the new claim. Partial tails refuse Invalid before binding;
+their rejection is not claimed as an evaluated boot/pin mismatch.
+
+This covers local changed-claim refusal only. Actual reboot, namespace switching,
+whole-host rollback resistance and production issuer enrollment remain unproved.
+No observation recovers a guard or admits execution/cleanup. Fixed cells two
+through four still require authenticated outcome and original writer/cgroup
+evidence; P2 through P5 and server admission remain open.
+
+The [exact-source packet](local-runs/diagnostic-context-replay-20261013/README.md)
+pins implementation `4302202b12d90f0708c029929b6f7f51c6f38aea`.
+Three targeted repeats pass 18 SIGKILL cases, three controls and 336 fresh
+inspections. This closes the modeled fresh-reader refusal slice only; it does
+not close P1 or open any host operation.
+
+The separate nine-proof regression passes 78 SIGKILL cases, eight controls and
+270 fresh inspections, preserving every prior process-loss proof. The next P1
+slice must establish authenticated outcome/progression before implementing
+cells two through four; a retained reader cannot supply that authority.

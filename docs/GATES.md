@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 fresh-reader context replay has one ignored/manual Linux gate:
+`tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-context-replay-refuses-after-loss`.
+It inspects eight explicit profiles after six owned SIGKILL cases and one
+control, with 112 fresh read-only processes. Boot/namespace changes are modeled;
+this gate never reboots a host or switches namespaces. Partial-tail Invalid
+is not evidence of a successful binding check. See the
+[context contract](testing/performance/0.74/diagnostic-context-replay-local-contract.toml).
+
 W11 owned Starting quarantine has an additional ignored/manual nonroot Linux
 gate: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-quarantine-all-stages-and-post-return`.
 It covers six exact owned SIGKILL cases and one uninterrupted control, observing

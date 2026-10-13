@@ -1,0 +1,34 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `context_replay`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs:35:20
+   |
+35 | ...q!(context_repla......
+   |       ^^^^^^^^^^^^^...e of unresolved module or unlinked crate `context_replay`
+   |
+   = help: if you wanted to use a crate named `context_replay`, use `cargo add context_replay` to add it to your `Cargo.toml`
+
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `context_replay`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs:38:17
+   |
+38 | ...t!(context_re...::I...
+   |       ^^^^^^^^^^... use of unresolved module or unlinked crate `context_replay`
+   |
+   = help: if you wanted to use a crate named `context_replay`, use `cargo add context_replay` to add it to your `Cargo.toml`
+
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `context_replay`
+  --> tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs:34:20
+   |
+34 | ...in context_repla......
+   |       ^^^^^^^^^^^^^...e of unresolved module or unlinked crate `context_replay`
+   |
+   = help: if you wanted to use a crate named `context_replay`, use `cargo add context_replay` to add it to your `Cargo.toml`
+
+error[E0282]: type annotations needed
+  --> tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs:35:61
+   |
+35 | ...se(profile.na...
+   |       ^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0433.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

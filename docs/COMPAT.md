@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Fresh-reader context replay extends only the private test harness. Seven
+single-component mutations exercise the existing authority Binding refusal,
+while partial journal tails continue to fail Invalid before binding. No
+production schema, namespace, protocol, migration or reader API changes.
+Retained context still denies new reservation; no recovered view becomes an
+acknowledgement, retry or cleanup capability. Boot/namespace changes are modeled,
+not an installed-host reboot. See the
+[context design](testing/performance/0.74/diagnostic-context-replay-local-design.md).
+
 Owned quarantine process-loss testing adds only cfg(test) instrumentation at
 the four existing authority append checkpoints. The production refusal API,
 record/commit encoding, filenames, ownership rules, sync order and reader

@@ -2882,3 +2882,29 @@ pins `86a52311a4094d657a0ac59ede3310f1731b581d` and retains three six-kill/contr
 repeats plus all eight process proofs. A normal library build has no observer
 symbols. Development failures remain visible; no production storage behavior,
 qualification input or product claim is changed.
+
+## Fresh inspection with modeled changed context
+
+The [context replay contract](diagnostic-context-replay-local-contract.toml) adds
+eight private inspection profiles after owner loss. Seven profiles each change
+one boot, machine, namespace or trust component; the unchanged profile preserves
+the earlier active/refused observations. Complete mismatched journals return
+Binding; partial tails return Invalid before binding. Neither becomes a runtime
+acknowledgement, append permission or cleanup proof.
+
+Each profile is inspected twice in fresh read-only processes. The same retained
+attempt context denies new reservation, and retained bytes/metadata cannot
+change. Unknown profiles refuse. These are modeled claims, not actual reboot,
+setns or production issuer enrollment. Production code and storage remain
+unchanged; cells two through four and P2 through P5 remain open.
+
+The [local evidence packet](local-runs/diagnostic-context-replay-20261013/README.md)
+pins implementation `4302202b12d90f0708c029929b6f7f51c6f38aea`.
+Three targeted same-source repeats pass 18 SIGKILL cases, three controls and
+336 fresh inspections. These are refusal checks, not performance samples or
+permission to run a worker.
+
+The separate nine-proof process regression passes 78 SIGKILL cases, eight
+controls and 270 fresh inspections. No recovered observation authorizes cell
+progression or cleanup. Server admission and numerical qualification stay
+closed.

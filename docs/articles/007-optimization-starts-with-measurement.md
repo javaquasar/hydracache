@@ -7360,3 +7360,54 @@ not run here. Windows passes 204, root contracts 166 and Linux doctests 52.
 Current/MSRV checks, warnings-denied lint/Rustdoc and local performance-contract
 checks pass. These results confirm local tooling behavior; they add no numerical
 allocation or throughput claim and do not open qualification.
+
+## Fresh context claims do not revive an old attempt
+
+The next hypothesis concerns a reader after the original owner has died. A
+complete journal can still describe the old authority, but changing a boot,
+machine, namespace or trust assertion must not make that authority current.
+The [context replay design](../testing/performance/0.74/diagnostic-context-replay-local-design.md)
+tests the existing refusal rules without adding another recovery capability.
+
+Eight explicit test-only profiles separate the unchanged case from seven
+single-component mutations: boot ID, machine ID, user namespace, mount namespace,
+policy digest, epoch and issuer. The original files are never modified to fit
+the new claim. Unknown profile names are rejected rather than falling back to
+the original profile. Seeded tests check that each mutation changes exactly one
+host identity or trust component while preserving a valid input shape.
+
+After each owned SIGKILL boundary, two fresh processes per profile inspect
+reservation eligibility and the authority journal. A complete journal with
+different claims must return Binding, whether its old authority was still
+active or already refused. An incomplete record/marker pair returns Invalid
+before binding. That result establishes refusal of a malformed journal, not
+proof that the changed boot or issuer was evaluated. The unchanged complete
+journal remains readable observation data, never a reconstructed Starting guard.
+
+Every profile still encounters the retained attempt/state/cell-one/Starting
+context that denies a new reservation. Original bytes and metadata remain exact
+after each read, and the original common fence and helper terminal checks still
+apply. No inspection appends a refusal, repairs a tail, advances epoch, retries
+the attempt or releases resources based on a missing PID.
+
+Boot and namespace changes are modeled claims inside real fresh processes.
+The host is not rebooted and no namespace switch is performed. Fixture-selected
+keys and policy pins are not independently enrolled production trust. These
+limitations keep the result separate from P2 trusted inputs, P3 writer/cgroup
+cleanup and the separately approved exact-host rehearsal. Native/RESP hot paths
+and frozen numerical qualification inputs are untouched.
+
+The [exact-source packet](../testing/performance/0.74/local-runs/diagnostic-context-replay-20261013/README.md)
+pins implementation `4302202b12d90f0708c029929b6f7f51c6f38aea`.
+Three targeted repeats pass 18 SIGKILL cases, three uninterrupted controls and
+336 fresh reader inspections. Each repeat separates 56 complete Binding
+refusals, 48 partial-tail Invalid refusals and eight unchanged complete views.
+This confirms the modeled refusal hypothesis; it does not supply throughput
+or allocation measurements, real reboot evidence or permission to continue an
+old attempt.
+
+The separate nine-proof regression passes 78 SIGKILL cases, eight controls and
+270 fresh inspections, including every prior owned process-loss proof. It is
+a regression group, not additional samples merged into the three targeted
+repetitions. The next P1 boundary is authenticated completion and later fixed
+cells; actual reboot semantics and P2 through P5 remain open.
