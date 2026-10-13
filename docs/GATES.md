@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11 owned Starting quarantine has an additional ignored/manual nonroot Linux
+gate: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-quarantine-all-stages-and-post-return`.
+It covers six exact owned SIGKILL cases and one uninterrupted control, observing
+both retained reservation refusal and the authority journal in two fresh
+read-only processes per case. Test-only thread-local checkpoint hooks are absent
+from production builds. No repair, retry, recovered acknowledgement or writer
+cleanup is permitted. See the
+[process-loss contract](testing/performance/0.74/diagnostic-quarantine-crash-local-contract.toml).
+
 W11 owned Starting intent has one additional ignored/manual nonroot Linux gate:
 `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-starting-all-stages-and-post-return`.
 It kills only the owned test process at all eight departure publication

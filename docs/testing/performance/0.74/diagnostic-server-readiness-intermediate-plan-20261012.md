@@ -248,3 +248,24 @@ Implementation `9875fa44a58b45f25fde249c9c8038bf946c6425` has a
 [local exact-source packet](local-runs/diagnostic-starting-quarantine-20261013/README.md)
 with three repeated eight-case matrices and scoped regression. This closes only
 the owned quarantine API slice, not P1 or server readiness.
+
+## P1 Local authority refusal process loss
+
+The [quarantine process-loss proof](diagnostic-quarantine-crash-local-design.md)
+adds test-only observation at the existing four authority append boundaries,
+plus death before refusal and after return. Retained reservation context refuses
+new admission even when the original authority remains active. A partial tail
+is invalid; a sealed refusal pair is readable data, not recovered acknowledgement.
+Two fresh processes per case inspect without append, repair, retry or adoption.
+
+This closes only the specified local SIGKILL boundary. It does not close P1.
+Reboot/context semantics, authentic completed
+cell evidence and cells two through four remain before trusted production inputs,
+execution/watchdog/cleanup and installed-host rehearsal. No server operation or
+qualification input is changed.
+
+Implementation `86a52311a4094d657a0ac59ede3310f1731b581d` passes three
+six-SIGKILL/control repeats and the eight-proof process regression; see the
+[final-source packet](local-runs/diagnostic-quarantine-crash-20261013/README.md).
+The normal non-test library has no observer symbols. The local authority
+process-loss matrix is complete; P1 and server admission remain open.

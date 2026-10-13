@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Owned quarantine process-loss testing adds only cfg(test) instrumentation at
+the four existing authority append checkpoints. The production refusal API,
+record/commit encoding, filenames, ownership rules, sync order and reader
+compatibility are unchanged. Fresh fixture inspection observes partial journal
+refusal or a complete authority refusal without recovering acknowledgement,
+retrying an append or admitting another reservation. No migration or cleanup is
+added. See the
+[process-loss design](testing/performance/0.74/diagnostic-quarantine-crash-local-design.md).
+
 Owned Starting quarantine introduces only a consuming runtime type. It reuses
 the existing bounded authority refusal record/commit schema and Policy reason;
 no filename, encoding, migration or reader compatibility changes. Acknowledged

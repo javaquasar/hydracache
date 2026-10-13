@@ -7298,3 +7298,65 @@ while checking a macro-expanded test; MSRV reported an unused mutable binding.
 Removing that unnecessary binding allowed the current compiler to proceed.
 This sequence does not establish the compiler bug's root cause, and no warning
 policy or correctness assertion was weakened.
+
+## Actual process loss during authority refusal
+
+Logical append errors do not establish what survives an abruptly terminated
+owner. The next hypothesis was that the existing owned Starting quarantine
+remains fail-closed after actual SIGKILL, including after durable refusal but
+before its runtime acknowledgement can be used. The
+[process-loss design](../testing/performance/0.74/diagnostic-quarantine-crash-local-design.md)
+keeps the original protocol and examines its existing boundaries.
+
+A scoped thread-local observer, compiled only in tests, blocks the exact owned
+test process at the four authority append checkpoints. The parent kills only
+that child and retains the helper's original pidfd. Additional cases die before
+invoking refusal or after successful quarantine return. The original common
+fence must be busy before death and released afterward, and the exact owned
+helper must become terminal. This is a local nonroot fixture, not a production
+worker start or proof of an empty campaign cgroup.
+
+The retained states have different meanings. BeforeRefusal retains the active
+revision-one authority, but the five acknowledged attempt/state/cell-one/Starting
+files already prohibit a new reservation. An empty record, a sealed record with
+no marker, or an empty marker is an invalid journal tail. DurableCommit and
+AfterReturn retain the sealed revision-two authority refusal. Even that complete
+pair cannot reconstruct the dead owner's runtime acknowledgement or a healthy
+Starting guard.
+
+Two fresh processes inspect both reservation eligibility and the journal under
+test-parent selected fixture pins and current local host/namespace context.
+They do not enroll production trust, append, repair, adopt or retry. Exact
+retained bytes and file metadata must stay unchanged after owner termination
+and each inspection. A recovered refused view is observation data, not cleanup
+permission or proof that every possible writer has stopped.
+
+Development negatives include a temporary string lifetime error in the private
+fresh-inspection label and a source guard that stops scanning at the first
+cfg(test) declaration. Moving the hook declaration beside the existing test
+blocks preserves the same guard markers; the lock, budgets, write/sync order
+and assertions are unchanged. Both failures remain in the evidence rather
+than being counted as completed crash matrices.
+
+The frozen numerical qualification inputs are unaffected. Actual process loss
+does not establish physical power-loss durability, host reboot handling,
+production issuer enrollment or authentic cell completion. Those remain
+separate boundaries before cells two through four, execution and server admission.
+
+Implementation `86a52311` passes three final-source matrices:
+eighteen SIGKILL cases, three controls and forty-two fresh inspections in total.
+The full eight-proof regression separately passes 72 signal cases, seven controls
+and 158 fresh inspections. A normal all-features library build has no observer
+symbols, confirming that this instrumentation is absent for that build/config.
+The [exact-source packet](../testing/performance/0.74/local-runs/diagnostic-quarantine-crash-20261013/README.md)
+preserves the initial errors and binds the implementation, original storage
+protocol and frozen qualification inputs. The local process-loss hypothesis
+is confirmed for these boundaries, not for reboot, power loss or production
+writer cleanup.
+
+Scoped Linux regression passes 673 tests with nine manual/host cases ignored;
+the eight process proofs are run separately, while the real-host bus case is
+not run here. Windows passes 204, root contracts 166 and Linux doctests 52.
+Current/MSRV checks, warnings-denied lint/Rustdoc and local performance-contract
+checks pass. These results confirm local tooling behavior; they add no numerical
+allocation or throughput claim and do not open qualification.

@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized] target(s) in 2.64s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 2 tests
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_preserves_fault_and_scope ... ok
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_publication_checkpoint_order_matches_original_refusal_protocol ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 601 filtered out; finished in 0.04s
+

@@ -2861,3 +2861,24 @@ The [exact-source packet](local-runs/diagnostic-starting-quarantine-20261013/REA
 retains three eight-case functional repeats, scoped regressions and the compiler
 development negative. Runtime implementation is `9875fa44a58b45f25fde249c9c8038bf946c6425`.
 There is no new process-loss measurement or product performance claim.
+
+## Process loss during owned authority refusal
+
+The [local quarantine fault proof](diagnostic-quarantine-crash-local-design.md)
+adds test-only observation at the four existing authority append checkpoints,
+plus process death before refusal and after return. Original attempt objects,
+the initial authority pair and exact refusal-tail shape are retained; common
+fence and exact helper termination checks use the existing owned-process harness.
+
+Fresh reservation always refuses retained context. Fresh journal inspection
+distinguishes active authority before refusal, an invalid partial tail, and a
+complete refused view after durable commit. No view reconstructs acknowledgement,
+permits replay or authorizes cleanup. The production protocol and schemas are
+unchanged; the observer is compiled only in tests. Reboot, power loss and
+installed-root enrollment are not supplied by this fixture.
+
+The [final-source packet](local-runs/diagnostic-quarantine-crash-20261013/README.md)
+pins `86a52311a4094d657a0ac59ede3310f1731b581d` and retains three six-kill/control
+repeats plus all eight process proofs. A normal library build has no observer
+symbols. Development failures remain visible; no production storage behavior,
+qualification input or product claim is changed.

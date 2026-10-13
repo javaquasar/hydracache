@@ -1,0 +1,1 @@
+{"artifact": "/home/artur/.cache/hydracache-074-manager-local-target/debug/libhydracache_long_run_supervisor_074.rlib", "cfg_test_observer_symbols": "absent", "production_activation": false, "sha256": "b3491cc4d346ab3addcb6702913f58f1cc392adb97931aa3d5530056c8b828e9", "symbol_inspector": "nm --defined-only"}
