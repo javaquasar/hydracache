@@ -18,6 +18,9 @@ pub const MAX_INTENT_BODY_BYTES: usize = 4096;
 pub const MAX_SIGNED_INTENT_BYTES: usize = 8192;
 const PRINCIPAL_LIMIT: usize = 32;
 
+#[path = "diagnostic_signed_history.rs"]
+pub mod signed_history;
+
 /// Unverified wire body. A signature does not authenticate live host state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

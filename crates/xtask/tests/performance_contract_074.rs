@@ -3,6 +3,74 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_signed_history_is_data_only_not_fixed_progression() {
+    let c = contract("diagnostic-signed-history-local-contract.toml");
+    for key in [
+        "supplied_byte_inspection_only",
+        "exact_initial_anchor_and_first_record",
+        "original_controller_peer_worker_and_signed_projection",
+        "exact_previous_raw_hash_and_commit",
+        "unique_retained_request_and_nonce",
+        "additional_heartbeat_revisions_allowed",
+        "current_original_intent_brackets_inspection",
+        "errors_latch_original_intent_guard",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "new_durable_schema",
+        "filesystem_or_process_operation",
+        "history_is_completion_proof",
+        "recovered_history_is_runtime_acknowledgement",
+        "original_object_ownership_proved",
+        "later_fixed_cells_implemented",
+        "full_fixed_lifecycle_implemented",
+        "global_nonce_protection",
+        "authenticated_peer_or_clock",
+        "host_reboot_proved",
+        "positive_host_enrollment_proved",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["max_retained_cells"].as_integer(), Some(4));
+    assert_eq!(c["max_record_bytes"].as_integer(), Some(16384));
+    assert_eq!(c["minimum_reserved_revision_gap"].as_integer(), Some(3));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signed_history.rs"),
+    )
+    .unwrap();
+    for required in [
+        "original.revalidate(current_bytes, check)?",
+        "original.latch_refusal()",
+        "original.verify_consumed(",
+        "pairs[0].record != anchor_bytes",
+        "previous.revision.checked_add(",
+        "record.previous_record_sha256 != previous_hash",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "std::fs",
+        "std::process",
+        "pub fn start",
+        "pub fn consume",
+        "pub fn publish",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("signed_history"));
+}
+
+#[test]
 fn diagnostic_fixture_recovery_reuses_intents_without_production_restart_authority() {
     let c = contract("diagnostic-fixture-recovery-local-contract.toml");
     for key in [

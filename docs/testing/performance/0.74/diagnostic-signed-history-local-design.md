@@ -60,3 +60,9 @@ peer credentials, a trusted clock, production issuer pins, global nonce
 uniqueness or protection against whole-host snapshot rollback. Fixed cells two
 through four still cannot execute or acknowledge completion. P1 remains open;
 P2 through P5, product qualification and ship gates are unchanged.
+
+The existing previous-record hash belongs to the outer retained record; it is
+not covered by the intent signature. Every projection signature is verified,
+but recomputing outer hashes is not an authenticated transition trace. An owned
+progression protocol must retain original objects and authentic completion
+evidence instead of promoting this observation into a next-cell capability.

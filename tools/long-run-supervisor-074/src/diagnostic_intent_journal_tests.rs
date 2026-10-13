@@ -835,3 +835,360 @@ fn intent_journal_historical_expiry_never_renews_execution_eligibility() {
     ));
     assert!(guard.is_refused());
 }
+
+#[test]
+fn signed_history_empty_anchor_is_observation_only() {
+    let f = Fixture::new(0);
+    let packet = bytes(&f);
+    let anchor = record_bytes(&Record {
+        schema_version: RECORD_SCHEMA.into(),
+        state: f.state.clone(),
+        signed_intent: String::from_utf8(packet.clone()).unwrap(),
+        peer_uid: f.peer.uid,
+        peer_gids: f.peer.gids.clone(),
+        previous_record_sha256: None,
+    })
+    .unwrap();
+    let mut worker = f.worker();
+    let mut guard = verify_intent_projection(&mut worker, &packet, &f.check(100)).unwrap();
+    let observation =
+        signed_history::inspect_signed_history(&mut guard, &packet, &f.check(100), &anchor, &[])
+            .unwrap();
+    assert_eq!(observation.retained_cells, 0);
+    assert_eq!(observation.anchor_sha256, digest(&anchor));
+    assert_eq!(observation.last_record_sha256, None);
+    assert!(!guard.is_refused());
+}
+
+struct SignedChain {
+    f: Fixture,
+    anchor: Vec<u8>,
+    pairs: Vec<(Vec<u8>, Vec<u8>)>,
+}
+impl SignedChain {
+    fn new(cells: usize, heartbeats: u64) -> Self {
+        let mut f = Fixture::new(0);
+        let mut pairs = Vec::new();
+        for cell in 0..cells {
+            f.state.completed_cells = cell;
+            f.state.revision = 1 + cell as u64 * (3 + heartbeats);
+            f.state.last_observed_monotonic_ns = (2 + cell as u64 * 60) * 1_000_000_000;
+            f.state.controller_monotonic_ns = f.state.last_observed_monotonic_ns;
+            let raw = record_bytes(&Record {
+                schema_version: RECORD_SCHEMA.into(),
+                state: f.state.clone(),
+                signed_intent: String::from_utf8(bytes(&f)).unwrap(),
+                peer_uid: f.peer.uid,
+                peer_gids: f.peer.gids.clone(),
+                previous_record_sha256: pairs.last().map(|p: &(Vec<u8>, Vec<u8>)| digest(&p.0)),
+            })
+            .unwrap();
+            pairs.push((raw.clone(), marker_bytes(&raw)));
+        }
+        Self {
+            f,
+            anchor: pairs[0].0.clone(),
+            pairs,
+        }
+    }
+    fn rewrite(
+        &mut self,
+        index: usize,
+        change: impl FnOnce(&mut Record, &mut IntentProjectionBody),
+    ) {
+        let mut record: Record = serde_json::from_slice(&self.pairs[index].0).unwrap();
+        let mut body: SignedIntentProjection = serde_json::from_str(&record.signed_intent).unwrap();
+        change(&mut record, &mut body.intent);
+        let projection = project_reserved_state(&record.state).unwrap();
+        body.intent.state_sha256 = projection.state_sha256;
+        body.intent.unit_spec_sha256 = projection.unit_spec_sha256;
+        record.signed_intent = String::from_utf8(self.f.signed(&body.intent)).unwrap();
+        self.pairs[index].0 = record_bytes(&record).unwrap();
+        for i in index..self.pairs.len() {
+            if i > index {
+                let mut record: Record = serde_json::from_slice(&self.pairs[i].0).unwrap();
+                record.previous_record_sha256 = Some(digest(&self.pairs[i - 1].0));
+                self.pairs[i].0 = record_bytes(&record).unwrap();
+            }
+            self.pairs[i].1 = marker_bytes(&self.pairs[i].0);
+        }
+    }
+    fn inspect(
+        &self,
+        now: u64,
+    ) -> Result<signed_history::SignedHistoryObservation, signed_history::SignedHistoryError> {
+        let packet = bytes(&self.f);
+        let mut worker = self.f.worker();
+        let mut guard = verify_intent_projection(&mut worker, &packet, &self.f.check(100)).unwrap();
+        let pairs: Vec<_> = self
+            .pairs
+            .iter()
+            .map(|(record, commit)| signed_history::RetainedIntentPair { record, commit })
+            .collect();
+        let result = signed_history::inspect_signed_history(
+            &mut guard,
+            &packet,
+            &self.f.check(now),
+            &self.anchor,
+            &pairs,
+        );
+        assert_eq!(guard.is_refused(), result.is_err());
+        if result.is_err() {
+            assert!(matches!(
+                guard.revalidate(&packet, &self.f.check(100)),
+                Err(IntentProjectionError::Refused)
+            ));
+        }
+        result
+    }
+}
+
+#[test]
+fn signed_history_all_prefixes_and_heartbeat_revisions_are_readonly() {
+    for cells in 1..=4 {
+        for heartbeats in [0, 1, 19] {
+            let mut chain = SignedChain::new(cells, heartbeats);
+            let original = chain.pairs.clone();
+            for _ in 0..3 {
+                let view = chain.inspect(100).unwrap();
+                assert_eq!(view.retained_cells, cells);
+                assert_eq!(
+                    view.last_record_sha256,
+                    Some(digest(&chain.pairs[cells - 1].0))
+                );
+            }
+            assert_eq!(chain.pairs, original);
+            if cells < 4 {
+                chain.f.state.completed_cells += 1;
+                chain.f.state.revision += 3;
+                assert_eq!(chain.inspect(100).unwrap().retained_cells, cells);
+            }
+        }
+    }
+}
+
+#[test]
+fn signed_history_exact_anchor_pair_and_document_budgets_refuse() {
+    for mutation in 0..11 {
+        let mut chain = SignedChain::new(3, 0);
+        match mutation {
+            0 => chain.anchor.push(b' '),
+            1 => chain.anchor = vec![0; MAX_RECORD_BYTES + 1],
+            2 => chain.pairs[1].0 = vec![0; MAX_RECORD_BYTES + 1],
+            3 => chain.pairs[1].1.pop().map(|_| ()).unwrap(),
+            4 => chain.pairs[1].1 = vec![b'a'; MARKER_BYTES],
+            5 => chain.pairs.remove(1).0.clear(),
+            6 => chain.pairs.push(chain.pairs[2].clone()),
+            7 => {
+                chain.pairs.push(chain.pairs[2].clone());
+                chain.pairs.push(chain.pairs[2].clone());
+            }
+            8 => {
+                let mut record: Record = serde_json::from_slice(&chain.pairs[1].0).unwrap();
+                record.schema_version = "future".into();
+                chain.pairs[1].0 = record_bytes(&record).unwrap();
+                chain.pairs[1].1 = marker_bytes(&chain.pairs[1].0);
+            }
+            9 => {
+                chain.rewrite(0, |_, body| body.request_id = "9".repeat(64));
+            }
+            _ => {
+                chain.pairs[1].0.push(b' ');
+                chain.pairs[1].1 = marker_bytes(&chain.pairs[1].0);
+            }
+        }
+        let before = chain.pairs.clone();
+        assert!(chain.inspect(100).is_err(), "mutation {mutation}");
+        assert_eq!(before, chain.pairs);
+    }
+}
+
+#[test]
+fn signed_history_resigned_origin_clock_and_revision_mutations_refuse() {
+    for mutation in 0..10 {
+        let mut chain = SignedChain::new(4, 0);
+        chain.rewrite(1, |record, _| match mutation {
+            0 => record.state.identity.lease_id = "a".repeat(64),
+            1 => record.state.identity.binary_sha256 = "a".repeat(64),
+            2 => record.state.identity.build_provenance_sha256 = "a".repeat(64),
+            3 => record.state.reserved_monotonic_ns += 1,
+            4 => record.state.revision = 3,
+            5 => record.state.revision = 1,
+            6 => {
+                record.state.last_observed_monotonic_ns = 1_500_000_000;
+                record.state.controller_monotonic_ns = 1_500_000_000;
+            }
+            7 => record.state.completed_cells = 2,
+            8 => record.previous_record_sha256 = Some("a".repeat(64)),
+            _ => record.previous_record_sha256 = None,
+        });
+        assert!(chain.inspect(100).is_err(), "signed mutation {mutation}");
+    }
+}
+
+#[test]
+fn signed_history_duplicate_requests_and_nonces_refuse() {
+    for nonce in [false, true] {
+        let mut chain = SignedChain::new(4, 0);
+        let first: Record = serde_json::from_slice(&chain.pairs[0].0).unwrap();
+        let first: SignedIntentProjection = serde_json::from_str(&first.signed_intent).unwrap();
+        chain.rewrite(2, |_, body| {
+            if nonce {
+                body.nonce_sha256 = first.intent.nonce_sha256;
+            } else {
+                body.request_id = first.intent.request_id;
+            }
+        });
+        assert_eq!(
+            chain.inspect(100),
+            Err(signed_history::SignedHistoryError::Replay)
+        );
+    }
+}
+
+#[test]
+fn signed_history_current_projection_and_missing_prefix_refuse() {
+    for mutation in 0..6 {
+        let mut chain = SignedChain::new(3, 0);
+        match mutation {
+            0 => chain.f.state.identity.lease_id = "a".repeat(64),
+            1 => chain.f.state.revision -= 1,
+            2 => chain.f.state.completed_cells = 0,
+            3 => chain.pairs.clear(),
+            4 => {
+                chain.f.state.completed_cells += 1;
+                chain.f.state.revision += 2;
+            }
+            _ => chain.f.state.reserved_monotonic_ns += 1,
+        }
+        assert!(chain.inspect(100).is_err(), "current mutation {mutation}");
+    }
+}
+
+#[test]
+fn signed_history_signatures_principals_and_time_are_not_renewed() {
+    for mutation in 0..7 {
+        let mut chain = SignedChain::new(3, 0);
+        if mutation == 0 {
+            let mut record: Record = serde_json::from_slice(&chain.pairs[1].0).unwrap();
+            let mut signed: SignedIntentProjection =
+                serde_json::from_str(&record.signed_intent).unwrap();
+            signed.signature_hex = "0".repeat(128);
+            record.signed_intent = String::from_utf8(line(&signed)).unwrap();
+            chain.pairs[1].0 = record_bytes(&record).unwrap();
+            chain.pairs[1].1 = marker_bytes(&chain.pairs[1].0);
+            let previous = digest(&chain.pairs[1].0);
+            chain.rewrite(2, |record, _| {
+                record.previous_record_sha256 = Some(previous)
+            });
+        } else if mutation < 6 {
+            chain.rewrite(1, |record, body| match mutation {
+                1 => body.controller.run_id += 1,
+                2 => record.peer_uid = 901,
+                3 => body.worker_policy_epoch += 1,
+                4 => body.boot_id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee".into(),
+                _ => {
+                    body.issued_at_unix_seconds = 101;
+                    body.expires_at_unix_seconds = 161;
+                }
+            });
+        }
+        assert!(
+            chain
+                .inspect(if mutation == 6 { 160 } else { 100 })
+                .is_err(),
+            "authentication mutation {mutation}"
+        );
+    }
+}
+
+#[test]
+fn signed_history_original_guard_input_drift_latches() {
+    let chain = SignedChain::new(1, 0);
+    let packet = bytes(&chain.f);
+    let mut worker = chain.f.worker();
+    let mut guard = verify_intent_projection(&mut worker, &packet, &chain.f.check(100)).unwrap();
+    let mut changed = chain.f.body();
+    changed.request_id = "8".repeat(64);
+    assert!(signed_history::inspect_signed_history(
+        &mut guard,
+        &chain.f.signed(&changed),
+        &chain.f.check(100),
+        &chain.anchor,
+        &[]
+    )
+    .is_err());
+    assert!(guard.is_refused());
+}
+
+#[test]
+fn signed_history_seeded_plausibility_never_proves_completion() {
+    let mut seed = 0x074fu64;
+    for _ in 0..64 {
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let mut chain = SignedChain::new(4, seed % 23);
+        assert_eq!(chain.inspect(100).unwrap().retained_cells, 4);
+        let index = 1 + (seed as usize % 3);
+        let previous: Record = serde_json::from_slice(&chain.pairs[index - 1].0).unwrap();
+        chain.rewrite(index, |record, _| {
+            record.state.revision = previous.state.revision + 2
+        });
+        assert!(chain.inspect(100).is_err());
+    }
+    println!(
+        "signed history seed=0x074f legal=64 signed_mutations=64; inspection is not completion"
+    );
+}
+
+#[test]
+fn signed_history_expired_history_is_not_current_intent_renewal() {
+    let chain = SignedChain::new(4, 0);
+    let mut body = chain.f.body();
+    body.issued_at_unix_seconds = 200;
+    body.expires_at_unix_seconds = 260;
+    let current = chain.f.signed(&body);
+    let mut worker = chain.f.worker();
+    let mut guard = verify_intent_projection(&mut worker, &current, &chain.f.check(200)).unwrap();
+    let pairs: Vec<_> = chain
+        .pairs
+        .iter()
+        .map(|(record, commit)| signed_history::RetainedIntentPair { record, commit })
+        .collect();
+    assert_eq!(
+        signed_history::inspect_signed_history(
+            &mut guard,
+            &current,
+            &chain.f.check(200),
+            &chain.anchor,
+            &pairs
+        )
+        .unwrap()
+        .retained_cells,
+        4
+    );
+    assert!(signed_history::inspect_signed_history(
+        &mut guard,
+        &current,
+        &chain.f.check(260),
+        &chain.anchor,
+        &pairs
+    )
+    .is_err());
+    assert!(guard.is_refused());
+}
+
+#[test]
+fn signed_history_independent_concurrent_inspections_share_no_acknowledgement() {
+    let chain = std::sync::Arc::new(SignedChain::new(4, 1));
+    let before = chain.pairs.clone();
+    let threads: Vec<_> = (0..4)
+        .map(|_| {
+            let chain = chain.clone();
+            std::thread::spawn(move || chain.inspect(100).unwrap())
+        })
+        .collect();
+    for thread in threads {
+        assert_eq!(thread.join().unwrap().retained_cells, 4);
+    }
+    assert_eq!(before, chain.pairs);
+}

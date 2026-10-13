@@ -1,5 +1,11 @@
 # HydraCache — Enforcement Gates
 
+W11 signed history inspection is covered by fast Linux unit/property tests and
+a compile-fail no-start test. It checks supplied bytes only and adds no manual
+process-loss gate: this API does not write or spawn. Existing fixed storage
+and process-loss gates are unchanged. See the
+[history contract](testing/performance/0.74/diagnostic-signed-history-local-contract.toml).
+
 W11 owned attempt transfer has two additional ignored/manual nonroot Linux
 gates: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-publication-all-stages-and-post-return`
 and `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-consumption-all-stages-and-post-return`.

@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Signed diagnostic history inspection adds a data-only supplied-byte API using
+the existing retained-intent schema, canonical LF encoding, record budget and
+commit digest. It changes no publisher, reader, filename, state or migration.
+Cells one through four are checked against the exact initial-attempt anchor,
+original signature pins and previous raw hashes. Revision gaps are necessary
+bounds, not proof of omitted transitions or completion. Inspection returns no
+storage acknowledgement, append or execution capability. See the
+[history design](testing/performance/0.74/diagnostic-signed-history-local-design.md).
+
 Owned early-attempt transfer now connects the original runtime acknowledgement
 to initial schema-1 Reserved publication and existing cell-one retention.
 It moves the original descriptor/stamp/bytes and common fence without unlock
