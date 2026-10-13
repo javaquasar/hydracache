@@ -1,5 +1,18 @@
 # HydraCache Compatibility Register
 
+Owned early-attempt transfer now connects the original runtime acknowledgement
+to initial schema-1 Reserved publication and existing cell-one retention.
+It moves the original descriptor/stamp/bytes and common fence without unlock
+or recovered-file adoption. Namespace checks permit the attempt name only while
+that original document is owned; every state/cell-one boundary revalidates it.
+State creation remains exclusive 0600 with original sync barriers; attempt stays
+0400 and record/commit bytes retain their existing schema and limits.
+No filename, durable schema, migration, recovered acknowledgement or execution
+permission is added. Old empty-fence/campaign readers refuse retained context;
+legacy publishers do not adopt an attempt. Partial/uncertain context is retained
+and never repaired or deleted. See
+[transfer design](testing/performance/0.74/diagnostic-attempt-publication-local-design.md).
+
 Early diagnostic attempt retention adds only `diagnostic-attempt-074.json` to
 the bound fixed intent leaf. It reuses canonical LF-terminated
 `diagnostic-retained-intent-074-v1`, its 16384-byte limit and initial Reserved

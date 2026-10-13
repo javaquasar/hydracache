@@ -1,4 +1,6 @@
 //! Original authority and signed expected intent only, not publication or start.
+#[path = "diagnostic_attempt_publication.rs"]
+pub mod attempt_publication;
 #[path = "diagnostic_early_attempt.rs"]
 pub mod early_attempt;
 #[path = "diagnostic_empty_fenced_intent.rs"]

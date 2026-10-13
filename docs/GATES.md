@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 owned attempt transfer has two additional ignored/manual nonroot Linux
+gates: `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-publication-all-stages-and-post-return`
+and `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-consumption-all-stages-and-post-return`.
+They retain the original attempt through initial-state and cell-one SIGKILL
+boundaries, including lost acknowledgement. They are not ordinary fast tests,
+worker-start permission or host enrollment. See the
+[transfer contract](testing/performance/0.74/diagnostic-attempt-publication-local-design.md).
+
 The W11 early-attempt process-loss proof is registered separately as
 `tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-all-stages-and-post-return`.
 Its ignored/manual nonroot Linux test checks nine exact owned SIGKILL cases and

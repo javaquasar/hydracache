@@ -11,7 +11,7 @@ use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileExt, MetadataExt};
 use thiserror::Error;
 
-const NAME: &str = "diagnostic-attempt-074.json";
+pub(super) const NAME: &str = "diagnostic-attempt-074.json";
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AttemptStage {
     BeforeCreate,
@@ -57,7 +57,7 @@ fn stamp(m: &Metadata) -> [u64; 11] {
         m.ctime_nsec() as u64,
     ]
 }
-struct Document {
+pub(super) struct Document {
     file: File,
     stamp: [u64; 11],
     raw: Vec<u8>,
@@ -97,7 +97,7 @@ impl Document {
         }
         Ok(())
     }
-    fn inspect(&self, leaf: &File) -> Result<(), StorageAttemptError> {
+    pub(super) fn inspect(&self, leaf: &File) -> Result<(), StorageAttemptError> {
         let m = self.file.metadata()?;
         self.safe(leaf, &m)?;
         if stamp(&m) != self.stamp {
@@ -284,5 +284,19 @@ impl<'storage> AttemptStorage<'storage> {
             self.latch_refusal();
         }
         result
+    }
+    pub(crate) fn into_publication(
+        self,
+    ) -> Result<super::publication_storage::PublicationStorage<'storage>, Box<Self>> {
+        if !self.acknowledged || self.is_refused() || self.document.is_none() {
+            return Err(Box::new(self));
+        }
+        // Move the original descriptor and fence. No path-based reconstruction.
+        Ok(
+            super::publication_storage::PublicationStorage::from_attempt(
+                self.empty,
+                self.document.expect("checked owned document"),
+            ),
+        )
     }
 }

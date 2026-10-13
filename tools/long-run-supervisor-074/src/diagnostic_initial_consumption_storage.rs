@@ -1,5 +1,5 @@
 //! Private exact two-object consumption; never reopens a runtime acknowledgement.
-use super::{only_state, open_at, DirectoryStream, PublicationStorage, StoragePublicationError};
+use super::{open_at, DirectoryStream, PublicationStorage, StoragePublicationError, ATTEMPT_NAME};
 use crate::diagnostic_lease::ACTIVE_DIAGNOSTIC_NAME;
 use crate::diagnostic_output_preparation::intent_journal::{
     marker_bytes, MARKER_BYTES, MAX_RECORD_BYTES,
@@ -117,8 +117,9 @@ impl ConsumptionDocument {
 impl PublicationStorage<'_> {
     pub(super) fn inspect_consumption_namespace(&self) -> Result<(), StoragePublicationError> {
         if !self.consumption_started {
-            return only_state(self.leaf()?);
+            return self.publication_namespace(true);
         }
+        self.inspect_owned_attempt()?;
         for document in self.consumption_documents.iter().flatten() {
             document.inspect(self.leaf()?)?;
         }
@@ -133,7 +134,7 @@ impl PublicationStorage<'_> {
             return Err(error.into());
         }
         let stream = DirectoryStream(pointer);
-        let mut seen = [false; 3];
+        let mut seen = [false; 4];
         loop {
             unsafe {
                 *libc::__errno_location() = 0;
@@ -156,6 +157,8 @@ impl PublicationStorage<'_> {
                 1
             } else if name == NAMES[1].as_bytes() && self.consumption_documents[1].is_some() {
                 2
+            } else if name == ATTEMPT_NAME.as_bytes() && self.attempt.is_some() {
+                3
             } else {
                 return Err(StoragePublicationError::Context);
             };
@@ -169,11 +172,12 @@ impl PublicationStorage<'_> {
                 true,
                 self.consumption_documents[0].is_some(),
                 self.consumption_documents[1].is_some(),
+                self.attempt.is_some(),
             ]
         {
             return Err(StoragePublicationError::Context);
         }
-        Ok(())
+        self.inspect_owned_attempt()
     }
     fn consumption_boundary<E: From<StoragePublicationError>>(
         &mut self,

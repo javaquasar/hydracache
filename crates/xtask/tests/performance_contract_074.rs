@@ -10414,3 +10414,86 @@ fn diagnostic_early_attempt_contract_requires_retention_not_replay() {
             .unwrap();
     assert!(!server.contains("early_attempt"));
 }
+
+#[test]
+fn diagnostic_attempt_publication_contract_requires_original_transfer_and_closed_start() {
+    let c = contract("diagnostic-attempt-publication-local-contract.toml");
+    for key in [
+        "runtime_acknowledged_attempt_consumed_by_value",
+        "original_attempt_descriptor_stamp_bytes_and_fence_moved",
+        "no_lock_release_or_reacquisition",
+        "full_initial_state_matches_before_mutation",
+        "unbound_mismatch_retains_healthy_guard_and_lock",
+        "attempt_allowed_only_when_original_document_owned",
+        "attempt_revalidated_through_state_and_cell_one",
+        "exclusive_state_creation_and_sync_before_ack",
+        "failure_retains_first_error_original_borrow_and_lock",
+        "safe_original_refusal_bridge_only",
+        "before_state_create_still_blocks_fresh_reservation",
+        "recovered_history_cannot_recreate_runtime_ack",
+        "legacy_publisher_rejects_unowned_attempt",
+        "real_process_loss_both_phases_required",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "new_durable_schema",
+        "new_filename",
+        "later_fixed_cells_implemented",
+        "full_fixed_lifecycle_implemented",
+        "global_nonce_protection",
+        "authenticated_peer_or_clock",
+        "machine_power_loss_proved",
+        "host_reboot_proved",
+        "positive_host_enrollment_proved",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs"),
+    )
+    .unwrap();
+    assert!(source.contains("read.storage.into_publication()"));
+    assert!(source.contains("read.original.pins.matches_state(check.state)"));
+    assert!(source.contains("Held::Attempt"));
+    assert!(source.contains("Held::Publication"));
+    let attempt = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs"),
+    )
+    .unwrap();
+    let publication =
+        std::fs::read_to_string(root().join(
+            "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs",
+        ))
+        .unwrap();
+    let consumption = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs"),
+    )
+    .unwrap();
+    assert!(attempt.contains("PublicationStorage::from_attempt("));
+    assert!(publication.contains("attempt: Option<AttemptDocument>"));
+    assert!(publication.contains("self.before_publication()?;"));
+    assert!(consumption.contains("name == ATTEMPT_NAME.as_bytes() && self.attempt.is_some()"));
+    assert!(consumption.contains("self.inspect_owned_attempt()"));
+    for forbidden in [
+        "Fence::acquire",
+        "remove_file",
+        "O_TRUNC",
+        "pub fn start",
+        "pub fn path(",
+        "pub fn file(",
+        "impl Clone",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("attempt_publication"));
+}

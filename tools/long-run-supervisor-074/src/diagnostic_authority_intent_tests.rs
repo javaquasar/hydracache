@@ -28,6 +28,9 @@ mod process_crash_tests;
 #[path = "diagnostic_early_attempt_tests.rs"]
 mod early_attempt_tests;
 
+#[path = "diagnostic_attempt_publication_tests.rs"]
+mod attempt_publication_tests;
+
 struct Intent {
     state: DiagnosticState,
     controller: DiagnosticPolicy,

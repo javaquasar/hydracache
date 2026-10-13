@@ -1,6 +1,6 @@
 //! Private nonroot owned-process proof; no production entry or restart writer.
 use super::*;
-use super::super::{early_attempt, initial_consumption, reservation_publication};
+use super::super::{attempt_publication, early_attempt, initial_consumption, reservation_publication};
 use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test};
 use crate::diagnostic_process::{pin_owned_test_helper, OwnedTasksHelper};
 use crate::diagnostic_worker_policy::authority_registry::fixture::initialize_fixture_registry;
@@ -135,12 +135,15 @@ fn diagnostic_process_crash_child() {
     let account_root = owned_path(ACCOUNT, "hydracache-crash-account-");
     let phase = std::env::var(PHASE).unwrap();
     let target = std::env::var(STAGE).unwrap();
-    assert!(phase == "reserved" || phase == "consumption" || phase == "attempt");
+    assert!(matches!(
+        phase.as_str(),
+        "reserved" | "consumption" | "attempt" | "attemptreserved" | "attemptconsumption"
+    ));
     let permitted = if phase == "attempt" {
         early_attempt::ALL_ATTEMPT_STAGES
             .iter()
             .any(|at| format!("{at:?}") == target)
-    } else if phase == "reserved" {
+    } else if phase == "reserved" || phase == "attemptreserved" {
         reservation_publication::ALL_STAGES
             .iter()
             .any(|at| format!("{at:?}") == target)
@@ -174,6 +177,37 @@ fn diagnostic_process_crash_child() {
     let raw = i.signed(&i.body(&f));
     let mut original = bind_fixed_intent(&mut authority, &raw, &i.check(&f, 100)).unwrap();
     with_owned_empty_fence_at_for_test(&origin, |fence, _, _| {
+        if phase == "attemptreserved" || phase == "attemptconsumption" {
+            let attempt =
+                early_attempt::retain_fixed_attempt(&mut original, fence, &raw, &i.check(&f, 100))
+                    .unwrap();
+            let mut read =
+                attempt_publication::publish_with(attempt, &raw, &i.check(&f, 100), |at| {
+                    if phase == "attemptreserved" && format!("{at:?}") == target {
+                        ready(&format!("{phase}:{target}"), owned.child.id(), true);
+                    }
+                    Ok(())
+                })
+                .unwrap();
+            if phase == "attemptconsumption" {
+                let mut consumed =
+                    initial_consumption::consume_with(read, &raw, &i.check(&f, 100), |at| {
+                        if format!("{at:?}") == target {
+                            ready(&format!("{phase}:{target}"), owned.child.id(), true);
+                        }
+                        Ok(())
+                    })
+                    .unwrap();
+                consumed.revalidate(&raw, &i.check(&f, 100)).unwrap();
+                assert_eq!(target, "AfterReturn");
+                ready("attemptconsumption:AfterReturn", owned.child.id(), true);
+            } else {
+                read.revalidate(&raw, &i.check(&f, 100)).unwrap();
+                assert_eq!(target, "AfterReturn");
+                ready("attemptreserved:AfterReturn", owned.child.id(), true);
+            }
+            return;
+        }
         if phase == "attempt" {
             let mut read =
                 early_attempt::retain_with(&mut original, fence, &raw, &i.check(&f, 100), |at| {
@@ -484,8 +518,26 @@ fn checkpoint_contents(s: &Scratch, phase: &str, stage: &str) {
         }
         return;
     }
-    if phase == "reserved" {
-        assert_eq!(names.len(), usize::from(stage != "BeforeCreate"));
+    let inherited_attempt = matches!(phase, "attemptreserved" | "attemptconsumption");
+    if inherited_attempt {
+        let path = s.leaf().join("diagnostic-attempt-074.json");
+        let raw = fs::read(&path).unwrap();
+        assert_eq!(fs::metadata(&path).unwrap().mode() & 0o7777, 0o400);
+        let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        assert_eq!(value["schema_version"], "diagnostic-retained-intent-074-v1");
+        assert!(value["previous_record_sha256"].is_null());
+        assert_eq!(value["state"]["revision"], 1);
+        assert_eq!(value["state"]["completed_cells"], 0);
+        assert_eq!(value["state"]["stage"], "reserved");
+        let mut canonical = crate::canonical_json(&value).unwrap();
+        canonical.push(b'\n');
+        assert_eq!(raw, canonical);
+    }
+    if phase == "reserved" || phase == "attemptreserved" {
+        assert_eq!(
+            names.len(),
+            usize::from(stage != "BeforeCreate") + usize::from(inherited_attempt)
+        );
         if stage == "BeforeCreate" {
             return;
         }
@@ -512,13 +564,14 @@ fn checkpoint_contents(s: &Scratch, phase: &str, stage: &str) {
         });
     assert_eq!(
         names.len(),
-        if index == 0 {
-            1
-        } else if index < 7 {
-            2
-        } else {
-            3
-        }
+        usize::from(inherited_attempt)
+            + if index == 0 {
+                1
+            } else if index < 7 {
+                2
+            } else {
+                3
+            }
     );
     if index == 0 {
         return;
@@ -585,8 +638,12 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
     checkpoint_contents(&s, phase, stage);
     let state = s.leaf().join("active-diagnostic.json");
     let empty = matches!(phase, "reserved" | "attempt") && stage == "BeforeCreate";
-    assert_eq!(state.exists(), phase != "attempt" && !empty);
-    if phase == "consumption" || (phase != "attempt" && stage == "AfterReturn") {
+    let state_expected = phase != "attempt"
+        && !(matches!(phase, "reserved" | "attemptreserved") && stage == "BeforeCreate");
+    assert_eq!(state.exists(), state_expected);
+    if matches!(phase, "consumption" | "attemptconsumption")
+        || (phase != "attempt" && stage == "AfterReturn")
+    {
         let state = crate::diagnostic_lease::decode_active(&fs::read(&state).unwrap()).unwrap();
         assert_eq!(state.stage, DiagnosticStage::Reserved);
         assert_eq!((state.revision, state.completed_cells), (1, 0));
@@ -600,7 +657,7 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
         let restarted_snapshot = snapshot(&s);
         assert_eq!(restarted_snapshot, original_snapshot);
     }
-    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if phase == "attempt" { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
+    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
 }
 fn seeded(mut stages: Vec<String>) -> Vec<String> {
     let mut seed = 0x074d_u64;
@@ -657,4 +714,32 @@ fn diagnostic_process_crash_attempt_all_stages_and_post_return() {
         run_case("attempt", &stage, true);
     }
     run_case("attempt", "AfterReturn", false);
+}
+
+#[test]
+#[ignore = "manual local nonroot Linux owned attempt-to-Reserved SIGKILL proof, no product workload"]
+fn diagnostic_process_crash_attempt_publication_all_stages_and_post_return() {
+    let mut stages: Vec<_> = reservation_publication::ALL_STAGES
+        .iter()
+        .map(|at| format!("{at:?}"))
+        .collect();
+    stages.push("AfterReturn".into());
+    for stage in seeded(stages) {
+        run_case("attemptreserved", &stage, true);
+    }
+    run_case("attemptreserved", "AfterReturn", false);
+}
+
+#[test]
+#[ignore = "manual local nonroot Linux owned inherited-attempt consumption SIGKILL proof, no product workload"]
+fn diagnostic_process_crash_attempt_consumption_all_stages_and_post_return() {
+    let mut stages: Vec<_> = initial_consumption::ALL_CONSUMPTION_STAGES
+        .iter()
+        .map(|at| format!("{at:?}"))
+        .collect();
+    stages.push("AfterReturn".into());
+    for stage in seeded(stages) {
+        run_case("attemptconsumption", &stage, true);
+    }
+    run_case("attemptconsumption", "AfterReturn", false);
 }

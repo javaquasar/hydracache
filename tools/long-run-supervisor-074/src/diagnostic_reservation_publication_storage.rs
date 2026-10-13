@@ -1,6 +1,9 @@
 //! Private original-object publication engine; no authority or execution entry.
 use super::super::super::super::open_at;
 use super::super::super::{Document, FixedReservedStateError, Stamp, MAX_BYTES};
+use super::attempt_storage::{
+    Document as AttemptDocument, StorageAttemptError, NAME as ATTEMPT_NAME,
+};
 use super::{
     parent as performance_parent, EmptyReservationFenceError, OriginalEmptyReservationFence,
 };
@@ -8,7 +11,7 @@ use crate::diagnostic_lease::{DiagnosticState, ACTIVE_DIAGNOSTIC_NAME};
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::Write;
-use std::os::fd::IntoRawFd;
+use std::os::fd::{AsRawFd, IntoRawFd};
 use thiserror::Error;
 
 #[path = "diagnostic_initial_consumption_storage.rs"]
@@ -29,6 +32,8 @@ pub enum PublicationStage {
 }
 #[derive(Debug, Error)]
 pub enum StoragePublicationError {
+    #[error("original inherited attempt refused: {0}")]
+    Attempt(#[from] StorageAttemptError),
     #[error("original empty storage/fence refused: {0}")]
     Fence(#[from] EmptyReservationFenceError),
     #[error("original created state document refused: {0}")]
@@ -52,6 +57,7 @@ pub enum StoragePublicationError {
 }
 pub(crate) struct PublicationStorage<'storage> {
     pub(crate) empty: OriginalEmptyReservationFence<'storage>,
+    attempt: Option<AttemptDocument>,
     document: Option<Document>,
     attempted: bool,
     acknowledged: bool,
@@ -63,6 +69,7 @@ impl<'storage> PublicationStorage<'storage> {
     pub(crate) fn new(empty: OriginalEmptyReservationFence<'storage>) -> Self {
         Self {
             empty,
+            attempt: None,
             document: None,
             attempted: false,
             acknowledged: false,
@@ -70,6 +77,14 @@ impl<'storage> PublicationStorage<'storage> {
             consumption_acknowledged: false,
             consumption_documents: [None, None],
         }
+    }
+    pub(super) fn from_attempt(
+        empty: OriginalEmptyReservationFence<'storage>,
+        attempt: AttemptDocument,
+    ) -> Self {
+        let mut storage = Self::new(empty);
+        storage.attempt = Some(attempt);
+        storage
     }
     pub(crate) fn is_refused(&self) -> bool {
         self.empty.is_refused()
@@ -97,6 +112,51 @@ impl<'storage> PublicationStorage<'storage> {
             .map_err(EmptyReservationFenceError::from)?;
         Ok(())
     }
+    fn inspect_owned_attempt(&self) -> Result<(), StoragePublicationError> {
+        if let Some(attempt) = &self.attempt {
+            attempt.inspect(self.leaf()?)?;
+        }
+        Ok(())
+    }
+    fn publication_namespace(&self, state_present: bool) -> Result<(), StoragePublicationError> {
+        self.inspect_owned_attempt()?;
+        if self.attempt.is_none() {
+            if !state_present {
+                return Err(StoragePublicationError::Context);
+            }
+            only_state(self.leaf()?)?;
+            return Ok(());
+        }
+        let fresh = open_at(self.leaf()?, ".", libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
+        let mut seen = [false; 2];
+        for entry in std::fs::read_dir(format!("/proc/self/fd/{}", fresh.as_raw_fd()))? {
+            let name = entry?.file_name();
+            let index = if name == ATTEMPT_NAME {
+                1
+            } else if state_present && name == ACTIVE_DIAGNOSTIC_NAME {
+                0
+            } else {
+                return Err(StoragePublicationError::Context);
+            };
+            if seen[index] {
+                return Err(StoragePublicationError::Context);
+            }
+            seen[index] = true;
+        }
+        if seen != [state_present, true] {
+            return Err(StoragePublicationError::Context);
+        }
+        self.inspect_owned_attempt()
+    }
+    fn before_publication(&mut self) -> Result<(), StoragePublicationError> {
+        if self.attempt.is_none() {
+            return self.empty.revalidate().map_err(Into::into);
+        }
+        self.ancestry()?;
+        self.publication_namespace(false)?;
+        self.ancestry()?;
+        self.publication_namespace(false)
+    }
     fn objects(&mut self, file: &File) -> Result<(), StoragePublicationError> {
         self.ancestry()?;
         let stamp = Stamp::of(&file.metadata()?);
@@ -107,7 +167,7 @@ impl<'storage> PublicationStorage<'storage> {
         if Stamp::of(&named.metadata()?) != stamp || Stamp::of(&file.metadata()?) != stamp {
             return Err(FixedReservedStateError::Document.into());
         }
-        only_state(self.leaf()?)?;
+        self.publication_namespace(true)?;
         self.ancestry()
     }
     fn boundary<E: From<StoragePublicationError>>(
@@ -135,10 +195,11 @@ impl<'storage> PublicationStorage<'storage> {
         if raw.len() as u64 > MAX_BYTES {
             return Err(StoragePublicationError::State(FixedReservedStateError::Document).into());
         }
-        self.empty
-            .revalidate()
-            .map_err(StoragePublicationError::from)?;
+        self.before_publication()?;
         checkpoint(PublicationStage::BeforeCreate)?;
+        if self.attempt.is_some() {
+            self.before_publication()?;
+        }
         // Exclusion protects even a same-name appearance after the last empty scan.
         let mut file = open_at(
             self.leaf()?,
