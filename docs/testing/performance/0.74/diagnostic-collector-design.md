@@ -35,7 +35,8 @@ events latch refusal. No retry, truncation, unlink or automatic repair follows.
 
 Both streams must return an actual zero-length read after all queued bytes drain.
 A hangup event, dead leader, empty read queue or caller boolean is insufficient.
-Only then may the original collector sync the files, make them read-only, sync
+Only then may the original collector sync the files, make them read-only, verify
+their retained bytes against the incremental stream hashes, sync
 the directory and close its writable descriptors before returning byte counts
 and hashes. That result proves local stream drain only, not authenticated start,
 successful workload output, cgroup cessation or lifecycle completion.
@@ -79,7 +80,16 @@ receipt. Test compile-time prohibition of forging or promoting the receipt.
 Use seed `0x0750` for deterministic fragmentation, with three exact-source
 repeats. Process tests own only bounded nonproduct children, with a 30-second
 harness deadline and RAII cleanup. These tests do not model power loss, actual
-root isolation or production cgroup revocation. Run package tests, current/MSRV
+root isolation or production cgroup revocation. A separate ignored owned-child
+proof interrupts directory creation/sync, both stream creation/sync, append,
+read-only conversion/sync, final directory sync, close, acknowledgement and
+after-return lost acknowledgement. Use 14 checkpoint deaths plus after-return,
+one uninterrupted control and two fresh refusal inspections for every retained
+attempt. At each barrier the parent snapshots retained bytes and metadata before
+SIGKILL, then requires unchanged snapshots and original signal-nine termination.
+Fresh inspectors cannot recreate the collector or repair its files. Run this
+180-second manual gate three times, single-flight without relinking libtest.
+Run package tests, current/MSRV
 checks, warnings-denied Clippy/Rustdoc, scoped formatting, documentation and
 non-promotable performance-contract checks. Retain negative results and raw logs.
 Collector overhead must later pass the existing host budget before measurement
