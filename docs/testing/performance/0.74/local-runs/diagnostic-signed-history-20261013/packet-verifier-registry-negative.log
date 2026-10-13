@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\diagnostic-signed-history-20261013\verify_packet.py", line 135, in <module>
+    w11["artifacts"].extend("docs/testing/performance/0.74/local-runs/diagnostic-signed-history-20261013/" + name for name in ("README.md", "manifest.json", "verify_packet.py"))
+    ~~~^^^^^^^^^^^^^
+KeyError: 'artifacts'

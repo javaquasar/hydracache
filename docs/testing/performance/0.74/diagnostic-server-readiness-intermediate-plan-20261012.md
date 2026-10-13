@@ -189,3 +189,18 @@ P1 remains open. Fixed cells two through four need signed next-state/history
 rules and owned progression, including incomplete/reboot refusal. This package
 does not authenticate caller outcomes or time, establish writer cessation/empty
 cgroup, or open execution, installed-host rehearsal or qualification.
+
+## P1 Signed supplied history inspection
+
+The [history slice](diagnostic-signed-history-local-design.md) verifies bounded
+supplied cells one through four against the exact initial-attempt anchor,
+original signature pins, unique request/nonce and previous raw hashes.
+Reserved projections require at least three revisions per completed cell,
+allowing additional heartbeats. These are necessary consistency checks, not a
+retained transition trace or proof of completion.
+
+P1 remains open. Observation cannot become an append/start guard or recovered
+acknowledgement. The outer previous-record hash is not covered by the intent
+signature. Next define the owned state progression and its completion boundary,
+preserving the original fence, authority and attempt rather than reopening or
+rebinding them. Incomplete/reboot refusal, P2 through P5 and ship remain closed.

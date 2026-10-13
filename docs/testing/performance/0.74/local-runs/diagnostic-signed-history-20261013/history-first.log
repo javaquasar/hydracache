@@ -1,0 +1,18 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 14.34s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 9 tests
+test diagnostic_output_preparation::intent_journal::tests::signed_history_original_guard_input_drift_latches ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_empty_anchor_is_observation_only ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_duplicate_requests_and_nonces_refuse ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_current_projection_and_missing_prefix_refuse ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_signatures_principals_and_time_are_not_renewed ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_exact_anchor_pair_and_document_budgets_refuse ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_resigned_origin_clock_and_revision_mutations_refuse ... ok
+test diagnostic_output_preparation::intent_journal::tests::signed_history_all_prefixes_and_heartbeat_revisions_are_readonly ... ok
+signed history seed=0x074f legal=64 signed_mutations=64; inspection is not completion
+test diagnostic_output_preparation::intent_journal::tests::signed_history_seeded_plausibility_never_proves_completion ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 561 filtered out; finished in 13.51s
+

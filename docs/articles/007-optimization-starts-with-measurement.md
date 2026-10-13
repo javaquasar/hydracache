@@ -7116,3 +7116,56 @@ passes 204, root contracts 164, and Linux compile-fail doctests 43. Current/MSRV
 warnings-denied lint/Rustdoc, format and docs checks pass. These are local
 ownership/retention/refusal observations, not throughput, allocation, host
 durability or production-readiness claims.
+
+## Checking signed history without authorizing the next cell
+
+P1 needs to separate a consistent history from permission to continue. The
+[history contract](../testing/performance/0.74/diagnostic-signed-history-local-design.md)
+introduces bounded byte inspection of up to four retained record/commit pairs,
+anchored to the exact initial attempt. It verifies every signed Reserved state
+and unit projection under the original controller, peer and worker policy.
+Cell indices, lease/boot/binary/provenance, reservation origin, previous raw
+hashes, commit bytes and unique request/nonce must agree. Malformed,
+noncanonical, oversized, incomplete or conflicting input refuses and latches
+the supplied original intent guard.
+
+An increasing revision alone is insufficient. Returning from one Reserved cell
+to the next requires at least Reserved to Starting to Running to Reserved:
+three publications, not one. The checker therefore requires a minimum gap of
+three revisions while allowing heartbeat publications. Observation and
+controller clocks cannot regress, and the supplied current state must be
+consistent with the retained prefix. Re-signed mutations test these rules even
+when all affected outer hashes and commit markers are recomputed.
+
+This remains a necessary bound, not proof that omitted transitions occurred.
+The previous-record hash is an outer record field, not part of the signed intent
+body. Its integrity link cannot replace an authenticated transition trace,
+actual cell outcome or demonstrated writer cessation. A valid signature over a
+later Reserved projection must not let a caller skip the owned completion
+protocol. The new result deliberately contains only a pair count and hashes;
+it has no append, execution or recovered-acknowledgement conversion.
+
+Historical signatures are checked at their signed issue time, with no future
+issue time relative to the asserted current clock. The current original intent
+is independently revalidated before and after inspection. A new valid current
+intent can inspect expired historical records, but history cannot renew an
+expired current intent. Independent concurrent inspections share immutable
+bytes, not a runtime acknowledgement. Peer/time remain assertions until P2.
+
+Existing fixed publishers and filesystem fences are unchanged. No write,
+process spawn, new filename, durable schema or server route is added, so this
+slice adds no process-loss boundary. It does not establish original-object
+ownership, successful completion, durable refusal across restart or host
+rollback protection. Fixed cells two through four, incomplete/reboot handling,
+trusted inputs, execution/watchdog/cleanup and host rehearsal remain open.
+These checks improve tooling correctness; they are not product throughput or
+allocation improvements and do not change qualification or ship admission.
+
+The [exact-source packet](../testing/performance/0.74/local-runs/diagnostic-signed-history-20261013/README.md)
+retains the missing-entry compilation failure and separates the initial
+nine-test run from the final eleven cases. Each of three final-source repeats
+passes all eleven tests, including 64 seeded legal chains and 64 re-signed
+mutations. Scoped Linux regression passes 644 with seven manual/host cases
+ignored; Windows passes 204, root contracts 165 and Linux doctests 44.
+Formatting, current/MSRV checks, warnings-denied lint/Rustdoc and docs/book
+checks pass. No process-loss or server result is claimed for this read-only API.

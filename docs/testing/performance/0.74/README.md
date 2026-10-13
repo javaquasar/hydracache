@@ -2790,3 +2790,25 @@ attempt already exists. Surviving records cannot recreate a runtime guard.
 Fixed cells two through four and signed state/history progression remain P1
 work; trusted inputs, execution/cleanup and host/qualification admission remain
 closed.
+
+## Signed history inspection without lifecycle permission
+
+The [byte inspection API](diagnostic-signed-history-local-design.md) checks up to
+four existing-schema record/commit pairs against the exact initial-attempt
+anchor. It verifies each signed state/unit projection under original controller,
+peer and worker pins, previous raw hashes, unique retained request/nonce and
+necessary revision/clock bounds. Extra heartbeat revisions are allowed.
+The current intent brackets inspection; historical issue times do not renew it.
+
+The returned count/hashes are observation data. They prove neither omitted
+transitions nor cell completion, filesystem identity, durable acknowledgement
+or permission to append/start. The outer previous-record hash is not signed by
+the intent signature. The fixed publishers, original fences and server route
+remain unchanged. P1 still requires owned progression and incomplete/reboot
+handling before trusted inputs, execution/cleanup and host rehearsal.
+
+The [exact-source packet](local-runs/diagnostic-signed-history-20261013/README.md)
+retains baseline, missing-entry failure, three repeated eleven-test/seeded
+matrices and scoped regressions. No new process-loss test is claimed for an API
+that only checks supplied bytes; existing fixed storage and crash harness are
+unchanged. Qualification inputs and the inherited plan-digest refusal remain.

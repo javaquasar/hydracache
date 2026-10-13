@@ -1,0 +1,127 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized] target(s) in 2.81s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 28 tests
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_receipts::tests::pinned_hdr_projection_checks_bucket_edges_and_ceil_rank ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_receipts::tests::seeded_hdr_projection_preserves_rank_bounds_and_overflow_accounting ... ok
+test diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair ... ok
+test diagnostic_artifacts::local_audit_tests::local_file_reader_enforces_exact_budget_and_regular_leaf ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records ... ok
+test host_receipt::tests::canonical_receipt_round_trips_and_detects_drift ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test host_receipt::tests::cpuset_parser_canonicalizes_ranges ... ok
+test host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+test host_receipt::tests::installed_binary_identity_requires_every_manifest_field ... ok
+test host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id ... ok
+test host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed ... ok
+test host_receipt::tests::provisioning_source_is_strict_and_binary_bound ... ok
+test host_receipt::tests::provisioning_v1_rejects_worker_authority_extensions ... ok
+test host_receipt::tests::quarantine_recovery_allows_only_the_provisioned_supervisor_identity_to_change ... ok
+test start_evidence::tests::rejects_non_start_and_invalid_campaign_before_touching_paths ... ok
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+test start_evidence::tests::bounded_input_and_create_new_output_are_enforced ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_refusal_and_higher_epoch_are_distinct_monotonic_transitions ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_seeded_history_mutations_never_adopt_gaps_or_changed_refusals ... ok
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_generation_capacity_is_finite_and_no_epoch_wrap_is_possible ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests\diagnostic_intent_projection.rs (target\debug\deps\diagnostic_intent_projection-618a37f4f1d00869.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_lease.rs (target\debug\deps\diagnostic_lease-1180d6d1c75186a9.exe)
+
+running 18 tests
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests\diagnostic_original_fence.rs (target\debug\deps\diagnostic_original_fence-0f117ead9555c9fe.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_task_api.rs (target\debug\deps\diagnostic_task_api-e40e18e3447cbd8a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_worker_account.rs (target\debug\deps\diagnostic_worker_account-84b908605936f2bb.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\diagnostic_worker_policy.rs (target\debug\deps\diagnostic_worker_policy-4a19612bf3999c04.exe)
+
+running 14 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.06s
+
+     Running tests\host_execution.rs (target\debug\deps\host_execution-e68baa90c854d230.exe)
+
+running 5 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\provisioning.rs (target\debug\deps\provisioning-f6c934047be1dfc0.exe)
+
+running 5 tests
+test sudo_boundary_exposes_only_the_fixed_signed_bundle_installer ... ok
+test accounts_directories_and_unresolved_key_fail_closed ... ok
+test service_is_detached_confined_and_exposes_no_workflow_shell ... ok
+test private_storage_is_checked_before_installation_without_metadata_repair ... ok
+test role_overhead_does_not_expand_the_fixed_root_entrypoint ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
