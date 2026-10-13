@@ -7250,3 +7250,51 @@ Linux scoped functional tests pass 660 with eight manual/host tests ignored;
 Windows passes 204, root contracts 166 and Linux compile-fail doctests 48.
 Current/MSRV checks, warnings-denied lint/Rustdoc, format and docs/book checks
 pass. No inherited negative was removed and no qualification input was changed.
+
+## Declining an incomplete attempt without claiming cleanup
+
+The next lifecycle hypothesis was that an owned Starting attempt can be
+permanently declined without renewing its original launch consent or interpreting
+a missing PID/cgroup inode as proof that no writer exists. The
+[quarantine design](../testing/performance/0.74/diagnostic-starting-quarantine-local-design.md)
+uses a consuming runtime transition: the original guard becomes an opaque
+quarantine that still owns its borrow, retained objects and common fence.
+
+The operation first latches all original readers, then attempts a Policy refusal
+through the original authority journal under its captured trust and host pins.
+It accepts no new signed envelope, asserted peer/time, path or completion outcome.
+The original attempt, active-state anchor, cell-one pair and Starting document
+remain untouched. Even replacement of a Starting document cannot turn revocation
+into adoption or authorize repair. The authority record/commit format is unchanged.
+
+Three outcomes answer different questions. Acknowledged establishes a validated
+original authority refusal, including an already durable refusal without another
+append. Uncertain preserves the exact persistence error, including a durable
+commit whose acknowledgement failed. PreviouslyRefused performs no additional
+I/O and makes no claim about whether a prior refusal was durable. All three
+prevent returning a healthy lifecycle capability. None proves completed execution,
+writer cessation or an empty original cgroup, and none authorizes cleanup.
+
+The local tests cover original object conservation and common-lock contention,
+the four existing logical authority append faults, unsafe storage and advanced
+epoch, replaced attempt objects, expired consent, no retry after prior refusal
+and independent concurrent chains. A changed or partial context remains ineligible
+for fresh reservation after the runtime quarantine is dropped. Compile-fail
+examples prevent cloning, launch, resource release and reuse of the consumed guard.
+
+This is a fail-closed lifecycle improvement, not an allocation or throughput
+result. The prior Starting-file SIGKILL matrix does not prove process loss during
+authority append. That distinct fault proof and reboot handling remain follow-up
+work before later cells, trusted production inputs and execution/watchdog/cleanup
+can be admitted. No server workload or qualification threshold changes here.
+
+Implementation `9875fa44` passes all eight cases in three same-source
+repeats. Scoped Linux regression passes 668 tests with eight manual/host cases
+ignored; Windows passes 204, root contracts 166 and Linux doctests 52. Current
+and MSRV checks, warnings-denied lint/Rustdoc, format and documentation checks
+pass. The [packet](../testing/performance/0.74/local-runs/diagnostic-starting-quarantine-20261013/README.md)
+also retains the first compiler failure. Rust 1.94 stopped in diagnostic rendering
+while checking a macro-expanded test; MSRV reported an unused mutable binding.
+Removing that unnecessary binding allowed the current compiler to proceed.
+This sequence does not establish the compiler bug's root cause, and no warning
+policy or correctness assertion was weakened.

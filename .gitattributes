@@ -152,3 +152,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signed-history-*/*.log -text
 docs/testing/performance/0.74/local-runs/diagnostic-signed-history-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-starting-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-starting-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-starting-quarantine-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-starting-quarantine-*/manifest.json -text

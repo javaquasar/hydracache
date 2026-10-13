@@ -2836,3 +2836,28 @@ development/scheduling negatives and final-source proof. Three complete
 process repeats and the full prior-phase regression confirm retained-context
 refusal after actual process loss. This does not establish host reboot,
 power-loss durability, production clock/peer or completion authority.
+
+## Quarantine of an incomplete owned Starting attempt
+
+The [quarantine API](diagnostic-starting-quarantine-local-design.md) consumes
+the original Starting guard into a permanently unusable object that retains
+the original borrow and fence. It latches refusal before writing through the
+original authority journal with captured trust and host pins. No fresh envelope,
+peer, time assertion or caller outcome can renew launch consent. Attempt/state/
+cell-one/Starting objects are never modified or adopted by this operation.
+
+Disposition distinguishes acknowledged original authority refusal, uncertain
+persistence with its exact error, and a previously refused reader without a new
+durable claim or I/O. None establishes Terminal, cell completion, writer cessation
+or empty cgroup. Dropping the runtime object does not delete retained context or
+make fresh admission eligible. The existing authority format is reused.
+
+P1 remains open. Actual authority-append SIGKILL and reboot handling, authenticated
+cell completion and later fixed cells still precede P2 through P5 and server
+admission. Logical append faults and the prior Starting-file crash proof are
+different evidence; they must not be substituted for one another.
+
+The [exact-source packet](local-runs/diagnostic-starting-quarantine-20261013/README.md)
+retains three eight-case functional repeats, scoped regressions and the compiler
+development negative. Runtime implementation is `9875fa44a58b45f25fde249c9c8038bf946c6425`.
+There is no new process-loss measurement or product performance claim.

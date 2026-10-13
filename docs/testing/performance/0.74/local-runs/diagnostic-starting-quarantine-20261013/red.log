@@ -1,0 +1,27 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `quarantine` found for struct `FixedStartingIntentRead<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_starting_intent_tests.rs:623:36
+    |
+623 |   ...ng.quarantine();
+    |         ^^^^^^^^^^ method not found in `FixedStartingIntentRead<'_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs:47:1
+    |
+ 47 | / pub ...
+ 48 | |     ...
+ 49 | |     ...
+ 50 | |     ...
+...   |
+ 56 | |     ...
+ 57 | | > {
+    | |_- method `quarantine` not found for this struct
+
+error[E0433]: failed to resolve: use of undeclared type `QuarantineDisposition`
+   --> tools/long-run-supervisor-074/src/diagnostic_starting_intent_tests.rs:624:53
+    |
+624 | ...), QuarantineDisposition::A...
+    |       ^^^^^^^^^^^^^^^^^^^^^ use of undeclared type ...Disposition`
+
+Some errors have detailed explanations: E0433, E0599.
+For more information about an error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

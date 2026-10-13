@@ -227,3 +227,24 @@ the runtime implementation is the existing transition fixtures' original
 fence retention. It includes three complete functional/process repeats and
 the seven-phase SIGKILL regression, preserving all development/scheduling
 negatives. P1 is still not complete; no execution or host boundary is opened.
+
+## P1 Owned incomplete attempt quarantine
+
+The [quarantine slice](diagnostic-starting-quarantine-local-design.md) consumes
+an acknowledged original Starting guard into permanent refusal while holding
+the same original chain and fence. It attempts only the existing authority
+refusal, using captured pins. It introduces no new durable format or attempt
+mutation. Its explicit disposition cannot authorize execution, completed-cell
+publication, cleanup or re-admission, including when authority persistence is
+uncertain or the old launch envelope would now be expired.
+
+P1 is not complete. Next test real process loss during this authority append
+and acknowledgement, preserving partial tails and read-only fresh inspection.
+Later progression requires authentic completion and original writer/cgroup
+evidence; no caller-asserted outcome can promote Starting to Running or Terminal.
+Reboot handling, cells two through four and P2 through P5 remain open.
+
+Implementation `9875fa44a58b45f25fde249c9c8038bf946c6425` has a
+[local exact-source packet](local-runs/diagnostic-starting-quarantine-20261013/README.md)
+with three repeated eight-case matrices and scoped regression. This closes only
+the owned quarantine API slice, not P1 or server readiness.

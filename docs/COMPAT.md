@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Owned Starting quarantine introduces only a consuming runtime type. It reuses
+the existing bounded authority refusal record/commit schema and Policy reason;
+no filename, encoding, migration or reader compatibility changes. Acknowledged
+means original authority refusal only. Uncertain retains the persistence error,
+and PreviouslyRefused performs no new I/O or claim of durable acknowledgement.
+The original attempt objects remain retained and fresh admission still refuses.
+No terminal receipt, cleanup, replay or healthy capability conversion is added.
+See the [quarantine design](testing/performance/0.74/diagnostic-starting-quarantine-local-design.md).
+
 Owned first Starting departure adds only `diagnostic-starting-intent-074.json`
 inside the original fixed leaf. Canonical LF-terminated
 `diagnostic-starting-intent-074-v1` is bounded by 4096 bytes and includes the
