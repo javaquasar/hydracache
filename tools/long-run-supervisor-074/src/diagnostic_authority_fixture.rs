@@ -556,12 +556,18 @@ fn fail(
     requested: Option<PublicationStage>,
     stage: PublicationStage,
 ) -> Result<(), AuthorityError> {
+    #[cfg(test)]
+    publication_checkpoint::observe(stage);
     if requested == Some(stage) {
         Err(AuthorityError::Injected(stage))
     } else {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "diagnostic_authority_checkpoint.rs"]
+pub(crate) mod publication_checkpoint;
 
 #[cfg(test)]
 impl FixtureAuthorityRegistry {

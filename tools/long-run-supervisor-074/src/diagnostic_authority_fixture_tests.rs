@@ -3,6 +3,52 @@ use super::*;
 use std::os::unix::fs::symlink;
 use tempfile::TempDir;
 
+#[test]
+fn authority_publication_checkpoint_preserves_fault_and_scope() {
+    let calls = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let observed = calls.clone();
+    publication_checkpoint::with(
+        move |stage| {
+            assert_eq!(stage, PublicationStage::RecordCreated);
+            observed.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        },
+        || {
+            assert!(matches!(
+                fail(
+                    Some(PublicationStage::RecordCreated),
+                    PublicationStage::RecordCreated
+                ),
+                Err(AuthorityError::Injected(PublicationStage::RecordCreated))
+            ));
+        },
+    );
+    fail(None, PublicationStage::RecordCreated).unwrap();
+    assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 1);
+}
+
+#[test]
+fn authority_publication_checkpoint_order_matches_original_refusal_protocol() {
+    let (dir, uid, gid) = fixture();
+    let p = checked(7);
+    let mut registry = initialize_fixture_registry(dir.path(), uid, gid, &p).unwrap();
+    let stages = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let observed = stages.clone();
+    publication_checkpoint::with(
+        move |stage| observed.lock().unwrap().push(stage),
+        || registry.refuse(RefusalReason::Policy).unwrap(),
+    );
+    assert_eq!(
+        *stages.lock().unwrap(),
+        [
+            PublicationStage::RecordCreated,
+            PublicationStage::RecordSynced,
+            PublicationStage::MarkerCreated,
+            PublicationStage::DurableCommit,
+        ]
+    );
+    assert!(registry.inspect(&p.trust, &p.context).unwrap().refused);
+}
+
 fn fixture() -> (TempDir, u32, u32) {
     let dir = tempfile::Builder::new()
         .prefix("hydracache-authority-")

@@ -3,7 +3,9 @@ use super::*;
 use super::super::{attempt_publication, early_attempt, initial_consumption, reservation_publication, starting_intent};
 use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test};
 use crate::diagnostic_process::{pin_owned_test_helper, OwnedTasksHelper};
-use crate::diagnostic_worker_policy::authority_registry::fixture::initialize_fixture_registry;
+use crate::diagnostic_worker_policy::authority_registry::fixture::{initialize_fixture_registry, open_fixture_registry, publication_checkpoint};
+use crate::diagnostic_worker_policy::authority_registry::AuthorityError;
+use crate::diagnostic_worker_policy::{AssertedWorkerHost, NamespaceIdentity, WorkerPolicyTrust};
 use crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::{open_signed_fixture_credentials, mount_binding::open_signed_fixture_mount};
 use crate::host_execution::{lock_host_root, HostExecutionError};
 use std::io::{BufRead, BufReader, Read, Write};
@@ -24,6 +26,7 @@ const ACCOUNT: &str = "HC074_PRIVATE_CRASH_ACCOUNT";
 const PHASE: &str = "HC074_PRIVATE_CRASH_PHASE";
 const STAGE: &str = "HC074_PRIVATE_CRASH_STAGE";
 const EMPTY: &str = "HC074_PRIVATE_CRASH_EMPTY";
+const AUTHORITY_PIN: &str = "HC074_PRIVATE_CRASH_AUTHORITY_PIN";
 const OUTPUT_BUDGET: u64 = 8192;
 
 fn readiness_line(line: &str) -> Option<&str> {
@@ -119,6 +122,13 @@ fn diagnostic_process_crash_child() {
             _ => panic!("invalid private inspect expectation"),
         };
         inspect_empty_fence_at_for_test(&origin, empty);
+        if std::env::var(PHASE).unwrap() == "quarantine" {
+            let authority_root = owned_path(AUTHORITY, "hydracache-authority-");
+            let label =
+                inspect_quarantine_authority(&authority_root, &std::env::var(STAGE).unwrap());
+            ready(label, 0, false);
+            return;
+        }
         ready(
             if empty {
                 "fresh-empty"
@@ -143,8 +153,14 @@ fn diagnostic_process_crash_child() {
             | "attemptreserved"
             | "attemptconsumption"
             | "starting"
+            | "quarantine"
     ));
-    let permitted = if phase == "starting" {
+    let permitted = if phase == "quarantine" {
+        matches!(
+            target.as_str(),
+            "BeforeRefusal" | "RecordCreated" | "RecordSynced" | "MarkerCreated" | "DurableCommit"
+        )
+    } else if phase == "starting" {
         starting_intent::ALL_STARTING_STAGES
             .iter()
             .any(|at| format!("{at:?}") == target)
@@ -186,7 +202,10 @@ fn diagnostic_process_crash_child() {
     let raw = i.signed(&i.body(&f));
     let mut original = bind_fixed_intent(&mut authority, &raw, &i.check(&f, 100)).unwrap();
     with_owned_empty_fence_at_for_test(&origin, |fence, _, _| {
-        if phase == "attemptreserved" || phase == "attemptconsumption" || phase == "starting" {
+        if matches!(
+            phase.as_str(),
+            "attemptreserved" | "attemptconsumption" | "starting" | "quarantine"
+        ) {
             let attempt =
                 early_attempt::retain_fixed_attempt(&mut original, fence, &raw, &i.check(&f, 100))
                     .unwrap();
@@ -198,7 +217,7 @@ fn diagnostic_process_crash_child() {
                     Ok(())
                 })
                 .unwrap();
-            if phase == "starting" {
+            if phase == "starting" || phase == "quarantine" {
                 let consumed = initial_consumption::consume_fixed_initial_intent(
                     read,
                     &raw,
@@ -212,13 +231,35 @@ fn diagnostic_process_crash_child() {
                 next.cleanup_confirmed = false;
                 let mut starting =
                     starting_intent::retain_with(consumed, &raw, &i.check(&f, 100), &next, |at| {
-                        if format!("{at:?}") == target {
+                        if phase == "starting" && format!("{at:?}") == target {
                             ready(&format!("{phase}:{target}"), owned.child.id(), true);
                         }
                         Ok(())
                     })
                     .unwrap();
                 starting.revalidate(&raw, &i.check(&f, 100)).unwrap();
+                if phase == "quarantine" {
+                    if target == "BeforeRefusal" {
+                        ready("quarantine:BeforeRefusal", owned.child.id(), true);
+                    }
+                    let target_checkpoint = target.clone();
+                    let helper = owned.child.id();
+                    let quarantined = publication_checkpoint::with(
+                        move |at| {
+                            if format!("{at:?}") == target_checkpoint {
+                                ready(&format!("quarantine:{target_checkpoint}"), helper, true);
+                            }
+                        },
+                        || starting.quarantine(),
+                    );
+                    assert!(matches!(
+                        quarantined.disposition(),
+                        starting_intent::QuarantineDisposition::Acknowledged
+                    ));
+                    assert_eq!(target, "AfterReturn");
+                    ready("quarantine:AfterReturn", owned.child.id(), true);
+                    return;
+                }
                 assert_eq!(target, "AfterReturn");
                 ready("starting:AfterReturn", owned.child.id(), true);
             } else if phase == "attemptconsumption" {
@@ -286,6 +327,68 @@ fn diagnostic_process_crash_child() {
     });
 }
 
+fn authority_observation(stage: &str) -> &'static str {
+    match stage {
+        "BeforeRefusal" => "fresh-refused-authority-active",
+        "RecordCreated" | "RecordSynced" | "MarkerCreated" => "fresh-refused-authority-invalid",
+        "DurableCommit" | "AfterReturn" => "fresh-refused-authority-refused",
+        _ => panic!("unknown quarantine checkpoint"),
+    }
+}
+fn inspect_quarantine_authority(root: &Path, stage: &str) -> &'static str {
+    // Test-parent selected fixture pin; never production trust enrollment.
+    let pin = std::env::var(AUTHORITY_PIN).unwrap();
+    assert!(crate::is_hash(&pin));
+    let namespace = |name| {
+        let m = fs::metadata(format!("/proc/thread-self/ns/{name}")).unwrap();
+        NamespaceIdentity {
+            device: m.dev(),
+            inode: m.ino(),
+        }
+    };
+    let host = AssertedWorkerHost {
+        machine_id: fs::read_to_string("/etc/machine-id")
+            .unwrap()
+            .trim_end_matches('\n')
+            .into(),
+        boot_id: fs::read_to_string("/proc/sys/kernel/random/boot_id")
+            .unwrap()
+            .trim_end_matches('\n')
+            .into(),
+        user_namespace: namespace("user"),
+        mount_namespace: namespace("mnt"),
+    };
+    let key = ed25519_dalek::SigningKey::from_bytes(&[74; 32]).verifying_key();
+    let trust = WorkerPolicyTrust::new(key, &pin, 7).unwrap();
+    let observed = open_fixture_registry(
+        root,
+        unsafe { libc::geteuid() },
+        unsafe { libc::getegid() },
+        &trust,
+        &host,
+    );
+    match stage {
+        "BeforeRefusal" | "DurableCommit" | "AfterReturn" => {
+            let mut registry = observed.unwrap();
+            let view = registry.inspect(&trust, &host).unwrap();
+            assert_eq!(view.epoch, 7);
+            assert_eq!(
+                (view.revision, view.refused),
+                if stage == "BeforeRefusal" {
+                    (1, false)
+                } else {
+                    (2, true)
+                }
+            );
+        }
+        "RecordCreated" | "RecordSynced" | "MarkerCreated" => {
+            assert!(matches!(observed, Err(AuthorityError::Invalid)));
+        }
+        _ => panic!("unknown quarantine checkpoint"),
+    }
+    authority_observation(stage)
+}
+
 struct Scratch {
     origin: tempfile::TempDir,
     authority: tempfile::TempDir,
@@ -340,7 +443,18 @@ impl OwnedSubprocess {
     fn start(s: &Scratch, mode: &str, phase: &str, stage: &str, empty: bool) -> (Self, String) {
         let full = format!("{}::diagnostic_process_crash_child", module_path!());
         let (_, test) = full.split_once("::").unwrap();
-        let child = Command::new(std::env::current_exe().unwrap())
+        let mut command = Command::new(std::env::current_exe().unwrap());
+        if mode == "inspect" && phase == "quarantine" {
+            let anchor: serde_json::Value = serde_json::from_slice(
+                &fs::read(s.authority.path().join("0000000000000001.json")).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(anchor["revision"], 1);
+            assert_eq!(anchor["policy_epoch"], 7);
+            assert_eq!(anchor["state"], "active");
+            command.env(AUTHORITY_PIN, anchor["policy_sha256"].as_str().unwrap());
+        }
+        let child = command
             .args(["--exact", test, "--nocapture", "--test-threads=1"])
             .env(MODE, mode)
             .env(ORIGIN, s.origin.path())
@@ -495,19 +609,24 @@ fn snapshot(s: &Scratch) -> Vec<Entry> {
     entries.sort_by(|a, b| a.name.cmp(&b.name));
     entries
 }
-fn restart_inspect(s: &Scratch, empty: bool) {
-    let (mut child, message) = OwnedSubprocess::start(s, "inspect", "", "", empty);
-    assert_eq!(
-        message,
-        if empty {
-            "fresh-empty 0"
-        } else {
-            "fresh-refused 0"
-        }
-    );
+fn restart_inspect(s: &Scratch, empty: bool, phase: &str, stage: &str) {
+    let (mut child, message) = OwnedSubprocess::start(s, "inspect", phase, stage, empty);
+    let expected = if phase == "quarantine" {
+        format!("{} 0", authority_observation(stage))
+    } else if empty {
+        "fresh-empty 0".into()
+    } else {
+        "fresh-refused 0".into()
+    };
+    assert_eq!(message, expected);
     assert!(child.child.wait().unwrap().success());
 }
 fn checkpoint_contents(s: &Scratch, phase: &str, stage: &str) {
+    if phase == "quarantine" {
+        checkpoint_contents(s, "starting", "AfterReturn");
+        quarantine_authority_contents(s, stage);
+        return;
+    }
     let names: Vec<_> = fs::read_dir(s.leaf())
         .unwrap()
         .map(|entry| entry.unwrap().file_name())
@@ -706,6 +825,90 @@ fn checkpoint_contents(s: &Scratch, phase: &str, stage: &str) {
         ),
     }
 }
+fn quarantine_authority_contents(s: &Scratch, stage: &str) {
+    let root = s.authority.path();
+    let count = fs::read_dir(root).unwrap().count();
+    assert_eq!(
+        count,
+        match stage {
+            "BeforeRefusal" => 2,
+            "RecordCreated" | "RecordSynced" => 3,
+            "MarkerCreated" | "DurableCommit" | "AfterReturn" => 4,
+            _ => panic!("unknown quarantine checkpoint"),
+        }
+    );
+    let initial_path = root.join("0000000000000001.json");
+    let initial = fs::read(&initial_path).unwrap();
+    let first: serde_json::Value = serde_json::from_slice(&initial).unwrap();
+    assert_eq!(
+        first["schema_version"],
+        "diagnostic-authority-record-074-v1"
+    );
+    assert_eq!(first["revision"], 1);
+    assert_eq!(first["policy_epoch"], 7);
+    assert_eq!(first["state"], "active");
+    assert!(first["previous_sha256"].is_null() && first["refusal_reason"].is_null());
+    assert_eq!(fs::metadata(initial_path).unwrap().mode() & 0o7777, 0o400);
+    let initial_marker = root.join("0000000000000001.commit");
+    assert_eq!(
+        fs::metadata(&initial_marker).unwrap().mode() & 0o7777,
+        0o400
+    );
+    assert_eq!(
+        fs::read(initial_marker).unwrap(),
+        format!("{}\n", crate::sha256_hex(&initial)).as_bytes()
+    );
+    if stage == "BeforeRefusal" {
+        return;
+    }
+    let path = root.join("0000000000000002.json");
+    let record = fs::read(&path).unwrap();
+    let m = fs::metadata(&path).unwrap();
+    assert!(m.is_file() && m.nlink() == 1 && m.len() <= 2048);
+    assert_eq!(
+        m.mode() & 0o7777,
+        if stage == "RecordCreated" {
+            0o600
+        } else {
+            0o400
+        }
+    );
+    if stage == "RecordCreated" {
+        assert!(record.is_empty());
+        return;
+    }
+    let mut expected = first;
+    expected["revision"] = 2.into();
+    expected["previous_sha256"] = crate::sha256_hex(&initial).into();
+    expected["state"] = "refused".into();
+    expected["refusal_reason"] = "policy".into();
+    let mut canonical = crate::canonical_json(&expected).unwrap();
+    canonical.push(b'\n');
+    assert_eq!(record, canonical);
+    if stage == "RecordSynced" {
+        return;
+    }
+    let path = root.join("0000000000000002.commit");
+    let marker = fs::read(&path).unwrap();
+    let m = fs::metadata(path).unwrap();
+    assert!(m.is_file() && m.nlink() == 1);
+    assert_eq!(
+        m.mode() & 0o7777,
+        if stage == "MarkerCreated" {
+            0o600
+        } else {
+            0o400
+        }
+    );
+    if stage == "MarkerCreated" {
+        assert!(marker.is_empty());
+    } else {
+        assert_eq!(
+            marker,
+            format!("{}\n", crate::sha256_hex(&record)).as_bytes()
+        );
+    }
+}
 fn run_case(phase: &str, stage: &str, kill: bool) {
     let s = Scratch::new();
     let (mut child, message) = OwnedSubprocess::start(
@@ -729,8 +932,10 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
     let state_expected = phase != "attempt"
         && !(matches!(phase, "reserved" | "attemptreserved") && stage == "BeforeCreate");
     assert_eq!(state.exists(), state_expected);
-    if matches!(phase, "consumption" | "attemptconsumption" | "starting")
-        || (phase != "attempt" && stage == "AfterReturn")
+    if matches!(
+        phase,
+        "consumption" | "attemptconsumption" | "starting" | "quarantine"
+    ) || (phase != "attempt" && stage == "AfterReturn")
     {
         let state = crate::diagnostic_lease::decode_active(&fs::read(&state).unwrap()).unwrap();
         assert_eq!(state.stage, DiagnosticStage::Reserved);
@@ -741,11 +946,16 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
     drop(lock_host_root(&s.campaigns()).expect("original flock survived terminated owner"));
     assert_eq!(snapshot(&s), original_snapshot);
     for _ in 0..2 {
-        restart_inspect(&s, empty);
+        restart_inspect(
+            &s,
+            empty,
+            if phase == "quarantine" { phase } else { "" },
+            if phase == "quarantine" { stage } else { "" },
+        );
         let restarted_snapshot = snapshot(&s);
         assert_eq!(restarted_snapshot, original_snapshot);
     }
-    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption" | "starting") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
+    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption" | "starting" | "quarantine") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
 }
 fn seeded(mut stages: Vec<String>) -> Vec<String> {
     let mut seed = 0x074d_u64;
@@ -844,4 +1054,21 @@ fn diagnostic_process_crash_starting_all_stages_and_post_return() {
         run_case("starting", &stage, true);
     }
     run_case("starting", "AfterReturn", false);
+}
+
+#[test]
+#[ignore = "manual local nonroot Linux owned quarantine authority SIGKILL proof, no product workload"]
+fn diagnostic_process_crash_quarantine_all_stages_and_post_return() {
+    let stages = [
+        "BeforeRefusal",
+        "RecordCreated",
+        "RecordSynced",
+        "MarkerCreated",
+        "DurableCommit",
+        "AfterReturn",
+    ];
+    for stage in seeded(stages.into_iter().map(String::from).collect()) {
+        run_case("quarantine", &stage, true);
+    }
+    run_case("quarantine", "AfterReturn", false);
 }
