@@ -10268,3 +10268,62 @@ fn diagnostic_process_crash_proof_requires_owned_signal_and_fresh_inspection() {
         assert!(!source.contains(forbidden), "{forbidden}");
     }
 }
+
+#[test]
+fn diagnostic_transition_contract_keeps_fixed_execution_closed() {
+    let c = contract("diagnostic-transition-local-contract.toml");
+    for key in [
+        "exact_adjacent_revision_required",
+        "lease_boot_build_and_origin_immutable",
+        "controller_refresh_cannot_revive_expired_lease",
+        "original_start_inode_and_stop_reason_retained",
+        "completion_requires_running_and_exactly_one_cell",
+        "terminal_is_absorbing",
+        "invalid_transition_refuses_before_model_publication",
+        "existing_transaction_fence_required",
+        "validation_is_not_outcome_or_consumption_proof",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "new_durable_format",
+        "fixed_state_progression_implemented",
+        "later_fixed_cells_implemented",
+        "early_attempt_nonce_protection_implemented",
+        "authenticated_peer_or_clock",
+        "server_entry_wired",
+        "worker_execution_allowed",
+        "server_operation_performed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["test_seed"].as_str(), Some("0x074e"));
+    assert_eq!(c["targeted_repetitions"].as_integer(), Some(3));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_transition.rs"),
+    )
+    .unwrap();
+    assert!(source.contains("previous.revision.checked_add(1) != Some(next.revision)"));
+    assert!(source.contains("previous.stage == Stage::Terminal"));
+    for forbidden in ["pub fn", "std::fs", "Command::", "start_once", "unsafe"] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let publisher = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_lease.rs"),
+    )
+    .unwrap();
+    let publish_body = publisher.split("fn bump_publish(").nth(1).unwrap();
+    assert!(
+        publish_body
+            .find("validate_transition(&previous, &next)?;")
+            .unwrap()
+            < publish_body.find("publish(root, &next)?;").unwrap()
+    );
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("validate_transition"));
+}

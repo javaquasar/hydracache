@@ -13,6 +13,14 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 pub const ACTIVE_DIAGNOSTIC_NAME: &str = "active-diagnostic.json";
+
+#[path = "diagnostic_transition.rs"]
+mod transition;
+use transition::validate_transition;
+
+#[cfg(test)]
+#[path = "diagnostic_transition_tests.rs"]
+mod transition_tests;
 const PENDING_NAME: &str = ".active-diagnostic.pending";
 const MAX_DOCUMENT_BYTES: u64 = 65_536;
 pub const CELL_SECONDS: u64 = 60;
@@ -626,11 +634,18 @@ pub(crate) fn encode(state: &DiagnosticState) -> Result<Vec<u8>, DiagnosticError
 }
 
 fn bump_publish(root: &Path, state: &mut DiagnosticState) -> Result<(), DiagnosticError> {
-    state.revision = state
+    // The caller holds the existing host transaction fence. Validate the
+    // adjacent publication, not just the shape of an isolated snapshot.
+    let previous = read_active(root)?.ok_or(DiagnosticError::Invalid)?;
+    let mut next = state.clone();
+    next.revision = state
         .revision
         .checked_add(1)
         .ok_or(DiagnosticError::Invalid)?;
-    publish(root, state)
+    validate_transition(&previous, &next)?;
+    publish(root, &next)?;
+    *state = next;
+    Ok(())
 }
 
 fn publish(root: &Path, state: &DiagnosticState) -> Result<(), DiagnosticError> {

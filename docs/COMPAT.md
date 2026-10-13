@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The local diagnostic schema-1 publisher now checks adjacent state transitions
+under its existing transaction fence before writing. Revision must advance by
+exactly one; lease/boot/build/origin, original active-cell start/inode and stop
+reason cannot drift. Only Running may complete one cell; Terminal has no next
+publication. Existing snapshot bytes, readers, filenames and pending/terminal
+recovery are unchanged; no migration or new wire version is introduced. Invalid
+adjacent candidates refuse before mutation. This strengthens the local model,
+not fixed-root lifecycle or production execution. See
+[transition contract](testing/performance/0.74/diagnostic-transition-local-design.md).
+
 Initial fixed intent consumption now consumes the runtime-acknowledged Reserved
 publisher under its uninterrupted original lock. It creates only cell-one JSON
 and digest-commit files, reusing `diagnostic-retained-intent-074-v1`, canonical
