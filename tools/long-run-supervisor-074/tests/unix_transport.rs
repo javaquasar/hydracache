@@ -10,6 +10,28 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 #[test]
+fn diagnostic_kernel_receive_uses_message_sender_and_kernel_time() {
+    let temporary = tempfile::tempdir().unwrap();
+    let socket = temporary.path().join("kernel.sock");
+    let listener = SeqpacketListener::bind(&socket, 0o660, unsafe { libc::getegid() }).unwrap();
+    let client = SeqpacketConnection::connect(&socket).unwrap();
+    let mut receiver = listener
+        .accept()
+        .unwrap()
+        .into_diagnostic_kernel_receiver()
+        .unwrap();
+    assert!(receiver.try_receive().unwrap().is_none());
+    client.send_packet(b"\0kernel\xff").unwrap();
+    let mut packet = receiver.try_receive().unwrap().unwrap();
+    assert_eq!(packet.bytes(), b"\0kernel\xff");
+    assert_eq!(packet.sender_pid(), std::process::id());
+    assert!(packet.received_time().boottime_ns() > 0);
+    assert!(packet.received_time().unix_seconds() > 0);
+    assert_eq!(packet.received_time().boot_id().len(), 36);
+    packet.revalidate_sender().unwrap();
+}
+
+#[test]
 fn preserves_packet_boundaries_and_reports_exact_peer_credentials() {
     let temporary = tempfile::tempdir().unwrap();
     let socket = temporary.path().join("supervisor.sock");

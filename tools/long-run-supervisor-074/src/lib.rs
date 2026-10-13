@@ -25,6 +25,8 @@ pub mod diagnostic_builder;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_collector;
 pub mod diagnostic_ipc;
+#[cfg(target_os = "linux")]
+pub mod diagnostic_kernel_admission;
 pub mod diagnostic_lease;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_live_execution;

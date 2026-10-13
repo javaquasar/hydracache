@@ -191,6 +191,17 @@ pub struct SeqpacketConnection {
 }
 
 impl SeqpacketConnection {
+    /// Consumes this connection into the separate per-message diagnostic input.
+    /// No campaign transport policy or production diagnostic route is changed.
+    pub fn into_diagnostic_kernel_receiver(
+        self,
+    ) -> Result<
+        crate::diagnostic_kernel_admission::KernelReceiver,
+        crate::diagnostic_kernel_admission::KernelError,
+    > {
+        crate::diagnostic_kernel_admission::KernelReceiver::new(self.fd)
+    }
+
     pub fn connect(path: &Path) -> Result<Self, TransportError> {
         let address = socket_address(path)?;
         let fd = new_socket()?;

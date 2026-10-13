@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 kernel sender admission has an ignored/manual nonroot Linux/python3 gate:
+`tool.hydracache-long-run-supervisor-074.kernel-admission-inherited-socket-identifies-child`.
+It identifies the original per-message child sender through an inherited socket,
+then refuses that retained packet after exact owned SIGKILL while the parent's
+packet remains live. Its 180-second harness budget is not a performance threshold
+or production-key enrollment. Fast tests cover ancillary budgets/FD cleanup,
+kernel origin/time, signature and current credential consistency.
+
 W11 collector retention adds the ignored/manual nonroot Linux gate
 `tool.hydracache-long-run-supervisor-074.collector-owned-sigkill-matrix-retains-without-replay`.
 It exercises 15 owned SIGKILL cases, one uninterrupted control and 32 fresh

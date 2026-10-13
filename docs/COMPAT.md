@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+Diagnostic kernel admission adds an opt-in AF_UNIX SOCK_SEQPACKET receiver with
+SO_PASSCRED/SO_PASSPIDFD. It requires one per-message credentials record and one
+kernel pidfd, denies received SCM_RIGHTS/unknown/truncated control data, and keeps
+the diagnostic 16 KiB payload ceiling. Unsupported kernel options refuse rather
+than falling back to connection-time peer credentials. The existing campaign
+transport, portable diagnostic signed JSON/domain and durable formats are
+unchanged. Kernel sender/clock inputs do not enroll an issuer or authorize start;
+see the [kernel contract](testing/performance/0.74/diagnostic-kernel-admission-design.md).
+
 The operator-approved diagnostic collector amendment introduces a separate local
 fixture namespace `collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`.
 Only the original nonroot fixture writer can return a nonserialized drain result;
