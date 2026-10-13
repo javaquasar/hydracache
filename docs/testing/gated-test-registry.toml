@@ -8397,3 +8397,35 @@ cwd = "."
 platform = "linux"
 
 [gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-context-replay-refuses-after-loss"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "diagnostic_process_crash_context_replay_refuses_after_loss"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot owned process loss with modeled fresh-reader context replay; no reboot or product workload"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo", "python3"]
+timeout_seconds = 600
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_context_replay_refuses_after_loss", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]

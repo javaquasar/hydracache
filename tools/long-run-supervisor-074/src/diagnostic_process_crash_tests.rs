@@ -29,6 +29,24 @@ const EMPTY: &str = "HC074_PRIVATE_CRASH_EMPTY";
 const AUTHORITY_PIN: &str = "HC074_PRIVATE_CRASH_AUTHORITY_PIN";
 const OUTPUT_BUDGET: u64 = 8192;
 
+#[path = "diagnostic_context_replay_tests.rs"]
+mod context_replay;
+use context_replay::InspectionProfile;
+const INSPECTION_PROFILE: &str = "HC074_PRIVATE_CRASH_INSPECTION_PROFILE";
+
+#[test]
+fn diagnostic_context_profile_names_fail_closed() {
+    for profile in context_replay::PROFILES {
+        assert_eq!(
+            context_replay::InspectionProfile::parse(profile.name()),
+            Some(profile)
+        );
+    }
+    for unknown in ["", "Same", "unknown", "../boot", "boot\0"] {
+        assert!(context_replay::InspectionProfile::parse(unknown).is_none());
+    }
+}
+
 fn readiness_line(line: &str) -> Option<&str> {
     if !line.ends_with('\n') || line.contains(['\r', '\0']) {
         return None;
@@ -358,8 +376,9 @@ fn inspect_quarantine_authority(root: &Path, stage: &str) -> &'static str {
         user_namespace: namespace("user"),
         mount_namespace: namespace("mnt"),
     };
-    let key = ed25519_dalek::SigningKey::from_bytes(&[74; 32]).verifying_key();
-    let trust = WorkerPolicyTrust::new(key, &pin, 7).unwrap();
+    let profile = InspectionProfile::parse(&std::env::var(INSPECTION_PROFILE).unwrap())
+        .expect("unknown private inspection profile");
+    let (host, trust) = context_replay::inputs(&host, &pin, profile);
     let observed = open_fixture_registry(
         root,
         unsafe { libc::geteuid() },
@@ -369,6 +388,10 @@ fn inspect_quarantine_authority(root: &Path, stage: &str) -> &'static str {
     );
     match stage {
         "BeforeRefusal" | "DurableCommit" | "AfterReturn" => {
+            if profile != InspectionProfile::Same {
+                assert!(matches!(observed, Err(AuthorityError::Binding)));
+                return context_replay::expected_label(stage, profile);
+            }
             let mut registry = observed.unwrap();
             let view = registry.inspect(&trust, &host).unwrap();
             assert_eq!(view.epoch, 7);
@@ -441,6 +464,16 @@ struct OwnedSubprocess {
 }
 impl OwnedSubprocess {
     fn start(s: &Scratch, mode: &str, phase: &str, stage: &str, empty: bool) -> (Self, String) {
+        Self::start_with_profile(s, mode, phase, stage, empty, InspectionProfile::Same)
+    }
+    fn start_with_profile(
+        s: &Scratch,
+        mode: &str,
+        phase: &str,
+        stage: &str,
+        empty: bool,
+        profile: InspectionProfile,
+    ) -> (Self, String) {
         let full = format!("{}::diagnostic_process_crash_child", module_path!());
         let (_, test) = full.split_once("::").unwrap();
         let mut command = Command::new(std::env::current_exe().unwrap());
@@ -463,6 +496,7 @@ impl OwnedSubprocess {
             .env(PHASE, phase)
             .env(STAGE, stage)
             .env(EMPTY, if empty { "yes" } else { "no" })
+            .env(INSPECTION_PROFILE, profile.name())
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
@@ -610,9 +644,19 @@ fn snapshot(s: &Scratch) -> Vec<Entry> {
     entries
 }
 fn restart_inspect(s: &Scratch, empty: bool, phase: &str, stage: &str) {
-    let (mut child, message) = OwnedSubprocess::start(s, "inspect", phase, stage, empty);
+    restart_inspect_with_profile(s, empty, phase, stage, InspectionProfile::Same);
+}
+fn restart_inspect_with_profile(
+    s: &Scratch,
+    empty: bool,
+    phase: &str,
+    stage: &str,
+    profile: InspectionProfile,
+) {
+    let (mut child, message) =
+        OwnedSubprocess::start_with_profile(s, "inspect", phase, stage, empty, profile);
     let expected = if phase == "quarantine" {
-        format!("{} 0", authority_observation(stage))
+        format!("{} 0", context_replay::expected_label(stage, profile))
     } else if empty {
         "fresh-empty 0".into()
     } else {
@@ -910,6 +954,10 @@ fn quarantine_authority_contents(s: &Scratch, stage: &str) {
     }
 }
 fn run_case(phase: &str, stage: &str, kill: bool) {
+    run_case_profiles(phase, stage, kill, &[InspectionProfile::Same]);
+}
+fn run_case_profiles(phase: &str, stage: &str, kill: bool, profiles: &[InspectionProfile]) {
+    assert!(!profiles.is_empty());
     let s = Scratch::new();
     let (mut child, message) = OwnedSubprocess::start(
         &s,
@@ -945,17 +993,24 @@ fn run_case(phase: &str, stage: &str, kill: bool) {
     child.finish(kill);
     drop(lock_host_root(&s.campaigns()).expect("original flock survived terminated owner"));
     assert_eq!(snapshot(&s), original_snapshot);
-    for _ in 0..2 {
-        restart_inspect(
-            &s,
-            empty,
-            if phase == "quarantine" { phase } else { "" },
-            if phase == "quarantine" { stage } else { "" },
-        );
-        let restarted_snapshot = snapshot(&s);
-        assert_eq!(restarted_snapshot, original_snapshot);
+    for profile in profiles {
+        for inspection in 1..=2 {
+            let inspect_phase = if phase == "quarantine" { phase } else { "" };
+            let inspect_stage = if phase == "quarantine" { stage } else { "" };
+            if *profile == InspectionProfile::Same {
+                restart_inspect(&s, empty, inspect_phase, inspect_stage);
+            } else {
+                restart_inspect_with_profile(&s, empty, inspect_phase, inspect_stage, *profile);
+            }
+            let restarted_snapshot = snapshot(&s);
+            assert_eq!(restarted_snapshot, original_snapshot);
+            if profiles.len() > 1 {
+                assert_eq!(phase, "quarantine");
+                eprintln!("P1 replay profile={} checkpoint={stage} inspection={inspection} authority={} reservation=refused retained=unchanged", profile.name(), context_replay::expected_label(stage, *profile));
+            }
+        }
     }
-    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes=2 retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption" | "starting" | "quarantine") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 });
+    eprintln!("{} case={phase}:{stage} terminated={} signal={} fresh_processes={} retained=unchanged original_lock=released helper=terminal", if matches!(phase, "attempt" | "attemptreserved" | "attemptconsumption" | "starting" | "quarantine") { "P1" } else { "P0" }, if kill { "SIGKILL" } else { "control" }, if kill { 9 } else { 0 }, profiles.len() * 2);
 }
 fn seeded(mut stages: Vec<String>) -> Vec<String> {
     let mut seed = 0x074d_u64;
@@ -1071,4 +1126,30 @@ fn diagnostic_process_crash_quarantine_all_stages_and_post_return() {
         run_case("quarantine", &stage, true);
     }
     run_case("quarantine", "AfterReturn", false);
+}
+
+#[test]
+#[ignore = "manual local nonroot Linux owned modeled context replay proof, no reboot or product workload"]
+fn diagnostic_process_crash_context_replay_refuses_after_loss() {
+    for stage in seeded(
+        [
+            "BeforeRefusal",
+            "RecordCreated",
+            "RecordSynced",
+            "MarkerCreated",
+            "DurableCommit",
+            "AfterReturn",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect(),
+    ) {
+        run_case_profiles("quarantine", &stage, true, &context_replay::PROFILES);
+    }
+    run_case_profiles(
+        "quarantine",
+        "AfterReturn",
+        false,
+        &context_replay::PROFILES,
+    );
 }
