@@ -307,7 +307,8 @@ fn transition_publisher_refuses_invalid_candidate_before_any_write() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("campaigns");
     std::fs::create_dir(&root).unwrap();
-    super::DiagnosticCoordinator::reserve(
+    let (_root, _fence) = super::lock_host_root(&root).unwrap();
+    super::DiagnosticCoordinator::reserve_fenced(
         &root,
         reserved().identity,
         &super::DiagnosticClock {
@@ -316,7 +317,6 @@ fn transition_publisher_refuses_invalid_candidate_before_any_write() {
         },
     )
     .unwrap();
-    let (_root, _fence) = super::lock_host_root(&root).unwrap();
     let original = super::read_active(&root).unwrap().unwrap();
     let path = root.join(super::ACTIVE_DIAGNOSTIC_NAME);
     let raw = std::fs::read(&path).unwrap();
@@ -340,7 +340,8 @@ fn transition_publisher_refuses_stale_revision_without_replacing_state() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("campaigns");
     std::fs::create_dir(&root).unwrap();
-    super::DiagnosticCoordinator::reserve(
+    let (_root, _fence) = super::lock_host_root(&root).unwrap();
+    super::DiagnosticCoordinator::reserve_fenced(
         &root,
         reserved().identity,
         &super::DiagnosticClock {
@@ -349,7 +350,6 @@ fn transition_publisher_refuses_stale_revision_without_replacing_state() {
         },
     )
     .unwrap();
-    let (_root, _fence) = super::lock_host_root(&root).unwrap();
     let mut stale = super::read_active(&root).unwrap().unwrap();
     let mut starting = stale.clone();
     starting.stage = Stage::Starting;
