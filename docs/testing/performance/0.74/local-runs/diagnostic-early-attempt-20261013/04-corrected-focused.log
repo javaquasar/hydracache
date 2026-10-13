@@ -1,0 +1,83 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: unused variable: `root`
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:54
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $...
+    |                                                        ^^^^^
+...
+192 | /         pair!(i, original, fence, dir, root, leaf, f, raw, {
+193 | |             let mut read =
+194 | |                 retain_fixed_attempt(&mut original, fence, &r...
+195 | |             let retained = fs::read(leaf.join("diagnostic-att...
+...   |
+228 | |             );
+229 | |         });
+    | |__________- in this macro invocation
+    |
+help: `root` is captured in macro and introduced a unused variable
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:54
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $...
+    |                                                        ^^^^^
+...
+192 | /         pair!(i, original, fence, dir, root, leaf, f, raw, {
+193 | |             let mut read =
+194 | |                 retain_fixed_attempt(&mut original, fence, &r...
+195 | |             let retained = fs::read(leaf.join("diagnostic-att...
+...   |
+228 | |             );
+229 | |         });
+    | |__________- in this macro invocation
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+    = note: this warning originates in the macro `pair` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `leaf`
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:61
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $leaf| $...
+    |                                                               ^^^^^
+...
+340 | /                     pair!(i, original, fence, dir, root, leaf, f, ra...
+341 | |                         let result =
+342 | |                             retain_with(&mut original, fence, &raw, ...
+343 | |                                 if fail && at == AttemptStage::Prefi...
+...   |
+354 | |                         retained_context_refuses_for_test(root);
+355 | |                     });
+    | |______________________- in this macro invocation
+    |
+help: `leaf` is captured in macro and introduced a unused variable
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:61
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $leaf| $...
+    |                                                               ^^^^^
+...
+340 | /                     pair!(i, original, fence, dir, root, leaf, f, ra...
+341 | |                         let result =
+342 | |                             retain_with(&mut original, fence, &raw, ...
+343 | |                                 if fail && at == AttemptStage::Prefi...
+...   |
+354 | |                         retained_context_refuses_for_test(root);
+355 | |                     });
+    | |______________________- in this macro invocation
+    = note: this warning originates in the macro `pair` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized] target(s) in 14.08s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+early attempt seed=0x074d
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_already_refused_inputs_cross_latch_without_io ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_healthy_canonical_sealed_and_drop_blocks_reservation ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_independent_concurrent_chains_do_not_share_refusal ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_late_target_or_unknown_context_is_not_adopted ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_bound_expiry_signature_peer_and_state_refuse_once ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_unbound_state_mismatch_is_nonrevoking_and_no_write ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_all_boundaries_retain_first_error_lock_and_partial_context ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_original_object_byte_mode_link_and_named_drift_are_sticky ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_partial_policy_refusal_preserves_first_failure ... ok
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_unsafe_or_advanced_authority_is_not_appended ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 532 filtered out; finished in 25.82s
+

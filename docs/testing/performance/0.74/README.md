@@ -2756,3 +2756,19 @@ publisher refusals. It authenticates neither outcomes nor caller time/peer.
 Fixed cells two through four, early durable attempt/nonce admission and the
 owned progression protocol remain P1 work. Production execution, host rehearsal,
 qualification and shipping remain closed.
+
+## Early diagnostic attempt before state publication
+
+The [early-attempt primitive](diagnostic-early-attempt-local-design.md) now
+retains the exact signed initial attempt under the original fixed fence before
+any Reserved state. Exclusive creation, owned-file sealing and sync precede
+acknowledgement. Partial or complete retained context blocks fresh reservation;
+restart cannot recover the opaque runtime acknowledgement from bytes.
+
+The [local packet](local-runs/diagnostic-early-attempt-20261013/README.md) separates
+fast functional checks from the actual owned SIGKILL matrix. BeforeCreate is
+unadmitted and empty, not globally consumed nonce. The primitive is not yet
+connected to state publication, later cells or a production route. The next
+P1 step must transfer the owned guard without reopening or replacing the
+original authority, intent, fence or retained attempt. Trusted inputs,
+execution/watchdog/cleanup, installed-host rehearsal and qualification remain.

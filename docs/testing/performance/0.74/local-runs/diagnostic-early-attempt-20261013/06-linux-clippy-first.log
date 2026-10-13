@@ -1,0 +1,57 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: unused variable: `leaf`
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:61
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $leaf| $...
+    |                                                               ^^^^^
+...
+341 | /                     pair!(i, original, fence, dir, root, leaf, f, ra...
+342 | |                         let result =
+343 | |                             retain_with(&mut original, fence, &raw, ...
+344 | |                                 if fail && at == AttemptStage::Prefi...
+...   |
+355 | |                         retained_context_refuses_for_test(root);
+356 | |                     });
+    | |______________________- in this macro invocation
+    |
+help: `leaf` is captured in macro and introduced a unused variable
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:22:61
+    |
+ 22 |               with_owned_empty_fence_for_test(|$fence, $root, $leaf| $...
+    |                                                               ^^^^^
+...
+341 | /                     pair!(i, original, fence, dir, root, leaf, f, ra...
+342 | |                         let result =
+343 | |                             retain_with(&mut original, fence, &raw, ...
+344 | |                                 if fail && at == AttemptStage::Prefi...
+...   |
+355 | |                         retained_context_refuses_for_test(root);
+356 | |                     });
+    | |______________________- in this macro invocation
+    = note: `-D unused-variables` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_variables)]`
+    = note: this error originates in the macro `pair` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: variable does not need to be mutable
+   --> tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs:20:17
+    |
+ 20 |               l...mut $original =
+    |                ...----^^^^^^^^^
+    |                   |
+    |                   help: remove this `mut`
+...
+370 | /         pair!(i, original, fence...
+371 | |             let mut storage = At...
+372 | |             assert!(matches!(
+373 | |                 storage.retain_w...
+...   |
+383 | |             assert!(!original.is...
+384 | |         });
+    | |__________- in this macro invocation
+    |
+    = note: `-D unused-mut` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_mut)]`
+    = note: this error originates in the macro `pair` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

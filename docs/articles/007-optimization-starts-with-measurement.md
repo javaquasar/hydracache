@@ -7012,3 +7012,52 @@ doctests 38. Current/MSRV checks, warnings-denied lint, format and documentation
 checks pass. No expensive workload or server operation was performed. The
 inherited qualification digest mismatch and closed ship gate still refuse;
 their inputs and thresholds were not changed to make this package pass.
+
+## Retaining the diagnostic attempt before state publication
+
+The next P1 hypothesis concerns admission, not throughput. A process can die
+after signature checks but before publishing Reserved. If no byte was retained,
+there is no durable evidence of an accepted request. Moving another marker
+earlier cannot prove a nonce consumed before its own first write. The
+[early-attempt contract](../testing/performance/0.74/diagnostic-early-attempt-local-design.md)
+therefore makes the acceptance boundary explicit: no acknowledgement before
+exclusive creation, complete signed-attempt bytes, owned-file sealing, sync and
+final original authority checks.
+
+The guard borrows the original fixed intent and owns its original common fence.
+It creates only `diagnostic-attempt-074.json`, using the existing retained-intent
+schema and byte budget. It tracks actual partial bytes and the original file,
+rejects foreign objects and unknown context, and seals only its owned descriptor
+0400. Failure retains the lock until drop and publishes refusal only through an
+independently safe original authority journal. A changed or advanced journal
+cannot receive a new refusal just because the attempt failed.
+
+The [local proof](../testing/performance/0.74/local-runs/diagnostic-early-attempt-20261013/README.md)
+checks both returned failures and actual SIGKILL. BeforeCreate is empty and
+unadmitted. At later boundaries an empty, partial or complete record remains
+admission-blocking. AfterReturn death loses the runtime acknowledgement despite
+valid sealed bytes. Fresh read-only processes inspect retained context; none
+reconstruct a writer, repair history or execute a cell. Exact lock release and
+owned helper termination are checked separately from retained bytes and metadata.
+
+Early test mistakes are retained: an unsupported Clone assumption in the peer
+fixture, unused variables rejected by warnings-denied lint, and a root-contract
+literal that depended on formatter line breaks. Corrections changed test setup
+and checks, not the signed protocol, thresholds or refusal requirements.
+
+This primitive does not yet advance to Reserved or consume cells two through
+four. That transfer needs an owned protocol retaining the original attempt,
+authority and fence, rather than reopening files or rebinding changed state.
+It is local attempt retention, not global nonce protection, authenticated clock/
+peer, machine power-loss, production enrollment or performance improvement.
+The intermediate plan and product qualification/ship boundaries remain closed.
+
+At the frozen source, all twelve functional cases pass in three repeats.
+Three process repeats each pass nine SIGKILL cases and one uninterrupted control,
+with twenty fresh-process inspections. Full process regression also reruns the
+original twenty-four P0 signal cases and two controls through the extended
+harness. Linux scoped regression passes 619 with five manual cases ignored;
+Windows passes 204, root contracts 163 and Linux compile-fail doctests 41.
+Current/MSRV, warnings-denied lint/Rustdoc, format and documentation checks pass.
+These results establish local refusal/retention behavior, not throughput,
+allocation savings, host power-loss durability or production readiness.

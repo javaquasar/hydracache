@@ -1,0 +1,932 @@
+{
+  "schema_version": 1,
+  "state": "local-original-early-attempt-only",
+  "implementation_source": "cdeb2c8c8f308161644b9fc9bf224282da2c2dad",
+  "implementation_tree": "d22853a826e2ac4ecac9ad9c99a9db05267a3f44",
+  "baseline_source": "277f774a4fabad2b3e76fa3f907554f51cc45d22",
+  "preregistration_source": "525cda7121a0c545c024b4bc583e15cf0278be17",
+  "implementation_source_sha256": {
+    "tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs": "d415bc72bd0a5c8c7e329742c4920347bfd74881d26274391871ca47611d6ee2",
+    "tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs": "983dfb0d5b241bc84f1ac68e2db71e7916b7dcd83a1c27db52cbab59ee24e582",
+    "tools/long-run-supervisor-074/src/diagnostic_early_attempt_tests.rs": "7d63c7575b8aa5740fa959121db1856f1c20c5c7f8fcaa637d6584d46238faf0",
+    "docs/testing/performance/0.74/diagnostic-early-attempt-local-design.md": "1655e68c0464e73153c04c6a5413ffbc827ee36cde1b0e55c421e64e4c2cfe3d",
+    "docs/testing/performance/0.74/diagnostic-early-attempt-local-contract.toml": "01702cbc7599c1adcb6b07d6c17c520e71409bf2a6adea9efa9fb82ce496b8c4",
+    ".gitattributes": "2ef39d47f4ae4892529f34d4262977426bfd8433740ae4b593b6e8bf5a3d82bb",
+    "docs/COMPAT.md": "7cc487348977c7696dd4d1e06455825a367e2b7c5b450dd752478cbdb971ef99",
+    "docs/GATES.md": "b645cc1c898ba6e820849e530ae66a94f155f0cc9d422fb7f3ce75489b35f2fa",
+    "docs/testing/gated-test-registry.toml": "95a0c61bd3c613aba6e85f40e0413b63a55fd3e59d8411531f2fb62edd42e803",
+    "crates/xtask/tests/performance_contract_074.rs": "b9cac6a3210356a3fc3b6cac1faaab5f896aec9ff7cfc0e12d50c2834282fade",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs": "287d1fd999acd219d2030c5441b861bb3f9c5f6154b1a46da1d8a3ae2f527533",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_intent_tests.rs": "ba83bab494c09f626df8f4774472895920b64204be5313f5fe1f3e876d78c745",
+    "tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs": "1cc4341621eb3fe991eacde2c80adad1f50de8c7c3b5e7938d233ca3d9a36bab",
+    "tools/long-run-supervisor-074/src/diagnostic_process_crash_tests.rs": "fd482395151af613c249bf8e9f390c2484fd77a1d4388ee46b7df962eac4b180"
+  },
+  "unchanged_sources": {
+    "tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs": "6ee7a3c4bc33419a5d112486f15c97b14d505f2a33d6b77b74629a08bf331ac5",
+    "tools/long-run-supervisor-074/src/diagnostic_reservation_publication_storage.rs": "f686ac68b72b8b921e5035b976694235437553b2ee0a72f1af5177a00952beef",
+    "tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs": "395f53672edf988ac54137ebe2b253000f1d8be7f906c2a71227086ba7e68963",
+    "tools/long-run-supervisor-074/src/diagnostic_initial_consumption_storage.rs": "59d3fd7f26d678a54a5bab4fc687193c0836c0dda0c16ba942dfce874af3409f",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs": "e8f02772fdfd9b3cc0ea215c1a3b52a048c3d10fdd43b99fcc9a4dea6a1b0edd",
+    "tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs": "a48050e0085b2eae7319286fc1b6d9b482f3d2d4501886e159bce36c2b02fd16",
+    "tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs": "02cb507440b303e395d4ecf6b1fa282bad8216c55d2e4f731682b4560acf847e",
+    "tools/long-run-supervisor-074/src/diagnostic_original_fence.rs": "9372e04527aea745eaad2dd39179c9f96424c05a6625cffd7f6ba5135fceb8d4",
+    "tools/long-run-supervisor-074/src/diagnostic_lease.rs": "8fdbab3189c7e2bb84615b9ae99bd3022958d757f61a0ad1c48e02a91f230167",
+    "tools/long-run-supervisor-074/src/diagnostic_transition.rs": "b9bbc0a7c39ca279c6118c18f4d33419ab308bb66d87df66f873b0006b1fdca7"
+  },
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "frozen_inputs_sha256": {
+    "docs/testing/performance/0.74/baseline-identities.toml": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630",
+    "docs/testing/performance/0.74/scenario-matrix.toml": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961",
+    "docs/testing/performance/0.74/statistics.toml": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227",
+    "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828",
+    "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d",
+    "docs/testing/performance/0.74/composition-ledger.toml": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96",
+    "docs/testing/performance/0.74/release-admission-contract.toml": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe",
+    "docs/testing/performance/0.74/terminal-disposition-ledger.toml": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+  },
+  "historical_packet": "docs/testing/performance/0.74/local-runs/diagnostic-transition-20261013",
+  "historical_manifest_sha256": "b27985d934b7ffb5694d1978386aee8fe2c8c0d85427fcc6db10cf9f4c262bec",
+  "verifier_sha256": "cf9215af131418a7a236c4c53f52f2cb65653278430c6499892cdee06c35869d",
+  "contract_pins": {
+    "schema_version": 1,
+    "contract_id": "diagnostic-early-attempt-local-074-v1",
+    "baseline_source": "277f774a4fabad2b3e76fa3f907554f51cc45d22",
+    "original_fixed_intent_and_empty_fence_required": true,
+    "full_initial_state_matches_before_io": true,
+    "descriptor_relative_exclusive_creation": true,
+    "only_created_original_is_sealed": true,
+    "exact_owned_namespace_and_partial_bytes_required": true,
+    "file_directory_sync_before_acknowledgement": true,
+    "original_authority_brackets_every_boundary": true,
+    "failure_retains_original_lock_until_drop": true,
+    "safe_original_refusal_bridge_only": true,
+    "retained_attempt_blocks_fresh_reservation": true,
+    "before_create_is_unadmitted_not_consumed": true,
+    "recovered_bytes_cannot_recreate_runtime_ack": true,
+    "real_owned_sigkill_matrix_required": true,
+    "actual_process_interruption_checked": true,
+    "test_seed": "0x074d",
+    "targeted_repetitions": 3,
+    "attempt_stages": 8,
+    "crash_cases_per_repeat": 9,
+    "controls_per_repeat": 1,
+    "fresh_processes_per_repeat": 20,
+    "new_record_schema": false,
+    "global_nonce_protection": false,
+    "fixed_progression_integration_implemented": false,
+    "later_fixed_cells_implemented": false,
+    "authenticated_peer_or_clock": false,
+    "machine_power_loss_proved": false,
+    "host_reboot_proved": false,
+    "positive_host_enrollment_proved": false,
+    "server_entry_wired": false,
+    "worker_execution_allowed": false,
+    "server_operation_performed": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "required_test_names": [
+    "early_attempt_healthy_canonical_sealed_and_drop_blocks_reservation",
+    "early_attempt_unbound_state_mismatch_is_nonrevoking_and_no_write",
+    "early_attempt_all_boundaries_retain_first_error_lock_and_partial_context",
+    "early_attempt_late_target_or_unknown_context_is_not_adopted",
+    "early_attempt_original_object_byte_mode_link_and_named_drift_are_sticky",
+    "early_attempt_bound_expiry_signature_peer_and_state_refuse_once",
+    "early_attempt_unsafe_or_advanced_authority_is_not_appended",
+    "early_attempt_partial_policy_refusal_preserves_first_failure",
+    "early_attempt_already_refused_inputs_cross_latch_without_io",
+    "early_attempt_independent_concurrent_chains_do_not_share_refusal",
+    "early_attempt_storage_budget_and_same_guard_replay_refuse_before_creation",
+    "early_attempt_runtime_success_and_failure_are_original_thread_only"
+  ],
+  "test_prefix": "diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::",
+  "manual_test_full_name": "diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_all_stages_and_post_return",
+  "manual_gate_id": "tool.hydracache-long-run-supervisor-074.diagnostic-process-crash-attempt-all-stages-and-post-return",
+  "test_environment": {
+    "date": "2026-10-13",
+    "timezone": "Europe/Malta",
+    "linux": "WSL Ubuntu nonroot exact owned fixtures; no installed host",
+    "windows": "native portable checks",
+    "current_rust": "1.94.0",
+    "msrv": "1.88.0",
+    "product_workload": false,
+    "server_operation": false
+  },
+  "files": [
+    {
+      "name": "01-baseline.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib reservation_publication_ -- --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 4464,
+      "sha256": "0d8d9212c7f488d8eb7ee711642f635d7d4956344d665046277db4d364fe968f",
+      "test_totals": [
+        [
+          15,
+          0,
+          0
+        ]
+      ],
+      "phase": "baseline"
+    },
+    {
+      "name": "02-red-absent-entry.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture",
+      "platform": "linux",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "bytes": 1520,
+      "sha256": "db9b2f3dd7006d51c6a583e6eab0d5436f6f0a93800423a9984f72ea6bfdd1b4",
+      "test_totals": [],
+      "phase": "negative"
+    },
+    {
+      "name": "03-first-focused.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "bytes": 1228,
+      "sha256": "b4452d22c45e3752f3b30b904cd03223620eea95fd2662fdaa4f009cd1a680c4",
+      "test_totals": [],
+      "phase": "negative"
+    },
+    {
+      "name": "04-corrected-focused.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 6150,
+      "sha256": "00a1a8aa7a6f8aaba46e8a60c396e0c0bf34670cfcd014746b4f6c7918798514",
+      "test_totals": [
+        [
+          10,
+          0,
+          0
+        ]
+      ],
+      "phase": "provisional"
+    },
+    {
+      "name": "05-first-process-proof.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_process_crash_attempt_all_stages_and_post_return -- --ignored --nocapture --test-threads=1",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 5214,
+      "sha256": "01e4b06ab362e80aed5bed0d74026b1644966dec48b780a09780678196bf454d",
+      "test_totals": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "phase": "provisional"
+    },
+    {
+      "name": "06-linux-clippy-first.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "linux",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "bytes": 2854,
+      "sha256": "121b8fc839ebc93b22ffc34b7e7c6b1bc52fbc5e3206df672eb3c05f71666f86",
+      "test_totals": [],
+      "phase": "negative"
+    },
+    {
+      "name": "07-linux-clippy-corrected.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 193,
+      "sha256": "54f2d73d656520b4d6136ee011395c09abb7177af677003d1b44a20e2f054aa8",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "08-focused-final.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 3499,
+      "sha256": "92096fa02c03d4623136b4da88f86602c5ca65f7ea1c87d38d301dd0e4a7766f",
+      "test_totals": [
+        [
+          12,
+          0,
+          0
+        ]
+      ],
+      "phase": "provisional"
+    },
+    {
+      "name": "09-root-regression-first.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test gated_tests --test release_evidence --test release_governance",
+      "platform": "windows",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "bytes": 11537,
+      "sha256": "f3cab28d072a57e4cabcb593f34f87afad8a86362423a52ae71822eb75799a76",
+      "test_totals": [
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          120,
+          1,
+          0
+        ]
+      ],
+      "phase": "negative"
+    },
+    {
+      "name": "10-windows-regression.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 26374,
+      "sha256": "39d60588fec9967fb29fd5ff35ba1a3d521b01886d23d9c51b133cbc7106feb4",
+      "test_totals": [
+        [
+          28,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          19,
+          0,
+          0
+        ],
+        [
+          18,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "11-windows-clippy.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features -- -D warnings",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 61,
+      "sha256": "2468bd50c1d0a96610091af6c514eacf3783a282cadb5daf10106d8721281bb9",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "12-linux-current-check.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 193,
+      "sha256": "2ff64e36304b302908b53a4f75471ac21faab5957976d34aa1bb2ec26d4c4944",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "13-linux-msrv.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 247,
+      "sha256": "9bbc451de900e6b2e0c50ff44979035a00c454f6f1e0bbb6a6afee325c45bc25",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "14-windows-current-check.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 61,
+      "sha256": "29bee9a07c25de6ccdc7e045130d07aaca47c6fe9a5b8ea0ee7f1cdea22debab",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "15-windows-msrv.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 61,
+      "sha256": "2321343779c93bce60190e4241115f76b1201aca59d5f5c78346ecf02e38b05b",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "16-root-regression-corrected.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 test -p xtask --locked --test performance_contract_074 --test gated_tests --test release_evidence --test release_governance",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 14217,
+      "sha256": "f22d7dac11f1c90f82dbfa127855aa764b820097aeab8112cb1cb2ec9b173666",
+      "test_totals": [
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          121,
+          0,
+          0
+        ],
+        [
+          13,
+          0,
+          0
+        ],
+        [
+          23,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "17-xtask-check.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 check -p xtask --locked --all-targets --all-features",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 145,
+      "sha256": "4bf0b6730f1656d45a8636741f8109a5ab7d87081c5cbde8d725f9de506036b8",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "18-xtask-clippy.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 clippy -p xtask --locked --all-targets --all-features -- -D warnings",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 145,
+      "sha256": "cc582a14c1a02bc1cc4b1e96334940e9830ae38ab22e03031fc9562f3a7227fc",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "19-format.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "20-rustdoc.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; $env:RUSTDOCFLAGS='-D warnings'; cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 320,
+      "sha256": "a1856a9f31a0ea407bfb16592a0d30832e856f9a056265f437dfbf28c7418002",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "21-functional-repeat-1.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 3366,
+      "sha256": "43a3e792b9f81e9c5d2e49de17b980b4ca9429569331e4d3aeedc0020b5cc0a1",
+      "test_totals": [
+        [
+          12,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "22-process-repeat-1.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_all_stages_and_post_return -- --ignored --exact --nocapture --test-threads=1",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 1976,
+      "sha256": "16069d2a47574cbf6f8f94d86604fd2973d6950ac19bd73ce2cd98c8517613a5",
+      "test_totals": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "21-functional-repeat-2.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 3366,
+      "sha256": "5379118720118e5a196503358cff2918879c435879a8a1c992824be5f143814b",
+      "test_totals": [
+        [
+          12,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "22-process-repeat-2.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_all_stages_and_post_return -- --ignored --exact --nocapture --test-threads=1",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 1919,
+      "sha256": "f55ae1834b2a9c1e7f840d0f87457f730416923449f1d4b1344919af81b67f7b",
+      "test_totals": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "21-functional-repeat-3.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib early_attempt_ -- --nocapture --test-threads=4",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 3366,
+      "sha256": "c8f4e224882526a0d3a2855d194d55a9695fd3e78dd238117124963e7941ab7e",
+      "test_totals": [
+        [
+          12,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "22-process-repeat-3.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::process_crash_tests::diagnostic_process_crash_attempt_all_stages_and_post_return -- --ignored --exact --nocapture --test-threads=1",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 1919,
+      "sha256": "d32c377a7ade559d97e342392869db77e5cc0661695f2425ebe0009912cd8bcb",
+      "test_totals": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "23-all-process-regression.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_process_crash_ -- --ignored --nocapture --test-threads=1",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 6275,
+      "sha256": "c7027e4eaeba1476e7db8eb712dafc539c75cd7680eb4e5d5ee078d32927b819",
+      "test_totals": [
+        [
+          4,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "24-linux-regression.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib --test host_execution --test diagnostic_lease --test diagnostic_original_fence --test diagnostic_task_api --test diagnostic_intent_projection --test diagnostic_worker_policy --test diagnostic_worker_account --test provisioning -- --test-threads=16",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 91850,
+      "sha256": "cdcf27795969cb8bea1b7a9e6adb6f53131a8b5333d2bf53210d9b92acd9b3a7",
+      "test_totals": [
+        [
+          540,
+          0,
+          5
+        ],
+        [
+          16,
+          0,
+          0
+        ],
+        [
+          20,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "25-linux-doctests.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 10373,
+      "sha256": "623350dd3fd3833901a9ebeea63b782c9e140b111fe8966bc6d1d5781c24cbcf",
+      "test_totals": [
+        [
+          41,
+          0,
+          0
+        ]
+      ],
+      "phase": "final-source"
+    },
+    {
+      "name": "26-final-format.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "27-doc-check.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 239,
+      "sha256": "32581ff703252e63bade4803af0f6d28eff373973d5ef78851510a1d37c1c76f",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "28-book.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; & C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "29-local-contract.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 203,
+      "sha256": "7e173f4a6c4cd8bef1ece4091d1419181831bd6ba14205d95fbdc52db641bdfa",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "30-qualification-refusal.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; & C:/Python313/python.exe scripts/perf/performance_qualification_dry_run_074.py --manifest docs/testing/performance/0.74/qualification-manifest.toml --output 'C:/Users/ArturBuzov/AppData/Local/Temp/hydracache-early-attempt-1791878304150/qualification-must-not-exist.json' --dry-run",
+      "platform": "windows",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "bytes": 136,
+      "sha256": "7853e3eadb2278ef849fa81125cfe557262e190e4384213b0232d7973ab9ca44",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "31-ship-refusal.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 run -p xtask --locked -- performance-contract-check --release 0.74 --require-ship",
+      "platform": "windows",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "bytes": 487,
+      "sha256": "f3819a5520d5263d3d260bd47ae60d9c1ab190ab9963a44313b9bcdf46f97c8a",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "32-linux-rustdoc.log",
+      "command": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc -p hydracache-long-run-supervisor-074 --locked --no-deps",
+      "platform": "linux",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 460,
+      "sha256": "08d4e278262e267dc73f79476ebef96001621860c57e15c72376caf4f5809ab1",
+      "test_totals": [],
+      "phase": "final-source"
+    },
+    {
+      "name": "33-post-evidence-doc.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; cargo +1.94.0 run -p xtask --locked -- doc-check",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 155,
+      "sha256": "3573edf1cee728bf6981fa23cb1797a88dc4c35e8deb37e0b6d7071a7254fbc2",
+      "test_totals": [],
+      "phase": "final-evidence"
+    },
+    {
+      "name": "34-post-evidence-book.log",
+      "command": "$env:CARGO_PROFILE_DEV_DEBUG='0'; $env:CARGO_PROFILE_TEST_DEBUG='0'; $env:CARGO_INCREMENTAL='0'; $env:CARGO_BUILD_JOBS='2'; $env:CARGO_TERM_COLOR='never'; & C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site",
+      "platform": "windows",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "test_totals": [],
+      "phase": "final-evidence"
+    }
+  ]
+}

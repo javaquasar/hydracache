@@ -158,3 +158,19 @@ state/intent; cells two through four need an explicit owned progression protocol
 Early attempt/nonce admission, signed previous-record history, new-boundary
 process-loss cases and reboot handling remain. This validator proves neither
 authentic completion nor empty cgroup and does not open P2 through P5.
+
+## P1 Early attempt retention
+
+Implementation `cdeb2c8c8f308161644b9fc9bf224282da2c2dad` adds the
+[original early-attempt primitive](diagnostic-early-attempt-local-design.md),
+with [local evidence](local-runs/diagnostic-early-attempt-20261013/README.md).
+It retains the signed initial attempt before Reserved publication, acknowledges
+only after owned-object checks and sync, and blocks fresh reservation for any
+retained partial or complete context. BeforeCreate remains unadmitted, not
+global nonce proof. Surviving bytes cannot recreate a runtime acknowledgement.
+
+P1 remains open: connect this owned guard to Reserved publication and later
+cells without reopening/adoption or weaker original bindings. Signed history,
+incomplete-attempt handling and reboot semantics remain before P2 through P5.
+No fixed execution route, server operation, product candidate or qualification
+input is opened or changed.
