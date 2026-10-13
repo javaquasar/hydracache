@@ -6967,3 +6967,48 @@ local process-loss observations, not throughput, allocation, power-loss or
 production-readiness results. The original writer implementation and durable
 formats are unchanged; new path selectors and process helpers exist only in
 the crate's test build. The manual gates remain separate from ordinary fast CI.
+
+## Checking adjacent diagnostic state transitions
+
+After the process-loss proof, P1 starts by distinguishing a valid snapshot from
+a valid transition. Two individually valid states can still skip a cell, change
+the original binary/boot, forget an inode or overwrite a stop reason. The
+[transition contract](../testing/performance/0.74/diagnostic-transition-local-design.md)
+therefore validates the previous and next state together. The local model
+publisher invokes it under its existing host fence before creating pending state.
+
+Revision advances by exactly one. Lease, boot, binary, build provenance and
+reservation origin stay fixed; controller refresh cannot revive an expired
+controller. A running cell retains its original start and any bound inode.
+Only Running may complete one cell, returning to Reserved for the next of four
+cells or reaching Terminal after the fourth. Stop reason is sticky, and Terminal
+has no subsequent publication. Invalid and stale requests leave journal bytes
+unchanged. Existing schema-one encoding, snapshot readers and recovery formats
+are unchanged.
+
+The test hypothesis is functional: enforce the graph before mutation without
+breaking existing model lifecycle, cancellation and concurrent host admission.
+The [local evidence](../testing/performance/0.74/local-runs/diagnostic-transition-20261013/README.md)
+retains the missing-function red test, all 25 stage pairs, deterministic seed
+`0x074e`, 64 four-cell histories per repeat and invalid revision/cell mutations.
+Separate tests exercise identity/time/start/inode/reason drift, expiry, overflow,
+terminal replay and publication refusal. An initial graph fixture accidentally
+gave a pre-start cancellation a process identity; it was corrected while
+preserving the stricter rule, and its negative log remains available.
+
+This does not make the fixed runtime guards advance. They deliberately retain
+the initial state and signed-intent binding, so reopening or rebinding changed
+files would undermine the original-object guarantee. Fixed cells two through
+four need an owned progression protocol, retained signed history and early
+durable attempt/nonce admission. A caller-asserted successful outcome is still
+not writer cessation or empty-cgroup proof. P1 remains open, as do trusted
+production inputs, execution/watchdog/cleanup and installed-host rehearsal.
+No performance gain or release/qualification permission follows from this slice.
+
+The frozen implementation passes all eight new cases in each of three Linux
+repeats. Scoped Linux regression passes 607 with four manual cases ignored;
+Windows passes 204, root contracts/registry/governance 162, and Linux compile-fail
+doctests 38. Current/MSRV checks, warnings-denied lint, format and documentation
+checks pass. No expensive workload or server operation was performed. The
+inherited qualification digest mismatch and closed ship gate still refuse;
+their inputs and thresholds were not changed to make this package pass.

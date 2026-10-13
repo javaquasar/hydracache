@@ -1,0 +1,15 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 3.73s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-1a92ea25a02fabc3.exe)
+
+running 6 tests
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+transition seed=0x074e histories=64 accepted=1280 refused=2560
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.02s
+

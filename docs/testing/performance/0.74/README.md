@@ -2739,3 +2739,20 @@ history. Actual owned-process interruptions, later cells/state transitions,
 authenticated peer/time, coordinated trusted host rollout and original output/
 start/watchdog/owned cleanup remain. No production entry, server operation,
 product performance claim, qualification or ship permission is added.
+
+## Adjacent diagnostic state transitions
+
+The [first P1 transition slice](diagnostic-transition-local-design.md) now checks
+the local model publisher's previous and next state under its existing fence.
+It requires exact next revision, immutable lease/boot/build/reservation origin,
+monotonic controller/observation assertions and an unchanged original cell start,
+inode and stop reason. Only Running can complete exactly one cell; Terminal
+cannot publish another transition. Invalid and stale candidates refuse before
+writing pending/state. Existing schema-one bytes and readers are unchanged.
+
+The [local packet](local-runs/diagnostic-transition-20261013/README.md) covers the
+stage graph, seeded four-cell histories, mutations and journal-preserving
+publisher refusals. It authenticates neither outcomes nor caller time/peer.
+Fixed cells two through four, early durable attempt/nonce admission and the
+owned progression protocol remain P1 work. Production execution, host rehearsal,
+qualification and shipping remain closed.

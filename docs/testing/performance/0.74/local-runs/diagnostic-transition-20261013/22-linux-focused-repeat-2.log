@@ -1,0 +1,16 @@
+    Finished `test` profile [unoptimized] target(s) in 2.67s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+test diagnostic_lease::transition_tests::transition_entire_stage_graph_is_explicit ... ok
+test diagnostic_lease::transition_tests::transition_completion_and_terminal_replay_never_skip_or_restart_cells ... ok
+test diagnostic_lease::transition_tests::transition_start_and_heartbeat_cannot_revive_expired_budgets ... ok
+test diagnostic_lease::transition_tests::transition_identity_revision_clock_and_cell_drift_refuse_without_mutation ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write ... ok
+test diagnostic_lease::transition_tests::transition_publisher_refuses_stale_revision_without_replacing_state ... ok
+transition seed=0x074e histories=64 accepted=1280 refused=2560
+test diagnostic_lease::transition_tests::transition_four_cells_seeded_histories_and_mutations ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 524 filtered out; finished in 0.16s
+

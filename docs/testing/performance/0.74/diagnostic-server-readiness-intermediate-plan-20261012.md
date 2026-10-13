@@ -143,3 +143,18 @@ crash before the first durable intent, preserving the no-replay rule rather
 than treating empty-before-create as durable nonce protection. Real production
 issuer/pins and trusted host enrollment remain external prerequisites. This
 status update changes no qualification input, product candidate or ship gate.
+
+## First P1 transition slice
+
+Implementation `4085e4e9b587fb5d99e0ed271e7ec2ad251bf0f5` adds adjacent-state
+checks to the local model publisher, with a
+[preregistered graph](diagnostic-transition-local-design.md) and
+[exact-source evidence](local-runs/diagnostic-transition-20261013/README.md).
+Revision, identity/origin, clock assertions, cell count, original start/inode
+and stop reason are checked before mutation. Terminal replay refuses.
+
+P1 is not complete. The fixed runtime publisher still pins immutable initial
+state/intent; cells two through four need an explicit owned progression protocol.
+Early attempt/nonce admission, signed previous-record history, new-boundary
+process-loss cases and reboot handling remain. This validator proves neither
+authentic completion nor empty cgroup and does not open P2 through P5.

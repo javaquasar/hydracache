@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 3.36s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)
