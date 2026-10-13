@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+The operator-approved diagnostic collector amendment introduces a separate local
+fixture namespace `collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`.
+Only the original nonroot fixture writer can return a nonserialized drain result;
+reopening the files cannot recreate its acknowledgement or grant completion.
+Old signed unit projections and regular-file FD1/FD2 bindings remain unchanged.
+Future root enrollment needs a distinct signed pipe-to-collector projection;
+there is no automatic migration, fixture promotion or installed writer route.
+See the [collector contract](testing/performance/0.74/diagnostic-collector-design.md).
+
 Original pidfd termination adds a Linux read-only runtime API only. The result
 contains retained generation and strict exit/hangup readiness, never an exit
 code, authenticated outcome or cleanup authority. Existing live admission and

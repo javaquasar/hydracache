@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11 collector retention adds the ignored/manual nonroot Linux gate
+`tool.hydracache-long-run-supervisor-074.collector-owned-sigkill-matrix-retains-without-replay`.
+It exercises 15 owned SIGKILL cases, one uninterrupted control and 32 fresh
+refusals at a fixed 180-second harness budget. Run single-flight without relinking
+libtest. It proves local retained attempt behavior, not root isolation,
+authenticated original start, power-loss durability or original cgroup revocation.
+Fast collector tests separately cover actual pipe EOF, leaked writer copies,
+fixed byte ceilings, hashing, substitution and fault refusal.
+
 W11 terminal-process evidence has an ignored/manual nonroot Linux gate:
 `tool.hydracache-long-run-supervisor-074.terminal-process-owned-leader-exit-does-not-stop-descendant-writer`.
 It owns both fixture pidfds, kills only the leader and proves an actual
