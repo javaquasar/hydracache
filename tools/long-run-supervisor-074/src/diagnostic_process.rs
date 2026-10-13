@@ -11,6 +11,10 @@ const MAX_DEPTH: usize = 8;
 const MAX_COMPONENT: usize = 128;
 const PROC_MAGIC: libc::c_long = 0x9fa0;
 
+#[path = "diagnostic_process_terminal.rs"]
+mod terminal;
+pub use terminal::{TerminalProcessObservation, TerminalState};
+
 #[path = "diagnostic_process_io.rs"]
 mod io;
 pub use io::ProcessIoRead;
