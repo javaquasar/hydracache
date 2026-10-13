@@ -28,12 +28,150 @@ use super::reservation_publication::{self, ReservationPublicationError, StorageP
 use crate::diagnostic_lease::{encode, validate_transition, DiagnosticStage, DiagnosticState};
 use crate::diagnostic_worker_policy::intent_projection::IntentCheck;
 use crate::{canonical_json, sha256_hex};
+use crate::diagnostic_worker_policy::authority_registry::{AuthorityError, RefusalReason};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 pub use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::publication_storage::StartingStage;
 
 pub const STARTING_SCHEMA: &str = "diagnostic-starting-intent-074-v1";
 const MAX_BYTES: usize = 4096;
+
+/// Refusal acknowledgement only, never cell completion or cleanup permission.
+#[derive(Debug)]
+pub enum QuarantineDisposition {
+    Acknowledged,
+    Uncertain(AuthorityError),
+    /// No new I/O; prior refusal does not establish durable acknowledgement.
+    PreviouslyRefused,
+}
+
+/// Retains the original chain and fence, exposing neither retry nor execution.
+///
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine;
+/// fn clone(q: &FixedStartingQuarantine<'_,'_,'_,'_,'_,'_,'_,'_,'_>) { let _: FixedStartingQuarantine<'_,'_,'_,'_,'_,'_,'_,'_,'_> = q.clone(); }
+/// ```
+///
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine;
+/// fn start(q: &mut FixedStartingQuarantine<'_,'_,'_,'_,'_,'_,'_,'_,'_>) { q.start_once(); }
+/// ```
+///
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine;
+/// fn release(q: &mut FixedStartingQuarantine<'_,'_,'_,'_,'_,'_,'_,'_,'_>) { q.release_resources(); }
+/// ```
+///
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingIntentRead;
+/// fn reuse(read: FixedStartingIntentRead<'_,'_,'_,'_,'_,'_,'_,'_,'_>) { let _ = read.quarantine(); let _ = read.quarantine(); }
+/// ```
+pub struct FixedStartingQuarantine<
+    'join,
+    'storage,
+    'intent,
+    'authority,
+    'tasks,
+    'binding,
+    'guard,
+    'policy,
+    'process,
+> {
+    _read: FixedStartingIntentRead<
+        'join,
+        'storage,
+        'intent,
+        'authority,
+        'tasks,
+        'binding,
+        'guard,
+        'policy,
+        'process,
+    >,
+    disposition: QuarantineDisposition,
+}
+impl FixedStartingQuarantine<'_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub fn disposition(&self) -> &QuarantineDisposition {
+        &self.disposition
+    }
+}
+impl fmt::Debug for FixedStartingQuarantine<'_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FixedStartingQuarantine")
+            .field("disposition", &self.disposition)
+            .finish_non_exhaustive()
+    }
+}
+
+impl<'join, 'storage, 'intent, 'authority, 'tasks, 'binding, 'guard, 'policy, 'process>
+    FixedStartingIntentRead<
+        'join,
+        'storage,
+        'intent,
+        'authority,
+        'tasks,
+        'binding,
+        'guard,
+        'policy,
+        'process,
+    >
+{
+    /// Permanently decline this original attempt without inferring absent writers.
+    /// This is revocation, not a renewal of expired launch consent.
+    pub fn quarantine(
+        self,
+    ) -> FixedStartingQuarantine<
+        'join,
+        'storage,
+        'intent,
+        'authority,
+        'tasks,
+        'binding,
+        'guard,
+        'policy,
+        'process,
+    > {
+        self.quarantine_with(|journal, reason| journal.refuse(reason))
+    }
+
+    pub(super) fn quarantine_with(
+        mut self,
+        publish: impl FnOnce(
+            &mut super::super::Journal<'_>,
+            RefusalReason,
+        ) -> Result<(), AuthorityError>,
+    ) -> FixedStartingQuarantine<
+        'join,
+        'storage,
+        'intent,
+        'authority,
+        'tasks,
+        'binding,
+        'guard,
+        'policy,
+        'process,
+    > {
+        let disposition = if self.is_refused() {
+            // Never retry an uncertain or previously refused authority append.
+            self.read.read.storage.latch_refusal();
+            self.read.read.original.original.latch_original();
+            QuarantineDisposition::PreviouslyRefused
+        } else {
+            // Latch before persistence; failure cannot return a healthy capability.
+            self.read.read.storage.latch_refusal();
+            let original = &mut self.read.read.original.original;
+            original.latch_original();
+            match original.persist_with(RefusalReason::Policy, publish) {
+                Ok(()) => QuarantineDisposition::Acknowledged,
+                Err(error) => QuarantineDisposition::Uncertain(error),
+            }
+        };
+        FixedStartingQuarantine {
+            _read: self,
+            disposition,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

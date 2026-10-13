@@ -612,3 +612,282 @@ fn starting_intent_clock_boot_and_cell_projection_edges_refuse() {
         }
     });
 }
+
+#[test]
+fn starting_quarantine_acknowledges_only_original_authority_refusal() {
+    chain!(i, original, read, dir, root, leaf, f, raw, {
+        let starting =
+            retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state)).unwrap();
+        let before = objects(leaf);
+        let authority_before = inventory(&dir);
+        let quarantined = starting.quarantine();
+        assert!(format!("{quarantined:?}").contains("Acknowledged"));
+        assert!(matches!(
+            quarantined.disposition(),
+            QuarantineDisposition::Acknowledged
+        ));
+        busy(root);
+        assert_eq!(objects(leaf), before);
+        let after = inventory(&dir);
+        assert_eq!(after.len(), authority_before.len() + 2);
+        for original in authority_before {
+            assert!(after.contains(&original));
+        }
+        let records: Vec<_> = after
+            .iter()
+            .filter(|(name, _)| name.ends_with(".json"))
+            .map(|(_, raw)| raw.clone())
+            .collect();
+        let view = crate::diagnostic_worker_policy::authority_registry::inspect_registry_history(
+            &records, &f.trust, &f.host,
+        )
+        .unwrap();
+        assert!(view.refused);
+        assert_eq!(view.revision, 2);
+        drop(quarantined);
+        assert!(original.is_refused());
+        retained_context_refuses_for_test(root);
+    });
+}
+
+#[test]
+fn starting_quarantine_existing_original_durable_refusal_is_not_appended_again() {
+    chain!(i, original, read, dir, root, leaf, f, raw, {
+        let starting =
+            retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state)).unwrap();
+        match &mut starting.read.read.original.original.journal {
+            Journal::Fixed(registry) => registry.refuse(RefusalReason::Operator).unwrap(),
+            _ => unreachable!(),
+        }
+        let before = objects(leaf);
+        let authority_before = inventory(&dir);
+        let quarantined = starting.quarantine_with(|_, _| panic!("durable refusal duplicated"));
+        assert!(matches!(
+            quarantined.disposition(),
+            QuarantineDisposition::Acknowledged
+        ));
+        assert_eq!(objects(leaf), before);
+        assert_eq!(inventory(&dir), authority_before);
+        busy(root);
+        drop(quarantined);
+        assert!(original.is_refused());
+        retained_context_refuses_for_test(root);
+    });
+}
+
+#[test]
+fn starting_quarantine_all_authority_faults_remain_uncertain_and_fenced() {
+    for at in [
+        PublicationStageAuthority::RecordCreated,
+        PublicationStageAuthority::RecordSynced,
+        PublicationStageAuthority::MarkerCreated,
+        PublicationStageAuthority::DurableCommit,
+    ] {
+        chain!(i, original, read, dir, root, leaf, f, raw, {
+            let starting =
+                retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state))
+                    .unwrap();
+            let before = objects(leaf);
+            let authority_before = inventory(&dir);
+            let quarantined = starting.quarantine_with(|journal, reason| match journal {
+                Journal::Fixed(registry) => registry.refuse_at_for_test(reason, at),
+                _ => unreachable!(),
+            });
+            assert!(
+                matches!(quarantined.disposition(), QuarantineDisposition::Uncertain(crate::diagnostic_worker_policy::authority_registry::AuthorityError::Injected(observed)) if *observed == at)
+            );
+            assert_eq!(objects(leaf), before);
+            let after = inventory(&dir);
+            for original in &authority_before {
+                assert!(after.contains(original));
+            }
+            assert!(after.len() > authority_before.len());
+            busy(root);
+            // Re-reading disposition cannot append or upgrade a durable-but-unacknowledged tail.
+            assert!(matches!(
+                quarantined.disposition(),
+                QuarantineDisposition::Uncertain(_)
+            ));
+            assert_eq!(inventory(&dir), after);
+            drop(quarantined);
+            assert!(original.is_refused());
+            retained_context_refuses_for_test(root);
+        });
+    }
+}
+
+#[test]
+fn starting_quarantine_unsafe_or_advanced_authority_never_repairs() {
+    for kind in 0..3 {
+        chain!(i, original, read, dir, root, leaf, f, raw, {
+            let starting =
+                retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state))
+                    .unwrap();
+            match kind {
+                0 => fs::write(dir.path().join("foreign"), b"untrusted").unwrap(),
+                1 => fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o770)).unwrap(),
+                _ => {
+                    let changed = changed_checked(f, 0);
+                    match &mut starting.read.read.original.original.journal {
+                        Journal::Fixed(registry) => {
+                            registry.refuse(RefusalReason::Operator).unwrap();
+                            registry.advance(&changed).unwrap();
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
+            let before = objects(leaf);
+            let authority_before = inventory(&dir);
+            let quarantined = starting.quarantine();
+            assert!(matches!(
+                quarantined.disposition(),
+                QuarantineDisposition::Uncertain(_)
+            ));
+            assert_eq!(objects(leaf), before);
+            assert_eq!(inventory(&dir), authority_before);
+            busy(root);
+            drop(quarantined);
+            assert!(original.is_refused());
+            fs::set_permissions(dir.path(), fs::Permissions::from_mode(0o700)).unwrap();
+            retained_context_refuses_for_test(root);
+        });
+    }
+}
+
+#[test]
+fn starting_quarantine_drifted_attempt_is_not_adopted_for_refusal() {
+    for replace in [false, true] {
+        chain!(i, original, read, dir, root, leaf, f, raw, {
+            let starting =
+                retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state))
+                    .unwrap();
+            let path = leaf.join("diagnostic-starting-intent-074.json");
+            if replace {
+                fs::rename(&path, leaf.join("retained-original")).unwrap();
+                fs::write(&path, b"replacement").unwrap();
+            } else {
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+                fs::write(&path, b"changed").unwrap();
+            }
+            let before = objects(leaf);
+            let quarantined = starting.quarantine();
+            assert!(matches!(
+                quarantined.disposition(),
+                QuarantineDisposition::Acknowledged
+            ));
+            assert_eq!(objects(leaf), before);
+            assert_eq!(inventory(&dir).len(), 4);
+            busy(root);
+            drop(quarantined);
+            assert!(original.is_refused());
+            retained_context_refuses_for_test(root);
+        });
+    }
+}
+
+#[test]
+fn starting_quarantine_no_fresh_consent_or_time_is_required_to_decline() {
+    chain!(i, original, read, dir, root, leaf, f, raw, {
+        let starting =
+            retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state)).unwrap();
+        // The original launch check at 1000 would be expired. It is never passed
+        // to revocation, and cannot become renewed permission.
+        let expired = i.check(f, 1000);
+        assert!(capture_bound_intent(
+            starting
+                .read
+                .read
+                .original
+                .original
+                .original
+                .reader()
+                .original
+                .checked_policy(),
+            &raw,
+            &expired
+        )
+        .is_err());
+        let before = objects(leaf);
+        let quarantined = starting.quarantine();
+        assert!(matches!(
+            quarantined.disposition(),
+            QuarantineDisposition::Acknowledged
+        ));
+        assert_eq!(objects(leaf), before);
+        assert_eq!(inventory(&dir).len(), 4);
+        busy(root);
+        drop(quarantined);
+        assert!(original.is_refused());
+    });
+}
+
+#[test]
+fn starting_quarantine_prior_refusal_never_retries_or_claims_ack() {
+    for uncertain in [false, true] {
+        chain!(i, original, read, dir, root, leaf, f, raw, {
+            let mut starting =
+                retain_fixed_starting_intent(read, &raw, &i.check(f, 100), &next(&i.state))
+                    .unwrap();
+            if uncertain {
+                fs::write(dir.path().join("foreign"), []).unwrap();
+            }
+            assert!(starting.revalidate(&raw, &i.check(f, 1000)).is_err());
+            let before = objects(leaf);
+            let authority_before = inventory(&dir);
+            let quarantined = starting.quarantine_with(|_, _| panic!("prior refusal retried"));
+            assert!(matches!(
+                quarantined.disposition(),
+                QuarantineDisposition::PreviouslyRefused
+            ));
+            assert_eq!(objects(leaf), before);
+            assert_eq!(inventory(&dir), authority_before);
+            busy(root);
+            drop(quarantined);
+            assert!(original.is_refused());
+            retained_context_refuses_for_test(root);
+        });
+    }
+}
+
+#[test]
+fn starting_quarantine_independent_concurrent_chains_do_not_share_disposition() {
+    std::thread::scope(|scope| {
+        let threads: Vec<_> = [false, true]
+            .into_iter()
+            .map(|fail| {
+                scope.spawn(move || {
+                    chain!(i, original, read, dir, root, leaf, f, raw, {
+                        let starting = retain_fixed_starting_intent(
+                            read,
+                            &raw,
+                            &i.check(f, 100),
+                            &next(&i.state),
+                        )
+                        .unwrap();
+                        if fail {
+                            fs::write(dir.path().join("foreign"), []).unwrap();
+                        }
+                        let before = objects(leaf);
+                        let quarantined = starting.quarantine();
+                        assert_eq!(
+                            matches!(
+                                quarantined.disposition(),
+                                QuarantineDisposition::Uncertain(_)
+                            ),
+                            fail
+                        );
+                        assert_eq!(objects(leaf), before);
+                        busy(root);
+                        drop(quarantined);
+                        assert!(original.is_refused());
+                        retained_context_refuses_for_test(root);
+                    });
+                })
+            })
+            .collect();
+        for thread in threads {
+            thread.join().unwrap();
+        }
+    });
+}
