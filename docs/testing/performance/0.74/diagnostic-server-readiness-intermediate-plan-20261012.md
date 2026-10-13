@@ -63,6 +63,12 @@ adding an external monotonic authority would require a separate decision.
 
 ## P3 Production output start watchdog and cleanup
 
+The operator-approved 2026-10-14 [collector amendment](diagnostic-collector-design.md)
+replaces future worker-owned regular-file output with worker pipes and a sole
+root-owned evidence-file writer. Old signed projections remain unchanged. Local
+collector drain is a prerequisite, not authenticated completion or cgroup
+revocation; original start and trusted admission must still join the result.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,
