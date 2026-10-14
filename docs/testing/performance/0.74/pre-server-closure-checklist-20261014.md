@@ -97,8 +97,10 @@ The subsequent [actual public observation](local-runs/diagnostic-oidc-public-sou
 received the fixed discovery/JWKS once with matching runtime/CA inventory and
 four unselected keys. It adds no selected kid, snapshot expiry, workflow subject,
 production custody or token. The [dedicated job preparation](diagnostic-controller-job-preparation.md)
-also identifies the single-key versus bounded-roster decision and the separate
-prebuilt-signer/bootstrap custody gap. No active job or configuration follows.
+separates the local [bounded-roster implementation](diagnostic-oidc-roster-design.md)
+from actual key/workflow selection and the prebuilt-signer/bootstrap custody gap.
+V1 remains readable; v2 adds bounded selected membership and no key refresh.
+No active job or configuration follows.
 Independently authenticated GitHub key selection/custody/rotation, actual workflow
 policy selection and a protected diagnostic signing-job receipt remain required
 before real provenance enrollment. P2 and replay/start admission remain open.

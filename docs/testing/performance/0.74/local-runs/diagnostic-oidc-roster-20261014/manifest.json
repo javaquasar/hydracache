@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-oidc-roster-20261014",
+  "baseline_source": "c9df8c06e12b7bf6fe99ba77d87a43f85b4a63c9",
+  "preregister_commit": "9c7d8bdb5679aea6f136a4388886c848d0efe9fb",
+  "source_commit": "4fee68ab4d58a7f370e5462a06455e99016f5548",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "sha256_lf": "af11cc61eb244ff47a00ae931d58c9b8910720904a4cfd5df05717383e5685f8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+      "sha256_lf": "a50238819aa0276feb82ab34a8c2b0c12ed6848ce4f956c0f66ef307d72b41d7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs",
+      "sha256_lf": "b8143d5012214087c3fdf1c9b7cc5c91d6c129813955fdb0ac9f51ad2baa0c51"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_roster_tests.rs",
+      "sha256_lf": "85a819cf20a7110887b4cf2b125bcefe5cace3afbf4bb34c1541727a0e2d8528"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs",
+      "sha256_lf": "dffecff6bc349a551cec4005174073578a77c6522b938ffcf59b238a7014fac6"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "672e405d8b6b449d821a2a4c930608e5e153164801965a144cf200cdba99d433"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "0edaac26c17f5a04b0a69a9e703365c136407f20ee9a57d2486769a39dd6ec6b"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-oidc-roster-contract.toml",
+      "sha256_lf": "3038d35065a4b518399fce2aa726b86d1bf2cda889775336c65906e59021cc01"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-oidc-roster-design.md",
+      "sha256_lf": "ab949c0e4711368ea7be7ed2cd95fd2496475e67ca2d2233d51df24c4f99aedd"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256_lf": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/main.rs",
+      "sha256_lf": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_acquisition_074.py",
+      "sha256_lf": "de74844ad8dc96939485de769e92befbdafc0774374ced7d57d7c2d267863e0c"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_source_074.py",
+      "sha256_lf": "df6cf5967b49152c79ddb91565bf3fafdee3dc0452953cd1268f272b2e77d747"
+    },
+    {
+      "path": ".github/workflows/diagnostic-builder-074.yml",
+      "sha256_lf": "9ea33263c8f4d5509c60ed7106b4e9d5333d997ca2fbc7bb1782f37a059c6472"
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-074.yml",
+      "sha256_lf": "33904a5c12a102bac1ae8b7d62b3bb87c45e01d969a74f84675bdec057a31324"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256_lf": "a527df9447acb0a62fea9c4dab40323a2673572abe9c7d6d0bd4383379e7c13a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json",
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json",
+      "sha256_lf": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/auth.rs",
+      "sha256_lf": "2dc5c8c79f916c97f7906edfceb2f77e4a640d00029c5e1ec8bb9e3b0f440f27"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/config.rs",
+      "sha256_lf": "96ec2527c824e660c2b3816a816dc6293789bb35b11f5d87770578649f0b3661"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_artifacts.rs",
+      "sha256_lf": "6cff71b3c16ed6c017e0fc117aa76e13852a9ae67d897f41beea672cfc03e851"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs",
+      "sha256_lf": "866ac90ac8f4a49e66c133cd82dbf76149ce088450a805b8abecceadfee0a049"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_builder.rs",
+      "sha256_lf": "9f10caa467c9c91ac9e7a6b50de609a40f70d8ac86595148f00329aac3c7b578"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "624e5db1a98b9b399ae913946827bac6113c0916d95618387e52008261008557"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+      "sha256_lf": "e861d439c5969fe135bbd089f776aef497e951ffafee4d2ce34198ef2d9ef32b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+      "sha256_lf": "7a410cadcd47ff80ad90aa63ca27da4aed0aceea469d80235a7d4564e43584eb"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/request_builder.rs",
+      "sha256_lf": "df6799093d97a9e44d44a34ae3fa2b1e3fc83f19f0f6eabf4f68e07b6e365705"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "ba7f45656851af3936e9cadfc99c86d5176cd73d7c705ba8145142b5e6406738"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process_terminal_tests.rs",
+      "sha256_lf": "4569e7a8a22f9f9ba838c341dfe4aec78a432b15d7b36743fcb5dd8c1752adc8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/fixtures/public-synthetic-oidc-rsa-2048.pk8.b64",
+      "sha256_lf": "553eba394feac4dd4f699f2c47e445f4f8122f019ba9e585fa8c0d7d39575a2c"
+    }
+  ],
+  "frozen_lock_sources": [
+    "62114be0f5da3218706e30d7424acfb5d0579d07",
+    "70ca60eb3f2f75a326e9f6430467749b76440a04"
+  ],
+  "frozen_lock_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    }
+  ],
+  "verifier_sha256_lf": "1037474ade97b88de31f53405bdc03b32dc08728c996cefddf14e7f7ee98d3c0",
+  "packet_test_sha256_lf": "f4f92505e34d5ab367f5e8fade219d60515e83f5bb3da218f3ce8f2fe1b9aedd",
+  "captures": [
+    {
+      "path": "oidc-roster-packet-tests-final.log",
+      "bytes": 109,
+      "sha256": "e10dd1ec06109f9081612c6ad5ea439a362ba45c2251132986def6cd56347587",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-packet-tests.log",
+      "bytes": 108,
+      "sha256": "f3d4c5309fb17c9df51374bd1c17122105da61e94ba27b552ac10eeb44c57aeb",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-packet-linux.log",
+      "bytes": 117,
+      "sha256": "3f069439246c60af0380246059a7479f68a6d70c4758316eb542a41f57b4c191",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-docs-final.log",
+      "bytes": 1464,
+      "sha256": "da11c66e06dbb13b9e18f3c1d5e985f5589f56ed92d4123571ff52f00c5d71f7",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "negative_result": "Capture wrapper exits zero; --require-ship separately retains expected native exit 1 for unselected candidate/incomplete qualification."
+    },
+    {
+      "path": "oidc-roster-baseline-corrected.log",
+      "bytes": 4382,
+      "sha256": "f06a99fdcf03958ff16cfb6f8b8a6a07bbe798f2037d8a140ce025cb36d85e0d",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-baseline.log",
+      "bytes": 7983,
+      "sha256": "baf1cf41e8e74cb21f036f6af3c6be618ce429cd07d6ad9c6deecc8db797cbc7",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 1,
+      "negative_result": "Both baseline commands passed (10 and 16 tests). The wrapper's shell-variable reporting was empty and its final comparison failed. The corrected set-e wrapper retains the same baseline tests with outer exit zero."
+    },
+    {
+      "path": "oidc-roster-development.log",
+      "bytes": 3544,
+      "sha256": "2af753e17c89aa23716fbd49e47f76907b18996d5653ef2100b54d1fafe52629",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-docs-gates.log",
+      "bytes": 2228,
+      "sha256": "977e8a54c8ab6c66a1c107a2465bcfcff2057decfd440ce7e196f7f6acb3ebc8",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "negative_result": "Capture wrapper exits zero; --require-ship separately retains expected native exit 1 for unselected candidate/incomplete qualification."
+    },
+    {
+      "path": "oidc-roster-focused-repeats.log",
+      "bytes": 10948,
+      "sha256": "c831d5a96f64e6cdac7ebd69aaa1affd89c15f89fc7eced819b83fc1ffe2633c",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-linux-194-check-lint.log",
+      "bytes": 3861,
+      "sha256": "b2146a6f72dedf96094342278a341f7552171f29a2493aa429e979c641f19ecd",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-linux-msrv.log",
+      "bytes": 3656,
+      "sha256": "df9e20a90b0507987bb73ce11bf9a72b8d1381ed190c97061412ca4e0297a84f",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-linux-regression-lint.log",
+      "bytes": 36666,
+      "sha256": "0db0a91fcdd6064cd3b1e78c898b488da859c8214a764dc708903973ef20ef2b",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 1,
+      "negative_result": "49 original-input tests, 5 Linux API cases, 85 doctests and the nightly check passed. Clippy 0.1.98-nightly failed on 12 pre-existing lint sites across 11 unchanged files. Rust/Clippy 1.94 matches the Windows validator and passes strictly; no lint suppression or unrelated code edit."
+    },
+    {
+      "path": "oidc-roster-linux-rustdoc.log",
+      "bytes": 628,
+      "sha256": "40669bb8c6d8bcfd6d06f606c092addab7679252fd6c5b51be9845fb2c2508ba",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-missing-api.log",
+      "bytes": 1054,
+      "sha256": "bf67ba82b112b6fc33070beae55da7eabe4b12532e76eca7c5921003daa35144",
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "negative_result": "Preregistered E0432 compile refusal for absent TrustProfile/MAX_ROSTER_BYTES/MAX_ROSTER_KEYS before implementation; WSL outer exit 1."
+    },
+    {
+      "path": "oidc-roster-root-contracts-corrected.log",
+      "bytes": 13559,
+      "sha256": "cd409b9ea0e1533462bc08ab18492119a8cc9ce4c43c9a641816ed6f471b20d4",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-root-contracts.log",
+      "bytes": 1429,
+      "sha256": "1180ae0b525ca7879a86a57824b59becd66d13a05eaf39deaeca8fcd20ff091b",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 101,
+      "negative_result": "The requested gated_test_check target does not exist. No tests ran. Corrected invocation uses the existing gated_tests target; no production or threshold change."
+    },
+    {
+      "path": "oidc-roster-toolchains.log",
+      "bytes": 273,
+      "sha256": "44904797e109fd801df3d1068ac28c80ba459ac8e7e90a7dbe73ea5777ff22a5",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-windows-check.log",
+      "bytes": 203,
+      "sha256": "ab9f2f93d418bad9e25ec21277166d3f6f5e2f7825e25dd664e8c030cc3a5c05",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-windows-lint.log",
+      "bytes": 203,
+      "sha256": "58b3ce8fe6b6a4171df8f88971f7314a5e80156e7492159ec1f3265700bdf65e",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-windows-msrv.log",
+      "bytes": 2303,
+      "sha256": "e7b4d739123269061c5ab4ee9f75dae19750c953eef0b37ceb889f1e2f97827c",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-xtask-check.log",
+      "bytes": 397,
+      "sha256": "095e84074d03b6d935603f1a94e7e2e7e6caafb5e20fd5ae02c5de1ef225fe1d",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "oidc-roster-xtask-lint.log",
+      "bytes": 397,
+      "sha256": "1517a4d3c433f19c682d759fc54d67496fdefc0b50a829f4eeecddaa6c7c635a",
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    }
+  ],
+  "tests": {
+    "windows_offline_packet_cases": 6,
+    "focused_cases": 18,
+    "focused_repeats": 3,
+    "new_roster_cases": 8,
+    "original_trust_binding_cases": 49,
+    "linux_api_cases": 5,
+    "linux_doctests": 85,
+    "windows_root_cases": [
+      6,
+      132,
+      13
+    ],
+    "membership_seed": "0x07402a11",
+    "membership_mutations": 64,
+    "independent_bindings": 4,
+    "strict_clippy_toolchain": "1.94.0",
+    "msrv_check_toolchain": "1.88.0",
+    "full_release_gate_executed": false,
+    "manual_sigkill_executed": false,
+    "performance_measurement_executed": false
+  },
+  "admission_claims": {
+    "actual_public_snapshot_promoted_to_trust": false,
+    "actual_private_key_read": false,
+    "actual_token_requested_or_verified": false,
+    "trust_config_installed": false,
+    "protected_job_created_or_dispatched": false,
+    "automatic_network_refresh": false,
+    "durable_nonce_or_fence_admission": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "server_entry_wired": false,
+    "host_modified": false,
+    "product_workload_allowed": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  }
+}

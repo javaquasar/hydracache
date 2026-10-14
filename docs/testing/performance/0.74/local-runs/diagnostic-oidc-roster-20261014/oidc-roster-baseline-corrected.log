@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.87s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-b6c95b9be3d31011)
+
+running 10 tests
+test diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_constructor_bad_token_source_and_prior_refusal_cross_latch_all_owners ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_original_binding_owned_bytes_healthy_drop_and_sticky_faults ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_additional_scalar_claim_budget_and_duplicate_header_boundaries ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_canonical_schema_snapshot_and_rsa_key_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_each_origin_time_type_and_duplicate_claim_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_key_header_and_compact_encoding_confusion_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_original_jws_bytes_and_time_boundaries ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_seeded_signature_mutations_and_independent_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_source_nofollow_modes_links_bounds_and_fixed_nonroot_refusal ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 693 filtered out; finished in 18.97s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.95s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-b6c95b9be3d31011)
+
+running 16 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_coarse_metadata_cannot_hide_changed_named_bytes ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 687 filtered out; finished in 1.85s
+

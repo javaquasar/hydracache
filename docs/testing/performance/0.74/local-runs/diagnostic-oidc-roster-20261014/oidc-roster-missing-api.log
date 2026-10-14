@@ -1,0 +1,12 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved imports `super::super::profile::TrustProfile`, `super::super::profile::MAX_ROSTER_BYTES`, `super::super::profile::MAX_ROSTER_KEYS`
+ --> tools/long-run-supervisor-074/src/diagnostic_oidc_roster_tests.rs:3:29
+  |
+3 | ...::{TrustProfile, MAX_R...BYTES, MAX_ROST...YS};
+  |       ^^^^^^^^^^^^  ^^^^^...^^^^^  ^^^^^^^^...^^ no `MAX_ROSTER_KEYS` in `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::profile`
+  |       |             |
+  |       |             no `MAX_ROSTER_BYTES` in `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::profile`
+  |       no `TrustProfile` in `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::profile`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

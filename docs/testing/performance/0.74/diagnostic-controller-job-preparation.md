@@ -32,19 +32,16 @@ current v1 trust reader accepts exactly one explicitly selected key. Discovery
 and JWKS do not identify which one will sign a future job token. Neither roster
 order nor certificate metadata selects an active kid or a snapshot lifetime.
 
-Two safe approaches need a decision before activation:
+The operator subsequently approved local implementation of the
+[bounded v2 roster](diagnostic-oidc-roster-design.md). V1 remains readable with
+one explicit key; v2 accepts one through eight independently configured keys
+within 8192 canonical LF bytes. The token kid identifies an already configured
+member, never a new key. Duplicate kids/material, unknown kid, stale snapshots
+and source replacement refuse without network refresh or fallback.
 
-- Keep v1 and select one key independently. An unknown kid always refuses; a
-  future job may therefore fail and require a new explicitly reviewed snapshot.
-- Preregister a separate versioned bounded trusted-key roster. The configured
-  authenticated snapshot, not a token URL or embedded key, chooses membership;
-  a token kid may only identify an already selected member. Duplicate/unknown
-  kids, stale snapshots and algorithm confusion must still refuse. This needs
-  a new schema/compatibility review and tests before any actual enrollment.
-
-The bounded roster is the more practical production option for rotation, but it
-is not implemented or approved by receiving this public packet. No automatic
-promotion, token-controlled key acquisition or threshold/schema change is made.
+Actual production membership, workflow/subject and snapshot lifetime still need
+independent selection and custody review before activation. The public packet
+is not installed or automatically promoted into either runtime configuration.
 
 ## Job sequencing and custody
 

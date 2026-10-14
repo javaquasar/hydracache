@@ -7982,3 +7982,30 @@ The [public-source packet](../testing/performance/0.74/local-runs/diagnostic-oid
 and [job preparation](../testing/performance/0.74/diagnostic-controller-job-preparation.md)
 keep the successful network read, selection decision and remaining original-start
 prerequisites distinct.
+
+### Support issuer rotation without token controlled trust
+
+The approved local roster extension resolves the schema issue found in the real
+public observation. The new v2 configuration accepts one through eight keys in
+8192 canonical LF bytes; v1 keeps one key and its 2048-byte document limit.
+Worker/controller configurations keep their original source budget. Every key
+passes the same RSA/RS256 constraints, kids are strictly ordered, and duplicate
+modulus/exponent pairs refuse even when their names differ.
+
+The hypothesis is operational rather than a throughput claim: several explicitly
+selected issuer keys can support rotation without allowing an incoming token to
+choose new trust. Local synthetic tokens exercise each selected position and a
+deliberately wrong known kid whose signature matches another member. That latter
+case must fail, not succeed by trying every key. Unknown kids and expired
+snapshots still refuse without downloading or falling back. Replacing a valid
+snapshot also refuses the retained original controller/worker chain; restoring
+the old bytes cannot repair that runtime guard.
+
+One shared verifier retains the original signing input, strict claims, audience,
+origin and exclusive windows for both versions. No production snapshot was
+installed and no real token was requested. The
+[roster design](../testing/performance/0.74/diagnostic-oidc-roster-design.md)
+and [local evidence](../testing/performance/0.74/local-runs/diagnostic-oidc-roster-20261014/README.md)
+keep reader support distinct from actual issuer/job
+enrollment. The next producer owners are authenticated prebuilt-signer custody
+and retaining one immutable request through audience, token retrieval and signing.

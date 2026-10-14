@@ -1,0 +1,10 @@
+   Compiling rustix v1.1.4
+    Checking fastrand v2.4.1
+    Checking futures-lite v2.6.1
+    Checking xattr v1.6.1
+    Checking zbus v5.19.0
+    Checking tar v0.4.46
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+ Documenting hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.24s
+   Generated /home/artur/.cache/hydracache-074-194-check/doc/hydracache_long_run_supervisor_074/index.html and 2 other files

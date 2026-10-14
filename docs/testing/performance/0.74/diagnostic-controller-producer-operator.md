@@ -121,6 +121,8 @@ TLS and owned-child timeout use the documented
 The separately approved [one-attempt observation](local-runs/diagnostic-oidc-public-source-20261014/README.md)
 has now received the public sources under inventoried Windows platform TLS.
 Use its read-only verifier for reproduction, not another acquisition command.
-Its four unselected keys do not fill the v1 single-key, subject, workflow SHA or
-snapshot lifetime slots. See the [job preparation](diagnostic-controller-job-preparation.md)
+Its four unselected keys do not fill production membership, subject, workflow
+SHA or snapshot lifetime slots. The [bounded v2 reader](diagnostic-oidc-roster-design.md)
+preserves v1 and accepts a separately selected roster; no configuration is
+generated or installed by observing public sources. See the [job preparation](diagnostic-controller-job-preparation.md)
 before any protected environment, bootstrap, key policy or token-producing job.

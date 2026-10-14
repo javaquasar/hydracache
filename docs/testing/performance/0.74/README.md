@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The local [OIDC roster v2](diagnostic-oidc-roster-design.md) now supports one
+through eight explicitly configured keys while preserving v1 and original
+whole-chain refusal. This removes the single-key schema limitation, not actual
+issuer/workflow selection, protected-job custody or server admission.
+Its [local evidence](local-runs/diagnostic-oidc-roster-20261014/README.md) retains
+three focused repeats, original-input regression and unchanged frozen bindings.
+
 The [actual public OIDC packet](local-runs/diagnostic-oidc-public-source-20261014/README.md)
 now retains one fixed HTTPS discovery/JWKS read under inventoried platform TLS,
 with independent offline inspection and four unselected issuer keys. This is
