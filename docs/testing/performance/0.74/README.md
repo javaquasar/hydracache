@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [bootstrap decision](diagnostic-signer-bootstrap-decision.md) identifies the
+next architectural boundary: a separately trusted original launcher and selected
+runtime, not another conversion from an asserted executable observation.
+The recommended local-only prototype preserves the GNU build profile and tests
+first exec, post-launch exec denial and dummy handoff. Operator approval is
+required before adding this launch boundary; no credential or server operation
+is included. The [audit packet](local-runs/diagnostic-signer-bootstrap-decision-20261014/README.md)
+reproduces the same-inode counterexample at the unchanged code source.
+
 The [signer executable observation](diagnostic-signer-executable-design.md) now
 borrows the original bundle/process and compares the actual procfs executable
 object. Different-inode exec refuses with sticky bundle/wrapper failure. The

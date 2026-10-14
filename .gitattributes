@@ -197,3 +197,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-bundle-*/*.log -text 
 docs/testing/performance/0.74/local-runs/diagnostic-signer-bundle-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-signer-executable-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-executable-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-decision-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-decision-*/manifest.json -text

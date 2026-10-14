@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "local-documentation-boundary-audit",
+  "audited_source": "7e4d0e3ef78cdcf3455b8719968e8e888abeeda8",
+  "decision_status": "proposed-awaiting-operator-approval",
+  "qualification_manifest_raw_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "unchanged_audited_source_lf_sha256": {
+    "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs": "d998a01bfdfe073ae40cce0470c9037ce66bd03c980811cb695f86db5bccc109",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs": "701dd5770ec5250b453a94625649bc5ab294156706f875f78d00996bf9d6afa2",
+    "tools/long-run-supervisor-074/src/diagnostic_process.rs": "6873afcec923a19a53e2a19393c1d67290d37f0fa61375aa04bd8380d185183e",
+    "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+  },
+  "captures": [
+    {
+      "file": "bootstrap-decision-baseline.log",
+      "command": "WSL Ubuntu: cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib signer_executable --locked -- --nocapture",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 1548,
+      "sha256": "ae5573ed711c5f8fa7d302faaf1e0388ad98b05325d122b2cf45c8d4fecaa35e"
+    },
+    {
+      "file": "bootstrap-decision-doc-check.log",
+      "command": "target/debug/xtask.exe doc-check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 45,
+      "sha256": "e59f9abab91748881d6276a0dde72d52222fb4dd0bd0957c6e26b64643c43242"
+    },
+    {
+      "file": "bootstrap-decision-local-contract.log",
+      "command": "target/debug/xtask.exe performance-contract-check --release 0.74",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 61,
+      "sha256": "d156cc3782779d3ac3026705f49efe03556440a05c63de6e1bf0ae58c5203467"
+    },
+    {
+      "file": "bootstrap-decision-require-ship.log",
+      "command": "target/debug/xtask.exe performance-contract-check --release 0.74 --require-ship",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "bytes": 191,
+      "sha256": "fda7f109f86cbf084c21df6cab51fff85988697621132535c10352d93faf618b"
+    },
+    {
+      "file": "bootstrap-decision-root-contracts.log",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 11660,
+      "sha256": "25a352c0d52ba34bd9f0d9b751b4b6ee224f0068fcad9c96f2abca30dc716c75"
+    },
+    {
+      "file": "bootstrap-decision-gate-registry.log",
+      "command": "target/debug/xtask.exe gated-test-check",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "bytes": 61,
+      "sha256": "dc87cca3fc3fa9eea571be439dc1241a3bdc112bcd22b90633b1d648ae87ae10"
+    }
+  ],
+  "observations": {
+    "existing_linux_executable_tests_passed": 8,
+    "existing_root_contract_tests_passed": 136,
+    "existing_registered_gates": 169,
+    "actual_same_inode_reexec_still_matches": true,
+    "seed": "0x07403b24",
+    "fresh_process_observations": 16,
+    "independent_originals": 4
+  },
+  "claims": {
+    "launcher_implemented": false,
+    "original_invocation_authenticated": false,
+    "runtime_or_memory_attested": false,
+    "production_trust_enrolled": false,
+    "real_credential_read_or_job_dispatched": false,
+    "worker_start_or_writer_revocation_enabled": false,
+    "host_mutated_or_server_admitted": false,
+    "qualification_or_ship_allowed": false,
+    "performance_claim_allowed": false
+  }
+}

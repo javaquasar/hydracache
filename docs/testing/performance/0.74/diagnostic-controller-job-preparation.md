@@ -72,6 +72,11 @@ is not installed or automatically promoted into either runtime configuration.
    compares the original procfs object with that retained binary. Its same-inode
    re-exec counterexample means it cannot replace original invocation evidence,
    loader/runtime integrity or independently authenticated pre-exposure custody.
+   The [bootstrap decision](diagnostic-signer-bootstrap-decision.md) proposes a
+   separately trusted launcher/runtime with kernel first-exec observation and
+   post-launch exec restriction before handoff. Its new launch boundary requires
+   approval; a local prototype uses dummy data only and cannot certify the
+   token-bearing job's custody or authenticate worker start.
 3. Load independently reviewed builder policy/receipt and admitted lease/boot
    context. Define one operation, revision, request ID and nonce. Existing local
    CLI validation cannot authenticate supplied host context or consume a nonce.

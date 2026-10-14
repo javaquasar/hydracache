@@ -8165,3 +8165,38 @@ and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-ex
 preserve the counterexample alongside the useful refusal proof. The next
 pre-exposure work must establish runtime/bootstrap custody and original
 invocation evidence, rather than broaden the meaning of an inode match.
+
+### Original launch needs a separate trust boundary
+
+The same-inode counterexample determines the next engineering decision. Adding
+more metadata to the existing file/process check would still be observation
+after the fact. Original invocation instead requires a launcher that owns the
+child from creation, accounts for the admitted runtime, observes the first exec
+and controls the handoff before secrets can reach that child. The current
+asserted readers must not manufacture that launch authority.
+
+The [proposed bootstrap boundary](../testing/performance/0.74/diagnostic-signer-bootstrap-decision.md)
+preserves the existing GNU release profile. A static/musl rebuild might simplify
+runtime inventory but would introduce a new build contract and would not solve
+original invocation by itself. The proposed local prototype evaluates kernel
+exec events, denial of later exec through both syscall forms, and a private
+one-shot dummy handoff. It must account for threads, alternate ABI, runtime
+inputs and owner loss; a ready message or a seccomp flag alone is insufficient.
+The trusted kernel, launcher administration and reviewed signer remain explicit
+assumptions, not memory-attestation claims. Approval of this new launch boundary
+precedes implementation.
+
+Job authority is a different boundary again. GitHub's OIDC permission is scoped
+to a job or workflow, so moving token retrieval to a later step does not remove
+earlier steps from the trusted job. Build and dependency installation must
+remain in a job without that authority, while the token-bearing job needs its
+own reviewed bootstrap and runtime before it starts. The
+[official permission reference](https://docs.github.com/en/actions/reference/security/oidc#workflow-permissions-for-the-requesting-the-oidc-token)
+describes that scope. A local child handoff cannot retroactively isolate an
+untrusted job that already has token-request permission.
+
+The [decision audit](../testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-decision-20261014/README.md)
+reproduces all eight executable cases at the unchanged source, including the
+same-inode observation. This establishes the reason for the proposal, not a
+successful launcher or credential grant. Worker original-start, writer
+revocation, later cells and server rehearsal still need their own proofs.

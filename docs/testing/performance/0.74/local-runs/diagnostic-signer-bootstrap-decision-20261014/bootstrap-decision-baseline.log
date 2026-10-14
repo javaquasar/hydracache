@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.83s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_cloexec_and_additional_descriptor_release ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_different_inode_exec_keeps_generation_but_cross_refuses ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_process_exit_and_failed_initial_binding_stay_refused ... ok
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_same_inode_reexec_is_not_original_invocation_proof ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_equal_byte_foreign_inode_and_wrong_process_refuse_bundle ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_bundle_drift_and_prior_refusal_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_original_kernel_object_positive_and_healthy_drop ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_seeded_live_and_exec_cases_and_independent_originals ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 728 filtered out; finished in 0.69s
+
