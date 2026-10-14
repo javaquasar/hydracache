@@ -54,6 +54,8 @@ pub mod diagnostic_signer_build;
 pub mod diagnostic_signer_bundle;
 #[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
 mod diagnostic_signer_first_exec_fixture;
+#[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
+mod diagnostic_signer_seccomp_fixture;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_spool;
 #[cfg(target_os = "linux")]

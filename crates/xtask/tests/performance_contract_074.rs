@@ -11863,3 +11863,90 @@ fn signer_first_exec_fixture_is_test_only_and_cannot_grant_bootstrap_authority()
         assert!(!consumer.contains("first_exec_fixture"), "{path}");
     }
 }
+#[test]
+fn signer_seccomp_fixture_checks_original_syscall_without_bootstrap_admission() {
+    let c = contract("diagnostic-signer-seccomp-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "original_unreaped_child_and_pidfd_owned",
+        "kernel_entry_exit_and_original_bpf_memory_required",
+        "exact_filter_mode_tsync_flags_zero_install_result",
+        "no_ready_string_or_seccomp_status_substitute",
+        "bounded_preselected_header_and_program_addresses_only",
+        "no_privileged_filter_dump_or_register_guessing",
+        "native_execve_execveat_task_creation_and_control_denied",
+        "unsupported_arch_and_x32_kill_action_unchanged",
+        "exact_non_dumpable_hardening_before_probes",
+        "restoring_dumpability_denied",
+        "kernel_syscall_exit_before_sigsys_handled_exactly",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "first_exec_and_installation_composed",
+        "multithreaded_production_signer_supported",
+        "atomic_proof_against_external_memory_writer",
+        "runtime_or_memory_attested",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    assert_eq!(c["policy_instructions"].as_integer(), Some(34));
+    assert_eq!(c["policy_bytes"].as_integer(), Some(272));
+    let lib =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/lib.rs")).unwrap();
+    assert!(lib.replace("\r\n", "\n").contains("#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\nmod diagnostic_signer_seccomp_fixture;"));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs"),
+    )
+    .unwrap();
+    for required in [
+        "PTRACE_GET_SYSCALL_INFO",
+        "PTRACE_PEEKDATA",
+        "SECCOMP_FILTER_FLAG_TSYNC",
+        "PR_SET_DUMPABLE",
+        "PhantomData<Rc<()>>",
+        "waitpid(self.pid",
+        "header_address",
+        "program_address",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "PTRACE_SECCOMP_GET_FILTER",
+        "PTRACE_GETREGS",
+        "PTRACE_SETREGS",
+        "PTRACE_POKE",
+        "PTRACE_ATTACH",
+        "SigningKey",
+        "sign_prepared_files",
+        "serde",
+        "waitpid(-1",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "src/server.rs",
+        "src/bin/diagnostic_controller.rs",
+        "src/diagnostic_controller_producer_linux.rs",
+    ] {
+        let consumer =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074").join(path))
+                .unwrap();
+        assert!(!consumer.contains("seccomp_fixture"));
+    }
+}

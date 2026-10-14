@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+The owned seccomp installation fixture is a private Linux x86_64 test-build
+module, with no public launch/address/filter API, signed/durable/wire schema or
+migration. It requires kernel syscall-info, pidfd and close_range support and
+refuses unavailable or unknown forms; supported production kernel policy is
+unchanged. The 34-instruction policy and non-dumpable hardening are local
+fixture mechanics, not a production signer runtime profile. Existing first-exec
+source/contract, producer/process semantics, dependencies and reviewed pins
+remain unchanged. See the [seccomp boundary](testing/performance/0.74/diagnostic-signer-seccomp-design.md).
+
 The owned signer first-exec prototype is a private Linux x86_64 test-build
 module only. Normal libraries/CLIs have no new fixture launch symbols or API, and no durable,
 wire, signed-receipt, configuration or migration artifact changes. The fixture

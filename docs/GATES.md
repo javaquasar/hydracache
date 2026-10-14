@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11's second approved bootstrap slice uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_seccomp -- --nocapture`.
+Exact original installation entry/memory/zero exit, non-dumpable hardening,
+native denial and actual x32/i386 SIGSYS are checked on owned raw-fork helpers.
+The first-exec fixture remains separate; TSYNC on this single-thread child is
+not multithreaded production signer support. Normal libraries exclude the
+module. No handoff, privileged dump, host mutation or manual gate is added.
+See the [seccomp contract](testing/performance/0.74/diagnostic-signer-seccomp-contract.toml).
+
 W11's approved first-exec prototype starts with ordinary Linux x86_64 library
 tests: `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_first_exec -- --nocapture`.
 It launches/signals/reaps only owned temporary helpers in a test-build-only
