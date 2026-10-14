@@ -1,0 +1,30 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 16.69s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 7 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_canonical_schema_snapshot_and_rsa_key_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_original_jws_bytes_and_time_boundaries ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_key_header_and_compact_encoding_confusion_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_source_nofollow_modes_links_bounds_and_fixed_nonroot_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_each_origin_time_type_and_duplicate_claim_refuses ... ok
+seed=0x07552074 signature_mutations=32 independent_bindings=4 real_github_issuer_enrollment=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_seeded_signature_mutations_and_independent_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_original_binding_owned_bytes_healthy_drop_and_sticky_faults ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 687 filtered out; finished in 13.15s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 10.95s
+     Running tests/diagnostic_worker_kernel_binding.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_kernel_binding-b9cf61c1565c2e8d)
+
+running 4 tests
+test oidc_public_entry_is_fixed_original_binding_not_execution ... ok
+test worker_kernel_binding_public_entry_has_no_host_or_revalidation_override ... ok
+test controller_trust_input_public_entry_is_fixed_and_readonly ... ok
+test controller_build_input_public_entry_has_no_identity_or_trust_override ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 16.14s

@@ -7831,8 +7831,54 @@ selection; see its [OIDC reference](https://docs.github.com/en/actions/reference
 Our proposed audience would bind the same original request digest, with separate
 reviewed workflow and verification-key pins. Unknown/stale keys and origin,
 request or time mismatches would refuse rather than select downloaded trust.
-This is an additional trust architecture awaiting approval, not implemented
-provenance or a successful server gate. Offline public-key custody/rotation and
+The operator approved local implementation of this additional trust architecture,
+not real issuer enrollment or a successful server gate. Public-key custody/rotation and
 the dedicated diagnostic signing job still require review. Even after origin
 verification, durable replay/common fence and original-start/writer revocation
 must establish their own authority; a token does not consume a request nonce.
+
+### Verify configured OIDC origin without enrolling a production issuer
+
+The first approved implementation verifies RS256 against one explicitly selected
+RSA key in a separate fixed root-owned trust file. It uses already locked ring
+and base64 versions; only their two direct Linux supervisor dependency edges
+change. The verifier checks the original compact JWS signing bytes, strict
+header and bounded unique scalar claims. Pretty-printed claims can remain valid
+signed bytes; reserializing JSON before verification would verify the wrong input.
+Duplicate names, including escaped equivalents, wrong key/algorithm, token key
+URLs, invalid encoding and origin/request substitutions refuse.
+
+The audience derives from the original diagnostic request digest. Required
+repository/run/attempt/actor, subject, workflow revision, dedicated environment,
+event and hosted-runner fields must match the separately configured profile.
+Original kernel time gates token/snapshot validity without renewing request or
+packet freshness. Actor ID describes the initiating account, not independent
+approval by a rerun operator; protected-job approval remains a separate producer
+requirement. This profile deliberately excludes reusable-workflow claims until
+their policy is reviewed.
+
+The returned read-only guard retains mutable ownership of OIDC configuration and
+the original controller/build/worker/kernel chain, with bounded private token
+bytes. Revalidation cannot replace trust or token, and failures cross-latch all
+originals. It exposes neither claims nor a start capability. Synthetic RSA and
+controller/worker keys exercise actual local Linux packets; none are selected
+as production authorities. A publicly committed synthetic PKCS8 fixture is test
+data, never a credential for a real issuer or deployment.
+
+Ten focused cases, including the original kernel-clock sampler, pass in three
+repeats, alongside five new compile-fail boundaries. The first negative mutation
+mistakenly expected any changed nonempty jti to refuse. Replacing it with an empty
+jti tests the real bounded syntax contract without inventing a token allowlist.
+The initial root check also found a formatting-sensitive source marker and an
+old evidence check comparing frozen observer locks to current controller tooling.
+Frozen lock hashes remain unchanged and are checked against both exact original
+Git sources; a separate current-lock guard allows only the two approved dependency
+edges, with every package version/checksum and other dependency unchanged.
+Synthetic builder fixtures also retain the observer's exact frozen lock bytes
+and require its existing SHA instead of using the newer controller lock.
+
+This establishes configured cryptographic observation, not authenticated GitHub
+key acquisition, current key-review/rotation policy, an actual protected-job
+receipt or durable replay/common fence. Those producers remain before original
+start, collector/watchdog/writer cessation and later-cell completion. Existing
+wire/durable artifacts and frozen qualification inputs are not amended.

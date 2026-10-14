@@ -1,0 +1,270 @@
+    Finished `test` profile [unoptimized] target(s) in 2.05s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_wrong_original_identity_refuses_whole_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_constructor_prior_refusal_cross_latches_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_original_refusal_during_retention_cannot_rebind ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_independent_bindings_keep_reviewed_builder_pins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_roundtrip_owned_bytes_rechecks_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_retained_and_original_faults_stay_refused_after_restoration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 688 filtered out; finished in 7.03s
+
+    Finished `test` profile [unoptimized] target(s) in 1.49s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_strict_schema_principals_key_and_budget ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_fixed_constructor_refuses_nonroot_and_has_exact_path ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_constructor_uses_shared_nofollow_metadata_without_repairs ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_prior_refusal_or_source_failure_cross_latches_at_construction ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signed_roundtrip_retains_originals_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signature_actor_uid_gid_time_and_boot_refusals_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_source_worker_and_original_request_faults_stay_refused ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 688 filtered out; finished in 2.62s
+
+    Finished `test` profile [unoptimized] target(s) in 1.45s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 11 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_coarse_metadata_cannot_hide_changed_named_bytes ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 685 filtered out; finished in 0.22s
+
+    Finished `test` profile [unoptimized] target(s) in 2.94s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 691 filtered out; finished in 0.96s
+
+    Finished `test` profile [unoptimized] target(s) in 1.69s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 20 tests
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_exact_budget_and_oversized_packet_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_actual_sender_and_nonblocking_empty_receive ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_empty_disconnect_and_socket_option_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_seeded_status_mutations_refuse_wrong_credentials ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_wrong_socket_type_refuses_without_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_reviewed_controller_refuses_fixture_trust_and_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_authentication_has_no_caller_peer_or_time ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_received_rights_close_all_copies_on_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+test diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_signature_principal_and_clock_refusals_are_sticky ... ok
+
+test result: ok. 19 passed; 0 failed; 1 ignored; 0 measured; 676 filtered out; finished in 0.11s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 3.31s
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-36ea5595ce80137a)
+
+running 29 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... FAILED
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... FAILED
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... FAILED
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... FAILED
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... FAILED
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... FAILED
+test linux_tests::fixed_install_reader_requires_checked_builder_policy ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... FAILED
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... FAILED
+test linux_tests::independent_parallel_start_materials_remain_fixture_only ... FAILED
+test linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget ... FAILED
+test linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary ... FAILED
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... FAILED
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... FAILED
+test linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement ... FAILED
+test linux_tests::pinned_start_material_state_drift_is_sticky ... FAILED
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... FAILED
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... FAILED
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... FAILED
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test linux_tests::pinned_start_material_refuses_wrong_builder_and_identity ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... FAILED
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+
+failures:
+
+---- builder_signing_checks_observation_and_contents_before_signing stdout ----
+
+thread 'builder_signing_checks_observation_and_contents_before_signing' (572) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:245:73:
+called `Result::unwrap()` on an `Err` value: Contents
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- cargo_local_path_accepts_exact_version_fragment_not_foreign_sources stdout ----
+
+thread 'cargo_local_path_accepts_exact_version_fragment_not_foreign_sources' (573) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture stdout ----
+
+thread 'elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture' (577) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- checked_statement_binds_exact_model_intent_without_enrolling_execution stdout ----
+
+thread 'checked_statement_binds_exact_model_intent_without_enrolling_execution' (575) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- cargo_log_requires_one_unprofiled_binary_and_final_success stdout ----
+
+thread 'cargo_log_requires_one_unprofiled_binary_and_final_success' (574) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- every_artifact_is_hash_bound_and_p0_configs_cannot_drift stdout ----
+
+thread 'every_artifact_is_hash_bound_and_p0_configs_cannot_drift' (580) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files stdout ----
+
+thread 'linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files' (585) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1182:40:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes stdout ----
+
+thread 'linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes' (590) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1272:40:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::independent_parallel_start_materials_remain_fixture_only stdout ----
+
+thread '<unnamed>' (596) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1089:71:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (595) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1089:71:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'linux_tests::independent_parallel_start_materials_remain_fixture_only' (589) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1096:31:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+thread '<unnamed>' (597) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1089:71:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (598) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1089:71:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget stdout ----
+
+thread 'linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget' (599) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:943:59:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary stdout ----
+
+thread 'linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary' (600) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:998:51:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay stdout ----
+
+thread 'separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay' (605) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:785:5:
+Diagnostic builder signing refused; no authority fallback.
+
+
+---- linux_tests::independent_parallel_inspections_keep_their_own_descriptors stdout ----
+
+thread '<unnamed>' (594) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1168:56:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (593) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1168:56:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (591) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1168:56:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'linux_tests::independent_parallel_inspections_keep_their_own_descriptors' (588) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1174:31:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+thread '<unnamed>' (592) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1168:56:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement stdout ----
+
+thread 'linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement' (601) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1069:55:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::pinned_start_material_state_drift_is_sticky stdout ----
+
+thread 'linux_tests::pinned_start_material_state_drift_is_sticky' (603) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1048:59:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- signed_build_statement_binds_all_fields_and_rejects_other_domains stdout ----
+
+thread 'signed_build_statement_binds_all_fields_and_rejects_other_domains' (607) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:149:52:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux_tests::revalidation_refuses_mode_and_entry_drift_after_success stdout ----
+
+thread 'linux_tests::revalidation_refuses_mode_and_entry_drift_after_success' (604) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:1300:40:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- unsigned_content_inspection_never_becomes_build_or_execution_authority stdout ----
+
+thread 'unsigned_content_inspection_never_becomes_build_or_execution_authority' (609) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:360:63:
+called `Result::unwrap()` on an `Err` value: Contents
+
+---- unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs stdout ----
+
+thread 'unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs' (610) panicked at tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs:331:5:
+assertion failed: output.status.success()
+
+
+failures:
+    builder_signing_checks_observation_and_contents_before_signing
+    cargo_local_path_accepts_exact_version_fragment_not_foreign_sources
+    cargo_log_requires_one_unprofiled_binary_and_final_success
+    checked_statement_binds_exact_model_intent_without_enrolling_execution
+    elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture
+    every_artifact_is_hash_bound_and_p0_configs_cannot_drift
+    linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files
+    linux_tests::independent_parallel_inspections_keep_their_own_descriptors
+    linux_tests::independent_parallel_start_materials_remain_fixture_only
+    linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes
+    linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget
+    linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary
+    linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement
+    linux_tests::pinned_start_material_state_drift_is_sticky
+    linux_tests::revalidation_refuses_mode_and_entry_drift_after_success
+    separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay
+    signed_build_statement_binds_all_fields_and_rejects_other_domains
+    unsigned_content_inspection_never_becomes_build_or_execution_authority
+    unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs
+
+test result: FAILED. 10 passed; 19 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_artifacts`

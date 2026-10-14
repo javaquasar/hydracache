@@ -1,0 +1,16 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input`
+  --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:19:140
+   |
+19 | ...t, oidc_input::o...
+   |       ^^^^^^^^^^ could not find `oidc_input` in `build_input`
+
+error[E0599]: no function or associated item named `bind_oidc` found for struct `ControllerBuildInput<'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:21:35
+   |
+21 | ...t::bind_oidc;
+   |       ^^^^^^^^^ function or associated item not found in `ControllerBuildInput<'_, '_, '_, '_, '_, '_>`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_worker_kernel_binding") due to 2 previous errors

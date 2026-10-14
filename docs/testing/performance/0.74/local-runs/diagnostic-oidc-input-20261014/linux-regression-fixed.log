@@ -1,0 +1,81 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 5.43s
+     Running tests/diagnostic_artifacts.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_artifacts-36ea5595ce80137a)
+
+running 29 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test linux_tests::descriptor_bundle_checks_size_empty_and_special_mode_bounds ... ok
+test linux_tests::fixed_install_reader_requires_checked_builder_policy ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test linux_tests::descriptor_bundle_refuses_missing_corrupt_special_and_symlinked_root ... ok
+test linux_tests::independent_parallel_inspections_keep_their_own_descriptors ... ok
+test linux_tests::descriptor_bundle_refuses_links_writes_owner_drift_and_extra_files ... ok
+test linux_tests::pinned_start_material_caps_starting_runtime_at_observed_lease_boundary ... ok
+test linux_tests::pinned_start_material_keeps_original_descriptors_and_refuses_replacement ... ok
+test linux_tests::independent_parallel_start_materials_remain_fixture_only ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test linux_tests::pinned_descriptor_revalidation_detects_path_replacement_and_in_place_changes ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test linux_tests::pinned_start_material_refuses_wrong_builder_and_identity ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test linux_tests::revalidation_refuses_mode_and_entry_drift_after_success ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_replay ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+test linux_tests::pinned_start_material_state_drift_is_sticky ... ok
+test linux_tests::pinned_start_material_binds_four_cells_and_remaining_budget ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests/diagnostic_reviewed_trust.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_reviewed_trust-d3c868cc7885558f)
+
+running 8 tests
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+
+     Running tests/diagnostic_worker_policy.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_policy-60e2d41fb14c9ddc)
+
+running 15 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test authority_fixed_api_has_no_path_selector_and_nonroot_cannot_enroll ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.90s
+
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 8.77s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 5.03s
+ Documenting hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 12.14s
+   Generated /home/artur/.cache/hydracache-074-manager-local-target/doc/hydracache_long_run_supervisor_074/index.html and 1 other file

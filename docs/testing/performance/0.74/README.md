@@ -39,9 +39,14 @@ controller GitHub run metadata; replay/fence and execution admission remain clos
 Its [local evidence](local-runs/diagnostic-controller-build-input-20261014/README.md)
 retains repeated binding checks, all development failures and unchanged frozen inputs.
 The [controller provenance decision](diagnostic-controller-provenance-decision.md)
-proposes additional GitHub OIDC origin verification. Approval is required before
-introducing its new trust source or signing-job permission; no provenance producer
-or replay/start admission follows from the existing builder receipt.
+is approved for local implementation. The [OIDC input](diagnostic-oidc-input-design.md)
+verifies bounded RS256 origin against explicit fixed configuration while retaining
+the original controller/build/kernel chain. Synthetic positives are not independently
+authenticated GitHub key acquisition or a real protected-job token receipt.
+Actual trust selection, signing-job dispatch and replay/start admission remain closed.
+The [OIDC packet](local-runs/diagnostic-oidc-input-20261014/README.md) retains
+final bounded checks, every functional development failure, frozen lock proofs
+and the exact two-edge controller-tooling dependency delta.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.

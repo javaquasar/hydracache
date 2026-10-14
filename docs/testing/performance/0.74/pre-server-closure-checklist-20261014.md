@@ -82,10 +82,12 @@ original request identity, with whole-chain refusal. The receipt has no controll
 run/actor/workflow identity: independent controller provenance is still required.
 Installed executable contents, durable nonce consumption and common fence are
 not supplied by this read-only guard.
-The [provenance decision](diagnostic-controller-provenance-decision.md) recommends
-an additional GitHub OIDC source. The existing campaign signing workflow cannot
-produce a diagnostic packet; new trust/configuration and signing-job policy need
-operator approval before implementation. P2 remains open.
+The [approved local OIDC decision](diagnostic-controller-provenance-decision.md)
+now has a [configured original-input verifier](diagnostic-oidc-input-design.md).
+The existing campaign signing workflow cannot produce a diagnostic packet.
+Independently authenticated GitHub key selection/custody/rotation, actual workflow
+policy selection and a protected diagnostic signing-job receipt remain required
+before real provenance enrollment. P2 and replay/start admission remain open.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
