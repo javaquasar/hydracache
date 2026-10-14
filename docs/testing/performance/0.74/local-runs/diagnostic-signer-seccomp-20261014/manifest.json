@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-signer-seccomp-20261014",
+  "source_commit": "4f8d20eeb2f630b65669da78d5551ba3bded6d50",
+  "baseline_source": "06481accc61678025de73affe8364c43ce9f6513",
+  "preregistration": "96da191195c7a7bb1a8941c76035c71e4e28486d",
+  "development_amendment": "34584c4dc1bd136b62c366691af8cc6a160d1844",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "143cc883a1e734469021744e1a2989d929e72b0882453a61a57b50cd12dca80a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs",
+      "sha256_lf": "7e7096e3ef3557fd14e12667ea2ac67b1fb3fe5da12ad51aa158c7c24a64ab61"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs",
+      "sha256_lf": "e11c2934b1eb6d320bbf433242b45429559dc7f5a9bad08651cb24c2c333fd54"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "addf1aead63a9e63ead5c7d554966d00303463f22bc926bc97cb69ec70d2769f"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-seccomp-contract.toml",
+      "sha256_lf": "4db0e6bf51602cc40145845791d34c718781a518364c256f94eaa76a9868be41"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-seccomp-design.md",
+      "sha256_lf": "ceb45b0f628703ed874c2629edd709ccbfd953636f7585a0a2768114d734ef7d"
+    },
+    {
+      "path": "docs/GATES.md",
+      "sha256_lf": "ec73025f64c8b64c1528fc50c4a5d43ee4fe6cd8435c5c5ec131446e5f479ddc"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "1de911091ef8877c2d58d2d97e80a7d947d0c14a21368e15baaeda7faa9981cf"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-seccomp-plan-20261014.md",
+      "sha256_lf": "ab18997ae50fbd7226fd0baff37718422bf91b871174ecdcef4053c1da4ab211"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs",
+      "sha256_lf": "6873afcec923a19a53e2a19393c1d67290d37f0fa61375aa04bd8380d185183e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs",
+      "sha256_lf": "9101a388d67240a26f19efa8da3efb24d1bdcb303ce11f4faf0ceea8f8985328"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+      "sha256_lf": "d998a01bfdfe073ae40cce0470c9037ce66bd03c980811cb695f86db5bccc109"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+      "sha256_lf": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs",
+      "sha256_lf": "701dd5770ec5250b453a94625649bc5ab294156706f875f78d00996bf9d6afa2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+      "sha256_lf": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256_lf": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "docs/plans/releases.toml",
+      "sha256_lf": "ec94101f04e4734f7ff12975625db025e0140456e1b7c243c48d3fae1666f74a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json",
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs",
+      "sha256_lf": "95388c2ef052ced141500d8881ddb1e16dc562d29939a995e4ec7bc781c5b3c9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs",
+      "sha256_lf": "f15b21ccdf556394749505513799c3c3520cb1f96c3853037f5a9aefec295bfc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-first-exec-contract.toml",
+      "sha256_lf": "01f2ec3e42a713f292514ab39911d97203f168fc763adff5da8d019db9b7a6fa"
+    }
+  ],
+  "captures": [
+    {
+      "path": "signer-seccomp-abi-exit-observation.log",
+      "sha256": "08be1a248c3fdc3354ffe2f0eb6aa7c28741c2ce3ad9cef3fa6b38925b4bfabf",
+      "bytes": 1255,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-abi-investigation.log",
+      "sha256": "51e2b7ae05f5c71beb2353c63473be7d5c8fa3011e35e486296554a481d3b841",
+      "bytes": 1232,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-baseline.log",
+      "sha256": "55e2401dc9833780067ab927557995c58720aae8be6c009489a84f0030b50817",
+      "bytes": 2036,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "baseline"
+    },
+    {
+      "path": "signer-seccomp-check-development.log",
+      "sha256": "17fdbff1624f4460abe4e5416a3ce3de8b37a8c2ea9c8e332a06c21cf687bc03",
+      "bytes": 2335,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-development.log",
+      "sha256": "20c1284c94cc624194129dcb6fc017f421289fe52373eb0aa10e8c2a4c16ee7a",
+      "bytes": 1766,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "development"
+    },
+    {
+      "path": "signer-seccomp-doc-check.log",
+      "sha256": "6b380e23a0a3608979601c5687aa6ed8d6d38df8878be3c2c1524d684576c700",
+      "bytes": 252,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-format-result.log",
+      "sha256": "2eb064f2b6e55abf14d359c6d9eed50cd00d9fe7564c712317a9a2dbf4ac3dbe",
+      "bytes": 271,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-gate-registry.log",
+      "sha256": "497af94c65ba16dc59c59d2ef1f03d6091fe63f08067fe63af582c6d93099617",
+      "bytes": 190,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-hardened-check.log",
+      "sha256": "7624c53d10928896139156a94f7ee34018177a004b87e890d017d73cd4a68944",
+      "bytes": 2193,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "development"
+    },
+    {
+      "path": "signer-seccomp-hardened-development.log",
+      "sha256": "407bcf63078f2c735ec5e87841d67c7642ebf1fda398328ac664ca856d6dbb85",
+      "bytes": 3881,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-linux-final.log",
+      "sha256": "a05b04242c4f8473891c2cb4b84b640ac237c1ec088120baf55ba76a8bec8038",
+      "bytes": 11557,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-linux-msrv.log",
+      "sha256": "d43497a21726c11b40e1bff00d4be5f0731eae6cabd5951a79c0351994760933",
+      "bytes": 205,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-local-contract.log",
+      "sha256": "b3bb5bc9c7f57f619e3dacc81ac1966f83834453558fc81f7d275c5d69e48bb0",
+      "bytes": 215,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-missing-owner.log",
+      "sha256": "6f5c99f05142802affc3430194d0b8a11ac4b68e5d450656877df4f38d13ed74",
+      "bytes": 1341,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-normal-library.log",
+      "sha256": "559d63463d3bbf878fed2b93d8863e47185f20be53cfcbb82dd60f80c9c68f32",
+      "bytes": 251,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-registry.log",
+      "sha256": "9af16da13087a016eb48b0caacf2d2783835fd983fc72eae42931009610be32f",
+      "bytes": 306,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-require-ship.log",
+      "sha256": "0cb1c5265fef3e17501fa31a6c78cad39c472d965f2f723fd63392c13a82e586",
+      "bytes": 499,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1,
+      "phase": "retained-negative"
+    },
+    {
+      "path": "signer-seccomp-root-contracts.log",
+      "sha256": "5ec2038fd85018f2b3e737cb62b6422fd4ea998a4a68ee1c7adf0aa79cb72722",
+      "bytes": 12051,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-windows-check.log",
+      "sha256": "edfc811e561bbf5ccab024573b7c2a74c9e98fc041f214b292bc4d39ab459345",
+      "bytes": 203,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-windows-lint.log",
+      "sha256": "c66e85c1fad69e5fd677fe910246106fb55dd86a0960661b020fb060143b8948",
+      "bytes": 202,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-windows-msrv.log",
+      "sha256": "543da5be4407d9a1765c891399262a56634f03aeac34b8c59ed4c8473640a137",
+      "bytes": 202,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-windows-tests.log",
+      "sha256": "77fbf53ec8fa995c22f6f284814e012e68684f1c882e75c8c689fd67cfb6c2e7",
+      "bytes": 1175,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-xtask-check.log",
+      "sha256": "4e839d1777c7124a57c57787b973202e85b0ebd648c7062d97a88701ea67521f",
+      "bytes": 287,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-xtask-lint.log",
+      "sha256": "b722b318005e9e42a19fa836135aee32f684b98e34ceef8733aef47a9ad6a473",
+      "bytes": 287,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "exact-source-gate"
+    },
+    {
+      "path": "signer-seccomp-packet-tests-windows.log",
+      "sha256": "8da7cc41bc5983848242514cdcf4ccc44d2b51054636b1e579cb768af05ed2e4",
+      "bytes": 112,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "copied-packet-suite"
+    },
+    {
+      "path": "signer-seccomp-packet-tests-linux.log",
+      "sha256": "e091c8dba0667065290befd9a8917c817d7ced8e9bbfb28d7141a7e1e9302e14",
+      "bytes": 107,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0,
+      "phase": "copied-packet-suite"
+    }
+  ],
+  "verifier_sha256_lf": "bf53b54dcf4a4b7efc48214eb6293799717fb42bc33060ee07e3bf3339579ce3",
+  "packet_test_sha256_lf": "3b5ca1f43faf6f3c3857ac578d30326115738cee4e8c46b19ee6a6b8ea9cb209",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "admission_claims": {
+    "first_exec_and_installation_composed": false,
+    "multithreaded_production_signer_supported": false,
+    "atomic_proof_against_external_memory_writer": false,
+    "runtime_or_memory_attested": false,
+    "dummy_handoff_implemented": false,
+    "actual_tracer_loss_exitkill_proved": false,
+    "production_issuer_root_or_job_enrolled": false,
+    "actual_private_key_or_token_read": false,
+    "bootstrap_signing_or_worker_start_authority": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "host_service_or_cgroup_mutated": false,
+    "protected_job_dispatched": false,
+    "server_entry_wired": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  }
+}

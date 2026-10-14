@@ -1,0 +1,47 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: variants `ExecOther`, `ExecFd`, `Denied`, `X32`, and `I386` are never constructed
+  --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs:62:5
+   |
+60 | enum Case {
+   |      ---- variants in this enum
+61 |     ExecSelf,
+62 |     ExecOther,
+   |     ^^^^^^^^^
+63 |     ExecFd,
+   |     ^^^^^^
+64 |     Denied(u32),
+   |     ^^^^^^
+65 |     X32,
+   |     ^^^
+66 |     I386,
+   |     ^^^^
+   |
+   = note: `Case` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variants `Flags`, `Header`, `Policy`, and `Length` are never constructed
+  --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs:71:5
+   |
+69 | enum Fault {
+   |      ----- variants in this enum
+70 |     None,
+71 |     Flags,
+   |     ^^^^^
+72 |     Header,
+   |     ^^^^^^
+73 |     Policy,
+   |     ^^^^^^
+74 |     Length,
+   |     ^^^^^^
+   |
+   = note: `Fault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.02s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 747 filtered out; finished in 0.01s
+

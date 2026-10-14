@@ -1,0 +1,31 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: failed to resolve: use of undeclared type `Case`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:5:11
+  |
+5 | ...be(Case::E...
+  |       ^^^^ use of undeclared type `Case`
+
+error[E0433]: failed to resolve: use of undeclared type `Fault`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:5:27
+  |
+5 | ...f, Fault::N...
+  |       ^^^^^ use of undeclared type `Fault`
+
+error[E0425]: cannot find function `probe` in this scope
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:5:5
+  |
+5 |     probe(Ca...
+  |     ^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 3 previous errors; 1 warning emitted

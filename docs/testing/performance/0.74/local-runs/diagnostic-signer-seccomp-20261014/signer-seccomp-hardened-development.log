@@ -1,0 +1,43 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.94s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_kernel_info_unknown_partial_or_invalid_flags_refuses ... ok
+policy_instructions=34 serialized_bytes=272 bounded_syscall_numbers=1024 single_thread_fixture_only=true
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_policy_exact_bytes_bounded_syscalls_and_bad_arch ... ok
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial' (681) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:5:40:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch' (686) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:25:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial ... FAILED
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch ... FAILED
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_execve_other_and_execveat_are_kernel_denied' (679) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:12:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_execve_other_and_execveat_are_kernel_denied ... FAILED
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_seeded_probes_and_independent_tracer_threads' (683) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:170:10:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_seeded_probes_and_independent_tracer_threads ... FAILED
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_task_creation_and_policy_changes_are_kernel_denied' (684) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:18:46:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_task_creation_and_policy_changes_are_kernel_denied ... FAILED
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_wrong_flags_bytes_length_or_equal_header_pointer_refuse ... ok
+
+failures:
+
+failures:
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_execve_other_and_execveat_are_kernel_denied
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_seeded_probes_and_independent_tracer_threads
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_task_creation_and_policy_changes_are_kernel_denied
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch
+
+test result: FAILED. 3 passed; 5 failed; 0 ignored; 0 measured; 747 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

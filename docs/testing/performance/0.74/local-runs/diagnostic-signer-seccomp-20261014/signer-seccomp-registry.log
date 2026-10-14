@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.97s
+     Running `target\debug\xtask.exe test-gate-registry-check`
+Error: "unsupported xtask command: test-gate-registry-check"
+error: process didn't exit successfully: `target\debug\xtask.exe test-gate-registry-check` (exit code: 1)

@@ -1,5 +1,15 @@
 # Dedicated diagnostic controller job preparation
 
+The approved local bootstrap now has two separate test-build mechanics:
+[owned first exec](diagnostic-signer-first-exec-design.md) and
+[exact seccomp installation](diagnostic-signer-seccomp-design.md). The latter
+observes original bytes/TSYNC/zero exit and denial on a single-thread raw-fork
+helper; it has no fresh signer exec, runtime admission or handoff consumer.
+These fixtures cannot activate this job. Their next local join must preserve
+runtime custody and original ownership before dummy handoff and owner-loss
+tests; actual job-wide permission and private-key custody still require the
+independent enrollment below.
+
 The fixed public source was received once on 2026-10-14; see the
 [public acquisition packet](local-runs/diagnostic-oidc-public-source-20261014/README.md).
 This prepares the next job boundary under the

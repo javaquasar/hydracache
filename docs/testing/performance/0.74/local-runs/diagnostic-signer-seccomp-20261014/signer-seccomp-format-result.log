@@ -1,0 +1,6 @@
+{
+  "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+  "observed_exit": 0,
+  "source_commit": "4f8d20eeb2f630b65669da78d5551ba3bded6d50",
+  "observation": "No formatter output; successful command observed before source commit."
+}

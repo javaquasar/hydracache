@@ -8234,7 +8234,63 @@ followed by three eleven-case repeats, seeded fresh launches and independent
 tracer threads. Strict checks and a normal-library symbol inspection keep this
 launcher confined to test builds. The bounded ELF identification intentionally
 accepts a truncated header whose actual kernel exec fails; it does not attest
-the runtime. No dummy or real credential handoff exists yet. Exact seccomp
-installation, all-thread/ABI coverage, actual tracer loss and independently
-selected runtime custody remain the next distinct parts of the approved
-prototype, before any signing or worker-start consumer can use it.
+the runtime. That first slice does not implement exact filter installation or
+credential handoff. The next slice below checks filter installation separately;
+their composition, actual tracer loss and independently selected runtime custody
+still precede any signing or worker-start consumer.
+
+### Exact filter installation needs original memory and kernel results
+
+The next hypothesis is narrower than a working signer sandbox: can the owner
+prove which fixed filter its own helper actually asks the kernel to install,
+then observe the intended syscall denials? A ready message or a Seccomp=2 flag
+does not identify the filter. Privileged filter extraction would add a different
+host boundary, so the local fixture instead inspects genuine syscall information
+and bounded original memory while the owned child is stopped.
+
+The private helper is forked from the current test image, with its header and
+BPF array prepared beforehand. At the installation entry, the owner requires
+the exact native seccomp operation, TSYNC flags and original header address.
+It checks header length, original program pointer and every encoded instruction,
+then requires a zero, non-error kernel exit and checks those bytes again. An
+equal-byte replacement header or program pointer refuses just like altered
+bytes. This is a sequential observation under a trusted creator/kernel and no
+external memory writer, not an atomic signature over executable memory.
+
+Two development failures shaped the implementation. The first full run passed
+seven tests but failed the alternate-ABI case because the kernel reported a
+syscall-exit stop before terminal death. A focused capture exposed the exact
+x32 exit shape. The observer now accepts only that architecture/number-valued,
+non-error exit followed by SIGSYS, or direct SIGSYS; it does not treat an
+arbitrary intermediate stop as success. The terminal predicate remains intact.
+
+Fatal probes also require care outside the filter itself. The local host uses
+a piped core collector, where RLIMIT_CORE=0 does not suppress collection. The
+[core manual](https://man7.org/linux/man-pages/man5/core.5.html) describes this
+exception. Before final tests, the fixed policy was amended to allow only
+PR_SET_DUMPABLE/zero, and the owner must observe its successful kernel entry/exit
+after checking installed memory and before any fatal probe. Restoration of
+dumpability is denied. No global collector setting or credential changed.
+An initial ordering mistake in that integration failed five tests and is
+retained alongside the correction, rather than counted as a successful run.
+
+Three final eight-case repeats pass. Real native execve/execveat attempts,
+including the inherited test image and a different executable, return EPERM;
+fixed task-creation/control calls refuse, while real x32 and i386 int80 probes
+end with SIGSYS. Policy interpretation covers 1024 bounded syscall numbers and
+bad architectures, strict capture decoding and instruction mutations. Seeded
+fresh helpers and independent tracer threads exercise ownership without making
+the child multithreaded. The
+[seccomp design](../testing/performance/0.74/diagnostic-signer-seccomp-design.md)
+and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-seccomp-20261014/README.md)
+bind those results to the exact source and preserve the failures.
+
+The useful result is exact installation and kernel denial on a single-thread
+owned helper. TSYNC success here does not prove support for an already
+multithreaded GNU signer, and allowing other native syscalls makes this an
+exec/task-control policy rather than a complete sandbox. First exec, runtime
+custody and installation still need one original-owner chain before dummy
+handoff and real owner-loss tests. That next composition must not convert the
+older asserted observation guards into authority. Worker start, all-writer
+cessation and later lifecycle cells remain separate work; this correctness
+slice adds no allocation, throughput or release-readiness claim.

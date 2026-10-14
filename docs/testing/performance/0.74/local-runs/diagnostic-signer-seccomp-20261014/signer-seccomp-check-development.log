@@ -1,0 +1,29 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.51s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+policy_instructions=25 serialized_bytes=200 bounded_syscall_numbers=1024 single_thread_fixture_only=true
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_kernel_info_unknown_partial_or_invalid_flags_refuses ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_policy_exact_bytes_bounded_syscalls_and_bad_arch ... ok
+kernel_install=exact_entry_memory_exit_zero original_fork_helper=true handoff_or_runtime_admission=false
+
+thread 'diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch' (660) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs:25:34:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned seccomp fixture refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch ... FAILED
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_execve_other_and_execveat_are_kernel_denied ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_wrong_flags_bytes_length_or_equal_header_pointer_refuse ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_task_creation_and_policy_changes_are_kernel_denied ... ok
+seed=0x07403b26 fresh_kernel_probes=16 independent_tracer_threads=4 multithreaded_signer_supported=false
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_seeded_probes_and_independent_tracer_threads ... ok
+
+failures:
+
+failures:
+    diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 747 filtered out; finished in 0.14s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
