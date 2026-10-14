@@ -1,0 +1,19 @@
+{
+  "launcher": "owned clean native Windows process",
+  "stderr": "",
+  "outer_timed_out": false,
+  "exit_code": 0,
+  "normal_acquire_public_invocations": 1,
+  "tokens_passed": false,
+  "tls_overrides_passed": false,
+  "parent_environment_modified": false,
+  "stdout_bytes": 11115,
+  "source_commit": "709d1165f3dc8bfc8aed5630caa58a5a06a14d83",
+  "preregister_commit": "d0cca7594391cbd9c262cafc80f6b6703e8ed9b9",
+  "real_public_source_received": true,
+  "key_selected": false,
+  "token_requested": false,
+  "trust_installed": false,
+  "job_dispatched": false,
+  "host_modified": false
+}

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import os; from scripts.perf import diagnostic_oidc_acquisition_074 as a; print("forbidden_environment_names="+",".join(sorted(k for k in os.environ if k.upper() in a.FORBIDDEN_ENV))); a._guard_environment()
+                                                                                                                                                                                             ~~~~~~~~~~~~~~~~~~~~^^
+forbidden_environment_names=CURL_CA_BUNDLE
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\diagnostic_oidc_acquisition_074.py", line 35, in _guard_environment
+    raise ValueError("acquisition environment refused")
+ValueError: acquisition environment refused

@@ -7950,3 +7950,35 @@ expiry review remain before a protected diagnostic job. A copied unsigned report
 cannot authorize replay, original start or completion. The
 [acquisition procedure](../testing/performance/0.74/diagnostic-controller-producer-operator.md#public-acquisition-tool-after-separate-approval)
 keeps those choices separate from the local parser and TLS evidence.
+
+### Observe the real public source without choosing a signing policy
+
+The next step received the fixed GitHub discovery and JWKS once over TLS 1.3.
+The initial inherited environment failed the existing guard because a CA-bundle
+override name was present. A separately owned clean process used platform roots;
+no override value, parent setting or CA store was changed. Runtime/source and CA
+inventory match before and after. The byte-exact public bodies, TLS peer digest
+and native outcome are retained, and independent offline inspection reproduces
+the four-key roster and its source hashes. This is real public-source observation
+under that platform trust, not a modeled GitHub response or a protected-job token.
+
+The roster exposes a practical selection issue: the current v1 verifier accepts
+one configured key, but the public endpoint supplies four. Selecting the first
+key would not identify the signer of a future token. A separately reviewed
+bounded trusted roster would support rotation without permitting token-controlled
+URLs or embedded keys; that is a schema/policy decision, not an automatic
+promotion of received data. Production key/workflow/subject/expiry remain unset.
+
+Protected-job preparation also separates build and signing authority. Job-wide
+token permission cannot be treated as a late step-level grant, so compiling in
+the token-bearing job is not credential-free bootstrap. The signing job needs
+independently authenticated prebuilt tooling; the frozen observer builder receipt
+does not attest that controller executable. Body retention across audience,
+token retrieval and signing, bounded credential transport and original
+receiver/replay/fence remain code and custody work. No active workflow or token
+was created to make the observation look like execution admission.
+
+The [public-source packet](../testing/performance/0.74/local-runs/diagnostic-oidc-public-source-20261014/README.md)
+and [job preparation](../testing/performance/0.74/diagnostic-controller-job-preparation.md)
+keep the successful network read, selection decision and remaining original-start
+prerequisites distinct.

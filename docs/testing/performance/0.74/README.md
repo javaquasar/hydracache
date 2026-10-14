@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [actual public OIDC packet](local-runs/diagnostic-oidc-public-source-20261014/README.md)
+now retains one fixed HTTPS discovery/JWKS read under inventoried platform TLS,
+with independent offline inspection and four unselected issuer keys. This is
+not a protected-job token or installed trust. The
+[job preparation](diagnostic-controller-job-preparation.md) separates key-roster
+policy and signer/bootstrap custody from actual job activation and original start.
+
 The separate [diagnostic controller producer](diagnostic-controller-producer-design.md)
 now prepares canonical request/audience and selected-key signatures without a
 supervisor route. [Local usage](diagnostic-controller-producer-operator.md) separates

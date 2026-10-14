@@ -91,8 +91,14 @@ Local synthetic signatures and offline public discovery/JWKS inspection do not
 authenticate acquisition, select actual workflow/key policy or mint a real token.
 The [separate acquisition tool](diagnostic-oidc-acquisition-design.md) now bounds
 fixed HTTPS in an isolated child and records public transport/source metadata.
-Synthetic loopback TLS and timeout proof do not choose actual issuer keys or
-establish reviewed platform-CA/source custody; no real acquisition was run.
+Its initial synthetic loopback TLS and timeout packet does not choose actual
+issuer keys or establish reviewed platform-CA/source custody.
+The subsequent [actual public observation](local-runs/diagnostic-oidc-public-source-20261014/README.md)
+received the fixed discovery/JWKS once with matching runtime/CA inventory and
+four unselected keys. It adds no selected kid, snapshot expiry, workflow subject,
+production custody or token. The [dedicated job preparation](diagnostic-controller-job-preparation.md)
+also identifies the single-key versus bounded-roster decision and the separate
+prebuilt-signer/bootstrap custody gap. No active job or configuration follows.
 Independently authenticated GitHub key selection/custody/rotation, actual workflow
 policy selection and a protected diagnostic signing-job receipt remain required
 before real provenance enrollment. P2 and replay/start admission remain open.

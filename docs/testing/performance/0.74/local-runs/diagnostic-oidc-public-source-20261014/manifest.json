@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-oidc-public-source-20261014",
+  "source_commit": "709d1165f3dc8bfc8aed5630caa58a5a06a14d83",
+  "preregister_commit": "d0cca7594391cbd9c262cafc80f6b6703e8ed9b9",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "captures": [
+    {
+      "path": "final-mutations-windows.log",
+      "bytes": 109,
+      "sha256": "431119e002b24551e0551a5549141bebc656a328d447da2c39330584fc44bd35",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "docs-gates.log",
+      "bytes": 578,
+      "sha256": "ee0e9922e84899aa593864332d4665bad9ee8db9e4411a13db89556f53895b88",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0,
+      "negative_result": "The capture wrapper exits zero; --require-ship separately returns expected native exit 1 because candidate identity and release qualification remain incomplete."
+    },
+    {
+      "path": "final-verify-linux.log",
+      "bytes": 146,
+      "sha256": "8dcbce000d8e0bbae0da93e3d46cc99bcbe54ccab0f025516461187243dcf44a",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "clean-runtime-postflight.log",
+      "bytes": 1419,
+      "sha256": "85519eb9a2fa717a0a929612e61e3fca41e0c95bc5b43fb13145874d3a512cf8",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "clean-runtime-preflight.log",
+      "bytes": 1013,
+      "sha256": "7308506cf4b24d358aacb6c8bd86c1f065ac9aa9139380b283318cec8b3ce815",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "independent-inspection.log",
+      "bytes": 2020,
+      "sha256": "dcd3c6ac377452e35f144427284a51de662e08e06e574e2c4b59620d18e9cedc",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "inherited-environment-refusal.log",
+      "bytes": 779,
+      "sha256": "62d51b98aa92b76f35e3f8838840979eb8ec3681e1d66dfe781bf3dd8558ed14",
+      "expected_native_exit": 1,
+      "observed_native_exit": 1,
+      "negative_result": "CURL_CA_BUNDLE name present; guard refuses before child/network. Value not read or echoed. A separately owned clean process was explicitly prepared; parent environment and guards unchanged."
+    },
+    {
+      "path": "linux-offline-regression.log",
+      "bytes": 718,
+      "sha256": "74581373bc25c9210eb0de39563808dd25bba49db8d0a26824b559df87683827",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "mutations-windows.log",
+      "bytes": 109,
+      "sha256": "ee1641b3017bfb88e2d5d71a2139a263c236d61e316593dfebe7a9bd86acdedb",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "verify-windows.log",
+      "bytes": 146,
+      "sha256": "5fca3b7268f0d7c14dc25a5b7c199fdbdcfef3f4bfbaabcbb85b6dd9b11f8138",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    },
+    {
+      "path": "windows-offline-regression.log",
+      "bytes": 462,
+      "sha256": "de27a72b800c56fc10ea6bae77951f5ef06af5ff96612ae68201b6c648b36b78",
+      "expected_native_exit": 0,
+      "observed_native_exit": 0
+    }
+  ],
+  "public_artifacts": [
+    {
+      "path": "acquisition-report.json",
+      "bytes": 11115,
+      "sha256": "77cd206c0302245203caba3f6d7b90ec82a88c2d8ba32841a9d929470093f0bb"
+    },
+    {
+      "path": "acquisition-status.json",
+      "bytes": 587,
+      "sha256": "636832be306472106450b90ca6a6b0d5576bf6fbdfae3c9d2a9a914e9be332fb"
+    }
+  ],
+  "verifier_sha256_lf": "d3059cfabec42986784e1924d0c4662a2739d8143829c23b1fc562e7ab78aae2",
+  "unchanged_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256_lf": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/main.rs",
+      "sha256_lf": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "sha256_lf": "01f665fae44885ac85f208f4a61871499b3f21600ebf1cc03ff57c47898a596d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+      "sha256_lf": "f8d78cca6b81d15b6ef32ce8199c12ad30ef20febcb6971d2319f7f2ebc3b3db"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs",
+      "sha256_lf": "7f9361c33e31ef679fe371f43595adab1996e489d1ac501d9730fff539dd3b8b"
+    },
+    {
+      "path": ".github/workflows/diagnostic-builder-074.yml",
+      "sha256_lf": "9ea33263c8f4d5509c60ed7106b4e9d5333d997ca2fbc7bb1782f37a059c6472"
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-074.yml",
+      "sha256_lf": "33904a5c12a102bac1ae8b7d62b3bb87c45e01d969a74f84675bdec057a31324"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256_lf": "a527df9447acb0a62fea9c4dab40323a2673572abe9c7d6d0bd4383379e7c13a"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256_lf": "41e6024658700393c30d72d0d83dff88841c8a4edfe5c40ec55ade58cb05f7f6"
+    }
+  ],
+  "frozen_lock_sources": [
+    "62114be0f5da3218706e30d7424acfb5d0579d07",
+    "70ca60eb3f2f75a326e9f6430467749b76440a04"
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "scripts/perf/diagnostic_oidc_acquisition_074.py",
+      "sha256_lf": "de74844ad8dc96939485de769e92befbdafc0774374ced7d57d7c2d267863e0c"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_source_074.py",
+      "sha256_lf": "df6cf5967b49152c79ddb91565bf3fafdee3dc0452953cd1268f272b2e77d747"
+    }
+  ],
+  "frozen_lock_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    }
+  ],
+  "normal_acquire_public_invocations": 1,
+  "observed_key_count": 4,
+  "observed_ca_roster_sha256": "dc4dfefbd722e067db82e22d9849be097b6701c51979ffe5c7813b86aac24887",
+  "observed_peer_certificate_sha256": "2a6aa56347230d695e4ab7a8e5b6f8672d18c2bf98790d06d54dd0706388e6a1",
+  "before_binary_hashes": {
+    "C:\\Python313\\python.exe": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca",
+    "C:\\Python313\\python313.dll": "41ec4fc4e5bc8b207258590238f7f050b13fdfee84c4a7b1ecff6e945d031a10",
+    "C:\\Python313\\DLLs\\_ssl.pyd": "faf716d309349dbd54efd7fb402bd42ed21a537614ac0da89ed92ba307ecbf15",
+    "C:\\Python313\\DLLs\\libssl-3.dll": "007142039f04d04e0ed607bda53de095e5bc6a8a10d26ecedde94ea7d2d7eefe",
+    "C:\\Python313\\DLLs\\libcrypto-3.dll": "ccfffddcd3defb8d899026298af9af43bc186130f8483d77e97c93233d5f27d7"
+  },
+  "observation_claims": {
+    "real_public_discovery_and_jwks_received": true,
+    "platform_tls_chain_and_hostname_observed": true,
+    "source_and_runtime_inventory_matches": true,
+    "independent_offline_inspection_matches": true
+  },
+  "admission_claims": {
+    "production_ca_custody_or_physical_host_enrolled": false,
+    "actual_signing_kid_or_workflow_subject_selected": false,
+    "snapshot_lifetime_or_epoch_selected": false,
+    "actual_private_signing_key_read": false,
+    "actual_token_requested_or_verified": false,
+    "protected_environment_configured": false,
+    "workflow_registered_or_dispatched": false,
+    "trust_config_installed": false,
+    "durable_replay_or_fence_admission": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "host_modified": false,
+    "product_workload_run": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "tests": {
+    "offline_packet_mutation_cases_per_platform": 6,
+    "ordinary_python_regression_cases_per_platform": 25,
+    "no_refetch_in_tests": true,
+    "full_release_gate_executed": false,
+    "rust_runtime_or_dependencies_changed": false
+  }
+}

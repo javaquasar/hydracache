@@ -1,0 +1,104 @@
+# Dedicated diagnostic controller job preparation
+
+The fixed public source was received once on 2026-10-14; see the
+[public acquisition packet](local-runs/diagnostic-oidc-public-source-20261014/README.md).
+This prepares the next job boundary under the
+[approved local OIDC decision](diagnostic-controller-provenance-decision.md).
+No active workflow, protected environment, signing secret or token request is
+created. The campaign and separate builder workflows remain unchanged.
+
+## Existing fixed profile and missing selections
+
+The receiver profile already requires repository ID 1217101761, the dedicated
+`diagnostic-controller-074.yml` workflow on `feat/0.74-resp-native-throughput`,
+environment `performance-diagnostic-controller-074`, workflow_dispatch and a
+GitHub-hosted runner. Its workflow SHA and exact subject must be selected
+independently; neither is filled from the observer commit or default subject
+syntax. Current GitHub subject settings can differ from older name-only forms;
+select the actual repository policy rather than guessing. GitHub documents
+[OIDC claims and subject configuration](https://docs.github.com/en/actions/reference/security/oidc).
+
+The historical builder environment/secret has a separate fixed-build purpose.
+Its retained October 9 protection receipt is not protection for this new
+controller environment. Reusing that key or environment would not establish the
+new job's custody. The controller public pin remains the existing reviewed
+`c56f89595c45d0656225f1b8915babed046d278dc9ce1908c6bcb6e9c93e2fda`;
+private key custody for this job requires separate enrollment, not a key read here.
+
+## Public key selection decision before job activation
+
+The authenticated transport report contains four RSA/RS256 public keys. The
+current v1 trust reader accepts exactly one explicitly selected key. Discovery
+and JWKS do not identify which one will sign a future job token. Neither roster
+order nor certificate metadata selects an active kid or a snapshot lifetime.
+
+Two safe approaches need a decision before activation:
+
+- Keep v1 and select one key independently. An unknown kid always refuses; a
+  future job may therefore fail and require a new explicitly reviewed snapshot.
+- Preregister a separate versioned bounded trusted-key roster. The configured
+  authenticated snapshot, not a token URL or embedded key, chooses membership;
+  a token kid may only identify an already selected member. Duplicate/unknown
+  kids, stale snapshots and algorithm confusion must still refuse. This needs
+  a new schema/compatibility review and tests before any actual enrollment.
+
+The bounded roster is the more practical production option for rotation, but it
+is not implemented or approved by receiving this public packet. No automatic
+promotion, token-controlled key acquisition or threshold/schema change is made.
+
+## Job sequencing and custody
+
+1. Review one tooling/workflow revision and confirm repository/ref/environment
+   protection before exposing token or signing authority. Restrict token permission
+   to the signing job, not an untrusted build or reusable workflow. GitHub requires
+   `id-token: write` for token retrieval; see its
+   [OIDC permission reference](https://docs.github.com/en/actions/reference/security/oidc#workflow-permissions-for-the-requesting-the-oidc-token).
+2. Build and verify the signer in a distinct job without id-token permission or
+   signing secrets, with a sanitized build environment. Token permission is
+   job-wide, not a safe late-step grant; clearing variables in one build command
+   cannot remove the job's authority. The signing job therefore needs an
+   independently authenticated prebuilt signer/runtime and reviewed bootstrap.
+   Keep source/runtime/lock receipts; no compilation, dependency install or
+   unreviewed checkout after authority exposure. Review the original executable,
+   not just an artifact name or self-reported hash. The frozen observer builder's
+   fixed-build receipt does not attest the controller signer; do not expand that
+   key purpose implicitly. This bootstrap/artifact custody join remains code work.
+3. Load independently reviewed builder policy/receipt and admitted lease/boot
+   context. Define one operation, revision, request ID and nonce. Existing local
+   CLI validation cannot authenticate supplied host context or consume a nonce.
+   Generate the fresh request only after slow preparation, preserving its
+   exclusive maximum 60-second window.
+4. Freeze one canonical body and derive audience from it. Retrieve the token for
+   that audience through a separately reviewed bounded HTTPS producer. Never
+   reuse the public-acquisition helper for bearer-token transport: it refuses
+   token environment names and is deliberately a different boundary.
+5. Validate run/attempt/actor/repository and exact workflow/subject/environment
+   against the original body and independent selected issuer snapshot, then sign
+   that same retained body. Current audience/sign CLI calls reread files; the
+   future coordinator must prevent replacement across token retrieval/signing,
+   not merely promise identical filenames. Never log or archive raw tokens/keys.
+6. Hand off only through the separately enrolled transport and original receiver
+   chain. No SSH shell, arbitrary command, replacement body or direct fixture-to-
+   start conversion. Timeout, uncertain delivery or lost acknowledgement retains
+   the attempt; it cannot renew expiry or create automatic execution retry.
+
+Actor ID names the workflow initiator, not an independent rerun approver.
+GitHub distinguishes the original actor from the triggering actor on reruns;
+see the [variables reference](https://docs.github.com/en/actions/reference/workflows-and-actions/variables).
+Protection and rerun policy require explicit review. In the operator-plus-agent
+model, technical agent review and one human environment approval must not be
+presented as two independent human reviews.
+
+## Code and tests still required
+
+The producer validates/signs job bytes; it does not yet implement token retrieval,
+immutable cross-step body retention, an authenticated receiver transport or a
+protected-job receipt. Preregister each before implementation. Cover denied
+permissions/protection, wrong workflow/source/subject, key rotation/unknown kid,
+audience/body substitution, rerun attribution, token/packet expiry, disconnect,
+lost ack and no raw credential retention. Positive local models cannot replace
+the first separately approved actual protected-job receipt.
+
+Original worker policy/body pin/current epoch, physical host/root custody,
+durable nonce/common fence and authenticated start remain required at the host.
+This job design opens neither completion/later cells nor server/pilot/qualification.

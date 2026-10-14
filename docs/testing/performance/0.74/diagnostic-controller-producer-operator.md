@@ -117,3 +117,10 @@ freshness, worker epoch, replay/common fence and original-start gates still appl
 TLS and owned-child timeout use the documented
 [Python ssl API](https://docs.python.org/3.12/library/ssl.html) and
 [subprocess.run lifecycle](https://docs.python.org/3.12/library/subprocess.html#subprocess.run).
+
+The separately approved [one-attempt observation](local-runs/diagnostic-oidc-public-source-20261014/README.md)
+has now received the public sources under inventoried Windows platform TLS.
+Use its read-only verifier for reproduction, not another acquisition command.
+Its four unselected keys do not fill the v1 single-key, subject, workflow SHA or
+snapshot lifetime slots. See the [job preparation](diagnostic-controller-job-preparation.md)
+before any protected environment, bootstrap, key policy or token-producing job.
