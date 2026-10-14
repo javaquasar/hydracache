@@ -1,11 +1,13 @@
 # Controller provenance decision before replay admission
 
-Status: proposed, awaiting operator approval. Audit source is
+Status: local OIDC implementation approved by the operator on 2026-10-14;
+actual trust selection, job dispatch and server operations remain unapproved.
+Audit source is
 `d27c00970b329305ed840a1013950cff44db8ca9`. P2 needs a source independent of
 the controller signature to authenticate its GitHub origin. The recommended
 extension is GitHub OIDC alongside, not instead of, the current controller
 signature. No new trust root, crypto dependency, configuration schema, workflow
-permission or server route is enrolled by this proposal.
+permission or server route is enrolled by this decision alone.
 
 ## Existing protocol boundaries
 
