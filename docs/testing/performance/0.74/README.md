@@ -2,6 +2,8 @@
 
 The [pre-server closure checklist](pre-server-closure-checklist-20261014.md)
 tracks the remaining P1/P2/P3 production integration and exact-host gates.
+The [reusable controller boundaries](test-run-control-library-boundaries.md)
+record future core/backend/adapter separation without extracting crates now.
 The [kernel admission path](diagnostic-kernel-admission-design.md) now receives
 per-message credentials/pidfd and original-scope kernel time. The
 [reviewed-trust entry points](diagnostic-reviewed-trust-design.md) reuse the
