@@ -50,6 +50,18 @@ never fall back to register guessing, privileged dump or supplied assertions.
 
 ## Test and gate sequence
 
+Pre-final safety amendment: the host uses a piped core collector, for which
+RLIMIT_CORE=0 alone is insufficient. Supersede the initial 25-instruction draft
+with a 34-instruction/272-byte policy allowing only exact native
+prctl(PR_SET_DUMPABLE, 0) as a hardening exception; all other prctl forms still
+refuse. Observe that syscall's entry/zero exit after the installation memory
+check and before any fatal ABI probe. Do not elevate, alter the host core
+collector or weaken SIGSYS acceptance. Preserve development logs showing the
+additional syscall-exit stop before terminal observation and fix that state
+sequence explicitly, without skipping arbitrary stops. Memory reads become
+bounded by 16 plus 272 bytes. This is a fixture safety change, not a numerical
+threshold or production profile change; the original draft remains in Git.
+
 Capture the eleven-case first-exec baseline, then a missing-module/owner red
 compile. Test exact policy bytes/jumps/actions against all bounded syscall
 numbers, bad arch/x32 bits and seeded mutations. Real owned probes cover both
