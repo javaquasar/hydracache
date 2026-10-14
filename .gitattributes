@@ -205,3 +205,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-seccomp-*/*.log -text
 docs/testing/performance/0.74/local-runs/diagnostic-signer-seccomp-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-signer-joined-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-joined-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-*/manifest.json -text

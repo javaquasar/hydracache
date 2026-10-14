@@ -1,5 +1,13 @@
 # Dedicated diagnostic controller job preparation
 
+The new [bounded runtime inventory](diagnostic-signer-runtime-design.md) adds
+declared ELF dependency and original readonly file checks for the fixed GNU
+helper, loader, libc and libgcc copies. It neither forces launch to use those
+copies nor authenticates their production custody. The exact-source
+[local evidence](local-runs/diagnostic-signer-runtime-20261015/README.md) is not
+a permission, token, protected-job or worker-start grant. Enforced selected
+loader/root and runtime/launch composition remain the next local boundary.
+
 The approved local bootstrap retains two standalone test-build mechanics:
 [owned first exec](diagnostic-signer-first-exec-design.md) and
 [exact seccomp installation](diagnostic-signer-seccomp-design.md). The latter

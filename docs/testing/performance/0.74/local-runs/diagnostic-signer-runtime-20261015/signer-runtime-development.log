@@ -1,0 +1,66 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+
+thread 'rustc' (417) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 5 but ends at 4
+stack backtrace:
+   0:     0x75fbfce5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x75fbfd40e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x75fbfe8f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x75fbfce29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x75fbfce29993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x75fbfbe10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x75fbfce29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x75fbfce29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x75fbfce23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x75fbfce0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x75fbf998e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x75fbf9666c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x75fbfb7697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x75fbfe7d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x75fbfe7c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x75fbfe9004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x75fbfe902cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x75fbfe9023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x75fbfe8fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x75fbfe8f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x75fbfe8f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x75fbfe8f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x75fbfe8f8cab - <() as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x75fbfe36bd00 - rustc_middle[f9db403ed88df217]::lint::lint_level::lint_level_impl
+  24:     0x75fbfe371bc3 - <rustc_passes[ae81e2ef7691f27d]::dead::DeadVisitor>::lint_at_single_level
+  25:     0x75fbfda1d4c1 - <rustc_passes[ae81e2ef7691f27d]::dead::DeadVisitor>::warn_multiple
+  26:     0x75fbfda1ce11 - rustc_passes[ae81e2ef7691f27d]::dead::check_mod_deathness
+  27:     0x75fbfda1bd63 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::check_mod_deathness::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  28:     0x75fbfe3251bc - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::DefaultCache<rustc_span[56e001752d96add4]::def_id::LocalModDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  29:     0x75fbfe3270be - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::check_mod_deathness::get_query_incr::__rust_end_short_backtrace
+  30:     0x75fbfe329575 - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  31:     0x75fbfe328cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  32:     0x75fbfe7874cf - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  33:     0x75fbfe786d7f - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_incr::__rust_end_short_backtrace
+  34:     0x75fbfe790111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  35:     0x75fbfe5810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  36:     0x75fbfe529b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  37:     0x75fbfe52993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  38:     0x75fbfe52b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  39:     0x75fbf7e9cb84 - <unknown>
+  40:     0x75fbf7f29ecc - <unknown>
+  41:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [check_mod_deathness] checking deathness of variables in module `diagnostic_signer_runtime_fixture`
+#1 [analysis] running analysis passes on crate `hydracache_long_run_supervisor_074`
+end of query stack
+error: could not compile `hydracache-long-run-supervisor-074` (lib test)
+
+Caused by:
+  process didn't exit successfully: `/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc --crate-name hydracache_long_run_supervisor_074 --edition=2021 tools/long-run-supervisor-074/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=8af2f848a34cd472 -C extra-filename=-722be00aaac31273 --out-dir /home/artur/.cache/hydracache-074-194-check/debug/deps -C incremental=/home/artur/.cache/hydracache-074-194-check/debug/incremental -L dependency=/home/artur/.cache/hydracache-074-194-check/debug/deps --extern base64=/home/artur/.cache/hydracache-074-194-check/debug/deps/libbase64-5ec41e4236db44dc.rlib --extern ed25519_dalek=/home/artur/.cache/hydracache-074-194-check/debug/deps/libed25519_dalek-a01efc56170f6bd5.rlib --extern fs2=/home/artur/.cache/hydracache-074-194-check/debug/deps/libfs2-fb3eaafea511964b.rlib --extern libc=/home/artur/.cache/hydracache-074-194-check/debug/deps/liblibc-3ca9a8e3c01cf86b.rlib --extern ring=/home/artur/.cache/hydracache-074-194-check/debug/deps/libring-5cafc07158032b20.rlib --extern serde=/home/artur/.cache/hydracache-074-194-check/debug/deps/libserde-dcee58b92314281c.rlib --extern serde_json=/home/artur/.cache/hydracache-074-194-check/debug/deps/libserde_json-46bba49d9b83695b.rlib --extern sha2=/home/artur/.cache/hydracache-074-194-check/debug/deps/libsha2-449d8c4315376503.rlib --extern tar=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtar-a4f27054918936bb.rlib --extern tempfile=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtempfile-0849b0888cbb2204.rlib --extern thiserror=/home/artur/.cache/hydracache-074-194-check/debug/deps/libthiserror-8d2ea4db6aefd118.rlib --extern toml=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtoml-01dcff2e47235283.rlib --extern zbus=/home/artur/.cache/hydracache-074-194-check/debug/deps/libzbus-2ab2be64c77693df.rlib --extern zstd=/home/artur/.cache/hydracache-074-194-check/debug/deps/libzstd-364938822dd05960.rlib -L native=/home/artur/.cache/hydracache-074-194-check/debug/build/ring-2921d13312c77b1c/out -L native=/home/artur/.cache/hydracache-074-194-check/debug/build/zstd-sys-8e94915167681f3d/out` (exit status: 101)

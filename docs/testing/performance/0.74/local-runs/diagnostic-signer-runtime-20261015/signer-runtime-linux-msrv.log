@@ -1,0 +1,130 @@
+   Compiling unicode-ident v1.0.24
+   Compiling winnow v1.0.3
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.186
+   Compiling serde_core v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling pin-project-lite v0.2.17
+   Compiling endi v1.1.1
+   Compiling crossbeam-utils v0.8.21
+   Compiling linux-raw-sys v0.12.1
+   Compiling proc-macro2 v1.0.106
+   Compiling generic-array v0.14.7
+   Compiling bitflags v2.13.0
+   Compiling parking v2.2.1
+   Compiling jobserver v0.1.34
+   Compiling hybrid-array v0.4.13
+   Compiling concurrent-queue v2.5.0
+   Compiling crypto-common v0.1.7
+   Compiling quote v1.0.46
+   Compiling cc v1.2.65
+   Compiling block-buffer v0.10.4
+   Compiling syn v2.0.118
+   Compiling syn v3.0.6
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling rustix v1.1.4
+   Compiling futures-core v0.3.32
+   Compiling once_cell v1.21.4
+   Compiling digest v0.10.7
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling event-listener v5.4.1
+   Compiling errno v0.3.14
+   Compiling cpufeatures v0.2.17
+   Compiling fastrand v2.4.1
+   Compiling signal-hook-registry v1.4.8
+   Compiling event-listener-strategy v0.5.4
+   Compiling tracing-core v0.1.36
+   Compiling block-buffer v0.12.1
+   Compiling proc-macro-crate v3.5.0
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling ring v0.17.14
+   Compiling crypto-common v0.2.2
+   Compiling socket2 v0.6.4
+   Compiling mio v1.2.1
+   Compiling subtle v2.6.1
+   Compiling bytes v1.12.0
+   Compiling futures-io v0.3.32
+   Compiling zeroize v1.9.0
+   Compiling signature v2.2.0
+   Compiling const-oid v0.10.2
+   Compiling ed25519 v2.2.3
+   Compiling xattr v1.6.1
+   Compiling digest v0.11.3
+   Compiling tokio v1.52.3
+   Compiling futures-lite v2.6.1
+   Compiling async-broadcast v0.7.2
+   Compiling zmij v1.0.21
+   Compiling getrandom v0.4.3
+   Compiling sha2 v0.10.9
+   Compiling serde_spanned v1.1.1
+   Compiling serde_derive v1.0.228
+   Compiling enumflags2_derive v0.7.12
+   Compiling tracing-attributes v0.1.31
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling async-recursion v1.2.0
+   Compiling thiserror-impl v2.0.18
+   Compiling curve25519-dalek v4.1.3
+   Compiling tracing v0.1.44
+   Compiling async-trait v0.1.89
+   Compiling serde_repr v0.1.20
+   Compiling uuid v1.23.4
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling ordered-stream v0.2.0
+   Compiling getrandom v0.2.17
+   Compiling filetime v0.2.29
+   Compiling cpufeatures v0.3.0
+   Compiling memchr v2.8.2
+   Compiling hex v0.4.3
+   Compiling itoa v1.0.18
+   Compiling untrusted v0.9.0
+   Compiling toml_writer v1.1.1+spec-1.1.0
+   Compiling thiserror v2.0.18
+   Compiling toml v1.1.2+spec-1.1.0
+   Compiling tar v0.4.46
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.150
+   Compiling zvariant_utils v4.2.0
+   Compiling enumflags2 v0.7.12
+   Compiling zcheapstr v1.1.0
+   Compiling sha2 v0.11.0
+   Compiling ed25519-dalek v2.2.0
+   Compiling tempfile v3.27.0
+   Compiling fs2 v0.4.3
+   Compiling base64 v0.22.1
+   Compiling zvariant_derive v5.15.0
+   Compiling zstd-safe v7.2.4
+   Compiling zstd v0.13.3
+   Compiling zvariant v5.15.0
+   Compiling zbus_names v4.3.4
+   Compiling zbus_macros v5.19.0
+   Compiling zbus v5.19.0
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 55s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 10 tests
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_elf_header_program_and_range_mutations_refuse ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_dynamic_names_search_flags_and_unknown_tags_refuse ... ok
+ELF_string_table=virtual_address_mapped_to_file synthetic_image_not_executed=true
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_synthetic_elf_translates_virtual_string_table ... ok
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_unknown_missing_extra_graph_and_objects_refuse ... ok
+runtime_input=signer sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 needed=["libc.so.6", "ld-linux-x86-64.so.2", "libgcc_s.so.1"] original_fixture_only=true
+runtime_input=ld-linux-x86-64.so.2 sha256=c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da needed=[] original_fixture_only=true
+runtime_input=libc.so.6 sha256=3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf needed=["ld-linux-x86-64.so.2"] original_fixture_only=true
+runtime_input=libgcc_s.so.1 sha256=d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb needed=["libc.so.6", "ld-linux-x86-64.so.2"] original_fixture_only=true
+original_runtime_files=4 declared_elf_dependencies=checked launch_root_enforced=false custody_or_handoff=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_original_four_file_inventory_is_not_runtime_admission ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner ... ok
+seed=0x07403b28 parser_mutations=128 independent_runtime_fixtures=4 runtime_or_launch_authority=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_seeded_parser_mutations_and_independent_retention ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_equal_byte_named_and_root_replacement_is_sticky ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_content_hash_detects_drift_and_cannot_be_repaired ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 764 filtered out; finished in 6.42s
+
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 39.50s

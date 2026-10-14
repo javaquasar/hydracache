@@ -8357,3 +8357,61 @@ child death does not prove autonomous owner-loss cleanup. Production job/issuer
 custody, worker start and all-writer cessation remain separate. The result
 strengthens the correctness of the test apparatus without changing cache hot
 paths or claiming new allocation or throughput gains.
+
+### Declared runtime inputs are not the runtime that executes
+
+The joined helper still used the host GNU loader and libraries. The next local
+hypothesis asks whether we can enumerate that fixed helper's declared ELF
+dependencies and retain exactly the original files without mistaking the result
+for independent runtime custody. A GNU target or executable hash alone does not
+answer which loader, libraries or configuration a launch will actually use.
+
+The implementation is a private Linux x86_64 test module with a bounded byte
+parser, not ldd or a generic launch API. It checks ELF64 header/program ranges,
+LOAD interval/alignment and entry constraints, non-WX segments, nonexecutable
+stack, one DYNAMIC segment and the fixed interpreter. DT_STRTAB is translated
+from a virtual address through its file-backed LOAD. Treating it as a file
+offset would parse unrelated bytes. The [ELF manual](https://man7.org/linux/man-pages/man5/elf.5.html)
+documents those distinct fields. Unsupported forms, search paths, ORIGIN,
+TEXTREL, audit/filter/auxiliary tags and unsafe names refuse within fixed bounds.
+Known relocation/symbol/version metadata is not fully validated; section tables
+are ignored. Accepted synthetic metadata is not proof an ELF can safely execute.
+
+The flat fixture contains exactly the signer, GNU loader, libc and libgcc.
+Its declared edges must resolve to selected SONAMEs with no foreign, missing,
+unused or self-dependent object. Original readonly NOFOLLOW/CLOEXEC descriptors
+remain held alongside hashes and metadata. Rechecks compare both original and
+fresh named identities, content and parsed declarations under root brackets.
+The first mismatch stays refused even after bytes are restored. FIFO, symlink,
+hardlink, directory, wrong identity/mode, extra entries, equal-byte replacement
+and content drift cannot repair acceptance. Direct synthetic metadata resets in
+tests isolate inode and digest guards; there is no owner refresh API.
+
+Three ten-case repeats pass, including seed 0x07403b28, 128 no-panic parser
+mutations and four independent owners. The same helper and three library hashes
+are observed in each repeat. The mutations do not claim every changed byte must
+refuse, and independent owners do not make a signer multithreaded. Rust 1.88
+parent-crate compatibility, current strict checks, existing launch/filter/file/
+producer regressions and ordinary-library symbol exclusion pass. A missing-owner
+compile failure remains in evidence. An early Rust 1.94 diagnostic-renderer ICE
+while processing unused test code is also retained; completing the tests removed
+that diagnostic path without suppressing warnings or changing the toolchain.
+An incorrect regression command is recorded separately from corrected results.
+
+The useful result is bounded declared dependency inventory and point-in-time
+original-file consistency. It is not an atomic immutable snapshot or cessation
+of every writer. Copying four local images does not force the kernel and loader
+to select those copies. Cache/configuration, preload, hwcaps and later dlopen
+remain relevant; see the [loader manual](https://man7.org/linux/man-pages/man8/ld.so.8.html).
+Local system sources and fixture UID/GID are setup assertions, not enrolled
+production ancestry. No inspected image is executed by this module, and no FD
+or success bit feeds a signer/token/worker-start consumer.
+
+The [runtime design](../testing/performance/0.74/diagnostic-signer-runtime-design.md)
+and [evidence](../testing/performance/0.74/local-runs/diagnostic-signer-runtime-20261015/README.md)
+bind source, raw captures and unchanged qualification inputs. Next enforce the
+selected loader/root and configuration and compose them with the original
+launch. Independent production custody, one-shot dummy handoff and actual tracer
+loss still need distinct proofs. Worker P2/P3, all-writer cessation, later cells
+and server rehearsal remain separate. These tests measure no cache speed,
+allocations or product workload and add no release-readiness claim.

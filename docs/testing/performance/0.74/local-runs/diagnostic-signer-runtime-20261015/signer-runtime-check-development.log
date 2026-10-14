@@ -1,0 +1,30 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.66s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 10 tests
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_elf_header_program_and_range_mutations_refuse ... ok
+ELF_string_table=virtual_address_mapped_to_file synthetic_image_not_executed=true
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_dynamic_names_search_flags_and_unknown_tags_refuse ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_synthetic_elf_translates_virtual_string_table ... ok
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_content_hash_detects_drift_and_cannot_be_repaired ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_unknown_missing_extra_graph_and_objects_refuse ... ok
+runtime_input=signer sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 needed=["libc.so.6", "ld-linux-x86-64.so.2", "libgcc_s.so.1"] original_fixture_only=true
+runtime_input=ld-linux-x86-64.so.2 sha256=c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da needed=[] original_fixture_only=true
+runtime_input=libc.so.6 sha256=3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf needed=["ld-linux-x86-64.so.2"] original_fixture_only=true
+runtime_input=libgcc_s.so.1 sha256=d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb needed=["libc.so.6", "ld-linux-x86-64.so.2"] original_fixture_only=true
+original_runtime_files=4 declared_elf_dependencies=checked launch_root_enforced=false custody_or_handoff=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_original_four_file_inventory_is_not_runtime_admission ... ok
+seed=0x07403b28 parser_mutations=128 independent_runtime_fixtures=4 runtime_or_launch_authority=false
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_seeded_parser_mutations_and_independent_retention ... ok
+test diagnostic_signer_runtime_fixture::tests::signer_runtime_equal_byte_named_and_root_replacement_is_sticky ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 764 filtered out; finished in 0.83s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.56s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.52s

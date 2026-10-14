@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [bounded runtime inventory](diagnostic-signer-runtime-design.md) retains
+four original readonly fixture files and validates their declared GNU ELF
+dependency graph without executing inspected images. Three ten-case Linux
+repeats, current/MSRV and prior launch regressions pass; the
+[local runtime packet](local-runs/diagnostic-signer-runtime-20261015/README.md)
+retains parser/file substitutions, compiler failure and command correction.
+This is input consistency, not an enforced loader root or loaded runtime custody.
+Those prerequisites still precede dummy handoff; credentials, worker start,
+all-writer cessation, later cells and server admission remain closed.
+
 The [joined bootstrap fixture](diagnostic-signer-joined-design.md) now follows
 one owned fresh GNU helper through first exec, bounded startup, exact filter
 installation and kernel-denied self/different/descriptor exec. Child SIGKILL at
