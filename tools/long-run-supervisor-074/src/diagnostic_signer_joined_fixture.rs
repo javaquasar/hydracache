@@ -34,7 +34,7 @@ fn read_image(path: &Path) -> io::Result<Vec<u8>> {
     }
     Ok(bytes)
 }
-fn compiled_helper() -> io::Result<Vec<u8>> {
+pub(super) fn compiled_helper() -> io::Result<Vec<u8>> {
     let home = std::env::var_os("HOME").ok_or_else(invalid)?;
     let rustup = PathBuf::from(&home).join(".cargo/bin/rustup");
     let tool = Command::new(rustup)

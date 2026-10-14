@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The runtime inventory/parser exist only in Linux x86_64 libtest builds. They
+retain original readonly inputs and bounded declared ELF metadata without a
+loader/launch consumer or public acceptance/FD API. No dependency, normal-library
+surface, CLI, schema, reviewed pin, server or qualification input changes.
+Only the joined helper compiler gains test-module visibility. No custody,
+runtime closure, key, handoff or worker start is admitted. See the
+[runtime boundary](testing/performance/0.74/diagnostic-signer-runtime-design.md).
+
 The joined signer bootstrap fixture and embedded helper exist only in Linux
 x86_64 library test builds. Shared policy/info/file helpers gain pub(super)
 test-module visibility, not a normal-library/public ABI. No durable/wire/signed

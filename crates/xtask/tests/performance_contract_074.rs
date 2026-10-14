@@ -12055,3 +12055,109 @@ fn signer_joined_fixture_preserves_kernel_input_and_closed_runtime_admission() {
         assert!(!consumer.contains("joined_fixture"), "{path}");
     }
 }
+
+#[test]
+fn signer_runtime_inventory_preserves_original_inputs_and_closed_launch_admission() {
+    let c = contract("diagnostic-signer-runtime-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "pure_byte_parser_never_executes_inspected_elf",
+        "virtual_string_table_translated_through_file_backed_load",
+        "unknown_tags_search_paths_and_preload_forms_refuse",
+        "exact_four_file_declared_dependency_graph_checked",
+        "original_readonly_nofollow_cloexec_descriptors_retained",
+        "metadata_hash_parse_and_named_identity_rechecked",
+        "failure_sticky_without_refresh_or_fd_export",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "complete_elf_relocation_symbol_version_validation",
+        "selected_loader_root_enforced",
+        "loaded_runtime_closure_proved",
+        "independent_runtime_custody",
+        "mapped_memory_attested",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("image_bytes", 8388608),
+        ("program_headers", 32),
+        ("load_segments", 16),
+        ("dynamic_entries", 512),
+        ("string_table_bytes", 65536),
+        ("needed_names", 8),
+        ("name_bytes", 128),
+        ("original_files", 4),
+        ("parser_mutations", 128),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let lib = std::fs::read_to_string(base.join("lib.rs")).unwrap();
+    assert!(lib.replace("\r\n", "\n").contains("#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\nmod diagnostic_signer_runtime_fixture;"));
+    let owner = std::fs::read_to_string(base.join("diagnostic_signer_runtime_fixture.rs")).unwrap();
+    for required in [
+        "O_NOFOLLOW",
+        "O_CLOEXEC",
+        "O_NONBLOCK",
+        "libc::openat",
+        "read_at(",
+        "Sha256::digest",
+        "self.refused",
+        "check_root()",
+        "compiled_helper()?",
+    ] {
+        assert!(owner.contains(required), "{required}");
+    }
+    let parser = std::fs::read_to_string(base.join("diagnostic_signer_runtime_elf.rs")).unwrap();
+    for required in [
+        "checked_add",
+        "MAX_IMAGE",
+        "mapped(&loads",
+        "needed.len() >= 8",
+        "count > 32",
+        "d.file / 16 > 512",
+        "string_size > 65536",
+    ] {
+        assert!(parser.contains(required), "{required}");
+    }
+    for source in [&owner, &parser] {
+        for forbidden in [
+            "pub fn",
+            "pub struct",
+            "SigningKey",
+            "sign_prepared_files",
+            "Command::",
+            "execve(",
+            "execveat(",
+            "PTRACE_",
+            "chroot(",
+            "setuid(",
+            "unshare(",
+        ] {
+            assert!(!source.contains(forbidden), "{forbidden}");
+        }
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        let consumer = std::fs::read_to_string(base.join(path)).unwrap();
+        assert!(!consumer.contains("runtime_fixture"), "{path}");
+    }
+}

@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+W11's bounded runtime inventory uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_runtime -- --nocapture`.
+Ten cases check bounded declared ELF edges and original readonly file consistency.
+No environment gate is added; loader-enforced root, loaded runtime closure,
+independent custody, handoff and server admission remain closed. See the
+[runtime contract](testing/performance/0.74/diagnostic-signer-runtime-contract.toml).
+
 W11's joined bootstrap fixture uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_joined -- --nocapture`.
 A fixed locally built GNU helper passes original first exec and exact kernel
