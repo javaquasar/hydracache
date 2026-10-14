@@ -1,7 +1,7 @@
 # Signer bootstrap launch and runtime decision
 
-Status: proposed on 2026-10-14, awaiting operator approval of the new local
-launch boundary. Audited source is
+Status: operator approved the local-only prototype on 2026-10-14. Actual runtime
+custody, production inputs and external operations remain separate. Audited source is
 `7e4d0e3ef78cdcf3455b8719968e8e888abeeda8`. Existing executable observation
 does not establish original invocation. The next useful step must control the
 original launch and the runtime before a credential handoff, rather than add
@@ -127,11 +127,11 @@ need their own admission; product pilots and six-hour/24-hour qualification
 remain separately authorized. No release status, threshold or frozen artifact
 changes follow from approval of this local prototype.
 
-## Decision requested
+## Approved local boundary
 
-Approve a local-only trusted-launcher prototype with the existing GNU profile,
+The operator approved a local-only trusted-launcher prototype with the existing GNU profile,
 explicit runtime selection and first-exec/post-launch handoff checks above.
 Approval does not select actual production trust inputs or authorize any
 credential, GitHub or server operation. Reject or revise the trust model before
-code if kernel/root trust or isolation from untrusted same-UID processes cannot
+integration if kernel/root trust or isolation from untrusted same-UID processes cannot
 be provided at the eventual signing job boundary.
