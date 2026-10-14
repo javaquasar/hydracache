@@ -5,10 +5,10 @@ use crate::diagnostic_signer_build::*;
 use ed25519_dalek::{Signer, SigningKey};
 use std::os::unix::fs::{symlink, PermissionsExt};
 
-struct Fixture {
+pub(super) struct Fixture {
     temp: tempfile::TempDir,
-    root: PathBuf,
-    statement: SignerBuildStatement,
+    pub(super) root: PathBuf,
+    pub(super) statement: SignerBuildStatement,
     key: SigningKey,
 }
 impl Drop for Fixture {
@@ -22,7 +22,7 @@ impl Drop for Fixture {
     }
 }
 impl Fixture {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let temp = tempfile::tempdir().unwrap();
         let root = temp.path().join("bundle");
         fs::create_dir(&root).unwrap();
@@ -77,7 +77,7 @@ impl Fixture {
         fs::set_permissions(&fixture.root, fs::Permissions::from_mode(0o555)).unwrap();
         fixture
     }
-    fn write_receipt(&self) {
+    pub(super) fn write_receipt(&self) {
         let mut message = SIGNATURE_DOMAIN.to_vec();
         message.push(0);
         message.extend(crate::canonical_json(&self.statement).unwrap());
@@ -97,7 +97,7 @@ impl Fixture {
         let m = fs::metadata(&self.root).unwrap();
         (m.uid(), m.gid())
     }
-    fn inspect(&self) -> Result<AssertedSignerBundle, ArtifactError> {
+    pub(super) fn inspect(&self) -> Result<AssertedSignerBundle, ArtifactError> {
         let (uid, gid) = self.owners();
         retain_asserted_bundle(&self.root, uid, gid, self.selection())
     }
@@ -107,7 +107,7 @@ impl Fixture {
     fn readonly_root(&self) {
         fs::set_permissions(&self.root, fs::Permissions::from_mode(0o555)).unwrap();
     }
-    fn replace(&self, name: &str, bytes: &[u8]) {
+    pub(super) fn replace(&self, name: &str, bytes: &[u8]) {
         self.writable_root();
         fs::remove_file(self.root.join(name)).unwrap();
         fs::write(self.root.join(name), bytes).unwrap();
@@ -118,7 +118,7 @@ impl Fixture {
         .unwrap();
         self.readonly_root();
     }
-    fn edit(&self, name: &str, bytes: &[u8]) {
+    pub(super) fn edit(&self, name: &str, bytes: &[u8]) {
         fs::set_permissions(self.root.join(name), fs::Permissions::from_mode(0o644)).unwrap();
         fs::write(self.root.join(name), bytes).unwrap();
         fs::set_permissions(

@@ -63,6 +63,11 @@ Runtime/bootstrap manifests remain opaque signed assertions. No interpreter,
 loader, shared-library mapping, actual process `/proc/exe`, authenticated build
 job, trusted issuer/pins, secret custody or token-bearing job is certified.
 This reader is not connected to the producer, CLI, server or execution route.
+The later [executable object observation](diagnostic-signer-executable-design.md)
+borrows this same original bundle and an existing ProcessRead. It detects
+observed different-inode exec and refuses both wrapper/bundle, but its actual
+same-inode re-exec counterexample leaves original invocation and complete
+runtime integrity unproved. It exports no authority and enables no producer.
 Those independent selections and original mapped-process/runtime observations
 must precede a reviewed pre-exposure bootstrap and credential coordination.
 Original replay/common fence/start, all-writer cessation and later fixed cells

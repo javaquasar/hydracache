@@ -1,5 +1,20 @@
 #![cfg(target_os = "linux")]
 #[test]
+fn signer_executable_api_borrows_original_bundle_and_process_without_replacements() {
+    use hydracache_long_run_supervisor_074::{
+        diagnostic_process::ProcessRead,
+        diagnostic_signer_bundle::{
+            AssertedSignerBundle, AssertedSignerExecutableRead, SignerExecutableError,
+        },
+    };
+    let _: for<'a> fn(
+        &'a mut AssertedSignerBundle,
+        &'a ProcessRead,
+    ) -> Result<AssertedSignerExecutableRead<'a>, SignerExecutableError> =
+        AssertedSignerBundle::bind_asserted_process_executable;
+}
+
+#[test]
 fn signer_bundle_api_has_asserted_inputs_and_no_replacement_recheck_arguments() {
     use hydracache_long_run_supervisor_074::{
         diagnostic_artifacts::ArtifactError,

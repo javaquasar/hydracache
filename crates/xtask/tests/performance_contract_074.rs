@@ -3,6 +3,108 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn signer_executable_observation_keeps_same_inode_reexec_and_runtime_authority_unproved() {
+    let c = contract("diagnostic-signer-executable-contract.toml");
+    assert_eq!(c["additional_executable_descriptors"].as_integer(), Some(2));
+    assert_eq!(c["owned_fixture_handshake_seconds"].as_integer(), Some(5));
+    for key in [
+        "actual_kernel_exe_object_comparison",
+        "original_process_and_bundle_borrowed_without_replacements",
+        "retained_pidfd_generation_boot_group_cgroup_bracketed",
+        "readonly_expected_and_original_o_path_cloexec_target_owned",
+        "different_inode_exec_refuses_with_generation_unchanged",
+        "same_inode_reexec_counterexample_retained",
+        "first_failure_refuses_wrapper_and_bundle_after_drop",
+        "healthy_drop_preserves_original_owners",
+        "legacy_io_predicates_and_public_process_scope_unchanged",
+        "no_public_fd_file_path_process_model_export",
+        "owned_helpers_clear_environment_and_exit_on_eof",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "production_issuer_pins_ancestry_or_job_enrolled",
+        "original_exec_invocation_authenticated",
+        "mapped_instruction_integrity_proved",
+        "loader_runtime_bootstrap_context_authenticated",
+        "actual_private_key_or_token_read",
+        "bootstrap_or_signing_authority_enabled",
+        "host_service_or_cgroup_mutated",
+        "protected_job_dispatched",
+        "durable_replay_or_fence_admitted",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "bundle: &'a mut AssertedSignerBundle",
+        "process: &'a ProcessRead",
+        "self.bundle.refused = true",
+        "process.pin_executable(&self.files[0].file)",
+        "self.bundle.check_original()?",
+        "self.executable.revalidate()?",
+        "Same-inode re-exec can match",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    let process = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_process_executable.rs"),
+    )
+    .unwrap();
+    let production = process.split("#[cfg(test)]").next().unwrap();
+    assert!(production.contains("pub(crate) fn pin_executable("));
+    for forbidden in [
+        "pub fn start",
+        "pub fn sign",
+        "pub fn file",
+        "pub fn path",
+        "pub fn process",
+        "impl AsRawFd",
+        "std::process",
+        "kill(",
+        "execve",
+        "SigningKey",
+    ] {
+        assert!(
+            !source.contains(forbidden) && !production.contains(forbidden),
+            "{forbidden}"
+        );
+    }
+    let tests = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_executable_tests.rs"),
+    )
+    .unwrap();
+    assert!(tests.contains("actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false"));
+    assert!(tests.contains(".env_clear()"));
+    for path in [
+        "main.rs",
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let consumer = std::fs::read_to_string(
+            root().join(format!("tools/long-run-supervisor-074/src/{path}")),
+        )
+        .unwrap();
+        assert!(
+            !consumer.contains("bind_asserted_process_executable"),
+            "{path}"
+        );
+    }
+}
+
+#[test]
 fn original_signer_bundle_keeps_readonly_descriptor_checks_separate_from_bootstrap() {
     let c = contract("diagnostic-signer-bundle-contract.toml");
     for (key, value) in [

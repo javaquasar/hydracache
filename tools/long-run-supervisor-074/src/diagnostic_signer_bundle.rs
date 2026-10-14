@@ -24,6 +24,10 @@ const FILES: [&str; 6] = [
 ];
 const MAX_PATH_BYTES: usize = 4096;
 
+#[path = "diagnostic_signer_executable.rs"]
+mod executable;
+pub use executable::{AssertedSignerExecutableRead, SignerExecutableError};
+
 #[derive(Clone, PartialEq, Eq)]
 struct Stamp {
     dev: u64,

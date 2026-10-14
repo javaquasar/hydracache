@@ -19,6 +19,10 @@ pub use terminal::{TerminalProcessObservation, TerminalState};
 mod io;
 pub use io::ProcessIoRead;
 
+#[path = "diagnostic_process_executable.rs"]
+mod executable;
+pub(crate) use executable::ProcessExecutableRead;
+
 #[path = "diagnostic_process_credentials.rs"]
 mod credentials;
 pub(crate) use credentials::open_namespace_checked_credentials_unobserved;

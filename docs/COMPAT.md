@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The Linux signer executable observation is a runtime-only borrowed guard, with
+no serialized/wire/durable schema or migration. It joins original asserted
+bundle files to an existing retained ProcessRead through a crate-private
+executable-only observer. Old bundle/receipt formats, signed domains, process
+scope and IO predicates remain unchanged. Unknown/mismatched objects and
+observed loss refuse the wrapper/bundle; same-inode re-exec remains an explicit
+observational limit, not original-start authority. Older tools have no such
+method and require no artifact conversion. See the
+[executable boundary](testing/performance/0.74/diagnostic-signer-executable-design.md).
+
 The Linux local signer-bundle input layout v1 has six fixed public fixture names:
 `diagnostic_controller`, `signer-build-receipt-v1.json`, `Cargo.lock.root`,
 `build-log.jsonl`, `runtime-manifest.json` and `bootstrap-context.json`. Its new

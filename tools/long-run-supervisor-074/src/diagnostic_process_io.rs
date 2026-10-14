@@ -28,14 +28,14 @@ impl Stable {
     }
 }
 #[derive(PartialEq, Eq)]
-struct Executable {
+pub(super) struct Executable {
     stable: Stable,
     len: u64,
     mtime: (i64, i64),
     ctime: (i64, i64),
 }
 impl Executable {
-    fn of(m: &Metadata) -> Self {
+    pub(super) fn of(m: &Metadata) -> Self {
         Self {
             stable: Stable::of(m),
             len: m.len(),
@@ -180,7 +180,7 @@ impl ProcessIoRead<'_> {
         Ok(())
     }
 }
-fn readonly_clone(file: &File) -> Result<File, ProcessError> {
+pub(super) fn readonly_clone(file: &File) -> Result<File, ProcessError> {
     // SAFETY: retained descriptor, read-only fcntl query.
     let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
     if flags < 0 {
@@ -211,7 +211,7 @@ fn check_directory(parent: &File, retained: &File, name: &str) -> Result<(), Pro
     }
     Ok(())
 }
-fn magic_target(directory: &File, name: &str) -> Result<File, ProcessError> {
+pub(super) fn magic_target(directory: &File, name: &str) -> Result<File, ProcessError> {
     // Fixed procfs magic links only. Ordinary path readers keep O_NOFOLLOW.
     if !matches!(name, "exe" | "1" | "2") {
         return Err(ProcessError::Invalid);
