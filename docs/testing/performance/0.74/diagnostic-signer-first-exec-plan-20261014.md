@@ -68,6 +68,16 @@ separate. No performance measurement or qualification follows.
 
 ## Following approved slices
 
+Development amendment before final measurements: concurrent raw forks can
+inherit another thread's temporary writable binary descriptor and retain it
+while stopped before exec, despite CLOEXEC. Preserve observed exec errno 26
+(ETXTBSY) and add a deterministic two-owned-child regression before the fix.
+After dup2, require close_range to close every descriptor above stdio except
+the selected executable before SIGSTOP. Unsupported kernels refuse; no fallback
+or new deadline. This also removes unexpected inherited descriptors before the
+initial barrier. The private owner separates initial-stop and first-exec stages
+only to exercise this regression; it has no public adoption or handoff seam.
+
 Next evaluate an exact post-launch exec policy covering execve/execveat,
 alternate ABI and all threads; independently account for policy installation
 rather than trusting a ready string or Seccomp=2. Then test a bounded dummy
