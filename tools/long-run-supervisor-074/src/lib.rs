@@ -48,6 +48,7 @@ pub use diagnostic_output_preparation::fixed_intent_storage::preflight as diagno
 pub mod diagnostic_process;
 pub mod diagnostic_receipts;
 pub mod diagnostic_reviewed_trust;
+pub mod diagnostic_signer_build;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_spool;
 #[cfg(target_os = "linux")]

@@ -1,5 +1,17 @@
 # HydraCache Compatibility Register
 
+The separate local `diagnostic-signer-build-074-v1` receipt reader accepts at most
+8192 canonical LF bytes with strict fields and an Ed25519 signature under the
+new `hydracache-diagnostic-signer-build-074-v1` domain. Expected source/profile
+and all supplied binary/lock/log/runtime/context hashes and lengths must match
+an explicitly asserted selection. Weak and known controller/observer-builder/
+worker-issuer keys refuse this new role. Old observer readers reject this shape;
+the new reader rejects old receipts and unknown future schemas without fallback.
+No migration, production issuer/pin, receipt producer, file reader or bootstrap/
+execution consumer is introduced. Its opaque result exposes inventory only, not
+the existing verified observer build. See the
+[signer model](testing/performance/0.74/diagnostic-signer-build-design.md).
+
 The additional opt-in `diagnostic-oidc-trust-input-074-v2` reader accepts one
 through eight explicitly configured RSA/RS256 keys, strictly sorted by kid with
 duplicate modulus/exponent refusal, in at most 8192 canonical LF bytes. It uses

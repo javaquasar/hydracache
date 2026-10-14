@@ -3,6 +3,94 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn signer_build_model_has_separate_role_and_no_bootstrap_or_execution_authority() {
+    let c = contract("diagnostic-signer-build-contract.toml");
+    for (key, value) in [
+        ("receipt_budget_bytes", 8192),
+        ("binary_budget_bytes", 134217728),
+        ("lock_budget_bytes", 1048576),
+        ("log_budget_bytes", 16777216),
+        ("context_budget_bytes", 65536),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for key in [
+        "separate_schema_signature_domain_and_key_role",
+        "known_controller_observer_builder_worker_issuer_keys_refuse",
+        "strict_canonical_lf_unknown_future_duplicate_refusal",
+        "expected_statement_and_all_supplied_content_bound",
+        "selection_provenance_explicitly_asserted_not_authenticated",
+        "result_has_only_diagnostic_receipt_digest",
+        "positive_signatures_and_contexts_synthetic_only",
+        "old_observer_reader_and_pins_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_signer_build_authenticated",
+        "production_signer_issuer_selected",
+        "original_executable_or_runtime_custody_authenticated",
+        "bootstrap_or_signing_authorization_enabled",
+        "private_key_or_token_read",
+        "trust_configuration_installed",
+        "protected_job_dispatched",
+        "durable_replay_or_fence_admission",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_build.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "pub struct AssertedSignerBuildSelection",
+        "receipt.statement != self.expected",
+        "canonical != bytes",
+        "verify_strict",
+        "CONTROLLER_KEY_HEX, BUILDER_KEY_HEX, WORKER_ISSUER_KEY_HEX",
+        "supplied.len() as u64 != digest.bytes",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "pub fn sign",
+        "pub fn start",
+        "pub fn load",
+        "pub fn path",
+        "pub fn file",
+        "std::fs",
+        "std::process",
+        "SigningKey",
+        "impl Clone",
+        "impl From",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "main.rs",
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let consumer = std::fs::read_to_string(
+            root().join(format!("tools/long-run-supervisor-074/src/{path}")),
+        )
+        .unwrap();
+        assert!(!consumer.contains("diagnostic_signer_build"), "{path}");
+    }
+}
+
+#[test]
 fn diagnostic_public_acquisition_is_bounded_observation_not_trust_or_execution() {
     let ci = std::fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
     assert!(ci.contains("run: python3 -m unittest scripts.perf.test_diagnostic_builder_074 scripts.perf.test_diagnostic_oidc_source_074 scripts.perf.test_diagnostic_oidc_acquisition_074"));
