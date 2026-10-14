@@ -56,6 +56,9 @@ class PublicEncodingTests(unittest.TestCase):
     def test_unsupported_platform_refuses_before_any_file_or_crypto_operation(self):
         with patch.object(keytool.sys, "platform", "win32"), self.assertRaises(keytool.Refused):
             keytool.inspect(Path("unused"))
+        with patch.object(keytool.sys, "platform", "linux"), \
+                patch.object(keytool.os, "geteuid", return_value=0, create=True), self.assertRaises(keytool.Refused):
+            keytool.inspect(Path("unused"))
 
     def test_metadata_ignores_read_atime_but_keeps_nanosecond_mutation_fields(self):
         from types import SimpleNamespace
@@ -67,11 +70,12 @@ class PublicEncodingTests(unittest.TestCase):
             self.assertNotEqual(original, keytool.stable_metadata(SimpleNamespace(**{**fields, field: fields[field] + 1})))
 
 
-@unittest.skipUnless(sys.platform == "linux", "Linux custody fixtures require nonroot Linux/OpenSSL; not Windows coverage")
+@unittest.skipUnless(sys.platform == "linux" and os.geteuid() != 0,
+                     "Custody fixtures require nonroot Linux/OpenSSL; not Windows/root coverage")
 class LinuxCustodyTests(unittest.TestCase):
     def setUp(self):
         import pwd
-        parent = Path(pwd.getpwuid(os.geteuid()).pw_dir) / ".local/share"
+        parent = Path(pwd.getpwuid(os.geteuid()).pw_dir)
         self.temp = tempfile.TemporaryDirectory(prefix="worker-key-test-074-", dir=parent)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
