@@ -1,5 +1,23 @@
 #![cfg(target_os = "linux")]
 #[test]
+fn signer_bundle_api_has_asserted_inputs_and_no_replacement_recheck_arguments() {
+    use hydracache_long_run_supervisor_074::{
+        diagnostic_artifacts::ArtifactError,
+        diagnostic_signer_build::AssertedSignerBuildSelection,
+        diagnostic_signer_bundle::{retain_asserted_bundle, AssertedSignerBundle},
+    };
+    use std::path::Path;
+    let _: fn(
+        &Path,
+        u32,
+        u32,
+        AssertedSignerBuildSelection,
+    ) -> Result<AssertedSignerBundle, ArtifactError> = retain_asserted_bundle;
+    let _: fn(&mut AssertedSignerBundle) -> Result<&str, ArtifactError> =
+        AssertedSignerBundle::check_original;
+}
+
+#[test]
 fn retained_producer_public_api_consumes_preparation_not_request_paths_or_origin() {
     use hydracache_long_run_supervisor_074::diagnostic_controller_producer::{
         linux::sign_prepared_files, PreparedDiagnosticRequest, ProducerError,

@@ -133,6 +133,50 @@ impl AssertedSignerBuildSelection {
         bytes: &[u8],
         contents: &SignerBuildContents<'_>,
     ) -> Result<CheckedSignerBuildModel, ArtifactError> {
+        self.check_receipt(bytes)?;
+        for (digest, supplied) in [
+            (&self.expected.binary, contents.binary),
+            (&self.expected.root_lock, contents.root_lock),
+            (&self.expected.build_log, contents.build_log),
+            (&self.expected.runtime_manifest, contents.runtime_manifest),
+            (&self.expected.bootstrap_context, contents.bootstrap_context),
+        ] {
+            // Length first: over-budget slices never reach hashing.
+            if supplied.len() as u64 != digest.bytes || sha256_hex(supplied) != digest.sha256 {
+                return Err(ArtifactError::Contents);
+            }
+        }
+        Ok(CheckedSignerBuildModel {
+            receipt_sha256: sha256_hex(bytes),
+        })
+    }
+
+    // Internal streaming-reader seam only. Still an explicitly asserted model,
+    // never a public digest-to-bootstrap or execution authorization factory.
+    #[cfg(target_os = "linux")]
+    pub(crate) fn verify_original_digests(
+        &self,
+        bytes: &[u8],
+        digests: &[ArtifactDigest; 5],
+    ) -> Result<CheckedSignerBuildModel, ArtifactError> {
+        self.check_receipt(bytes)?;
+        for (actual, expected) in digests.iter().zip([
+            &self.expected.binary,
+            &self.expected.root_lock,
+            &self.expected.build_log,
+            &self.expected.runtime_manifest,
+            &self.expected.bootstrap_context,
+        ]) {
+            if actual != expected {
+                return Err(ArtifactError::Contents);
+            }
+        }
+        Ok(CheckedSignerBuildModel {
+            receipt_sha256: sha256_hex(bytes),
+        })
+    }
+
+    fn check_receipt(&self, bytes: &[u8]) -> Result<(), ArtifactError> {
         if bytes.is_empty() || bytes.len() > MAX_RECEIPT_BYTES {
             return Err(ArtifactError::Invalid);
         }
@@ -161,21 +205,7 @@ impl AssertedSignerBuildSelection {
         self.key
             .verify_strict(&message, &Signature::from_bytes(&raw_signature))
             .map_err(|_| ArtifactError::Invalid)?;
-        for (digest, supplied) in [
-            (&self.expected.binary, contents.binary),
-            (&self.expected.root_lock, contents.root_lock),
-            (&self.expected.build_log, contents.build_log),
-            (&self.expected.runtime_manifest, contents.runtime_manifest),
-            (&self.expected.bootstrap_context, contents.bootstrap_context),
-        ] {
-            // Length first: over-budget slices never reach hashing.
-            if supplied.len() as u64 != digest.bytes || sha256_hex(supplied) != digest.sha256 {
-                return Err(ArtifactError::Contents);
-            }
-        }
-        Ok(CheckedSignerBuildModel {
-            receipt_sha256: sha256_hex(bytes),
-        })
+        Ok(())
     }
 }
 

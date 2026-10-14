@@ -1,5 +1,17 @@
 # HydraCache Compatibility Register
 
+The Linux local signer-bundle input layout v1 has six fixed public fixture names:
+`diagnostic_controller`, `signer-build-receipt-v1.json`, `Cargo.lock.root`,
+`build-log.jsonl`, `runtime-manifest.json` and `bootstrap-context.json`. Its new
+opt-in asserted reader refuses extra/missing entries, unsafe owner/type/mode,
+name/inode/byte drift and the old fixed observer install root. It consumes the
+unchanged `diagnostic-signer-build-074-v1` receipt/domain and streams bounded
+hashes through a private shared verifier. The returned runtime-only guard has
+no serialized schema, installer, production path, authority export or migration.
+Older tools have no signer-bundle reader; observer bundles remain separate and
+cannot be automatically upgraded or treated as signer custody. See the
+[original file boundary](testing/performance/0.74/diagnostic-signer-bundle-design.md).
+
 The separate local `diagnostic-signer-build-074-v1` receipt reader accepts at most
 8192 canonical LF bytes with strict fields and an Ed25519 signature under the
 new `hydracache-diagnostic-signer-build-074-v1` domain. Expected source/profile
@@ -7,7 +19,7 @@ and all supplied binary/lock/log/runtime/context hashes and lengths must match
 an explicitly asserted selection. Weak and known controller/observer-builder/
 worker-issuer keys refuse this new role. Old observer readers reject this shape;
 the new reader rejects old receipts and unknown future schemas without fallback.
-No migration, production issuer/pin, receipt producer, file reader or bootstrap/
+No migration, production issuer/pin, receipt producer, production file reader or bootstrap/
 execution consumer is introduced. Its opaque result exposes inventory only, not
 the existing verified observer build. See the
 [signer model](testing/performance/0.74/diagnostic-signer-build-design.md).

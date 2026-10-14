@@ -3,6 +3,110 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn original_signer_bundle_keeps_readonly_descriptor_checks_separate_from_bootstrap() {
+    let c = contract("diagnostic-signer-bundle-contract.toml");
+    for (key, value) in [
+        ("original_descriptors", 7),
+        ("exact_child_entries", 6),
+        ("path_budget_bytes", 4096),
+        ("hash_chunk_bytes", 65536),
+        ("receipt_budget_bytes", 8192),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for key in [
+        "absolute_nofollow_descriptor_relative_readonly_open",
+        "original_metadata_names_hashes_bracketed",
+        "first_refusal_sticky_no_replacement_arguments",
+        "full_binary_log_and_context_bytes_not_retained",
+        "private_common_receipt_validation_preserves_supplied_model",
+        "no_public_file_fd_path_or_model_export",
+        "original_descriptors_cloexec_and_raii_owned",
+        "positive_origin_selection_and_contexts_explicitly_asserted",
+        "real_kernel_descriptors_in_owned_nonroot_fixtures",
+        "signed_receipt_domain_schema_and_old_key_pins_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "production_issuer_or_pins_selected",
+        "trusted_root_ancestor_or_job_custody_authenticated",
+        "original_mapped_executable_or_runtime_authenticated",
+        "bootstrap_or_signing_authority_enabled",
+        "actual_private_key_or_token_read",
+        "installed_trust_or_artifact_mutated",
+        "process_spawn_or_service_action",
+        "protected_job_dispatched",
+        "durable_replay_or_common_fence_admitted",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "O_NOFOLLOW",
+        "O_NONBLOCK",
+        "O_CLOEXEC",
+        "libc::openat",
+        "self.refused = true",
+        "pub fn check_original(&mut self)",
+        "self.name.as_bytes()",
+        "selection.verify_original_digests(",
+        "[0; 65536]",
+        "names.len() == FILES.len()",
+        "path == Path::new(INSTALL_ROOT)",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "pub fn start",
+        "pub fn sign",
+        "pub fn file",
+        "pub fn path",
+        "pub fn digest",
+        "pub fn load",
+        "impl AsRawFd",
+        "impl Clone",
+        "std::process",
+        "File::create",
+        "write(true)",
+        "set_permissions",
+        "execve",
+        "O_TRUNC",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let model = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_build.rs"),
+    )
+    .unwrap();
+    assert!(model.contains("pub(crate) fn verify_original_digests("));
+    assert_eq!(model.matches("self.check_receipt(bytes)?").count(), 2);
+    for path in [
+        "main.rs",
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+        "diagnostic_live_execution.rs",
+    ] {
+        let consumer = std::fs::read_to_string(
+            root().join(format!("tools/long-run-supervisor-074/src/{path}")),
+        )
+        .unwrap();
+        assert!(!consumer.contains("diagnostic_signer_bundle"), "{path}");
+    }
+}
+
+#[test]
 fn signer_build_model_has_separate_role_and_no_bootstrap_or_execution_authority() {
     let c = contract("diagnostic-signer-build-contract.toml");
     for (key, value) in [

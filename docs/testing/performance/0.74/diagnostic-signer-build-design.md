@@ -34,9 +34,12 @@ immutable build model; live authorization remains a separate original chain.
 
 The checked model has private fields, no Deserialize/Clone and no conversion to
 the observer's `VerifiedBuild`. It cannot export a path/descriptor, authorize
-signing, enroll a host or start a worker. Only the new module and its tests use
-this schema. No CLI, receipt producer, file reader, workflow, bootstrap factory,
-token request, credential access or server route consumes it. Existing reviewed
+signing, enroll a host or start a worker. The portable module has no IO. The
+subsequent [original file reader](diagnostic-signer-bundle-design.md) uses a
+crate-private digest seam for explicitly asserted Linux fixtures, retaining
+inventory only. No production file reader, CLI, receipt producer, workflow,
+bootstrap factory, token request, credential access or server route consumes
+either result. Existing reviewed
 pins, observer readers, producer semantics and signed domains remain unchanged.
 
 An actual bootstrap still needs independent issuer/pin selection and acquisition
