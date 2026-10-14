@@ -30,7 +30,8 @@ These formats must not be reinterpreted as each other.
 
 GitHub documents OIDC run/attempt, numeric actor/repository, workflow ref/SHA,
 environment and runner claims, plus a configurable audience. Token retrieval
-requires job-level `id-token: write`. These facts make OIDC a suitable additional
+requires `id-token: write`; this proposal scopes it to one dedicated signing job.
+These facts make OIDC a suitable additional
 origin source; they do not prove completion, a current active run, compilation or
 permission to execute. See the [GitHub OIDC reference](https://docs.github.com/en/actions/reference/security/oidc).
 
