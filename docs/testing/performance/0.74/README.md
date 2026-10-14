@@ -1,12 +1,21 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The operator approved the local [bootstrap prototype](diagnostic-signer-bootstrap-decision.md).
+Its [first exec slice](diagnostic-signer-first-exec-design.md) now creates and
+observes owned fixture children at exact kernel exec stops, including same-inode
+re-exec. Immediate inherited-FD closure fixes a reproduced ETXTBSY concurrency
+failure. It exists only in Linux x86_64 test builds, not a production launch API.
+See the [local first-exec packet](local-runs/diagnostic-signer-first-exec-20261014/README.md).
+Seccomp/policy proof, dummy handoff, actual tracer loss and runtime custody remain
+next approved local work; credentials, protected jobs and server admission stay closed.
+
 The [bootstrap decision](diagnostic-signer-bootstrap-decision.md) identifies the
 next architectural boundary: a separately trusted original launcher and selected
 runtime, not another conversion from an asserted executable observation.
 The recommended local-only prototype preserves the GNU build profile and tests
-first exec, post-launch exec denial and dummy handoff. Operator approval is
-required before adding this launch boundary; no credential or server operation
-is included. The [audit packet](local-runs/diagnostic-signer-bootstrap-decision-20261014/README.md)
+first exec, post-launch exec denial and dummy handoff. Its approval excludes
+credential or server operations. The earlier
+[audit packet](local-runs/diagnostic-signer-bootstrap-decision-20261014/README.md)
 reproduces the same-inode counterexample at the unchanged code source.
 
 The [signer executable observation](diagnostic-signer-executable-design.md) now

@@ -8183,8 +8183,8 @@ exec events, denial of later exec through both syscall forms, and a private
 one-shot dummy handoff. It must account for threads, alternate ABI, runtime
 inputs and owner loss; a ready message or a seccomp flag alone is insufficient.
 The trusted kernel, launcher administration and reviewed signer remain explicit
-assumptions, not memory-attestation claims. Approval of this new launch boundary
-precedes implementation.
+assumptions, not memory-attestation claims. The operator approved the local-only
+prototype before its first implementation slice.
 
 Job authority is a different boundary again. GitHub's OIDC permission is scoped
 to a job or workflow, so moving token retrieval to a later step does not remove
@@ -8200,3 +8200,41 @@ reproduces all eight executable cases at the unchanged source, including the
 same-inode observation. This establishes the reason for the proposal, not a
 successful launcher or credential grant. Worker original-start, writer
 revocation, later cells and server rehearsal still need their own proofs.
+
+### Kernel exec stops expose an inherited descriptor race
+
+The first approved slice tests one hypothesis: an owner created before exec can
+distinguish a new invocation even when the executable inode stays unchanged.
+The private Linux x86_64 fixture forks its own child, retains the original pidfd,
+descriptor-execs the selected binary, and requires a PTRACE_EVENT_EXEC stop
+before continuing it. The helper output is still empty at that stop. A later
+same-inode exec generates another kernel event, which refuses the owner and
+terminates the owned helper before the new image runs user code. This addresses
+the previous observational counterexample without redefining inode equality.
+
+Concurrent runs then revealed a separate implementation fault: occasional exec
+errno 26, ETXTBSY. CLOEXEC did not close an inherited writable descriptor while
+another helper remained stopped before exec. A deterministic two-child test
+reproduced it: open a writable descriptor for the second binary, fork and stop
+the first child, close the parent's writer, then attempt the second exec. The
+first stopped child still held the writer and blocked execution. This explains
+the observed fault without selecting a timing threshold or adding retries.
+
+The fix closes every nonselected descriptor above stdio in the child immediately
+after redirection, preserving only the selected executable. The same two-child
+regression then passes while the first child remains stopped. The closure
+affects the forked child's copied descriptor table, not the parent's table;
+an unsupported syscall refuses instead of falling back. This is both a
+reliability fix and an inherited-descriptor boundary. It is not global writer
+revocation or a production sandbox.
+
+The [first-exec packet](../testing/performance/0.74/local-runs/diagnostic-signer-first-exec-20261014/README.md)
+retains the original failures, errno diagnosis and expected-red regression,
+followed by three eleven-case repeats, seeded fresh launches and independent
+tracer threads. Strict checks and a normal-library symbol inspection keep this
+launcher confined to test builds. The bounded ELF identification intentionally
+accepts a truncated header whose actual kernel exec fails; it does not attest
+the runtime. No dummy or real credential handoff exists yet. Exact seccomp
+installation, all-thread/ABI coverage, actual tracer loss and independently
+selected runtime custody remain the next distinct parts of the approved
+prototype, before any signing or worker-start consumer can use it.

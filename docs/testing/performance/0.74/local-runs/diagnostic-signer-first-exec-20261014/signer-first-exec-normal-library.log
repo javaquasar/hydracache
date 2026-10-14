@@ -1,0 +1,9 @@
+   Compiling rustix v1.1.4
+   Compiling fastrand v2.4.1
+   Compiling futures-lite v2.6.1
+   Compiling xattr v1.6.1
+   Compiling zbus v5.19.0
+   Compiling tar v0.4.46
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.93s
+normal-library fixture symbols absent

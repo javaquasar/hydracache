@@ -1,0 +1,82 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of undeclared type `Fixture`
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs:5:19
+    |
+  5 | ... = Fixture::n...
+    |       ^^^^^^^ use of undeclared type `Fixture`
+    |
+note: these structs exist but are inaccessible
+   --> tools/long-run-supervisor-074/src/diagnostic_artifacts_linux.rs:497:5
+    |
+497 |    ...uct Fixture {
+    |    ...^^^^^^^^^^^ `crate::diagnostic_artifacts::linux::io_binding_tests::Fixture`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_named_output.rs:445:5
+    |
+445 |    ...uct Fixture {
+    |    ...^^^^^^^^^^^ `crate::diagnostic_named_output::tests::Fixture`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_intent_journal_tests.rs:23:1
+    |
+ 23 |...uct Fixture {
+    |...^^^^^^^^^^^ `crate::diagnostic_output_preparation::intent_journal::tests::Fixture`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:396:5
+    |
+396 |    ...uct Fixture {
+    |    ...^^^^^^^^^^^ `crate::diagnostic_output_preparation::tests::Fixture`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_bundle_tests.rs:8:1
+    |
+  8 |...uct Fixture {
+    |...^^^^^^^^^^^ `crate::diagnostic_signer_bundle::tests::Fixture`: not accessible
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_policy_credentials_tests.rs:45:1
+    |
+ 45 |...uct Fixture {
+    |...^^^^^^^^^^^ `crate::diagnostic_worker_policy::local_context::account_files::kernel_binding::tests::Fixture`: not accessible
+help: consider importing this struct
+    |
+  1 + use crate::diagnostic_output_preparation::recovery::tests::Fixture;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `Phase`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs:7:29
+  |
+7 | ...e, Phase::F...
+  |       ^^^^^ use of undeclared type `Phase`
+  |
+help: consider importing this enum
+  |
+1 + use crate::Phase;
+  |
+
+error[E0433]: failed to resolve: use of undeclared type `Control`
+  --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs:11:19
+   |
+11 | ...nd(Control::A...
+   |       ^^^^^^^ use of undeclared type `Control`
+   |
+note: struct `crate::diagnostic_kernel_admission::ancillary::Control` exists but is inaccessible
+  --> tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs:9:1
+   |
+ 9 | ...L_BYTES]);
+   | ...^^^^^^^^^^ not accessible
+
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: failed to resolve: use of undeclared type `OwnedExec`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs:6:21
+  |
+6 | ... = OwnedExec::l...
+  |       ^^^^^^^^^ use of undeclared type `OwnedExec`
+
+For more information about this error, try `rustc --explain E0433`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors; 1 warning emitted
