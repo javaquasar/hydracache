@@ -105,6 +105,43 @@ fn kernel_admission_packet_projection_drift_latches_refusal() {
     assert!(p.revalidate_sender().is_err());
     assert!(matches!(p.revalidate_sender(), Err(KernelError::Refused)));
 }
+
+#[test]
+fn kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky() {
+    for case in 0..3 {
+        let (mut receiver, fd) = pair();
+        send(&fd, b"context-only");
+        let mut p = packet(&mut receiver);
+        let ns = |name: &str| {
+            let m = File::open(format!("/proc/thread-self/ns/{name}"))
+                .unwrap()
+                .metadata()
+                .unwrap();
+            crate::diagnostic_worker_policy::NamespaceIdentity {
+                device: m.dev(),
+                inode: m.ino(),
+            }
+        };
+        let host = crate::diagnostic_worker_policy::AssertedWorkerHost {
+            machine_id: "a".repeat(32),
+            boot_id: p.received.boot_id().into(),
+            user_namespace: ns("user"),
+            mount_namespace: ns("mnt"),
+        };
+        p.require_worker_context(&host).unwrap();
+        match case {
+            0 => p.sender.projection.groups.push(u32::MAX),
+            1 => p.received.realtime_ns = u64::MAX,
+            _ => p.latch_refusal(),
+        }
+        assert!(p.require_worker_context(&host).is_err());
+        assert!(p.is_refused());
+        assert!(matches!(
+            p.require_worker_context(&host),
+            Err(KernelError::Refused)
+        ));
+    }
+}
 #[test]
 fn kernel_admission_wrong_socket_type_refuses_without_fallback() {
     let mut fds = [-1; 2];

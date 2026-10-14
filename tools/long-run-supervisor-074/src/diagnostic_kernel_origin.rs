@@ -88,6 +88,22 @@ fn clock(id: libc::clockid_t) -> Result<u64, KernelError> {
     }
     timespec(value.tv_sec, value.tv_nsec)
 }
+fn require_namespace(
+    file: &File,
+    expected: (u64, u64),
+    kind: libc::c_int,
+) -> Result<(), KernelError> {
+    filesystem(file, libc::NSFS_MAGIC as libc::c_long)?;
+    // SAFETY: retained nsfs descriptor; NS_GET_NSTYPE takes no pointer.
+    if unsafe { libc::ioctl(file.as_raw_fd(), libc::NS_GET_NSTYPE) } != kind {
+        return Err(KernelError::Invalid);
+    }
+    let metadata = file.metadata()?;
+    if (metadata.dev(), metadata.ino()) != expected {
+        return Err(KernelError::Invalid);
+    }
+    Ok(())
+}
 pub(super) fn timespec(sec: libc::time_t, ns: libc::c_long) -> Result<u64, KernelError> {
     if sec < 0 || !(0..1_000_000_000).contains(&ns) {
         return Err(KernelError::Invalid);
@@ -149,6 +165,29 @@ impl Origin {
             realtime_ns,
         })
     }
+    pub(super) fn require_worker_context(
+        &self,
+        expected: &crate::diagnostic_worker_policy::AssertedWorkerHost,
+    ) -> Result<(), KernelError> {
+        self.revalidate()?;
+        if self.boot != expected.boot_id {
+            return Err(KernelError::Invalid);
+        }
+        for (index, (identity, kind)) in [
+            (expected.user_namespace, libc::CLONE_NEWUSER),
+            (expected.mount_namespace, libc::CLONE_NEWNS),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let (file, retained) = &self.namespaces[index];
+            if *retained != (identity.device, identity.inode) {
+                return Err(KernelError::Invalid);
+            }
+            require_namespace(file, *retained, kind)?;
+        }
+        self.revalidate()
+    }
     pub(super) fn child(&self, name: &str, directory: bool) -> Result<File, KernelError> {
         child(&self.root, name, directory)
     }
@@ -157,6 +196,40 @@ impl Origin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn kernel_worker_context_namespace_type_and_object_are_independent_checks() {
+        let (file, id) = namespace("mnt").unwrap();
+        require_namespace(&file, id, libc::CLONE_NEWNS).unwrap();
+        assert!(require_namespace(&file, id, libc::CLONE_NEWUSER).is_err());
+        assert!(require_namespace(&file, (id.0, id.1 + 1), libc::CLONE_NEWNS).is_err());
+        assert!(require_namespace(&tempfile::tempfile().unwrap(), id, libc::CLONE_NEWNS).is_err());
+    }
+    #[test]
+    fn kernel_worker_context_original_typed_namespaces_and_drift_refuse() {
+        for case in 0..7 {
+            let mut origin = Origin::open().unwrap();
+            let host = crate::diagnostic_worker_policy::AssertedWorkerHost {
+                machine_id: "a".repeat(32),
+                boot_id: origin.boot.clone(),
+                user_namespace: crate::diagnostic_worker_policy::NamespaceIdentity {
+                    device: origin.namespaces[0].1 .0,
+                    inode: origin.namespaces[0].1 .1,
+                },
+                mount_namespace: crate::diagnostic_worker_policy::NamespaceIdentity {
+                    device: origin.namespaces[1].1 .0,
+                    inode: origin.namespaces[1].1 .1,
+                },
+            };
+            origin.require_worker_context(&host).unwrap();
+            match case {
+                0 => origin.boot = "wrong".into(),
+                1..=4 => origin.namespaces[case - 1].1 .1 += 1,
+                5 => origin.namespaces.swap(0, 1),
+                _ => origin.namespaces[0].0 = tempfile::tempfile().unwrap(),
+            }
+            assert!(origin.require_worker_context(&host).is_err());
+        }
+    }
     #[test]
     fn kernel_time_timespec_and_ordering_edges_refuse() {
         for (s, n) in [(-1, 0), (0, -1), (0, 1_000_000_000), (libc::time_t::MAX, 0)] {

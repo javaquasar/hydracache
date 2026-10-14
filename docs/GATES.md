@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11 worker policy/kernel binding has a fast Linux API target
+`cfg.hydracache-long-run-supervisor-074.diagnostic-worker-kernel-binding`, plus
+ordinary library tests for original context/refusal and compile-fail doctests.
+It compares actual retained kernel objects with synthetic policy/model inputs;
+it does not enroll a production host, authenticate a controller or admit start.
+Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked worker_kernel_binding -- --test-threads=1`
+for the focused runtime cases. See the
+[binding contract](testing/performance/0.74/diagnostic-worker-kernel-binding-contract.toml).
+
 W11 kernel sender admission has an ignored/manual nonroot Linux/python3 gate:
 `tool.hydracache-long-run-supervisor-074.kernel-admission-inherited-socket-identifies-child`.
 It identifies the original per-message child sender through an inherited socket,

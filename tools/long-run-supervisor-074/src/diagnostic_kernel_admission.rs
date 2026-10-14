@@ -97,6 +97,31 @@ impl KernelReceiver {
     }
 }
 impl KernelPacket {
+    pub(crate) fn latch_refusal(&mut self) {
+        self.refused = true;
+    }
+    pub(crate) fn is_refused(&self) -> bool {
+        self.refused
+    }
+    /// Compare retained receiver context and current sender/time, not principal admission.
+    pub(crate) fn require_worker_context(
+        &mut self,
+        host: &crate::diagnostic_worker_policy::AssertedWorkerHost,
+    ) -> Result<(), KernelError> {
+        if self.refused {
+            return Err(KernelError::Refused);
+        }
+        let result = (|| {
+            self.sender.revalidate(&self.origin)?;
+            self.origin.require_worker_context(host)?;
+            valid_hold(&self.received, &self.origin.sample()?)?;
+            self.sender.revalidate(&self.origin)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
     /// Require the reviewed controller key/repository before kernel authentication.
     /// The supplied principal policy is not enrolled host/epoch/replay authority.
     /// Like generic authentication, this returns request data, never a start guard.

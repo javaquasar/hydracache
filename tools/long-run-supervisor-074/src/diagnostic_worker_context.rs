@@ -250,13 +250,13 @@ impl FixedPaths {
         Ok(())
     }
 }
-struct Probe {
+pub(super) struct Probe {
     tid: libc::pid_t,
     namespaces: Namespaces,
     paths: FixedPaths,
 }
 impl Probe {
-    fn open(expected: &AssertedWorkerHost) -> Result<Self, WorkerContextError> {
+    pub(super) fn open(expected: &AssertedWorkerHost) -> Result<Self, WorkerContextError> {
         let tid = thread_id();
         let r = root()?;
         let proc = PinnedDirectory::new(child(&r.file, c"proc", true, false)?, true)?;
@@ -286,7 +286,7 @@ impl Probe {
         }
         Ok(())
     }
-    fn observe(&self, expected: &AssertedWorkerHost) -> Result<(), WorkerContextError> {
+    pub(super) fn observe(&self, expected: &AssertedWorkerHost) -> Result<(), WorkerContextError> {
         for _ in 0..2 {
             self.namespace_bracket(expected)?;
             self.paths
@@ -413,6 +413,13 @@ fn namespace(file: &File, expected: libc::c_int) -> Result<NamespaceIdentity, Wo
 fn thread_id() -> libc::pid_t {
     // SAFETY: gettid has no arguments and returns the calling thread's ID.
     unsafe { libc::gettid() }
+}
+
+#[cfg(test)]
+impl Probe {
+    pub(super) fn simulate_thread_drift_for_test(&mut self) {
+        self.tid += 1;
+    }
 }
 
 #[cfg(test)]

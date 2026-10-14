@@ -474,3 +474,228 @@ fn worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io() {
         Err(TrustInputError::Invalid)
     ));
 }
+
+fn kernel_local_host() -> AssertedWorkerHost {
+    let namespace = |name: &str| {
+        let m = File::open(format!("/proc/thread-self/ns/{name}"))
+            .unwrap()
+            .metadata()
+            .unwrap();
+        NamespaceIdentity {
+            device: m.dev(),
+            inode: m.ino(),
+        }
+    };
+    AssertedWorkerHost {
+        machine_id: fs::read_to_string("/etc/machine-id")
+            .unwrap()
+            .trim_end_matches('\n')
+            .into(),
+        boot_id: fs::read_to_string("/proc/sys/kernel/random/boot_id")
+            .unwrap()
+            .trim_end_matches('\n')
+            .into(),
+        user_namespace: namespace("user"),
+        mount_namespace: namespace("mnt"),
+    }
+}
+fn kernel_model(host: AssertedWorkerHost) -> Model {
+    let mut model = Model::new();
+    model.host = host;
+    model.policy.machine_id = model.host.machine_id.clone();
+    model.policy.boot_id = model.host.boot_id.clone();
+    model.policy.user_namespace = model.host.user_namespace;
+    model.policy.mount_namespace = model.host.mount_namespace;
+    let body = line(&model.policy);
+    model.trust =
+        WorkerPolicyTrust::new(model.key.verifying_key(), &crate::sha256_hex(&body), 7).unwrap();
+    let mut message = WORKER_POLICY_DOMAIN.to_vec();
+    message.push(0);
+    message.extend(body);
+    model.envelope = line(&SignedWorkerPolicy {
+        schema_version: SIGNED_WORKER_POLICY_SCHEMA.into(),
+        policy: model.policy.clone(),
+        signature_hex: crate::hex(&model.key.sign(&message).to_bytes()),
+    });
+    fs::write(model.config(), model.document()).unwrap();
+    model
+}
+fn kernel_packet() -> crate::diagnostic_kernel_admission::KernelPacket {
+    use std::os::fd::{FromRawFd, OwnedFd};
+    let mut fds = [-1; 2];
+    assert_eq!(
+        unsafe {
+            libc::socketpair(
+                libc::AF_UNIX,
+                libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC,
+                0,
+                fds.as_mut_ptr(),
+            )
+        },
+        0
+    );
+    let receiver = unsafe { OwnedFd::from_raw_fd(fds[0]) };
+    let sender = unsafe { OwnedFd::from_raw_fd(fds[1]) };
+    let mut receiver = crate::diagnostic_kernel_admission::KernelReceiver::new(receiver).unwrap();
+    let bytes = b"context-observation-only-not-authorized-request";
+    assert_eq!(
+        unsafe {
+            libc::send(
+                sender.as_raw_fd(),
+                bytes.as_ptr().cast(),
+                bytes.len(),
+                libc::MSG_NOSIGNAL,
+            )
+        },
+        bytes.len() as isize
+    );
+    receiver.try_receive().unwrap().unwrap()
+}
+
+#[test]
+fn worker_kernel_binding_actual_context_roundtrip_and_healthy_drop() {
+    let model = kernel_model(kernel_local_host());
+    let mut input = model.input();
+    let mut authority = model.authority();
+    let mut packet = kernel_packet();
+    {
+        let mut binding = input
+            .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+            .unwrap();
+        for _ in 0..3 {
+            binding.revalidate().unwrap();
+        }
+        assert!(!binding.is_refused());
+    }
+    assert!(!input.is_refused() && !authority.is_failed() && !packet.is_refused());
+    packet.revalidate_sender().unwrap();
+    input
+        .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+        .unwrap()
+        .revalidate()
+        .unwrap();
+}
+#[test]
+fn worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all() {
+    for case in 0..4 {
+        let mut host = kernel_local_host();
+        match case {
+            0 => {
+                host.machine_id = if host.machine_id == "a".repeat(32) {
+                    "b".repeat(32)
+                } else {
+                    "a".repeat(32)
+                }
+            }
+            1 => host.boot_id = "11111111-2222-3333-4444-555555555555".into(),
+            2 => host.user_namespace.inode += 1,
+            _ => host.mount_namespace.inode += 1,
+        }
+        let model = kernel_model(host);
+        let mut input = model.input();
+        let mut authority = model.authority();
+        let mut packet = kernel_packet();
+        assert!(input
+            .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+            .is_err());
+        assert!(input.is_refused() && authority.is_failed() && packet.is_refused());
+        assert!(matches!(
+            input.verify_kernel_policy(&model.envelope, &mut packet, &mut authority),
+            Err(TrustInputError::Refused)
+        ));
+    }
+}
+#[test]
+fn worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch() {
+    for case in 0..4 {
+        let model = kernel_model(kernel_local_host());
+        let mut input = model.input();
+        let mut authority = model.authority();
+        let mut packet = kernel_packet();
+        {
+            let mut binding = input
+                .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+                .unwrap();
+            if case == 0 {
+                fs::write(model.config(), b"changed\n").unwrap();
+            } else {
+                binding.simulate_owned_fault_for_test(case - 1);
+            }
+            assert!(binding.revalidate().is_err());
+            fs::write(model.config(), model.document()).unwrap();
+            assert!(binding.is_refused());
+            assert!(matches!(
+                binding.revalidate(),
+                Err(TrustInputError::Refused)
+            ));
+        }
+        assert!(input.is_refused() && authority.is_failed() && packet.is_refused());
+    }
+}
+#[test]
+fn worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover() {
+    for case in 0..6 {
+        let model = kernel_model(kernel_local_host());
+        let mut input = model.input();
+        let mut authority = model.authority();
+        let mut packet = kernel_packet();
+        let mut bad = model.envelope.clone();
+        match case {
+            0 => bad = b"{}\n".to_vec(),
+            1 => bad = vec![b'x'; super::super::MAX_SIGNED_WORKER_POLICY_BYTES + 1],
+            2 => {
+                let mut value: serde_json::Value = serde_json::from_slice(&bad).unwrap();
+                value["signature_hex"] = "0".repeat(128).into();
+                bad = line(&value);
+            }
+            3 => packet.latch_refusal(),
+            4 => authority.latch_refusal(),
+            _ => input.refused = true,
+        }
+        assert!(input
+            .verify_kernel_policy(&bad, &mut packet, &mut authority)
+            .is_err());
+        assert!(input.is_refused() && authority.is_failed() && packet.is_refused());
+    }
+}
+#[test]
+fn worker_kernel_binding_seeded_context_mutations_and_independent_threads() {
+    let mut seed = 0x07522074_u64;
+    for _ in 0..32 {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        let mut host = kernel_local_host();
+        host.user_namespace.inode = host.user_namespace.inode.wrapping_add(1 + seed % 1000);
+        let model = kernel_model(host);
+        let mut input = model.input();
+        let mut authority = model.authority();
+        let mut packet = kernel_packet();
+        assert!(input
+            .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+            .is_err());
+        assert!(input.is_refused() && authority.is_failed() && packet.is_refused());
+    }
+    std::thread::scope(|scope| {
+        let handles: Vec<_> = (0..4)
+            .map(|_| {
+                scope.spawn(|| {
+                    let model = kernel_model(kernel_local_host());
+                    let mut input = model.input();
+                    let mut authority = model.authority();
+                    let mut packet = kernel_packet();
+                    input
+                        .verify_kernel_policy(&model.envelope, &mut packet, &mut authority)
+                        .unwrap()
+                        .revalidate()
+                        .unwrap();
+                    assert!(!input.is_refused() && !authority.is_failed() && !packet.is_refused());
+                })
+            })
+            .collect();
+        for handle in handles {
+            handle.join().unwrap();
+        }
+    });
+    println!("seed=0x07522074 signed_context_mutations=32 independent_threads=4 production_enrollment=false");
+}

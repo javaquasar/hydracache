@@ -1,5 +1,12 @@
 # HydraCache Compatibility Register
 
+Worker policy/kernel binding adds an opt-in read-only runtime guard, not a new
+wire, configuration or durable schema. It compares verified policy context with
+retained machine/boot files, typed user/mount namespaces and the original kernel
+packet, without a caller host argument. Existing assertion APIs remain unchanged;
+controller/replay/fence and initial-host/source-opener enrollment remain separate.
+See the [binding design](testing/performance/0.74/diagnostic-worker-kernel-binding-design.md).
+
 The fixed worker trust input introduces a separate root-owned configuration
 schema and read-only runtime guard; see its
 [contract](testing/performance/0.74/diagnostic-worker-trust-input-design.md).

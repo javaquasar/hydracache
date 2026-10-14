@@ -13,6 +13,10 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use thiserror::Error;
 
+#[path = "diagnostic_worker_kernel_binding.rs"]
+mod kernel_binding;
+pub use kernel_binding::KernelWorkerPolicyInput;
+
 pub const TRUST_INPUT_SCHEMA: &str = "diagnostic-worker-trust-input-074-v1";
 pub const FIXED_TRUST_PATH: &str = "/etc/hydracache-perf/worker-trust-074.json";
 pub const MAX_TRUST_BYTES: usize = 2048;
@@ -31,6 +35,10 @@ pub enum TrustInputError {
     Policy(#[from] WorkerPolicyError),
     #[error("original authority inspection failed: {0}")]
     Authority(#[from] AuthorityError),
+    #[error("original kernel packet context failed: {0}")]
+    Kernel(#[from] crate::diagnostic_kernel_admission::KernelError),
+    #[error("original fixed worker context failed: {0}")]
+    Context(#[from] super::local_context::WorkerContextError),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -374,6 +382,11 @@ pub struct WorkerPolicyInput<'s, 'a> {
     host: AssertedWorkerHost,
 }
 impl WorkerPolicyInput<'_, '_> {
+    fn latch_refusal(&mut self) {
+        self.policy.refused = true;
+        self.input.refused = true;
+        self.authority.latch_refusal();
+    }
     pub fn policy_sha256(&self) -> &str {
         self.policy.policy_sha256()
     }
@@ -395,9 +408,7 @@ impl WorkerPolicyInput<'_, '_> {
             self.input.check()
         })();
         if result.is_err() {
-            self.policy.refused = true;
-            self.input.refused = true;
-            self.authority.latch_refusal();
+            self.latch_refusal();
         }
         result
     }

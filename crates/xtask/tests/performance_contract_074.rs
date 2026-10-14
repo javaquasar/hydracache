@@ -3,6 +3,85 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_worker_kernel_binding_preserves_original_context_and_closed_execution() {
+    let c = contract("diagnostic-worker-kernel-binding-contract.toml");
+    assert_eq!(
+        c["exclusive_original_packet_hold_seconds"].as_integer(),
+        Some(60)
+    );
+    for key in [
+        "no_caller_host_argument",
+        "candidate_context_requires_original_pinned_signature",
+        "retained_fixed_machine_boot_documents",
+        "typed_original_user_mount_namespaces",
+        "retained_receiver_pid_time_namespace_and_clock",
+        "original_packet_mutable_borrow_retained",
+        "original_policy_config_authority_retained",
+        "original_reading_thread_required",
+        "no_revalidation_replacement_arguments",
+        "all_original_runtime_inputs_latch_on_failure",
+        "healthy_drop_preserves_original_inputs",
+        "no_raw_policy_context_or_descriptor_export",
+        "positive_config_and_journal_cases_are_nonroot_models",
+        "signed_test_policies_use_only_synthetic_issuer",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_production_policy_or_epoch_selected",
+        "actual_root_source_opener_attested",
+        "physical_initial_host_enrolled",
+        "controller_principals_or_provenance_enrolled",
+        "durable_replay_or_original_fence_join_complete",
+        "authority_bootstrap_performed",
+        "runtime_refusal_is_durable_revocation",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "real_private_key_read_or_production_policy_signed",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"),
+    )
+    .unwrap();
+    for required in [
+        "policy: WorkerPolicyInput<'s, 'a>",
+        "packet: &'p mut KernelPacket",
+        "probe: Probe",
+        "Probe::open(&policy.host)",
+        "packet.latch_refusal()",
+        "self.policy.latch_refusal()",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn start",
+        "pub fn into_",
+        "pub fn fixture",
+        "std::env::",
+        "initialize_fixed_registry",
+        "pub fn path",
+        "pub fn file",
+        "pub fn context",
+        "impl Clone",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("verify_kernel_policy"));
+}
+
+#[test]
 fn diagnostic_worker_trust_input_keeps_root_source_and_owned_authority_distinct_from_enrollment() {
     let c = contract("diagnostic-worker-trust-input-contract.toml");
     assert_eq!(
