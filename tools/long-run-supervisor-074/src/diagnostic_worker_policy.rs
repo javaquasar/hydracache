@@ -16,6 +16,10 @@ const GROUP_LIMIT: usize = 32;
 pub mod authority_registry;
 
 #[cfg(target_os = "linux")]
+#[path = "diagnostic_worker_trust_input.rs"]
+pub mod trusted_input;
+
+#[cfg(target_os = "linux")]
 #[path = "diagnostic_intent_projection.rs"]
 pub mod intent_projection;
 

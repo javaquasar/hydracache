@@ -3,6 +3,97 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_worker_trust_input_keeps_root_source_and_owned_authority_distinct_from_enrollment() {
+    let c = contract("diagnostic-worker-trust-input-contract.toml");
+    assert_eq!(
+        c["input_schema"].as_str(),
+        Some("diagnostic-worker-trust-input-074-v1")
+    );
+    assert_eq!(
+        c["fixed_path"].as_str(),
+        Some("/etc/hydracache-perf/worker-trust-074.json")
+    );
+    assert_eq!(c["max_document_bytes"].as_integer(), Some(2048));
+    for key in [
+        "selected_separate_worker_issuer_required",
+        "external_policy_body_pin_and_nonzero_epoch_required",
+        "canonical_unknown_duplicate_future_refusal",
+        "root_owned_nofollow_original_ancestry_required",
+        "single_link_nonexecutable_regular_document_required",
+        "original_file_metadata_and_bytes_rechecked",
+        "bounded_fragmented_interrupted_read_refusal",
+        "config_journal_policy_journal_config_bracket",
+        "same_active_original_authority_revision_and_epoch",
+        "original_mutable_config_and_authority_borrows_retained",
+        "original_envelope_and_asserted_context_retained",
+        "no_revalidation_replacement_arguments",
+        "failure_latches_all_original_runtime_inputs",
+        "no_raw_policy_trust_fd_or_fixture_export",
+        "actual_nonroot_constructor_refusal_checked",
+        "positive_cases_are_private_nonroot_models",
+        "host_context_is_still_asserted",
+        "runtime_refusal_is_not_durable_revocation",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "current_production_policy_body_pin_selected",
+        "current_production_authority_epoch_selected",
+        "actual_production_trust_file_created",
+        "initial_host_namespace_enrolled",
+        "kernel_context_controller_replay_fence_join_complete",
+        "authenticated_original_start",
+        "whole_writer_cgroup_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "host_modified",
+        "real_private_key_read_or_production_policy_signed",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"),
+    )
+    .unwrap();
+    for required in [
+        "O_NOFOLLOW",
+        "O_NONBLOCK",
+        "O_CLOEXEC",
+        "worker_issuer_key()",
+        "authority.latch_refusal()",
+        "PhantomData<Rc<()>>",
+        "policy: CheckedWorkerPolicy",
+        "input: &'s mut WorkerTrustInput",
+        "authority: &'a mut FixedAuthorityRegistry",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "O_CREAT",
+        "O_TRUNC",
+        "create_dir",
+        "remove_file",
+        "std::env::",
+        "pub fn fixture",
+        "pub fn start",
+        "pub fn path",
+        "pub fn file",
+        "impl Clone",
+        "pub fn into_worker_policy",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("trusted_input"));
+}
+
+#[test]
 fn diagnostic_starting_intent_retains_original_anchor_without_execution() {
     let c = contract("diagnostic-starting-intent-local-contract.toml");
     for key in [

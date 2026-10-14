@@ -194,6 +194,7 @@ fn reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment
     assert_ne!(key_hex, CONTROLLER_KEY_HEX);
     assert_ne!(key_hex, BUILDER_KEY_HEX);
     let key = diagnostic_builder::decode_key(key_hex).unwrap();
+    assert_eq!(reviewed::worker_issuer_key().unwrap(), key);
     assert!(!key.is_weak());
     assert_eq!(
         selection["public_key_sha256"],

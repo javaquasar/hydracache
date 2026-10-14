@@ -11,6 +11,13 @@ pub const BUILDER_KEY_HEX: &str =
     "39215088b0102dffb987b937efa9f49a6c5c7704192fa1f16b4e19ccad12c3ba";
 pub const BUILDER_POLICY_SHA256: &str =
     "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22";
+pub const WORKER_ISSUER_KEY_HEX: &str =
+    "e7bd73d40638095eb7fdb3d03eec3c36af688d185fd750b83fc3ee81683a2f59";
+
+/// Separately selected local issuer; no policy pin, epoch or host enrollment default.
+pub fn worker_issuer_key() -> Result<VerifyingKey, ArtifactError> {
+    diagnostic_builder::decode_key(WORKER_ISSUER_KEY_HEX)
+}
 
 /// Decode the previously approved public key, without a caller-selected override.
 /// This does not attest current revocation status or an installed controller.
