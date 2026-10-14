@@ -8083,3 +8083,44 @@ custody and pre-exposure bootstrap remain the next owners. Those must be joined
 to the retained request through real token coordination before original
 receiver/replay/fence/start and all-writer cessation can open server execution.
 This step changes local verification discipline, not measured cache throughput.
+
+### Retain the file object rather than trusting its name
+
+Once a separate signer statement exists, the next seam is the filesystem input.
+A receipt and a pathname can continue to look identical while the named object
+has changed. The local Linux reader now holds the directory and six original
+file descriptors, walks components with read-only no-follow openat, and refuses
+unexpected names, unsafe metadata or nonregular/multilink children. The selection
+and directory owners remain explicitly asserted; this is not production enrollment.
+
+The hypothesis is about object identity rather than speed: rechecking a bundle
+must refuse an equal-byte replacement inode, not merely a different hash. Each
+recheck compares named files with original descriptors, streams original hashes,
+and brackets dev/inode, owner/mode/link/length and mtime/ctime plus directory
+membership. These metadata timestamps detect observed changes; they do not
+supply authority ordering. Hashing uses a fixed 64 KiB scratch buffer, and only
+the bounded receipt gets a temporary byte copy. Large binaries and logs do not
+become retained payload buffers.
+
+Tests perform actual replacements, in-place writes, restored names/bytes,
+symlinks, hardlinks, FIFOs, extra/missing entries and sparse over-budget files
+inside owned nonroot temporary directories. A private child check isolates
+equal-byte inode refusal even when the directory stamp also changed. It does
+not bypass the public guard. Seeded substitutions and independent concurrent
+guards check sticky refusal; CLOEXEC and post-drop inode observations check the
+original descriptor ownership. Chunk-boundary hashing and compile-fail/API checks
+cover read ceilings, empty inputs and the absence of FD or replacement exports.
+The first lint pass found two test-style errors, which were corrected without
+weakening lint or runtime predicates.
+
+This closes an original file-input seam, not the signer bootstrap. A successful
+check describes an observed interval and cannot make a later pathname exec
+atomic. Runtime/bootstrap manifests still contain opaque signed assertions;
+the reader has not identified a mapped executable, loader or shared libraries,
+authenticated trusted ancestry, selected production pins or acquired job custody.
+It returns inventory only and has no producer/CLI/start consumer. The
+[file design](../testing/performance/0.74/diagnostic-signer-bundle-design.md)
+and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-bundle-20261014/README.md)
+keep the real descriptor proof separate from those remaining pre-exposure
+bootstrap requirements. No credential, server launch or throughput claim is
+authorized by the synthetic receipt or its original file handles.

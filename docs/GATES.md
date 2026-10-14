@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 original signer-file retention has fast Linux library cases
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_bundle -- --test-threads=1`
+and an API check in the existing registered kernel-binding target. Real owned
+fixture descriptors, streamed hashes, sticky drift and no export are checked;
+issuer selection, trusted ancestry and mapped executable/runtime stay asserted
+or absent. No manual SIGKILL or execution gate is added. See the
+[original file contract](testing/performance/0.74/diagnostic-signer-bundle-contract.toml).
+
 W11's separate signer-build model has the portable fast integration target
 `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_build --locked`.
 It verifies synthetic signatures and supplied-byte consistency under explicitly

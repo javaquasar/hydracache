@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original signer-file reader](diagnostic-signer-bundle-design.md) now keeps
+seven real Linux descriptors and checks exact names, metadata and streamed
+hashes with sticky refusal. Equal-byte replacement is not the original inode.
+The [local packet](local-runs/diagnostic-signer-bundle-20261014/README.md) uses
+owned nonroot synthetic bundles only: this is file-input consistency, not
+trusted production ancestry, mapped executable/runtime or bootstrap authority.
+
 The separate [signer build model](diagnostic-signer-build-design.md) now verifies
 a dedicated receipt domain/role and matching supplied artifact/context bytes.
 Known controller/observer-builder/worker-issuer keys refuse that role. Selection
