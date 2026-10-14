@@ -1,0 +1,24 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.81s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+maps_mutation_seed=0x07403b2a cases=256 memory_attested=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_seeded_parser_inputs_do_not_panic ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_require_exact_selected_file_and_pseudo_identities ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop ... ok
+rooted_original_exec_and_exact_install=same_child selected_VMA_file_ids=4 memory_attested=false handoff=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement ... ok
+owned_rooted_exec_SIGKILL=initial,rooted,first_exec,installed original_reaped=true tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily ... ok
+rooted_exec_seed=0x07403b2a fresh_execs=8 independent_owners=4 parent_root_changed=false actual_multithread_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 781 filtered out; finished in 17.75s
+

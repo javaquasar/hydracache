@@ -8473,3 +8473,52 @@ exact installation, then constrain later root/namespace changes before dummy
 handoff. Independent job/runtime custody, actual tracer loss, worker start and
 all-writer cessation remain separate. No cache-performance result follows from
 this test-apparatus change.
+
+## Joining the selected root, original exec and installation (2026-10-15)
+
+The next hypothesis concerned composition rather than speed: would the original
+GNU helper still start from the retained root and reach the exact existing filter,
+without the launcher quietly relying on host loader paths? Separate root probes
+and separate exec/filter tests could not answer that. A successful path probe
+does not show which objects an actual loader maps, and a successful host exec
+does not show that the selected root participates in that invocation.
+
+The new private test owner therefore creates its own root and child, retains the
+original pidfd and observes the complete local chain. Child-only user maps/root,
+capability removal and no_new_privs precede original descriptor exec. At the
+kernel exec event, the original signer, root/cwd, namespace, credentials, single
+task, empty environment and closed input FDs must match. At first exec only
+signer/loader file identities may appear; at installation entry and zero exit,
+all four selected images must appear. Kernel-reported device/inode, ranges,
+offsets and supported permissions are parsed under fixed bounds. The
+[proc maps manual](https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html)
+defines those metadata fields; they are not the mapped memory's authenticated bytes.
+
+The existing helper and its 34 instructions remain unchanged. Original stack
+header/program addresses are captured once and checked against all 272 bytes at
+filter entry and zero exit, then non-dumpable hardening and existing native exec
+denial complete in this same child. The useful change is evidence continuity:
+the root proof, original invocation and installation no longer refer to different
+helpers. This still does not create a production acceptance token or credential
+channel. No arbitrary root, PID, command or acceptance bit is accepted by the owner.
+
+Three eleven-case repeats pass, including real SIGKILL at initial, rooted,
+first-exec and installed boundaries, sticky refusals, phase/replay, installer
+faults and namespace/environment/tree/hash drift. Each repeat has eight seeded
+fresh execs and four independent owners. Parser mutations, 75 previous regressions,
+MSRV, portability, strict lint, normal-library exclusion and 142 root contracts
+also pass. Development failures are retained: missing owner, missing Write import
+and strict Clippy's nested-if rejection. They are not counted as successful fault
+probes. The [design](../testing/performance/0.74/diagnostic-signer-rooted-exec-design.md)
+and [source-bound packet](../testing/performance/0.74/local-runs/diagnostic-signer-rooted-exec-20261015/README.md)
+separate these failed steps from final repeated results.
+
+The important negative finding is that the unchanged policy still allows later
+root/namespace mutations. Rejecting those operations during traced startup is
+not equivalent to filtering them after installation. That is the next isolated
+hypothesis, before dummy handoff or actual tracer-loss testing. The rooted fd
+probe also stays deferred: its unchanged helper requires /proc/self/exe, absent
+from the mount-free root; no convenient proc mount or helper rewrite hides this
+gap. Independent runtime/issuer/job custody, memory attestation, authenticated
+worker start, all writers and later lifecycle cells remain open. No allocation,
+throughput or latency improvement was measured in this apparatus-only slice.

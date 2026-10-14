@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [selected-root original-exec composition](diagnostic-signer-rooted-exec-design.md)
+now observes original descriptor exec, selected kernel VMA file identities and
+the unchanged exact filter installation in one owned child. Three eleven-case
+repeats, Rust1.88, 75 prior regressions and portability/contract checks pass;
+the [local rooted-exec packet](local-runs/diagnostic-signer-rooted-exec-20261015/README.md)
+retains compilation/lint failures separately from final results. Actual SIGKILL
+covers initial/rooted/first-exec/installed boundaries. This is not memory
+attestation, independent custody or post-install namespace/root confinement.
+Next isolate that late-mutation policy, then dummy handoff and actual tracer loss;
+credentials, worker/all-writer completion and server/qualification stay closed.
+Earlier packets below retain their narrower source-specific claims.
+
 The [owned child root fixture](diagnostic-signer-root-design.md) now proves
 child-only nonroot user-map/root/capability mechanics and fixed path/inode
 selection without mounts or host-root operations. Three seven-case repeats,

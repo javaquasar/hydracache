@@ -1,0 +1,41 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.29s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 7 tests
+test diagnostic_signer_root_fixture::tests::signer_root_bounded_mapping_and_credentials_refuse_unknown_or_weakened_forms ... ok
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+test diagnostic_signer_root_fixture::tests::signer_root_cleanup_uses_original_directory_fds_not_replaced_ancestors ... ok
+owned_nonroot_child_root=selected_inode namespace=child_only caps=zero host_paths=absent signer_exec=false custody=false
+test diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch ... ok
+owned_root_SIGKILL=initial,rooted original_child_reaped=true signer_exec=false tracer_loss_proved=false
+test diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse ... ok
+test diagnostic_signer_root_fixture::tests::signer_root_exact_tree_files_and_hash_drift_refuse_stickily ... ok
+test diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse ... ok
+seed=0x07403b29 rooted_path_probes=8 independent_owners=4 parent_root_changed=false signer_exec=false
+test diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 774 filtered out; finished in 7.64s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.59s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 9 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+inherited_writer_counterexample=ETXTBSY whole_writer_revocation=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse ... ok
+pre_install_exec=entry_refused original_child_reaped=true new_image_not_dispatched=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch ... ok
+fresh_exec_and_exact_install=same_owned_child credential_handoff=false runtime_custody=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child ... ok
+owned_child_SIGKILL_boundaries=first_exec,installed no_handoff=true tracer_loss_proved=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries ... ok
+image_preparation_writer=isolated_copy_child stopped_parent_snapshot_does_not_block_exec=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse ... ok
+seed=0x07403b27 fresh_exec_install_probes=8 independent_tracer_threads=4 production_multithreading=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 772 filtered out; finished in 1.74s
+
