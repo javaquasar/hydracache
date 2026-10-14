@@ -7813,3 +7813,26 @@ the GitHub history asserted by the controller. That distinct provenance input,
 durable nonce consumption and common original fence remain prerequisites before
 authenticated start, watchdog and whole-writer cessation. No wire schema, real
 policy/epoch, selected key, frozen qualification input or server entry changes.
+
+### Select an independent source for controller origin
+
+The workflow audit exposes a protocol distinction, not a missing field to copy.
+The current qualification job signs campaign start/attach/seal/abort with a
+UUID request ID and 300-second authorization; diagnostic requests use a distinct
+domain, nonce, lease identity and at most 60 seconds. The separate builder
+receipt authenticates a fixed build statement, but its signed fields do not
+include controller run or workflow identity. Artifact names and unsigned
+environment observations cannot bridge these boundaries.
+
+The [proposed origin decision](../testing/performance/0.74/diagnostic-controller-provenance-decision.md)
+recommends retaining the controller signature and adding independently verified
+GitHub OIDC evidence. GitHub supports job-origin claims and custom audience
+selection; see its [OIDC reference](https://docs.github.com/en/actions/reference/security/oidc).
+Our proposed audience would bind the same original request digest, with separate
+reviewed workflow and verification-key pins. Unknown/stale keys and origin,
+request or time mismatches would refuse rather than select downloaded trust.
+This is an additional trust architecture awaiting approval, not implemented
+provenance or a successful server gate. Offline public-key custody/rotation and
+the dedicated diagnostic signing job still require review. Even after origin
+verification, durable replay/common fence and original-start/writer revocation
+must establish their own authority; a token does not consume a request nonce.

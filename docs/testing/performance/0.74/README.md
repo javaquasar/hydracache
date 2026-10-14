@@ -38,6 +38,10 @@ same signed request. It neither verifies installed executable bytes nor authenti
 controller GitHub run metadata; replay/fence and execution admission remain closed.
 Its [local evidence](local-runs/diagnostic-controller-build-input-20261014/README.md)
 retains repeated binding checks, all development failures and unchanged frozen inputs.
+The [controller provenance decision](diagnostic-controller-provenance-decision.md)
+proposes additional GitHub OIDC origin verification. Approval is required before
+introducing its new trust source or signing-job permission; no provenance producer
+or replay/start admission follows from the existing builder receipt.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.
