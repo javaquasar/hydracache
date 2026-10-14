@@ -171,3 +171,72 @@ fn reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins() {
         }
     });
 }
+
+#[test]
+fn reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment() {
+    use ed25519_dalek::Signature;
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::WorkerPolicyTrust;
+    const RAW: &[u8] = include_bytes!(
+        "../../../docs/testing/performance/0.74/diagnostic-worker-issuer-public.json"
+    );
+    let selection: serde_json::Value = serde_json::from_slice(RAW).unwrap();
+    assert_eq!(
+        selection["schema_version"],
+        "diagnostic-worker-issuer-key-selection-074-v1"
+    );
+    assert_eq!(selection["algorithm"], "Ed25519");
+    assert_eq!(selection["purpose"], "diagnostic-worker-policy-only");
+    let key_hex = selection["public_key_hex"].as_str().unwrap();
+    assert_eq!(
+        key_hex,
+        "e7bd73d40638095eb7fdb3d03eec3c36af688d185fd750b83fc3ee81683a2f59"
+    );
+    assert_ne!(key_hex, CONTROLLER_KEY_HEX);
+    assert_ne!(key_hex, BUILDER_KEY_HEX);
+    let key = diagnostic_builder::decode_key(key_hex).unwrap();
+    assert!(!key.is_weak());
+    assert_eq!(
+        selection["public_key_sha256"],
+        ArtifactDigest::of(&key.to_bytes()).sha256
+    );
+    assert_eq!(
+        selection["public_key_sha256"],
+        "c714e1038a081ed841dd183e2814ce647c85e6bafaf43943bffb1e2378786cad"
+    );
+    let decode = |text: &str| -> Vec<u8> {
+        assert_eq!(text.len() % 2, 0);
+        text.as_bytes()
+            .chunks_exact(2)
+            .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+            .collect()
+    };
+    let message = b"hydracache-diagnostic-worker-key-selfcheck-074-v1\0not-a-worker-policy\n";
+    assert_eq!(
+        decode(selection["selfcheck_message_hex"].as_str().unwrap()),
+        message
+    );
+    let signature = Signature::from_slice(&decode(
+        selection["selfcheck_signature_hex"].as_str().unwrap(),
+    ))
+    .unwrap();
+    key.verify_strict(message, &signature).unwrap();
+    assert!(key
+        .verify_strict(
+            b"hydracache-diagnostic-worker-policy-074-v1\0not-a-worker-policy\n",
+            &signature
+        )
+        .is_err());
+    assert!(reviewed::controller_key()
+        .unwrap()
+        .verify_strict(message, &signature)
+        .is_err());
+    for field in ["worker_policy_signed", "host_enrolled", "admission_allowed"] {
+        assert_eq!(selection[field], false);
+    }
+    assert!(selection["policy_epoch"].is_null());
+    assert!(selection["worker_policy_body_sha256"].is_null());
+    assert!(WorkerPolicyTrust::new(key, "", 0).is_err());
+    let mut canonical = serde_json::to_vec(&selection).unwrap();
+    canonical.push(b'\n');
+    assert_eq!(RAW, canonical);
+}
