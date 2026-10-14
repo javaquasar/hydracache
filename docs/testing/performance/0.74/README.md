@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [pre-server closure checklist](pre-server-closure-checklist-20261014.md)
+tracks the remaining P1/P2/P3 production integration and exact-host gates.
+The [kernel admission path](diagnostic-kernel-admission-design.md) now receives
+per-message credentials/pidfd and original-scope kernel time, but independently
+selected controller/builder/worker issuer pins are still required before trust
+enrollment. This is not an installed start/completion or server-ready receipt.
+The [kernel packet](local-runs/diagnostic-kernel-admission-20261014/README.md)
+retains 36 raw captures, including compiler/lint negatives, three reviewed
+fast repeats and three actual inherited-sender/SIGKILL proofs.
+
 The [collector amendment](diagnostic-collector-design.md), approved 2026-10-14,
 keeps worker output in pipes and reserves future evidence-file writing for a
 root-owned collector. The local implementation now moves real pipe bytes into

@@ -48,6 +48,14 @@ for any durable change. P0 success alone does not close P1.
 
 ## P2 Trusted peer time and external authority
 
+Implementation `f2dbbe64c0fbf0a0eeca3bf6e8e2177188bc7f67` adds the separate
+[kernel input path](diagnostic-kernel-admission-design.md): one recvmsg binds
+payload to kernel credentials and original sender pidfd, with proc/namespace
+and kernel-clock checks. Portable model and campaign APIs remain unchanged.
+P2 stays open until independent production issuer/digest/epoch and host trust
+are loaded and joined to original authority/fence admission. See the
+[pre-server checklist](pre-server-closure-checklist-20261014.md).
+
 Connect peer credentials from the original kernel IPC context rather than caller
 assertions. Bind controller provenance, admitted host/boot/namespace/account
 context, bounded freshness checks and monotonic lease/progress authority. Never

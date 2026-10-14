@@ -7539,3 +7539,46 @@ revocation still need connection. Only their joined evidence can publish
 completion, advance cells two through four and admit a host lifecycle rehearsal.
 No product hot path, frozen workload, estimator, threshold or qualification
 input changes in this package.
+
+### Receiving the original sender instead of an asserted peer
+
+The next missing dependency was P2 input provenance. The old portable diagnostic
+handler accepts peer IDs and time as caller inputs; using that seam in production
+would make the admission decision depend on assertions. Even kernel SO_PEERCRED
+is insufficient to identify each message: the
+[Unix socket contract](https://man7.org/linux/man-pages/man7/unix.7.html)
+describes connection-time credentials, while an inherited socket can be used by
+another process later.
+
+The new diagnostic-only receiver consumes the original seqpacket connection
+and requires SO_PASSCRED and SO_PASSPIDFD. One recvmsg binds the payload to
+credentials and the original message sender's pidfd. It rejects descriptor
+passing, unknown controls, duplicates, truncation and invalid size, closing all
+received descriptors on refusal. The existing campaign receiver remains intact.
+Missing kernel capabilities cause a refusal, not a peercred fallback. The
+[kernel SCM implementation](https://raw.githubusercontent.com/torvalds/linux/v6.6/include/net/scm.h)
+explains the message PID reference; capability-authorized explicit credentials
+still require independently trusted signature/principal admission.
+
+An actual local child inherits a socket whose SO_PEERCRED identifies the parent.
+Its packet nevertheless identifies the child and supplies the child's retained
+pidfd. After owned SIGKILL that original packet refuses, while a separate parent
+packet remains live. This checks original-message identity rather than a numeric
+PID reopened after death. Supplementary groups come from the retained original
+live process projection, bracketed by pidfd and context checks, not JSON or an
+unguarded fresh PID lookup.
+
+Clock input is also produced locally. The receiver retains procfs boot identity
+and user/mount/PID/time namespace handles, then samples CLOCK_BOOTTIME for elapsed
+lease time and CLOCK_REALTIME only for signature freshness. Boot/namespace drift,
+clock reversal and a packet held for 60 seconds refuse. Signed boot identity must
+match the observed kernel boot. These facts describe the original receiver
+namespace; they do not independently enroll the physical host or supply an
+authority epoch.
+
+The package still requires operator-selected production public keys and exact
+policy digest/epoch pins. No fixture seed or envelope-supplied verifier can replace
+that selection. Authenticated original start, the private root collector,
+watchdog/cgroup revocation, completion and cells two through four remain open
+integration tasks in the [pre-server checklist](../testing/performance/0.74/pre-server-closure-checklist-20261014.md).
+Kernel-input success cannot turn those dependencies into an admitted server run.

@@ -1,0 +1,416 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-kernel-admission-local-20261014",
+  "baseline_source": "5483ae1c0d37dc925c464662c1f88c8db83e150a",
+  "preregistration_source": "b485fd18871f355446cb060d9f5a10d0524d0eaf",
+  "implementation_source": "f2dbbe64c0fbf0a0eeca3bf6e8e2177188bc7f67",
+  "source_files": [
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "200f37565e90683582ef7ebc055847c4922418856b87d4f81490d16a0d6d61aa"
+    },
+    {
+      "path": "docs/GATES.md",
+      "sha256_lf": "3cadcc9784f857ccc8f5afa6455624a73824337cdf0f611d9c14fcc0d307842a"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256_lf": "4b02847357233b98ef9b5338b72337171ac674cffd84b5c3908a3d1db0c7ca65"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "e8ae7cf00a94be225ed756be40f6136a05fb1a7e8e4d4ab1af95b1b01a418308"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/unix_transport.rs",
+      "sha256_lf": "0b3325ed3cd1fa0fe733945a09317294153983c1e5ce62fa9a9578bea8a3940c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/unix_transport.rs",
+      "sha256_lf": "20ab1ad6487bf5b44a482280696a9d87e872a01b09dda5b668f4484fe90cf92e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "sha256_lf": "75fb755db3bb8fdd8c8c99b043efaa0005389bf5c8104d7c5c06644f2a7b98f1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs",
+      "sha256_lf": "57fd733e42f58f96a7a79a109d5fa8e1c54d8093d6eb80dce72d41ba23b275e1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs",
+      "sha256_lf": "b5206f8051330c11f7979f6afd61376054fd5c2ca38030e60b2bdbf40972543d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "sha256_lf": "e50dc0d26aaa178eaee7ae9b7a4a90ffde643173bbcb5033e9818a9a6ec3f925"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "verifier_sha256_lf": "0a0bf629fa54426e131c3733724d4d199bd57ab658cfb53684d457f0b16a86d3",
+  "captures": [
+    {
+      "id": "baseline",
+      "path": "baseline.log",
+      "bytes": 2845,
+      "sha256": "29bcf736c46d8619b80845551d7ad2df005bef5c3b5ddd70daf87cac84c8847b",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test unix_transport --test diagnostic_ipc"
+    },
+    {
+      "id": "book",
+      "path": "book.log",
+      "bytes": 151,
+      "sha256": "f1fb880c5491d6ae4f5c37f9f0eceafdf369bc1fddeed4371f33d619dec04d60",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "C:/Users/ArturBuzov/.cargo/bin/mdbook.exe build docs-site"
+    },
+    {
+      "id": "collector-regression",
+      "path": "collector-regression.log",
+      "bytes": 2503,
+      "sha256": "ebfb12bf57c294e6902cc21c609e4b78b9d3bbea8baa5d703335f47c111789b4",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_collector -- --test-threads=1"
+    },
+    {
+      "id": "corrected-tests",
+      "path": "corrected-tests.log",
+      "bytes": 2989,
+      "sha256": "1f5d1325b510297035f046e86034aa0f97c78180f42f61521c5772808d323258",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test unix_transport"
+    },
+    {
+      "id": "doc-check",
+      "path": "doc-check.log",
+      "bytes": 45,
+      "sha256": "e59f9abab91748881d6276a0dde72d52222fb4dd0bd0957c6e26b64643c43242",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "target/debug/xtask.exe doc-check"
+    },
+    {
+      "id": "doctests",
+      "path": "doctests.log",
+      "bytes": 14169,
+      "sha256": "98002750e62ee9f04d12b1cd09c799a5e398516ac1c7c674fd11cf1b45e80588",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --doc"
+    },
+    {
+      "id": "fast-1",
+      "path": "fast-1.log",
+      "bytes": 2131,
+      "sha256": "1e0633f5b0ed91f62ec53878d1ff19e16d91a9a0375e5199a516b6a8d00bbaab",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "fast-2",
+      "path": "fast-2.log",
+      "bytes": 2131,
+      "sha256": "853fe3f7aa69f3ba3a127d803f63e020460fef80044949d0b28f8417445ab7db",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "fast-3",
+      "path": "fast-3.log",
+      "bytes": 2131,
+      "sha256": "0846477c89e7310ed4e4d91335b2303bf9e423a7c2b3afb3afd4ee23541fa2b5",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "final-reviewed",
+      "path": "final-reviewed.log",
+      "bytes": 3122,
+      "sha256": "d57686aa0d35707bf1ce29743e0247cefda4fb289c2e103dc6542cc32a9bb73e",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings"
+    },
+    {
+      "id": "first-tests",
+      "path": "first-tests.log",
+      "bytes": 10934,
+      "sha256": "e1f3c46212c09b12f325f12e2bdca6787d9dd8ca300e928a965e38b3d184751b",
+      "expected_exit": 0,
+      "observed_exit": 101,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1; cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test unix_transport"
+    },
+    {
+      "id": "format",
+      "path": "format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -- --check"
+    },
+    {
+      "id": "gated-check",
+      "path": "gated-check.log",
+      "bytes": 61,
+      "sha256": "fde0aa314ed6ffd482a0e8a4736858cf2be7cb04d1833125c5bd99aa7cf788e9",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "target/debug/xtask.exe gated-test-check"
+    },
+    {
+      "id": "linux-check",
+      "path": "linux-check.log",
+      "bytes": 193,
+      "sha256": "1f21fee9a88296620bca123b6b56795844992e2e338c9100b3f378f1df5ca340",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked"
+    },
+    {
+      "id": "linux-clippy",
+      "path": "linux-clippy.log",
+      "bytes": 193,
+      "sha256": "e1f44b634c19b2efe6d2e4a9cba4999cb90a0c56a659cbbe41c2665114539dae",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings"
+    },
+    {
+      "id": "linux-msrv",
+      "path": "linux-msrv.log",
+      "bytes": 193,
+      "sha256": "7c0be13a1993ab2827b9195fe1fb3478864c89b2db0c15e5997b78a389fbbb64",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked"
+    },
+    {
+      "id": "manual-1",
+      "path": "manual-1.log",
+      "bytes": 751,
+      "sha256": "299a9ce805fe08b187781798ae4ef7d6d2a42428f3badf2f817093066d834200",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "manual-final-1",
+      "path": "manual-final-1.log",
+      "bytes": 608,
+      "sha256": "5d85e15e00d214b58909825bf16e639caba56cfb5b173401f5428dba8eaf030f",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "manual-final-2",
+      "path": "manual-final-2.log",
+      "bytes": 608,
+      "sha256": "6abd2fe23d0b107582db8c2a78950f9fe44e29a6daddfa181fe545dde20c1574",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "manual-final-3",
+      "path": "manual-final-3.log",
+      "bytes": 608,
+      "sha256": "8a54627b1b5d049452010082a7822bda91a2464db06ab006e33d076899f8cc84",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "performance-contract",
+      "path": "performance-contract.log",
+      "bytes": 61,
+      "sha256": "d156cc3782779d3ac3026705f49efe03556440a05c63de6e1bf0ae58c5203467",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "target/debug/xtask.exe performance-contract-check --release 0.74"
+    },
+    {
+      "id": "red",
+      "path": "red.log",
+      "bytes": 631,
+      "sha256": "99b90623f3dbfdbc789a4c70013308720a89b85d40591350e59bbe6bd586498f",
+      "expected_exit": 101,
+      "observed_exit": 101,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test unix_transport diagnostic_kernel_receive_uses_message_sender_and_kernel_time -- --exact"
+    },
+    {
+      "id": "review-tests-clippy",
+      "path": "review-tests-clippy.log",
+      "bytes": 3225,
+      "sha256": "3dced54fa9147a6c008209fae74715e0d770126beb9ec8a0870c5e41a7e1dfc9",
+      "expected_exit": 0,
+      "observed_exit": 101,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1; cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings"
+    },
+    {
+      "id": "reviewed-fast-1",
+      "path": "reviewed-fast-1.log",
+      "bytes": 2131,
+      "sha256": "77634a76f5ef9e87876d706265be14b66838f37c30b6ff09ac66be3b7f53eaaa",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "reviewed-fast-2",
+      "path": "reviewed-fast-2.log",
+      "bytes": 2131,
+      "sha256": "bd14593013dc4d82851e729b21126dc52e3f8855c9152f627089f1ecd4810e29",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "reviewed-fast-3",
+      "path": "reviewed-fast-3.log",
+      "bytes": 2131,
+      "sha256": "0c78836134b02aba3f14b9680e14776e41afb258fbafc97ac870715a4c38a85e",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel -- --test-threads=1"
+    },
+    {
+      "id": "reviewed-manual-1",
+      "path": "reviewed-manual-1.log",
+      "bytes": 631,
+      "sha256": "b9fdaad7d7d72b9855b0692b52c02c7789db6f5d1ed78a67e6ccc36dd7ce4d3d",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "reviewed-manual-2",
+      "path": "reviewed-manual-2.log",
+      "bytes": 631,
+      "sha256": "18b87961fe672bb59e3cc7f1fc13b74991f7cfa8916d774ad7f6f73f26f4a256",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "reviewed-manual-3",
+      "path": "reviewed-manual-3.log",
+      "bytes": 631,
+      "sha256": "55f0ae65655072dd590233939112c24bd5ae7cba0d7f769a0c74adfe4912d6bc",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --lib diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill -- --ignored --exact --nocapture --test-threads=1"
+    },
+    {
+      "id": "root-contracts",
+      "path": "root-contracts.log",
+      "bytes": 12587,
+      "sha256": "e3697cc22ad034623238c2312b9c25add54225a80eec44c48b732f33f77a08e8",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p xtask --locked --test gated_tests --test release_evidence --test performance_contract_074"
+    },
+    {
+      "id": "ship-refusal",
+      "path": "ship-refusal.log",
+      "bytes": 191,
+      "sha256": "fda7f109f86cbf084c21df6cab51fff85988697621132535c10352d93faf618b",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "command": "target/debug/xtask.exe performance-contract-check --release 0.74 --require-ship"
+    },
+    {
+      "id": "transport-regression",
+      "path": "transport-regression.log",
+      "bytes": 2876,
+      "sha256": "e98229ec54526566cf3f97b0b823af7b5be2d8239b98ed6260e20a9fa1389c5c",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test unix_transport --test diagnostic_ipc"
+    },
+    {
+      "id": "windows-check",
+      "path": "windows-check.log",
+      "bytes": 190,
+      "sha256": "fcf63306d9e106723ce5f662cf608b4247b105bb667c707bb639f84a07d0b7d7",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked"
+    },
+    {
+      "id": "windows-clippy",
+      "path": "windows-clippy.log",
+      "bytes": 190,
+      "sha256": "cb0b6912e7e9bf14f9e80366c71a1069b0a6f5c448a53c632098fe431edb350a",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked -- -D warnings"
+    },
+    {
+      "id": "windows-msrv",
+      "path": "windows-msrv.log",
+      "bytes": 190,
+      "sha256": "ae77932b05785a48fbf33c52463b063e7c3354342ac1c7baf8e3e8e39ca1a75a",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked"
+    },
+    {
+      "id": "root-artifacts-final",
+      "path": "root-artifacts-final.log",
+      "bytes": 1356,
+      "sha256": "39956bf0ece5cd8acc154d8776520d5936668c10ae1edae4a525ab4b41e90232",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "command": "cargo +1.94.0 test -p xtask --locked --test release_evidence"
+    }
+  ],
+  "capture_count": 36,
+  "server_operation": false,
+  "production_enrollment": false,
+  "linux_command_prefix": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never CARGO_TERM_WIDTH=120; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; ",
+  "profile_environment": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never"
+}

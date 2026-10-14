@@ -1,0 +1,45 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 16.89s
+     Running tests/diagnostic_ipc.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_ipc-5d1bcd880fd8a377)
+
+running 22 tests
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test local_seqpacket_denies_non_allowlisted_kernel_peer_without_marker ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test linked_ledger_is_refused_and_mode_is_private ... ok
+test local_seqpacket_uses_kernel_peer_credentials_without_production_route ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.51s
+
+     Running tests/unix_transport.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/unix_transport-b2a9c5d5fc40091b)
+
+running 9 tests
+test bounded_accept_rejects_zero_and_excessive_timeouts ... ok
+test bounded_receive_rejects_zero_and_excessive_timeouts ... ok
+test bounded_accept_returns_a_ready_connection_without_waiting_for_deadline ... ok
+test enforces_packet_limit_socket_mode_and_exclusive_path ... ok
+test diagnostic_kernel_receive_uses_message_sender_and_kernel_time ... ok
+test preserves_packet_boundaries_and_reports_exact_peer_credentials ... ok
+test rejects_overlong_socket_path_before_creating_any_file ... ok
+test bounded_accept_returns_none_without_a_connection ... ok
+test bounded_receive_times_out_and_preserves_the_next_packet ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

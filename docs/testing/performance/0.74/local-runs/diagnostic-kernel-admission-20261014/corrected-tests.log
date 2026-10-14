@@ -1,0 +1,37 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 15.76s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 12 tests
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_actual_sender_and_nonblocking_empty_receive ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_authentication_has_no_caller_peer_or_time ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_empty_disconnect_and_socket_option_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_exact_budget_and_oversized_packet_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_received_rights_close_all_copies_on_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_seeded_status_mutations_refuse_wrong_credentials ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_signature_principal_and_clock_refusals_are_sticky ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_wrong_socket_type_refuses_without_fallback ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 636 filtered out; finished in 0.08s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 10.76s
+     Running tests/unix_transport.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/unix_transport-b2a9c5d5fc40091b)
+
+running 9 tests
+test enforces_packet_limit_socket_mode_and_exclusive_path ... ok
+test preserves_packet_boundaries_and_reports_exact_peer_credentials ... ok
+test bounded_receive_rejects_zero_and_excessive_timeouts ... ok
+test bounded_accept_rejects_zero_and_excessive_timeouts ... ok
+test bounded_accept_returns_a_ready_connection_without_waiting_for_deadline ... ok
+test diagnostic_kernel_receive_uses_message_sender_and_kernel_time ... ok
+test rejects_overlong_socket_path_before_creating_any_file ... ok
+test bounded_accept_returns_none_without_a_connection ... ok
+test bounded_receive_times_out_and_preserves_the_next_packet ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
