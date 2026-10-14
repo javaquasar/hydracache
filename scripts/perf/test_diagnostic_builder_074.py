@@ -46,8 +46,23 @@ class DiagnosticBuilderTests(unittest.TestCase):
 
     def test_fixed_inputs_require_actual_frozen_hashes(self):
         root = Path(__file__).resolve().parents[2]
-        real = builder.checked_inputs(root, root / "docs/testing/performance/0.74/rental-pilot-draft")
-        self.assertEqual(set(real), set(builder.HASHES))
+        # The coordinator's source is the frozen observer checkout, not the new
+        # controller tooling with two direct crypto dependency edges.
+        current = (root / "Cargo.lock").read_text().replace("\r\n", "\n")
+        marker = '[[package]]\nname = "hydracache-long-run-supervisor-074"'
+        before, rest = current.split(marker, 1)
+        package, after = rest.split("\n[[package]]", 1)
+        package = package.replace('\n "base64",', '').replace('\n "ring",', '')
+        frozen = (before + marker + package + "\n[[package]]" + after).encode()
+        self.assertEqual(hashlib.sha256(frozen).hexdigest(), builder.HASHES["Cargo.lock.root"])
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            observer = source / "tools/get-owner-scheduled-controls-074"
+            observer.mkdir(parents=True)
+            (source / "Cargo.lock").write_bytes(frozen)
+            (observer / "Cargo.lock").write_bytes((root / "tools/get-owner-scheduled-controls-074/Cargo.lock").read_bytes())
+            real = builder.checked_inputs(source, root / "docs/testing/performance/0.74/rental-pilot-draft")
+            self.assertEqual(set(real), set(builder.HASHES))
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaises(ValueError):
                 builder.checked_inputs(Path(temp), Path(temp))
