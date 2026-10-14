@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The local [retained producer API](diagnostic-retained-producer-design.md) now
+signs the original opaque preparation without reopening request/policy/receipt
+files and refuses audience substitution before key IO. Token coordination and
+independent prebuilt-signer custody remain separate; no protected job is enabled.
+The [local evidence](local-runs/diagnostic-retained-producer-20261014/README.md)
+retains the baseline, missing-API refusal, three repeats and unchanged host inputs.
+
 The local [OIDC roster v2](diagnostic-oidc-roster-design.md) now supports one
 through eight explicitly configured keys while preserving v1 and original
 whole-chain refusal. This removes the single-key schema limitation, not actual

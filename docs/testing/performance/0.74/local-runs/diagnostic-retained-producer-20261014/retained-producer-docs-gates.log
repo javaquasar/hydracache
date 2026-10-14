@@ -1,0 +1,20 @@
+doc-check: OK (releases.toml is consistent)
+gated-test-check: OK (169 discovered gates, all registered)
+performance-contract-check 0.74: OK (local, non-promotable)
+performance-contract-check 0.74: 0.74 ship admission is closed while candidate identity and release qualification are incomplete
+Error: "performance-contract-check 0.74 found 1 problem(s)"
+Checked 51 markdown files and 20 external includes for local links.
+ INFO Book building has started
+ INFO Running the html backend
+ INFO HTML book written to `C:\Workspace\prj\jq\cashe\hydracache-074\docs-site\book`
+warning: in the working copy of 'crates/xtask/tests/performance_contract_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/articles/007-optimization-starts-with-measurement.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-controller-job-preparation.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-controller-producer-operator.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/pre-server-closure-checklist-20261014.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_controller_producer_tests.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs', LF will be replaced by CRLF the next time Git touches it

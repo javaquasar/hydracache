@@ -87,6 +87,9 @@ now has a [configured original-input verifier](diagnostic-oidc-input-design.md).
 The existing campaign signing workflow cannot produce a diagnostic packet.
 The separate [job-side producer](diagnostic-controller-producer-operator.md)
 prepares/signs the existing diagnostic body and derives its request-bound audience.
+Its [retained signing API](diagnostic-retained-producer-design.md) now avoids
+public-file rereads and requires the earlier audience before key IO. This is
+not actual token coordination, signer/bootstrap custody or receiver admission.
 Local synthetic signatures and offline public discovery/JWKS inspection do not
 authenticate acquisition, select actual workflow/key policy or mint a real token.
 The [separate acquisition tool](diagnostic-oidc-acquisition-design.md) now bounds

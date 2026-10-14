@@ -1,0 +1,210 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0425]: cannot find function `sign_prepared_files_selected` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:56:9
+   |
+56 |   ...   ...s_selected(pr...
+   |         ...^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:37:1
+   |
+37 | / fn s...
+38 | |     ...
+39 | |     ...
+40 | |     ...
+...  |
+65 | |     ...
+66 | | }
+   | |_- similarly named function `sign_files_selected` defined here
+   |
+help: a function with a similar name exists
+   |
+56 -         sign_prepared_files_selected(prepared, &audience, &key_path, &output, &key.verifying_key()).unwrap();
+56 +         sign_files_selected(prepared, &audience, &key_path, &output, &key.verifying_key()).unwrap();
+   |
+
+error[E0425]: cannot find function `sign_prepared_files` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:71:22
+   |
+71 |   ...s!(sign_prepared......
+   |         ^^^^^^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:6:1
+   |
+ 6 | / pub ...
+ 7 | |     ...
+ 8 | |     ...
+ 9 | |     ...
+...  |
+24 | |     ...
+25 | | }
+   | |_- similarly named function `prepare_files` defined here
+   |
+help: a function with a similar name exists
+   |
+71 -     assert!(matches!(sign_prepared_files(replacement, original.audience(), &dir.path().join("absent-key"), &output), Err(ProducerError::Invalid)));
+71 +     assert!(matches!(prepare_files(replacement, original.audience(), &dir.path().join("absent-key"), &output), Err(ProducerError::Invalid)));
+   |
+
+error[E0425]: cannot find function `sign_prepared_files` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:83:26
+   |
+83 |   ...s!(sign_prepared_files(pr...
+   |         ^^^^^^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:6:1
+   |
+ 6 | / pub ...
+ 7 | |     ...
+ 8 | |     ...
+ 9 | |     ...
+...  |
+24 | |     ...
+25 | | }
+   | |_- similarly named function `prepare_files` defined here
+   |
+help: a function with a similar name exists
+   |
+83 -         assert!(matches!(sign_prepared_files(prepared, &audience, &dir.path().join("absent-key"), &output), Err(ProducerError::Invalid)));
+83 +         assert!(matches!(prepare_files(prepared, &audience, &dir.path().join("absent-key"), &output), Err(ProducerError::Invalid)));
+   |
+
+error[E0425]: cannot find function `sign_prepared_files` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:92:22
+   |
+92 |   ...s!(sign_prepared......
+   |         ^^^^^^^^^^^^^^^^^^^
+   |
+  ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:6:1
+   |
+ 6 | / pub ...
+ 7 | |     ...
+ 8 | |     ...
+ 9 | |     ...
+...  |
+24 | |     ...
+25 | | }
+   | |_- similarly named function `prepare_files` defined here
+   |
+help: a function with a similar name exists
+   |
+92 -     assert!(matches!(sign_prepared_files(prepared, &audience, &dir.path().join("absent-key"), &output), Err(ProducerError::Time)));
+92 +     assert!(matches!(prepare_files(prepared, &audience, &dir.path().join("absent-key"), &output), Err(ProducerError::Time)));
+   |
+
+error[E0425]: cannot find function `sign_prepared_files` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:105:22
+    |
+105 |   ...s!(sign_prepare...r...
+    |         ^^^^^^^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:6:1
+    |
+  6 | / pub ...
+  7 | |     ...
+  8 | |     ...
+  9 | |     ...
+...   |
+ 24 | |     ...
+ 25 | | }
+    | |_- similarly named function `prepare_files` defined here
+    |
+help: a function with a similar name exists
+    |
+105 -     assert!(matches!(sign_prepared_files(prepare(), &audience, &key_path, &output), Err(ProducerError::Key)));
+105 +     assert!(matches!(prepare_files(prepare(), &audience, &key_path, &output), Err(ProducerError::Key)));
+    |
+
+error[E0425]: cannot find function `sign_prepared_files_selected` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:107:5
+    |
+107 |    ...iles_selected(pr...
+    |    ...^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:37:1
+    |
+ 37 | / fn s...
+ 38 | |     ...
+ 39 | |     ...
+ 40 | |     ...
+...   |
+ 65 | |     ...
+ 66 | | }
+    | |_- similarly named function `sign_files_selected` defined here
+    |
+help: a function with a similar name exists
+    |
+107 -     sign_prepared_files_selected(prepare(), &audience, &key_path, &output, &key.verifying_key()).unwrap();
+107 +     sign_files_selected(prepare(), &audience, &key_path, &output, &key.verifying_key()).unwrap();
+    |
+
+error[E0425]: cannot find function `sign_prepared_files_selected` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:109:22
+    |
+109 |   ...s!(sign_prepare...r...
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:37:1
+    |
+ 37 | / fn s...
+ 38 | |     ...
+ 39 | |     ...
+ 40 | |     ...
+...   |
+ 65 | |     ...
+ 66 | | }
+    | |_- similarly named function `sign_files_selected` defined here
+    |
+help: a function with a similar name exists
+    |
+109 -     assert!(matches!(sign_prepared_files_selected(prepare(), &audience, &key_path, &output, &key.verifying_key()), Err(ProducerError::File)));
+109 +     assert!(matches!(sign_files_selected(prepare(), &audience, &key_path, &output, &key.verifying_key()), Err(ProducerError::File)));
+    |
+
+error[E0425]: cannot find function `sign_prepared_files_selected` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:112:22
+    |
+112 |   ...s!(sign_prepare...r...
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:37:1
+    |
+ 37 | / fn s...
+ 38 | |     ...
+ 39 | |     ...
+ 40 | |     ...
+...   |
+ 65 | |     ...
+ 66 | | }
+    | |_- similarly named function `sign_files_selected` defined here
+    |
+help: a function with a similar name exists
+    |
+112 -     assert!(matches!(sign_prepared_files_selected(prepare(), &audience, &key_path, &dir.path().join("other"), &key.verifying_key()), Err(ProducerError::File)));
+112 +     assert!(matches!(sign_files_selected(prepare(), &audience, &key_path, &dir.path().join("other"), &key.verifying_key()), Err(ProducerError::File)));
+    |
+
+error[E0425]: cannot find function `sign_prepared_files_selected` in this scope
+   --> tools/long-run-supervisor-074/src/diagnostic_retained_producer_tests.rs:128:5
+    |
+128 |    ...iles_selected(pr...
+    |    ...^^^^^^^^^^^^^
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs:37:1
+    |
+ 37 | / fn s...
+ 38 | |     ...
+ 39 | |     ...
+ 40 | |     ...
+...   |
+ 65 | |     ...
+ 66 | | }
+    | |_- similarly named function `sign_files_selected` defined here
+    |
+help: a function with a similar name exists
+    |
+128 -     sign_prepared_files_selected(prepared, &audience, &key_path, &output, &key.verifying_key()).unwrap();
+128 +     sign_files_selected(prepared, &audience, &key_path, &output, &key.verifying_key()).unwrap();
+    |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 9 previous errors

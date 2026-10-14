@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.06s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_controller_producer::linux::tests::producer_linux_checks_public_request_before_opening_any_secret ... ok
+test diagnostic_controller_producer::linux::tests::producer_linux_private_synthetic_output_is_exclusive_and_never_real_controller ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_bad_audience_and_expiry_refuse_before_key_io ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_public_entry_keeps_controller_pin_and_exclusive_output ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_seeded_body_replacements_and_independent_preparations ... seed=0x07403b21 retained_body_cases=32 independent_preparations=4 actual_token_or_signer_custody=false
+ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_signs_original_body_after_public_files_change_or_disappear ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_valid_other_body_with_previous_audience_refuses_before_key ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... seed=0x07562074 signed_model_requests=32 independent_preparations=4 real_controller_signing=false
+ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 705 filtered out; finished in 1.80s
+

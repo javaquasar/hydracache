@@ -8009,3 +8009,34 @@ and [local evidence](../testing/performance/0.74/local-runs/diagnostic-oidc-rost
 keep reader support distinct from actual issuer/job
 enrollment. The next producer owners are authenticated prebuilt-signer custody
 and retaining one immutable request through audience, token retrieval and signing.
+
+### Retain the request before coordinating credentials
+
+The next producer change isolates body consistency from credential authority.
+Two standalone CLI invocations can read different public files even when their
+filenames match. The new local signing API instead consumes the earlier opaque
+preparation, recomputes its canonical body digest and verified builder identity,
+and checks its stored and observed audience before opening a signing key. It
+takes no replacement request, builder-policy or receipt path.
+
+The hypothesis is directly falsifiable: alter or remove every public input after
+preparation and the synthetic signature must still bind the original body and
+audience. Pair a different valid preparation with the earlier audience and it
+must refuse before even opening an absent secret file. Tests exercise both,
+plus expiry, malformed audiences, selected-key purpose, exclusive output and
+seeded caller-buffer replacement. The existing key metadata, clock brackets and
+signed wire domain remain; ownership consumption does not become durable replay
+protection. The old file CLI delegates internally but its separate commands still
+reread files.
+
+This closes the retained file-signing seam, not actual token retrieval or origin
+verification. A future trusted coordinator must hold that same object through
+the real token exchange and validation. Bootstrap is independent: the frozen
+observer builder receipt does not attest the signer executable, and neither a
+self-reported executable hash nor the controller key can supply independent
+custody for code reading that controller key. No key-purpose expansion or
+production artifact/pin selection is made by the
+[retained producer](../testing/performance/0.74/diagnostic-retained-producer-design.md).
+The [local packet](../testing/performance/0.74/local-runs/diagnostic-retained-producer-20261014/README.md)
+retains repeatable synthetic body/signature results and unchanged original
+qualification inputs without claiming production origin or a performance gain.

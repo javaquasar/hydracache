@@ -56,6 +56,22 @@ refuse. Recreating preparation does not consume a durable nonce.
 
 ## Future protected job integration
 
+For a future in-process Linux coordinator, retain one preparation across the
+public audience step and signing:
+
+```rust,ignore
+let prepared = linux::prepare_files(request, policy, receipt)?;
+let audience = prepared.audience().to_owned();
+// Actual OIDC retrieval/verification and signer custody still need implementation.
+linux::sign_prepared_files(prepared, &audience, key, output)?;
+```
+
+The [retained API](diagnostic-retained-producer-design.md) takes no replacement
+public paths and consumes preparation on success or failure. It compares
+retained body/build/digest/audience before key IO. Audience text is consistency,
+not token verification or a bootstrap attestation. The separate CLI commands
+above still read files independently and must not be described as this coordinator.
+
 A separately reviewed job must freeze one request body, derive its audience,
 retrieve OIDC for that audience and sign that same body. It must independently
 bind exact repository/run/attempt/actor and reviewed workflow SHA/ref,

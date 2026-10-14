@@ -71,9 +71,12 @@ is not installed or automatically promoted into either runtime configuration.
    token environment names and is deliberately a different boundary.
 5. Validate run/attempt/actor/repository and exact workflow/subject/environment
    against the original body and independent selected issuer snapshot, then sign
-   that same retained body. Current audience/sign CLI calls reread files; the
-   future coordinator must prevent replacement across token retrieval/signing,
-   not merely promise identical filenames. Never log or archive raw tokens/keys.
+   that same retained body. Current audience/sign CLI calls reread files. The
+   local [retained signing API](diagnostic-retained-producer-design.md) now
+   consumes one prepared object and checks the earlier audience before key IO;
+   the future coordinator must keep that object through actual retrieval and
+   verification. Matching audience text alone is not token proof. Never log or
+   archive raw tokens/keys.
 6. Hand off only through the separately enrolled transport and original receiver
    chain. No SSH shell, arbitrary command, replacement body or direct fixture-to-
    start conversion. Timeout, uncertain delivery or lost acknowledgement retains
@@ -88,9 +91,11 @@ presented as two independent human reviews.
 
 ## Code and tests still required
 
-The producer validates/signs job bytes; it does not yet implement token retrieval,
-immutable cross-step body retention, an authenticated receiver transport or a
-protected-job receipt. Preregister each before implementation. Cover denied
+The producer validates/signs retained job bytes, including body/audience
+consistency without public-file reopening. It does not yet implement token
+retrieval/verification coordination, signer/bootstrap custody, an authenticated
+receiver transport or a protected-job receipt. Preregister each before
+implementation. Cover denied
 permissions/protection, wrong workflow/source/subject, key rotation/unknown kid,
 audience/body substitution, rerun attribution, token/packet expiry, disconnect,
 lost ack and no raw credential retention. Positive local models cannot replace
