@@ -3,6 +3,80 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_controller_build_binds_reviewed_statement_without_execution_or_run_provenance() {
+    let c = contract("diagnostic-controller-build-input-contract.toml");
+    for key in [
+        "fixed_reviewed_builder_policy_required",
+        "original_signed_request_identity_required",
+        "original_controller_mutable_borrow_retained",
+        "bounded_original_policy_receipt_bytes_owned",
+        "original_context_brackets_receipt_verification",
+        "same_statement_and_identity_on_revalidation",
+        "all_original_runtime_inputs_latch_on_failure",
+        "healthy_drop_preserves_originals",
+        "no_trust_identity_revalidation_or_export_override",
+        "positive_cases_use_public_receipt_and_synthetic_controller_worker",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "installed_executable_contents_verified",
+        "github_controller_provenance_independently_verified",
+        "actual_root_source_or_worker_enrollment",
+        "durable_replay_or_common_fence_admitted",
+        "runtime_refusal_is_durable_revocation",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "private_key_read_or_production_policy_signed",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        "diagnostic_reviewed_trust::load_builder_policy",
+        "&self.request.identity",
+        "original: &'r mut SignedControllerInput",
+        "self.original.revalidate()?",
+        "self.original.latch_refusal()",
+        "checked.statement() != self.build.statement()",
+        "policy_bytes.to_vec()",
+        "receipt_bytes.to_vec()",
+    ] {
+        assert!(runtime.contains(marker), "{marker}");
+    }
+    for marker in [
+        "pub fn start",
+        "pub fn into_",
+        "pub fn identity",
+        "pub fn statement",
+        "pub fn fixture",
+        "O_CREAT",
+        "std::env::",
+        "impl Clone",
+        "load_policy(",
+        "initialize_fixed_registry",
+        "sign_build(",
+    ] {
+        assert!(!runtime.contains(marker), "{marker}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("ControllerBuildInput") && !server.contains("bind_reviewed_build"));
+}
+
+#[test]
 fn diagnostic_controller_trust_is_fixed_principals_not_provenance_replay_or_start() {
     let c = contract("diagnostic-controller-trust-input-contract.toml");
     assert_eq!(

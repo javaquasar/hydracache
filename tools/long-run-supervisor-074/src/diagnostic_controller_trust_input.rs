@@ -2,6 +2,9 @@
 use super::*;
 use crate::diagnostic_ipc::{DiagnosticPolicy, DiagnosticRequest};
 
+#[path = "diagnostic_controller_build_input.rs"]
+pub mod build_input;
+
 pub const CONTROLLER_INPUT_SCHEMA: &str = "diagnostic-controller-trust-input-074-v1";
 pub const FIXED_CONTROLLER_PATH: &str = "/etc/hydracache-perf/controller-trust-074.json";
 const CONTROLLER_FILE: &str = "controller-trust-074.json";
@@ -198,6 +201,10 @@ pub struct SignedControllerInput<'c, 'b, 's, 'a, 'p> {
     request_sha256: String,
 }
 impl SignedControllerInput<'_, '_, '_, '_, '_> {
+    fn latch_refusal(&mut self) {
+        self.controller.refused = true;
+        self.worker.latch_refusal();
+    }
     pub fn request_sha256(&self) -> &str {
         &self.request_sha256
     }
@@ -222,8 +229,7 @@ impl SignedControllerInput<'_, '_, '_, '_, '_> {
             self.worker.revalidate()
         })();
         if result.is_err() {
-            self.controller.refused = true;
-            self.worker.latch_refusal();
+            self.latch_refusal();
         }
         result
     }

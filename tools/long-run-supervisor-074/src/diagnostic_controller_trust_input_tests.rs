@@ -21,13 +21,13 @@ fn line(value: &impl Serialize) -> Vec<u8> {
     raw.push(b'\n');
     raw
 }
-struct Model {
+pub(super) struct Model {
     root: TempDir,
-    key: SigningKey,
+    pub(super) key: SigningKey,
     document: ControllerDocument,
 }
 impl Model {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let root = tempfile::tempdir().unwrap();
         fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
         fs::create_dir(root.path().join("etc")).unwrap();
@@ -49,7 +49,7 @@ impl Model {
         model.write();
         model
     }
-    fn path(&self) -> PathBuf {
+    pub(super) fn path(&self) -> PathBuf {
         self.root
             .path()
             .join("etc/hydracache-perf")
@@ -59,7 +59,7 @@ impl Model {
         fs::write(self.path(), line(&self.document)).unwrap();
         fs::set_permissions(self.path(), fs::Permissions::from_mode(0o600)).unwrap();
     }
-    fn input(&self) -> ControllerTrustInput {
+    pub(super) fn input(&self) -> ControllerTrustInput {
         ControllerTrustInput {
             source: ControllerSource::open(self.root.path(), uid(), &self.key.verifying_key())
                 .unwrap(),
@@ -67,7 +67,7 @@ impl Model {
             _original_thread: PhantomData,
         }
     }
-    fn request(&self) -> DiagnosticRequest {
+    pub(super) fn request(&self) -> DiagnosticRequest {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -99,7 +99,7 @@ impl Model {
             expires_at_unix_seconds: now + 60,
         }
     }
-    fn sign(&self, request: DiagnosticRequest, key: &SigningKey) -> Vec<u8> {
+    pub(super) fn sign(&self, request: DiagnosticRequest, key: &SigningKey) -> Vec<u8> {
         let signature = key.sign(&diagnostic_ipc::signing_message(&request).unwrap());
         line(&SignedDiagnosticRequest {
             request,
