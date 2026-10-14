@@ -9,7 +9,7 @@ use std::rc::Rc;
 
 #[path = "diagnostic_oidc_profile.rs"]
 mod profile;
-use profile::{verify, Profile, MAX_TOKEN};
+use profile::{verify, TrustProfile, MAX_ROSTER_BYTES, MAX_TOKEN};
 
 pub const FIXED_OIDC_PATH: &str = "/etc/hydracache-perf/oidc-trust-074.json";
 const FILE: &str = "oidc-trust-074.json";
@@ -31,7 +31,7 @@ struct Source {
     root: Directory,
     ancestors: Vec<Directory>,
     snapshot: Snapshot,
-    profile: Profile,
+    profile: TrustProfile,
     uid: u32,
 }
 impl Source {
@@ -49,15 +49,16 @@ impl Source {
             let parent = ancestors.last().map_or(&root.file, |d| &d.file);
             ancestors.push(Directory::new(child(parent, name, true)?, uid)?);
         }
-        let snapshot = Snapshot::new(
+        let snapshot = Snapshot::new_with_limit(
             child(
                 &ancestors.last().ok_or(OidcError::Invalid)?.file,
                 FILE,
                 false,
             )?,
             uid,
+            MAX_ROSTER_BYTES,
         )?;
-        let profile = Profile::decode(&snapshot.raw)?;
+        let profile = TrustProfile::decode(&snapshot.raw)?;
         let source = Self {
             root_name: root_name.into(),
             root,
@@ -81,8 +82,11 @@ impl Source {
             directory.same(&child(parent, name, true)?)?;
             parent = &directory.file;
         }
-        self.snapshot
-            .same(&Snapshot::new(child(parent, FILE, false)?, self.uid)?)?;
+        self.snapshot.same(&Snapshot::new_with_limit(
+            child(parent, FILE, false)?,
+            self.uid,
+            MAX_ROSTER_BYTES,
+        )?)?;
         Ok(())
     }
 }

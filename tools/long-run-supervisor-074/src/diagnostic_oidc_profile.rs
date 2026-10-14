@@ -5,6 +5,9 @@ use serde::{de::MapAccess, Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 
 pub(super) const SCHEMA: &str = "diagnostic-oidc-trust-input-074-v1";
+const ROSTER_SCHEMA: &str = "diagnostic-oidc-trust-input-074-v2";
+pub(super) const MAX_ROSTER_BYTES: usize = 8192;
+pub(super) const MAX_ROSTER_KEYS: usize = 8;
 pub(super) const ISSUER: &str = "https://token.actions.githubusercontent.com";
 pub(super) const WORKFLOW: &str = "javaquasar/hydracache/.github/workflows/diagnostic-controller-074.yml@refs/heads/feat/0.74-resp-native-throughput";
 pub(super) const ENVIRONMENT: &str = "performance-diagnostic-controller-074";
@@ -35,6 +38,44 @@ pub(super) struct Profile {
     pub snapshot_expires_at: u64,
     pub key: Key,
 }
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct RosterProfile {
+    schema_version: String,
+    repository_id: u64,
+    issuer: String,
+    workflow_ref: String,
+    workflow_sha: String,
+    environment: String,
+    subject: String,
+    snapshot_not_before: u64,
+    snapshot_expires_at: u64,
+    keys: Vec<Key>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+pub(super) enum TrustProfile {
+    V1(Profile),
+    V2(RosterProfile),
+}
+
+pub(super) struct SelectedProfile<'a> {
+    repository_id: u64,
+    issuer: &'a str,
+    workflow_ref: &'a str,
+    workflow_sha: &'a str,
+    environment: &'a str,
+    subject: &'a str,
+    snapshot_not_before: u64,
+    snapshot_expires_at: u64,
+    key: &'a Key,
+}
+
+pub(super) trait KeyPolicy {
+    fn select(&self, kid: &str) -> Result<SelectedProfile<'_>, OidcError>;
+}
 fn bounded_text(s: &str, max: usize) -> bool {
     !s.is_empty() && s.len() <= max && !s.chars().any(char::is_control)
 }
@@ -49,6 +90,20 @@ fn segment(s: &str, max: usize) -> Result<Vec<u8>, OidcError> {
     Ok(raw)
 }
 impl Profile {
+    fn selected(&self) -> SelectedProfile<'_> {
+        SelectedProfile {
+            repository_id: self.repository_id,
+            issuer: &self.issuer,
+            workflow_ref: &self.workflow_ref,
+            workflow_sha: &self.workflow_sha,
+            environment: &self.environment,
+            subject: &self.subject,
+            snapshot_not_before: self.snapshot_not_before,
+            snapshot_expires_at: self.snapshot_expires_at,
+            key: &self.key,
+        }
+    }
+    #[cfg(test)]
     pub(super) fn decode(raw: &[u8]) -> Result<Self, OidcError> {
         if raw.is_empty() || raw.len() > 2048 {
             return Err(OidcError::Invalid);
@@ -56,11 +111,19 @@ impl Profile {
         let p: Self = serde_json::from_slice(raw).map_err(|_| OidcError::Invalid)?;
         let mut canonical = crate::canonical_json(&p).map_err(|_| OidcError::Invalid)?;
         canonical.push(b'\n');
+        if canonical != raw || p.schema_version != SCHEMA {
+            return Err(OidcError::Invalid);
+        }
+        p.selected().validate()?;
+        Ok(p)
+    }
+}
+impl SelectedProfile<'_> {
+    fn validate(&self) -> Result<(), OidcError> {
+        let p = self;
         let n = segment(&p.key.n, 684)?;
         let e = segment(&p.key.e, 4)?;
-        if canonical != raw
-            || p.schema_version != SCHEMA
-            || p.repository_id != crate::diagnostic_builder::REPOSITORY_ID
+        if p.repository_id != crate::diagnostic_builder::REPOSITORY_ID
             || p.issuer != ISSUER
             || p.workflow_ref != WORKFLOW
             || p.environment != ENVIRONMENT
@@ -69,7 +132,7 @@ impl Profile {
                 .workflow_sha
                 .bytes()
                 .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-            || !bounded_text(&p.subject, 256)
+            || !bounded_text(p.subject, 256)
             || p.snapshot_not_before == 0
             || p.snapshot_expires_at <= p.snapshot_not_before
             || !bounded_text(&p.key.kid, 128)
@@ -83,7 +146,82 @@ impl Profile {
         {
             return Err(OidcError::Invalid);
         }
-        Ok(p)
+        Ok(())
+    }
+}
+impl KeyPolicy for Profile {
+    fn select(&self, kid: &str) -> Result<SelectedProfile<'_>, OidcError> {
+        if kid != self.key.kid {
+            return Err(OidcError::Invalid);
+        }
+        Ok(self.selected())
+    }
+}
+impl RosterProfile {
+    fn selected<'a>(&'a self, key: &'a Key) -> SelectedProfile<'a> {
+        // The selected key always belongs to this retained configured roster.
+        SelectedProfile {
+            repository_id: self.repository_id,
+            issuer: &self.issuer,
+            workflow_ref: &self.workflow_ref,
+            workflow_sha: &self.workflow_sha,
+            environment: &self.environment,
+            subject: &self.subject,
+            snapshot_not_before: self.snapshot_not_before,
+            snapshot_expires_at: self.snapshot_expires_at,
+            key,
+        }
+    }
+}
+impl TrustProfile {
+    pub(super) fn decode(raw: &[u8]) -> Result<Self, OidcError> {
+        if raw.is_empty() || raw.len() > MAX_ROSTER_BYTES {
+            return Err(OidcError::Invalid);
+        }
+        let profile: Self = serde_json::from_slice(raw).map_err(|_| OidcError::Invalid)?;
+        let mut canonical = crate::canonical_json(&profile).map_err(|_| OidcError::Invalid)?;
+        canonical.push(b'\n');
+        if canonical != raw {
+            return Err(OidcError::Invalid);
+        }
+        match &profile {
+            Self::V1(p) => {
+                if raw.len() > 2048 || p.schema_version != SCHEMA {
+                    return Err(OidcError::Invalid);
+                }
+                p.selected().validate()?;
+            }
+            Self::V2(p) => {
+                if p.schema_version != ROSTER_SCHEMA
+                    || !(1..=MAX_ROSTER_KEYS).contains(&p.keys.len())
+                    || p.keys.windows(2).any(|pair| pair[0].kid >= pair[1].kid)
+                {
+                    return Err(OidcError::Invalid);
+                }
+                let mut material = std::collections::BTreeSet::new();
+                for key in &p.keys {
+                    p.selected(key).validate()?;
+                    if !material.insert((&key.n, &key.e)) {
+                        return Err(OidcError::Invalid);
+                    }
+                }
+            }
+        }
+        Ok(profile)
+    }
+}
+impl KeyPolicy for TrustProfile {
+    fn select(&self, kid: &str) -> Result<SelectedProfile<'_>, OidcError> {
+        match self {
+            Self::V1(p) => p.select(kid),
+            Self::V2(p) => {
+                let index = p
+                    .keys
+                    .binary_search_by(|key| key.kid.as_str().cmp(kid))
+                    .map_err(|_| OidcError::Invalid)?;
+                Ok(p.selected(&p.keys[index]))
+            }
+        }
     }
 }
 #[derive(Deserialize)]
@@ -154,7 +292,7 @@ impl Claims {
     }
 }
 pub(super) fn verify(
-    profile: &Profile,
+    profile: &impl KeyPolicy,
     token: &[u8],
     request: &crate::diagnostic_ipc::DiagnosticRequest,
     request_hash: &str,
@@ -170,9 +308,10 @@ pub(super) fn verify(
     }
     let h: Header =
         serde_json::from_slice(&segment(parts[0], 1024)?).map_err(|_| OidcError::Invalid)?;
-    if h.alg != "RS256" || h.typ != "JWT" || h.kid != profile.key.kid {
+    if h.alg != "RS256" || h.typ != "JWT" {
         return Err(OidcError::Invalid);
     }
+    let profile = profile.select(&h.kid)?;
     let payload = segment(parts[1], 12288)?;
     let signature = segment(parts[2], 684)?;
     let n = segment(&profile.key.n, 684)?;

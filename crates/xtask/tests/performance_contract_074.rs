@@ -182,6 +182,90 @@ fn diagnostic_producer_is_job_data_and_offline_inspection_never_enrolls_trust() 
 }
 
 #[test]
+fn diagnostic_oidc_roster_v2_is_bounded_compatible_and_not_enrollment() {
+    let c = contract("diagnostic-oidc-roster-contract.toml");
+    for (key, value) in [
+        ("max_source_bytes", 8192),
+        ("max_v1_document_bytes", 2048),
+        ("max_v2_document_bytes", 8192),
+        ("min_roster_keys", 1),
+        ("max_roster_keys", 8),
+        ("max_token_bytes", 16384),
+        ("max_token_lifetime_seconds", 600),
+        ("original_request_packet_hold_seconds", 60),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for key in [
+        "canonical_version_specific_shape_required",
+        "v1_reader_and_single_key_behavior_preserved",
+        "strict_sorted_unique_kids_required",
+        "duplicate_modulus_exponent_refused",
+        "token_kid_selects_configured_member_only",
+        "one_selected_key_signature_no_try_all",
+        "unknown_key_and_stale_snapshot_refuse",
+        "original_source_drift_latches_without_refresh",
+        "worker_controller_source_budget_unchanged",
+        "original_claims_clock_and_whole_chain_refusal_preserved",
+        "positive_rosters_and_principals_are_synthetic",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_public_snapshot_promoted_to_trust",
+        "actual_private_key_read",
+        "actual_token_requested_or_verified",
+        "trust_config_installed",
+        "protected_job_created_or_dispatched",
+        "automatic_network_refresh",
+        "durable_nonce_or_fence_admission",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let profile = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "diagnostic-oidc-trust-input-074-v2",
+        "raw.len() > 2048",
+        "MAX_ROSTER_KEYS: usize = 8",
+        "pair[0].kid >= pair[1].kid",
+        "material.insert",
+        "binary_search_by",
+        "profile.select(&h.kid)?",
+    ] {
+        assert!(profile.contains(marker), "{marker}");
+    }
+    assert!(!profile.contains("reqwest") && !profile.contains("std::net::"));
+    let snapshot = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"),
+    )
+    .unwrap();
+    assert!(snapshot.contains("MAX_TRUST_BYTES: usize = 2048"));
+    assert!(snapshot.contains("Self::new_with_limit(file, uid, MAX_TRUST_BYTES)"));
+    assert!(snapshot.contains("self.limit != named.limit"));
+    let controller = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs"),
+    )
+    .unwrap();
+    assert!(!controller.contains("new_with_limit"));
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("bind_oidc") && !server.contains("TrustProfile"));
+}
+
+#[test]
 fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_start() {
     let c = contract("diagnostic-oidc-input-contract.toml");
     assert_eq!(c["max_trust_bytes"].as_integer(), Some(2048));

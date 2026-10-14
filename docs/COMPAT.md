@@ -1,5 +1,20 @@
 # HydraCache Compatibility Register
 
+The additional opt-in `diagnostic-oidc-trust-input-074-v2` reader accepts one
+through eight explicitly configured RSA/RS256 keys, strictly sorted by kid with
+duplicate modulus/exponent refusal, in at most 8192 canonical LF bytes. It uses
+the existing root-only OIDC path and required principal/snapshot fields, with
+`keys` instead of v1 `key`. Current readers preserve v1's 2048-byte document and
+single-key semantics; prior v1 readers reject v2 and unknown future versions.
+Only the original OIDC source observation uses the larger read budget; worker
+and controller configurations remain bounded to 2048 bytes. Mixed shapes,
+unknown keys, expired selection, unsafe metadata or source drift refuse without
+network refresh, key fallback or downgrade. No migration/writer installs trust;
+rotation and old-binary rollback require explicit reviewed configuration and new
+original enrollment. Signed domains, durable records, frozen qualification and
+server routes are unchanged. See the
+[roster design](testing/performance/0.74/diagnostic-oidc-roster-design.md).
+
 The opt-in `diagnostic-oidc-public-acquisition-074-v1` tool report is unsigned
 observation data, not a runtime trust configuration. It retains bounded raw public
 discovery/JWKS bodies as base64, source/CA-roster/peer certificate hashes, TLS

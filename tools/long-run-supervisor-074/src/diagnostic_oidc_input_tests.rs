@@ -1,4 +1,7 @@
 //! This RSA private test fixture is publicly committed, never a production key.
+#[path = "diagnostic_oidc_roster_tests.rs"]
+mod roster_tests;
+use super::profile::Profile;
 use super::*;
 use crate::diagnostic_ipc::DiagnosticRequest;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::tests::Model;

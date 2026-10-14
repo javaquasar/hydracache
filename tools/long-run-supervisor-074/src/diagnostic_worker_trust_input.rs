@@ -159,11 +159,17 @@ fn child(parent: &File, name: &str, directory: bool) -> Result<File, TrustInputE
     Ok(unsafe { File::from_raw_fd(fd) })
 }
 fn bounded_read(
-    mut read: impl FnMut(&mut [u8], u64) -> std::io::Result<usize>,
+    read: impl FnMut(&mut [u8], u64) -> std::io::Result<usize>,
 ) -> Result<Vec<u8>, TrustInputError> {
-    let mut bytes = vec![0; MAX_TRUST_BYTES + 1];
+    bounded_read_limit(read, MAX_TRUST_BYTES)
+}
+fn bounded_read_limit(
+    mut read: impl FnMut(&mut [u8], u64) -> std::io::Result<usize>,
+    limit: usize,
+) -> Result<Vec<u8>, TrustInputError> {
+    let mut bytes = vec![0; limit + 1];
     let mut offset = 0;
-    for _ in 0..MAX_TRUST_BYTES + 2 {
+    for _ in 0..limit + 2 {
         let count = match read(&mut bytes[offset..], offset as u64) {
             Ok(count) => count,
             Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
@@ -180,7 +186,7 @@ fn bounded_read(
             return Ok(bytes);
         }
         offset += count;
-        if offset > MAX_TRUST_BYTES {
+        if offset > limit {
             return Err(TrustInputError::Invalid);
         }
     }
@@ -190,9 +196,17 @@ struct Snapshot {
     file: File,
     stamp: FileStamp,
     raw: Vec<u8>,
+    limit: usize,
 }
 impl Snapshot {
     fn new(file: File, uid: u32) -> Result<Self, TrustInputError> {
+        Self::new_with_limit(file, uid, MAX_TRUST_BYTES)
+    }
+    // Private OIDC v2 extension. Existing source constructors keep the v1 limit.
+    fn new_with_limit(file: File, uid: u32, limit: usize) -> Result<Self, TrustInputError> {
+        if ![MAX_TRUST_BYTES, 8192].contains(&limit) {
+            return Err(TrustInputError::Invalid);
+        }
         let m = file.metadata()?;
         if !m.is_file()
             || m.uid() != uid
@@ -200,22 +214,32 @@ impl Snapshot {
             || m.mode() & 0o7133 != 0
             || m.mode() & 0o400 == 0
             || m.len() == 0
-            || m.len() > MAX_TRUST_BYTES as u64
+            || m.len() > limit as u64
         {
             return Err(TrustInputError::Invalid);
         }
         let stamp = FileStamp::of(&m);
-        let raw = bounded_read(|buffer, offset| file.read_at(buffer, offset))?;
+        let raw = if limit == MAX_TRUST_BYTES {
+            bounded_read(|buffer, offset| file.read_at(buffer, offset))?
+        } else {
+            bounded_read_limit(|buffer, offset| file.read_at(buffer, offset), limit)?
+        };
         if raw.len() as u64 != stamp.len || FileStamp::of(&file.metadata()?) != stamp {
             return Err(TrustInputError::Invalid);
         }
-        Ok(Self { file, stamp, raw })
+        Ok(Self {
+            file,
+            stamp,
+            raw,
+            limit,
+        })
     }
     fn same(&self, named: &Snapshot) -> Result<(), TrustInputError> {
-        if FileStamp::of(&self.file.metadata()?) != self.stamp
+        if self.limit != named.limit
+            || FileStamp::of(&self.file.metadata()?) != self.stamp
             || self.stamp != named.stamp
             || self.raw != named.raw
-            || bounded_read(|b, o| self.file.read_at(b, o))? != self.raw
+            || bounded_read_limit(|b, o| self.file.read_at(b, o), self.limit)? != self.raw
             || FileStamp::of(&self.file.metadata()?) != self.stamp
         {
             return Err(TrustInputError::Invalid);
