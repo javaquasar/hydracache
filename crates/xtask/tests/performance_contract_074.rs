@@ -11779,3 +11779,87 @@ fn diagnostic_attempt_publication_contract_requires_original_transfer_and_closed
             .unwrap();
     assert!(!server.contains("attempt_publication"));
 }
+#[test]
+fn signer_first_exec_fixture_is_test_only_and_cannot_grant_bootstrap_authority() {
+    let c = contract("diagnostic-signer-first-exec-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "owned_fork_child_never_adopted",
+        "post_fork_child_only_libc_then_exec_or_exit",
+        "inherited_nonselected_fds_closed_before_initial_stop",
+        "deterministic_foreign_writer_regression_retained",
+        "descriptor_execveat_with_empty_environment_except_fixed_fixture_values",
+        "exact_exec_event_required_before_continuation",
+        "retained_binary_compared_at_stopped_original_child",
+        "no_helper_output_before_first_continuation",
+        "same_and_different_inode_second_exec_stop_refuses",
+        "owned_pidfd_signal_and_exact_child_reaping",
+        "original_owner_thread_bound",
+        "no_dummy_or_real_credential_handoff_api",
+        "normal_library_has_no_fixture_launch_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "seccomp_installed",
+        "pre_syscall_exec_denial_proved",
+        "actual_tracer_loss_exitkill_proved",
+        "dynamic_runtime_or_memory_attested",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let lib =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/lib.rs")).unwrap();
+    assert!(lib.replace("\r\n", "\n").contains("#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\nmod diagnostic_signer_first_exec_fixture;"));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs"),
+    )
+    .unwrap();
+    for required in [
+        "PTRACE_O_TRACEEXEC",
+        "PTRACE_O_EXITKILL",
+        "SYS_execveat",
+        "AT_EMPTY_PATH",
+        "SYS_pidfd_send_signal",
+        "SYS_close_range",
+        "PhantomData<Rc<()>>",
+        "waitpid(self.pid",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub struct",
+        "pub fn",
+        "SigningKey",
+        "sign_prepared_files",
+        "serde",
+        "std::process::Command",
+        "waitpid(-1",
+        "PTRACE_ATTACH",
+        "PTRACE_DETACH",
+        "PTRACE_POKE",
+        "pub use",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "src/server.rs",
+        "src/bin/diagnostic_controller.rs",
+        "src/diagnostic_controller_producer_linux.rs",
+    ] {
+        let consumer =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074").join(path))
+                .unwrap();
+        assert!(!consumer.contains("first_exec_fixture"), "{path}");
+    }
+}

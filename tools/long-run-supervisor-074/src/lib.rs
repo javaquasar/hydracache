@@ -49,8 +49,11 @@ pub mod diagnostic_process;
 pub mod diagnostic_receipts;
 pub mod diagnostic_reviewed_trust;
 pub mod diagnostic_signer_build;
+// Owned local mechanics only; no launch symbols exist in a normal library.
 #[cfg(target_os = "linux")]
 pub mod diagnostic_signer_bundle;
+#[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
+mod diagnostic_signer_first_exec_fixture;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_spool;
 #[cfg(target_os = "linux")]

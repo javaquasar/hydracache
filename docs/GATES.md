@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11's approved first-exec prototype starts with ordinary Linux x86_64 library
+tests: `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_first_exec -- --nocapture`.
+It launches/signals/reaps only owned temporary helpers in a test-build-only
+module. Exact kernel exec stops, descriptor closure before the initial stop,
+same-inode exec and independent tracer-thread regressions are checked. Normal
+libraries expose no fixture launch symbol; root contracts keep consumers absent.
+No credential handoff, seccomp, actual tracer-loss proof, host mutation or manual
+gate is introduced. See the [first-exec contract](testing/performance/0.74/diagnostic-signer-first-exec-contract.toml).
+
 W11 signer executable object observation has fast Linux cases
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_executable -- --test-threads=1`
 plus an internal executable-only case and the existing registered API target.

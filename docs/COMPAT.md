@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The owned signer first-exec prototype is a private Linux x86_64 test-build
+module only. Normal libraries/CLIs have no new fixture launch symbols or API, and no durable,
+wire, signed-receipt, configuration or migration artifact changes. The fixture
+requires close_range for immediate inherited-FD closure and explicitly refuses
+when unavailable; this does not change supported production kernel policy.
+Original process scope, producer semantics and reviewed pins remain unchanged.
+See the [first-exec boundary](testing/performance/0.74/diagnostic-signer-first-exec-design.md).
+
 The Linux signer executable observation is a runtime-only borrowed guard, with
 no serialized/wire/durable schema or migration. It joins original asserted
 bundle files to an existing retained ProcessRead through a crate-private
