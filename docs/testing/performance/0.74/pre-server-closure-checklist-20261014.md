@@ -69,6 +69,13 @@ retains config/journal/policy, Probe and packet ownership through cross-refusal.
 Real production policy/epoch, source-opener/physical-host enrollment and
 controller provenance/replay/fence remain open; no execution route follows.
 
+The [controller principal input](diagnostic-controller-trust-input-design.md)
+adds the fixed root-owned configuration reader and an original signed-request
+guard borrowing the same worker/kernel chain. It verifies the selected signer's
+statement and actual peer/freshness, not independent GitHub/build provenance or
+nonce consumption. Real allowlists/configuration, worker policy/epoch and source
+enrollment remain unselected; durable replay/fence and P3 are still required.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

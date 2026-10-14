@@ -26,6 +26,12 @@ retention. Real local Linux observations with modeled config/journal do not
 establish installed-root enrollment, controller/replay/fence or start authority.
 Its [evidence](local-runs/diagnostic-worker-kernel-binding-20261014/README.md)
 retains actual-context checks, repeats and every development failure.
+The [fixed controller principal source](diagnostic-controller-trust-input-design.md)
+now binds an independently configured allowlist to the same original worker/kernel
+guard. Signature/peer/freshness observation is not independently verified GitHub
+run provenance or durable nonce/fence admission; actual configuration is not installed.
+The [controller input evidence](local-runs/diagnostic-controller-trust-input-20261014/README.md)
+retains the fixture restoration failure, repeated checks and unchanged frozen inputs.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.

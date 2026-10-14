@@ -7746,3 +7746,34 @@ authorization. Approved real policy/epoch and explicit journal enrollment remain
 required. Controller principals/provenance, durable replay/original fence, then
 authenticated collector start/watchdog/writer cessation are the next joins. No
 server route or numerical measurement is opened by this guard.
+
+### Load controller principals independently of the signed message
+
+Pinning a controller key is only part of principal admission. A caller-supplied
+actor/UID/GID allowlist could still select who is accepted. The new fixed source
+reads `controller-trust-074.json` under original root-owned no-follow ancestry
+and retains metadata and exact bounded bytes. Its separate canonical schema
+requires the reviewed key/repository and explicit sorted, unique bounded actor
+and nonroot client allowlists. Incoming signatures, worker policy, environment
+and selfchecks cannot populate or replace that source.
+
+The signed-request guard retains mutable borrows of that source and the original
+worker/kernel chain. Config checks bracket kernel signature/peer/boot/freshness
+verification, and revalidation must reproduce the same original request.
+Construction or later errors refuse controller, worker policy/config/journal
+and packet together. Healthy drop is observation only: reading the same packet
+again neither consumes a nonce nor authorizes another executor. A digest getter
+does not export request data or a start capability.
+
+Eight functional cases pass in three final repeats, with seeded disallowed actors
+and independent bindings. The first fixture restoration tried to rewrite its
+own read-only file; restoring test permissions before rewriting fixes that test
+without weakening production file checks. Synthetic signers and private nonroot
+trees exercise real local kernel peers, not actual installed allowlists or keys.
+
+A valid signature authenticates the selected signer's statement. GitHub run and
+actor metadata and the build hash still require independent provenance evidence;
+they are not facts supplied by the kernel or this reader. Durable replay and
+original fence/early-attempt acknowledgement remain the next ownership join,
+after real policy/epoch, principals and host/source enrollment. Only those
+producers can lead to authenticated original-start and whole-writer cessation.

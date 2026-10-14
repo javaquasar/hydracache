@@ -1,0 +1,60 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 20.94s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_constructor_uses_shared_nofollow_metadata_without_repairs ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_fixed_constructor_refuses_nonroot_and_has_exact_path ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_prior_refusal_or_source_failure_cross_latches_at_construction ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... seed=0x07532074 signed_disallowed_actors=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signature_actor_uid_gid_time_and_boot_refusals_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signed_roundtrip_retains_originals_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_source_worker_and_original_request_faults_stay_refused ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_strict_schema_principals_key_and_budget ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 671 filtered out; finished in 10.90s
+
+    Finished `test` profile [unoptimized] target(s) in 2.29s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_constructor_uses_shared_nofollow_metadata_without_repairs ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_fixed_constructor_refuses_nonroot_and_has_exact_path ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_prior_refusal_or_source_failure_cross_latches_at_construction ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... seed=0x07532074 signed_disallowed_actors=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signature_actor_uid_gid_time_and_boot_refusals_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signed_roundtrip_retains_originals_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_source_worker_and_original_request_faults_stay_refused ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_strict_schema_principals_key_and_budget ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 671 filtered out; finished in 11.09s
+
+    Finished `test` profile [unoptimized] target(s) in 1.49s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_constructor_uses_shared_nofollow_metadata_without_repairs ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_fixed_constructor_refuses_nonroot_and_has_exact_path ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_prior_refusal_or_source_failure_cross_latches_at_construction ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... seed=0x07532074 signed_disallowed_actors=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signature_actor_uid_gid_time_and_boot_refusals_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signed_roundtrip_retains_originals_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_source_worker_and_original_request_faults_stay_refused ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_strict_schema_principals_key_and_budget ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 671 filtered out; finished in 4.76s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 15.61s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `dev` profile [unoptimized] target(s) in 25.58s
+ Documenting hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 9.70s
+   Generated /home/artur/.cache/hydracache-074-manager-local-target/doc/hydracache_long_run_supervisor_074/index.html and 1 other file
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 12.15s

@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-controller-trust-input-20261014",
+  "baseline_source": "cbbae6499c6eccc902df99a8d1bc103c013a4f85",
+  "preregistration_source": "993050118cc5cfe43d6e27b2c1c705752035a4c5",
+  "implementation_source": "b59b717f5712bff43633532d4c59cf5f246f30b6",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "source_files": [
+    {
+      "sha256_lf": "45e5fef5f4a26fee13030c5cacc31953c322d26704742f0b1cd72b13584189b5",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs"
+    },
+    {
+      "sha256_lf": "a6fd354082aadea9761494747d882ca03f833c5e0ddd9731ce94b84121e7074d",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input_tests.rs"
+    },
+    {
+      "sha256_lf": "e877c33a4084d10ea59bf072c9814284b42a8bb5f917b8931428eca3a2160756",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"
+    },
+    {
+      "sha256_lf": "d0e38e72f853b2f609744cc3084931a7e83c431529c2bb743234c342ae1108a0",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+    },
+    {
+      "sha256_lf": "2efa9b5a429489dc1a0e7cd7f6567b46b7bd13bdb0692d8a1c46719e4a9a5beb",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs"
+    },
+    {
+      "sha256_lf": "c5156021a635594aa537226674ea9d5605f63cc58e3b056a49186f55ec9af1f8",
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs"
+    },
+    {
+      "sha256_lf": "f0bcd1b7b6e1040e3080b8b81b1e7412ca360f05a0ab8e2a7354ab49f1eafcf4",
+      "path": "crates/xtask/tests/performance_contract_074.rs"
+    },
+    {
+      "sha256_lf": "cd896f4a355f3c9df1746f5f0f37dac22fb01528cef7fa37dbe2e6a68ea321ee",
+      "path": "docs/COMPAT.md"
+    },
+    {
+      "sha256_lf": "00b7ff2d568df62b5b264dbcaccc4329176f3bfc2a668e01592de4fdbf825dfc",
+      "path": "docs/testing/performance/0.74/diagnostic-controller-trust-input-contract.toml"
+    },
+    {
+      "sha256_lf": "4bf2c10b7d986a6ac607263bed8a661c5b04fa7f13b37c14f3464613d6ce9912",
+      "path": "docs/testing/performance/0.74/diagnostic-controller-trust-input-design.md"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "unchanged_files": [
+    {
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json"
+    },
+    {
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22",
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
+    },
+    {
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs"
+    },
+    {
+      "sha256_lf": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+    },
+    {
+      "sha256_lf": "2705f09f40c6907a258ca6255494ae83917953739cb2b8699bac1a08189ebec7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256_lf": "41115bb8613291c22e28d18c210789b3f9951aef3a53e2c99c7b2d52739274f1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+    },
+    {
+      "sha256_lf": "7a410cadcd47ff80ad90aa63ca27da4aed0aceea469d80235a7d4564e43584eb",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs"
+    },
+    {
+      "sha256_lf": "e861d439c5969fe135bbd089f776aef497e951ffafee4d2ce34198ef2d9ef32b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs"
+    },
+    {
+      "sha256_lf": "2dc4c7fca08276166f4fb29294042a468ab911c77108fee4fd5303a9e3f1de8d",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+    },
+    {
+      "sha256_lf": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs"
+    },
+    {
+      "sha256_lf": "63390f1c70706b57ad03596576d0af362ed24ab66ae52fd3472fb84297f09a49",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector.rs"
+    },
+    {
+      "sha256_lf": "1678172282f210f0932673f836534bbb5496969b6b7ddd92f4c6fdbd13303e57",
+      "path": "tools/long-run-supervisor-074/src/lib.rs"
+    },
+    {
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09",
+      "path": "tools/long-run-supervisor-074/src/server.rs"
+    },
+    {
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9",
+      "path": "Cargo.toml"
+    },
+    {
+      "sha256_lf": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+      "path": "Cargo.lock"
+    },
+    {
+      "sha256_lf": "02e9213b93cc35a254aab4744d2841227d1785e4eccc9fa0f0e2e67495434ce6",
+      "path": "tools/long-run-supervisor-074/Cargo.toml"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "captures": [
+    {
+      "sha256": "e61a07ae83ba04cecc81b290f8fb53333c2ec35596a849d3eb57aafe8574d11b",
+      "bytes": 4650,
+      "path": "01-baseline.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "5ee479ec62df909406f3a2fdc0d75a95d4956796bfeeb37897969d4a2d7c8355",
+      "bytes": 665,
+      "path": "02-missing-controller-api-red.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0,
+      "expected_native_exit": 101,
+      "observed_native_exit": 101
+    },
+    {
+      "sha256": "e70c748f4615d824fc5159543d761959a76b0c63b7ca5567e9a42927b8b4197e",
+      "bytes": 2309,
+      "path": "03-first-functional.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 101,
+      "negative_result": "Six of seven passed; fixture restoration failed to rewrite its mode-0400 file. Only test permission restoration was corrected."
+    },
+    {
+      "sha256": "21bc383b0ce735704d9ac62e95d341f991e7f65771f3661aa890ae311eb3a253",
+      "bytes": 30496,
+      "path": "04-linux-repeats-regression-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "bdae1cf23403461b95733031f63e302f97b7f5cd77a1cb2dee7e9b31dc8eba43",
+      "bytes": 15811,
+      "path": "05-windows-root-regression-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "aa954bc6d0f80ca58f000cb8eac218106aa801149f0ee3849cc5f0aaa102c763",
+      "bytes": 6156,
+      "path": "06-final-linux-repeats-lint-doc-msrv.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "0828b103a20ee76ee6ed639b641ab47acf1dcb0d26621b4c42634cf803b895e9",
+      "bytes": 617,
+      "path": "07-final-docs-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    }
+  ],
+  "verifier_sha256_lf": "6f2ded50a96e0f054067816b0974c1611d7f7d66e61774285860a2235687aa8c",
+  "capture_count": 7,
+  "tests": {
+    "final_controller_cases": 8,
+    "repeats": 3,
+    "doctests": 73,
+    "new_compile_fail": 5,
+    "api_target": 2,
+    "baseline_worker_kernel": 5,
+    "baseline_kernel": 18,
+    "baseline_kernel_ignored": 1,
+    "baseline_reviewed_trust": 8,
+    "regression_trust": 11,
+    "regression_worker_kernel": 5,
+    "regression_kernel": 18,
+    "regression_kernel_ignored": 1,
+    "linux_worker_policy": 15,
+    "linux_reviewed_trust": 8,
+    "windows_portable": 22,
+    "root_suites": [
+      6,
+      127,
+      13
+    ],
+    "seed": "0x07532074",
+    "signed_disallowed_actors": 32,
+    "independent_bindings": 4
+  },
+  "linux_msrv_clippy": "unavailable; not run",
+  "profile_environment": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never",
+  "linux_command_prefix": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; ",
+  "ship_check": {
+    "expected_native_exit": 1,
+    "observed_native_exit": 1
+  },
+  "admission_claims": {
+    "actual_principals_selected_or_config_installed": false,
+    "source_opener_or_physical_host_enrolled": false,
+    "real_worker_policy_epoch_or_authority_enrolled": false,
+    "github_run_or_build_provenance_independently_verified": false,
+    "durable_replay_or_fence_admission": false,
+    "runtime_refusal_is_durable_revocation": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "server_entry_wired": false,
+    "private_key_read_or_production_policy_signed": false,
+    "host_modified": false,
+    "product_workload_or_qualification": false,
+    "new_sigkill_or_full_milestone_proof": false,
+    "performance_claim": false,
+    "ship_admission": false
+  }
+}
