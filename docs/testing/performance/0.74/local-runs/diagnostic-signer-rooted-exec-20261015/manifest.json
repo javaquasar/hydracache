@@ -344,15 +344,15 @@
     },
     {
       "path": "rooted-exec-packet-windows.log",
-      "sha256": "d1582794b2a0678be182362af17f98a8118159d0719bafc14b240f9539a91d50",
-      "bytes": 204,
+      "sha256": "794387195e2c0a3186f206aaae1ca24304e0be82d7e637fc1bdbc37b9545929f",
+      "bytes": 206,
       "expected_outer_exit": 0,
       "observed_outer_exit": 0
     },
     {
       "path": "rooted-exec-packet-linux.log",
-      "sha256": "f9bc618f7733d3bdf598bef670e9d35e1ff62724df1013a8ec5bc00727544676",
-      "bytes": 198,
+      "sha256": "56563429e4296e8701641722edd40b59785320cfc3609dbd192ab4bb75d4fa52",
+      "bytes": 200,
       "expected_outer_exit": 0,
       "observed_outer_exit": 0
     },
@@ -362,6 +362,13 @@
       "bytes": 14845,
       "expected_outer_exit": 0,
       "observed_outer_exit": 0
+    },
+    {
+      "path": "rooted-exec-committed-packet-development.log",
+      "sha256": "59d4162ed2992bf07d5c88f5c4ecc7829106ee905c47ed7fd74c0faec74aad5f",
+      "bytes": 422,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
     }
   ],
   "admission_claims": {
@@ -385,6 +392,6 @@
     "ship_allowed": false,
     "performance_claim_allowed": false
   },
-  "verifier_sha256_lf": "8bf79a2e6366962ae7fc018a7a28d7b0a8c7cb0fe5f1ce6ce8f06ce5443cb370",
-  "packet_test_sha256_lf": "0773f03f70827f287dc61b9473b4b2bc1c30f93b696e50827db0ae6af7d47083"
+  "verifier_sha256_lf": "9f767e035a9a87e6997bb1120af69d86d1942480e5371c9fd2a1db439e5ba4a1",
+  "packet_test_sha256_lf": "970724c542e33195d72a837f7e907fbc6c6bcd282c7cdaeb33a9e186005bd382"
 }

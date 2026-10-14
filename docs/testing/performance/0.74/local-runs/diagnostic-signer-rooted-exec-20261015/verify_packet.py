@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 PACKET = Path(__file__).resolve().parent
 ROOT = PACKET.parents[5]
@@ -57,6 +58,7 @@ UNCHANGED = set([
     "docs/testing/performance/0.74/diagnostic-signer-root-design.md"
 ])
 REQUIRED_CAPTURES = set([
+    "rooted-exec-committed-packet-development.log",
     "rooted-exec-baseline.log",
     "rooted-exec-development.log",
     "rooted-exec-doc-check.log",
@@ -82,7 +84,8 @@ REQUIRED_CAPTURES = set([
     "rooted-exec-xtask-lint.log"
 ])
 RED_CAPTURES = {"rooted-exec-missing-owner.log", "rooted-exec-development.log",
-                "rooted-exec-linux-check-lint.log", "rooted-exec-require-ship.log"}
+                "rooted-exec-linux-check-lint.log", "rooted-exec-require-ship.log",
+                "rooted-exec-committed-packet-development.log"}
 AUXILIARY = {"rooted-exec-packet-windows.log", "rooted-exec-packet-linux.log"}
 ADMISSION = set([
     "continuous_loaded_runtime_closure_proved",
@@ -117,6 +120,7 @@ def committed(commit, path):
 
 
 def main():
+    assert (PACKET / ".gitattributes").read_bytes() == b"* -text\n*.log whitespace=cr-at-eol,-blank-at-eof\n"
     manifest = json.loads((PACKET / "manifest.json").read_bytes())
     assert type(manifest["schema_version"]) is int and manifest["schema_version"] == 1
     assert manifest["packet_id"] == "diagnostic-signer-rooted-exec-20261015"
@@ -177,6 +181,8 @@ def main():
     assert "error[E0433]" in (PACKET / "rooted-exec-missing-owner.log").read_text()
     assert "error[E0599]" in (PACKET / "rooted-exec-development.log").read_text()
     assert "collapsible_if" in (PACKET / "rooted-exec-linux-check-lint.log").read_text()
+    negative = (PACKET / "rooted-exec-committed-packet-development.log").read_text()
+    assert "committed_raw_capture_mismatches=['rooted-exec-doc-check.log'" in negative
     assert set(manifest["admission_claims"]) == ADMISSION
     assert all(value is False for value in manifest["admission_claims"].values())
     for name, key in [("verify_packet.py", "verifier_sha256_lf"),
@@ -185,6 +191,20 @@ def main():
     print(f"Verified selected-root original-exec evidence, {len(captures)} captures; custody/handoff/start closed.")
 
 
+def verify_committed(commit):
+    assert re.fullmatch(r"[0-9a-f]{40}", commit)
+    manifest = json.loads((PACKET / "manifest.json").read_bytes())
+    names = {"manifest.json", "README.md", ".gitattributes", "verify_packet.py", "test_verify_packet.py"}
+    names.update(c["path"] for c in manifest["captures"])
+    relative = PACKET.relative_to(ROOT)
+    for name in sorted(names):
+        assert (PACKET / name).read_bytes() == committed(commit, (relative / name).as_posix()), name
+    print(f"Verified committed packet bytes at {commit}; no Git EOL normalization.")
+
+
 if __name__ == "__main__":
     main()
+    if len(sys.argv) != 1:
+        assert len(sys.argv) == 3 and sys.argv[1] == "--committed"
+        verify_committed(sys.argv[2])
 

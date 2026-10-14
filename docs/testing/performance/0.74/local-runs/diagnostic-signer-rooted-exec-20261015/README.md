@@ -69,11 +69,28 @@ dependencies, reviewed pins and frozen qualification inputs remain unchanged.
 ## Reproduce and remaining limits
 
 Run `python verify_packet.py` and `python -m unittest test_verify_packet.py` here.
-These read local Git/files only. Nine copied-packet mutation tests reject wrong
+Also run `python verify_packet.py --committed <full-packet-commit>` to compare
+every packet file's exact bytes with its published Git object. These read local
+Git/files only. Ten mutation tests reject wrong
 schema/source/hash, empty/frozen bindings, capture/exit substitutions, missing
 positives, changed helper identity and false admission. Windows/Linux reports
 are captured outside the packet during tests, then copied and bound. Final
-inventory: 25 captures, 11 source files and 32 unchanged files.
+inventory: 26 captures, 11 source files and 32 unchanged files.
+
+The first publication (`af04e32107eb3e4fc3b4b72849c2a4ffc3b1c5d7`)
+passed working-tree verification but a separate committed-
+object check found twelve Windows captures normalized by Git, with raw hashes no
+longer matching the manifest. Its expected exit1 log is retained. Packet-local
+`* -text` attributes now preserve all packet bytes; only this new packet's files
+are re-added without normalization. The verifier tests attribute substitution and
+committed-byte substitution, and the final publication is checked against Git on
+both platforms. Original captures and measurements are not edited. This corrects
+evidence transport, not product source or a qualification threshold.
+Only raw logs treat CRLF terminators and captured final blank records as data
+for diff checking; actual trailing spaces and code checks remain enabled.
+These path-specific controls follow the
+[Git attributes](https://git-scm.com/docs/gitattributes#_checking_whitespace_errors)
+and [whitespace semantics](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corewhitespace).
 
 Kernel VMA file metadata is not mapped-memory, relocation-byte or privileged
 map_files attestation; loaded closure is not continuously checked. The selected

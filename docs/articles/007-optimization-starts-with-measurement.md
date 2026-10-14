@@ -8522,3 +8522,12 @@ from the mount-free root; no convenient proc mount or helper rewrite hides this
 gap. Independent runtime/issuer/job custody, memory attestation, authenticated
 worker start, all writers and later lifecycle cells remain open. No allocation,
 throughput or latency improvement was measured in this apparatus-only slice.
+
+Publication exposed a separate reproducibility seam: a clean working tree was
+not enough. Git normalized twelve Windows log files, so committed raw bytes no
+longer matched their manifest hashes even though local verification passed.
+The negative committed-object check is retained. Packet-local no-text attributes
+preserve the actual captures, and an additional verifier compares every packet
+file against its exact published Git object. Attribute/committed-byte substitutions
+are now tested too. Evidence transport must preserve observations, not silently
+rewrite them or compensate by changing expected hashes to normalized output.

@@ -35,6 +35,13 @@ class PacketTests(unittest.TestCase):
     def test_control(self):
         self.check()
 
+    def test_git_attributes_and_committed_byte_substitution_refuse(self):
+        with self.assertRaises(AssertionError):
+            self.check(lambda p: (p / ".gitattributes").write_bytes(b"* text\n"))
+        with patch.object(verifier, "committed", return_value=b"substituted\n"):
+            with self.assertRaises(AssertionError):
+                verifier.verify_committed("0" * 40)
+
     def test_future_boolean_version_and_source_refuse(self):
         for mutation in [lambda m: m.update(schema_version=2),
                          lambda m: m.update(schema_version=True),
