@@ -7576,9 +7576,44 @@ match the observed kernel boot. These facts describe the original receiver
 namespace; they do not independently enroll the physical host or supply an
 authority epoch.
 
-The package still requires operator-selected production public keys and exact
-policy digest/epoch pins. No fixture seed or envelope-supplied verifier can replace
-that selection. Authenticated original start, the private root collector,
+The package still requires independently selected worker trust and exact
+policy digest/epoch pins. The controller and separate builder keys were already
+selected in the earlier enrollment; their reuse is described below. No fixture
+seed or envelope-supplied verifier can replace that selection. Authenticated
+original start, the private root collector,
 watchdog/cgroup revocation, completion and cells two through four remain open
 integration tasks in the [pre-server checklist](../testing/performance/0.74/pre-server-closure-checklist-20261014.md).
 Kernel-input success cannot turn those dependencies into an admitted server run.
+
+### Reusing established trust without inventing worker authority
+
+The controller and distinct builder public keys were already retained in the
+[reviewed public policy](../testing/performance/0.74/diagnostic-builder-public-policy.json)
+and October 9 enrollment evidence. The raw policy digest matches that earlier
+independent selection. The builder private seed was retained only in a protected
+GitHub environment secret, while the local SSH key serves only server access.
+Neither requires generating a new signing authority to continue local implementation.
+
+The new portable builder loader accepts policy bytes but no caller-selected key
+or digest. It delegates canonical parsing and strict signature verification to
+the existing verifier under those reviewed pins. A separate kernel packet entry
+requires the same reviewed controller key and repository before original sender
+and kernel-time authentication. Any key/repository or authentication failure
+permanently refuses that packet, including fallback to the generic local method.
+The generic model APIs remain unchanged and no production listener is enabled.
+
+Local checks verify the retained real hosted-build receipt signature, reject
+changed signatures even with recomputed receipt hashes, and reject policy/key
+substitution. Signature validity authenticates that retained statement; without
+its executable bytes it does not repeat content verification or grant execution.
+These are trust-selection checks, not throughput measurements or proof that
+historical keys remain authorized under a current external epoch.
+
+The worker-policy evidence still uses synthetic issuer keys. Its production
+issuer, signed host/account policy pin and current authority epoch need explicit
+selection. Reusing the controller or builder for that role without approval
+would invent authority. Trusted installed configuration, controller provenance,
+replay/fence joins, original start, watchdog, writer cessation and later cells
+remain the boundaries before a server rehearsal. The
+[trust contract](../testing/performance/0.74/diagnostic-reviewed-trust-design.md)
+keeps these remaining dependencies separate from the public pins already available.

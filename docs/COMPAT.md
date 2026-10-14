@@ -1,5 +1,12 @@
 # HydraCache Compatibility Register
 
+Reviewed diagnostic trust adds opt-in runtime-only verification entry points,
+using the existing October 9 public controller/builder pins and raw policy digest.
+No signed domain, JSON schema, durable record, installed configuration or existing
+generic API changes. The new kernel entry latches refusal on key/repository drift;
+it cannot enroll worker trust, current epoch/revocation, host authority or a start.
+See the [reviewed-trust scope](testing/performance/0.74/diagnostic-reviewed-trust-design.md).
+
 Diagnostic kernel admission adds an opt-in AF_UNIX SOCK_SEQPACKET receiver with
 SO_PASSCRED/SO_PASSPIDFD. It requires one per-message credentials record and one
 kernel pidfd, denies received SCM_RIGHTS/unknown/truncated control data, and keeps

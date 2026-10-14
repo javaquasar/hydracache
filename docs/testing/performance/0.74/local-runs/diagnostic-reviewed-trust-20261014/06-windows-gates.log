@@ -1,0 +1,69 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 35.07s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-9812b2350634447c.exe)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running tests\diagnostic_ipc.rs (target\debug\deps\diagnostic_ipc-290551e287e499f7.exe)
+
+running 19 tests
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.41s
+
+     Running tests\diagnostic_reviewed_trust.rs (target\debug\deps\diagnostic_reviewed_trust-3fdc4fa70c1791cf.exe)
+
+running 7 tests
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 8.59s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 10.23s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 14.62s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 10.96s

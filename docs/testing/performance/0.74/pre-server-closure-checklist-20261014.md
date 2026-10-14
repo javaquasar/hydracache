@@ -20,15 +20,28 @@ arguments on this new path. This does not load or enroll production trust.
 
 ## Required operator input for production trust
 
-Select the diagnostic controller public key, distinct builder public key and
-worker-policy issuer public key, with exact builder/worker policy SHA-256 and
-current nonzero authority epoch. Supply an independently reviewed public-config
-file or approved public values; no private key or token belongs in chat/evidence.
+The reviewed controller and distinct builder public keys already exist in the
+[public builder policy](diagnostic-builder-public-policy.json). Its raw SHA-256
+is `dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22`, matching
+the [October 9 enrollment](local-runs/diagnostic-builder-enrollment-20261009/manifest.json)
+and separately verified hosted-build evidence. The builder seed was retained in
+a protected GitHub environment secret, not a local key file. SSH access keys are
+separate from these signing authorities; regenerating them is not a prerequisite.
+
+The [reviewed-trust entry points](diagnostic-reviewed-trust-design.md) reuse these
+fixed public pins for builder-policy loading and opt-in kernel controller-key
+selection. They do not establish current revocation status or installed trust.
+
+Still select the worker-policy issuer public key, signed production policy with
+its exact canonical body SHA-256, and current nonzero authority epoch. Supply an
+independently reviewed public-config file or approved public values; no private
+key or token belongs in chat/evidence.
 An envelope cannot choose its own verifier, digest or epoch. Fixture seeds, keys,
 namespaces and modeled host facts cannot fill these slots.
 
-Current independently selected values are not present in the reviewed source.
-Production trust loading/enrollment cannot pass until this operator input exists.
+The reviewed worker-policy packet uses synthetic issuer keys and records no real
+issuer enrollment. Production trust loading/enrollment cannot pass until the
+remaining operator input exists and is joined to trusted host/root ownership.
 The fixed controller/build/worker verification primitives are not themselves
 proof of independent production selection. Choosing how keys are generated,
 stored and controlled is a deployment decision, not an implicit test default.

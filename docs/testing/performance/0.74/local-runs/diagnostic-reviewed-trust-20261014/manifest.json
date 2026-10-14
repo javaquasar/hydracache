@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-reviewed-trust-local-20261014",
+  "baseline_source": "194585b89b119750589e39138644a75c2b1b3cbc",
+  "preregistration_source": "e8acf3b9d213986185a4b4944bcdd93e89fe8087",
+  "implementation_source": "fcc50c6cbf65f7746d3e398beee321de4fe817f4",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "1678172282f210f0932673f836534bbb5496969b6b7ddd92f4c6fdbd13303e57"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "693c6d2cf17ced3cabb63bf73a4fa52b50b42c063d559ed7c5708268bdddb029"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "sha256_lf": "0d52265c429805b5061b3e0d77d8820f0ad73e749b3be508666a1b00add5ce89"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs",
+      "sha256_lf": "8e37b8a87b8ca8996dcb43e6f6d211fe192dd390930bec21a4e64991782a9c91"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "8579c0ce50f010dd1254e26a70b7c75aacb0c66a1436ac9f72a3d137614bc1f4"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-reviewed-trust-design.md",
+      "sha256_lf": "ae4102ff8cd0e64fba3371bcb07416fded48263a6686269fedc36a998146273d"
+    }
+  ],
+  "trust_evidence": [
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-enrollment-20261009/manifest.json",
+      "sha256_lf": "dc0aab46d1197434effc91dd621105b8878acd98adcb1cd86e173763934fca48"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/manifest.json",
+      "sha256_lf": "f5df8c7cf6e248d01178456a6990673e26cd5a741ca64ecb61697a7956718e42"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json",
+      "sha256_lf": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-worker-policy-20261010/manifest.json",
+      "sha256_lf": "52cf459b59fe6f1b2c868fab32fed8e423431847fdafd5e3c207b45c56d9050d"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "verifier_sha256_lf": "a8661429f202226c43dc52f45f6273ce56f953efe0711e5171e140dde2ada6cf",
+  "capture_scope": "Reviewed source tested before implementation commit; docs/evidence changes do not alter the tested Rust source. Raw native output plus PowerShell Tee; native negative status distinguished from harness exception.",
+  "captures": [
+    {
+      "path": "01-baseline.log",
+      "bytes": 6833,
+      "sha256": "94cddd0221a90aff7725c6a4a4bdf65c5ed5b93261687a53f46962919f48ed33",
+      "observed_native_exit": 0,
+      "scope": "baseline: artifact+IPC then kernel tests"
+    },
+    {
+      "path": "02-missing-api-red.log",
+      "bytes": 1238,
+      "sha256": "82993756b8105d885b71d6c30933717e8d03e68c4d582e7952be4739ba15742a",
+      "observed_native_exit": 101,
+      "scope": "first missing-module red; additional private-helper harness error"
+    },
+    {
+      "path": "03-corrected-missing-api-red.log",
+      "bytes": 799,
+      "sha256": "1c5546fceae1eac8017d7a57691453a16805c47c3cc284e245011eeeb0522ac4",
+      "observed_native_exit": 101,
+      "scope": "corrected missing-module red"
+    },
+    {
+      "path": "04-first-green.log",
+      "bytes": 3453,
+      "sha256": "644db9f1fb21d3a793ff63af2eb6fada01d7fde0969e7920c7078e0c1176fce5",
+      "observed_native_exit": 0,
+      "scope": "first tests: reviewed trust and kernel"
+    },
+    {
+      "path": "05-linux-gates.log",
+      "bytes": 30396,
+      "sha256": "880e352f086880bc9083dea5eaaa2301c1af8dc9082a03a381e4c124a2178854",
+      "observed_native_exit": 1,
+      "scope": "three reviewed-source repeats, regression, doctests, current check/lint, MSRV check; MSRV Clippy component unavailable"
+    },
+    {
+      "path": "06-windows-gates.log",
+      "bytes": 4701,
+      "sha256": "365f41429a83544ffe40b7061c505afcd05fad3a111afcccb5c520e28c9f294d",
+      "observed_native_exit": 0,
+      "scope": "Windows tests, current/MSRV checks and strict Clippy"
+    },
+    {
+      "path": "07-linux-available-lint-msrv.log",
+      "bytes": 122,
+      "sha256": "cfd7f618e46136e995e91c7e048c175753a3d0d940082ef3dc860389fd649cfb",
+      "observed_native_exit": 0,
+      "scope": "Linux current strict Clippy and MSRV check repeated"
+    },
+    {
+      "path": "08-root-gates.log",
+      "bytes": 1432,
+      "sha256": "a56bdef028cafd4b59bb86cac611ce93c9195b706106a7b3b0c351f012474c94",
+      "observed_native_exit": 101,
+      "scope": "guessed nonexistent xtask targets; zero tests executed"
+    },
+    {
+      "path": "09-corrected-root-gates.log",
+      "bytes": 11955,
+      "sha256": "21d9863389f171ed5fce9aacfe2de17d2be340cc831c94c42193d807c98ca217",
+      "observed_native_exit": 0,
+      "scope": "gated_tests+performance_contract_074, empty release-evidence v074 filter (not coverage), format/doc/local-contract; expected require-ship=1"
+    },
+    {
+      "path": "10-links-book.log",
+      "bytes": 220,
+      "sha256": "c63aaa86b5a706fab6d94289ad2adfc384fdc5a34eaaed8945cfdbdbc6f27dbe",
+      "observed_native_exit": 0,
+      "scope": "documentation links and mdbook"
+    },
+    {
+      "path": "11-release-evidence.log",
+      "bytes": 1356,
+      "sha256": "f0a42a3d59dc9f496adc0f95a82f2324e7bc4b0212b3bda1ca42f1c5cd036fd7",
+      "observed_native_exit": 0,
+      "scope": "complete release_evidence target (13 tests)"
+    }
+  ],
+  "observations": {
+    "linux_focused_repeats": 3,
+    "portable_trust_tests_per_repeat": 7,
+    "kernel_fast_tests_per_repeat": 15,
+    "linux_regression": 60,
+    "linux_doctests": 58,
+    "windows_tests": 41,
+    "root_registry_tests": 6,
+    "root_performance_tests": 124,
+    "root_evidence_tests": 13,
+    "retained_builder_signature_verified": true,
+    "linux_msrv_clippy_available": false,
+    "manual_process_proofs_rerun": false,
+    "full_release_gate_run": false
+  },
+  "claims": {
+    "production_worker_issuer_selected": false,
+    "production_keys_generated": false,
+    "current_external_revocation_verified": false,
+    "controller_provenance_enrolled": false,
+    "host_enrolled": false,
+    "execution_authorized": false,
+    "server_modified": false,
+    "product_workload_run": false,
+    "performance_claim": false,
+    "qualification_run": false,
+    "admission_allowed": false
+  }
+}

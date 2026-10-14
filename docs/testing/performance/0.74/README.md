@@ -3,9 +3,14 @@
 The [pre-server closure checklist](pre-server-closure-checklist-20261014.md)
 tracks the remaining P1/P2/P3 production integration and exact-host gates.
 The [kernel admission path](diagnostic-kernel-admission-design.md) now receives
-per-message credentials/pidfd and original-scope kernel time, but independently
-selected controller/builder/worker issuer pins are still required before trust
-enrollment. This is not an installed start/completion or server-ready receipt.
+per-message credentials/pidfd and original-scope kernel time. The
+[reviewed-trust entry points](diagnostic-reviewed-trust-design.md) reuse the
+already selected controller/builder public pins. Worker issuer/policy/epoch,
+current authority status and trusted installed host/root joins remain required
+before enrollment. This is not an installed start/completion or server-ready receipt.
+The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
+retains the real historical builder signature check and three focused local
+repeats, without enrollment or numerical claims.
 The [kernel packet](local-runs/diagnostic-kernel-admission-20261014/README.md)
 retains 36 raw captures, including compiler/lint negatives, three reviewed
 fast repeats and three actual inherited-sender/SIGKILL proofs.
