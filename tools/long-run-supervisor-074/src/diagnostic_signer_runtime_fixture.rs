@@ -23,7 +23,7 @@ fn invalid() -> io::Error {
         "owned runtime inventory refused",
     )
 }
-fn read_bounded(file: &File) -> io::Result<Vec<u8>> {
+pub(super) fn read_bounded(file: &File) -> io::Result<Vec<u8>> {
     let mut out = Vec::new();
     let mut chunk = [0; 16384];
     loop {
@@ -220,6 +220,17 @@ fn graph(info: &[elf::Info]) -> io::Result<()> {
         return Err(invalid());
     }
     Ok(())
+}
+// Pure declaration validation shared by private test fixtures, never a retained
+// guard/FD conversion or runtime-custody acceptance token.
+pub(super) fn validate_images(images: &[Vec<u8>; 4]) -> io::Result<()> {
+    graph(
+        &images
+            .iter()
+            .enumerate()
+            .map(|(index, bytes)| elf::parse(bytes, index == 0))
+            .collect::<io::Result<Vec<_>>>()?,
+    )
 }
 struct Input {
     name: &'static str,

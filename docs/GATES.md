@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11's owned child root fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_root -- --nocapture`.
+Seven cases check fixed temporary tree and kernel child-only root/map/capability
+mechanics. No mount, host-root operation or new environment gate is used; missing
+unprivileged namespace capability refuses instead of falling back. Actual signer
+exec/runtime custody and server admission stay closed. See the
+[child root contract](testing/performance/0.74/diagnostic-signer-root-contract.toml).
+
 W11's bounded runtime inventory uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_runtime -- --nocapture`.
 Ten cases check bounded declared ELF edges and original readonly file consistency.

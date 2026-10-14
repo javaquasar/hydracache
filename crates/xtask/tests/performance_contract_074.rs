@@ -12161,3 +12161,112 @@ fn signer_runtime_inventory_preserves_original_inputs_and_closed_launch_admissio
         assert!(!consumer.contains("runtime_fixture"), "{path}");
     }
 }
+
+#[test]
+fn signer_child_root_mechanics_preserve_nonroot_local_scope_and_closed_exec() {
+    let c = contract("diagnostic-signer-root-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "image_writers_isolated_from_parent_fork_table",
+        "original_root_tree_files_metadata_hashes_and_elf_checked",
+        "same_nonzero_uid_gid_single_maps_in_owned_child_only",
+        "original_pidfd_thread_bound_no_adoption",
+        "root_cwd_namespace_credentials_and_descriptor_set_checked",
+        "capability_sets_zero_and_no_new_privs_before_probes",
+        "fixed_paths_match_original_files_and_selected_host_paths_absent",
+        "drop_and_sigkill_reap_original_without_replay",
+        "root_failure_sticky_and_one_child_attempt_only",
+        "cleanup_uses_original_directory_descriptors",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "mount_or_host_namespace_or_sysctl_changed",
+        "signer_exec_in_selected_root",
+        "selected_loader_root_enforced",
+        "loaded_runtime_closure_proved",
+        "post_launch_namespace_escape_policy_installed",
+        "independent_runtime_custody",
+        "mapped_memory_attested",
+        "complete_sandbox",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("original_files", 4),
+        ("original_directories", 4),
+        ("report_bytes", 96),
+        ("mapping_bytes", 4096),
+        ("status_bytes", 65536),
+        ("capability_number_ceiling", 63),
+        ("stall_seconds", 5),
+        ("seeded_probes", 8),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let lib = std::fs::read_to_string(base.join("lib.rs")).unwrap();
+    assert!(lib.replace("\r\n", "\n").contains("#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\nmod diagnostic_signer_root_fixture;"));
+    let source = std::fs::read_to_string(base.join("diagnostic_signer_root_fixture.rs")).unwrap();
+    for required in [
+        "CLONE_NEWUSER",
+        "libc::chroot",
+        "libc::fchdir",
+        "libc::fchmod",
+        "SYS_capset",
+        "PR_CAPBSET_DROP",
+        "PR_CAP_AMBIENT_CLEAR_ALL",
+        "PR_SET_NO_NEW_PRIVS",
+        "PTRACE_O_EXITKILL",
+        "SYS_pidfd_open",
+        "waitpid(self.pid",
+        "PhantomData<Rc<()>>",
+        "root.attempted",
+        "read_bounded",
+        "env_clear()",
+        "setgroups",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "libc::mount",
+        "CLONE_NEWNS",
+        "libc::setuid",
+        "execve(",
+        "execveat(",
+        "SigningKey",
+        "sign_prepared_files",
+        "PTRACE_ATTACH",
+        "PTRACE_POKE",
+        "waitpid(-1",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("root_fixture"),
+            "{path}"
+        );
+    }
+}

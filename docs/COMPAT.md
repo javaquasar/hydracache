@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The child root probe exists only in Linux x86_64 libtest builds. Its temporary
+tree and private scalar report are not a public API or durable/wire artifact.
+It changes only its owned child's user namespace/root/capabilities with unchanged
+nonzero UID/GID; no host account/mount/service configuration changes. Existing
+GNU helper launch/filter and normal-library consumers remain unchanged. No signer
+exec, handoff, custody or server admission follows. See the
+[child root boundary](testing/performance/0.74/diagnostic-signer-root-design.md).
+
 The runtime inventory/parser exist only in Linux x86_64 libtest builds. They
 retain original readonly inputs and bounded declared ELF metadata without a
 loader/launch consumer or public acceptance/FD API. No dependency, normal-library
