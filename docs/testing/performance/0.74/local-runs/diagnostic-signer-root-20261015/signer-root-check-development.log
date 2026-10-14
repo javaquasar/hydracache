@@ -1,0 +1,30 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.71s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 7 tests
+test diagnostic_signer_root_fixture::tests::signer_root_bounded_mapping_and_credentials_refuse_unknown_or_weakened_forms ... ok
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+test diagnostic_signer_root_fixture::tests::signer_root_cleanup_uses_original_directory_fds_not_replaced_ancestors ... ok
+owned_nonroot_child_root=selected_inode namespace=child_only caps=zero host_paths=absent signer_exec=false custody=false
+test diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch ... ok
+owned_root_SIGKILL=initial,rooted original_child_reaped=true signer_exec=false tracer_loss_proved=false
+test diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse ... ok
+test diagnostic_signer_root_fixture::tests::signer_root_exact_tree_files_and_hash_drift_refuse_stickily ... ok
+test diagnostic_signer_root_fixture::tests::signer_root_owner_sequence_namespace_and_terminal_replay_refuse ... ok
+seed=0x07403b29 rooted_path_probes=8 independent_owners=4 parent_root_changed=false signer_exec=false
+test diagnostic_signer_root_fixture::tests::signer_root_seeded_probes_and_independent_nonroot_owners ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 774 filtered out; finished in 6.86s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.56s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: file is loaded as a module multiple times: `tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+  = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

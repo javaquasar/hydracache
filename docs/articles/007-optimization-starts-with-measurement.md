@@ -8415,3 +8415,61 @@ launch. Independent production custody, one-shot dummy handoff and actual tracer
 loss still need distinct proofs. Worker P2/P3, all-writer cessation, later cells
 and server rehearsal remain separate. These tests measure no cache speed,
 allocations or product workload and add no release-readiness claim.
+
+### A selected path root still needs an original executable
+
+Library-path priority does not exclude fallback into host paths. Directly
+invoking a selected loader has another consequence: the first kernel executable
+object is the loader, not the signer. Those distinctions matter when joining
+runtime selection to an original-exec proof. The
+[loader manual](https://man7.org/linux/man-pages/man8/ld.so.8.html) describes direct
+invocation and the search order. The next experiment therefore checks a fixed
+root before adding any new exec path.
+
+The private fixture creates four readonly files at the original GNU interpreter
+and library paths beneath an owned temporary root. Its parent holds original
+descriptors, hashes and exact tree identities, but no writable image description:
+isolated copy children preserve the previous writer-inheritance fix. One owned
+raw-fork child closes nonselected FDs, stops under its original tracer and
+creates a user namespace. The owner supplies single-entry maps preserving the
+same nonzero UID/GID. Namespace capabilities permit the temporary root selection
+without granting host-root authority; their scope is explained in the
+[user namespace manual](https://man7.org/linux/man-pages/man7/user_namespaces.7.html).
+
+The child enters the original root, resets cwd to `/`, closes its directory FD,
+drops all capability sets and sets no_new_privs. Before permitting the fixed
+probes, the parent checks kernel root/cwd and namespace objects, exact maps,
+UID/GID slots, capability status, one task and the selected descriptor set.
+Absolute signer/loader/library paths then resolve to the original fixture inode
+pairs. Checked host passwd/proc/cache/preload paths return ENOENT, and `/..`
+remains the selected root. The parent root and namespace stay unchanged.
+
+The first kernel positive passes. Strict lint then rejects the attempt to include
+the ELF source as two separate modules. Sharing one pure four-image validator
+fixes that code organization without a lint waiver or exported guard/FD. A
+separate review catches unsafe cleanup through replaced ancestors; cleanup now
+uses original directory descriptors, and a symlink-substitution test confirms
+that a different owned directory is not chmodded. An incorrectly transported
+shell filter also starts the wider unit suite; that local group is interrupted,
+retained as incomplete and replaced with explicit focused commands. None of
+those development captures is counted as a successful final gate.
+
+Three seven-case repeats pass, with seed 0x07403b29, eight fresh path probes and
+four independent owners. Actual SIGKILL at initial and rooted stops leads to
+refusal and exact-child reaping. A root permits one child attempt only; phase,
+namespace, mapping, capability, tree, file and digest faults cannot manufacture
+a replacement. Current/MSRV checks, existing regressions and normal-library
+exclusion pass. The [design](../testing/performance/0.74/diagnostic-signer-root-design.md)
+and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-root-20261015/README.md)
+retain the failed steps and bind final results to their source.
+
+This establishes path-root mechanics on this local kernel, not an admitted GNU
+runtime. The raw-fork probe still has the test image's old mappings and executes
+no selected ELF. Chroot is not a complete sandbox, as the
+[chroot manual](https://man7.org/linux/man-pages/man2/chroot.2.html) cautions; zero
+current capabilities also do not prohibit arbitrary later namespace operations.
+Next join original descriptor exec, selected interpreter/library objects and
+exact installation, then constrain later root/namespace changes before dummy
+handoff. Independent job/runtime custody, actual tracer loss, worker start and
+all-writer cessation remain separate. No cache-performance result follows from
+this test-apparatus change.

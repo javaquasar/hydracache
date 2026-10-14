@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.99s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+owned_nonroot_child_root=selected_inode namespace=child_only caps=zero host_paths=absent signer_exec=false custody=false
+test diagnostic_signer_root_fixture::tests::signer_root_original_kernel_root_is_not_signer_launch ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 774 filtered out; finished in 0.98s
+

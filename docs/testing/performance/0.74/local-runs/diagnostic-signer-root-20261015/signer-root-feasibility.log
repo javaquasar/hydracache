@@ -1,0 +1,6 @@
+uid=1000(artur) gid=1000(artur) groups=1000(artur),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),100(users),107(netdev),1001(docker)
+6.6.87.2-microsoft-standard-WSL2
+62569
+40
+user:[4026531837]
+/

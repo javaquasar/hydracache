@@ -1,5 +1,13 @@
 # Dedicated diagnostic controller job preparation
 
+The [owned nonroot child root probe](diagnostic-signer-root-design.md) now checks
+kernel root/cwd, a child-only user namespace/map, zero capability sets and fixed
+absolute file identities in a temporary tree. It performs no mounts or signer
+exec; current root selection is not loaded-runtime or protected-job custody.
+The [local packet](local-runs/diagnostic-signer-root-20261015/README.md) cannot
+activate this job. Join the root to original exec and actual loader/library
+objects, and address later namespace/root escape before handoff integration.
+
 The new [bounded runtime inventory](diagnostic-signer-runtime-design.md) adds
 declared ELF dependency and original readonly file checks for the fixed GNU
 helper, loader, libc and libgcc copies. It neither forces launch to use those

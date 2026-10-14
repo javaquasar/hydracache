@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [owned child root fixture](diagnostic-signer-root-design.md) now proves
+child-only nonroot user-map/root/capability mechanics and fixed path/inode
+selection without mounts or host-root operations. Three seven-case repeats,
+Rust1.88 and 68 prior regressions pass; the
+[local root packet](local-runs/diagnostic-signer-root-20261015/README.md) retains
+compiler/lint failures and an interrupted command-filter mistake. It does not
+execute the signer, enforce its loader selection or prove runtime custody.
+Original exec/loaded-object/filter composition and later escape restrictions
+remain before dummy handoff or server admission.
+
 The [bounded runtime inventory](diagnostic-signer-runtime-design.md) retains
 four original readonly fixture files and validates their declared GNU ELF
 dependency graph without executing inspected images. Three ten-case Linux
