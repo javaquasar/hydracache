@@ -86,7 +86,7 @@ fn stamp(m: &std::fs::Metadata) -> [u64; 11] {
     ]
 }
 
-fn read(path: &Path, limit: u64, secret: bool) -> Result<Vec<u8>, ArtifactError> {
+pub(crate) fn read(path: &Path, limit: u64, secret: bool) -> Result<Vec<u8>, ArtifactError> {
     let (parent, name) = parent(path, secret)?;
     // SAFETY: valid retained directory FD and NUL-terminated leaf.
     let fd = unsafe {
@@ -122,7 +122,7 @@ fn read(path: &Path, limit: u64, secret: bool) -> Result<Vec<u8>, ArtifactError>
     Ok(bytes)
 }
 
-fn write_new(path: &Path, bytes: &[u8]) -> Result<(), ArtifactError> {
+pub(crate) fn write_new(path: &Path, bytes: &[u8]) -> Result<(), ArtifactError> {
     let (directory, name) = parent(path, true)?;
     // SAFETY: retained directory FD and NUL-terminated leaf; never overwrite.
     let fd = unsafe {

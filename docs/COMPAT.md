@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+The separate `diagnostic_controller` job CLI emits the existing diagnostic signed
+request/domain unchanged; it is not an installed supervisor command or a migration.
+Its portable preparation requires canonical LF requests and the fixed reviewed
+builder receipt. Controller selection is fixed; no public key/time override exists.
+The offline `diagnostic-oidc-source-inspection-074-v1` report contains only bounded
+public-source metadata/digests and explicit false acquisition/enrollment/admission
+flags. No runtime reader consumes that report as trust. Unknown source key fields,
+duplicates, wrong fixed issuer/endpoint or algorithms refuse; discovery extension
+fields are ignored and confer no authority. Older tools have no inspection reader.
+See the [producer boundary](testing/performance/0.74/diagnostic-controller-producer-design.md).
+
 Separate opt-in `diagnostic-oidc-trust-input-074-v1` configuration has a fixed
 root-only original reader at `/etc/hydracache-perf/oidc-trust-074.json`, bounded
 to 2048 canonical LF bytes. It selects one explicit RSA/RS256 signing key, fixed

@@ -3,6 +3,100 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_producer_is_job_data_and_offline_inspection_never_enrolls_trust() {
+    let c = contract("diagnostic-controller-producer-contract.toml");
+    assert_eq!(c["request_budget_bytes"].as_integer(), Some(16384));
+    assert_eq!(c["source_budget_bytes"].as_integer(), Some(65536));
+    for key in [
+        "original_signed_schema_unchanged",
+        "fixed_reviewed_builder_and_controller_required",
+        "canonical_request_digest_audience_required",
+        "job_utc_before_after_signing_required",
+        "secret_original_nofollow_private_files_required",
+        "output_exclusive_sync_required",
+        "no_public_key_time_override",
+        "separate_cli_no_installed_supervisor_route",
+        "offline_inspector_never_selects_or_writes_trust",
+        "positive_signatures_synthetic_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_controller_private_key_read",
+        "authenticated_public_source_acquisition",
+        "actual_protected_job_token_verified",
+        "trust_configuration_installed",
+        "remote_job_dispatched",
+        "durable_nonce_or_fence_admission",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let producer = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs"),
+    )
+    .unwrap();
+    let profile = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs"),
+    )
+    .unwrap();
+    for source in [&producer, &profile] {
+        assert!(source.contains("urn:hydracache:diagnostic:074:request:"));
+    }
+    for marker in [
+        "diagnostic_reviewed_trust::load_builder_policy",
+        "diagnostic_reviewed_trust::controller_key()",
+        "verify_receipt(receipt, &request.identity)",
+        "expected.verify_strict",
+    ] {
+        // Rustfmt may put the strict verifier call on a separate line.
+        assert!(
+            producer
+                .replace(char::is_whitespace, "")
+                .contains(&marker.replace(char::is_whitespace, "")),
+            "{marker}"
+        );
+    }
+    for marker in [
+        "pub fn sign_checked",
+        "pub fn sign_job",
+        "pub fn start",
+        "pub fn into_verified",
+        "impl Clone",
+    ] {
+        assert!(!producer.contains(marker), "{marker}");
+    }
+    let source =
+        std::fs::read_to_string(root().join("scripts/perf/diagnostic_oidc_source_074.py")).unwrap();
+    for marker in [
+        "urllib",
+        "requests.",
+        "http.client",
+        "write_bytes",
+        "write_text",
+        "active_kid",
+    ] {
+        assert!(!source.contains(marker), "{marker}");
+    }
+    for path in [
+        "tools/long-run-supervisor-074/src/main.rs",
+        "tools/long-run-supervisor-074/src/server.rs",
+    ] {
+        let source = std::fs::read_to_string(root().join(path)).unwrap();
+        assert!(
+            !source.contains("diagnostic_controller_producer") && !source.contains("bind_oidc")
+        );
+    }
+}
+
+#[test]
 fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_start() {
     let c = contract("diagnostic-oidc-input-contract.toml");
     assert_eq!(c["max_trust_bytes"].as_integer(), Some(2048));

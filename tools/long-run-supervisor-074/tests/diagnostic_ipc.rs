@@ -1,4 +1,10 @@
 use ed25519_dalek::{Signer, SigningKey};
+
+#[test]
+fn producer_public_api_is_separate_from_receiver_and_host_execution() {
+    use hydracache_long_run_supervisor_074::diagnostic_controller_producer::prepare_request;
+    let _ = prepare_request;
+}
 use hydracache_long_run_supervisor_074::diagnostic_ipc::*;
 use hydracache_long_run_supervisor_074::diagnostic_lease::{
     CellIntent, DiagnosticBackend, DiagnosticClock, DiagnosticCoordinator, DiagnosticIdentity,
@@ -865,4 +871,20 @@ fn local_seqpacket_uses_kernel_peer_credentials_without_production_route() {
         assert_eq!(client.join().unwrap(), response);
         assert_eq!((b.starts, b.stops), (0, 0));
     });
+}
+#[test]
+fn producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs() {
+    for args in [
+        vec!["start", "not-real-secret"],
+        vec!["sign"],
+        vec!["audience"],
+    ] {
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_controller"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("not-real-secret"));
+    }
 }
