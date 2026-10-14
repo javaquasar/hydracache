@@ -55,6 +55,13 @@ stored and controlled is a deployment decision, not an implicit test default.
 
 ## Code and local gates still open
 
+The [fixed trust input](diagnostic-worker-trust-input-design.md) now retains the
+selected issuer and explicitly configured body pin/epoch from a bounded original
+root-owned file, with an owned config/journal/policy join. Its positive filesystem
+and signed-policy cases are private nonroot models with synthetic issuers. No
+production configuration or worker policy is created, and current host context
+still needs independent kernel admission. This does not close P2.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

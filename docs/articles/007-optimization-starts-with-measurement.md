@@ -7650,3 +7650,46 @@ grammar and rotation rules. Policy digest and epoch remain unset. The next trust
 join needs an independently admitted host/account policy and current authority,
 then authenticated original start, watchdog, writer cessation and completion.
 Generating this key closes only issuer selection, not P2 through P5.
+
+### Keeping the selected trust source with the original authority
+
+The next P2 dependency is the source of policy digest and epoch. Letting a signed
+envelope, environment variable or another caller choose them would undo the
+independent issuer selection. The new input reads only the fixed
+`/etc/hydracache-perf/worker-trust-074.json`, with root-owned no-follow ancestry,
+a single-link non-executable regular document and a 2048-byte limit. Canonical
+schema, fixed repository/issuer and explicit nonzero epoch are checked before use.
+No actual production file or policy is populated with model values.
+
+The reader retains the original root, directories, file, metadata and bytes.
+Named-object revalidation refuses substitutions rather than reopening a
+replacement into the old identity. Full byte comparison remains necessary:
+synthetic coarse-stamp/mixed-read cases demonstrate that equal metadata alone
+cannot certify the original document. Fragmented reads, interrupted/error reads,
+empty/oversized data, links, special files and unsafe modes are separately checked.
+
+Policy verification uses a config/journal/policy/journal/config bracket under
+the same active original authority revision/epoch. The returned guard owns the
+verified policy and envelope/context, while retaining mutable borrows of the
+original config owner and journal. It exposes no raw policy, trust/FD extractor
+or start capability. Revalidation cannot replace bytes, host, verifier or epoch;
+failures refuse all original runtime owners. Compile-fail tests prevent input
+refresh while the guard holds its owners, cross-thread transfer, extraction and
+execution. Runtime refusal remains distinct from a durable revocation append.
+
+The first test run rejected an incorrectly nested authority fixture path before
+these joins could run. The corrected fixtures use the existing exclusive
+`/tmp/hydracache-authority-*` boundary; production restrictions were not relaxed.
+Model positives use synthetic issuer keys and nonroot owned trees, never a fake
+policy signed by the actual private key. The local public constructor refuses the
+nonroot caller before file access. These results establish the reader and original
+consistency join, not a positive installed-root or physical-host admission.
+
+The [trust-input design](../testing/performance/0.74/diagnostic-worker-trust-input-design.md)
+and [contract](../testing/performance/0.74/diagnostic-worker-trust-input-contract.toml)
+preserves the remaining boundary: actual approved policy/body pin/current epoch,
+explicit journal enrollment, admitted kernel host/namespace, controller
+provenance/replay and original fence must still be connected. The reader neither
+initializes an authority journal nor signs or installs a policy. Authenticated
+original start, watchdog/writer cessation, completion and later cells stay closed;
+no numerical product claim follows from local control-plane safety checks.

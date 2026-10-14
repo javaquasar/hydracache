@@ -1,0 +1,42 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 10.42s
+     Running tests\diagnostic_reviewed_trust.rs (target\debug\deps\diagnostic_reviewed_trust-3fdc4fa70c1791cf.exe)
+
+running 8 tests
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+     Running tests\diagnostic_worker_policy.rs (target\debug\deps\diagnostic_worker_policy-4a19612bf3999c04.exe)
+
+running 14 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.14s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 7.18s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 8.67s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized] target(s) in 8.52s

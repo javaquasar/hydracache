@@ -1,0 +1,35 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 19.80s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... seed=0x07512074 mutations=256 independent_guards=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 652 filtered out; finished in 0.37s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 12.62s
+     Running tests/diagnostic_reviewed_trust.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_reviewed_trust-b6ae9672d83c0058)
+
+running 8 tests
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+

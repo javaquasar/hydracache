@@ -13,6 +13,11 @@ custody tests and independent public selfcheck verification, not enrollment.
 Worker policy/epoch,
 current authority status and trusted installed host/root joins remain required
 before enrollment. This is not an installed start/completion or server-ready receipt.
+The [fixed worker trust source](diagnostic-worker-trust-input-design.md) adds
+bounded original root/file retention and an owned policy/active-journal join;
+modeled positives do not fill missing production policy/epoch or host admission.
+Its [local packet](local-runs/diagnostic-worker-trust-input-20261014/README.md)
+retains the original fixture-path failure, final repeated checks and closed gates.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.

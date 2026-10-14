@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-worker-trust-input-20261014",
+  "baseline_source": "a4bb2cb0d34814492ace996d1bda07452e97480d",
+  "preregistration_source": "ef1d44cca102c92a731f359cde74a0e16dff3513",
+  "implementation_source": "3123349d9cb7704616292fc65c766d87080d6b2b",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "source_files": [
+    {
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs"
+    },
+    {
+      "sha256_lf": "7a410cadcd47ff80ad90aa63ca27da4aed0aceea469d80235a7d4564e43584eb",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs"
+    },
+    {
+      "sha256_lf": "2ec65ae79de52d310c4c8b344c6162d3aad3c5a096514978f77004540e08f4a6",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+    },
+    {
+      "sha256_lf": "c8fc770a87684160118528d2507e0c3152e794e2eb23ae2d6eaf2b3d953ad8d9",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs"
+    },
+    {
+      "sha256_lf": "573b68fd6b9ac1ca5f7717e8fd38b189ed53fd2c8ef064d0ca685ee60a745736",
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs"
+    },
+    {
+      "sha256_lf": "732ce22ce6b76981e6c182c0cc8bde88a7db69c2855fcc4b88b3b34a90310aaf",
+      "path": "crates/xtask/tests/performance_contract_074.rs"
+    },
+    {
+      "sha256_lf": "efe44ab9cbe83bcb9e760e74ad5ab3b5adaf0b921490ed9641cc67bed0d43833",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-trust-input-contract.toml"
+    },
+    {
+      "sha256_lf": "730623774936e31965067c7c54cc48435830379c537b6b2afc7d6501816aa99c",
+      "path": "docs/COMPAT.md"
+    },
+    {
+      "sha256_lf": "09d1e06b678c4d89c5e453319875ade699d8cdfc1b74005de046e1b1aa0152f3",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-trust-input-design.md"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json"
+    },
+    {
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22",
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
+    },
+    {
+      "sha256_lf": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+    },
+    {
+      "sha256_lf": "2705f09f40c6907a258ca6255494ae83917953739cb2b8699bac1a08189ebec7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256_lf": "41115bb8613291c22e28d18c210789b3f9951aef3a53e2c99c7b2d52739274f1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+    },
+    {
+      "sha256_lf": "0d52265c429805b5061b3e0d77d8820f0ad73e749b3be508666a1b00add5ce89",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+    },
+    {
+      "sha256_lf": "1678172282f210f0932673f836534bbb5496969b6b7ddd92f4c6fdbd13303e57",
+      "path": "tools/long-run-supervisor-074/src/lib.rs"
+    },
+    {
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09",
+      "path": "tools/long-run-supervisor-074/src/server.rs"
+    },
+    {
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9",
+      "path": "Cargo.toml"
+    },
+    {
+      "sha256_lf": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+      "path": "Cargo.lock"
+    },
+    {
+      "sha256_lf": "02e9213b93cc35a254aab4744d2841227d1785e4eccc9fa0f0e2e67495434ce6",
+      "path": "tools/long-run-supervisor-074/Cargo.toml"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "verifier_sha256_lf": "a239567f4f34661abc2ed2c80ca5158cef9fa1e897cfe621190551f60cf0c100",
+  "captures": [
+    {
+      "path": "01-baseline.log",
+      "bytes": 5056,
+      "sha256": "49673578c9f1ea7ff8a75e447bfcfdc47a371c5f586ae6ecb1227217dffc880a",
+      "description": "Linux baseline: reviewed trust, worker policy and fixed authority integration suites",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "02-missing-issuer-api-red.log",
+      "bytes": 578,
+      "sha256": "6ce9cbec10b108977f60f0daa5b538b6dbfcb33a5dccf8d070111229be7e567e",
+      "description": "Missing worker_issuer_key compile-time API",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "path": "03-first-tests.log",
+      "bytes": 4709,
+      "sha256": "465e9fa8e1e9aa27b76c4597f2c044800933416e8673df654d1cc20664298e30",
+      "description": "First Linux trust-input tests: incorrect nested authority fixture refused before join",
+      "expected_exit": 0,
+      "observed_exit": 101
+    },
+    {
+      "path": "04-corrected-fixture-tests.log",
+      "bytes": 2983,
+      "sha256": "bca39cd0b8f1be6b5bf97308a064613ebdcfde4d7ac7d6b1cefdd54445295ea5",
+      "description": "Corrected fixture-only Linux trust-input and reviewed-trust tests",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "05-linux-gates.log",
+      "bytes": 26366,
+      "sha256": "29976be7fcb3a7644f534ffc5990e5ef93eb6393f895cd35057390944ad6db92",
+      "description": "Linux reviewed tests repeated three times; regression, doctests, current check/lint and MSRV check",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "06-windows-gates.log",
+      "bytes": 2920,
+      "sha256": "63dabbfe997fe8071c31ff4c1a735a2c5fe61da42cf8f54eb0eb523c31ae9fab",
+      "description": "Windows reviewed trust and worker policy; current check/lint and MSRV check",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "07-root-gates.log",
+      "bytes": 13761,
+      "sha256": "1261eed09e1f24f70df42c50d90517c4ba21987193604a51f076f480c364fba6",
+      "description": "Root gated_tests, performance_contract_074 and release_evidence; current check/lint; docs/contract/links/book with expected ship refusal",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "08-linux-root-package-gates.log",
+      "bytes": 566,
+      "sha256": "bccb8bfa821ac57fd4de68d259a079216c59c6abdc0df809ad7eccd152d0e247",
+      "description": "Linux xtask current check and warnings-denied Clippy",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "09-final-path-drift-guard.log",
+      "bytes": 5852,
+      "sha256": "1fdb0dd36abb799bc7bb0efbf2447cb31b3841c81a475f79d0f9d93ad5a98549",
+      "description": "Final fixed-path drift guard: eleven Linux tests in three repeats and strict current Clippy",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "10-explicit-production-scope-contract.log",
+      "bytes": 485,
+      "sha256": "bc9ba1f11596dfbc76037840848bd6a12e051d55c92c8c63cf9196574d83bc05",
+      "description": "Explicit no-production-signing contract label: scoped root test",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "11-final-root-scope-check-lint.log",
+      "bytes": 290,
+      "sha256": "d0cfb66f222b8c34a42c73ffab7d9f7cbc1cab2e26d7ac73162a36b52a111727",
+      "description": "Final Windows xtask current check and warnings-denied Clippy",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "sha256": "b60123b5efad1ce17cf7726497051876da9f5b0a9ef122dbda1d54ca080f22d5",
+      "path": "12-final-docs-integrity.log",
+      "bytes": 580,
+      "description": "Final scoped formatting, doc-check, local performance contract, expected require-ship refusal, links and book",
+      "expected_exit": 0,
+      "observed_exit": 0
+    }
+  ],
+  "capture_count": 12,
+  "tests": {
+    "final_linux_trust_input_per_repeat": 11,
+    "final_linux_trust_input_repeats": 3,
+    "linux_doctests": 63,
+    "linux_regression": [
+      8,
+      15,
+      13
+    ],
+    "windows_regression": [
+      8,
+      14
+    ],
+    "root_suites": [
+      6,
+      125,
+      13
+    ],
+    "seed": "0x07512074",
+    "invalid_byte_mutations_per_test": 256,
+    "parallel_owned_guards": 4
+  },
+  "retained_negative_result": "Initial five of ten trust-input tests failed at the existing authority fixture path boundary. Only the fixture layout was corrected; no production rule or existing fixture reader was relaxed.",
+  "linux_msrv_clippy": "unavailable; not run",
+  "profile_environment": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never",
+  "linux_command_prefix": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074;",
+  "ship_check": {
+    "expected_native_exit": 1,
+    "observed_native_exit": 1,
+    "state": "closed; candidate identity and qualification incomplete"
+  },
+  "admission_claims": {
+    "real_private_key_read_or_production_policy_signed": false,
+    "production_policy_body_pin_or_epoch_selected": false,
+    "actual_root_trust_file_installed": false,
+    "authority_bootstrap_or_enrollment": false,
+    "initial_host_namespace_admitted": false,
+    "kernel_host_context_joined": false,
+    "controller_provenance_replay_or_fence_joined": false,
+    "authenticated_original_start": false,
+    "writer_cessation_or_completion": false,
+    "fixed_cells_2_through_4": false,
+    "new_sigkill_proofs": false,
+    "server_operation": false,
+    "product_candidate_or_expensive_workload": false,
+    "performance_claim": false,
+    "release_ship_admission": false
+  }
+}

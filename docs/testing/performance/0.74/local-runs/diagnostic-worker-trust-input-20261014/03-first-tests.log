@@ -1,0 +1,56 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 18.17s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+
+thread 'diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch' (417) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... FAILED
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... FAILED
+
+thread 'diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners' (418) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... FAILED
+thread 'diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals' (420) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (423) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (425) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread '<unnamed>' (422) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+thread 'diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency' (421) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:433:27:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+thread '<unnamed>' (424) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... FAILED
+
+thread 'diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh' (426) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:134:14:
+called `Result::unwrap()` on an `Err` value: Invalid
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... FAILED
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch
+    diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners
+    diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals
+    diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency
+    diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh
+
+test result: FAILED. 5 passed; 5 failed; 0 ignored; 0 measured; 652 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
