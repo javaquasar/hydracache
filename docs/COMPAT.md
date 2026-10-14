@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The selected-root original-exec composition is a private child of the existing
+Linux x86_64 libtest root module. It owns its own root/child and observes stopped
+kernel file mappings and exact unchanged filter bytes. No caller adoption, public
+API, normal-library consumer, durable/wire schema, dependency, production profile,
+reviewed pin or qualification input changes. Post-install root/namespace policy,
+custody, handoff and server admission remain closed. See the
+[rooted exec boundary](testing/performance/0.74/diagnostic-signer-rooted-exec-design.md).
+
 The child root probe exists only in Linux x86_64 libtest builds. Its temporary
 tree and private scalar report are not a public API or durable/wire artifact.
 It changes only its owned child's user namespace/root/capabilities with unchanged

@@ -12270,3 +12270,128 @@ fn signer_child_root_mechanics_preserve_nonroot_local_scope_and_closed_exec() {
         );
     }
 }
+
+#[test]
+fn signer_rooted_original_exec_keeps_production_and_late_namespace_policy_closed() {
+    let c = contract("diagnostic-signer-rooted-exec-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "owner_creates_root_and_child_without_caller_adoption",
+        "original_pidfd_and_thread_bound_trace_retained",
+        "root_namespace_credentials_tasks_fds_and_empty_env_checked",
+        "original_descriptor_exec_observed_in_selected_root",
+        "kernel_vma_selected_file_identities_checked",
+        "native_startup_extra_exec_task_control_root_namespace_mutations_refused",
+        "original_stack_header_program_and_exact_install_entry_exit_checked",
+        "non_dumpable_zero_exit_and_native_exec_denial_checked",
+        "sticky_failure_phase_replay_sigkill_and_drop_reap_original",
+        "parent_root_namespace_and_old_helper_policy_unchanged",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_or_map_files_attested",
+        "post_install_root_namespace_mutation_policy_installed",
+        "independent_runtime_custody",
+        "complete_sandbox",
+        "multithreaded_signer_supported",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "mount_or_host_namespace_or_sysctl_changed",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("original_files", 4),
+        ("original_directories", 4),
+        ("mapping_bytes", 65536),
+        ("mapping_records", 128),
+        ("page_bytes", 4096),
+        ("native_syscall_ceiling", 1024),
+        ("startup_pairs", 256),
+        ("filter_instructions", 34),
+        ("filter_bytes", 272),
+        ("stall_seconds", 5),
+        ("seeded_execs", 8),
+        ("independent_owners", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let parent = std::fs::read_to_string(base.join("diagnostic_signer_root_fixture.rs")).unwrap();
+    assert!(parent.contains("mod rooted_exec;"));
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    for required in [
+        "Root::new()",
+        "PhantomData<Rc<()>>",
+        "SYS_pidfd_open",
+        "SYS_execveat",
+        "AT_EMPTY_PATH",
+        "PTRACE_O_TRACEEXEC",
+        "PTRACE_O_EXITKILL",
+        "PTRACE_GET_SYSCALL_INFO",
+        "PTRACE_PEEKDATA",
+        "PR_SET_DUMPABLE",
+        "maps::validate",
+        "self.installer(stack, header, program)?",
+        "0..256",
+        "SYS_unshare",
+        "SYS_setns",
+        "SYS_chroot",
+        "encoded(&policy())",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "PTRACE_ATTACH",
+        "PTRACE_POKE",
+        "waitpid(-1",
+        "SigningKey",
+        "sign_prepared_files",
+        "libc::mount(",
+        "CLONE_NEWNS",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let maps = std::fs::read_to_string(base.join("diagnostic_signer_rooted_maps.rs")).unwrap();
+    for required in [
+        "65536",
+        "128",
+        "4096",
+        "libc::major",
+        "libc::minor",
+        "file.stamp.0[1]",
+        "checked_add",
+        "[vdso]",
+        "[stack]",
+    ] {
+        assert!(maps.contains(required), "{required}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("rooted_exec"),
+            "{path}"
+        );
+    }
+}

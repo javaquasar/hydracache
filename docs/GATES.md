@@ -1,7 +1,15 @@
 # HydraCache — Enforcement Gates
 
+W11's selected-root original-exec composition uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked rooted_exec -- --nocapture`.
+Eleven cases check the original child exec, selected kernel VMA file identities,
+exact unchanged filter installation, refusals and SIGKILL at four boundaries.
+No new manual gate, production custody, post-install namespace policy, handoff or
+server admission follows. See the
+[rooted exec contract](testing/performance/0.74/diagnostic-signer-rooted-exec-contract.toml).
+
 W11's owned child root fixture uses ordinary Linux x86_64 tests:
-`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_root -- --nocapture`.
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_signer_root_fixture::tests:: -- --nocapture`.
 Seven cases check fixed temporary tree and kernel child-only root/map/capability
 mechanics. No mount, host-root operation or new environment gate is used; missing
 unprivileged namespace capability refuses instead of falling back. Actual signer

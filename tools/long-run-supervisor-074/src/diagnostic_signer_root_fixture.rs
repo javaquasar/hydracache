@@ -771,5 +771,7 @@ fn child(fds: [i32; 3], last: u32) -> ! {
         libc::_exit(0);
     }
 }
+#[path = "diagnostic_signer_rooted_exec_fixture.rs"]
+mod rooted_exec;
 #[path = "diagnostic_signer_root_fixture_tests.rs"]
 mod tests;
