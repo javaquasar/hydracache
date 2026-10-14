@@ -11950,3 +11950,108 @@ fn signer_seccomp_fixture_checks_original_syscall_without_bootstrap_admission() 
         assert!(!consumer.contains("seccomp_fixture"));
     }
 }
+
+#[test]
+fn signer_joined_fixture_preserves_kernel_input_and_closed_runtime_admission() {
+    let c = contract("diagnostic-signer-joined-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "local_fixed_gnu_helper_compiled_before_launch",
+        "image_materialization_writer_isolated_from_parent_forks",
+        "inherited_external_writer_counterexample_retained",
+        "helper_environment_cleared_and_original_stdio_only",
+        "fresh_exec_and_exact_install_same_owned_child",
+        "single_original_task_checked",
+        "pre_install_exec_task_control_and_unsupported_number_refuse",
+        "post_exec_addresses_captured_once_from_kernel_entry",
+        "header_and_program_bounded_to_original_stack",
+        "exact_bytes_tsync_zero_exit_and_nondumpable_hardening",
+        "native_self_other_and_descriptor_exec_denied",
+        "owned_child_sigkill_at_first_exec_and_installed_checked",
+        "sticky_refusal_and_terminal_replay_denied",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "post_exec_addresses_preselected_before_fork",
+        "independent_runtime_custody",
+        "mapped_memory_attested",
+        "atomic_proof_against_external_memory_writer",
+        "multithreaded_production_signer_supported",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_service_or_cgroup_mutated",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("policy_instructions", 34),
+        ("policy_bytes", 272),
+        ("startup_entry_pairs", 256),
+        ("startup_syscall_number_ceiling", 1024),
+        ("maps_read_bytes", 65536),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value));
+    }
+    let lib =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/lib.rs")).unwrap();
+    assert!(lib.replace("\r\n", "\n").contains("#[cfg(all(test, target_os = \"linux\", target_arch = \"x86_64\"))]\nmod diagnostic_signer_joined_fixture;"));
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs"),
+    )
+    .unwrap();
+    for required in [
+        "PTRACE_GET_SYSCALL_INFO",
+        "PTRACE_PEEKDATA",
+        "PTRACE_O_EXITKILL",
+        "SECCOMP_FILTER_FLAG_TSYNC",
+        "PR_SET_DUMPABLE",
+        "PhantomData<Rc<()>>",
+        "waitpid(self.pid",
+        "header",
+        "program",
+        "stack_bounds",
+        "startup_allowed",
+        "env_clear()",
+        "1.94.0",
+        "--target=x86_64-unknown-linux-gnu",
+        "include_str!",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "PTRACE_SECCOMP_GET_FILTER",
+        "PTRACE_GETREGS",
+        "PTRACE_SETREGS",
+        "PTRACE_POKE",
+        "PTRACE_ATTACH",
+        "SigningKey",
+        "sign_prepared_files",
+        "waitpid(-1",
+        "LD_PRELOAD",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "src/server.rs",
+        "src/bin/diagnostic_controller.rs",
+        "src/diagnostic_controller_producer_linux.rs",
+    ] {
+        let consumer =
+            std::fs::read_to_string(root().join("tools/long-run-supervisor-074").join(path))
+                .unwrap();
+        assert!(!consumer.contains("joined_fixture"), "{path}");
+    }
+}

@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The joined signer bootstrap fixture and embedded helper exist only in Linux
+x86_64 library test builds. Shared policy/info/file helpers gain pub(super)
+test-module visibility, not a normal-library/public ABI. No durable/wire/signed
+schema, configuration, migration, dependency or production kernel/build profile
+changes. Rust 1.94/GNU compiler and exact local copy utility are fixture setup
+requirements and explicitly refuse absence; they do not select production
+runtime custody. The bounded post-exec input proof has its own narrower trust
+scope rather than changing the standalone fork-only contract. See the
+[joined boundary](testing/performance/0.74/diagnostic-signer-joined-design.md).
+
 The owned seccomp installation fixture is a private Linux x86_64 test-build
 module, with no public launch/address/filter API, signed/durable/wire schema or
 migration. It requires kernel syscall-info, pidfd and close_range support and

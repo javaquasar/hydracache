@@ -36,7 +36,7 @@ fn peek_word(word: libc::c_long, errno: i32) -> io::Result<libc::c_long> {
 const fn ins(code: u16, jt: u8, jf: u8, k: u32) -> libc::sock_filter {
     libc::sock_filter { code, jt, jf, k }
 }
-fn policy() -> [libc::sock_filter; COUNT] {
+pub(super) fn policy() -> [libc::sock_filter; COUNT] {
     let mut out = [ins(0, 0, 0, 0); COUNT];
     out[..6].copy_from_slice(&[
         ins(0x20, 0, 0, 4),
@@ -66,7 +66,7 @@ fn policy() -> [libc::sock_filter; COUNT] {
     ]);
     out
 }
-fn encoded(program: &[libc::sock_filter]) -> Vec<u8> {
+pub(super) fn encoded(program: &[libc::sock_filter]) -> Vec<u8> {
     program
         .iter()
         .flat_map(|i| {
@@ -96,12 +96,12 @@ enum Fault {
     Pointer,
 }
 #[derive(Debug, PartialEq, Eq)]
-enum Event {
+pub(super) enum Event {
     Entry { arch: u32, nr: u64, args: [u64; 6] },
     Exit { arch: u32, value: i64, error: bool },
 }
 
-fn decode(info: &libc::ptrace_syscall_info, bytes: usize) -> io::Result<Event> {
+pub(super) fn decode(info: &libc::ptrace_syscall_info, bytes: usize) -> io::Result<Event> {
     if bytes > std::mem::size_of::<libc::ptrace_syscall_info>() || info.flags != 0 {
         return Err(invalid());
     }

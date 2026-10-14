@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11's joined bootstrap fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_joined -- --nocapture`.
+A fixed locally built GNU helper passes original first exec and exact kernel
+filter installation in one owner chain. Phase/refusal, bounded post-exec stack
+inputs, isolated image writing, native denial and owned child SIGKILL at two
+boundaries are checked. Runtime custody, handoff and actual tracer loss remain
+closed. No normal-library launch API or manual gate is introduced. See the
+[joined contract](testing/performance/0.74/diagnostic-signer-joined-contract.toml).
+
 W11's second approved bootstrap slice uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_seccomp -- --nocapture`.
 Exact original installation entry/memory/zero exit, non-dumpable hardening,

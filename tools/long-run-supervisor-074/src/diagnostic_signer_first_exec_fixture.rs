@@ -24,7 +24,7 @@ fn is_exec_stop(status: i32) -> bool {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct Stamp {
+pub(super) struct Stamp {
     dev: u64,
     ino: u64,
     uid: u32,
@@ -36,7 +36,7 @@ struct Stamp {
     changed: (i64, i64),
 }
 impl Stamp {
-    fn of(m: &Metadata) -> Self {
+    pub(super) fn of(m: &Metadata) -> Self {
         Self {
             dev: m.dev(),
             ino: m.ino(),
@@ -50,7 +50,7 @@ impl Stamp {
         }
     }
 }
-fn selected(file: &File) -> io::Result<Stamp> {
+pub(super) fn selected(file: &File) -> io::Result<Stamp> {
     // SAFETY: flag query on a borrowed live descriptor, no ownership transfer.
     let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
     let m = file.metadata()?;
