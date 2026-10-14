@@ -15,6 +15,13 @@ use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input:
 };
 
 #[test]
+fn oidc_public_entry_is_fixed_original_binding_not_execution() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::{ControllerBuildInput, oidc_input::open_fixed_oidc_trust};
+    let _ = open_fixed_oidc_trust;
+    let _ = ControllerBuildInput::bind_oidc;
+}
+
+#[test]
 fn worker_kernel_binding_public_entry_has_no_host_or_revalidation_override() {
     fn bind<'s, 'a, 'p>(
         source: &'s mut WorkerTrustInput,

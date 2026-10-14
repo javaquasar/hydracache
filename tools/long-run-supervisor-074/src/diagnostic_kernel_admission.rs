@@ -147,6 +147,23 @@ impl KernelPacket {
     pub fn received_time(&self) -> &KernelTimePoint {
         &self.received
     }
+    // Private fresh origin sample; never a caller timestamp or a renewed packet hold.
+    pub(crate) fn sample_original_unix_seconds(&mut self) -> Result<u64, KernelError> {
+        let result = (|| {
+            if self.refused {
+                return Err(KernelError::Refused);
+            }
+            self.sender.revalidate(&self.origin)?;
+            let now = self.origin.sample()?;
+            valid_hold(&self.received, &now)?;
+            self.sender.revalidate(&self.origin)?;
+            Ok(now.unix_seconds())
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
     pub fn revalidate_sender(&mut self) -> Result<(), KernelError> {
         if self.refused {
             return Err(KernelError::Refused);

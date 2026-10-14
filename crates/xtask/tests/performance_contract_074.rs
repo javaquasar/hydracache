@@ -3,6 +3,127 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_start() {
+    let c = contract("diagnostic-oidc-input-contract.toml");
+    assert_eq!(c["max_trust_bytes"].as_integer(), Some(2048));
+    assert_eq!(c["max_token_bytes"].as_integer(), Some(16384));
+    assert_eq!(c["max_token_lifetime_seconds"].as_integer(), Some(600));
+    assert_eq!(
+        c["original_request_packet_hold_seconds"].as_integer(),
+        Some(60)
+    );
+    for k in [
+        "rs256_original_signing_input_only",
+        "single_explicit_rsa_key_no_token_trust_override",
+        "strict_bounded_claims_duplicate_type_refusal",
+        "request_digest_audience_and_origin_equality_required",
+        "fixed_job_profile_explicit_workflow_revision_subject_required",
+        "original_kernel_freshness_and_snapshot_checks",
+        "original_source_build_controller_worker_chain_retained",
+        "no_replacement_or_token_claims_descriptor_export",
+        "all_original_runtime_inputs_latch_on_failure",
+        "positive_issuer_and_principals_are_synthetic",
+    ] {
+        assert_eq!(c[k].as_bool(), Some(true), "{k}");
+    }
+    for k in [
+        "actual_github_key_acquisition_or_policy_enrolled",
+        "actual_protected_job_token_verified",
+        "dedicated_signing_job_dispatched",
+        "durable_nonce_or_fence_admission",
+        "runtime_refusal_is_durable_revocation",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "real_private_key_read_or_production_policy_signed",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[k].as_bool(), Some(false), "{k}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs"),
+    )
+    .unwrap();
+    let runtime = source.split("#[cfg(test)]").next().unwrap();
+    for marker in [
+        ".same(&Snapshot::new",
+        "original_unix_seconds()",
+        "self.original.original.latch_refusal()",
+        "original: &'o mut ControllerBuildInput",
+        "trust: &'t mut OidcTrustInput",
+    ] {
+        assert!(runtime.contains(marker), "{marker}");
+    }
+    for marker in [
+        "pub fn start",
+        "pub fn into_",
+        "pub fn claims",
+        "pub fn token",
+        "pub fn fixture",
+        "std::env::",
+        "O_CREAT",
+        "impl Clone",
+        "reqwest",
+    ] {
+        assert!(!runtime.contains(marker), "{marker}");
+    }
+    let profile = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "RSA_PKCS1_2048_8192_SHA256",
+        "token.as_bytes()[..input_len]",
+        "out.contains_key(&key)",
+        "request_hash",
+        "snapshot_expires_at",
+    ] {
+        assert!(profile.contains(marker), "{marker}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("bind_oidc") && !server.contains("OidcControllerInput"));
+    // Current tooling is not the frozen observer build. Only these approved
+    // Linux supervisor edges may differ; no package/version/checksum drifts.
+    let baseline = std::process::Command::new("git")
+        .args([
+            "show",
+            "35210757cc505e159345c58608677aa537c4bdd1:Cargo.lock",
+        ])
+        .current_dir(root())
+        .output()
+        .unwrap();
+    assert!(baseline.status.success());
+    let mut expected: toml::Value =
+        toml::from_str(std::str::from_utf8(&baseline.stdout).unwrap()).unwrap();
+    let current: toml::Value =
+        toml::from_str(&std::fs::read_to_string(root().join("Cargo.lock")).unwrap()).unwrap();
+    let supervisor = expected["package"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|p| p["name"].as_str() == Some("hydracache-long-run-supervisor-074"))
+        .unwrap();
+    let deps = supervisor["dependencies"].as_array_mut().unwrap();
+    assert!(!deps
+        .iter()
+        .any(|d| matches!(d.as_str(), Some("base64" | "ring"))));
+    deps.push(toml::Value::String("base64".into()));
+    deps.push(toml::Value::String("ring".into()));
+    deps.sort_by(|a, b| a.as_str().unwrap().cmp(b.as_str().unwrap()));
+    assert_eq!(
+        current, expected,
+        "only the two approved supervisor crypto edges may change"
+    );
+}
+
+#[test]
 fn diagnostic_controller_build_binds_reviewed_statement_without_execution_or_run_provenance() {
     let c = contract("diagnostic-controller-build-input-contract.toml");
     for key in [
@@ -5129,11 +5250,37 @@ fn local_diagnostic_artifact_verification_keeps_execution_and_build_claims_close
             "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
         ),
     ] {
-        let actual: String = Sha256::digest(std::fs::read(root().join(path)).unwrap())
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect();
-        assert_eq!(actual, expected);
+        // Immutable observer/build evidence belongs to its exact original sources,
+        // not to the subsequently extended controller tooling's workspace lock.
+        for source in [
+            "62114be0f5da3218706e30d7424acfb5d0579d07",
+            "70ca60eb3f2f75a326e9f6430467749b76440a04",
+        ] {
+            let object = std::process::Command::new("git")
+                .args(["show", &format!("{source}:{path}")])
+                .current_dir(root())
+                .output()
+                .unwrap();
+            assert!(
+                object.status.success(),
+                "missing original lock object {source}:{path}"
+            );
+            let actual: String = Sha256::digest(&object.stdout)
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect();
+            assert_eq!(actual, expected, "original lock object {source}:{path}");
+        }
+        if path != "Cargo.lock" {
+            let actual: String = Sha256::digest(std::fs::read(root().join(path)).unwrap())
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect();
+            assert_eq!(
+                actual, expected,
+                "current standalone observer remains frozen"
+            );
+        }
         assert_eq!(m[field], expected);
     }
     assert_eq!(m["files"].as_array().unwrap().len(), 3);

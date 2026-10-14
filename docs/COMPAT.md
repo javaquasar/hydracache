@@ -1,5 +1,21 @@
 # HydraCache Compatibility Register
 
+Separate opt-in `diagnostic-oidc-trust-input-074-v1` configuration has a fixed
+root-only original reader at `/etc/hydracache-perf/oidc-trust-074.json`, bounded
+to 2048 canonical LF bytes. It selects one explicit RSA/RS256 signing key, fixed
+GitHub issuer/repository/dedicated job profile, explicit workflow SHA/subject and
+snapshot validity window. Missing/null/duplicate/unknown/future/noncanonical or
+unsafe input, source drift and expired selection refuse without repair/refresh.
+Older binaries have no reader; no writer or migration installs configuration.
+The additional compact-JWS profile verifies original signing bytes and strict
+bounded claims under configured trust, binding audience and origin to the same
+original diagnostic request. Additional bounded scalar claims confer no authority;
+unknown JOSE headers and reusable-job claims refuse in this initial profile.
+Actual independently authenticated key acquisition, protected-job enrollment,
+durable replay, execution and server routing remain separate. Existing signed
+domains, request/ledger/receipt schemas and frozen qualification are unchanged.
+See the [OIDC design](testing/performance/0.74/diagnostic-oidc-input-design.md).
+
 Separate operator configuration `diagnostic-controller-trust-input-074-v1`
 has a new opt-in reader at `/etc/hydracache-perf/controller-trust-074.json`.
 It accepts only schema/repository/controller key/actor IDs/client UIDs/client GID

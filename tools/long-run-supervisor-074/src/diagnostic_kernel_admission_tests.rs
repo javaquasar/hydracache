@@ -53,6 +53,25 @@ fn kernel_admission_actual_sender_and_nonblocking_empty_receive() {
     assert!(receiver.try_receive().unwrap().is_none());
 }
 #[test]
+fn kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal() {
+    for case in 0..3 {
+        let (mut receiver, fd) = pair();
+        send(&fd, b"original-clock-only");
+        let mut p = packet(&mut receiver);
+        assert!(p.sample_original_unix_seconds().unwrap() >= p.received_time().unix_seconds());
+        match case {
+            0 => p.sender.projection.groups.push(u32::MAX),
+            1 => p.received.realtime_ns = u64::MAX,
+            _ => p.latch_refusal(),
+        }
+        assert!(p.sample_original_unix_seconds().is_err());
+        assert!(matches!(
+            p.sample_original_unix_seconds(),
+            Err(KernelError::Refused)
+        ));
+    }
+}
+#[test]
 fn kernel_admission_exact_budget_and_oversized_packet_refuse() {
     for length in [
         MAX_PACKET_BYTES,

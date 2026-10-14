@@ -103,6 +103,18 @@ pub struct KernelWorkerPolicyInput<'s, 'a, 'p> {
     probe: Probe,
 }
 impl KernelWorkerPolicyInput<'_, '_, '_> {
+    pub(super) fn original_unix_seconds(&mut self) -> Result<u64, TrustInputError> {
+        let result = (|| {
+            self.revalidate()?;
+            let now = self.packet.sample_original_unix_seconds()?;
+            self.revalidate()?;
+            Ok(now)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
     pub(super) fn latch_refusal(&mut self) {
         self.policy.latch_refusal();
         self.packet.latch_refusal();

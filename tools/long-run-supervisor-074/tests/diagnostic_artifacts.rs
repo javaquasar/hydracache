@@ -19,7 +19,24 @@ struct Synthetic {
     log: Vec<u8>,
     configs: BTreeMap<String, &'static [u8]>,
 }
-const ROOT_LOCK: &[u8] = include_bytes!("../../../Cargo.lock");
+// Synthetic observer fixtures need its frozen lock, not the newer controller's
+// two crypto dependency edges. Reconstruct only that package block and require
+// the original fixed SHA. This also works in the builder's shallow checkout.
+fn frozen_root_lock() -> &'static [u8] {
+    static ORIGINAL: std::sync::LazyLock<Vec<u8>> = std::sync::LazyLock::new(|| {
+        let current = include_str!("../../../Cargo.lock").replace("\r\n", "\n");
+        let marker = "[[package]]\nname = \"hydracache-long-run-supervisor-074\"";
+        let (before, rest) = current.split_once(marker).unwrap();
+        let (package, after) = rest.split_once("\n[[package]]").unwrap();
+        let package = package
+            .replace("\n \"base64\",", "")
+            .replace("\n \"ring\",", "");
+        let raw = format!("{before}{marker}{package}\n[[package]]{after}").into_bytes();
+        assert_eq!(ArtifactDigest::of(&raw).sha256, ROOT_LOCK_SHA256);
+        raw
+    });
+    ORIGINAL.as_slice()
+}
 const OBSERVER_LOCK: &[u8] = include_bytes!("../../get-owner-scheduled-controls-074/Cargo.lock");
 
 fn artifact_event() -> serde_json::Value {
@@ -106,7 +123,7 @@ impl Synthetic {
             counting_allocator: false,
             build_command: BUILD_COMMAND.iter().map(|s| s.to_string()).collect(),
             binary: ArtifactDigest::of(&binary),
-            root_lock: ArtifactDigest::of(ROOT_LOCK),
+            root_lock: ArtifactDigest::of(frozen_root_lock()),
             observer_lock: ArtifactDigest::of(OBSERVER_LOCK),
             build_log: ArtifactDigest::of(&log),
             configs: configs
@@ -151,7 +168,7 @@ impl Synthetic {
     fn contents(&self) -> ArtifactContents<'_> {
         ArtifactContents {
             binary: &self.binary,
-            root_lock: ROOT_LOCK,
+            root_lock: frozen_root_lock(),
             observer_lock: OBSERVER_LOCK,
             build_log: &self.log,
             configs: self.configs.clone(),
@@ -307,7 +324,7 @@ fn unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs() {
     for (name, bytes) in [
         ("binary", f.binary.as_slice()),
         ("cargo.jsonl", f.log.as_slice()),
-        ("root.lock", ROOT_LOCK),
+        ("root.lock", frozen_root_lock()),
         ("observer.lock", OBSERVER_LOCK),
     ] {
         std::fs::write(root.join(name), bytes).unwrap();
@@ -758,7 +775,7 @@ fn separate_builder_cli_signs_checked_fixture_without_execution_and_refuses_repl
     for (name, raw) in [
         ("timing-controls-074", f.binary.as_slice()),
         ("build-log.jsonl", f.log.as_slice()),
-        ("Cargo.lock.root", ROOT_LOCK),
+        ("Cargo.lock.root", frozen_root_lock()),
         ("Cargo.lock.observer", OBSERVER_LOCK),
     ] {
         std::fs::write(root.join(name), raw).unwrap();
@@ -844,7 +861,7 @@ mod linux_tests {
             for (name, bytes) in [
                 ("timing-controls-074", f.binary.as_slice()),
                 ("build-log.jsonl", f.log.as_slice()),
-                ("Cargo.lock.root", ROOT_LOCK),
+                ("Cargo.lock.root", frozen_root_lock()),
                 ("Cargo.lock.observer", OBSERVER_LOCK),
             ] {
                 fs::write(root.join(name), bytes).unwrap();

@@ -4,6 +4,9 @@ use crate::diagnostic_artifacts::{ArtifactError, VerifiedBuild};
 use crate::diagnostic_builder::CheckedBuilderPolicy;
 use crate::diagnostic_reviewed_trust;
 
+#[path = "diagnostic_oidc_input.rs"]
+pub mod oidc_input;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ControllerBuildError {
     #[error("original controller input refused: {0}")]
