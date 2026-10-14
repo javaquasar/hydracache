@@ -103,6 +103,25 @@ pub struct KernelWorkerPolicyInput<'s, 'a, 'p> {
     probe: Probe,
 }
 impl KernelWorkerPolicyInput<'_, '_, '_> {
+    pub(super) fn latch_refusal(&mut self) {
+        self.policy.latch_refusal();
+        self.packet.latch_refusal();
+    }
+    pub(super) fn authenticate_configured_controller(
+        &mut self,
+        policy: &crate::diagnostic_ipc::DiagnosticPolicy,
+    ) -> Result<crate::diagnostic_ipc::DiagnosticRequest, TrustInputError> {
+        let result = (|| {
+            self.revalidate()?;
+            let request = self.packet.authenticate(policy)?;
+            self.revalidate()?;
+            Ok(request)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
     #[cfg(test)]
     pub(super) fn simulate_owned_fault_for_test(&mut self, case: u8) {
         match case {
@@ -126,8 +145,7 @@ impl KernelWorkerPolicyInput<'_, '_, '_> {
             self.policy.revalidate()
         })();
         if result.is_err() {
-            self.policy.latch_refusal();
-            self.packet.latch_refusal();
+            self.latch_refusal();
         }
         result
     }

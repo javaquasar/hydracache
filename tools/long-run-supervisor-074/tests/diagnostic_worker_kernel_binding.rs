@@ -1,4 +1,10 @@
 #![cfg(target_os = "linux")]
+#[test]
+fn controller_trust_input_public_entry_is_fixed_and_readonly() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::{open_fixed_controller_trust, SignedControllerInput};
+    let _ = open_fixed_controller_trust;
+    let _ = SignedControllerInput::revalidate;
+}
 use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::{
     KernelWorkerPolicyInput, WorkerTrustInput,
 };

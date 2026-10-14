@@ -3,6 +3,89 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_controller_trust_is_fixed_principals_not_provenance_replay_or_start() {
+    let c = contract("diagnostic-controller-trust-input-contract.toml");
+    assert_eq!(
+        c["input_schema"].as_str(),
+        Some("diagnostic-controller-trust-input-074-v1")
+    );
+    assert_eq!(
+        c["fixed_path"].as_str(),
+        Some("/etc/hydracache-perf/controller-trust-074.json")
+    );
+    assert_eq!(c["max_document_bytes"].as_integer(), Some(2048));
+    assert_eq!(c["max_principals_per_allowlist"].as_integer(), Some(32));
+    for key in [
+        "reviewed_controller_key_repository_required",
+        "explicit_sorted_nonroot_client_principals",
+        "strict_canonical_missing_null_duplicate_future_refusal",
+        "original_nofollow_root_file_metadata_bytes_retained",
+        "no_public_path_key_policy_or_principal_override",
+        "original_kernel_worker_mutable_borrow_retained",
+        "kernel_signature_peer_boot_freshness_checks",
+        "original_request_retained_without_extraction",
+        "same_original_request_on_revalidation",
+        "failure_latches_controller_and_all_original_worker_inputs",
+        "healthy_drop_preserves_originals",
+        "positive_cases_are_nonroot_models_and_synthetic_signers",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_principals_selected_or_config_installed",
+        "source_opener_or_physical_host_enrolled",
+        "real_worker_policy_epoch_or_authority_enrolled",
+        "github_run_or_build_provenance_independently_verified",
+        "durable_replay_or_fence_admission",
+        "runtime_refusal_is_durable_revocation",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "private_key_read_or_production_policy_signed",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "controller_key()",
+        "Snapshot::new",
+        "snapshot.same",
+        "controller: &'c mut ControllerTrustInput",
+        "worker: &'b mut KernelWorkerPolicyInput",
+        "authenticate_configured_controller",
+        "worker.latch_refusal()",
+        "PhantomData<Rc<()>>",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for marker in [
+        "pub fn start",
+        "pub fn into_",
+        "pub fn policy",
+        "pub fn fixture",
+        "O_CREAT",
+        "std::env::",
+        "initialize_fixed_registry",
+        "impl Clone",
+    ] {
+        assert!(!source.contains(marker), "{marker}");
+    }
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(!server.contains("controller_input"));
+}
+
+#[test]
 fn diagnostic_worker_kernel_binding_preserves_original_context_and_closed_execution() {
     let c = contract("diagnostic-worker-kernel-binding-contract.toml");
     assert_eq!(

@@ -1,5 +1,18 @@
 # HydraCache Compatibility Register
 
+Separate operator configuration `diagnostic-controller-trust-input-074-v1`
+has a new opt-in reader at `/etc/hydracache-perf/controller-trust-074.json`.
+It accepts only schema/repository/controller key/actor IDs/client UIDs/client GID
+in canonical LF JSON, at most 2048 bytes and 32 strictly sorted unique principals
+per list. Root-owned original no-follow files retain metadata and exact bytes;
+missing/null/duplicate/unknown/future/noncanonical, wrong pinned key/repository,
+unsafe principals or drift refuse without repair, reload or fallback. No writer,
+migration or actual configuration installation is added; older binaries have no
+reader for this new configuration. Existing signed request/domain and durable
+formats remain unchanged. Its borrowed request guard verifies signature/peer/
+freshness only, not GitHub provenance, nonce consumption or start. See the
+[design](testing/performance/0.74/diagnostic-controller-trust-input-design.md).
+
 Worker policy/kernel binding adds an opt-in read-only runtime guard, not a new
 wire, configuration or durable schema. It compares verified policy context with
 retained machine/boot files, typed user/mount namespaces and the original kernel

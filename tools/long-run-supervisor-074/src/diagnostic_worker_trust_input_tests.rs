@@ -521,6 +521,11 @@ fn kernel_model(host: AssertedWorkerHost) -> Model {
     model
 }
 fn kernel_packet() -> crate::diagnostic_kernel_admission::KernelPacket {
+    kernel_packet_bytes(b"context-observation-only-not-authorized-request")
+}
+pub(super) fn kernel_packet_bytes(
+    bytes: &[u8],
+) -> crate::diagnostic_kernel_admission::KernelPacket {
     use std::os::fd::{FromRawFd, OwnedFd};
     let mut fds = [-1; 2];
     assert_eq!(
@@ -537,7 +542,6 @@ fn kernel_packet() -> crate::diagnostic_kernel_admission::KernelPacket {
     let receiver = unsafe { OwnedFd::from_raw_fd(fds[0]) };
     let sender = unsafe { OwnedFd::from_raw_fd(fds[1]) };
     let mut receiver = crate::diagnostic_kernel_admission::KernelReceiver::new(receiver).unwrap();
-    let bytes = b"context-observation-only-not-authorized-request";
     assert_eq!(
         unsafe {
             libc::send(
@@ -550,6 +554,25 @@ fn kernel_packet() -> crate::diagnostic_kernel_admission::KernelPacket {
         bytes.len() as isize
     );
     receiver.try_receive().unwrap().unwrap()
+}
+
+pub(super) fn controller_worker_fixture() -> (
+    TempDir,
+    TempDir,
+    WorkerTrustInput,
+    FixedAuthorityRegistry,
+    Vec<u8>,
+) {
+    let model = kernel_model(kernel_local_host());
+    let input = model.input();
+    let authority = model.authority();
+    (
+        model.root,
+        model.authority_root,
+        input,
+        authority,
+        model.envelope,
+    )
 }
 
 #[test]

@@ -17,6 +17,9 @@ use thiserror::Error;
 mod kernel_binding;
 pub use kernel_binding::KernelWorkerPolicyInput;
 
+#[path = "diagnostic_controller_trust_input.rs"]
+pub mod controller_input;
+
 pub const TRUST_INPUT_SCHEMA: &str = "diagnostic-worker-trust-input-074-v1";
 pub const FIXED_TRUST_PATH: &str = "/etc/hydracache-perf/worker-trust-074.json";
 pub const MAX_TRUST_BYTES: usize = 2048;
