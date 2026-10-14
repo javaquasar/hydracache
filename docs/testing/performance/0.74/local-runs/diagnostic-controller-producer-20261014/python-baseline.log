@@ -1,0 +1,15 @@
+..E....
+======================================================================
+ERROR: test_fixed_inputs_require_actual_frozen_hashes (scripts.perf.test_diagnostic_builder_074.DiagnosticBuilderTests.test_fixed_inputs_require_actual_frozen_hashes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\test_diagnostic_builder_074.py", line 49, in test_fixed_inputs_require_actual_frozen_hashes
+    real = builder.checked_inputs(root, root / "docs/testing/performance/0.74/rental-pilot-draft")
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\diagnostic_builder_074.py", line 59, in checked_inputs
+    raise ValueError("fixed input bytes refused")
+ValueError: fixed input bytes refused
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.043s
+
+FAILED (errors=1)

@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The separate [diagnostic controller producer](diagnostic-controller-producer-design.md)
+now prepares canonical request/audience and selected-key signatures without a
+supervisor route. [Local usage](diagnostic-controller-producer-operator.md) separates
+public preparation, secret custody and future protected-job integration. The
+offline public-source inspector records syntax/metadata only; independently
+authenticated acquisition and actual workflow/trust selection remain open.
+The [producer packet](local-runs/diagnostic-controller-producer-20261014/README.md)
+retains final focused repeats, both-platform checks, all development negatives
+and unchanged frozen inputs without performance or server admission claims.
+
 The [pre-server closure checklist](pre-server-closure-checklist-20261014.md)
 tracks the remaining P1/P2/P3 production integration and exact-host gates.
 The [reusable controller boundaries](test-run-control-library-boundaries.md)

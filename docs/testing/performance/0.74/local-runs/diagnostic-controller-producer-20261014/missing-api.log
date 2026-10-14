@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_controller_producer`
+ --> tools/long-run-supervisor-074/tests/diagnostic_ipc.rs:5:45
+  |
+5 | ...4::diagnostic_controller_producer::p...
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could no...ontroller_producer` in `hydracache_long_run_supervisor_074`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_ipc") due to 1 previous error

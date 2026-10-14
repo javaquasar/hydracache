@@ -1,0 +1,46 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 16.97s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-d9db541f97ad2584)
+
+running 6 tests
+test diagnostic_controller_producer::linux::tests::producer_linux_checks_public_request_before_opening_any_secret ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_controller_producer::linux::tests::producer_linux_private_synthetic_output_is_exclusive_and_never_real_controller ... ok
+seed=0x07562074 signed_model_requests=32 independent_preparations=4 real_controller_signing=false
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 697 filtered out; finished in 0.48s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 11.11s
+     Running tests/diagnostic_ipc.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_ipc-1d4652b70457d1b9)
+
+running 23 tests
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test local_seqpacket_denies_non_allowlisted_kernel_peer_without_marker ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test linked_ledger_is_refused_and_mode_is_private ... ok
+test local_seqpacket_uses_kernel_peer_credentials_without_production_route ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.32s
+

@@ -1,0 +1,14 @@
+Verified 18 raw captures, exact committed producer source and unchanged frozen/tooling inputs; actual enrollment and execution remain closed.
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/diagnostic-controller-producer-20261014/verify_packet.py", line 51, in <module>
+    main()
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/diagnostic-controller-producer-20261014/verify_packet.py", line 30, in main
+    old = subprocess.check_output(["git", "show", commit + ":" + entry["path"]], cwd=root)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'show', 'fdc3bb5d350df6a77bb78ec330bc63b4c238ddd8:crates/xtask/tests/performance_contract_074.rs']' returned non-zero exit status 128.

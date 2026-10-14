@@ -7882,3 +7882,38 @@ key acquisition, current key-review/rotation policy, an actual protected-job
 receipt or durable replay/common fence. Those producers remain before original
 start, collector/watchdog/writer cessation and later-cell completion. Existing
 wire/durable artifacts and frozen qualification inputs are not amended.
+
+### Produce the exact diagnostic request separately from admission
+
+The job-side producer now validates one canonical request against the reviewed
+builder policy and receipt before touching a signing key. Its audience is the
+same domain-separated digest required by the OIDC verifier. Signing consumes
+that preparation, requires the already selected controller key, self-verifies
+the original diagnostic signature and checks job UTC before and after signing.
+It returns signed bytes, not a receiver guard, consumed nonce or start authority.
+Recreating preparation remains possible; durable replay belongs to original
+receiver admission, not this stateless tool.
+
+A separate Linux CLI reuses protected original-file readers and exclusive synced
+output. Private directory/leaf modes, single-link files, key-purpose matching,
+bounded inputs and refusal without echoing credentials are covered by local
+tests. Successful signing uses only synthetic private test selection; the public
+entry refuses that key. The installed supervisor and campaign workflow acquire
+no new route or permission. Compile failures in new tests exposed a missing
+metadata trait, private helper imports and a SHA-array formatting assumption;
+the fixes stayed in the tests rather than expanding the public API.
+
+The public-source inspector is deliberately offline. It checks discovery/JWKS
+syntax, exact endpoints and public RSA bounds, then reports hashes and metadata
+with acquisition, selection and admission false. Certificate fields do not
+verify a chain, and an unsigned local file does not become trusted through
+parsing. This separates a repeatable parser test from independently authenticated
+key acquisition, custody and rotation. The Python builder regression also now
+reconstructs exact frozen observer fixture bytes and verifies their original
+digest instead of comparing them with the newer controller tooling lock.
+
+The next integration must preserve one body across audience derivation, token
+retrieval, signing and receiver verification. Actual protected workflow/pins,
+issuer acquisition and original replay/fence remain prerequisites for start;
+producer success cannot stand in for any of them. See the
+[local producer procedure](../testing/performance/0.74/diagnostic-controller-producer-operator.md).

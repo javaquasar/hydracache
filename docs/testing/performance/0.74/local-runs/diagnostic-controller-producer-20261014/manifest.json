@@ -1,0 +1,387 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-controller-producer-20261014",
+  "baseline_source": "fc696e72aa33e5a5d41227f9314455293705a9fb",
+  "preregister_source": "0c7fe697946c6dd7e220075327cf5544737fe316",
+  "implementation_source": "fdc3bb5d350df6a77bb78ec330bc63b4c238ddd8",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "frozen_lock_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256_lf": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/main.rs",
+      "sha256_lf": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+      "sha256_lf": "e861d439c5969fe135bbd089f776aef497e951ffafee4d2ce34198ef2d9ef32b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+      "sha256_lf": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "sha256_lf": "01f665fae44885ac85f208f4a61871499b3f21600ebf1cc03ff57c47898a596d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+      "sha256_lf": "f8d78cca6b81d15b6ef32ce8199c12ad30ef20febcb6971d2319f7f2ebc3b3db"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json",
+      "sha256_lf": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-074.yml",
+      "sha256_lf": "33904a5c12a102bac1ae8b7d62b3bb87c45e01d969a74f84675bdec057a31324"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256_lf": "41e6024658700393c30d72d0d83dff88841c8a4edfe5c40ec55ade58cb05f7f6"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "48442f5162588c577d79ff1f87636c2c13af4e607104171d1b4f0df212c2c2c4"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "e5dddcc71f630026c8de00c1fa422f3af7d35fcda189c2a4b3b429195214d968"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-controller-producer-contract.toml",
+      "sha256_lf": "698a1bb1be0e929d82b0594a2d793247267a3cc252c5497c853afef0663f034c"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-controller-producer-design.md",
+      "sha256_lf": "66e082246f992bc280c59d4f271e3ba542fe104a539dc0729f9e99bf6d540807"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_source_074.py",
+      "sha256_lf": "df6cf5967b49152c79ddb91565bf3fafdee3dc0452953cd1268f272b2e77d747"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_builder_074.py",
+      "sha256_lf": "1f77264f056155d0c9218a7846e5eb30a1cc4de95deb13822655e8cb0c19a965"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_oidc_source_074.py",
+      "sha256_lf": "d5e57cfd43666e9901bdf6762e86c774d43c437af1448f83a32ea94ff3624c6e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+      "sha256_lf": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_builder_linux.rs",
+      "sha256_lf": "866ac90ac8f4a49e66c133cd82dbf76149ce088450a805b8abecceadfee0a049"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs",
+      "sha256_lf": "7f9361c33e31ef679fe371f43595adab1996e489d1ac501d9730fff539dd3b8b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "624e5db1a98b9b399ae913946827bac6113c0916d95618387e52008261008557"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux_tests.rs",
+      "sha256_lf": "77e95189e67b4ae808f36d8cc187f44553cf70844b109474df6af970827be3c7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_tests.rs",
+      "sha256_lf": "34fcce275f8a2e86b0b9b84605c757f1ec2a8bc72d926ba0223fc2bd435f3c1e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "ba7f45656851af3936e9cadfc99c86d5176cd73d7c705ba8145142b5e6406738"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_ipc.rs",
+      "sha256_lf": "b88a3b4bc61af4bdeddb2d872905ca51f2845ac61c83f9cc430d6102ce0d558c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs",
+      "sha256_lf": "8ffdaa6498752318de51d6b7da3af482f0294f7364bca11e10c1d820842df0ce"
+    }
+  ],
+  "captures": [
+    {
+      "sha256": "ee0e9922e84899aa593864332d4665bad9ee8db9e4411a13db89556f53895b88",
+      "path": "docs-gates.log",
+      "bytes": 578,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0,
+      "expected_inner_refusal": "require-ship exit 1; wrapper verifies that unchanged closed gate"
+    },
+    {
+      "sha256": "b1fd2fcfe0acf4ad2389287e0e2988f515fb2c593f9b5e9d233a114e395b7529",
+      "path": "final-four-operation-repeats.log",
+      "bytes": 4193,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "fc21ff9f595923c330dbcd39a80b5714e95d47d97759b370039244bae5020882",
+      "path": "linux-api-check-lint-final.log",
+      "bytes": 3270,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "a45ca326633dfada93e4d32ca7385449f132b10fdf8a4b8ba2f03e2026668a9a",
+      "path": "linux-api-check-lint-fixed.log",
+      "bytes": 2822,
+      "expected_wrapper_exit": 101,
+      "observed_wrapper_exit": 101,
+      "negative_result": "New test assumed SHA digest supports LowerHex. Test converts individual bytes; runtime hashing unchanged."
+    },
+    {
+      "sha256": "6b50afd9444a46cc4bfc8fe4d520a7d5f442369afa06ecb0ed757583933a1c80",
+      "path": "linux-api-check-lint.log",
+      "bytes": 1154,
+      "expected_wrapper_exit": 101,
+      "observed_wrapper_exit": 101,
+      "negative_result": "New CLI integration test attempted private canonical/hash helper imports. Local test serialization/hash used instead; no public API widening."
+    },
+    {
+      "sha256": "2a2f32a408435f0352c23a41dce31330bbb018444ea27d9ead85148d151a3414",
+      "path": "linux-repeats-regression-msrv-docs.log",
+      "bytes": 29894,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "f8ca0e9ac29fb409eb2cbccb0070a8b32386e31a2938400f448f3c4072d2c1d6",
+      "path": "missing-api.log",
+      "bytes": 648,
+      "expected_wrapper_exit": 101,
+      "observed_wrapper_exit": 101,
+      "negative_result": "Expected missing producer API before implementation."
+    },
+    {
+      "sha256": "6c134bade70f8f8a1e5c56c7935bad09c7cd7c40089b99d633aed8d0b38e9b7d",
+      "path": "python-baseline-fixed.log",
+      "bytes": 110,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "7efbb24de6d96de4af865982331e53519e792310589910b7850cd8502d5d0bbe",
+      "path": "python-baseline.log",
+      "bytes": 938,
+      "expected_wrapper_exit": 1,
+      "observed_wrapper_exit": 1,
+      "negative_result": "Six builder tests passed; frozen-input test used current tooling lock. Only the fixture was corrected; all frozen SHA pins remain unchanged."
+    },
+    {
+      "sha256": "e27894df5bc07b83eb1bd5bdd660764cc9ce7f6a3bc7107ef08b49a5cf38e6a8",
+      "path": "python-development.log",
+      "bytes": 206,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "f3c0ac071da02edbd09bfa67a5c873a1a53de9da45b91de39397d3c8d73ed6b3",
+      "path": "python-final.log",
+      "bytes": 206,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "d8ba9762c85bc08a40da3c71afe850e5da8fa0d5d5c980fca5996edea84efbcc",
+      "path": "root-contracts.log",
+      "bytes": 23617,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "0c98e73140aa3b69c22bad7df92f5cb2450c687d4ca59c5ec8ea8fff860d2477",
+      "path": "rust-baseline.log",
+      "bytes": 2976,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "aca72985fd4d8296b0b52e8a80a6845865be2aaae908cbdd9be55315aba53e36",
+      "path": "rust-development-fixed.log",
+      "bytes": 3407,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "9d1e1ad47f39c9cfe49e9a2e047c1fed73f58c867c44a566a15eb6d390af5218",
+      "path": "rust-development.log",
+      "bytes": 862,
+      "expected_wrapper_exit": 101,
+      "observed_wrapper_exit": 101,
+      "negative_result": "New Linux test omitted MetadataExt. Test-only import fixed."
+    },
+    {
+      "sha256": "b6211d0b86a705d5f75840a37d97b2e1b082f708df27059ff9dcee30d36699cc",
+      "path": "windows-final-producer.log",
+      "bytes": 2157,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "c07f411a54ec0311ce7035cb31f5d5ed6be29c866c932198d05ea5359536da4c",
+      "path": "windows-msrv-format.log",
+      "bytes": 2291,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "d23f7b90c3d2cd6c3114db0443955acda698cc1e90577635c11da3d13a65c76f",
+      "path": "windows-portable.log",
+      "bytes": 16516,
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 1373,
+      "sha256": "8caa8b79bbc182d5c27ea5e4a1e54dd7b7f2649b97d9e05b602498a35596b08b",
+      "path": "final-packet-docs.log",
+      "expected_wrapper_exit": 1,
+      "observed_wrapper_exit": 1,
+      "negative_result": "Native Windows verification passed; WSL Git could not resolve Windows .git path. Retained both failures; read-only exact translated GIT_DIR subsequently passes without changing metadata or branches."
+    },
+    {
+      "bytes": 1373,
+      "sha256": "8caa8b79bbc182d5c27ea5e4a1e54dd7b7f2649b97d9e05b602498a35596b08b",
+      "path": "final-packet-docs-fixed.log",
+      "expected_wrapper_exit": 1,
+      "observed_wrapper_exit": 1,
+      "negative_result": "Native Windows verification passed; WSL Git could not resolve Windows .git path. Retained both failures; read-only exact translated GIT_DIR subsequently passes without changing metadata or branches."
+    },
+    {
+      "bytes": 673,
+      "sha256": "edbf289e136781ea73a7080f36c6cba13f2a4cfe09b26538d27721293ba2eb4d",
+      "path": "final-packet-docs-git-context.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    }
+  ],
+  "verifier_sha256_lf": "700b28547ac8a325707758aabb1d254e11379cea69ff8eb2928fe10ba5f44e9b",
+  "frozen_lock_sources": [
+    "62114be0f5da3218706e30d7424acfb5d0579d07",
+    "70ca60eb3f2f75a326e9f6430467749b76440a04"
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "capture_count": 21,
+  "tests": {
+    "linux_final_producer_cases": 6,
+    "linux_final_repeats": 3,
+    "windows_producer_cases": 4,
+    "seed": "0x07562074",
+    "synthetic_requests_per_seed_case": 32,
+    "independent_preparations": 4,
+    "linux_ipc": 24,
+    "linux_kernel_binding_and_cli": 5,
+    "linux_oidc_regression": 10,
+    "linux_builder_file_boundary": 1,
+    "linux_artifacts": 29,
+    "reviewed_trust_per_platform": 8,
+    "windows_ipc": 21,
+    "windows_artifacts": 15,
+    "linux_compile_fail_docs": 85,
+    "python_builder_and_source_inspector_per_platform": 13,
+    "root_contracts": 130,
+    "root_registry": 6,
+    "root_release_evidence": 13,
+    "discovered_registered_gates": 169,
+    "current_rust": "1.94.0",
+    "msrv_check_both_platforms": "1.88.0",
+    "current_strict_clippy_both_platforms": true,
+    "linux_msrv_clippy_executed": false,
+    "full_release_verify_executed": false
+  },
+  "admission_claims": {
+    "actual_controller_private_key_read": false,
+    "actual_production_policy_signed": false,
+    "authenticated_public_source_acquisition": false,
+    "actual_github_issuer_key_selected": false,
+    "actual_protected_job_token_verified": false,
+    "trust_configuration_installed": false,
+    "remote_job_dispatched": false,
+    "durable_nonce_or_fence_admission": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "server_entry_wired": false,
+    "host_modified": false,
+    "new_actual_process_loss_proof": false,
+    "product_candidate_or_workload_run": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  }
+}

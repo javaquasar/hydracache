@@ -1,0 +1,15 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `mode` found for struct `Metadata` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux_tests.rs:39:47
+   |
+39 | ...().mode() ...
+   |       ^^^^
+   |
+   = note: `Metadata` implements similarly named trait `std::os::linux::fs::MetadataExt`, but not `std::os::unix::fs::MetadataExt`
+help: there is a method `st_mode` with a similar name
+   |
+39 |     assert_eq!(fs::metadata(&output).unwrap().st_mode() & 0o777, 0o600);
+   |                                               +++
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error
