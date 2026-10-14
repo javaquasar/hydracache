@@ -5,7 +5,12 @@ tracks the remaining P1/P2/P3 production integration and exact-host gates.
 The [kernel admission path](diagnostic-kernel-admission-design.md) now receives
 per-message credentials/pidfd and original-scope kernel time. The
 [reviewed-trust entry points](diagnostic-reviewed-trust-design.md) reuse the
-already selected controller/builder public pins. Worker issuer/policy/epoch,
+already selected controller/builder public pins. A separate worker issuer was
+generated locally with [custody and use instructions](diagnostic-worker-issuer-key.md);
+its [public selection](diagnostic-worker-issuer-public.json) carries no policy or epoch.
+The [key packet](local-runs/diagnostic-worker-key-20261014/README.md) retains local
+custody tests and independent public selfcheck verification, not enrollment.
+Worker policy/epoch,
 current authority status and trusted installed host/root joins remain required
 before enrollment. This is not an installed start/completion or server-ready receipt.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)

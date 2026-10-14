@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-worker-key-local-20261014",
+  "baseline_source": "47c59d40a19f2d04a63f044c0e62703c760ba1c8",
+  "preregistration_source": "f5350ea96e5a41489c5e5835e72af23edcbd2e7a",
+  "helper_source": "b1c53e422c26e5646c0bfffb2d8f3493d950b888",
+  "public_selfcheck_source": "69f156804dad006c96c5350a5e210ee31b2336e1",
+  "final_fixture_source": "bd6f9014252996c527bfccc1fd137a9596706a5c",
+  "capture_scope": "Helper/public test source is checked before its commit; fixture-only portability commit rechecked x3. Docs/evidence do not alter the tested helper or Rust source. Key material never printed; public probe is not a policy signature.",
+  "source_files": [
+    {
+      "path": "scripts/perf/diagnostic_worker_key_074.py",
+      "sha256_lf": "d4ba38db485603912e659189fcd60ff706523a95f00957a07d0c48a65f89c750"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_worker_key_074.py",
+      "sha256_lf": "c888aada365b60f5e530998fa37c72fb368e2a0ce1a3658d7db7c0dcde61355f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "86287d1bae06f045e6c36ff1774130e85348eb66fe28cedb9f04a857091505b2"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json",
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    }
+  ],
+  "unchanged_authority_files": [
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "693c6d2cf17ced3cabb63bf73a4fa52b50b42c063d559ed7c5708268bdddb029"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+      "sha256_lf": "873c2368a8ad4311053c5caed8592f9428ea193d238cc68bdcf62e235c19518a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "sha256_lf": "0d52265c429805b5061b3e0d77d8820f0ad73e749b3be508666a1b00add5ce89"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "1678172282f210f0932673f836534bbb5496969b6b7ddd92f4c6fdbd13303e57"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "02e9213b93cc35a254aab4744d2841227d1785e4eccc9fa0f0e2e67495434ce6"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "public_selection_sha256_raw": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+  "public_key_sha256": "c714e1038a081ed841dd183e2814ce647c85e6bafaf43943bffb1e2378786cad",
+  "verifier_sha256_lf": "7dc77532ae761408c6a6ca3dfa73bc3a9565daff195e4f74c766a73979cd6ba0",
+  "captures": [
+    {
+      "path": "01-baseline.log",
+      "bytes": 58828,
+      "sha256": "bbe03af80993d9253e55d8114ce5aa2a689932de7a0e3bb3d29f9dd367045355",
+      "observed_native_exit": 0,
+      "scope": "244-test broad worker-policy baseline (9 ignored) and 7 reviewed-trust checks"
+    },
+    {
+      "path": "02-missing-helper-red.log",
+      "bytes": 925,
+      "sha256": "57c2ee92b9929498eb6b555676060c7c26b8be304d7b04546d501507ec08a75a",
+      "observed_native_exit": 1,
+      "scope": "missing-helper red import refusal"
+    },
+    {
+      "path": "03-first-tests.log",
+      "bytes": 118,
+      "sha256": "4a2155977aa3da2c0541ae73264062cdfe4da1312ab6721917ba7c639959d1be",
+      "observed_native_exit": 0,
+      "scope": "initial 14 helper checks"
+    },
+    {
+      "path": "04-reviewed-helper-repeats.log",
+      "bytes": 366,
+      "sha256": "07a78fa24cef34438224a4c52e4c20a25293a9efb032bbd3cd6c4c19e93203c1",
+      "observed_native_exit": 0,
+      "scope": "18-helper-check repeats x3 and Python compilation"
+    },
+    {
+      "path": "05-windows-helper-tests.log",
+      "bytes": 135,
+      "sha256": "f58f7dca39fa448e77c3609d6c66b9f305904f7cf5fc3de10d1fa85cd54c0f5b",
+      "observed_native_exit": 0,
+      "scope": "7 Windows portable checks; 11 Linux cases explicitly skipped"
+    },
+    {
+      "path": "06-real-generation-public.log",
+      "bytes": 867,
+      "sha256": "3bf656c55df455c1e9e2abec5402e6fef91bc4a7ade2300a9f239236684ad59f",
+      "observed_native_exit": 0,
+      "scope": "one real local key generated; public selection only"
+    },
+    {
+      "path": "07-real-inspection-public.log",
+      "bytes": 1224,
+      "sha256": "85e97595481aeabbf97af90a3a3404cfb7677fa24edb1a557a1fcec94bcc8b71",
+      "observed_native_exit": 0,
+      "scope": "original local key inspected; modes/owner/link count and OpenSSL version"
+    },
+    {
+      "path": "08-linux-rust-selfcheck.log",
+      "bytes": 3721,
+      "sha256": "f26d7a11fdf2635cebbb9691229dbdfd91f35cff59728fd668f9390cfad81430",
+      "observed_native_exit": 0,
+      "scope": "8 Rust strict public selfchecks x3; Linux current check/strict lint and MSRV check"
+    },
+    {
+      "path": "09-windows-rust-selfcheck.log",
+      "bytes": 1657,
+      "sha256": "b2217ef2a380efdefab094c1321e43f23181a0c5f3019fd354ad39cf99785396",
+      "observed_native_exit": 0,
+      "scope": "8 Rust strict public selfchecks; Windows current check/strict lint and MSRV check"
+    },
+    {
+      "path": "10-documented-inspection.log",
+      "bytes": 867,
+      "sha256": "3bf656c55df455c1e9e2abec5402e6fef91bc4a7ade2300a9f239236684ad59f",
+      "observed_native_exit": 0,
+      "scope": "documented direct WSL inspect command; public only"
+    },
+    {
+      "path": "11-root-documentation-gates.log",
+      "bytes": 12993,
+      "sha256": "ff82a1189baaaa32b6921a13b9bdc2420490afed600a9e02dd00ff08ab7bafb4",
+      "observed_native_exit": 0,
+      "scope": "root registry/performance/evidence 6/124/13, format/doc/contract, expected ship refusal, links/book"
+    },
+    {
+      "path": "12-explicit-exec-inspection.log",
+      "bytes": 867,
+      "sha256": "3bf656c55df455c1e9e2abec5402e6fef91bc4a7ade2300a9f239236684ad59f",
+      "observed_native_exit": 0,
+      "scope": "documented explicit --exec inspect command; public only"
+    },
+    {
+      "path": "13-final-custody-fixtures.log",
+      "bytes": 366,
+      "sha256": "728c955aa936500c0e44b05d21c169f9a3fa28258c68364ca6b116f98b399d62",
+      "observed_native_exit": 0,
+      "scope": "final portable fixture source: 18 helper checks x3 and Python compilation"
+    },
+    {
+      "path": "14-final-windows-fixtures.log",
+      "bytes": 135,
+      "sha256": "c6959ddddd5a6a11f171651f217206ea39863ee3fd295d9fc86b64c3bc8db866",
+      "observed_native_exit": 0,
+      "scope": "final fixture source: 7 Windows checks; 11 Linux cases skipped"
+    }
+  ],
+  "local_key_custody": {
+    "storage": "local WSL Ubuntu Linux filesystem outside Git",
+    "directory": "/home/artur/.local/share/hydracache-worker-issuer-074-20261014",
+    "private_filename": "issuer-private.pem",
+    "private_bytes": 119,
+    "uid": 1000,
+    "gid": 1000,
+    "directory_mode": "0700",
+    "private_mode": "0600",
+    "private_links": 1,
+    "public_mode": "0400",
+    "private_format": "unencrypted-pkcs8-pem",
+    "private_material_retained_in_git": false,
+    "private_key_hash_collected": false,
+    "backup_created_by_this_task": false,
+    "private_key_uploaded_or_registered_by_this_task": false
+  },
+  "observations": {
+    "real_key_generated_once": true,
+    "retained_public_selfcheck_verified_by_openssl": true,
+    "retained_public_selfcheck_verified_by_rust": true,
+    "final_linux_helper_tests_per_repeat": 18,
+    "final_linux_helper_repeats": 3,
+    "windows_helper_tests_passed": 7,
+    "windows_linux_cases_skipped": 11,
+    "linux_rust_selfchecks_per_repeat": 8,
+    "linux_rust_repeats": 3,
+    "windows_rust_selfchecks": 8,
+    "existing_worker_baseline_passed": 244,
+    "existing_worker_baseline_ignored": 9,
+    "root_tests_passed": 143,
+    "linux_msrv_clippy_available": false,
+    "full_release_gate_run": false
+  },
+  "admission_claims": {
+    "worker_policy_signed": false,
+    "policy_body_pin_selected": false,
+    "authority_epoch_selected": false,
+    "host_enrolled": false,
+    "installed_root_trust_loaded": false,
+    "execution_authorized": false,
+    "server_modified": false,
+    "existing_authorities_replaced": false,
+    "product_workload_run": false,
+    "performance_claim": false,
+    "qualification_run": false,
+    "admission_allowed": false
+  }
+}

@@ -16,7 +16,42 @@ by the account, Linux root or an administrator controlling WSL. Do not copy it t
 the performance host, repository, clipboard, chat, command arguments or CI logs.
 No backup, GitHub secret registration or remote enrollment accompanies generation.
 
-The narrow operator helper will support `generate` and `inspect` only. It walks
+## Current local key and commands
+
+The generated key directory is
+`/home/artur/.local/share/hydracache-worker-issuer-074-20261014` in WSL Ubuntu.
+Its `issuer-private.pem` stays there; do not open or paste its contents.
+The public selection is retained in
+[diagnostic-worker-issuer-public.json](diagnostic-worker-issuer-public.json).
+Its raw public key SHA-256 fingerprint is
+`c714e1038a081ed841dd183e2814ce647c85e6bafaf43943bffb1e2378786cad`.
+This is SHA-256 of the 32 public bytes, not an SSH fingerprint or private-file hash.
+
+Generation command from PowerShell (already performed for this directory):
+
+```powershell
+wsl -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/python3 scripts/perf/diagnostic_worker_key_074.py generate /home/artur/.local/share/hydracache-worker-issuer-074-20261014
+```
+
+That directory now exists, so **do not rerun generate**. For later verification,
+use the custody inspection and compare its public key/fingerprint with
+the separately retained public selection:
+
+```powershell
+wsl -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/python3 scripts/perf/diagnostic_worker_key_074.py inspect /home/artur/.local/share/hydracache-worker-issuer-074-20261014
+```
+
+The helper needs an existing trusted parent directory owned by root/current user,
+with no group/other write permission. It refuses a missing/unsafe parent, any Git
+ancestor, links or an existing generation destination. Rotation requires a new
+explicit destination and review, not copying this command to overwrite the key.
+
+Inspection obtains public data via OpenSSL and signs the fixed selfcheck message;
+it does not sign an arbitrary document, change the key or authorize worker use.
+Filesystem reads may update access time. Current modes/UID are local custody
+observations, not attestation of a production account or storage encryption.
+
+The narrow operator helper supports `generate` and `inspect` only. It walks
 trusted ancestors without following links, rejects writable/foreign ancestry
 and Git checkouts, and refuses any existing generation target without overwrite
 or permission repair. OpenSSL receives retained key descriptors, never private
@@ -69,6 +104,14 @@ Ed25519ph, reuse the selfcheck signature or add another newline. The separate
 `diagnostic-signed-worker-policy-074-v1` envelope contains the body and lowercase
 128-hex signature; canonical envelope limit is 8192 bytes. Existing receipt v1
 does not gain worker-authority fields.
+
+After the approved message bytes are independently checked, the corresponding
+OpenSSL signing operation is `pkeyutl -sign -rawin -inkey <private-PEM-path>
+-in <checked-message-path> -out <new-signature-path>`. Use a new private signing
+directory and a previously absent output; OpenSSL's `-out` alone does not prevent
+overwrite. Keep key material out of shell variables; the `-inkey` value is only
+a filename. Do not use `-text`, print a private PEM, or pass PEM/seed via argv.
+This is a future operator procedure, not a worker policy signed in this task.
 
 Construct WorkerPolicyTrust from the independently selected raw public key,
 canonical body digest and current epoch, then call the existing

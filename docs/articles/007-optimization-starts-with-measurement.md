@@ -7609,11 +7609,44 @@ its executable bytes it does not repeat content verification or grant execution.
 These are trust-selection checks, not throughput measurements or proof that
 historical keys remain authorized under a current external epoch.
 
-The worker-policy evidence still uses synthetic issuer keys. Its production
-issuer, signed host/account policy pin and current authority epoch need explicit
-selection. Reusing the controller or builder for that role without approval
-would invent authority. Trusted installed configuration, controller provenance,
+The historical worker-policy evidence uses synthetic issuer keys. A separate
+real issuer was subsequently created under explicit operator approval; its
+signed host/account policy pin and current authority epoch still need selection.
+Trusted installed configuration, controller provenance,
 replay/fence joins, original start, watchdog, writer cessation and later cells
 remain the boundaries before a server rehearsal. The
 [trust contract](../testing/performance/0.74/diagnostic-reviewed-trust-design.md)
 keeps these remaining dependencies separate from the public pins already available.
+
+### Creating a separate worker issuer without enrolling a host
+
+The operator selected a separate Ed25519 pair rather than extending the existing
+controller key's signing role. A narrow local helper generates it with OpenSSL
+into an exclusive directory in the WSL Linux filesystem, outside every Git
+checkout. The directory is 0700; the single-link private PKCS8 PEM is 0600.
+Trusted no-follow ancestry, retained descriptors and exact named-object checks
+refuse links, unsafe permissions, replacement or an existing generation target.
+An incomplete operation is retained, not overwritten or repaired by retry.
+
+The private key remains unencrypted in local custody. Permissions do not protect
+it from the same account, Linux root or an administrator controlling WSL, and do
+not attest whole-disk encryption. No private key is copied to the performance
+host or registered as a new CI secret. Only the
+[public selection](../testing/performance/0.74/diagnostic-worker-issuer-public.json)
+is retained in Git, with SHA-256 of the 32 raw public bytes and a signature over a
+fixed selfcheck message in a separate non-policy domain.
+
+OpenSSL accepts that selfcheck and rejects changed message bytes; Rust strict
+Ed25519 independently accepts the retained public proof and rejects the
+worker-policy domain and controller key. Disposable-key tests cover exclusive
+and concurrent creation, unsafe/Git ancestry, symlink/hardlink, exact modes,
+special/oversized files, corrupt public selection, key replacement and partial
+crypto failure. These checks establish local custody and encoding compatibility,
+not authority to execute a workload or a throughput improvement.
+
+The [generation and use note](../testing/performance/0.74/diagnostic-worker-issuer-key.md)
+records the exact local location, generation/inspection commands, signing byte
+grammar and rotation rules. Policy digest and epoch remain unset. The next trust
+join needs an independently admitted host/account policy and current authority,
+then authenticated original start, watchdog, writer cessation and completion.
+Generating this key closes only issuer selection, not P2 through P5.

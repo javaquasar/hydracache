@@ -32,15 +32,22 @@ The [reviewed-trust entry points](diagnostic-reviewed-trust-design.md) reuse the
 fixed public pins for builder-policy loading and opt-in kernel controller-key
 selection. They do not establish current revocation status or installed trust.
 
-Still select the worker-policy issuer public key, signed production policy with
-its exact canonical body SHA-256, and current nonzero authority epoch. Supply an
+The operator-authorized separate worker issuer key has now been generated locally;
+see the [public selection](diagnostic-worker-issuer-public.json) and
+[custody/use instructions](diagnostic-worker-issuer-key.md). Its fixed non-policy
+selfcheck verifies with OpenSSL and Rust strict Ed25519. The private key remains
+outside Git in local WSL storage, not on the performance host or in a new CI secret.
+
+Still select the signed production worker policy with its exact canonical body
+SHA-256 and current nonzero authority epoch. Supply an
 independently reviewed public-config file or approved public values; no private
 key or token belongs in chat/evidence.
 An envelope cannot choose its own verifier, digest or epoch. Fixture seeds, keys,
 namespaces and modeled host facts cannot fill these slots.
 
-The reviewed worker-policy packet uses synthetic issuer keys and records no real
-issuer enrollment. Production trust loading/enrollment cannot pass until the
+The historical worker-policy packet uses synthetic issuer keys. Creating the
+separate real issuer now does not retroactively enroll that packet or a real host.
+Production trust loading/enrollment cannot pass until the
 remaining operator input exists and is joined to trusted host/root ownership.
 The fixed controller/build/worker verification primitives are not themselves
 proof of independent production selection. Choosing how keys are generated,
