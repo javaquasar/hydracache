@@ -3,6 +3,91 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn diagnostic_public_acquisition_is_bounded_observation_not_trust_or_execution() {
+    let ci = std::fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
+    assert!(ci.contains("run: python3 -m unittest scripts.perf.test_diagnostic_builder_074 scripts.perf.test_diagnostic_oidc_source_074 scripts.perf.test_diagnostic_oidc_acquisition_074"));
+    let c = contract("diagnostic-oidc-acquisition-contract.toml");
+    for (key, value) in [
+        ("source_budget_bytes", 65536),
+        ("report_budget_bytes", 196608),
+        ("owned_child_timeout_seconds", 15),
+        ("resource_timeout_seconds", 5),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for key in [
+        "fixed_https_origin_and_paths_only",
+        "platform_ca_hostname_san_strict_full_chain_required",
+        "proxy_ca_keylog_python_and_known_token_environment_refuse",
+        "isolated_owned_child_minimal_environment",
+        "no_redirect_retry_decompression_or_credentials",
+        "raw_public_bodies_hashes_and_transport_metadata_retained",
+        "report_is_unsigned_not_runtime_capability",
+        "positive_actual_tls_is_synthetic_loopback_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_github_issuer_key_acquired",
+        "actual_production_key_or_workflow_policy_selected",
+        "actual_private_key_read",
+        "trust_config_installed",
+        "protected_job_dispatched",
+        "durable_replay_or_fence_admission",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source =
+        std::fs::read_to_string(root().join("scripts/perf/diagnostic_oidc_acquisition_074.py"))
+            .unwrap();
+    for marker in [
+        "def acquire_public_sources():",
+        "ssl.PROTOCOL_TLS_CLIENT",
+        "ssl.CERT_REQUIRED",
+        "context.check_hostname = True",
+        "context.hostname_checks_common_name = False",
+        "ssl.VERIFY_X509_STRICT",
+        "context.keylog_filename = None",
+        "timeout=WORKER_TIMEOUT",
+        "\"-E\", \"-s\"",
+        "CHILD_ENV",
+        "connection.close()",
+        "source.inspect_sources(*bodies)",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for marker in [
+        "load_cert_chain",
+        "Authorization",
+        "urllib",
+        "requests.",
+        "write_text",
+        "write_bytes",
+        "CERT_NONE",
+        "check_hostname = False",
+    ] {
+        assert!(!source.contains(marker), "{marker}");
+    }
+    for path in [
+        "tools/long-run-supervisor-074/src/main.rs",
+        "tools/long-run-supervisor-074/src/server.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+    ] {
+        assert!(!std::fs::read_to_string(root().join(path))
+            .unwrap()
+            .contains("diagnostic_oidc_acquisition"));
+    }
+}
+
+#[test]
 fn diagnostic_producer_is_job_data_and_offline_inspection_never_enrolls_trust() {
     let c = contract("diagnostic-controller-producer-contract.toml");
     assert_eq!(c["request_budget_bytes"].as_integer(), Some(16384));

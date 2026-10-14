@@ -789,6 +789,9 @@ jobs:
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
 
+      - name: Release 0.74 local issuer tooling fixtures
+        run: python3 -m unittest scripts.perf.test_diagnostic_builder_074 scripts.perf.test_diagnostic_oidc_source_074 scripts.perf.test_diagnostic_oidc_acquisition_074
+
       - name: Release 0.74 Linux supervisor contracts
         if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
         run: cargo test -p hydracache-long-run-supervisor-074 --locked

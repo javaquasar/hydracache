@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The opt-in `diagnostic-oidc-public-acquisition-074-v1` tool report is unsigned
+observation data, not a runtime trust configuration. It retains bounded raw public
+discovery/JWKS bodies as base64, source/CA-roster/peer certificate hashes, TLS
+metadata and job receive timestamps. The owned-child reader refuses unknown
+fields/schema, bad bounds/framing/duplicates, inconsistent inspector data or any
+selected-key/admission flag. No runtime config reader consumes this report;
+older tools have no report reader or migration. Existing offline report,
+diagnostic domains and frozen qualification are unchanged. See the
+[acquisition boundary](testing/performance/0.74/diagnostic-oidc-acquisition-design.md).
+
 The separate `diagnostic_controller` job CLI emits the existing diagnostic signed
 request/domain unchanged; it is not an installed supervisor command or a migration.
 Its portable preparation requires canonical LF requests and the fixed reviewed
