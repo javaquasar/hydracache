@@ -1,0 +1,1 @@
+{"command":"cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask --check","observed_exit":0,"source_commit":"491e1038c3fea6e1ca72a8a6c78b738b40281a58"}

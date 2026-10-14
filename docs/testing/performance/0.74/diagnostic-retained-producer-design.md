@@ -50,6 +50,12 @@ code after exposing signing/token authority. A new signer-build receipt/domain/
 key role, or actual out-of-band artifact/pin enrollment, needs a separately
 reviewed decision. No such root or purpose is selected by this retained-body API.
 
+The subsequently approved [local signer build model](diagnostic-signer-build-design.md)
+implements only the separate receipt/domain/role using synthetic keys. Its
+explicitly asserted selection and supplied-byte consistency result cannot
+authorize this producer, authenticate original runtime custody or choose a
+production root. The retained signing API remains unchanged.
+
 ## Verification and remaining integration
 
 Synthetic positives cover original bytes/signature/audience after file and

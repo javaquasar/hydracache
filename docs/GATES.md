@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+W11's separate signer-build model has the portable fast integration target
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_build --locked`.
+It verifies synthetic signatures and supplied-byte consistency under explicitly
+asserted inputs, not independent issuer selection or actual bootstrap custody.
+Doctests refuse clone/deserialization/observer-build conversion; root performance
+contracts keep production consumers absent. It adds no manual process-loss gate
+because this model neither writes nor executes. See the
+[signer model contract](testing/performance/0.74/diagnostic-signer-build-contract.toml).
+
 W11 worker policy/kernel binding has a fast Linux API target
 `cfg.hydracache-long-run-supervisor-074.diagnostic-worker-kernel-binding`, plus
 ordinary library tests for original context/refusal and compile-fail doctests.

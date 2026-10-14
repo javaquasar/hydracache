@@ -191,3 +191,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-oidc-roster-*/*.log -text wh
 docs/testing/performance/0.74/local-runs/diagnostic-oidc-roster-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-retained-producer-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-retained-producer-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-build-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-build-*/manifest.json -text

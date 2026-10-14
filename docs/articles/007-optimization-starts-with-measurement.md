@@ -8040,3 +8040,46 @@ production artifact/pin selection is made by the
 The [local packet](../testing/performance/0.74/local-runs/diagnostic-retained-producer-20261014/README.md)
 retains repeatable synthetic body/signature results and unchanged original
 qualification inputs without claiming production origin or a performance gain.
+
+### Separate signer assertions from observer builder authority
+
+A build receipt is meaningful only within its issuer's reviewed purpose. The
+existing builder attests one frozen observer binary; reusing that authority for
+code that reads the controller private key would silently enlarge the trust
+boundary. The controller key cannot independently attest its own signer either.
+The next approved local step therefore introduces a dedicated signer-build schema
+and signature domain, and refuses the known controller, observer builder and
+worker issuer keys for the new role. No production issuer is selected.
+
+The hypothesis is narrower than bootstrap authentication: a separate signed
+statement can bind a source/toolchain/profile and all five supplied artifacts
+without becoming an old observer receipt or execution permission. The model
+requires an exact expected statement and SHA256/length matches for binary,
+lockfile, build log, runtime manifest and bootstrap context. Strict canonical LF
+JSON, bounded inputs, unknown/duplicate/future refusal and domain-separated
+Ed25519 verification prevent alternate shapes and cross-purpose reuse.
+
+Nine synthetic integration cases test every statement field, all signature
+positions, wrong issuer/domain, old key-role reuse, malformed JSON and each
+artifact substitution. Seeded mutations and independent concurrent models check
+that successful verification cannot hide a later mismatched input. The retained
+observer receipt still verifies in its own reader and refuses in the new one;
+the old reader also refuses the new signer shape. Compile-fail tests prevent
+turning the result into a verified observer build, cloning it or deserializing it.
+
+The positive deliberately uses `not ELF` and opaque runtime/context bytes. This
+is not a shortcut in a production loader: the new API has no loader or authority
+consumer at all. It makes the precise result visible. A valid signature authenticates
+an assertion under a supplied key; matching content authenticates neither that
+key's selection, compilation nor the original mapped executable. Its result
+exposes only a diagnostic receipt digest. Promoting it directly into permission
+to read secrets would defeat the separation the schema establishes.
+
+The [model design](../testing/performance/0.74/diagnostic-signer-build-design.md)
+and [local packet](../testing/performance/0.74/local-runs/diagnostic-signer-build-20261014/README.md)
+retain the positive and refusal checks. Independently selected production issuer
+and pins, actual prebuilt-artifact acquisition, original executable/runtime
+custody and pre-exposure bootstrap remain the next owners. Those must be joined
+to the retained request through real token coordination before original
+receiver/replay/fence/start and all-writer cessation can open server execution.
+This step changes local verification discipline, not measured cache throughput.

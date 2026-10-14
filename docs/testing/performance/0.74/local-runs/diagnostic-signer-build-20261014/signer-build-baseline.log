@@ -1,0 +1,12 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.63s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_long_run_supervisor_074-91cc7594fd779cb0.exe)
+
+running 5 tests
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.53s
+

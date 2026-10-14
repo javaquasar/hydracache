@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The separate [signer build model](diagnostic-signer-build-design.md) now verifies
+a dedicated receipt domain/role and matching supplied artifact/context bytes.
+Known controller/observer-builder/worker-issuer keys refuse that role. Selection
+is explicitly asserted and the opaque result is inventory only, not bootstrap
+authority. The [local evidence](local-runs/diagnostic-signer-build-20261014/README.md)
+retains synthetic checks; actual signer issuer/pins and original executable/runtime
+custody remain required before any token-bearing job.
+
 The local [retained producer API](diagnostic-retained-producer-design.md) now
 signs the original opaque preparation without reopening request/policy/receipt
 files and refuses audience substitution before key IO. Token coordination and

@@ -60,6 +60,10 @@ is not installed or automatically promoted into either runtime configuration.
    not just an artifact name or self-reported hash. The frozen observer builder's
    fixed-build receipt does not attest the controller signer; do not expand that
    key purpose implicitly. This bootstrap/artifact custody join remains code work.
+   The [separate signer receipt model](diagnostic-signer-build-design.md) checks
+   a new domain/role and supplied bytes locally, but caller-asserted selection is
+   not independent custody. It has no job/producer authority consumer and does
+   not replace this pre-exposure bootstrap requirement.
 3. Load independently reviewed builder policy/receipt and admitted lease/boot
    context. Define one operation, revision, request ID and nonce. Existing local
    CLI validation cannot authenticate supplied host context or consume a nonce.

@@ -1,0 +1,12 @@
+Verified signer model source, 21 captures and unchanged frozen inputs; bootstrap/start closed.
+test_bootstrap_claim_and_empty_claims_refuse (test_verify_packet.PacketTests.test_bootstrap_claim_and_empty_claims_refuse) ... ok
+test_capture_exit_substitution_refuses (test_verify_packet.PacketTests.test_capture_exit_substitution_refuses) ... ok
+test_capture_mutation_refuses (test_verify_packet.PacketTests.test_capture_mutation_refuses) ... ok
+test_control (test_verify_packet.PacketTests.test_control) ... ok
+test_future_and_boolean_version_refuse (test_verify_packet.PacketTests.test_future_and_boolean_version_refuse) ... ok
+test_source_hash_substitution_refuses (test_verify_packet.PacketTests.test_source_hash_substitution_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 65.308s
+
+OK
