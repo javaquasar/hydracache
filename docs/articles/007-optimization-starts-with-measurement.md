@@ -8124,3 +8124,44 @@ and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-bu
 keep the real descriptor proof separate from those remaining pre-exposure
 bootstrap requirements. No credential, server launch or throughput claim is
 authorized by the synthetic receipt or its original file handles.
+
+### An executable inode is not the original invocation
+
+The next local step connects the original file-input owner to an existing
+retained process observation. It owns a read-only clone of the expected binary
+and an O_PATH/CLOEXEC handle for the original procfs executable target. Rechecks
+compare original and fresh target metadata while bracketing the retained
+pidfd/generation/boot/group/cgroup and bundle hashes. A different executable
+inode refuses even if PID and start ticks have not changed; failure stays
+latched in the wrapper and bundle after drop. Healthy drop changes neither
+original owner and grants no permission to signal, sign or start.
+
+The hypothesis has a useful counterexample. An owned copied shell first
+acknowledges readiness, then execs a different `/bin/cat` object. The retained
+generation observation remains valid while executable binding refuses. That
+proves why process generation alone is insufficient for executable identity.
+Another controlled shell re-execs the very same copied binary. It acknowledges
+readiness a second time, yet the generation and executable object still match.
+The new check therefore cannot prove the original invocation or the absence of
+intervening same-inode exec. Treating this accepted observation as authenticated
+original-start evidence would be a false conclusion.
+
+Eight wrapper tests, an internal expected-descriptor case and the borrowed API/
+compile-fail checks exercise original positives, equal-byte foreign inode,
+wrong process, different exec, same-inode counterexample, exit, bundle drift,
+sticky refusal, healthy drop and descriptor ownership. A fixed seed adds fresh
+controlled observations and independently owned helpers. Their environment is
+cleared and the fixed protocol uses only acknowledgements, exec and EOF exit;
+no product/service/cgroup mutation or signal is part of this step. Legacy stream
+binding retains its predicates and remains separately tested.
+
+The result is a kernel executable object observation, not a signature over the
+process's loaded instructions. Loader, shared libraries, interpreter, JIT,
+preloads and bootstrap environment remain outside the check. Production issuer,
+pins, ancestry and job custody are still unselected, and no credential or start
+consumer accepts this borrowed guard. The
+[executable design](../testing/performance/0.74/diagnostic-signer-executable-design.md)
+and [local evidence](../testing/performance/0.74/local-runs/diagnostic-signer-executable-20261014/README.md)
+preserve the counterexample alongside the useful refusal proof. The next
+pre-exposure work must establish runtime/bootstrap custody and original
+invocation evidence, rather than broaden the meaning of an inode match.

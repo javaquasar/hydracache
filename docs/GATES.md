@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11 signer executable object observation has fast Linux cases
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_executable -- --test-threads=1`
+plus an internal executable-only case and the existing registered API target.
+Owned cleared-environment helpers exercise exec/exit and actual procfs matching;
+same-inode re-exec remains an explicit counterexample to original-invocation
+proof. No signal, production process, secret or manual execution gate is added.
+See the [executable contract](testing/performance/0.74/diagnostic-signer-executable-contract.toml).
+
 W11 original signer-file retention has fast Linux library cases
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_bundle -- --test-threads=1`
 and an API check in the existing registered kernel-binding target. Real owned

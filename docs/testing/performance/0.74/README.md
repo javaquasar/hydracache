@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [signer executable observation](diagnostic-signer-executable-design.md) now
+borrows the original bundle/process and compares the actual procfs executable
+object. Different-inode exec refuses with sticky bundle/wrapper failure. The
+[local packet](local-runs/diagnostic-signer-executable-20261014/README.md) also
+retains an actual same-inode re-exec that still matches: original invocation,
+loaded memory/runtime and production bootstrap authority remain unproved.
+
 The [original signer-file reader](diagnostic-signer-bundle-design.md) now keeps
 seven real Linux descriptors and checks exact names, metadata and streamed
 hashes with sticky refusal. Equal-byte replacement is not the original inode.

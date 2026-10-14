@@ -1,0 +1,18 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved imports `hydracache_long_run_supervisor_074::diagnostic_signer_bundle::AssertedSignerExecutableRead`, `hydracache_long_run_supervisor_074::diagnostic_signer_bundle::SignerExecutableError`
+ --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:6:58
+  |
+6 | ...e, AssertedSignerExecutableRead, SignerExecutableError},
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^ ...leError` in `diagnostic_sig...
+  |       |
+  |       no `AssertedSignerExecutableRead` in `diagnostic_signer_bundle`
+
+error[E0599]: no function or associated item named `bind_asserted_process_executable` found for struct `AssertedSignerBundle` in the current scope
+ --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:8:161
+  |
+8 | ...e::bind_asserted_process_executable;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in `AssertedSignerBundle`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_worker_kernel_binding") due to 2 previous errors

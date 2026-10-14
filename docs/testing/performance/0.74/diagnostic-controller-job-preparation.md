@@ -68,6 +68,10 @@ is not installed or automatically promoted into either runtime configuration.
    real fixture descriptors with sticky name/metadata/hash checks. Its asserted
    root/selection and opaque context still cannot attest the original process
    mapping, loader/runtime or protected job. No secret or token grant consumes it.
+   The later [kernel executable observation](diagnostic-signer-executable-design.md)
+   compares the original procfs object with that retained binary. Its same-inode
+   re-exec counterexample means it cannot replace original invocation evidence,
+   loader/runtime integrity or independently authenticated pre-exposure custody.
 3. Load independently reviewed builder policy/receipt and admitted lease/boot
    context. Define one operation, revision, request ID and nonce. Existing local
    CLI validation cannot authenticate supplied host context or consume a nonce.

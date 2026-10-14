@@ -1,0 +1,51 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.79s
+     Running tests\diagnostic_artifacts.rs (target\debug\deps\diagnostic_artifacts-b599846892969207.exe)
+
+running 15 tests
+test diagnostic_build_attestation_has_a_separate_domain ... ok
+test builder_policy_requires_external_pin_and_distinct_controller_key ... ok
+test checked_statement_binds_exact_model_intent_without_enrolling_execution ... ok
+test builder_signing_checks_observation_and_contents_before_signing ... ok
+test cargo_local_path_accepts_exact_version_fragment_not_foreign_sources ... ok
+test signed_receipt_is_strict_canonical_bounded_and_lease_bound ... ok
+test signed_build_statement_binds_all_fields_and_rejects_other_domains ... ok
+test every_artifact_is_hash_bound_and_p0_configs_cannot_drift ... ok
+test unsigned_content_inspection_never_becomes_build_or_execution_authority ... ok
+test every_signed_top_level_field_refuses_unsigned_mutation ... ok
+test elf_checks_are_structural_only_and_refuse_truncated_or_wrong_architecture ... ok
+test cargo_log_requires_one_unprofiled_binary_and_final_success ... ok
+test even_resigned_source_toolchain_features_and_limits_cannot_drift ... ok
+test builder_signer_cli_refuses_missing_or_unknown_commands ... ok
+test unsigned_file_audit_has_read_only_cli_and_refuses_changed_inputs ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests\diagnostic_reviewed_trust.rs (target\debug\deps\diagnostic_reviewed_trust-338b45f14366dd96.exe)
+
+running 8 tests
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+     Running tests\diagnostic_signer_build.rs (target\debug\deps\diagnostic_signer_build-4af158bf5a6ef0f1.exe)
+
+running 9 tests
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+
