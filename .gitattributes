@@ -171,3 +171,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-worker-key-*/*.log -text whi
 docs/testing/performance/0.74/local-runs/diagnostic-worker-key-*/manifest.json -text
 docs/testing/performance/0.74/local-runs/diagnostic-worker-trust-input-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-worker-trust-input-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-worker-kernel-binding-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-worker-kernel-binding-*/manifest.json -text

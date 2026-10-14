@@ -1,0 +1,27 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::KernelWorkerPolicyInput`
+ --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:3:5
+  |
+3 |     K... W...
+  |     ^...^^^^^^^^^
+  |     |
+  |     no `KernelWorkerPolicyInput` in `diagnostic_worker_policy::trusted_input`
+  |     help: a similar name exists in the module: `WorkerPolicyInput`
+
+error[E0599]: no method named `verify_kernel_policy` found for mutable reference `&mut ...` in the current scope
+  --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:14:16
+   |
+14 | ...ce.verify_ke...y(by...
+   |       ^^^^^^^^^...^
+   |
+   = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_kernel_binding-abd70352b62b4507.long-type-17804086999338077570.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+help: there is a method `verify_policy` with a similar name
+   |
+14 -         source.verify_kernel_policy(bytes, packet, journal)
+14 +         source.verify_policy(bytes, packet, journal)
+   |
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_worker_kernel_binding") due to 2 previous errors

@@ -7687,9 +7687,62 @@ consistency join, not a positive installed-root or physical-host admission.
 
 The [trust-input design](../testing/performance/0.74/diagnostic-worker-trust-input-design.md)
 and [contract](../testing/performance/0.74/diagnostic-worker-trust-input-contract.toml)
-preserves the remaining boundary: actual approved policy/body pin/current epoch,
+preserve the remaining boundary: actual approved policy/body pin/current epoch,
 explicit journal enrollment, admitted kernel host/namespace, controller
 provenance/replay and original fence must still be connected. The reader neither
 initializes an authority journal nor signs or installs a policy. Authenticated
 original start, watchdog/writer cessation, completion and later cells stay closed;
 no numerical product claim follows from local control-plane safety checks.
+
+### Separate the reusable controller without moving it yet
+
+A reusable test-run controller needs three boundaries: a portable lifecycle and
+evidence core, a Linux execution backend with an autonomous supervisor, and the
+HydraCache adapter for exact workload identities and qualification policy. The
+[boundary note](../testing/performance/0.74/test-run-control-library-boundaries.md)
+records this direction without extracting crates or renaming signed artifacts.
+Observation and execution remain different capabilities. A library embedded in
+the worker cannot supply a surviving watchdog when that worker dies.
+
+Moving the current code before its original-start, whole-writer revocation and
+crash gates close would change the structure before validating the complete
+ownership protocol. Finish the current lifecycle first, then move one component
+at a time against its retained baseline. An independent library still needs
+compatibility, failure/drop and overhead evidence; abstraction is not a measured
+performance gain or permission to run another workload.
+
+### Compare verified policy with the original kernel context
+
+The separate `verify_kernel_policy` entry removes the caller host argument from
+this new read-only path. Candidate machine/boot/user/mount fields come from
+bounded signed-policy bytes and are accepted only by the original externally
+pinned verifier and active journal. The existing fixed context Probe compares
+actual retained machine/boot files and typed reading-thread namespaces. The
+original kernel packet independently compares its retained receiver boot/user/
+mount objects and keeps sender pidfd/credentials, PID/time namespaces and clock
+checks. Equal supplied strings alone cannot satisfy this join.
+
+The returned guard owns the policy/config/journal relationship and Probe while
+borrowing the same packet mutably. Later checks bracket context with the original
+packet and policy/journal; failures latch all originals, including after wrapper
+drop. Replacement arguments, policy/FD extraction and start methods are absent.
+Packet freshness keeps its existing exclusive 60-second admission bound; future
+consumed-attempt authority must neither renew that request nor mistake this
+short-lived observation for an entire campaign lease.
+
+Eight focused runtime/kernel cases pass in three repeats, plus a public API check
+and five new compile-fail cases within 68 doctests. Positives use synthetic
+issuers/private modeled config and journal alongside real local Linux observations;
+they never sign model facts with the actual issuer. Seeded wrong namespaces,
+machine/boot mismatches, source/sender/context/policy refusal and restoration
+exercise cross-refusal. The registry first caught a missing Linux target; an old
+source guard then caught a test-only hook placed before its runtime boundary.
+Registering the target and moving only the hook preserve the original assertions.
+An incorrect regression-target name is retained separately from functional results.
+
+This establishes actual current-context consistency, not physical initial-host
+enrollment, source-opener attestation, real worker account mapping or controller
+authorization. Approved real policy/epoch and explicit journal enrollment remain
+required. Controller principals/provenance, durable replay/original fence, then
+authenticated collector start/watchdog/writer cessation are the next joins. No
+server route or numerical measurement is opened by this guard.

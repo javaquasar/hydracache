@@ -20,6 +20,12 @@ bounded original root/file retention and an owned policy/active-journal join;
 modeled positives do not fill missing production policy/epoch or host admission.
 Its [local packet](local-runs/diagnostic-worker-trust-input-20261014/README.md)
 retains the original fixture-path failure, final repeated checks and closed gates.
+The [worker/kernel binding](diagnostic-worker-kernel-binding-design.md) adds a
+separate no-caller-host read-only entry with original packet and fixed context
+retention. Real local Linux observations with modeled config/journal do not
+establish installed-root enrollment, controller/replay/fence or start authority.
+Its [evidence](local-runs/diagnostic-worker-kernel-binding-20261014/README.md)
+retains actual-context checks, repeats and every development failure.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.

@@ -62,6 +62,13 @@ and signed-policy cases are private nonroot models with synthetic issuers. No
 production configuration or worker policy is created, and current host context
 still needs independent kernel admission. This does not close P2.
 
+The separate [worker/kernel join](diagnostic-worker-kernel-binding-design.md)
+now compares verified policy with actual retained local machine/boot/user/mount
+context and the original kernel packet, without a caller host argument. It
+retains config/journal/policy, Probe and packet ownership through cross-refusal.
+Real production policy/epoch, source-opener/physical-host enrollment and
+controller provenance/replay/fence remain open; no execution route follows.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

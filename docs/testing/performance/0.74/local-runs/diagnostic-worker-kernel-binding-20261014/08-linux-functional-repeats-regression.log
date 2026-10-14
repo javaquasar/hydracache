@@ -1,0 +1,161 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 13.39s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... seed=0x07522074 signed_context_mutations=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 666 filtered out; finished in 1.38s
+
+    Finished `test` profile [unoptimized] target(s) in 1.56s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... seed=0x07522074 signed_context_mutations=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 666 filtered out; finished in 1.40s
+
+    Finished `test` profile [unoptimized] target(s) in 1.77s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... seed=0x07522074 signed_context_mutations=32 independent_threads=4 production_enrollment=false
+ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 666 filtered out; finished in 1.34s
+
+    Finished `test` profile [unoptimized] target(s) in 1.50s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 3 tests
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 668 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized] target(s) in 1.55s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 11 tests
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_coarse_metadata_cannot_hide_changed_named_bytes ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 660 filtered out; finished in 0.35s
+
+    Finished `test` profile [unoptimized] target(s) in 1.62s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 10 tests
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_fixed_security_and_nofollow_refuse_owned_fixtures ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_guard_cannot_be_sent_or_shared ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_namespace_descriptors_are_typed_readonly_cloexec ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_descriptor_and_thread_restoration_stay_refused ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_policy_failure_precedes_broken_probe_io ... ok
+test diagnostic_worker_policy::local_context::tests::worker_context_single_read_refuses_short_overrun_error_and_midread_growth ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 661 filtered out; finished in 0.14s
+
+    Finished `test` profile [unoptimized] target(s) in 1.84s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 19 tests
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test diagnostic_kernel_admission::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_packet_hold_has_exclusive_boottime_boundary ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_time_timespec_and_ordering_edges_refuse ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_namespace_type_and_object_are_independent_checks ... ok
+test diagnostic_kernel_admission::origin::tests::kernel_worker_context_original_typed_namespaces_and_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_actual_sender_and_nonblocking_empty_receive ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_authentication_has_no_caller_peer_or_time ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_empty_disconnect_and_socket_option_drift_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_exact_budget_and_oversized_packet_refuse ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+test diagnostic_kernel_admission::tests::kernel_admission_packet_projection_drift_latches_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_received_rights_close_all_copies_on_refusal ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_reviewed_controller_refuses_fixture_trust_and_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_seeded_status_mutations_refuse_wrong_credentials ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_signature_principal_and_clock_refusals_are_sticky ... ok
+test diagnostic_kernel_admission::tests::kernel_admission_wrong_socket_type_refuses_without_fallback ... ok
+test diagnostic_kernel_admission::tests::kernel_worker_context_packet_sender_clock_and_prior_refusal_are_sticky ... ok
+
+test result: ok. 18 passed; 0 failed; 1 ignored; 0 measured; 652 filtered out; finished in 0.14s
+
+error: no test target named `diagnostic_authority_fixed` in `hydracache-long-run-supervisor-074` package
+help: available test targets:
+    abort_lifecycle
+    archive
+    authorization
+    chain
+    checkpoint_evidence
+    config
+    diagnostic_artifacts
+    diagnostic_collector
+    diagnostic_context_files
+    diagnostic_intent_projection
+    diagnostic_ipc
+    diagnostic_lease
+    diagnostic_manager
+    diagnostic_original_fence
+    diagnostic_receipts
+    diagnostic_reviewed_trust
+    diagnostic_spool
+    diagnostic_task_api
+    diagnostic_tree
+    diagnostic_worker_account
+    diagnostic_worker_context
+    diagnostic_worker_files
+    diagnostic_worker_kernel_binding
+    diagnostic_worker_policy
+    event_journal
+    host_execution
+    lease_expiry
+    manifest
+    measurement_loss
+    mutation
+    process_identity
+    progress_loss
+    protocol
+    provisioning
+    request_builder
+    seal_artifact
+    seal_input
+    seal_lifecycle
+    server
+    service
+    spawn
+    start_lifecycle
+    state_machine
+    state_store
+    systemd_notify
+    systemd_unit
+    unix_transport
+    watchdog

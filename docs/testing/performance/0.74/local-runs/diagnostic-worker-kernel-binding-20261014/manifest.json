@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-worker-kernel-binding-20261014",
+  "baseline_source": "aa7822798b57a9aa211f561d432db803edcefee1",
+  "preregistration_source": "7c22a02b16451093cd99a9fd385c77ec768d4436",
+  "implementation_source": "37c22397402e71cbbf1ff0928c16ab2b4180bcad",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "unchanged_files": [
+    {
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json"
+    },
+    {
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22",
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
+    },
+    {
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs"
+    },
+    {
+      "sha256_lf": "45873848cafd559e038e1f8cec0e3c0266d98de70e7dc4fd8f2ada00a0e038fc",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs"
+    },
+    {
+      "sha256_lf": "2705f09f40c6907a258ca6255494ae83917953739cb2b8699bac1a08189ebec7",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs"
+    },
+    {
+      "sha256_lf": "41115bb8613291c22e28d18c210789b3f9951aef3a53e2c99c7b2d52739274f1",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs"
+    },
+    {
+      "sha256_lf": "7a410cadcd47ff80ad90aa63ca27da4aed0aceea469d80235a7d4564e43584eb",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs"
+    },
+    {
+      "sha256_lf": "e861d439c5969fe135bbd089f776aef497e951ffafee4d2ce34198ef2d9ef32b",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs"
+    },
+    {
+      "sha256_lf": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs"
+    },
+    {
+      "sha256_lf": "63390f1c70706b57ad03596576d0af362ed24ab66ae52fd3472fb84297f09a49",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector.rs"
+    },
+    {
+      "sha256_lf": "1678172282f210f0932673f836534bbb5496969b6b7ddd92f4c6fdbd13303e57",
+      "path": "tools/long-run-supervisor-074/src/lib.rs"
+    },
+    {
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09",
+      "path": "tools/long-run-supervisor-074/src/server.rs"
+    },
+    {
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9",
+      "path": "Cargo.toml"
+    },
+    {
+      "sha256_lf": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+      "path": "Cargo.lock"
+    },
+    {
+      "sha256_lf": "02e9213b93cc35a254aab4744d2841227d1785e4eccc9fa0f0e2e67495434ce6",
+      "path": "tools/long-run-supervisor-074/Cargo.toml"
+    },
+    {
+      "sha256_lf": "3e83080b531da5ac419fc088577da99e8bfe64e909bfa34a4a897c1eed4aa8bd",
+      "path": "crates/hydracache/src/lib.rs"
+    },
+    {
+      "sha256_lf": "3ad27876b77d8399d083a05836aad04638407b5164514a744cab0a4d7bb65efd",
+      "path": "crates/hydracache-server/src/lib.rs"
+    }
+  ],
+  "verifier_sha256_lf": "d78e207315ca8b5fbb9d1bd64a261a1dce4a54a25e93e5849ecccfb4890f6d98",
+  "captures": [
+    {
+      "bytes": 54508,
+      "sha256": "f8caddcc8c2e0b6336a6f9bfd4f55e3f76dc97cd842f6f4edc71337243307f21",
+      "path": "01-baseline.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 1581,
+      "sha256": "688ce14a48b716cc59c65e0240f1b3c9774f499b295b814941916dbcc4d10dca",
+      "path": "02-missing-kernel-binding-api-red.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0,
+      "expected_native_exit": 101,
+      "observed_native_exit": 101
+    },
+    {
+      "bytes": 390,
+      "sha256": "fa183bf33561be2e6d940ceb4cc867bdef64307ebcf9ede5f728d07fe9923ae5",
+      "path": "03-linux-first-check-lint.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 740,
+      "sha256": "79a84239844ecf4102ad77cbd56257e2529ac26562d5222c53fd4bda9f49489d",
+      "path": "04-windows-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 3757,
+      "sha256": "7c3b4da562b5d64ec9c93ceff451e79da948df605db46240526ae29a8c592e4c",
+      "path": "05-windows-regression-root-contracts.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 1,
+      "failure": "Missing registration of the new cfg-gated Linux API target; portable regression passed before root failure."
+    },
+    {
+      "bytes": 17356,
+      "sha256": "bed75d480eed3623f2c8775ad15a6ecab3e63b178f51d003ec2671e0bfb59b6d",
+      "path": "06-linux-api-doc-msrv-root.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 11895,
+      "sha256": "f130708105fb49dd0f6495c65b9e4003a60c5b8b8d3449fc50c70257503c2590",
+      "path": "07-corrected-root-contracts.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 1,
+      "failure": "Existing context source guard saw the test-only hook before runtime ended; moved only the hook."
+    },
+    {
+      "bytes": 11288,
+      "sha256": "6a276f5c96fa91ed03b6c4a9c8544c5c2ae493497937c7cad2f9f495a462dae8",
+      "path": "08-linux-functional-repeats-regression.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 101,
+      "failure": "Functional repeats/regression passed; incorrect integration target diagnostic_authority_fixed stopped the remaining command."
+    },
+    {
+      "bytes": 11375,
+      "sha256": "78dab2a330c9d1def6072572740e1f7c273c1fac88a698fc3604edfa4f7cc56e",
+      "path": "09-final-linux-repeats-regression-lint.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 12737,
+      "sha256": "51534c9bb197c7a01e0a14f4ad6f324ad32b1ae013843e5c38a1021bd455aca8",
+      "path": "10-final-root-contracts.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 16680,
+      "sha256": "c9b2a33f6e28ab72cf1e3e4f5039dd55d49365ca7e9158359d2772fcf1bcfc34",
+      "path": "11-final-linux-doc-check.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "bytes": 617,
+      "sha256": "0828b103a20ee76ee6ed639b641ab47acf1dcb0d26621b4c42634cf803b895e9",
+      "path": "12-final-docs-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    }
+  ],
+  "source_files": [
+    {
+      "sha256_lf": "2dc4c7fca08276166f4fb29294042a468ab911c77108fee4fd5303a9e3f1de8d",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs"
+    },
+    {
+      "sha256_lf": "fd0e8d14b10e54b3b374df98d6e787e184c2410f6cc3337e458ba6508b4aa058",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs"
+    },
+    {
+      "sha256_lf": "7a20c4e176a03e5b373afe1cefdca3969cff47fb048d1485c742cd0e54d797cc",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+    },
+    {
+      "sha256_lf": "da85b8f612455909e90c2a50ed66c484d5a8c7a7aeb60fed83b6a34d6a44d805",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_context.rs"
+    },
+    {
+      "sha256_lf": "8a9b77adf48332d7434a1070312831082a23580ee78a6265b99ae7a401d37238",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs"
+    },
+    {
+      "sha256_lf": "b420c615bf3b686fe7ef0888cc70584b8b425e29ee775fdd8c1551d1da7b3a7a",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs"
+    },
+    {
+      "sha256_lf": "6e5c90c698cec13f9a12dea52a93440fd7d64d59b23b09244ce1ee96fdfc16ba",
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs"
+    },
+    {
+      "sha256_lf": "be76c0c634a71482e3d9119a9bf3fa9996e95dfaa61a821699af96b862ef47a5",
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs"
+    },
+    {
+      "sha256_lf": "590d08334c305d42420230d41358378ad3200058396c128e8561621802299d31",
+      "path": "crates/xtask/tests/performance_contract_074.rs"
+    },
+    {
+      "sha256_lf": "73a9316044eada4af62b0b697ec5bcdf4ea9cf36b2abd7c92ce2c5d159b6e9f9",
+      "path": "docs/COMPAT.md"
+    },
+    {
+      "sha256_lf": "f0e413853c7fd89182efe4fa91b803fce6c81f84769b1b763487663f8c86e9db",
+      "path": "docs/GATES.md"
+    },
+    {
+      "sha256_lf": "41e6024658700393c30d72d0d83dff88841c8a4edfe5c40ec55ade58cb05f7f6",
+      "path": "docs/testing/gated-test-registry.toml"
+    },
+    {
+      "sha256_lf": "df9bd4211e216dd602701b51d9697d98adb60fec2a3316c0c6a90a2bb793b45f",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-kernel-binding-contract.toml"
+    },
+    {
+      "sha256_lf": "85e7263df4d57c61982427f9d5e07bfc8d9926c5cfdbe183ae7f001bdd73e195",
+      "path": "docs/testing/performance/0.74/diagnostic-worker-kernel-binding-design.md"
+    },
+    {
+      "sha256_lf": "8d4eabf583eff66df592770f8384e19ca82e4441b70ea05db3066a255a7d1b69",
+      "path": "docs/testing/performance/0.74/test-run-control-library-boundaries.md"
+    }
+  ],
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "capture_count": 12,
+  "baseline": {
+    "trust_passed": 11,
+    "context_passed": 7,
+    "broad_kernel_filter_passed": 218,
+    "broad_kernel_filter_ignored": 10,
+    "full_release_gate": false
+  },
+  "tests": {
+    "owned_worker_kernel_cases_per_repeat": 5,
+    "receiver_namespace_sender_cases_per_repeat": 3,
+    "repeats": 3,
+    "public_api": 1,
+    "doctests": 68,
+    "new_compile_fail": 5,
+    "linux_authority_fixed": 13,
+    "linux_reviewed_trust": 8,
+    "linux_worker_policy": 15,
+    "linux_kernel_admission_passed": 18,
+    "linux_kernel_admission_manual_ignored": 1,
+    "windows_reviewed_trust": 8,
+    "windows_worker_policy": 14,
+    "root_suites": [
+      6,
+      126,
+      13
+    ],
+    "seed": "0x07522074",
+    "signed_wrong_context_mutations": 32,
+    "independent_threads": 4
+  },
+  "linux_msrv_clippy": "unavailable; not run",
+  "profile_environment": "CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never",
+  "linux_command_prefix": "set -e -o pipefail; export PATH=/home/artur/.cache/hydracache-074-registration-tools/bin:/home/artur/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; export CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-manager-local-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=2 CARGO_TERM_COLOR=never; cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074; ",
+  "ship_check": {
+    "expected_native_exit": 1,
+    "observed_native_exit": 1,
+    "admission": "closed"
+  },
+  "admission_claims": {
+    "actual_production_policy_or_epoch_selected": false,
+    "actual_root_source_opener_attested": false,
+    "physical_initial_host_enrolled": false,
+    "controller_principals_or_provenance_enrolled": false,
+    "durable_replay_or_original_fence_join_complete": false,
+    "authority_bootstrap_performed": false,
+    "runtime_refusal_is_durable_revocation": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "server_entry_wired": false,
+    "real_private_key_read_or_production_policy_signed": false,
+    "host_modified": false,
+    "new_sigkill_or_full_milestone_proof": false,
+    "product_workload_or_qualification": false,
+    "performance_claim": false,
+    "library_extracted_or_published": false,
+    "ship_admission": false
+  }
+}
