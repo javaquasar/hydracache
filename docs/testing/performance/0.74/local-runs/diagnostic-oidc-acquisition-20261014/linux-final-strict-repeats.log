@@ -1,0 +1,33 @@
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+............
+----------------------------------------------------------------------
+Ran 12 tests in 1.875s
+
+OK
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+............
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+----------------------------------------------------------------------
+Ran 12 tests in 1.666s
+
+OK
+............
+----------------------------------------------------------------------
+Ran 12 tests in 1.600s
+
+OK
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+.........................
+----------------------------------------------------------------------
+Ran 25 tests in 2.043s
+
+OK
+seed=0x07562074 offline_mutations=32 key_selected=false authenticated_acquisition=false
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false

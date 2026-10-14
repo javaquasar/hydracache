@@ -1,0 +1,31 @@
+test_actual_loopback_tls_accept_and_hostname_or_unknown_ca_refuse (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_actual_loopback_tls_accept_and_hostname_or_unknown_ca_refuse) ... FAIL
+test_environment_refuses_before_launch_or_ca_loading_without_echo (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_environment_refuses_before_launch_or_ca_loading_without_echo) ... ok
+test_fixed_http_request_accepts_bounded_identity_and_chunked_sources (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_fixed_http_request_accepts_bounded_identity_and_chunked_sources) ... ok
+test_http_status_framing_compression_budget_and_partial_body_refuse (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_http_status_framing_compression_budget_and_partial_body_refuse) ... ok
+test_parent_child_timeout_failure_partial_and_inconsistent_report_refuse (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_parent_child_timeout_failure_partial_and_inconsistent_report_refuse) ... ok
+test_parent_exact_isolated_child_and_modeled_report_keep_all_admission_closed (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_parent_exact_isolated_child_and_modeled_report_keep_all_admission_closed) ... ok
+test_platform_context_keeps_chain_hostname_san_and_no_keylog (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_platform_context_keeps_chain_hostname_san_and_no_keylog) ... ok
+test_seeded_reports_independent_acquisitions_and_cli_unknown_refuse (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_seeded_reports_independent_acquisitions_and_cli_unknown_refuse) ... ok
+test_tls_and_resource_deadline_failures_close_exact_connection (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_tls_and_resource_deadline_failures_close_exact_connection) ... ok
+test_worker_malformed_discovery_stops_before_jwks_and_clock_reversal_refuses (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_worker_malformed_discovery_stops_before_jwks_and_clock_reversal_refuses) ... ok
+
+======================================================================
+FAIL: test_actual_loopback_tls_accept_and_hostname_or_unknown_ca_refuse (scripts.perf.test_diagnostic_oidc_acquisition_074.AcquisitionTests.test_actual_loopback_tls_accept_and_hostname_or_unknown_ca_refuse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\test_diagnostic_oidc_acquisition_074.py", line 265, in test_actual_loopback_tls_accept_and_hostname_or_unknown_ca_refuse
+    with tls_fixture() as (requests, errors):
+         ~~~~~~~~~~~^^
+  File "C:\Python313\Lib\contextlib.py", line 148, in __exit__
+    next(self.gen)
+    ~~~~^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\test_diagnostic_oidc_acquisition_074.py", line 123, in tls_fixture
+    assert all(isinstance(error, str) for error in errors), errors
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)]
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.572s
+
+FAILED (failures=1)
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false

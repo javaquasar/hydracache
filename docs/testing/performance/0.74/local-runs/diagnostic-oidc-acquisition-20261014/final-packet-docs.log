@@ -1,0 +1,9 @@
+Verified 13 raw captures, exact acquisition source and unchanged frozen/tooling inputs; actual issuer selection and execution remain closed.
+Verified 13 raw captures, exact acquisition source and unchanged frozen/tooling inputs; actual issuer selection and execution remain closed.
+doc-check: OK (releases.toml is consistent)
+gated-test-check: OK (169 discovered gates, all registered)
+performance-contract-check 0.74: OK (local, non-promotable)
+Checked 51 markdown files and 20 external includes for local links.
+ INFO Book building has started
+ INFO Running the html backend
+ INFO HTML book written to `C:\Workspace\prj\jq\cashe\hydracache-074\docs-site\book`

@@ -7917,3 +7917,36 @@ retrieval, signing and receiver verification. Actual protected workflow/pins,
 issuer acquisition and original replay/fence remain prerequisites for start;
 producer success cannot stand in for any of them. See the
 [local producer procedure](../testing/performance/0.74/diagnostic-controller-producer-operator.md).
+
+### Bound public key acquisition without selecting production trust
+
+The separate public acquisition tool now requests only the fixed discovery and
+JWKS paths. TLS requires the fixed hostname, SAN verification, a strict full
+chain under platform CA roots and TLS 1.2 or newer. Redirects, compression,
+ambiguous framing, duplicate headers, over-budget bodies and inherited proxy,
+CA/key-log/OpenSSL/Python or known bearer-token overrides refuse. It neither
+reads a signing key nor accepts a token or token-selected URL.
+
+Socket timeouts alone do not bound a slow DNS resolver or headers delivered one
+byte at a time. An isolated owned child therefore receives a minimal environment
+and a total subprocess deadline. Timeout kills and reaps only that child and
+refuses partial output. The parent checks schema, raw public source digests,
+transport metadata and exact inspector types; JSON zero is not boolean false.
+Raw sources and platform CA/peer certificate hashes remain inspectable without
+turning a receive timestamp into an authority epoch or snapshot expiry.
+
+Real loopback TLS verifies a synthetic positive, unknown-CA refusal and wrong
+hostname refusal. The first Windows run exposed a fixture assumption: the peer
+can reset TCP instead of delivering a TLS alert. The client still had to raise
+certificate verification failure; only the fixture's handshake observation was
+made portable. An owned blocking child additionally proves timeout reaping and
+partial-output refusal. Modeled HTTP/report mutations and independent acquisitions
+exercise the remaining paths without contacting the actual issuer. The ordinary
+CI step runs these local fixtures, not the acquisition command or qualification.
+
+This adds a transport mechanism, not a production-key enrollment receipt. Platform
+CA/source/interpreter custody, actual key acquisition and explicit key/workflow/
+expiry review remain before a protected diagnostic job. A copied unsigned report
+cannot authorize replay, original start or completion. The
+[acquisition procedure](../testing/performance/0.74/diagnostic-controller-producer-operator.md#public-acquisition-tool-after-separate-approval)
+keeps those choices separate from the local parser and TLS evidence.

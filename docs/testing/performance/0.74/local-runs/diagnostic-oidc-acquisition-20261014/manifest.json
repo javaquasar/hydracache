@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-oidc-acquisition-20261014",
+  "baseline_source": "e007113d52a6031e3254c36fa169f495ddf56e08",
+  "preregister_source": "78b114488434d21334d9ed6382b8056e46402fdf",
+  "implementation_source": "b877d014c92c7eb57eaed2afb5791925374358ca",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "verifier_sha256_lf": "ddd75d1a098f33284a2e98880edf18cf98a3075b2eaf4a5f5665242b3f4d4996",
+  "frozen_lock_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    }
+  ],
+  "source_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256_lf": "a527df9447acb0a62fea9c4dab40323a2673572abe9c7d6d0bd4383379e7c13a"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "87c0ab73c0bb92cc7ffdff1a9f290726a35b90af63bad085e91b55c542822504"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "c583e8584ff7dbb7b9da22027e3aeb960c19daa1174d0369249db8cdee8e77fa"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-oidc-acquisition-contract.toml",
+      "sha256_lf": "587d0d20c7af84b93fb12bcbed69037185ac7ff98b894723055a3b8abd14f353"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-oidc-acquisition-design.md",
+      "sha256_lf": "aaab5329cbabc6dce6ae47ae121b279508847df944b453615b2c85feced32f9a"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_acquisition_074.py",
+      "sha256_lf": "de74844ad8dc96939485de769e92befbdafc0774374ced7d57d7c2d267863e0c"
+    },
+    {
+      "path": "scripts/perf/fixtures/README.md",
+      "sha256_lf": "119f9ba047d0fedebe337d0f136fccfffd9a76fa5c0b676e5b246a6b634ff0a7"
+    },
+    {
+      "path": "scripts/perf/fixtures/public-synthetic-oidc-tls-ca.pem",
+      "sha256_lf": "7e63db43803b9fba6df408d2b733551b75207608927881d6dc06a9102258ee0a"
+    },
+    {
+      "path": "scripts/perf/fixtures/public-synthetic-oidc-tls-key.pem",
+      "sha256_lf": "d9c4e168d2a76e05031f37c64b2abc60a795f427c84cc3beadaa23bbf6db6212"
+    },
+    {
+      "path": "scripts/perf/fixtures/public-synthetic-oidc-tls-server.pem",
+      "sha256_lf": "6f7c8ed49f9bc162932a3830e81ac9a2a02125b581f114495aa3663a1197fd1b"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_oidc_acquisition_074.py",
+      "sha256_lf": "43154735a901fa5ed9fef9b749f7692f113d0e5a88f59ada805890f0cbefb7f2"
+    }
+  ],
+  "captures": [
+    {
+      "sha256": "4dc039e5ec6adb4aa26648be928195ea00b57b5ccff0d449dfc412877f30d950",
+      "bytes": 206,
+      "path": "baseline.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "4d5cafeefa6a2447e7ab07bbc57d0eed44f3f1d87296048a723b14290556f03f",
+      "bytes": 2417,
+      "path": "development-linux.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "bf7152b111698beca2522abd439cec628c70fb0f76edef8b94ef5c9cb06c8237",
+      "bytes": 2725,
+      "path": "development-windows-fixed.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "cae0fcc4bb1829cfb8c6cc1ae1af24149167c89786e56e53583ea87cd755a880",
+      "bytes": 3494,
+      "path": "development-windows.log",
+      "expected_wrapper_exit": 1,
+      "observed_wrapper_exit": 1,
+      "negative_result": "Nine cases passed; Windows TLS refusal fixture saw TCP reset instead of TLS alert. Client certificate verification refusal remains mandatory; only fixture handshake observation corrected."
+    },
+    {
+      "sha256": "ee0e9922e84899aa593864332d4665bad9ee8db9e4411a13db89556f53895b88",
+      "bytes": 578,
+      "path": "docs-gates.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0,
+      "expected_inner_refusal": "require-ship exit 1, unchanged closed release gate"
+    },
+    {
+      "sha256": "c1d02f273a2b9c819fbbb5121dfd0fe0258aa49b812f23db3972f5e910f52343",
+      "bytes": 808,
+      "path": "final-ci-contract.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "e4722846709b2ec8eaf693c9b2ef6b9559fbe493f7d65e96dc0229bee9bc9961",
+      "bytes": 1283,
+      "path": "linux-final-repeats.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "3140499bb3d0fd1a508604c09307b56cec29a5533c4d5014e7db9b9ece8151d5",
+      "bytes": 1542,
+      "path": "linux-final-strict-repeats.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "239c6526de5cc9ff1009dedfcb78b773eb4729cf63f37dd8edd9e691f26c37d7",
+      "bytes": 246,
+      "path": "missing-api.log",
+      "expected_wrapper_exit": 1,
+      "observed_wrapper_exit": 1,
+      "negative_result": "Expected missing acquisition API at the unchanged baseline."
+    },
+    {
+      "sha256": "9ac6201e101cdc4be423e5fa20fd7e9940710061f5800e95bcfa23759a9a47a2",
+      "bytes": 9427,
+      "path": "msrv-contract-check.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "1efb304bf67497f3781ed9d11c5f19adab56e141ee8881f8aa2b4f491bc0fb65",
+      "bytes": 13667,
+      "path": "root-contracts.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "089370069c0c4baa1ae808381e8f6eacd41ae260f3ae58fa57858afd4eadcf36",
+      "bytes": 1283,
+      "path": "windows-final-repeats.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "08f6fd219c7a1fd87acca04234eff1071fd13a043df80e88e1743adb25198bdb",
+      "bytes": 1542,
+      "path": "windows-final-strict-repeats.log",
+      "expected_wrapper_exit": 0,
+      "observed_wrapper_exit": 0
+    },
+    {
+      "sha256": "ce979da8def4dd3eb60b4cfa6abe4ff558c06784cfb44f27c083725ea2ffb0b4",
+      "bytes": 671,
+      "observed_wrapper_exit": 0,
+      "path": "final-packet-docs.log",
+      "expected_wrapper_exit": 0
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.lock",
+      "sha256_lf": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/main.rs",
+      "sha256_lf": "6ac3db6af4049e48ce42762b09ff69774642daf7c800c65ccc2f602056c9b6bd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "sha256_lf": "01f665fae44885ac85f208f4a61871499b3f21600ebf1cc03ff57c47898a596d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+      "sha256_lf": "f8d78cca6b81d15b6ef32ce8199c12ad30ef20febcb6971d2319f7f2ebc3b3db"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer.rs",
+      "sha256_lf": "7f9361c33e31ef679fe371f43595adab1996e489d1ac501d9730fff539dd3b8b"
+    },
+    {
+      "path": "scripts/perf/diagnostic_oidc_source_074.py",
+      "sha256_lf": "df6cf5967b49152c79ddb91565bf3fafdee3dc0452953cd1268f272b2e77d747"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_oidc_source_074.py",
+      "sha256_lf": "d5e57cfd43666e9901bdf6762e86c774d43c437af1448f83a32ea94ff3624c6e"
+    },
+    {
+      "path": "scripts/perf/diagnostic_builder_074.py",
+      "sha256_lf": "3077980814dc83fa0043c4386ff4d705e966f95fc7c50978493931756d265e99"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_builder_074.py",
+      "sha256_lf": "1f77264f056155d0c9218a7846e5eb30a1cc4de95deb13822655e8cb0c19a965"
+    },
+    {
+      "path": ".github/workflows/performance-long-run-qualification-074.yml",
+      "sha256_lf": "33904a5c12a102bac1ae8b7d62b3bb87c45e01d969a74f84675bdec057a31324"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256_lf": "41e6024658700393c30d72d0d83dff88841c8a4edfe5c40ec55ade58cb05f7f6"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "docs/testing/performance/0.74/baseline-identities.toml",
+      "sha256_lf": "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
+    },
+    {
+      "path": "docs/testing/performance/0.74/scenario-matrix.toml",
+      "sha256_lf": "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+    },
+    {
+      "path": "docs/testing/performance/0.74/statistics.toml",
+      "sha256_lf": "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "docs/testing/performance/0.74/long-run-controller-resilience-contract.toml",
+      "sha256_lf": "d38a6e51ebc127374025171a9749ab4cb75ec91b2b8ec21ae120b6126c09253d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/composition-ledger.toml",
+      "sha256_lf": "ff0409570f76bc709ae61846e40b91975b0bf02a8d53374d447c87991e61ec96"
+    },
+    {
+      "path": "docs/testing/performance/0.74/release-admission-contract.toml",
+      "sha256_lf": "2ce93c1f7ff99a4a69980ef97907fee21bb1f1a407dfaa6414d27f04586c98fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/terminal-disposition-ledger.toml",
+      "sha256_lf": "7f1e8904e5c9915b50c4dd66011e39bf4847c3564709248e9046aec3622b4968"
+    }
+  ],
+  "frozen_lock_sources": [
+    "62114be0f5da3218706e30d7424acfb5d0579d07",
+    "70ca60eb3f2f75a326e9f6430467749b76440a04"
+  ],
+  "capture_count": 14,
+  "tests": {
+    "final_acquisition_cases_per_platform": 12,
+    "final_strict_repeats_per_platform": 3,
+    "combined_python_cases_per_platform": 25,
+    "seed": "0x07572074",
+    "report_mutations": 32,
+    "independent_modeled_acquisitions": 4,
+    "actual_loopback_tls_cases_per_repeat": 3,
+    "actual_owned_child_timeout_case_per_repeat": 1,
+    "fixture_child_deadline_seconds": 0.5,
+    "production_child_deadline_unchanged_seconds": 15,
+    "root_performance_contracts": 131,
+    "root_registry": 6,
+    "root_release_evidence": 13,
+    "final_updated_ci_source_contract": 1,
+    "registered_gates": 169,
+    "current_rust": "1.94.0",
+    "windows_msrv_contract_check": "1.88.0",
+    "full_release_verify_executed": false,
+    "actual_github_acquisition_command_executed": false
+  },
+  "admission_claims": {
+    "actual_github_issuer_key_acquired": false,
+    "actual_production_key_or_workflow_policy_selected": false,
+    "actual_private_signing_key_read": false,
+    "actual_protected_job_token_verified": false,
+    "trust_configuration_installed": false,
+    "protected_job_dispatched": false,
+    "durable_nonce_or_fence_admission": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "host_modified": false,
+    "new_durable_boundary_process_loss_proof": false,
+    "product_candidate_or_workload_run": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  }
+}

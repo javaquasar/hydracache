@@ -9,6 +9,13 @@ authenticated acquisition and actual workflow/trust selection remain open.
 The [producer packet](local-runs/diagnostic-controller-producer-20261014/README.md)
 retains final focused repeats, both-platform checks, all development negatives
 and unchanged frozen inputs without performance or server admission claims.
+The [public acquisition tool](diagnostic-oidc-acquisition-design.md) is now locally
+implemented with fixed HTTPS, strict platform TLS and a bounded isolated child.
+Actual loopback TLS and owned-child timeout tests use public synthetic fixtures;
+actual GitHub acquisition, custody review and policy selection remain separate.
+The [acquisition evidence](local-runs/diagnostic-oidc-acquisition-20261014/README.md)
+retains actual synthetic TLS/child-timeout observations, final strict repeats
+on both platforms and the Windows fixture negative without enrolling trust.
 
 The [pre-server closure checklist](pre-server-closure-checklist-20261014.md)
 tracks the remaining P1/P2/P3 production integration and exact-host gates.

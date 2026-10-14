@@ -1,0 +1,30 @@
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 0.987s
+
+OK
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 0.972s
+
+OK
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 1.023s
+
+OK
+actual_loopback_tls=accept,wrong_hostname,unknown_ca actual_github_fetch=false
+owned_fixture_timeout=reaped partial_output=refused actual_github_fetch=false
+seed=0x07572074 report_mutations=32 independent_models=4 production_authority=false
+.............
+seed=0x07562074 offline_mutations=32 key_selected=false authenticated_acquisition=false
+----------------------------------------------------------------------
+Ran 13 tests in 0.236s
+
+OK

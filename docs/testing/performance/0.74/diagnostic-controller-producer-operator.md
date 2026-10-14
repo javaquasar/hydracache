@@ -88,3 +88,32 @@ CA overrides, bounded responses and explicit custody/review/rotation are require
 The [GitHub discovery document](https://token.actions.githubusercontent.com/.well-known/openid-configuration)
 publishes the issuer endpoint; parsing a supplied copy does not authenticate its
 origin. The inspector performs no network acquisition or actual key selection.
+
+## Public acquisition tool after separate approval
+
+The [local acquisition implementation](diagnostic-oidc-acquisition-design.md)
+adds a separate command; it was tested with modeled responses and synthetic
+loopback TLS, not against the real issuer. Only after actual acquisition is
+approved, run from reviewed tooling and an audited Python/OpenSSL/CA environment:
+
+```sh
+python scripts/perf/diagnostic_oidc_acquisition_074.py acquire-public
+```
+
+There is no URL, CA, token, kid or timeout option. Proxy, CA/key-log/OpenSSL,
+Python and known GitHub token overrides refuse even when set to empty strings;
+use a separately reviewed clean process instead of copying credentials into it.
+The owned child receives only a small OS/locale environment and has a 15-second
+total deadline, with five-second resource limits and no retry. Do not invoke its
+internal `_worker` mode manually; that bypasses the outer child deadline.
+
+The unsigned report retains bounded public bodies, digests, platform CA roster
+digest, peer certificate/TLS metadata and job timestamps. Platform trust is not
+an independently selected issuer pin, and this report cannot grant a runtime
+capability. Review acquisition source/interpreter/CA custody and source hashes
+before choosing an actual key, snapshot lifetime or protected workflow policy.
+The tool creates no file, signs nothing and installs no trust. Existing receiver
+freshness, worker epoch, replay/common fence and original-start gates still apply.
+TLS and owned-child timeout use the documented
+[Python ssl API](https://docs.python.org/3.12/library/ssl.html) and
+[subprocess.run lifecycle](https://docs.python.org/3.12/library/subprocess.html#subprocess.run).

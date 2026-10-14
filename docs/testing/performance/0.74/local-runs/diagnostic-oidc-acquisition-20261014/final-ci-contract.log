@@ -1,0 +1,13 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized] target(s) in 4.14s
+     Running tests\performance_contract_074.rs (C:/Users/ArturBuzov/.cache/hydracache-074-windows-target\debug\deps\performance_contract_074-4088f809c28dc3bc.exe)
+
+running 1 test
+test diagnostic_public_acquisition_is_bounded_observation_not_trust_or_execution ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 130 filtered out; finished in 0.00s
+
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1.46s
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1.78s

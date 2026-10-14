@@ -89,6 +89,10 @@ The separate [job-side producer](diagnostic-controller-producer-operator.md)
 prepares/signs the existing diagnostic body and derives its request-bound audience.
 Local synthetic signatures and offline public discovery/JWKS inspection do not
 authenticate acquisition, select actual workflow/key policy or mint a real token.
+The [separate acquisition tool](diagnostic-oidc-acquisition-design.md) now bounds
+fixed HTTPS in an isolated child and records public transport/source metadata.
+Synthetic loopback TLS and timeout proof do not choose actual issuer keys or
+establish reviewed platform-CA/source custody; no real acquisition was run.
 Independently authenticated GitHub key selection/custody/rotation, actual workflow
 policy selection and a protected diagnostic signing-job receipt remain required
 before real provenance enrollment. P2 and replay/start admission remain open.
