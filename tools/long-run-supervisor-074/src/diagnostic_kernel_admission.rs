@@ -97,6 +97,22 @@ impl KernelReceiver {
     }
 }
 impl KernelPacket {
+    /// Require the reviewed controller key/repository before kernel authentication.
+    /// The supplied principal policy is not enrolled host/epoch/replay authority.
+    /// Like generic authentication, this returns request data, never a start guard.
+    pub fn authenticate_reviewed_controller(
+        &mut self,
+        policy: &DiagnosticPolicy,
+    ) -> Result<DiagnosticRequest, KernelError> {
+        if self.refused {
+            return Err(KernelError::Refused);
+        }
+        if crate::diagnostic_reviewed_trust::require_controller_pin(policy).is_err() {
+            self.refused = true;
+            return Err(KernelError::Invalid);
+        }
+        self.authenticate(policy)
+    }
     pub fn bytes(&self) -> &[u8] {
         &self.bytes
     }

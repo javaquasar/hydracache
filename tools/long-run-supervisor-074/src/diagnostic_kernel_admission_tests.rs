@@ -227,6 +227,44 @@ fn kernel_admission_authentication_has_no_caller_peer_or_time() {
     assert_eq!(p.authenticate(&policy).unwrap().controller.actor_id, 18);
 }
 #[test]
+fn kernel_admission_reviewed_controller_refuses_fixture_trust_and_fallback() {
+    use crate::diagnostic_reviewed_trust as reviewed;
+    for case in 0..3 {
+        let (bytes, mut policy) = signed();
+        let (mut receiver, fd) = pair();
+        send(&fd, &bytes);
+        let mut p = packet(&mut receiver);
+        match case {
+            0 => policy.repository_id = crate::diagnostic_builder::REPOSITORY_ID,
+            1 => policy.verifying_key = reviewed::controller_key().unwrap(),
+            _ => {
+                policy.repository_id = crate::diagnostic_builder::REPOSITORY_ID;
+                policy.verifying_key = reviewed::controller_key().unwrap();
+            }
+        }
+        let result = p.authenticate_reviewed_controller(&policy);
+        if case < 2 {
+            assert!(matches!(result, Err(KernelError::Invalid)));
+        } else {
+            assert!(matches!(
+                result,
+                Err(KernelError::Authentication(
+                    diagnostic_ipc::DiagnosticIpcError::Signature
+                ))
+            ));
+        }
+        assert!(matches!(
+            p.authenticate_reviewed_controller(&policy),
+            Err(KernelError::Refused)
+        ));
+        assert!(matches!(
+            p.authenticate(&signed().1),
+            Err(KernelError::Refused)
+        ));
+        assert!(matches!(p.revalidate_sender(), Err(KernelError::Refused)));
+    }
+}
+#[test]
 fn kernel_admission_signature_principal_and_clock_refusals_are_sticky() {
     for case in 0..7 {
         let (mut bytes, mut policy) = signed();
