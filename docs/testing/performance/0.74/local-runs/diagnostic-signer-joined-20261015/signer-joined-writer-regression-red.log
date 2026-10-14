@@ -1,0 +1,20 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.09s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit' (655) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs:7:62:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "joined first exec refused: 0x9a00" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit ... FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 763 filtered out; finished in 0.24s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

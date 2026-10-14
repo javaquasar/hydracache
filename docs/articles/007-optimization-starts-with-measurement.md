@@ -8294,3 +8294,66 @@ handoff and real owner-loss tests. That next composition must not convert the
 older asserted observation guards into authority. Worker start, all-writer
 cessation and later lifecycle cells remain separate work; this correctness
 slice adds no allocation, throughput or release-readiness claim.
+
+### A fresh executable must carry the installation proof
+
+The next local hypothesis joins the two mechanics instead of assuming that
+success on separate helpers composes. A small fixed Rust helper is compiled
+before launch with the existing GNU target and release-like O3/panic-abort
+settings, without external crates or credentials. One owner creates its child,
+descriptor-execs that image, requires the exact kernel exec stop, follows GNU
+startup and then observes the exact filter installation in the new address space.
+The same child must subsequently receive EPERM for self/different execve and
+descriptor execveat before exiting successfully. No ready text supplies authority.
+
+Fresh exec changes the address space, so the earlier parent-preselected stack
+pointers cannot simply be carried across. The new observer captures the actual
+installation header once from kernel syscall information, bounds it and its
+program to the original stack mapping, freezes both addresses and checks all
+policy bytes again after exact zero exit. This proves actual kernel inputs for
+the trusted fixed helper, not independent provenance of an arbitrary pointer
+or protection against an external memory writer. Before installation, another
+exec, task creation, control calls and unsupported syscall-number forms refuse
+at entry; observed task/descriptor checks remain distinct from runtime custody.
+
+The first development problems were ordinary preparation errors: the pinned
+digest type did not support the selected hex formatter, and cleared environment
+lookup could no longer find rustup through the previous PATH. Explicit byte
+formatting and local compiler discovery fixed them without changing dependencies
+or restoring inherited environment. Those failures remain in the evidence.
+
+A repeated run then exposed a stronger version of the inherited-writer problem.
+Closing descriptors before the initial stop is not enough if a different fork
+has inherited an image writer but has not yet reached that closure. The parent
+may finish writing and release its FD while that in-flight child still holds
+the writable description. The original rare failure had only a generic exit
+status; a deterministic stopped descriptor-table snapshot subsequently reproduced
+the mechanism with actual ETXTBSY. The distinction prevents hindsight from
+turning an uncaptured errno into a measured fact.
+
+The fix removes that description from the parent's table: an isolated local
+copy process materializes the image while the parent holds only a pipe. The
+parent closes input, waits for success, verifies the bytes and freezes the image
+before original launch. A stopped snapshot no longer blocks exec. Deliberately
+giving a snapshot an external image writer still produces ETXTBSY, so this is
+owned preparation isolation, not a claim that every writer has been revoked.
+No retry, scheduling threshold or serialized benchmark hides the counterexample.
+
+Three nine-case repeats pass, including phase/replay and memory-range refusals,
+installer faults, metadata substitution, seeded fresh children and independent
+tracer threads. All three builds produce the same helper hash locally. Real
+SIGKILL at first-exec and installed boundaries leaves a refused/reaped original
+child with no handoff; actual tracer-loss EXITKILL is still a different test.
+The [joined design](../testing/performance/0.74/diagnostic-signer-joined-design.md)
+and [evidence](../testing/performance/0.74/local-runs/diagnostic-signer-joined-20261015/README.md)
+retain the unsuccessful repeat and deterministic red alongside final-source
+success. Normal libraries expose no launcher symbols or production consumer.
+
+This joins original exec and installation mechanics, not the remaining trust
+inputs. The system GNU loader and libraries are still fixture dependencies;
+their independent selection/custody must precede one-shot dummy handoff. A
+single-thread child does not establish multithreaded signer support, and local
+child death does not prove autonomous owner-loss cleanup. Production job/issuer
+custody, worker start and all-writer cessation remain separate. The result
+strengthens the correctness of the test apparatus without changing cache hot
+paths or claiming new allocation or throughput gains.

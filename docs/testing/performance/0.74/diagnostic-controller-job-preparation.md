@@ -1,14 +1,16 @@
 # Dedicated diagnostic controller job preparation
 
-The approved local bootstrap now has two separate test-build mechanics:
+The approved local bootstrap retains two standalone test-build mechanics:
 [owned first exec](diagnostic-signer-first-exec-design.md) and
 [exact seccomp installation](diagnostic-signer-seccomp-design.md). The latter
 observes original bytes/TSYNC/zero exit and denial on a single-thread raw-fork
 helper; it has no fresh signer exec, runtime admission or handoff consumer.
-These fixtures cannot activate this job. Their next local join must preserve
-runtime custody and original ownership before dummy handoff and owner-loss
-tests; actual job-wide permission and private-key custody still require the
-independent enrollment below.
+The newer [joined fixture](diagnostic-signer-joined-design.md) observes first
+exec and exact installation on one owned fresh GNU helper and tests child
+SIGKILL at two boundaries. It still has no admitted runtime, handoff or actual
+tracer-loss proof. These fixtures cannot activate this job. Runtime custody must
+precede dummy handoff; actual job-wide permission and private-key custody still
+require the independent enrollment below.
 
 The fixed public source was received once on 2026-10-14; see the
 [public acquisition packet](local-runs/diagnostic-oidc-public-source-20261014/README.md).

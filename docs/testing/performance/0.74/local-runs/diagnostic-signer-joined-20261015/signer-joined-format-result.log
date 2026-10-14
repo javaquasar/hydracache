@@ -1,0 +1,9 @@
+{
+  "source_commit": "bdaa20a5f50645ddb609b7404bb6d94889dac215",
+  "observed_exit": 0,
+  "commands": [
+    "cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask -- --check",
+    "rustfmt +1.94.0 --edition 2021 --check tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs"
+  ],
+  "observation": "Both successful commands produced no output before source commit."
+}

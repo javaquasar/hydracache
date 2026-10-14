@@ -1,13 +1,25 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [joined bootstrap fixture](diagnostic-signer-joined-design.md) now follows
+one owned fresh GNU helper through first exec, bounded startup, exact filter
+installation and kernel-denied self/different/descriptor exec. Child SIGKILL at
+first-exec and installed boundaries refuses without replay. The
+[local joined packet](local-runs/diagnostic-signer-joined-20261015/README.md)
+retains a failed repeat and deterministic inherited-writer ETXTBSY reproducer.
+Isolating image writes from the parent's FD table fixes that preparation seam;
+the deliberately injected external-writer counterexample still refuses.
+Three nine-case repeats pass. Runtime custody, dummy handoff and actual tracer
+loss remain open; this is neither whole-writer revocation nor server admission.
+
 The [owned seccomp installation slice](diagnostic-signer-seccomp-design.md)
 now verifies the original header/BPF bytes at kernel entry and zero exit, then
 observes native exec/task-control denial and actual x32/i386 SIGSYS on a
 single-thread raw-fork helper. Its non-dumpable hardening prevents fatal probes
 from reaching a piped core collector. Three eight-case repeats and the
 [local packet](local-runs/diagnostic-signer-seccomp-20261014/README.md) retain
-the ABI sequencing failures and final checks. It is not yet composed with first
-exec or an admitted GNU runtime; TSYNC here is not multithreaded signer support.
+the ABI sequencing failures and final checks. That standalone fork-only proof
+remains separate from the newer joined fixture and an admitted GNU runtime;
+TSYNC on either single-thread helper is not multithreaded signer support.
 
 The operator approved the local [bootstrap prototype](diagnostic-signer-bootstrap-decision.md).
 Its [first exec slice](diagnostic-signer-first-exec-design.md) now creates and
@@ -15,9 +27,8 @@ observes owned fixture children at exact kernel exec stops, including same-inode
 re-exec. Immediate inherited-FD closure fixes a reproduced ETXTBSY concurrency
 failure. It exists only in Linux x86_64 test builds, not a production launch API.
 See the [local first-exec packet](local-runs/diagnostic-signer-first-exec-20261014/README.md).
-Joining first exec with exact installation and runtime prerequisites, dummy
-handoff and actual tracer loss remain approved local work. Credentials,
-protected jobs and server admission stay closed.
+GNU runtime prerequisites/custody, dummy handoff and actual tracer loss remain
+approved local work. Credentials, protected jobs and server admission stay closed.
 
 The [bootstrap decision](diagnostic-signer-bootstrap-decision.md) identifies the
 next architectural boundary: a separately trusted original launcher and selected

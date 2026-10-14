@@ -1,0 +1,159 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.33s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 9 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+inherited_writer_counterexample=ETXTBSY whole_writer_revocation=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse ... ok
+pre_install_exec=entry_refused original_child_reaped=true new_image_not_dispatched=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch ... ok
+fresh_exec_and_exact_install=same_owned_child credential_handoff=false runtime_custody=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child ... ok
+image_preparation_writer=isolated_copy_child stopped_parent_snapshot_does_not_block_exec=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit ... owned_child_SIGKILL_boundaries=first_exec,installed no_handoff=true tracer_loss_proved=false
+ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse ... ok
+seed=0x07403b27 fresh_exec_install_probes=8 independent_tracer_threads=4 production_multithreading=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 755 filtered out; finished in 1.68s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.49s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 9 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+inherited_writer_counterexample=ETXTBSY whole_writer_revocation=false
+fresh_exec_and_exact_install=same_owned_child credential_handoff=false runtime_custody=false
+pre_install_exec=entry_refused original_child_reaped=true new_image_not_dispatched=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch ... ok
+owned_child_SIGKILL_boundaries=first_exec,installed no_handoff=true tracer_loss_proved=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse ... ok
+image_preparation_writer=isolated_copy_child stopped_parent_snapshot_does_not_block_exec=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse ... ok
+seed=0x07403b27 fresh_exec_install_probes=8 independent_tracer_threads=4 production_multithreading=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 755 filtered out; finished in 2.28s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.20s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 9 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+inherited_writer_counterexample=ETXTBSY whole_writer_revocation=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_foreign_inode_metadata_and_nonempty_output_refuse ... ok
+fresh_exec_and_exact_install=same_owned_child credential_handoff=false runtime_custody=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_original_exec_and_installation_are_one_child ... ok
+pre_install_exec=entry_refused original_child_reaped=true new_image_not_dispatched=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_early_exec_is_refused_before_syscall_dispatch ... ok
+image_preparation_writer=isolated_copy_child stopped_parent_snapshot_does_not_block_exec=true
+test diagnostic_signer_joined_fixture::tests::signer_joined_image_preparation_has_no_parent_writer_to_inherit ... ok
+owned_child_SIGKILL_boundaries=first_exec,installed no_handoff=true tracer_loss_proved=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_owned_child_sigkill_at_exec_and_installed_boundaries ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_other_exec_and_descriptor_exec_are_denied ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse ... ok
+test diagnostic_signer_joined_fixture::tests::signer_joined_flags_policy_length_and_nonstack_inputs_refuse ... ok
+seed=0x07403b27 fresh_exec_install_probes=8 independent_tracer_threads=4 production_multithreading=false
+test diagnostic_signer_joined_fixture::tests::signer_joined_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 755 filtered out; finished in 1.77s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.55s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+policy_instructions=34 serialized_bytes=272 bounded_syscall_numbers=1024 single_thread_fixture_only=true
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_kernel_info_unknown_partial_or_invalid_flags_refuses ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_policy_exact_bytes_bounded_syscalls_and_bad_arch ... ok
+kernel_install=exact_entry_memory_exit_zero original_fork_helper=true handoff_or_runtime_admission=false
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_original_install_and_kernel_execve_denial ... ok
+actual_x32_number_bit_and_i386_int80=SIGSYS no_exec_or_handoff=true
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_wrong_flags_bytes_length_or_equal_header_pointer_refuse ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_execve_other_and_execveat_are_kernel_denied ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_x32_and_i386_abi_are_killed_before_dispatch ... ok
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_task_creation_and_policy_changes_are_kernel_denied ... ok
+seed=0x07403b26 fresh_kernel_probes=16 independent_tracer_threads=4 multithreaded_signer_supported=false
+test diagnostic_signer_seccomp_fixture::tests::signer_seccomp_seeded_probes_and_independent_tracer_threads ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 756 filtered out; finished in 0.18s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.33s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_original_stop_precedes_helper_output ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_foreign_equal_byte_inode_cannot_match_original ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_kernel_rejects_header_only_shape_without_admission ... ok
+exec-stop exact_event=true lower_status_cases=327680 unknown_high_bits=refused
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_different_inode_second_exec_is_stopped_before_new_user_code ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_wait_status_exhaustive_exact_event_only ... ok
+same_inode_second_exec=kernel_event_refused new_user_code_ran=false seccomp_installed=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_same_inode_second_exec_is_stopped_before_new_user_code ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_header_descriptor_and_metadata_refusals ... ok
+inherited_foreign_writer=closed_before_initial_stop CLOEXEC_alone=insufficient
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_inherited_foreign_writer_closed_before_initial_stop ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_cloexec_and_drop_clean_exact_owned_child ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_unexpected_signal_and_output_overflow_cross_refuse ... ok
+seed=0x07403b25 fresh_original_launches=16 independent_tracer_threads=4 signer_or_runtime_authority=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 753 filtered out; finished in 0.13s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.96s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 18 tests
+test diagnostic_signer_bundle::executable::tests::signer_executable_bundle_drift_and_prior_refusal_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_cloexec_and_additional_descriptor_release ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_different_inode_exec_keeps_generation_but_cross_refuses ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_equal_byte_foreign_inode_and_wrong_process_refuse_bundle ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_original_kernel_object_positive_and_healthy_drop ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_process_exit_and_failed_initial_binding_stay_refused ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_same_inode_reexec_is_not_original_invocation_proof ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_seeded_live_and_exec_cases_and_independent_originals ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_absolute_normal_path_and_symlink_ancestry_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_bad_signature_selection_and_each_initial_content_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_equal_byte_named_replacement_root_replacement_and_sticky_refusal ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_in_place_write_metadata_or_namespace_drift_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_empty_oversized_missing_and_extra_entries_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_permissions_and_asserted_owner_mismatch_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_original_positive_cloexec_and_drop_release_owned_descriptors ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_seeded_substitutions_and_independent_concurrent_originals ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_streaming_hash_chunk_boundary_empty_and_read_ceiling ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_symlink_hardlink_directory_and_fifo_children_refuse_without_blocking ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 746 filtered out; finished in 1.58s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.22s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_controller_producer::linux::tests::producer_linux_checks_public_request_before_opening_any_secret ... ok
+test diagnostic_controller_producer::linux::tests::producer_linux_private_synthetic_output_is_exclusive_and_never_real_controller ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_bad_audience_and_expiry_refuse_before_key_io ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_public_entry_keeps_controller_pin_and_exclusive_output ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_seeded_body_replacements_and_independent_preparations ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_signs_original_body_after_public_files_change_or_disappear ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_valid_other_body_with_previous_audience_refuses_before_key ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 752 filtered out; finished in 2.04s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.94s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.90s
