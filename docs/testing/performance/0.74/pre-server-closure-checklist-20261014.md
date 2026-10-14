@@ -76,6 +76,13 @@ statement and actual peer/freshness, not independent GitHub/build provenance or
 nonce consumption. Real allowlists/configuration, worker policy/epoch and source
 enrollment remain unselected; durable replay/fence and P3 are still required.
 
+The [controller and builder receipt binding](diagnostic-controller-build-input-design.md)
+retains the independently pinned builder policy and signed statement against the
+original request identity, with whole-chain refusal. The receipt has no controller
+run/actor/workflow identity: independent controller provenance is still required.
+Installed executable contents, durable nonce consumption and common fence are
+not supplied by this read-only guard.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

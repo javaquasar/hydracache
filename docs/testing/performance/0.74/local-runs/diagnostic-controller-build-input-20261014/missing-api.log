@@ -1,0 +1,11 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no function or associated item named `bind_reviewed_build` found for struct `SignedControllerInput<'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs:11:36
+   |
+11 | ...t::bind_reviewed_build;
+   |       ^^^^^^^^^^^^^^^^^^^ function ...ated item not found in `SignedControllerInput<'_, '_, '_, '_, '_>`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_worker_kernel_binding") due to 1 previous error
+expected_missing_api_native_exit=
+bash: line 1: test: : integer expression expected

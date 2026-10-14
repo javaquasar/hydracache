@@ -32,6 +32,12 @@ guard. Signature/peer/freshness observation is not independently verified GitHub
 run provenance or durable nonce/fence admission; actual configuration is not installed.
 The [controller input evidence](local-runs/diagnostic-controller-trust-input-20261014/README.md)
 retains the fixture restoration failure, repeated checks and unchanged frozen inputs.
+The [original controller and builder binding](diagnostic-controller-build-input-design.md)
+now retains the distinct reviewed builder statement against the identity in that
+same signed request. It neither verifies installed executable bytes nor authenticates
+controller GitHub run metadata; replay/fence and execution admission remain closed.
+Its [local evidence](local-runs/diagnostic-controller-build-input-20261014/README.md)
+retains repeated binding checks, all development failures and unchanged frozen inputs.
 The [reviewed-trust packet](local-runs/diagnostic-reviewed-trust-20261014/README.md)
 retains the real historical builder signature check and three focused local
 repeats, without enrollment or numerical claims.

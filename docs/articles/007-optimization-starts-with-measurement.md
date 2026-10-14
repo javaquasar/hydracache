@@ -7777,3 +7777,39 @@ they are not facts supplied by the kernel or this reader. Durable replay and
 original fence/early-attempt acknowledgement remain the next ownership join,
 after real policy/epoch, principals and host/source enrollment. Only those
 producers can lead to authenticated original-start and whole-writer cessation.
+
+### Bind the builder statement to the original controller request
+
+Independent builder key selection did not previously force its receipt to remain
+joined to the live original controller/kernel/worker input. The new read-only
+binding takes the public builder policy and receipt, verifies them under the
+fixed reviewed pins against the identity in that original request, and keeps
+the original controller guard mutably borrowed. It owns bounded copies of the
+policy and receipt along with the checked builder authority and statement.
+Original-context checks bracket verification; later checks accept no replacements
+and require the same identity and statement. Any error refuses the entire
+original config/policy/journal/packet chain rather than allowing a new receipt to
+repair that observation.
+
+Eight focused cases pass in three repeats. They combine a retained real historical
+builder signature with synthetic controller/worker signers, private nonroot
+config/journal trees and real local Linux messages. Thirty-two seeded signature
+mutations still refuse when the synthetic controller signs their recomputed
+receipt hash. Tests also cover wrong original identity, budgets, original owner
+and retained-byte drift, permanent refusal, caller-buffer changes and healthy
+drop. Five new compile-fail cases prohibit extraction, start, replacement checks,
+thread transfer and refreshing an owner while its binding remains borrowed.
+
+The first test compilation needed an explicit checked conversion from the
+receipt's u64 budget to a vector length. A regression command named a nonexistent
+builder integration target; the corrected artifacts target includes those builder
+checks. Both development failures remain in the local evidence packet. No
+production validation was relaxed to make either check pass.
+
+This authenticates the builder's signed statement, not an installed executable
+or an independently observed compilation. The existing receipt has no controller
+run ID, attempt, actor or workflow identity. Its signature therefore cannot prove
+the GitHub history asserted by the controller. That distinct provenance input,
+durable nonce consumption and common original fence remain prerequisites before
+authenticated start, watchdog and whole-writer cessation. No wire schema, real
+policy/epoch, selected key, frozen qualification input or server entry changes.

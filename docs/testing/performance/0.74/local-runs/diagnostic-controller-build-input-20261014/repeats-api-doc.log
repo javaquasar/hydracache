@@ -1,0 +1,150 @@
+repeat=
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized] target(s) in 19.80s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_constructor_prior_refusal_cross_latches_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_wrong_original_identity_refuses_whole_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_original_refusal_during_retention_cannot_rebind ... ok
+independent_threads=4 controller_run_provenance=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_independent_bindings_keep_reviewed_builder_pins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_roundtrip_owned_bytes_rechecks_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_retained_and_original_faults_stay_refused_after_restoration ... ok
+seed=0x07542074 signature_mutations=32 production_signing=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 679 filtered out; finished in 6.40s
+
+repeat=
+    Finished `test` profile [unoptimized] target(s) in 2.05s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_original_refusal_during_retention_cannot_rebind ... ok
+independent_threads=4 controller_run_provenance=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_independent_bindings_keep_reviewed_builder_pins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_constructor_prior_refusal_cross_latches_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_roundtrip_owned_bytes_rechecks_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_wrong_original_identity_refuses_whole_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_retained_and_original_faults_stay_refused_after_restoration ... ok
+seed=0x07542074 signature_mutations=32 production_signing=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 679 filtered out; finished in 9.51s
+
+repeat=
+    Finished `test` profile [unoptimized] target(s) in 1.85s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/hydracache_long_run_supervisor_074-3804d3010312edbc)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_constructor_prior_refusal_cross_latches_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_wrong_original_identity_refuses_whole_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_original_refusal_during_retention_cannot_rebind ... ok
+independent_threads=4 controller_run_provenance=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_independent_bindings_keep_reviewed_builder_pins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_roundtrip_owned_bytes_rechecks_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_retained_and_original_faults_stay_refused_after_restoration ... ok
+seed=0x07542074 signature_mutations=32 production_signing=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 679 filtered out; finished in 6.04s
+
+    Finished `test` profile [unoptimized] target(s) in 1.40s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 78 tests
+test tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::FixedAuthorityIntentRead (line 131) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::attempt_publication (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::FixtureAuthorityIntentRead (line 158) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::FixtureAuthorityIntentRead (line 163) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_collector.rs - diagnostic_collector::fixture::FixtureDrain (line 540) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_authority_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::FixedAuthorityIntentRead (line 141) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_collector.rs - diagnostic_collector::fixture::FixtureDrain (line 536) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_attempt_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::attempt_publication (line 9) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::ControllerBuildInput (line 55) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::ControllerBuildInput (line 51) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::ControllerBuildInput (line 47) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::ControllerBuildInput (line 63) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs - diagnostic_worker_policy::trusted_input::controller_input::SignedControllerInput (line 181) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::ControllerBuildInput (line 59) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs - diagnostic_worker_policy::trusted_input::controller_input::SignedControllerInput (line 185) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs - diagnostic_worker_policy::trusted_input::controller_input::SignedControllerInput (line 173) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs - diagnostic_worker_policy::trusted_input::controller_input::SignedControllerInput (line 189) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs - diagnostic_worker_policy::trusted_input::controller_input::SignedControllerInput (line 177) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::early_attempt (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::empty_fence (line 14) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::early_attempt (line 8) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::empty_fence (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_early_attempt.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::early_attempt (line 13) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::empty_fence (line 24) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::empty_fence (line 19) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::OriginalEmptyReservationFence (line 45) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::OriginalEmptyReservationFence (line 40) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::fenced_state (line 14) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::OriginalEmptyReservationFence (line 54) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::fenced_state (line 19) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::fenced_state (line 24) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_fenced_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::fenced_state (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::OriginalEmptyReservationFence (line 59) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::initial_consumption (line 13) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::initial_consumption (line 19) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::initial_consumption (line 8) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_initial_consumption.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::initial_consumption (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs - diagnostic_output_preparation::fixed_intent_storage::FixedIntentStorageRead (line 94) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs - diagnostic_output_preparation::fixed_intent_storage::FixedIntentStorageRead (line 99) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs - diagnostic_worker_policy::intent_projection::CheckedIntentProjection (line 92) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_intent_journal.rs - diagnostic_output_preparation::intent_journal::FixtureIntentObservation (line 47) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::FencedReservedStateRead (line 141) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_intent_projection.rs - diagnostic_worker_policy::intent_projection::CheckedIntentProjection (line 99) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs - diagnostic_process::terminal::TerminalProcessObservation (line 24) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::FencedReservedStateRead (line 136) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs - diagnostic_kernel_admission::KernelPacket (line 42) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_fence.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::FencedReservedStateRead (line 150) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs - diagnostic_process::terminal::TerminalProcessObservation (line 14) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_process_terminal.rs - diagnostic_process::terminal::TerminalProcessObservation (line 19) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication (line 22) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::FixedReservedStateRead (line 169) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication (line 12) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::FixedReservedStateRead (line 164) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication (line 17) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reservation_publication.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::reservation_publication (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_reserved_state.rs - diagnostic_output_preparation::fixed_intent_storage::reserved_state::FixedReservedStateRead (line 179) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead (line 241) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead (line 248) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent (line 20) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_authority.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::FixtureAuthorityBoundRead<'_,'_,'_,'_,'_,'_>::check_fixture_lifecycle (line 324) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signed_history.rs - diagnostic_worker_policy::intent_projection::signed_history::SignedHistoryObservation (line 20) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent (line 13) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent (line 8) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent (line 3) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine (line 50) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine (line 60) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine (line 55) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs - diagnostic_worker_policy::trusted_input::kernel_binding::KernelWorkerPolicyInput (line 90) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs - diagnostic_worker_policy::trusted_input::kernel_binding::KernelWorkerPolicyInput (line 82) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_starting_intent.rs - diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::starting_intent::FixedStartingQuarantine (line 65) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs - diagnostic_worker_policy::trusted_input::kernel_binding::KernelWorkerPolicyInput (line 74) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs - diagnostic_worker_policy::trusted_input::kernel_binding::KernelWorkerPolicyInput (line 86) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs - diagnostic_worker_policy::trusted_input::kernel_binding::KernelWorkerPolicyInput (line 78) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs - diagnostic_worker_policy::trusted_input::WorkerPolicyInput (line 367) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs - diagnostic_worker_policy::trusted_input::WorkerPolicyInput (line 359) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs - diagnostic_worker_policy::trusted_input::WorkerPolicyInput (line 376) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs - diagnostic_worker_policy::trusted_input::WorkerPolicyInput (line 363) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs - diagnostic_worker_policy::trusted_input::WorkerTrustInput (line 284) - compile fail ... ok
+
+test result: ok. 78 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+    Finished `test` profile [unoptimized] target(s) in 1.68s
+     Running tests/diagnostic_worker_kernel_binding.rs (/home/artur/.cache/hydracache-074-manager-local-target/debug/deps/diagnostic_worker_kernel_binding-47f2b6b74beea293)
+
+running 3 tests
+test controller_build_input_public_entry_has_no_identity_or_trust_override ... ok
+test worker_kernel_binding_public_entry_has_no_host_or_revalidation_override ... ok
+test controller_trust_input_public_entry_is_fixed_and_readonly ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
