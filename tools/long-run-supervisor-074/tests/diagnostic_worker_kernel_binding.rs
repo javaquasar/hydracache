@@ -1,5 +1,15 @@
 #![cfg(target_os = "linux")]
 #[test]
+fn retained_producer_public_api_consumes_preparation_not_request_paths_or_origin() {
+    use hydracache_long_run_supervisor_074::diagnostic_controller_producer::{
+        linux::sign_prepared_files, PreparedDiagnosticRequest, ProducerError,
+    };
+    use std::path::Path;
+    let _: fn(PreparedDiagnosticRequest, &str, &Path, &Path) -> Result<(), ProducerError> =
+        sign_prepared_files;
+}
+
+#[test]
 fn producer_cli_audience_and_wrong_key_are_job_data_not_admission() {
     use hydracache_long_run_supervisor_074::diagnostic_controller_producer::prepare_request;
     use sha2::{Digest, Sha256};

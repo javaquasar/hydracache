@@ -81,6 +81,20 @@ impl PreparedDiagnosticRequest {
     pub fn audience(&self) -> &str {
         &self.audience
     }
+    // This compares retained job bytes only, never token or bootstrap authority.
+    fn check_audience(&self, observed_audience: &str) -> Result<(), ProducerError> {
+        let hash = crate::sha256_hex(
+            &crate::canonical_json(&self.request).map_err(|_| ProducerError::Invalid)?,
+        );
+        if hash != self.request_sha256
+            || self.build.identity() != &self.request.identity
+            || self.audience != format!("urn:hydracache:diagnostic:074:request:{hash}")
+            || observed_audience != self.audience
+        {
+            return Err(ProducerError::Invalid);
+        }
+        Ok(())
+    }
     fn check_time(&self, now: u64) -> Result<(), ProducerError> {
         if now < self.request.issued_at_unix_seconds || now >= self.request.expires_at_unix_seconds
         {
@@ -115,12 +129,7 @@ impl PreparedDiagnosticRequest {
         self.check_time(now)?;
         let message =
             diagnostic_ipc::signing_message(&self.request).map_err(|_| ProducerError::Invalid)?;
-        let hash = crate::sha256_hex(
-            &crate::canonical_json(&self.request).map_err(|_| ProducerError::Invalid)?,
-        );
-        if hash != self.request_sha256 || self.build.identity() != &self.request.identity {
-            return Err(ProducerError::Invalid);
-        }
+        self.check_audience(&self.audience)?;
         if expected.is_weak() || key.verifying_key() != *expected {
             return Err(ProducerError::Key);
         }

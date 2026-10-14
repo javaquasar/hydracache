@@ -43,6 +43,37 @@ fn prepared(r: &DiagnosticRequest) -> PreparedDiagnosticRequest {
     prepare_request(&line(r), POLICY, RECEIPT).unwrap()
 }
 #[test]
+fn producer_retained_audience_and_internal_body_corruption_refuse() {
+    let r = model_request();
+    let original = prepared(&r);
+    let audience = original.audience().to_owned();
+    original.check_audience(&audience).unwrap();
+    for bad in [
+        "",
+        "other",
+        "urn:hydracache:diagnostic:074:request:untrusted",
+    ] {
+        assert!(matches!(
+            prepared(&r).check_audience(bad),
+            Err(ProducerError::Invalid)
+        ));
+    }
+    for case in 0..4 {
+        let mut p = prepared(&r);
+        match case {
+            0 => p.request.controller.run_id += 1,
+            1 => p.request_sha256 = "0".repeat(64),
+            2 => p.audience = "other".into(),
+            _ => p.request.identity.binary_sha256 = "0".repeat(64),
+        }
+        assert!(matches!(
+            p.check_audience(&audience),
+            Err(ProducerError::Invalid)
+        ));
+    }
+}
+
+#[test]
 fn producer_roundtrip_exact_request_domain_audience_and_synthetic_signature() {
     let r = model_request();
     let p = prepared(&r);

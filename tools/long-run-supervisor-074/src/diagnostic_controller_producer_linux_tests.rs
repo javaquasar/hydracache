@@ -1,4 +1,6 @@
 use super::super::tests::{line, model_request};
+#[path = "diagnostic_retained_producer_tests.rs"]
+mod retained;
 use super::*;
 use std::fs;
 use std::os::unix::fs::{MetadataExt, PermissionsExt};

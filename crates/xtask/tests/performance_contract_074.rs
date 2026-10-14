@@ -88,6 +88,81 @@ fn diagnostic_public_acquisition_is_bounded_observation_not_trust_or_execution()
 }
 
 #[test]
+fn retained_producer_consistency_cannot_become_token_bootstrap_or_start_authority() {
+    let c = contract("diagnostic-retained-producer-contract.toml");
+    assert_eq!(c["request_budget_bytes"].as_integer(), Some(16384));
+    assert_eq!(c["request_window_seconds"].as_integer(), Some(60));
+    for key in [
+        "opaque_preparation_consumed",
+        "retained_body_digest_build_and_audience_rechecked",
+        "audience_mismatch_refuses_before_key_io",
+        "no_public_request_policy_receipt_reopen",
+        "controller_pin_key_metadata_and_clock_guards_unchanged",
+        "exclusive_synced_output_unchanged",
+        "legacy_cli_and_signed_schema_unchanged",
+        "positive_signatures_synthetic_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "observed_audience_is_token_verification",
+        "complete_token_coordinator_implemented",
+        "signer_bootstrap_custody_authenticated",
+        "new_signer_build_receipt_or_key_purpose",
+        "actual_controller_private_key_read",
+        "actual_token_requested_or_verified",
+        "trust_configuration_installed",
+        "remote_job_dispatched",
+        "durable_nonce_or_fence_admission",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_entry_wired",
+        "host_modified",
+        "product_workload_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let source = std::fs::read_to_string(
+        root().join("tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs"),
+    )
+    .unwrap();
+    let retained = source
+        .split("pub fn sign_prepared_files(")
+        .nth(1)
+        .unwrap()
+        .split("#[cfg(test)]")
+        .next()
+        .unwrap();
+    assert!(retained.contains("prepared: PreparedDiagnosticRequest"));
+    assert!(
+        retained
+            .find("prepared.check_audience(observed_audience)?")
+            .unwrap()
+            < retained.find("let mut secret = read(key").unwrap()
+    );
+    assert!(
+        !retained.contains("prepare_files(")
+            && !retained.contains("read(request")
+            && !retained.contains("read(receipt")
+    );
+    assert!(
+        retained.contains("diagnostic_reviewed_trust::controller_key()")
+            && retained.contains("write_new(output, &bytes)")
+    );
+    let server =
+        std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/server.rs"))
+            .unwrap();
+    assert!(
+        !server.contains("sign_prepared_files")
+            && !server.contains("diagnostic_controller_producer")
+    );
+}
+
+#[test]
 fn diagnostic_producer_is_job_data_and_offline_inspection_never_enrolls_trust() {
     let c = contract("diagnostic-controller-producer-contract.toml");
     assert_eq!(c["request_budget_bytes"].as_integer(), Some(16384));

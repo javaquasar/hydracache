@@ -29,6 +29,11 @@ The separate `diagnostic_controller` job CLI emits the existing diagnostic signe
 request/domain unchanged; it is not an installed supervisor command or a migration.
 Its portable preparation requires canonical LF requests and the fixed reviewed
 builder receipt. Controller selection is fixed; no public key/time override exists.
+The opt-in retained signing API consumes the same opaque preparation and checks
+its earlier audience without rereading public input files. This is runtime-only
+job-body consistency: no signed/wire/durable schema, CLI command, migration,
+token trust or receiver route changes. Older tools keep their existing separate
+file commands. See the [retained boundary](testing/performance/0.74/diagnostic-retained-producer-design.md).
 The offline `diagnostic-oidc-source-inspection-074-v1` report contains only bounded
 public-source metadata/digests and explicit false acquisition/enrollment/admission
 flags. No runtime reader consumes that report as trust. Unknown source key fields,

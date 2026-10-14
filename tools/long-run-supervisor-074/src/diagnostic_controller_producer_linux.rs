@@ -43,6 +43,49 @@ fn sign_files_selected(
     expected: &VerifyingKey,
 ) -> Result<(), ProducerError> {
     let prepared = prepare_files(request, policy, receipt)?;
+    let audience = prepared.audience().to_owned();
+    sign_prepared_files_selected(prepared, &audience, key, output, expected)
+}
+
+/// Signs the retained body without reopening public inputs. Audience is consistency, not OIDC.
+/// Consumes preparation even on error; this is not durable nonce consumption.
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_controller_producer::{PreparedDiagnosticRequest, linux::sign_prepared_files};
+/// use std::path::Path;
+/// fn reuse(p: PreparedDiagnosticRequest, a: &str, key: &Path, out: &Path) {
+///     sign_prepared_files(p, a, key, out).unwrap();
+///     sign_prepared_files(p, a, key, out).unwrap();
+/// }
+/// ```
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_controller_producer::{PreparedDiagnosticRequest, linux::sign_prepared_files};
+/// use std::path::Path;
+/// fn replace(p: PreparedDiagnosticRequest, request: &Path, key: &Path, out: &Path) {
+///     sign_prepared_files(p, request, key, out).unwrap();
+/// }
+/// ```
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_controller_producer::PreparedDiagnosticRequest;
+/// fn duplicate(p: PreparedDiagnosticRequest) { let _ = p.clone(); }
+/// ```
+pub fn sign_prepared_files(
+    prepared: PreparedDiagnosticRequest,
+    observed_audience: &str,
+    key: &Path,
+    output: &Path,
+) -> Result<(), ProducerError> {
+    let expected =
+        crate::diagnostic_reviewed_trust::controller_key().map_err(|_| ProducerError::Key)?;
+    sign_prepared_files_selected(prepared, observed_audience, key, output, &expected)
+}
+fn sign_prepared_files_selected(
+    prepared: PreparedDiagnosticRequest,
+    observed_audience: &str,
+    key: &Path,
+    output: &Path,
+    expected: &VerifyingKey,
+) -> Result<(), ProducerError> {
+    prepared.check_audience(observed_audience)?;
     prepared.check_time(job_unix_seconds()?)?;
     let mut secret = read(key, 65, true).map_err(|_| ProducerError::File)?;
     let raw = secret.strip_suffix(b"\n").unwrap_or(&secret);
