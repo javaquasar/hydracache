@@ -1,0 +1,201 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.34s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 866 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.54s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 866 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.99s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 866 filtered out; finished in 0.02s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.02s
+     Running tests/diagnostic_prebuilt_copy.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_prebuilt_copy-32205c0dbdd621be)
+
+running 3 tests
+test invalid_expected_digest_creates_no_attempt ... ok
+test source_alias_writer_after_copy_does_not_change_the_new_inode ... ok
+test copy_is_distinct_readonly_single_link_without_repairing_cargo_source ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/diagnostic_root_owned_input.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_root_owned_input-2c247865f0aaa5e9)
+
+running 2 tests
+test caller_owned_copy_cannot_be_promoted_by_readonly_mode ... ok
+test actual_root_owned_system_file_is_inventory_not_execution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_issuer.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_issuer-a5f0757987a3f215)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.26s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 16 tests
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_bounded_stream_handles_short_io_and_faults ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_close_error_is_reported_once_without_retry ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_invalid_names_bounds_parent_and_input_flags_create_nothing ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_existing_symlink_attempt_never_touches_target ... ok
+retained_foreign_writer_survives_0555=true inventory_is_not_revocation=true
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_concurrent_same_attempt_has_exactly_one_owner ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_chmod_does_not_revoke_a_foreign_retained_writer ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_independent_attempts_share_no_file_or_writer ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_sigkill_child ... ok
+source_write_metadata_equal=false source_content_rehash_refuses=true
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_source_changes_during_copy_refuse_without_source_repair ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_owned_writer_closes_before_readonly_return ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_extra_child_or_equal_bytes_substitution_is_sticky ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_source_offset_is_unchanged_and_wrong_digest_retains_failure ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_parent_mode_link_and_named_directory_drift_refuse ... ok
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_each_injected_failure_retains_attempt_without_retry_or_writer ... ok
+seed=0x0740c074 boundary_lengths=5 corruptions=40 copy_budget_exact=true
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_seeded_lengths_and_corruptions_keep_the_exact_budget ... ok
+actual_owned_child_SIGKILL=7 retained_attempts=7 retries_refused=7 prepared_binary_executed=false power_loss_proved=false
+test diagnostic_prebuilt_copy::tests::prebuilt_copy_actual_sigkill_retains_all_seven_attempts_without_resume ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 862 filtered out; finished in 0.09s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.36s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 18 tests
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_cloexec_and_additional_descriptor_release ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_absolute_normal_path_and_symlink_ancestry_refuse ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_process_exit_and_failed_initial_binding_stay_refused ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_different_inode_exec_keeps_generation_but_cross_refuses ... ok
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_same_inode_reexec_is_not_original_invocation_proof ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_bundle_drift_and_prior_refusal_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_equal_byte_foreign_inode_and_wrong_process_refuse_bundle ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_original_kernel_object_positive_and_healthy_drop ... ok
+seed=0x07403b23 fresh_substitutions=32 independent_originals=4 actual_bootstrap=false
+test diagnostic_signer_bundle::tests::signer_bundle_original_positive_cloexec_and_drop_release_owned_descriptors ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_bad_signature_selection_and_each_initial_content_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_symlink_hardlink_directory_and_fifo_children_refuse_without_blocking ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_streaming_hash_chunk_boundary_empty_and_read_ceiling ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_empty_oversized_missing_and_extra_entries_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_equal_byte_named_replacement_root_replacement_and_sticky_refusal ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_permissions_and_asserted_owner_mismatch_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_in_place_write_metadata_or_namespace_drift_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_seeded_substitutions_and_independent_concurrent_originals ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_seeded_live_and_exec_cases_and_independent_originals ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 860 filtered out; finished in 0.66s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.25s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 6 tests
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 343) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 339) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 347) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 335) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 330) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs - diagnostic_root_owned_input::RootOwnedInputRead (line 326) - compile fail ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 102 filtered out; finished in 0.10s
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.44s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.90s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.93s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.83s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 12 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 866 filtered out; finished in 0.02s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.56s
+     Running tests/diagnostic_root_owned_input.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/deps/diagnostic_root_owned_input-87edec22fa5e3634)
+
+running 2 tests
+test caller_owned_copy_cannot_be_promoted_by_readonly_mode ... ok
+test actual_root_owned_system_file_is_inventory_not_execution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.74s

@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_root_owned_input`
+ --> tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs:2:80
+  |
+2 | ...t, diagnostic_root_owned_input::i...
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `diagnostic_root_owned_input` i...g_run_supervisor_074`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_root_owned_input") due to 1 previous error

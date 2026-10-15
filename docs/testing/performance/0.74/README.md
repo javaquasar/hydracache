@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [root-owned input reader](diagnostic-root-owned-input-design.md) retains the
+full numeric-root ancestor chain and original reading thread/user/mount/root
+context around bounded content checks. The [new packet](local-runs/diagnostic-root-owned-input-20261015/README.md)
+records three read-only GNU-file positives and the old user-owned copy's refusal.
+Current namespace consistency is not initial-host enrollment or independent
+runtime/job policy. No ownership, namespace, mount, signing or server operation
+is enabled, and the old bundle's 0555 profile remains unchanged.
+
 The [unsigned copy preparer](diagnostic-prebuilt-copy-design.md) now creates a
 distinct read-only single-link file without modifying Cargo's source inode.
 The [copy packet](local-runs/diagnostic-prebuilt-copy-20261015/README.md) retains

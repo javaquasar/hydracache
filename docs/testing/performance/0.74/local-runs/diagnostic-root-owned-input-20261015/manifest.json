@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "source_commit": "e535898005aef243316d8a9e5a81ce23acfa3d3f",
+  "source_tree": "f118936fc665cd96a71883bec47ae598e2e593d7",
+  "baseline_source": "f09330e3cc9c211edf6a94f814fb38c3b37e5cf6",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "fe32bef26efcd0a6b9b505713397134c7cbdf3775ff9b35e65023c5ba5b8cbd5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input.rs",
+      "sha256_lf": "91422f54c68f63c4286a1a4d58a4c9e5611012073206e76e9d66ed38646780db"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_root_owned_input_tests.rs",
+      "sha256_lf": "2a9e43ca78e7b4877f2879cee0afc98236421827878074635c7b269233c7a6da"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs",
+      "sha256_lf": "45fe73bdb931ddaa4f618d4eaa02c5daae0c2567a990d193e2927e83b4ab4194"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/examples/inspect_root_owned_input.rs",
+      "sha256_lf": "239d53f11bb48f2dce5f982d9b4187e9d3288901597178069e8f6abee6f931cf"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "fae5ad557e9e838b8137a4be1d8aa771c549b30a4fbca1c4b95cb69a55ff7067"
+    },
+    {
+      "path": "docs/GATES.md",
+      "sha256_lf": "561d88c2cebf071a64efee5d77355a121800b5bf40d45095cc00ae8ecad40a40"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "0ff6a4c8b78e82d4c9611d0aec7a1aef18778b4788909bfab665d78c066ea4c1"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256_lf": "f6bfd0a41ef5a46304a76b7bce255e88f60f038b9f3f46847b9d01ff0792bb8c"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-root-owned-input-contract.toml",
+      "sha256_lf": "367bb00c676fdf6a54358374c414056d3211422ab69debd6e34170fb3d4923bd"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-root-owned-input-design.md",
+      "sha256_lf": "57094ce0911f3a84a962a60850ca64efe035e2717523610b27d07afeb27cc7fe"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-root-owned-input-plan-20261015.md",
+      "sha256_lf": "edb9dfec4fac045c816b9ca6780c2e44c99a408bfd7dff9999166574798d719d"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256_lf": "a527df9447acb0a62fea9c4dab40323a2673572abe9c7d6d0bd4383379e7c13a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy.rs",
+      "sha256_lf": "a7302d0e24070589ea0d64ce92bf1cce69088b0951cc8fe129bed9ffe0469227"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_prebuilt_copy_tests.rs",
+      "sha256_lf": "efea372b182164883f10487178ccf1170b1d403d7331b6498ef218e603f08ad0"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_prebuilt_copy.rs",
+      "sha256_lf": "a7ad40e658517230539c04dddd908cb86320487ee19bc6fd5dba773bf23b688f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/examples/prepare_unsigned_prebuilt.rs",
+      "sha256_lf": "e6dbf76b2362f8e63fb444f1519ae931f426503a02684be1f6826d1b04e32a26"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_issuer.rs",
+      "sha256_lf": "61aeaf85bb181795fc8a5fb7febd97a9af9ecbbda5d206169510a3a80f616df8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+      "sha256_lf": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+      "sha256_lf": "d998a01bfdfe073ae40cce0470c9037ce66bd03c980811cb695f86db5bccc109"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs",
+      "sha256_lf": "03b4d33741068f620c0cf7b6a85db0400b325785fe31ecdc8a686e42b988247e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+      "sha256_lf": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "scripts/perf/diagnostic_signer_key_074.py",
+      "sha256_lf": "5ef6620df0b65b0acfa4e31cc7fa63d5ff508b4f1b96f7d9fb7346dfac391c71"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-issuer-public.json",
+      "sha256_lf": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-issuer-selection.json",
+      "sha256_lf": "a35572f453b9939dc9e9619df0858eeaccfbacf45cddc7d8ec367e3e160e2019"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-job-074.yml.disabled",
+      "sha256_lf": "9d765c36342309490ef9bea9f9f5a2089b3f97ebd3357892290438b1fbab9499"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256_lf": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "docs/plans/releases.toml",
+      "sha256_lf": "ec94101f04e4734f7ff12975625db025e0140456e1b7c243c48d3fae1666f74a"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    }
+  ],
+  "captures": [
+    {
+      "path": "root-input-baseline.log",
+      "bytes": 551,
+      "sha256": "cc411ac1cbbd0d6e47ef9d47874bdb5ce6bb8a7f80c4f487a8463f1fa21e8684",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-missing-module.log",
+      "bytes": 665,
+      "sha256": "d2bd95d49c53f987eaa5f2280debf5fd84e77cc83fbfeb514644ee1685b1bbe5",
+      "expected_exit": 101,
+      "observed_exit": 101
+    },
+    {
+      "path": "root-input-linux-final.log",
+      "bytes": 17521,
+      "sha256": "1a14551001b505ee50de81f2379eb2aaff448e5ae102533235b3a8a8351d5a39",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-windows-contracts-final.log",
+      "bytes": 15699,
+      "sha256": "9a5eca343a6df323cc15212c3dad8404a687db936cfd6d5a8627e214c290af60",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-preflight.log",
+      "bytes": 240,
+      "sha256": "57d7eba36af866c7a3ce1c300a0d04a952986b5ca29965888d2088a889c13016",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-actual-runtime.log",
+      "bytes": 2567,
+      "sha256": "c1fe4bb54f597035254ae2e418feef9cd2c037b7afb5cf233f001ba1174f6344",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-user-copy-refusal.log",
+      "bytes": 91,
+      "sha256": "ade1c08641ff4c2ebb8564d0bf68e8c7687cbd739a83d41a0af5b2a7e6897eb0",
+      "expected_exit": 1,
+      "observed_exit": 1
+    },
+    {
+      "path": "root-input-postflight.log",
+      "bytes": 498,
+      "sha256": "807fc47d2d7933c4794bbe799aca1364e4eac0a8c825c3c0b033c155f6c8ef85",
+      "expected_exit": 0,
+      "observed_exit": 0
+    },
+    {
+      "path": "root-input-require-ship.log",
+      "bytes": 499,
+      "sha256": "8cb2bd965d41c2b84d9176da2a587040857a372ec31bb793539eb0b91876ac76",
+      "expected_exit": 1,
+      "observed_exit": 1
+    }
+  ],
+  "runtime_inputs": [
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+      "bytes": 2129424,
+      "mode": "0755",
+      "device": 2096,
+      "inode": 58479,
+      "inventory_only": true,
+      "runtime_selected": false
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb",
+      "bytes": 183024,
+      "mode": "0644",
+      "device": 2096,
+      "inode": 18044,
+      "inventory_only": true,
+      "runtime_selected": false
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+      "bytes": 236616,
+      "mode": "0755",
+      "device": 2096,
+      "inode": 58476,
+      "inventory_only": true,
+      "runtime_selected": false
+    }
+  ],
+  "reader_tool_sha256": "e10e5a14e2cfb6408f408cf249aa3b87f2c41c58524bc289cd841443ca2d8e8b",
+  "user_copy_refused": true,
+  "admission_claims": {
+    "initial_host_or_filesystem_authenticated": false,
+    "independent_runtime_root_or_job_policy_enrolled": false,
+    "loaded_runtime_closure_or_memory_attested": false,
+    "root_ancestor_namespace_or_mount_mutated": false,
+    "foreign_writer_revoked_or_continuous_immutability": false,
+    "actual_signing_or_private_key_token_access": false,
+    "authenticated_original_start": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "server_route_or_workflow_enabled": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "verifier_sha256_lf": "3cf4651acca44d26781243701e889d23417386a2096c5630c1b3d0912894fe5b",
+  "packet_test_sha256_lf": "8d0ae3f25a818facc32217a45431c6fb9d8d01eb8de10c4b945a025e6a60458d"
+}

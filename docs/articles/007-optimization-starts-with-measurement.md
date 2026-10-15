@@ -8948,3 +8948,49 @@ custody and independently authenticated receipt inputs before signing. Original
 worker start and cessation of every P2/P3 writer still precede completion and
 cells 2–4. These changes establish copy mechanics and failure boundaries, not a
 cache throughput or allocation improvement.
+
+## Retaining the root owned path in the original reader context
+
+The copy preparer answered which bytes reached a new inode and when its own
+writer closed. It did not authenticate the directories that name a runtime
+input. The next reader retains every path component from the current `/`, fixes
+numeric UID/GID 0 without a caller override, and rejects writable peer modes,
+symlinks, special files and hardlinked leaves. It checks required statx fields,
+including mount ID, and refuses missing support rather than falling back to
+device/inode alone. Ordinary mount IDs remain observations, not globally unique
+or cross-reboot authority.
+
+Reading context is retained with the path: the original reading TID, current
+root and typed nsfs user/mount namespace objects. Fresh name walks and positional
+hashes are bracketed by context checks; the first failure permanently refuses
+the guard. The object cannot move across threads, export an FD, deserialize,
+clone or become a bundle capability. Its private owner/anchor seam exists for
+owned filesystem tests, not as a public alternative to the numeric-root entry.
+
+Leaf metadata remains exact, but ancestor timestamp changes caused by unrelated
+entries do not reject an otherwise unchanged path binding. Tests distinguish
+that case from file/ancestor replacement and owner/mode/mount drift. A content
+test deliberately refreshes private fixture metadata after a same-size write;
+the hash must still refuse. All 13 leaf stamp fields have explicit mutation
+coverage within the seeded 64-case checks, with independent concurrent observers.
+Three 12-case current-toolchain repeats, MSRV, two integration cases, six
+compile-fail API cases, old copy/bundle/issuer regressions and 152 contracts pass.
+
+One clean-source local inventory then reads libc, libgcc_s and the GNU loader
+without requesting a separate execution or copy of those inputs. Ordinary
+inventory/stat/hash tools still use the host runtime; their startup and loaded
+closure are not authenticated by this reader. It accepts all three
+explicit paths, and their hashes/metadata match before and after. libgcc_s is
+0644; libc and the loader are 0755. These ordinary root-owned system modes are
+allowed only by this inventory profile, not substituted for the old bundle's
+0555 contract. The previously prepared 0555, single-link controller copy still
+belongs to UID/GID 1000 and is refused through the public root-owned reader.
+
+The [packet](../testing/performance/0.74/local-runs/diagnostic-root-owned-input-20261015/README.md)
+separates those observations from custody. Numeric root in a caller's namespace
+does not select the initial host or authenticate its filesystem/administrator;
+matching file hashes do not select a job, prove the loaded closure or revoke a
+foreign writer. The local example drops its live guard at exit, so the retained
+packet is not a live capability. Independent host/runtime/job policy and receipt
+acquisition remain before signing, original worker start, P2/P3 cessation and
+completion. No cache performance improvement or server admission follows.

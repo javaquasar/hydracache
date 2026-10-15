@@ -1,0 +1,17 @@
+runtime_before path=/usr/lib/x86_64-linux-gnu/libc.so.6 dev=2096 ino=58479 size=2129424 mode=755 uid=0 gid=0 links=1 mtime=1788444912 ctime=1789186404
+runtime_before path=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1 dev=2096 ino=18044 size=183024 mode=644 uid=0 gid=0 links=1 mtime=1766093810 ctime=1779702686
+runtime_before path=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 dev=2096 ino=58476 size=236616 mode=755 uid=0 gid=0 links=1 mtime=1788444912 ctime=1789186404
+3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf  /usr/lib/x86_64-linux-gnu/libc.so.6
+d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+e10e5a14e2cfb6408f408cf249aa3b87f2c41c58524bc289cd841443ca2d8e8b  /home/artur/.cache/hydracache-074-194-check/debug/examples/inspect_root_owned_input
+root_owned_input_sha256=3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf bytes=2129424 original_reader_context=matched inventory_only=true authenticated_custody=false executed=false signed=false admission=false
+root_owned_input_sha256=d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb bytes=183024 original_reader_context=matched inventory_only=true authenticated_custody=false executed=false signed=false admission=false
+root_owned_input_sha256=c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da bytes=236616 original_reader_context=matched inventory_only=true authenticated_custody=false executed=false signed=false admission=false
+runtime_after path=/usr/lib/x86_64-linux-gnu/libc.so.6 dev=2096 ino=58479 size=2129424 mode=755 uid=0 gid=0 links=1 mtime=1788444912 ctime=1789186404
+runtime_after path=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1 dev=2096 ino=18044 size=183024 mode=644 uid=0 gid=0 links=1 mtime=1766093810 ctime=1779702686
+runtime_after path=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 dev=2096 ino=58476 size=236616 mode=755 uid=0 gid=0 links=1 mtime=1788444912 ctime=1789186404
+3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf  /usr/lib/x86_64-linux-gnu/libc.so.6
+d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+e10e5a14e2cfb6408f408cf249aa3b87f2c41c58524bc289cd841443ca2d8e8b  /home/artur/.cache/hydracache-074-194-check/debug/examples/inspect_root_owned_input

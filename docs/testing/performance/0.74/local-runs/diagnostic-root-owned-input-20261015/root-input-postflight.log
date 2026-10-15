@@ -1,0 +1,6 @@
+reader_source_commit=e535898005aef243316d8a9e5a81ce23acfa3d3f
+reader_source_tree=f118936fc665cd96a71883bec47ae598e2e593d7
+reader_source_clean_after=true
+root_lock_sha256=99C8CF65FD709E390727D1441117B85E84FA9FE120CAC9A94E35C5D44FC2FCC7
+prepared_copy mode=555 uid=1000 gid=1000 links=1 size=1922976
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-prebuilt-copy-20261015.Ruo6eQvc/attempt-00000000000000000000000000000074/diagnostic_controller
