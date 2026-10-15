@@ -219,3 +219,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-gnu-catalog-*/** -tex
 docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-join-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-context-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-child-entry-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-probe-*/** -text whitespace=cr-at-eol

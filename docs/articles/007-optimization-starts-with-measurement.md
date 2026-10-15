@@ -9204,3 +9204,57 @@ launcher with explicit root/runtime/descriptor and parent-loss lifecycle, follow
 by authenticated original-start and all-writer fencing. Signing, completion,
 later cells and server admission remain closed. No product workload or cache
 allocation/throughput result was measured, and no server or GitHub state changed.
+
+## Ordinary self exec ownership without signer admission
+
+The ordinary probe now connects the fixed child restriction primitive to an
+original process owner. A separate normal binary retains its own read-only
+0555 image, forks exactly one child, acquires its pidfd and requires the first
+kernel PTRACE_EVENT_EXEC. The stopped kernel executable must match the retained
+original object before resume. Only then does the existing fixed child entry
+run. No caller-selected executable, PID, root, FD or command is accepted, and
+the owner remains private to the binary rather than a public launch capability.
+
+The parent is a fresh nonroot main-thread process with empty environment. Before
+fork, it also requires default SIGCHLD without autoreap: an ignored signal could
+invalidate the assumption that the fork PID remains unreaped before pidfd
+acquisition. This guard queries rather than rewrites the caller's disposition;
+the actual inherited-ignore negative must refuse. Child setup arms and reads
+back PDEATHSIG, checks the captured parent, closes foreign descriptors before
+the initial barrier and requests TRACEEXEC plus EXITKILL before original exec.
+Phase misuse or unexpected events permanently refuse, and cleanup targets only
+that original child. Once reaped, the owner cannot revisit an old numeric PID.
+
+The first passing test run was not sufficient. Parallel copy and outer test
+startup later produced ETXTBSY. A retained writable descriptor is consistent
+with this failure, even after changing a file to 0555; CLOEXEC does not close a
+fork child's copied descriptor until it reaches exec. The actual writer in the
+failed run was not identified, so this attribution remains an inference. The
+harness now serializes only copying and startup through exec, not normal owner
+lifetimes. A deterministic held-writer control requires exact ETXTBSY without
+retry; only explicit writer drop permits a new independent probe. Permissions
+alone therefore cannot stand in for the later all-writer revocation proof.
+
+Five final Linux repeats each pass nine private unit tests, one portable CLI
+test and five normal-process tests. Native/x32/i386 traverse the ordinary owner;
+the existing child tests independently retain exact EPERM and SIGSYS checks.
+Actual owned SIGKILL/drop is exercised at initial and first-exec stops. A
+foreign equal-byte file, phase replay, malformed image and exit0 without the
+expected fixed line refuse. Status classification covers 327680 cases plus
+256 seeded mutations, with four independent owners and unchanged parent state.
+MSRV 1.88, strict lint, 157 root contracts and the 52 prior first-exec/namespace/
+handoff/constructor-loss/creator-loss regression tests pass. The
+[owned-probe packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-probe-20261015/README.md)
+retains failed current/MSRV runs and the lint correction as well as final repeats.
+
+This establishes original self-exec mechanics for one secret-free diagnostic,
+not independently authenticated signer provenance. Its GNU loader/runtime are
+still current-environment inputs; an environment check after startup cannot
+retroactively authenticate loader execution. PDEATHSIG is a precondition, not
+an authentication token, and requesting EXITKILL is not a proof of every
+parent-loss boundary in this new composition. The next joins remain selected
+root/runtime and mapped-image checks, original-owner loss and protected job
+custody before credential handoff. Worker original-start and all-writer fencing
+are separate prerequisites to completion and cells 2–4. No product workload,
+performance claim, server/GitHub mutation or qualification follows from these
+local process tests.

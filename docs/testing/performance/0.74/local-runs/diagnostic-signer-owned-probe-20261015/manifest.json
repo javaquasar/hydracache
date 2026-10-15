@@ -1,0 +1,151 @@
+{
+  "schema_version": "diagnostic-signer-owned-probe-packet-074-v1",
+  "source_commit": "e3c91ad2d42a5af0d6ce089fb93c925622fa272a",
+  "source_tree": "b7d832f62805986721e1c4d002b1f3d8b49f481f",
+  "preregistration": "0f6a3145a5898c39d6a8797d93725d57a94e6268",
+  "closed_claims": {
+    "normal_parent_loss_all_boundaries_proved": false,
+    "selected_signer_root_or_runtime_authenticated": false,
+    "independent_job_or_runtime_custody": false,
+    "mapped_instruction_integrity_or_complete_sandbox": false,
+    "real_private_key_or_token_read": false,
+    "authenticated_worker_original_start": false,
+    "all_writers_revoked": false,
+    "completion_or_later_cells_enabled": false,
+    "signing_allowed": false,
+    "server_or_github_mutated": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "frozen_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "implementation_files": {
+    "crates/xtask/tests/performance_contract_074.rs": "7b4442c40a2dd799274dc1ed8bd537e318ebfb38b367c685831094df9741ff10",
+    "docs/COMPAT.md": "314f8f74997a55091b6efea2bc749aa5986869b0de4cd21342a03885ad187708",
+    "docs/GATES.md": "a0ddba4c8c478e3d02230404261ff448bed1838441fcceb107ab1170ac742b68",
+    "docs/testing/gated-test-registry.toml": "97a115e8c38fead3dcecfe202f8d027f1a1b8f2d5fd89cc02502219c10d5e587",
+    "docs/testing/performance/0.74/README.md": "6dcae8cafdd93d8e03a2f26d6da2e3205c819d4f9a22a87e88923a9c7b38f653",
+    "docs/testing/performance/0.74/diagnostic-signer-owned-probe-contract.toml": "a3891fa226cea53afad77856ef8b3784443aaf6d3839eacb9bc3831a8c5131d8",
+    "docs/testing/performance/0.74/diagnostic-signer-owned-probe-design.md": "681b8a8807e9bb99a6a05f0aa0ab1f980ed5c0e4b3685f0fdfa30498f48282e4",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_signer_owned_probe.rs": "f698853ec81dcc12e9609bf184d8e3b6439caf5e6f54d447a3007f80ff25b9e6",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs": "515bf7766ee15e2bd629a36dd5f1f3d3e613d9b137fb519c02b6aa7e6ef4d4cf",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe_tests.rs": "ffd1509ead1827f1c4112f7457973f75ed43d7d3381dc3682d69dd6d9185d6f6",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_cli.rs": "d02698ca09016b55b0a45f5eb624d7ada247a270d363fbed4c44d886feca2eaf",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs": "17fc7941072ae2eb6a74040989130f7de9cae1a3036827f4c0613cdd4396fd7c"
+  },
+  "independent_oracles": {
+    "tools/long-run-supervisor-074/src/lib.rs": "36c054f56ae80437bea158a17da6bc02b2a11873f57b41fb3bc6f0dc90b909b1",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs": "adf38288b9e77e1b509b6cec5326a897e80f24241ba53fa49671b5080cd8cc97",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs": "6f95dda5cf4ee94c7c49cec3f6d26129349dbdbdccb70804be12b9f71b9fb243",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371"
+  },
+  "files": {
+    "baseline-child.log": {
+      "bytes": 1837,
+      "sha256": "bdb8d939efc22d9f2d68b579ee6da6cc17eac8cd8a34adadc60f0d7047e2e9ee",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "baseline-first-exec.log": {
+      "bytes": 2139,
+      "sha256": "bb66a72810d8796834efa501e486bff90ce535e72ab87cee71db4fa643ae1fa1",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "child-final.log": {
+      "bytes": 1733,
+      "sha256": "feb39dc07c8b95b7bb10fe927234a143d51b22269a7130eea248a3d771eee9df",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "failed-linux.log": {
+      "bytes": 5524,
+      "sha256": "c34061b0cda640d433b5add7249d7c57b8fceba65a1ad76f38f139576a654736",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "failed-msrv.log": {
+      "bytes": 3804,
+      "sha256": "37d6b1a59faf09b689d77ad165af88bb820916fdfe9237da1c291ca7263365d2",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "initial.log": {
+      "bytes": 2385,
+      "sha256": "05a2c42e5c277a53a9adbfee58c3c765fefa5e9f077c41830633c8ca143ea6d1",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "lint-failed.log": {
+      "bytes": 926,
+      "sha256": "8db88a0085424f47d1d5f681435305d9790dc6fbc29f669f718e8ad1d2818286",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "linux-final.log": {
+      "bytes": 13718,
+      "sha256": "13f99a5e4803bcd8901d02068561ce96933c8db12b84223e34ffc67b14e48165",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "linux-msrv.log": {
+      "bytes": 3054,
+      "sha256": "9ca6f1f6a44f86e51e109679f8f6338cab07cb9a91492ab9043f58f59a51f6b9",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "missing-binary.log": {
+      "bytes": 709,
+      "sha256": "da0c7b1564dd5be7ac3a2c6f7e5dfa00119dac0ba7945bd0aeaf5bd301266bcf",
+      "outer_exit": 1,
+      "capture_complete": true
+    },
+    "README.md": {
+      "bytes": 5443,
+      "sha256": "d14f90a190584e1b55cae1edb4d42c28eb76be568d883892e2c0d5350d1e5cf0"
+    },
+    "regressions.log": {
+      "bytes": 18293,
+      "sha256": "c778a451c187b08699f74615c2870bbbc2b583fa7fed47003b36c756c770e8df",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "root-final.log": {
+      "bytes": 13310,
+      "sha256": "aa49e55cf7f49ca736341592bc570904df9d4f0a88c267b86b957fc4fa4f6c28",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "static-final.log": {
+      "bytes": 1169,
+      "sha256": "d1ae080b19a37a207d63c4fda616fe37524be26b6ad61e1fda6737302f1475fc",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "test_verify_packet.py": {
+      "bytes": 3770,
+      "sha256": "4f08a26d13b5d7925481844114c810b3a7f59fe7dd6a0ec9f153bb028db7de27"
+    },
+    "verify_packet.py": {
+      "bytes": 7106,
+      "sha256": "fd11d932a82f52bb75b733571f4960f8c38dfc48ed22a22d6cccca685a557011"
+    },
+    "windows-final.log": {
+      "bytes": 1721,
+      "sha256": "106df5d6602a0592948e9b1a5cea56969fe6a9f0547763e63ba4ab637b00cd3e",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "windows-msrv.log": {
+      "bytes": 1521,
+      "sha256": "f569d34a3ea8c449e1c0838ea5e263e0837673a66ebb103ae3cdee75c1016cf4",
+      "outer_exit": 0,
+      "capture_complete": true
+    }
+  }
+}

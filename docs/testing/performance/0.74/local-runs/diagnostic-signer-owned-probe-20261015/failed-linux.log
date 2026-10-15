@@ -1,0 +1,85 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.26s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 8 tests
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 4 tests
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.14s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 8 tests
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 4 tests
+
+thread 'ordinary_owned_probe_writable_and_hardlinked_image_refuse' (1080) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs:47:37:
+called `Result::unwrap()` on an `Err` value: Os { code: 26, kind: ExecutableFileBusy, message: "Text file busy" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... FAILED
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+
+failures:
+
+failures:
+    ordinary_owned_probe_writable_and_hardlinked_image_refuse
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_signer_owned_probe`

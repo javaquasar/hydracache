@@ -1,0 +1,30 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.58s
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_signer_child_entry-c48ed8f36a03eb07)
+
+running 5 tests
+x32=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+unfiltered_chdir=0 fixed_native_probes=20 exact_EPERM=true admission=false
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+i386=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+owned_native_children=8 parent_restrictions_and_cwd_unchanged=true
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_isolation.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_signer_isolation-0f8b9536a4758370)
+
+running 7 tests
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
