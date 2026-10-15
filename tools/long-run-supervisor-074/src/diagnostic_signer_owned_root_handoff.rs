@@ -142,8 +142,24 @@ impl State {
         self.attempted = true;
         Ok(())
     }
+    fn counts(&self, cut: u8) -> io::Result<()> {
+        let (step, sends, closed) = match cut {
+            5 => (Step::Fresh, 0, false),
+            6 | 7 => (Step::Ready, 0, false),
+            8 => (Step::Delivered, 1, false),
+            9 => (Step::Acked, 1, false),
+            10 => (Step::Acked, 1, true),
+            _ => return Err(refused()),
+        };
+        require(
+            self.step == step
+                && self.sends == sends
+                && self.attempted == (sends == 1)
+                && self.child_closed == closed,
+        )
+    }
 }
-fn socket_flags(socket: &File) -> io::Result<()> {
+pub(super) fn socket_flags(socket: &File) -> io::Result<()> {
     require(socket.metadata()?.file_type().is_socket())?;
     let flags = unsafe { libc::fcntl(socket.as_raw_fd(), libc::F_GETFL) };
     require(
@@ -174,7 +190,8 @@ fn socket_flags(socket: &File) -> io::Result<()> {
     Ok(())
 }
 use std::os::unix::fs::FileTypeExt;
-pub(super) fn transport(case: Option<Case>) -> io::Result<(File, File, Option<State>)> {
+pub(super) type Transport = (File, File, Option<State>);
+pub(super) fn transport(case: Option<Case>) -> io::Result<Transport> {
     let mut fds = [-1; 2];
     let result = if case.is_some() {
         unsafe {
@@ -450,6 +467,9 @@ fn awaiting_read(owner: &mut Owner) -> io::Result<usize> {
 }
 fn deliver(owner: &mut Owner, failed_send: bool) -> io::Result<()> {
     let pointer = awaiting_read(owner)?;
+    send_at_read(owner, pointer, failed_send)
+}
+fn send_at_read(owner: &mut Owner, pointer: usize, failed_send: bool) -> io::Result<()> {
     let channel = owner.handoff.as_mut().ok_or_else(refused)?;
     channel.attempt()?;
     if failed_send {
@@ -472,8 +492,18 @@ fn deliver(owner: &mut Owner, failed_send: bool) -> io::Result<()> {
     Ok(())
 }
 fn complete(owner: &mut Owner) -> io::Result<()> {
+    acknowledge(owner)?;
+    close(owner)?;
+    finish(owner)
+}
+fn acknowledge(owner: &mut Owner) -> io::Result<()> {
     outgoing(owner, Step::Delivered, ACK)?;
     owner.handoff.as_mut().ok_or_else(refused)?.step = Step::Acked;
+    Ok(())
+}
+fn close(owner: &mut Owner) -> io::Result<()> {
+    state(owner, Step::Acked)?;
+    require(!owner.handoff.as_ref().ok_or_else(refused)?.closed())?;
     require(
         matches!(event(owner)?, Event::Entry { nr, args } if nr == libc::SYS_close as u64 && args[0] == 3),
     )?;
@@ -481,6 +511,11 @@ fn complete(owner: &mut Owner) -> io::Result<()> {
     owner.handoff.as_mut().ok_or_else(refused)?.child_closed = true;
     state(owner, Step::Acked)?;
     context(owner)?;
+    Ok(())
+}
+fn finish(owner: &mut Owner) -> io::Result<()> {
+    state(owner, Step::Acked)?;
+    require(owner.handoff.as_ref().ok_or_else(refused)?.closed())?;
     require(
         matches!(event(owner)?, Event::Entry { nr, args } if nr == libc::SYS_exit_group as u64 && args[0] == 0),
     )?;
@@ -490,10 +525,72 @@ fn complete(owner: &mut Owner) -> io::Result<()> {
     owner.phase = Phase::Terminal;
     Ok(())
 }
+// A private continuation is obtained only by observing the original trace.
+// In particular Receive holds the exact original stack pointer, not caller input.
+pub(super) enum Checkpoint {
+    Installed,
+    Ready,
+    Receive(usize),
+    Delivered,
+    Acked,
+    Closed,
+}
+pub(super) fn pause(owner: &mut Owner, cut: u8) -> io::Result<Checkpoint> {
+    require((5..=10).contains(&cut))?;
+    state(owner, Step::Fresh)?;
+    if cut == 5 {
+        return Ok(Checkpoint::Installed);
+    }
+    ready(owner)?;
+    if cut == 6 {
+        return Ok(Checkpoint::Ready);
+    }
+    if cut == 7 {
+        return Ok(Checkpoint::Receive(awaiting_read(owner)?));
+    }
+    deliver(owner, false)?;
+    if cut == 8 {
+        return Ok(Checkpoint::Delivered);
+    }
+    acknowledge(owner)?;
+    if cut == 9 {
+        return Ok(Checkpoint::Acked);
+    }
+    close(owner)?;
+    Ok(Checkpoint::Closed)
+}
+pub(super) fn counts(owner: &Owner, cut: u8) -> io::Result<()> {
+    owner.handoff.as_ref().ok_or_else(refused)?.counts(cut)
+}
+pub(super) fn resume(owner: &mut Owner, checkpoint: Checkpoint) -> io::Result<()> {
+    match checkpoint {
+        Checkpoint::Installed => {
+            ready(owner)?;
+            deliver(owner, false)?;
+            complete(owner)?;
+        }
+        Checkpoint::Ready => {
+            deliver(owner, false)?;
+            complete(owner)?;
+        }
+        Checkpoint::Receive(pointer) => {
+            send_at_read(owner, pointer, false)?;
+            complete(owner)?;
+        }
+        Checkpoint::Delivered => complete(owner)?,
+        Checkpoint::Acked => {
+            close(owner)?;
+            finish(owner)?;
+        }
+        Checkpoint::Closed => finish(owner)?,
+    }
+    owner.terminate()?;
+    require(owner.phase == Phase::Terminal && owner.terminal == Some(0))
+}
 pub(super) fn drain(owner: &Owner) -> io::Result<()> {
     drain_socket(&owner.pipe)
 }
-fn drain_socket(socket: &File) -> io::Result<()> {
+pub(super) fn drain_socket(socket: &File) -> io::Result<()> {
     let mut total = 0;
     let mut eof = false;
     // Exact remaining diagnostic messages are bounded, even on refusal.

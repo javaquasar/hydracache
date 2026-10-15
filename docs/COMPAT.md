@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+Fixed `root-transfer-{loss,healthy}-*` and two `root-transfer-no-exitkill-*`
+diagnostics extend the binary-private version1 `HC074RL1` selected-cut vocabulary
+with cuts5..10: installed, ready, receive-entry, delivered, acked and closed.
+Only installed/delivered admit the no-EXITKILL mode. Old cuts0..4 remain unchanged;
+old readers refuse new cuts rather than interpret them as old states. Exact
+selected frames, stage, reserved byte, two setup FDs, credential checks and G/H
+gates keep their existing shape and limits. For these socket-only cuts, the
+monitor creates the original pair before its fixture creator fork, checks each
+endpoint's distinct identity before G and discards its child-end duplicate.
+These public-dummy diagnostics are not a credential or production-start API.
+
 The binary-private `root-handoff-*` profile uses an unnamed seqpacket at FD3,
 not a product listener or credential API. It reuses version1 exact 16-byte
 `HC074-READY-v001`, `HC074-DUMMY-v001`, `HC074-ACK---v001` records plus the existing

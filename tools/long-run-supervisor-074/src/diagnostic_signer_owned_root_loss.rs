@@ -1,6 +1,7 @@
 //! Fixed normal-build stopped-creator-loss experiment, never authority.
 use super::{
-    bounded, file, isolation, open, refused, require, FixedProbe, Owner, Phase, Root, STOP,
+    bounded, file, handoff, isolation, open, refused, require, FixedProbe, Owner, Phase, Root,
+    Stamp, STOP,
 };
 use std::fs::File;
 use std::io::{self, Read};
@@ -23,6 +24,20 @@ impl Spec {
             "root-loss-healthy-initial" => (0, 1),
             "root-loss-healthy-installed" => (4, 1),
             "root-loss-no-exitkill-installed" => (4, 2),
+            "root-transfer-loss-installed" => (5, 0),
+            "root-transfer-loss-ready" => (6, 0),
+            "root-transfer-loss-receive" => (7, 0),
+            "root-transfer-loss-delivered" => (8, 0),
+            "root-transfer-loss-acked" => (9, 0),
+            "root-transfer-loss-closed" => (10, 0),
+            "root-transfer-healthy-installed" => (5, 1),
+            "root-transfer-healthy-ready" => (6, 1),
+            "root-transfer-healthy-receive" => (7, 1),
+            "root-transfer-healthy-delivered" => (8, 1),
+            "root-transfer-healthy-acked" => (9, 1),
+            "root-transfer-healthy-closed" => (10, 1),
+            "root-transfer-no-exitkill-installed" => (5, 2),
+            "root-transfer-no-exitkill-delivered" => (8, 2),
             _ => return Err(refused()),
         };
         Ok(Self { cut, mode })
@@ -431,7 +446,13 @@ fn scalar(raw: &str, key: &str) -> io::Result<i32> {
 fn text(path: &str) -> io::Result<String> {
     bounded(open(path)?)
 }
-fn binding(creator: &Process, pid: i32, pidfd: &File, pipe: &File) -> io::Result<()> {
+fn binding(
+    creator: &Process,
+    pid: i32,
+    pidfd: &File,
+    pipe: &File,
+    originals: Option<&handoff::Transport>,
+) -> io::Result<()> {
     nonterminal(creator.fd()?)?;
     nonterminal(pidfd)?;
     require(
@@ -467,7 +488,23 @@ fn binding(creator: &Process, pid: i32, pidfd: &File, pipe: &File) -> io::Result
     // metadata handle: opening a FIFO for reading could block or alter it.
     let path = std::ffi::CString::new(format!("/proc/{pid}/fd/3")).map_err(|_| refused())?;
     let writer = file(unsafe { libc::open(path.as_ptr(), libc::O_PATH | libc::O_CLOEXEC) })?;
-    same_pipe(pipe, &writer)
+    if let Some((parent, peer, state)) = originals {
+        require(state.is_some())?;
+        same_socket_pair(pipe, &writer, parent, peer)
+    } else {
+        same_pipe(pipe, &writer)
+    }
+}
+fn same_socket_pair(received: &File, child: &File, parent: &File, peer: &File) -> io::Result<()> {
+    handoff::socket_flags(received)?;
+    handoff::socket_flags(parent)?;
+    handoff::socket_flags(peer)?;
+    let stamp = |fd: &File| fd.metadata().map(|m| Stamp::of(&m));
+    require(
+        stamp(received)?.same_object(&stamp(parent)?)
+            && stamp(child)?.same_object(&stamp(peer)?)
+            && !stamp(parent)?.same_object(&stamp(peer)?),
+    )
 }
 fn same_pipe(pipe: &File, writer: &File) -> io::Result<()> {
     let flags = unsafe { libc::fcntl(pipe.as_raw_fd(), libc::F_GETFL) };
@@ -498,9 +535,25 @@ fn group_stop(owner: &mut Owner) -> io::Result<()> {
             && io::Error::last_os_error().raw_os_error() == Some(libc::EINVAL),
     )
 }
-fn creator(root: Root, endpoint: File, spec: Spec, parent: i32) -> ! {
+fn creator(
+    root: Root,
+    endpoint: File,
+    spec: Spec,
+    parent: i32,
+    transport: Option<handoff::Transport>,
+) -> ! {
     // Sole-main orchestration fork only. The worker raw fork path is unchanged.
-    let mut owner = match Owner::build(root, Some(FixedProbe::Native)) {
+    let built = if spec.cut >= 5 {
+        Owner::build_transport(
+            root,
+            Some(FixedProbe::Native),
+            Some(handoff::Case::Good),
+            transport,
+        )
+    } else {
+        Owner::build(root, Some(FixedProbe::Native))
+    };
+    let mut owner = match built {
         Ok(owner) => owner,
         Err(_) => unsafe { libc::_exit(91) },
     };
@@ -526,7 +579,34 @@ fn creator(root: Root, endpoint: File, spec: Spec, parent: i32) -> ! {
         if spec.cut >= 4 {
             owner.advance(Phase::Loaded, isolation::install)?;
         }
+        let checkpoint = if spec.cut >= 5 {
+            let checkpoint = handoff::pause(&mut owner, spec.cut)?;
+            handoff::counts(&owner, spec.cut)?;
+            Some(checkpoint)
+        } else {
+            None
+        };
         if spec.cut == 4 && spec.mode != 1 {
+            group_stop(&mut owner)?;
+        }
+        if matches!(spec.cut, 5 | 8) && spec.mode != 1 {
+            if spec.cut == 8 {
+                // Queue an owned stop while still at the original recv exit.
+                // Resumption must reach SIGSTOP delivery, not ACK or another event.
+                require(
+                    unsafe {
+                        libc::syscall(
+                            libc::SYS_pidfd_send_signal,
+                            owner.pidfd.as_ref().ok_or_else(refused)?.as_raw_fd(),
+                            libc::SIGSTOP,
+                            std::ptr::null::<libc::siginfo_t>(),
+                            0u32,
+                        )
+                    } == 0,
+                )?;
+                owner.trace(libc::PTRACE_CONT, 0)?;
+                require(owner.wait()? == STOP)?;
+            }
             group_stop(&mut owner)?;
         }
         if spec.mode == 2 {
@@ -538,8 +618,12 @@ fn creator(root: Root, endpoint: File, spec: Spec, parent: i32) -> ! {
         channel.send(&spec.frame(owner.pid, 1), &[])?;
         channel.gate(b'H')?;
         require(spec.mode == 1)?;
-        owner.terminate()?;
-        require(owner.terminal == Some(libc::SIGKILL))?;
+        if let Some(checkpoint) = checkpoint {
+            handoff::resume(&mut owner, checkpoint)?;
+        } else {
+            owner.terminate()?;
+            require(owner.terminal == Some(libc::SIGKILL))?;
+        }
         Ok(())
     })();
     // The monitor kept these same original root objects from BEFORE this fork.
@@ -576,6 +660,11 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
         root: Some(root),
         quiescent: false,
     };
+    let mut transport = if spec.cut >= 5 {
+        Some(handoff::transport(Some(handoff::Case::Good))?)
+    } else {
+        None
+    };
     let [reader, writer] = pair()?;
     let mut unrelated = unrelated()?;
     let parent = unsafe { libc::getpid() };
@@ -583,7 +672,13 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
     if pid == 0 {
         arm(parent);
         drop(reader);
-        creator(tree.root.take().unwrap(), writer, spec, parent);
+        creator(
+            tree.root.take().unwrap(),
+            writer,
+            spec,
+            parent,
+            transport.take(),
+        );
     }
     let mut original = Process::direct(pid)?;
     drop(writer);
@@ -594,7 +689,10 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
         let child = spec.decode(&raw, 0)?;
         let mut pipe = fds.pop().ok_or_else(refused)?;
         let pidfd = fds.pop().ok_or_else(refused)?;
-        binding(&original, child, &pidfd, &pipe)?;
+        binding(&original, child, &pidfd, &pipe, transport.as_ref())?;
+        // Both exact endpoint identities have been checked. Never retain the
+        // monitor's child-end duplicate across G: it would mask worker EOF.
+        drop(transport.take());
         worker = Some(Process {
             pid: child,
             fd: Some(pidfd),
@@ -635,8 +733,12 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
             }
             child.wait(libc::CLD_KILLED, libc::SIGKILL)?;
         }
-        let mut extra = [0];
-        require(pipe.read(&mut extra)? == 0)?;
+        if spec.cut >= 5 {
+            handoff::drain_socket(&pipe)?;
+        } else {
+            let mut extra = [0];
+            require(pipe.read(&mut extra)? == 0)?;
+        }
         nonterminal(unrelated.fd()?)?;
         signal(unrelated.fd()?)?;
         unrelated.wait(libc::CLD_KILLED, libc::SIGKILL)?;
@@ -684,6 +786,20 @@ mod tests {
             "root-loss-healthy-initial",
             "root-loss-healthy-installed",
             "root-loss-no-exitkill-installed",
+            "root-transfer-loss-installed",
+            "root-transfer-loss-ready",
+            "root-transfer-loss-receive",
+            "root-transfer-loss-delivered",
+            "root-transfer-loss-acked",
+            "root-transfer-loss-closed",
+            "root-transfer-healthy-installed",
+            "root-transfer-healthy-ready",
+            "root-transfer-healthy-receive",
+            "root-transfer-healthy-delivered",
+            "root-transfer-healthy-acked",
+            "root-transfer-healthy-closed",
+            "root-transfer-no-exitkill-installed",
+            "root-transfer-no-exitkill-delivered",
         ] {
             let spec = Spec::parse(name).unwrap();
             for stage in 0..2 {
@@ -712,6 +828,13 @@ mod tests {
             "root-loss-pre-arm",
             "root-loss-installed-extra",
             "root-loss-healthy-loaded",
+            "root-transfer-loss-pre-arm",
+            "root-transfer-loss-running",
+            "root-transfer-healthy-closed-extra",
+            "root-transfer-no-exitkill-ready",
+            "root-transfer-no-exitkill-receive",
+            "root-transfer-no-exitkill-acked",
+            "root-transfer-no-exitkill-closed",
         ] {
             assert!(Spec::parse(name).is_err());
         }
@@ -813,6 +936,30 @@ mod tests {
             0
         );
         assert!(same_pipe(&reader, &writer).is_err());
+    }
+    #[test]
+    fn original_socket_endpoints_require_each_original_not_equal_peer_inodes() {
+        let (parent, peer, _) = handoff::transport(Some(handoff::Case::Good)).unwrap();
+        let (other_parent, other_peer, _) = handoff::transport(Some(handoff::Case::Good)).unwrap();
+        let received = parent.try_clone().unwrap();
+        let child = peer.try_clone().unwrap();
+        same_socket_pair(&received, &child, &parent, &peer).unwrap();
+        assert!(same_socket_pair(&other_parent, &child, &parent, &peer).is_err());
+        assert!(same_socket_pair(&received, &other_peer, &parent, &peer).is_err());
+        assert!(same_socket_pair(&peer, &parent, &parent, &peer).is_err());
+        assert!(same_socket_pair(&received, &child, &parent, &parent).is_err());
+        let [reader, writer] = pipe();
+        assert!(same_socket_pair(&reader, &writer, &parent, &peer).is_err());
+        assert_eq!(
+            unsafe { libc::fcntl(received.as_raw_fd(), libc::F_SETFD, 0) },
+            0
+        );
+        assert!(same_socket_pair(&received, &child, &parent, &peer).is_err());
+        assert_eq!(
+            unsafe { libc::fcntl(parent.as_raw_fd(), libc::F_SETFL, 0) },
+            0
+        );
+        assert!(same_socket_pair(&parent, &child, &parent, &peer).is_err());
     }
     #[test]
     fn truncated_ancillary_rights_close_every_delivered_or_truncated_writer() {

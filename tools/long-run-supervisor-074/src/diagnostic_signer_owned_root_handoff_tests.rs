@@ -1,4 +1,39 @@
 use super::*;
+#[test]
+fn transfer_cut_counters_refuse_wrong_step_attempt_send_and_close() {
+    for (cut, step, sent, closed) in [
+        (5, Step::Fresh, 0, false),
+        (6, Step::Ready, 0, false),
+        (7, Step::Ready, 0, false),
+        (8, Step::Delivered, 1, false),
+        (9, Step::Acked, 1, false),
+        (10, Step::Acked, 1, true),
+    ] {
+        let (_, _, mut state) = pair();
+        state.step = step;
+        state.sends = sent;
+        state.attempted = sent == 1;
+        state.child_closed = closed;
+        state.counts(cut).unwrap();
+        state.step = Step::Refused;
+        assert!(state.counts(cut).is_err());
+        state.step = step;
+        state.attempted = !state.attempted;
+        assert!(state.counts(cut).is_err());
+        state.attempted = !state.attempted;
+        state.child_closed = !closed;
+        assert!(state.counts(cut).is_err());
+        state.child_closed = closed;
+        for sends in [2, u32::MAX] {
+            state.sends = sends;
+            assert!(state.counts(cut).is_err());
+        }
+    }
+    let (_, _, state) = pair();
+    for cut in [0, 4, 11, u8::MAX] {
+        assert!(state.counts(cut).is_err());
+    }
+}
 fn pair() -> (File, File, State) {
     let (parent, child, state) = transport(Some(Case::Good)).unwrap();
     (parent, child, state.unwrap())

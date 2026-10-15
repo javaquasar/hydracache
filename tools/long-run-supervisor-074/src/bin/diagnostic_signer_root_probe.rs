@@ -17,7 +17,9 @@ fn main() {
                     println!("selected rooted one-shot dummy observation passed; admission=false");
                     return;
                 }
-                if name.starts_with("root-loss-") && root::creator_loss(name).is_ok() {
+                if (name.starts_with("root-loss-") || name.starts_with("root-transfer-"))
+                    && root::creator_loss(name).is_ok()
+                {
                     println!("selected rooted creator-loss observation passed; admission=false");
                     return;
                 }

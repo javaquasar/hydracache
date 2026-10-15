@@ -14615,3 +14615,90 @@ fn ordinary_root_dummy_handoff_never_becomes_a_credential_or_start_producer() {
             .contains("diagnostic_signer_owned_root_handoff"));
     }
 }
+
+#[test]
+fn ordinary_transfer_loss_is_stopped_dummy_evidence_not_server_admission() {
+    let c = contract("diagnostic-signer-owned-root-handoff-loss-contract.toml");
+    for key in [
+        "fixed_stopped_transfer_creator_loss_observed",
+        "monitor_retains_original_root_and_socket_pair_before_fork",
+        "both_socket_endpoint_identities_checked_before_g",
+        "monitor_child_endpoint_closed_before_g",
+        "monitor_parent_endpoint_held_through_creator_reap",
+        "kernel_packet_credentials_checked",
+        "passing_loss_signals_only_creator",
+        "original_waitid_nowait_reap_echild_required",
+        "socket_eof_precedes_original_root_cleanup",
+        "healthy_controls_finish_ack_close_zero_exit",
+        "installed_and_delivered_group_stop_matched_negatives",
+        "negative_cleanup_never_automatic_death",
+        "unrelated_original_child_survives",
+        "unknown_quiescence_preserves_root",
+        "original_raw_child_policy_and_installer_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "fresh_creator_cli_exec_proved",
+        "pre_arm_loss_proved",
+        "running_child_loss_proved",
+        "creator_thread_only_loss_proved",
+        "full_normal_entry_creator_loss_proved",
+        "overlapping_broad_load_robustness_proved",
+        "credential_handoff_authenticated",
+        "runtime_custody_authenticated",
+        "original_worker_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("fixed_modes", 14),
+        ("positive_stopped_boundaries", 6),
+        ("healthy_controls", 6),
+        ("negative_controls", 2),
+        ("private_frame_version", 1),
+        ("private_frame_bytes", 16),
+        ("setup_descriptors", 2),
+        ("cut_descriptors", 0),
+        ("maximum_packets_per_direction", 4),
+        ("maximum_ancillary_bytes", 128),
+        ("wait_seconds", 5),
+        ("maximum_send_attempts", 1),
+        ("startup_syscall_pairs", 256),
+        ("maximum_protocol_events", 16),
+        ("maximum_failure_drain_bytes", 48),
+        ("maximum_image_bytes", 8388608),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_owned_root_loss.rs")).unwrap();
+    for marker in [
+        "same_socket_pair(",
+        "drop(transport.take())",
+        "handoff::pause(",
+        "handoff::counts(",
+        "handoff::resume(",
+        "handoff::drain_socket(",
+        "root-transfer-no-exitkill-delivered",
+        "group_stop(&mut owner)?",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    let drop = code.find("drop(transport.take())").unwrap();
+    let gate = code[drop..].find("channel.send(b\"G\"").unwrap();
+    assert!(gate > 0);
+    for consumer in ["lib.rs", "server.rs", "bin/diagnostic_controller.rs"] {
+        let text = std::fs::read_to_string(base.join(consumer)).unwrap();
+        assert!(!text.contains("root-transfer-") && !text.contains("owned_root_handoff"));
+    }
+}

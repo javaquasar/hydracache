@@ -43,6 +43,14 @@ const LOSS_MODES: [&str; 8] = [
     "root-loss-healthy-installed",
     "root-loss-no-exitkill-installed",
 ];
+const TRANSFER_CUTS: [&str; 6] = [
+    "installed",
+    "ready",
+    "receive",
+    "delivered",
+    "acked",
+    "closed",
+];
 struct Image {
     _temp: tempfile::TempDir,
     path: std::path::PathBuf,
@@ -358,6 +366,7 @@ fn normal_original_root_one_shot_dummy_handoff() {
             refused(image.command().arg(format!("root-handoff-{case}")));
         }
         println!("extra_libm_root_handoff_modes=25 refused=true unchanged_four_role_graph=true admission=false");
+        transfer_creator_loss_and_healthy_controls(&image);
         return;
     }
     let out = output(image.command().arg("root-handoff-good"));
@@ -382,6 +391,36 @@ fn normal_original_root_one_shot_dummy_handoff() {
         ));
         let attempted = u8::from(sends == 1 || case == "send-failure");
         println!("normal_root_handoff mode={case} attempted={attempted} sends={sends} success_claim=false original_reaped=true eof=true admission=false");
+    }
+    transfer_creator_loss_and_healthy_controls(&image);
+}
+fn transfer_creator_loss_and_healthy_controls(image: &Image) {
+    for (kind, cuts) in [
+        ("loss", &TRANSFER_CUTS[..]),
+        ("healthy", &TRANSFER_CUTS[..]),
+        ("no-exitkill", &["installed", "delivered"][..]),
+    ] {
+        for cut in cuts {
+            let mode = format!("root-transfer-{kind}-{cut}");
+            if image.extra_libm {
+                refused(image.command().arg(&mode));
+                continue;
+            }
+            let out = output(image.command().arg(&mode));
+            assert_eq!(out.status.code(), Some(0), "{mode}: {out:?}");
+            assert_eq!(
+                out.stdout,
+                b"selected rooted creator-loss observation passed; admission=false\n"
+            );
+            assert!(out.stderr.is_empty(), "{mode}: {out:?}");
+            let sent = u8::from(matches!(*cut, "delivered" | "acked" | "closed"));
+            let automatic = kind == "loss";
+            let completed = kind == "healthy";
+            println!("normal_root_transfer kind={kind} cut={cut} sends_at_cut={sent} automatic_death={automatic} ack_close_exit={completed} original_reaped=true eof=true unrelated_alive=true admission=false");
+        }
+    }
+    if image.extra_libm {
+        println!("extra_libm_root_transfer_modes=14 refused=true unchanged_four_role_graph=true admission=false");
     }
 }
 #[test]
@@ -446,6 +485,20 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
         assert!(out.stdout.is_empty() && out.stderr.is_empty());
     }
     refused(image.command().arg("root-handoff-unknown"));
+    for kind in ["loss", "healthy", "no-exitkill"] {
+        for cut in TRANSFER_CUTS {
+            let mode = format!("root-transfer-{kind}-{cut}");
+            refused(image.command().arg(&mode).env("UNTRUSTED_ROOT_PROBE", "1"));
+            refused(image.command().arg(&mode).arg("extra"));
+        }
+    }
+    for mode in [
+        "root-transfer-loss-unknown",
+        "root-transfer-no-exitkill-ready",
+        "root-transfer-loss-pre-arm",
+    ] {
+        refused(image.command().arg(mode));
+    }
     for mode in [
         "--root-native-child",
         "--root-x32-child",

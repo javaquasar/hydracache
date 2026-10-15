@@ -104,9 +104,17 @@ impl Owner {
         Self::build_profile(root, probe, None)
     }
     fn build_profile(
+        root: Root,
+        probe: Option<FixedProbe>,
+        case: Option<handoff::Case>,
+    ) -> io::Result<Self> {
+        Self::build_transport(root, probe, case, None)
+    }
+    fn build_transport(
         mut root: Root,
         probe: Option<FixedProbe>,
         case: Option<handoff::Case>,
+        monitored: Option<handoff::Transport>,
     ) -> io::Result<Self> {
         root.check()?;
         let last: u32 = bounded(open("/proc/sys/kernel/cap_last_cap")?)?
@@ -124,7 +132,15 @@ impl Owner {
             null_stamp.mode & libc::S_IFMT == libc::S_IFCHR
                 && null.metadata()?.rdev() == libc::makedev(1, 3),
         )?;
-        let (pipe, writer, handoff) = handoff::transport(case)?;
+        let (pipe, writer, handoff) = match monitored {
+            Some(transport) => {
+                require(
+                    case == Some(handoff::Case::Good) && matches!(probe, Some(FixedProbe::Native)),
+                )?;
+                transport
+            }
+            None => handoff::transport(case)?,
+        };
         let pipe_stamp = Stamp::of(&writer.metadata()?);
         let root_fd =
             file(unsafe { libc::fcntl(root.dirs[0].file.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 10) })?;
