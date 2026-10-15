@@ -6,6 +6,16 @@ use std::os::unix::process::CommandExt;
 use std::process::{Command, Output, Stdio};
 use std::time::{Duration, Instant};
 static COPY_AND_SPAWN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+const LOSS_MODES: [&str; 8] = [
+    "root-loss-initial",
+    "root-loss-rooted",
+    "root-loss-exec",
+    "root-loss-loaded",
+    "root-loss-installed",
+    "root-loss-healthy-initial",
+    "root-loss-healthy-installed",
+    "root-loss-no-exitkill-installed",
+];
 struct Image {
     _temp: tempfile::TempDir,
     path: std::path::PathBuf,
@@ -214,6 +224,10 @@ fn normal_original_root_exec_observes_selected_runtime_then_reaps() {
             refused(image.command().arg(mode));
         }
         println!("extra_libm_root_policy_modes=5 refused=true unchanged_four_role_graph=true admission=false");
+        for mode in LOSS_MODES {
+            refused(image.command().arg(mode));
+        }
+        println!("extra_libm_root_creator_loss_modes=8 refused=true unchanged_four_role_graph=true admission=false");
         return;
     }
     let out = output(image.command().arg("root-exec"));
@@ -244,6 +258,24 @@ fn normal_original_root_exec_observes_selected_runtime_then_reaps() {
         assert!(out.stderr.is_empty(), "{out:?}");
         println!("normal_root_policy_cleanup mode={mode} installed_stop=true original_reaped=true stream_eof=true admission=false");
     }
+    for mode in LOSS_MODES {
+        let out = output(image.command().arg(mode));
+        assert_eq!(out.status.code(), Some(0), "{mode}: {out:?}");
+        assert_eq!(
+            out.stdout,
+            b"selected rooted creator-loss observation passed; admission=false\n"
+        );
+        assert!(out.stderr.is_empty(), "{mode}: {out:?}");
+        let kind = if mode.contains("no-exitkill") {
+            "negative"
+        } else if mode.contains("healthy") {
+            "healthy"
+        } else {
+            "loss"
+        };
+        let automatic = kind == "loss";
+        println!("normal_root_creator_loss mode={mode} kind={kind} automatic_death={automatic} monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false");
+    }
 }
 
 #[test]
@@ -267,6 +299,17 @@ fn repeated_original_root_execs_leave_parent_context_unchanged() {
             );
             assert!(out.stderr.is_empty(), "{out:?}");
         }
+        if image.extra_libm {
+            refused(image.command().arg("root-loss-installed"));
+        } else {
+            let out = output(image.command().arg("root-loss-installed"));
+            assert_eq!(out.status.code(), Some(0), "{out:?}");
+            assert_eq!(
+                out.stdout,
+                b"selected rooted creator-loss observation passed; admission=false\n"
+            );
+            assert!(out.stderr.is_empty(), "{out:?}");
+        }
     }
     assert_eq!(
         before,
@@ -278,6 +321,7 @@ fn repeated_original_root_execs_leave_parent_context_unchanged() {
         )
     );
     println!("independent_root_exec_owners=4 extra_libm_refusal={} parent_context_unchanged=true admission=false", image.extra_libm);
+    println!("independent_root_loss_monitors=4 sequential=true extra_libm_refusal={} parent_context_unchanged=true admission=false", image.extra_libm);
 }
 #[test]
 fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
@@ -327,6 +371,11 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
         refused(image.command().arg(mode).env("UNTRUSTED_ROOT_PROBE", "1"));
         refused(image.command().args([mode, "extra"]));
     }
+    for mode in LOSS_MODES {
+        refused(image.command().arg(mode).env("UNTRUSTED_ROOT_PROBE", "1"));
+        refused(image.command().args([mode, "extra"]));
+    }
+    refused(image.command().arg("root-loss-unknown"));
     for mode in [
         "--root-native-child",
         "--root-x32-child",

@@ -14414,3 +14414,98 @@ fn structured_bootstrap_context_is_declared_policy_not_observed_custody() {
             .contains("bootstrap_context"));
     }
 }
+
+#[test]
+fn ordinary_root_creator_loss_is_owned_stops_only_not_authority() {
+    let c = contract("diagnostic-signer-owned-root-loss-contract.toml");
+    for key in [
+        "normal_owned_stop_creator_loss_diagnostic",
+        "monitor_retains_original_root_before_creator_fork",
+        "kernel_packet_credentials_checked",
+        "original_sole_child_pidfd_and_pipe_binding_checked",
+        "monitor_peer_held_until_creator_reaped",
+        "passing_loss_signals_only_creator",
+        "child_waitid_nowait_reap_echild_checked",
+        "stream_eof_precedes_root_cleanup",
+        "unrelated_original_child_survives_loss",
+        "installed_group_stop_matched_to_negative",
+        "no_exitkill_survivor_is_negative_only",
+        "unknown_quiescence_preserves_root",
+        "subreaper_state_restored",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "fresh_creator_cli_exec_proved",
+        "pre_arm_loss_proved",
+        "running_child_loss_proved",
+        "creator_thread_only_loss_proved",
+        "full_normal_entry_creator_loss_proved",
+        "overlapping_broad_load_robustness_proved",
+        "credential_handoff_authenticated",
+        "runtime_custody_authenticated",
+        "original_worker_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("positive_stopped_boundaries", 5),
+        ("healthy_controls", 2),
+        ("negative_controls", 1),
+        ("private_frame_version", 1),
+        ("private_frame_bytes", 16),
+        ("setup_descriptors", 2),
+        ("cut_descriptors", 0),
+        ("gate_bytes", 1),
+        ("maximum_packets_per_direction", 4),
+        ("maximum_ancillary_bytes", 128),
+        ("wait_seconds", 5),
+        ("maximum_image_bytes", 8388608),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_owned_root_loss.rs")).unwrap();
+    for marker in [
+        "SCM_CREDENTIALS",
+        "MSG_CMSG_CLOEXEC",
+        "MSG_CTRUNC",
+        "P_PIDFD",
+        "WNOWAIT",
+        "ECHILD",
+        "PTRACE_GETSIGINFO",
+        "PR_SET_CHILD_SUBREAPER",
+        "same_pipe(",
+        "reaper.restore()?",
+        "child.wait(libc::CLD_KILLED, libc::SIGKILL)?",
+        "pipe.read(&mut extra)? == 0",
+        "tree.quiescent = true",
+        "cleanup_attempted = true",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "SigningKey",
+        "Command::",
+        "pub fn ",
+        "execve(",
+        "PTRACE_POKEDATA",
+        "SIGCONT",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for consumer in ["lib.rs", "server.rs", "bin/diagnostic_controller.rs"] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("diagnostic_signer_owned_root_loss"));
+    }
+}

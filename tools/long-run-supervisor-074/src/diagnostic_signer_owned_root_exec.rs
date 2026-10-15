@@ -12,6 +12,8 @@ use std::time::{Duration, Instant};
 mod core;
 #[path = "diagnostic_signer_owned_root_isolation.rs"]
 mod isolation;
+#[path = "diagnostic_signer_owned_root_loss.rs"]
+mod loss;
 #[path = "diagnostic_signer_owned_root_maps.rs"]
 mod maps;
 const STOP: i32 = (libc::SIGSTOP << 8) | 0x7f;
@@ -532,6 +534,9 @@ pub(super) fn installed_cleanup(root: Root, kill: bool) -> io::Result<()> {
         )?;
     }
     Ok(())
+}
+pub(super) fn creator_loss(mode: &str) -> io::Result<()> {
+    loss::run(mode)
 }
 fn status(raw: &str, uid: u32, gid: u32, pid: i32, creator: i32, tracer: i32) -> io::Result<()> {
     require(!raw.is_empty() && raw.len() <= 65536 && raw.ends_with('\n'))?;

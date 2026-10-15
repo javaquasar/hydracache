@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+Fixed `root-loss-*` modes add only a binary-private local seqpacket diagnostic,
+not a product wire protocol. Version1 frame `HC074RL1` is exactly16 bytes: magic8,
+positive original child PID LE i32, fixed cut byte0..4, mode0..2, stage0..1,
+reserved0. Readers match the selected fixed mode/stage exactly. Setup carries
+two SCM_RIGHTS descriptors (original child pidfd and pipe reader); cut carries
+none. One-byte gates G/H carry no descriptors. Kernel SCM_CREDENTIALS PID/UID/GID
+and received CLOEXEC are mandatory; malformed/unknown/truncated input refuses.
+Four packets per direction and128 ancillary bytes are hard bounds. No caller PID,
+path, command or FD override exists. This is not authentication for credentials,
+worker start or authority. No durable/product compatibility change.
+
 The separate fixed `diagnostic_signer_root_probe` modes `root-native`, `root-x32`
 and `root-i386` compose the selected root with the existing 64-instruction policy.
 Binary-private child modes accept no extra input. A shared private installer adds

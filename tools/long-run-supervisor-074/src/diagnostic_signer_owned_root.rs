@@ -432,3 +432,7 @@ pub(super) fn installed_cleanup(kill: bool) -> io::Result<()> {
     launch::preflight()?;
     launch::installed_cleanup(acquire()?, kill)
 }
+pub(super) fn creator_loss(mode: &str) -> io::Result<()> {
+    launch::preflight()?;
+    launch::creator_loss(mode)
+}

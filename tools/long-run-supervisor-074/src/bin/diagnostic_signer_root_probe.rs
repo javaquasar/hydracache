@@ -9,6 +9,12 @@ fn main() {
         let mut args = std::env::args_os().skip(1);
         let mode = args.next();
         if args.next().is_none() {
+            if let Some(name) = mode.as_deref().and_then(std::ffi::OsStr::to_str) {
+                if name.starts_with("root-loss-") && root::creator_loss(name).is_ok() {
+                    println!("selected rooted creator-loss observation passed; admission=false");
+                    return;
+                }
+            }
             for (mode_name, kill) in [
                 ("root-kill-installed", true),
                 ("root-drop-installed", false),
