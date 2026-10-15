@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [macro MSRV diagnostic cleanup](local-runs/msrv-macro-diagnostics-20261015/README.md)
+removes the seven Rust1.88 Clippy errors recorded by the preceding packets.
+Seven exact-message regressions pass before and after the interpolation change;
+the macro suite now passes 83 tests on Windows/Linux with Rust1.88/1.94. This
+does not make the wider MSRV lint green: it next reports three existing
+`grid/conditional.rs` diagnostics. Historical failures remain unchanged, and no
+performance or server-admission claim follows from this code-quality step.
+
 The [ordinary send-window diagnostic](diagnostic-signer-owned-root-send-windows-design.md)
 adds two fixed creator stops after attempt latch and after send before recv
 resume. Six controls separate creator-enforced SIGKILL from healthy one-shot

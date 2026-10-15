@@ -1,0 +1,95 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.10s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_macros-3df10c1a6fb8f431.exe)
+
+running 83 tests
+test cacheable::tests::preserves_duplicate_attribute_segment_diagnostic ... ok
+test cacheable::tests::preserves_duplicate_attribute_expression_diagnostic ... ok
+test cacheable::tests::rejects_cacheable_attribute_non_async_function ... ok
+test cacheable::tests::rejects_cacheable_attribute_missing_key_source ... ok
+test cacheable::tests::rejects_duplicate_options ... ok
+test cacheable::tests::rejects_conflicting_ttl_options ... ok
+test cacheable::tests::rejects_duplicate_tags_expression ... ok
+test cacheable::tests::rejects_missing_cache ... ok
+test cacheable::tests::rejects_missing_cache_for_infallible_macro ... ok
+test cacheable::tests::rejects_missing_key ... ok
+test cacheable::tests::rejects_missing_load ... ok
+test cacheable::tests::rejects_unknown_options ... ok
+test config::tests::accepts_split_hydracache_attributes ... ok
+test config::tests::collection_is_optional ... ok
+test config::tests::parses_entity_collection_and_id ... ok
+test config::tests::infers_id_from_named_field_marker ... ok
+test config::tests::rejects_conflicting_explicit_and_field_id_metadata ... ok
+test config::tests::rejects_duplicate_field_id_markers ... ok
+test config::tests::rejects_duplicate_options ... ok
+test config::tests::rejects_field_id_marker_with_value ... ok
+test config::tests::rejects_unknown_options ... ok
+test cacheable::tests::expands_ttl_expr ... ok
+test cacheable::tests::expands_tags_expression_before_repeated_tags ... ok
+test cacheable::tests::expands_infallible_loader ... ok
+test cacheable::tests::expands_minimal_cacheable_loader ... ok
+test cacheable::tests::expands_repeated_tags_and_ttl_secs ... ok
+test entity::tests::rejects_missing_id ... ok
+test paths::tests::resolver_can_use_diesel_adapter_reexports ... ok
+test entity::tests::rejects_missing_entity ... ok
+test paths::tests::resolver_falls_back_to_sqlx_adapter_crate ... ok
+test paths::tests::resolver_prefers_database_neutral_crate ... ok
+test paths::tests::resolves_cache_entity_path_for_current_crate ... ok
+test paths::tests::resolves_cache_entity_path_for_renamed_crate ... ok
+test paths::tests::resolves_query_cache_policy_path_for_renamed_crate ... ok
+test paths::tests::fallback_runtime_path_is_available_without_runtime_dependency ... ok
+test paths::tests::resolves_runtime_path_for_current_crate ... ok
+test entity::tests::expands_id_from_named_field_marker ... ok
+test paths::tests::resolves_runtime_path_for_renamed_crate ... ok
+test cacheable::tests::expands_cacheable_attribute_with_segmented_key_and_tags ... ok
+test entity::tests::expands_impl_for_generics ... ok
+test policy::tests::expands_manual_key_policy_with_ttl_expr ... ok
+test policy::tests::expands_collection_policy ... ok
+test policy::tests::preserves_duplicate_expression_list_diagnostic ... ok
+test policy::tests::preserves_duplicate_type_diagnostic ... ok
+test policy::tests::preserves_empty_expression_list_diagnostic ... ok
+test policy::tests::preserves_missing_expression_list_comma_diagnostic ... ok
+test policy::tests::rejects_conflicting_key_sources ... ok
+test paths::tests::fallback_paths_are_available_without_adapter_dependencies ... ok
+test policy::tests::rejects_conflicting_ttl_options ... ok
+test policy::tests::rejects_dependency_lint_without_sql ... ok
+test policy::tests::expands_required_dimensions_for_segmented_key ... ok
+test policy::tests::rejects_duplicate_options ... ok
+test policy::tests::rejects_duplicate_sql ... ok
+test policy::tests::rejects_duplicate_required_dimension_labels ... ok
+test policy::tests::rejects_empty_key_segments ... ok
+test policy::tests::rejects_empty_lint_allow_reason ... ok
+test policy::tests::rejects_entity_without_id ... ok
+test policy::tests::rejects_id_without_entity ... ok
+test policy::tests::rejects_flat_tag_segments ... ok
+test policy::tests::expands_entity_policy_with_name_ttl_and_tags ... ok
+test policy::tests::expands_dimension_profile_metadata ... ok
+test policy::tests::rejects_preset_with_ttl_override ... ok
+test policy::tests::rejects_missing_key_source ... ok
+test policy::tests::expands_preset_policy_with_name_and_refresh_options ... ok
+test policy::tests::rejects_required_dimensions_without_key_segments ... ok
+test policy::tests::rejects_unknown_dimension_profile ... ok
+test policy::tests::rejects_missing_required_dimension_label ... ok
+test policy::tests::rejects_unknown_dependency_lint_mode ... ok
+test policy::tests::rejects_unknown_options ... ok
+test policy::tests::rejects_unknown_preset ... ok
+test policy::tests::expands_segmented_key_and_tags ... ok
+test prepared_policy::tests::preserves_duplicate_type_diagnostic ... ok
+test prepared_policy::tests::rejects_conflicting_key_sources ... ok
+test prepared_policy::tests::rejects_conflicting_ttl_options ... ok
+test prepared_policy::tests::rejects_duplicate_options ... ok
+test prepared_policy::tests::rejects_flat_tag_segments ... ok
+test prepared_policy::tests::rejects_missing_key_source ... ok
+test prepared_policy::tests::rejects_unknown_options ... ok
+test prepared_policy::tests::expands_collection_policy ... ok
+test prepared_policy::tests::expands_cache_entity_policy_with_name_ttl_and_refresh ... ok
+test prepared_policy::tests::expands_manual_entity_policy_without_per_entity_preset ... ok
+test policy::tests::expands_sql_dependency_lint_metadata ... ok
+test prepared_policy::tests::expands_segmented_static_key_and_tags ... ok
+
+test result: ok. 83 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+   Doc-tests hydracache_macros
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

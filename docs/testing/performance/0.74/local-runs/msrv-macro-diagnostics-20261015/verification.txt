@@ -1,0 +1,1 @@
+31 capture digests and lengths, three source blobs/tree and two frozen files match. Wider Windows MSRV gate remains failed; unsigned consistency only, no execution attestation or server admission.

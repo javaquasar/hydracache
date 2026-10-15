@@ -1,0 +1,331 @@
+{
+  "format_version": 1,
+  "scope": "Local macro diagnostic MSRV lint cleanup; no product or server admission",
+  "date": "2026-10-15",
+  "baseline_commit": "e83b3ecb0cc0c4c1c95c4b73b20f007cb5b8f833",
+  "source_commit": "36f284eac5a1c58796cc22613e064bc15d331988",
+  "source_tree": "530ff3b237fa080e340251a3fb94b81c3d295a31",
+  "source_files": [
+    {
+      "path": "crates/hydracache-macros/src/cacheable.rs",
+      "git_blob": "61c597c6ddc12d5107f5772b894a3c95fbdde041"
+    },
+    {
+      "path": "crates/hydracache-macros/src/policy.rs",
+      "git_blob": "3daa9979ac5675dca434503366137fc070d71668"
+    },
+    {
+      "path": "crates/hydracache-macros/src/prepared_policy.rs",
+      "git_blob": "5b9518e2bc845b8340630c2711c08bd44fddd296"
+    }
+  ],
+  "working_tree_receipt": "Existing worktree, documentation/evidence dirty. Checks mostly before source commit; postcommit-* captures identify the separate after-commit checks. Unsigned records, not execution attestation.",
+  "capture_encoding": "Tool-returned text, UTF-8/LF, one final newline for nonempty captures, empty logs unchanged, ANSI preserved",
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "remaining_failed_gates": [
+    {
+      "capture": "windows-msrv-clippy.log",
+      "error_count": 3,
+      "path": "crates/hydracache/src/grid/conditional.rs",
+      "lint": "clippy::uninlined_format_args"
+    }
+  ],
+  "unperformed": [
+    "Linux Rust1.88 Clippy: installed toolchain lacks component",
+    "Full release verify",
+    "Product performance qualification",
+    "Authenticated original-start or all-writer cessation",
+    "Server/workflow execution",
+    "Push"
+  ],
+  "captures": [
+    {
+      "file": "doc-check.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- doc-check",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "postcommit-pass",
+      "sha256": "0fe20ae1d19b9daa72dbd23a891369fb3d32243fb65f2252ddcb3c4ade696095",
+      "bytes": 164
+    },
+    {
+      "file": "baseline-msrv-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-macros --lib --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "expected_exit": 1,
+      "sha256": "779ee218717d7299f4cd5918b1e4a1f244482536a6ea693b6005f288f5afd021",
+      "bytes": 4332,
+      "classification": "baseline-failed-gate"
+    },
+    {
+      "file": "baseline-msrv-tests.log",
+      "command": "cargo +1.88.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "sha256": "afd4f201826bc25f7a24a85fa0f51ac2f90d6edbd047c5ea4736916157240d4d",
+      "bytes": 5352,
+      "classification": "baseline-or-environment"
+    },
+    {
+      "file": "environment.log",
+      "command": "cargo +1.88.0 --version; cargo +1.94.0 --version; rustup component list --toolchain 1.88.0 --installed; wsl.exe -d Ubuntu --exec /home/artur/.cargo/bin/rustup component list --toolchain 1.88.0 --installed; Get-PSDrive -Name C | Select-Object Used,Free; Get-FileHash Cargo.lock,docs/testing/performance/0.74/qualification-manifest.toml -Algorithm SHA256; git status --short",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "sha256": "da8dea8d41bce270e9a4cd4bb20f053032b9b3ac73b31619a249af364f824162",
+      "bytes": 616,
+      "classification": "baseline-or-environment"
+    },
+    {
+      "file": "gate-registry.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- gated-test-check",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "41546b645f0319db4a639cf96607ec68aa13304fef247584a7edcf30c3000883",
+      "bytes": 380
+    },
+    {
+      "file": "linux-current-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "e2df725b12c45794d790a77d4b70bceaad2e99a34bf09c00b6d5d7d994dd1069",
+      "bytes": 1293
+    },
+    {
+      "file": "linux-current-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "6ae003f3148fc7b91f43422f378da19b6d7a0e97426e6509b3c48a48ca53c08a",
+      "bytes": 1002
+    },
+    {
+      "file": "linux-current-consumers.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache --test cacheable_macro --test cacheable_ui --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "813906a3819d4e73310a599c942615e82f5fadf97091b959c51bd952f1c506dd",
+      "bytes": 15029
+    },
+    {
+      "file": "linux-current-db-consumers.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-db --test derive_ui --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "51d1aff6c0d3f8203d77e4019541acd12622566c7ec60783844a876ac22de67f",
+      "bytes": 7877
+    },
+    {
+      "file": "linux-current-macros-test.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "dbc66567245fd7d97c8cb3d4d19078cff49cfe1442d6a137759ce8338f9d9162",
+      "bytes": 5994
+    },
+    {
+      "file": "linux-format.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "linux-msrv-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "fd7483933f5088beeab8d3039b152063cbf58e2ed352d4dc2f7d8fc296f0ebce",
+      "bytes": 1293
+    },
+    {
+      "file": "linux-msrv-macros-test.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "93489e44d3dc5bd0f364f352ae686e45e36961832259e0c55b629d87d4d02c9c",
+      "bytes": 5994
+    },
+    {
+      "file": "performance-local.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "ff142600ff21822d0be4a4c69fb8c9568dfbf06e8518976517ef03ddb4808c79",
+      "bytes": 212
+    },
+    {
+      "file": "performance-static.log",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "939dfa73b246d56a37eea7084e02b4e540770771891959904132999cf5d4815c",
+      "bytes": 1246
+    },
+    {
+      "file": "postcommit-current-macros-test.log",
+      "command": "cargo +1.94.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "postcommit-pass",
+      "sha256": "88d4726b9f588f07925fc35c639a9a6ce4f0e0ff894cfc29cad8add87aa824d8",
+      "bytes": 5763
+    },
+    {
+      "file": "postcommit-msrv-macros-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-macros --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "postcommit-pass",
+      "sha256": "dccad65a474a0e64d7c677fc96c87f30265067841005a793f4d82605fea6fe77",
+      "bytes": 72
+    },
+    {
+      "file": "postcommit-msrv-macros-test.log",
+      "command": "cargo +1.88.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "postcommit-pass",
+      "sha256": "be326351dbc7729e5650326f2c1b9efaf182be08e53172b402c3f413b305150b",
+      "bytes": 5763
+    },
+    {
+      "file": "previous-packet-verifier.log",
+      "command": "python -B docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-send-windows-20261015/verify_packet.py",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "60dd8760e42bbaa5e35a5cd5a032e232d49d9fa3adf577a516fde368436e8769",
+      "bytes": 98
+    },
+    {
+      "file": "require-ship.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "expected_exit": 1,
+      "classification": "expected-closed-admission",
+      "sha256": "31c3a9535345c323b152443f748b4faeb01c82dcc322f3afc109960a0d295128",
+      "bytes": 494
+    },
+    {
+      "file": "test-first-msrv-tests.log",
+      "command": "cargo +1.88.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "sha256": "8bdb91889acf6f148c6955f849cbc05a66b9fcf46f5976c219fae026f13d00f2",
+      "bytes": 5870,
+      "classification": "pre-fix-characterization"
+    },
+    {
+      "file": "test-first.patch.log",
+      "command": "git diff -- crates/hydracache-macros/src",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "sha256": "9b25546ee8e37941cd16f1b0f5d67e2776bb7dfa4d2004d0bae050ce38af85a3",
+      "bytes": 4401,
+      "classification": "pre-fix-characterization"
+    },
+    {
+      "file": "windows-current-check.log",
+      "command": "cargo +1.94.0 check -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "67401447090f0e22f5dfefe5d35e41f4c9afcd57acff71d941327227aad22a0c",
+      "bytes": 3934
+    },
+    {
+      "file": "windows-current-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "077607e9fe9688e4ae055295220aa247cc6d5392bdb329a64a3e4999e2f76a76",
+      "bytes": 1444
+    },
+    {
+      "file": "windows-current-macros-test.log",
+      "command": "cargo +1.94.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "325292e9b580eca278aa26fe3b93c059461f169f86c3e80d6d91449dfb41340c",
+      "bytes": 5870
+    },
+    {
+      "file": "windows-format.log",
+      "command": "cargo +1.94.0 fmt -p hydracache-macros -- --check",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "windows-msrv-check.log",
+      "command": "cargo +1.88.0 check -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "83787796470ac09522a1306336eb58dc018a6f0d93b834fbf6e80e7e83aa663a",
+      "bytes": 3903
+    },
+    {
+      "file": "windows-msrv-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-macros -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "expected_exit": 0,
+      "classification": "remaining-failed-gate",
+      "sha256": "a05e93ca08c5f1eb18cf04bff05a35c76a7dfbc1570295dbc437d0d040715042",
+      "bytes": 2766
+    },
+    {
+      "file": "windows-msrv-macros-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-macros --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "a041609f5c89faa4883de1c93004e2c6df27eecb2e96bcf7bebaaa30a4cc7a54",
+      "bytes": 179
+    },
+    {
+      "file": "windows-msrv-macros-test.log",
+      "command": "cargo +1.88.0 test -p hydracache-macros --locked --offline",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "classification": "pass",
+      "sha256": "08d739498286cb1d53332f1bf72b67c038f3f725abad76d55f50cb1b698aa18b",
+      "bytes": 5870
+    },
+    {
+      "file": "windows-workspace-format-attempt.log",
+      "command": "inspection commands ending in: cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 1,
+      "expected_exit": 1,
+      "sha256": "26b0b62c7287b9090e565049725c2d05645ef644e87dc2b9a64cc12fcdb0636b",
+      "bytes": 11522,
+      "classification": "windows-formatter-environment-failure"
+    }
+  ]
+}

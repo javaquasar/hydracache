@@ -1,0 +1,279 @@
+warning: in the working copy of 'crates/hydracache-macros/src/cacheable.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/policy.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/prepared_policy.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/cacheable.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/policy.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/prepared_policy.rs', LF will be replaced by CRLF the next time Git touches it
+ crates/hydracache-macros/src/cacheable.rs       | 38 +++++++++++++++-
+ crates/hydracache-macros/src/policy.rs          | 58 ++++++++++++++++++++++---
+ crates/hydracache-macros/src/prepared_policy.rs | 12 ++++-
+ 3 files changed, 100 insertions(+), 8 deletions(-)
+warning: in the working copy of 'crates/hydracache-macros/src/cacheable.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/policy.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'crates/hydracache-macros/src/prepared_policy.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/crates/hydracache-macros/src/cacheable.rs b/crates/hydracache-macros/src/cacheable.rs
+index ab0a5c31..61c597c6 100644
+--- a/crates/hydracache-macros/src/cacheable.rs
++++ b/crates/hydracache-macros/src/cacheable.rs
+@@ -444,7 +444,7 @@ fn parse_unique_segment_list(
+     if current.is_some() {
+         return Err(syn::Error::new(
+             option.span(),
+-            format!("duplicate cacheable {} option", option),
++            format!("duplicate cacheable {option} option"),
+         ));
+     }
+ 
+@@ -460,7 +460,7 @@ fn parse_unique_expr(
+     if current.is_some() {
+         return Err(syn::Error::new(
+             option.span(),
+-            format!("duplicate cacheable {} option", option),
++            format!("duplicate cacheable {option} option"),
+         ));
+     }
+ 
+@@ -670,6 +670,40 @@ mod tests {
+         assert!(error.to_string().contains("duplicate cacheable tags"));
+     }
+ 
++    #[test]
++    fn preserves_duplicate_attribute_expression_diagnostic() {
++        let error = expand_attribute(
++            quote!(cache = first, cache = second, key = "one"),
++            quote!(
++                async fn load() -> Result<Value, Error> {
++                    todo!()
++                }
++            ),
++        )
++        .unwrap_err();
++
++        assert_eq!(error.to_string(), "duplicate cacheable cache option");
++    }
++
++    #[test]
++    fn preserves_duplicate_attribute_segment_diagnostic() {
++        let error = expand_attribute(
++            quote!(
++                cache = cache,
++                key_segments = ["one"],
++                key_segments = ["two"]
++            ),
++            quote!(
++                async fn load() -> Result<Value, Error> {
++                    todo!()
++                }
++            ),
++        )
++        .unwrap_err();
++
++        assert_eq!(error.to_string(), "duplicate cacheable key_segments option");
++    }
++
+     #[test]
+     fn rejects_unknown_options() {
+         let error = expand_loader(quote! {
+diff --git a/crates/hydracache-macros/src/policy.rs b/crates/hydracache-macros/src/policy.rs
+index 9570edd1..3daa9979 100644
+--- a/crates/hydracache-macros/src/policy.rs
++++ b/crates/hydracache-macros/src/policy.rs
+@@ -611,7 +611,7 @@ fn parse_unique_expr_list(
+     if !current.is_empty() {
+         return Err(syn::Error::new(
+             option.span(),
+-            format!("duplicate query_cache_policy {} option", option),
++            format!("duplicate query_cache_policy {option} option"),
+         ));
+     }
+ 
+@@ -623,8 +623,7 @@ fn parse_unique_expr_list(
+             content.parse::<Token![,]>()?;
+         } else if !content.is_empty() {
+             return Err(content.error(format!(
+-                "query_cache_policy {} expects comma-separated expressions",
+-                option
++                "query_cache_policy {option} expects comma-separated expressions"
+             )));
+         }
+     }
+@@ -632,7 +631,7 @@ fn parse_unique_expr_list(
+     if current.is_empty() {
+         Err(syn::Error::new(
+             option.span(),
+-            format!("query_cache_policy {} cannot be empty", option),
++            format!("query_cache_policy {option} cannot be empty"),
+         ))
+     } else {
+         Ok(())
+@@ -698,7 +697,7 @@ fn reject_duplicate<T>(current: &Option<T>, option: &Ident) -> syn::Result<()> {
+     if current.is_some() {
+         Err(syn::Error::new(
+             option.span(),
+-            format!("duplicate query_cache_policy {} option", option),
++            format!("duplicate query_cache_policy {option} option"),
+         ))
+     } else {
+         Ok(())
+@@ -956,6 +955,55 @@ mod tests {
+             .contains("duplicate query_cache_policy key"));
+     }
+ 
++    #[test]
++    fn preserves_duplicate_expression_list_diagnostic() {
++        let error = expand(quote! {
++            key = "one",
++            depends_on = [table("one")],
++            depends_on = [table("two")],
++        })
++        .unwrap_err();
++
++        assert_eq!(
++            error.to_string(),
++            "duplicate query_cache_policy depends_on option"
++        );
++    }
++
++    #[test]
++    fn preserves_missing_expression_list_comma_diagnostic() {
++        let error = expand(quote! {
++            key = "one",
++            depends_on = [table("one") table("two")],
++        })
++        .unwrap_err();
++
++        assert_eq!(
++            error.to_string(),
++            "query_cache_policy depends_on expects comma-separated expressions"
++        );
++    }
++
++    #[test]
++    fn preserves_empty_expression_list_diagnostic() {
++        let error = expand(quote!(key = "one", depends_on = [])).unwrap_err();
++
++        assert_eq!(
++            error.to_string(),
++            "query_cache_policy depends_on cannot be empty"
++        );
++    }
++
++    #[test]
++    fn preserves_duplicate_type_diagnostic() {
++        let error = expand(quote!(entity = First, entity = Second, id = 1)).unwrap_err();
++
++        assert_eq!(
++            error.to_string(),
++            "duplicate query_cache_policy entity option"
++        );
++    }
++
+     #[test]
+     fn rejects_unknown_options() {
+         let error = expand(quote!(key = "one", table = "users")).unwrap_err();
+diff --git a/crates/hydracache-macros/src/prepared_policy.rs b/crates/hydracache-macros/src/prepared_policy.rs
+index d27966ef..5b9518e2 100644
+--- a/crates/hydracache-macros/src/prepared_policy.rs
++++ b/crates/hydracache-macros/src/prepared_policy.rs
+@@ -318,7 +318,7 @@ fn reject_duplicate<T>(current: &Option<T>, option: &Ident) -> syn::Result<()> {
+     if current.is_some() {
+         Err(syn::Error::new(
+             option.span(),
+-            format!("duplicate prepared_query_policy {} option", option),
++            format!("duplicate prepared_query_policy {option} option"),
+         ))
+     } else {
+         Ok(())
+@@ -412,6 +412,16 @@ mod tests {
+             .contains("duplicate prepared_query_policy key"));
+     }
+ 
++    #[test]
++    fn preserves_duplicate_type_diagnostic() {
++        let error = expand(quote!(per_entity = First, per_entity = Second)).unwrap_err();
++
++        assert_eq!(
++            error.to_string(),
++            "duplicate prepared_query_policy per_entity option"
++        );
++    }
++
+     #[test]
+     fn rejects_unknown_options() {
+         let error = expand(quote!(key = "one", table = "users")).unwrap_err();
+#[test]
+fn proc_macro_compile_tests() {
+    let tests = trybuild::TestCases::new();
+    tests.pass("tests/derive/pass_entity.rs");
+    tests.pass("tests/derive/pass_field_id.rs");
+    tests.pass("tests/derive/pass_no_collection.rs");
+    tests.compile_fail("tests/derive/fail_conflicting_id_metadata.rs");
+    tests.compile_fail("tests/derive/fail_duplicate_field_id.rs");
+    tests.compile_fail("tests/derive/fail_field_id_value.rs");
+    tests.compile_fail("tests/derive/fail_missing_entity.rs");
+    tests.compile_fail("tests/derive/fail_missing_id.rs");
+    tests.compile_fail("tests/derive/fail_unknown_field_option.rs");
+    tests.compile_fail("tests/derive/fail_unknown_option.rs");
+    tests.pass("tests/policy/pass_entity_policy.rs");
+    tests.pass("tests/policy/pass_key_policy.rs");
+    tests.pass("tests/policy/pass_preset_refresh_policy.rs");
+    tests.pass("tests/policy/pass_segment_policy.rs");
+    tests.pass("tests/policy/pass_required_dimensions.rs");
+    tests.pass("tests/policy/pass_sql_lint_warn.rs");
+    tests.pass("tests/policy/pass_sql_lint_deny.rs");
+    tests.pass("tests/policy/pass_profile_policy.rs");
+    tests.pass("tests/policy/pass_prepared_policy.rs");
+    tests.compile_fail("tests/policy/fail_conflicting_key_sources.rs");
+    tests.compile_fail("tests/policy/fail_empty_key_segments.rs");
+    tests.compile_fail("tests/policy/fail_empty_tag_segment_group.rs");
+    tests.compile_fail("tests/policy/fail_entity_missing_id.rs");
+    tests.compile_fail("tests/policy/fail_flat_tag_segments.rs");
+    tests.compile_fail("tests/policy/fail_missing_key_source.rs");
+    tests.compile_fail("tests/policy/fail_required_dimensions_missing_label.rs");
+    tests.compile_fail("tests/policy/fail_required_dimensions_without_key_segments.rs");
+    tests.compile_fail("tests/policy/fail_preset_with_ttl.rs");
+    tests.compile_fail("tests/policy/fail_unknown_preset.rs");
+    tests.compile_fail("tests/policy/fail_unknown_lint_mode.rs");
+    tests.compile_fail("tests/policy/fail_duplicate_sql.rs");
+    tests.compile_fail("tests/policy/fail_unknown_builtin_profile.rs");
+    tests.compile_fail("tests/policy/fail_prepared_conflicting_key_sources.rs");
+    tests.compile_fail("tests/policy/fail_prepared_duplicate_option.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_key_segments.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_tag_segment_group.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_tag_segments.rs");
+    tests.compile_fail("tests/policy/fail_prepared_flat_tag_segments.rs");
+    tests.compile_fail("tests/policy/fail_prepared_missing_key_source.rs");
+    tests.compile_fail("tests/policy/fail_prepared_unknown_option.rs");
+}
+error: duplicate cacheable key_segments option
+ --> tests/cacheable/fail_attribute_duplicate_key_segments.rs:4:5
+  |
+4 |     key_segments = ["duplicate", id],
+  |     ^^^^^^^^^^^^
+The filename or extension is too long. (os error 206)
+This utility formats all bin and lib files of the current crate using rustfmt.
+
+Usage: cargo fmt [OPTIONS] [-- <rustfmt_options>...]
+
+Arguments:
+  [rustfmt_options]...  Options passed to rustfmt
+
+Options:
+  -q, --quiet
+          No output printed to stdout
+  -v, --verbose
+          Use verbose output
+      --version
+          Print rustfmt version and exit
+  -p, --package <package>...
+          Specify package to format
+      --manifest-path <manifest-path>
+          Specify path to Cargo.toml
+      --message-format <message-format>
+          Specify message-format: short|json|human
+      --all
+          Format all packages, and also their local path-based dependencies
+      --check
+          Run rustfmt in check mode
+  -h, --help
+          Print help

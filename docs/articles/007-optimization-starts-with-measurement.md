@@ -9988,3 +9988,35 @@ authenticated original worker start, P2/P3 cessation of every writer and later
 cells remain separate. Earlier parallel-fixture timeouts and MSRV macro lint
 failures remain recorded rather than waived. No server, qualification, product
 workload or throughput/allocation claim is opened by this local experiment.
+
+### Macro diagnostics under the minimum Rust version
+
+The send-window packet left a reproducible code-quality failure: Rust1.88 strict
+Clippy rejected seven format expressions in the procedural macros, although
+the current-toolchain check passed. Repeating the old command reproduced all
+seven errors. The original 76 macro tests passed, but most diagnostic assertions
+checked only substrings and did not cover every affected branch.
+
+Seven new tests first fixed the exact existing messages for duplicate cacheable
+expressions and segment lists, duplicate query dependency lists and types,
+missing list commas, empty dependency lists and duplicate prepared-policy types.
+All 83 tests passed before the implementation changed. The implementation then
+replaced only seven positional format arguments with implicit captures. Parser
+conditions and error spans remain unchanged; there is no lint suppression or
+new accepted input. The same 83 tests pass on Windows and Linux with Rust1.88
+and Rust1.94, and the macro package passes strict Windows MSRV Clippy.
+The Linux current-toolchain runtime and DB consumer suites also pass their
+compile-pass/compile-fail snapshots without updating expected diagnostics.
+
+The wider Windows MSRV lint now reaches three existing format diagnostics in
+`grid/conditional.rs`, previously hidden behind the macro failure. They remain
+a failed gate, not a successful cleanup receipt. Linux MSRV Clippy remains
+unperformed because that component is absent. Current-toolchain wider checks
+and strict Clippy pass on both platforms. The
+[local evidence](../testing/performance/0.74/local-runs/msrv-macro-diagnostics-20261015/README.md)
+retains the original red output, the test-first diff and the subsequent results;
+the earlier lifecycle packets keep their original source identities and failures.
+
+This is a compiler-compatibility cleanup, not an allocation or throughput
+improvement. It does not requalify a product candidate or advance authenticated
+original-start, P2/P3 writer cessation, completion or later lifecycle cells.

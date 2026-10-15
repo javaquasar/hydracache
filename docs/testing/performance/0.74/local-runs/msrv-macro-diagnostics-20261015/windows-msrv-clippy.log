@@ -1,0 +1,49 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking hydracache-client-protocol v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-protocol)
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache\src\grid\conditional.rs:107:48
+    |
+107 |               Self::WeakConsistency { level } => write!(
+    |  ________________________________________________^
+108 | |                 formatter,
+109 | |                 "conditional writes require Quorum/EachQuorum/All, got {:?}",
+110 | |                 level
+111 | |             ),
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache\src\grid\conditional.rs:112:53
+    |
+112 |               Self::MultiKeyRejected { key_count } => write!(
+    |  _____________________________________________________^
+113 | |                 formatter,
+114 | |                 "conditional write is single-key only, got {} keys",
+115 | |                 key_count
+116 | |             ),
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache\src\grid\conditional.rs:129:54
+    |
+129 |               Self::NotOwner { key, current_owner } => write!(
+    |  ______________________________________________________^
+130 | |                 formatter,
+131 | |                 "caller is not owner of fenced lock '{key}'; current owner is {:?}",
+132 | |                 current_owner
+133 | |             ),
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: could not compile `hydracache` (lib) due to 3 previous errors

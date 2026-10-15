@@ -1,0 +1,140 @@
+   Compiling syn v2.0.118
+   Compiling num-traits v0.2.19
+   Compiling smallvec v1.15.2
+   Compiling once_cell v1.21.4
+   Compiling regex-automata v0.4.14
+   Compiling tempfile v3.27.0
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling rusty-fork v0.3.1
+   Compiling plotters v0.3.7
+   Compiling regex v1.12.4
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.52
+   Compiling thiserror-impl v2.0.18
+   Compiling tokio-macros v2.7.0
+   Compiling futures-macro v0.3.32
+   Compiling async-trait v0.1.89
+   Compiling hydracache-macros v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-macros)
+   Compiling tokio v1.52.3
+   Compiling futures-util v0.3.32
+   Compiling thiserror v2.0.18
+   Compiling cobs v0.3.0
+   Compiling zerocopy v0.8.52
+   Compiling serde v1.0.228
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling heapless v0.7.17
+   Compiling tinytemplate v1.2.1
+   Compiling trybuild v1.0.117
+   Compiling postcard v1.1.3
+   Compiling hydracache-core v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-core)
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling ciborium-ll v0.2.2
+   Compiling rand_chacha v0.9.0
+   Compiling ciborium v0.2.2
+   Compiling proptest v1.11.0
+   Compiling criterion v0.8.2
+   Compiling hydracache-db v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-db)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.38s
+     Running tests/derive_ui.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/derive_ui-c41fb44bf3b5df2d)
+
+running 1 test
+   Compiling syn v2.0.118
+   Compiling typenum v1.20.1
+   Compiling num-traits v0.2.19
+   Compiling smallvec v1.15.2
+   Compiling serde_json v1.0.150
+   Compiling once_cell v1.21.4
+   Compiling const-oid v0.10.2
+   Compiling regex-automata v0.4.14
+   Compiling parking_lot_core v0.9.12
+   Compiling tempfile v3.27.0
+   Compiling cpufeatures v0.3.0
+   Compiling parking_lot v0.12.5
+   Compiling rusty-fork v0.3.1
+   Compiling hybrid-array v0.4.13
+   Compiling block-buffer v0.12.1
+   Compiling crypto-common v0.2.2
+   Compiling plotters v0.3.7
+   Compiling regex v1.12.4
+   Compiling digest v0.11.3
+   Compiling sha2 v0.11.0
+   Compiling serde_derive v1.0.228
+   Compiling zerocopy-derive v0.8.52
+   Compiling thiserror-impl v2.0.18
+   Compiling futures-macro v0.3.32
+   Compiling tokio-macros v2.7.0
+   Compiling async-trait v0.1.89
+   Compiling hydracache-macros v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-macros)
+   Compiling tokio v1.52.3
+   Compiling futures-util v0.3.32
+   Compiling thiserror v2.0.18
+   Compiling cobs v0.3.0
+   Compiling zerocopy v0.8.52
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling serde v1.0.228
+   Compiling heapless v0.7.17
+   Compiling tinytemplate v1.2.1
+   Compiling postcard v1.1.3
+   Compiling hydracache-core v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-core)
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling ciborium-ll v0.2.2
+   Compiling rand_chacha v0.9.0
+   Compiling ciborium v0.2.2
+   Compiling proptest v1.11.0
+   Compiling criterion v0.8.2
+   Compiling hydracache-db v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-db)
+   Compiling hydracache-db-tests v0.0.0 (/home/artur/.cache/hydracache-074-194-check/tests/trybuild/hydracache-db)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.42s
+
+
+test [0m[1mtests/derive/pass_entity.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/derive/pass_field_id.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/derive/pass_no_collection.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_conflicting_id_metadata.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_duplicate_field_id.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_field_id_value.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_missing_entity.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_missing_id.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_unknown_field_option.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/derive/fail_unknown_option.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_entity_policy.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_key_policy.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_preset_refresh_policy.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_segment_policy.rs[0m [should pass] ... test proc_macro_compile_tests has been running for over 60 seconds
+[0m[32mok
+[0mtest [0m[1mtests/policy/pass_required_dimensions.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_sql_lint_warn.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_sql_lint_deny.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_profile_policy.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/pass_prepared_policy.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_conflicting_key_sources.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_empty_key_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_empty_tag_segment_group.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_entity_missing_id.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_flat_tag_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_missing_key_source.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_required_dimensions_missing_label.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_required_dimensions_without_key_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_preset_with_ttl.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_unknown_preset.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_unknown_lint_mode.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_duplicate_sql.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_unknown_builtin_profile.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_conflicting_key_sources.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_duplicate_option.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_empty_key_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_empty_tag_segment_group.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_empty_tag_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_flat_tag_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_missing_key_source.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/policy/fail_prepared_unknown_option.rs[0m [should fail to compile] ... [0m[32mok
+[0m
+
+test proc_macro_compile_tests ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 105.42s

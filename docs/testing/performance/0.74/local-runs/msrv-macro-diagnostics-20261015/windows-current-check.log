@@ -1,0 +1,89 @@
+   Compiling quote v1.0.46
+    Checking winnow v1.0.3
+    Checking toml_datetime v1.1.1+spec-1.1.0
+    Checking hashbrown v0.17.1
+    Checking syn v2.0.118
+    Checking indexmap v2.14.0
+    Checking toml_parser v1.1.2+spec-1.1.0
+    Checking toml v1.1.2+spec-1.1.0
+    Checking toml_edit v0.25.12+spec-1.1.0
+    Checking proc-macro-crate v3.5.0
+    Checking hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+   Compiling synstructure v0.13.2
+   Compiling prettyplease v0.2.37
+   Compiling tonic-build v0.14.6
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.18
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling tokio-macros v2.7.0
+   Compiling zerofrom-derive v0.1.7
+   Compiling futures-macro v0.3.32
+    Checking curve25519-dalek v4.1.3
+   Compiling tracing-attributes v0.1.31
+    Checking tokio v1.52.3
+   Compiling yoke-derive v0.8.2
+    Checking futures-util v0.3.32
+    Checking thiserror v2.0.18
+    Checking zerofrom v0.1.8
+    Checking ed25519-dalek v2.2.0
+   Compiling prost-derive v0.14.4
+   Compiling zerovec-derive v0.11.3
+    Checking yoke v0.8.3
+   Compiling displaydoc v0.2.6
+    Checking tracing v0.1.44
+   Compiling async-trait v0.1.89
+    Checking axum-core v0.5.6
+    Checking cobs v0.3.0
+   Compiling pin-project-internal v1.1.13
+    Checking hydra-moka v0.12.15-hydra.1
+    Checking serde v1.0.228
+   Compiling prost v0.14.4
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Checking heapless v0.7.17
+    Checking tokio-util v0.7.18
+   Compiling prost-types v0.14.4
+    Checking serde_urlencoded v0.7.1
+    Checking pin-project v1.1.13
+    Checking zerovec v0.11.6
+    Checking postcard v1.1.3
+    Checking h2 v0.4.19
+    Checking tower v0.5.3
+    Checking zerotrie v0.2.4
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+    Checking tinystr v0.8.3
+   Compiling prost-build v0.14.4
+    Checking potential_utf v0.1.5
+    Checking icu_collections v2.2.0
+    Checking icu_locale_core v2.2.0
+    Checking tokio-rustls v0.26.4
+    Checking tokio-stream v0.1.18
+   Compiling ref-cast-impl v1.0.25
+    Checking hydracache-client-protocol v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-protocol)
+    Checking ahash v0.8.12
+   Compiling tonic-prost-build v0.14.6
+    Checking icu_provider v2.2.0
+    Checking ref-cast v1.0.25
+    Checking icu_properties v2.2.0
+    Checking icu_normalizer v2.2.0
+    Checking fluent-uri v0.4.1
+    Checking email_address v0.2.9
+    Checking referencing v0.48.1
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking idna_adapter v1.2.2
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking hyper v1.10.1
+    Checking idna v1.1.0
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+    Checking serde_yaml v0.9.34+deprecated
+    Checking jsonschema v0.48.1
+    Checking hyper-util v0.1.20
+    Checking axum v0.8.9
+    Checking hyper-timeout v0.5.2
+    Checking tonic v0.14.6
+    Checking tonic-prost v0.14.6
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 15s

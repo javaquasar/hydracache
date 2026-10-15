@@ -1,0 +1,20 @@
+cargo 1.88.0 (873a06493 2025-05-10)
+cargo 1.94.0 (85eff7c80 2026-01-15)
+cargo-x86_64-pc-windows-msvc
+clippy-x86_64-pc-windows-msvc
+rust-docs-x86_64-pc-windows-msvc
+rust-std-x86_64-pc-windows-msvc
+rustc-x86_64-pc-windows-msvc
+rustfmt-x86_64-pc-windows-msvc
+cargo-x86_64-unknown-linux-gnu
+rust-std-x86_64-unknown-linux-gnu
+rustc-x86_64-unknown-linux-gnu
+
+ M crates/hydracache-macros/src/cacheable.rs
+ M crates/hydracache-macros/src/policy.rs
+ M crates/hydracache-macros/src/prepared_policy.rs
+        Used        Free
+        ----        ----
+988908564480 32692035584
+                        
+                        

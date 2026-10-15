@@ -1,0 +1,404 @@
+   Compiling stable_deref_trait v1.2.1
+   Compiling syn v2.0.118
+   Compiling crossbeam-utils v0.8.21
+   Compiling zerocopy v0.8.52
+   Compiling smallvec v1.15.2
+   Compiling num-traits v0.2.19
+   Compiling getrandom v0.3.4
+   Compiling regex-syntax v0.8.11
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling equivalent v1.0.2
+   Compiling cc v1.2.65
+   Compiling aho-corasick v1.1.4
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling serde_json v1.0.150
+   Compiling num-integer v0.1.46
+   Compiling crossbeam-epoch v0.9.20
+   Compiling rustversion v1.0.22
+   Compiling utf8_iter v1.0.4
+   Compiling parking_lot_core v0.9.12
+   Compiling concurrent-queue v2.5.0
+   Compiling regex-automata v0.4.14
+   Compiling byteorder v1.5.0
+   Compiling lazy_static v1.5.0
+   Compiling event-listener v5.4.1
+   Compiling hash32 v0.2.1
+   Compiling indexmap v2.14.0
+   Compiling rustix v1.1.4
+   Compiling parking_lot v0.12.5
+   Compiling rand_core v0.9.5
+   Compiling icu_normalizer_data v2.2.0
+   Compiling icu_properties_data v2.2.0
+   Compiling num-bigint v0.4.8
+   Compiling synstructure v0.13.2
+   Compiling spin v0.9.9
+   Compiling tracing-core v0.1.36
+   Compiling linux-raw-sys v0.12.1
+   Compiling serde_derive v1.0.228
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerocopy-derive v0.8.52
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.6
+   Compiling thiserror-impl v2.0.18
+   Compiling ref-cast-impl v1.0.25
+   Compiling rayon-core v1.13.0
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling serde v1.0.228
+   Compiling bit-vec v0.8.0
+   Compiling thiserror v2.0.18
+   Compiling log v0.4.33
+   Compiling either v1.16.0
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling heapless v0.7.17
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling generator v0.8.9
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling bit-set v0.8.0
+   Compiling cobs v0.3.0
+   Compiling ref-cast v1.0.25
+   Compiling num-rational v0.4.2
+   Compiling futures-macro v0.3.32
+   Compiling tokio-macros v2.7.0
+   Compiling icu_provider v2.2.0
+   Compiling event-listener-strategy v0.5.4
+   Compiling alloca v0.4.0
+   Compiling crossbeam-deque v0.8.6
+   Compiling num-iter v0.1.45
+   Compiling num-complex v0.4.6
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling target-triple v1.0.0
+   Compiling futures-core v0.3.32
+   Compiling ciborium-io v0.2.2
+   Compiling winnow v1.0.3
+   Compiling clap_lex v1.1.0
+   Compiling slab v0.4.12
+   Compiling plotters-backend v0.3.7
+   Compiling anstyle v1.0.14
+   Compiling borrow-or-share v0.2.4
+   Compiling foldhash v0.2.0
+   Compiling futures-task v0.3.32
+   Compiling allocator-api2 v0.2.21
+   Compiling plotters-svg v0.3.7
+   Compiling tempfile v3.27.0
+   Compiling futures-util v0.3.32
+   Compiling clap_builder v4.6.0
+   Compiling hashbrown v0.17.1
+   Compiling half v2.7.1
+   Compiling ahash v0.8.12
+   Compiling ppv-lite86 v0.2.21
+   Compiling idna_adapter v1.2.2
+   Compiling ciborium-ll v0.2.2
+   Compiling fluent-uri v0.4.1
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling tokio v1.52.3
+   Compiling num v0.4.3
+   Compiling async-lock v3.4.2
+   Compiling proc-macro-crate v3.5.0
+   Compiling postcard v1.1.3
+   Compiling portable-atomic v1.13.1
+   Compiling itertools v0.13.0
+   Compiling tracing-log v0.2.0
+   Compiling tracing v0.1.44
+   Compiling matchers v0.2.0
+   Compiling regex v1.12.4
+   Compiling async-trait v0.1.89
+   Compiling sharded-slab v0.1.7
+   Compiling uuid v1.23.4
+   Compiling crossbeam-channel v0.5.15
+   Compiling wait-timeout v0.2.1
+   Compiling thread_local v1.1.9
+   Compiling quick-error v1.2.3
+   Compiling nu-ansi-term v0.50.3
+   Compiling micromap v0.3.0
+   Compiling tagptr v0.2.0
+   Compiling cast v0.3.0
+   Compiling same-file v1.0.6
+   Compiling vsimd v0.8.0
+   Compiling fnv v1.0.7
+   Compiling outref v0.5.2
+   Compiling percent-encoding v2.3.2
+   Compiling rusty-fork v0.3.1
+   Compiling walkdir v2.5.0
+   Compiling referencing v0.48.1
+   Compiling criterion-plot v0.8.2
+   Compiling uuid-simd v0.8.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling hydracache-core v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-core)
+   Compiling toml v1.1.2+spec-1.1.0
+   Compiling clap v4.6.1
+   Compiling hydracache-macros v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-macros)
+   Compiling rayon v1.12.0
+   Compiling fraction v0.15.4
+   Compiling unicode-general-category v1.1.0
+   Compiling rand_chacha v0.9.0
+   Compiling ciborium v0.2.2
+   Compiling idna v1.1.0
+   Compiling plotters v0.3.7
+   Compiling fancy-regex v0.18.0
+   Compiling tinytemplate v1.2.1
+   Compiling email_address v0.2.9
+   Compiling rand v0.9.4
+   Compiling rand_xorshift v0.4.0
+   Compiling jsonschema-regex v0.48.1
+   Compiling crossbeam-queue v0.3.12
+   Compiling page_size v0.6.0
+   Compiling termcolor v1.4.1
+   Compiling data-encoding v2.11.0
+   Compiling anes v0.1.6
+   Compiling unarray v0.1.4
+   Compiling num-cmp v0.1.0
+   Compiling scoped-tls v1.0.1
+   Compiling bytecount v0.6.9
+   Compiling oorandom v11.1.5
+   Compiling glob v0.3.3
+   Compiling criterion v0.8.2
+   Compiling loom v0.7.2
+   Compiling jsonschema v0.48.1
+   Compiling proptest v1.11.0
+   Compiling trybuild v1.0.117
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 48.73s
+     Running tests/cacheable_macro.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/cacheable_macro-dfbe6031be6c7a53)
+
+running 6 tests
+test cacheable_infallible_macro_caches_loader_result ... ok
+test cacheable_macro_accepts_tag_set_expression ... ok
+test cacheable_macro_accepts_tags_expression ... ok
+test cacheable_attribute_caches_function_result ... ok
+test cacheable_macro_caches_loader_result ... ok
+test cacheable_macro_applies_tags_and_ttl ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/cacheable_ui.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/cacheable_ui-9fac52b8cf24ebf9)
+
+running 1 test
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.46
+   Compiling unicode-ident v1.0.24
+   Compiling libc v0.2.186
+   Compiling cfg-if v1.0.4
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde_core v1.0.228
+   Compiling crossbeam-utils v0.8.21
+   Compiling serde v1.0.228
+   Compiling autocfg v1.5.1
+   Compiling memchr v2.8.2
+   Compiling zerocopy v0.8.52
+   Compiling once_cell v1.21.4
+   Compiling num-traits v0.2.19
+   Compiling pin-project-lite v0.2.17
+   Compiling smallvec v1.15.2
+   Compiling getrandom v0.3.4
+   Compiling regex-syntax v0.8.11
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling syn v2.0.118
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.9
+   Compiling aho-corasick v1.1.4
+   Compiling cc v1.2.65
+   Compiling crossbeam-epoch v0.9.20
+   Compiling getrandom v0.4.3
+   Compiling semver v1.0.28
+   Compiling regex-automata v0.4.14
+   Compiling parking_lot_core v0.9.12
+   Compiling zmij v1.0.21
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling rustc_version v0.4.1
+   Compiling num-integer v0.1.46
+   Compiling icu_properties_data v2.2.0
+   Compiling icu_normalizer_data v2.2.0
+   Compiling utf8_iter v1.0.4
+   Compiling thiserror v2.0.18
+   Compiling rustversion v1.0.22
+   Compiling serde_json v1.0.150
+   Compiling heapless v0.7.17
+   Compiling concurrent-queue v2.5.0
+   Compiling rustix v1.1.4
+   Compiling equivalent v1.0.2
+   Compiling byteorder v1.5.0
+   Compiling lazy_static v1.5.0
+   Compiling ref-cast v1.0.25
+   Compiling itoa v1.0.18
+   Compiling synstructure v0.13.2
+   Compiling winnow v1.0.3
+   Compiling parking v2.2.1
+   Compiling version_check v0.9.5
+   Compiling hashbrown v0.17.1
+   Compiling ahash v0.8.12
+   Compiling event-listener v5.4.1
+   Compiling indexmap v2.14.0
+   Compiling hash32 v0.2.1
+   Compiling parking_lot v0.12.5
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling num-bigint v0.4.8
+   Compiling rand_core v0.9.5
+   Compiling spin v0.9.9
+   Compiling tracing-core v0.1.36
+   Compiling linux-raw-sys v0.12.1
+   Compiling bit-vec v0.8.0
+   Compiling zerofrom-derive v0.1.7
+   Compiling serde_derive v1.0.228
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling zerocopy-derive v0.8.52
+   Compiling displaydoc v0.2.6
+   Compiling thiserror-impl v2.0.18
+   Compiling ref-cast-impl v1.0.25
+   Compiling portable-atomic v1.13.1
+   Compiling bitflags v2.13.0
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling log v0.4.33
+   Compiling bytes v1.12.0
+   Compiling rayon-core v1.13.0
+   Compiling either v1.16.0
+   Compiling toml_edit v0.25.12+spec-1.1.0
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling num-rational v0.4.2
+   Compiling generator v0.8.9
+   Compiling tinystr v0.8.3
+   Compiling icu_locale_core v2.2.0
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling cobs v0.3.0
+   Compiling bit-set v0.8.0
+   Compiling tokio-macros v2.7.0
+   Compiling futures-macro v0.3.32
+   Compiling event-listener-strategy v0.5.4
+   Compiling num-iter v0.1.45
+   Compiling crossbeam-deque v0.8.6
+   Compiling alloca v0.4.0
+   Compiling icu_provider v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling mio v1.2.1
+   Compiling socket2 v0.6.4
+   Compiling num-complex v0.4.6
+   Compiling ciborium-io v0.2.2
+   Compiling futures-core v0.3.32
+   Compiling foldhash v0.2.0
+   Compiling borrow-or-share v0.2.4
+   Compiling slab v0.4.12
+   Compiling plotters-backend v0.3.7
+   Compiling anstyle v1.0.14
+   Compiling allocator-api2 v0.2.21
+   Compiling fastrand v2.4.1
+   Compiling futures-task v0.3.32
+   Compiling clap_lex v1.1.0
+   Compiling unicode-general-category v1.1.0
+   Compiling futures-util v0.3.32
+   Compiling postcard v1.1.3
+   Compiling clap_builder v4.6.0
+   Compiling idna_adapter v1.2.2
+   Compiling plotters-svg v0.3.7
+   Compiling num v0.4.3
+   Compiling fluent-uri v0.4.1
+   Compiling tokio v1.52.3
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling ciborium-ll v0.2.2
+   Compiling tempfile v3.27.0
+   Compiling async-lock v3.4.2
+   Compiling proc-macro-crate v3.5.0
+   Compiling itertools v0.13.0
+   Compiling tracing-log v0.2.0
+   Compiling tracing v0.1.44
+   Compiling async-trait v0.1.89
+   Compiling regex v1.12.4
+   Compiling matchers v0.2.0
+   Compiling sharded-slab v0.1.7
+   Compiling uuid v1.23.4
+   Compiling wait-timeout v0.2.1
+   Compiling crossbeam-channel v0.5.15
+   Compiling thread_local v1.1.9
+   Compiling micromap v0.3.0
+   Compiling outref v0.5.2
+   Compiling cast v0.3.0
+   Compiling nu-ansi-term v0.50.3
+   Compiling fnv v1.0.7
+   Compiling percent-encoding v2.3.2
+   Compiling vsimd v0.8.0
+   Compiling tagptr v0.2.0
+   Compiling quick-error v1.2.3
+   Compiling same-file v1.0.6
+   Compiling rusty-fork v0.3.1
+   Compiling hydra-moka v0.12.15-hydra.1
+   Compiling walkdir v2.5.0
+   Compiling uuid-simd v0.8.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling referencing v0.48.1
+   Compiling criterion-plot v0.8.2
+   Compiling hydracache-macros v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-macros)
+   Compiling clap v4.6.1
+   Compiling hydracache-core v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-core)
+   Compiling rayon v1.12.0
+   Compiling ciborium v0.2.2
+   Compiling rand_chacha v0.9.0
+   Compiling plotters v0.3.7
+   Compiling fraction v0.15.4
+   Compiling idna v1.1.0
+   Compiling tinytemplate v1.2.1
+   Compiling email_address v0.2.9
+   Compiling fancy-regex v0.18.0
+   Compiling rand_xorshift v0.4.0
+   Compiling rand v0.9.4
+   Compiling jsonschema-regex v0.48.1
+   Compiling page_size v0.6.0
+   Compiling crossbeam-queue v0.3.12
+   Compiling oorandom v11.1.5
+   Compiling num-cmp v0.1.0
+   Compiling unarray v0.1.4
+   Compiling scoped-tls v1.0.1
+   Compiling anes v0.1.6
+   Compiling bytecount v0.6.9
+   Compiling data-encoding v2.11.0
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+   Compiling criterion v0.8.2
+   Compiling proptest v1.11.0
+   Compiling loom v0.7.2
+   Compiling jsonschema v0.48.1
+   Compiling hydracache-tests v0.0.0 (/home/artur/.cache/hydracache-074-194-check/tests/trybuild/hydracache)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 39.89s
+
+
+test [0m[1mtests/cacheable/pass_cacheable.rs[0m [should pass] ... test cacheable_macro_compile_tests has been running for over 60 seconds
+[0m[32mok
+[0mtest [0m[1mtests/cacheable/pass_cacheable_attribute.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/pass_cacheable_attribute_key_tags.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/pass_cacheable_infallible.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/pass_cacheable_tags.rs[0m [should pass] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_conflicting_key.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_conflicting_ttl.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_duplicate_key_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_empty_key_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_empty_tag_segment_group.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_empty_tag_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_flat_tag_segments.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_missing_cache.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_missing_key.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_non_result.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_attribute_unknown_option.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_conflicting_ttl.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_missing_cache.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_missing_key.rs[0m [should fail to compile] ... [0m[32mok
+[0mtest [0m[1mtests/cacheable/fail_missing_load.rs[0m [should fail to compile] ... [0m[32mok
+[0m
+
+test cacheable_macro_compile_tests ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 94.88s
