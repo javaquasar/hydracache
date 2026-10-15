@@ -1261,6 +1261,83 @@ fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_s
 }
 
 #[test]
+fn diagnostic_controller_attempt_requires_original_owned_retention_not_start() {
+    let c = contract("diagnostic-controller-attempt-contract.toml");
+    assert_eq!(c["write_boundaries"].as_integer(), Some(8));
+    for field in [
+        "original_preflight_consumed_by_value",
+        "same_fence_authority_request_kernel_and_trust_chain",
+        "no_caller_replacement_inputs",
+        "reserve_revision_zero_only",
+        "canonical_bounded_distinct_document",
+        "token_digest_only_no_bearer_token",
+        "exclusive_owned_creation_seal_and_sync_before_ack",
+        "every_boundary_rechecks_original_binding",
+        "first_error_and_lock_retained_until_drop",
+        "cross_chain_runtime_refusal_no_repeat_io",
+        "partial_or_complete_context_blocks_fresh_reservation",
+        "legacy_publication_conversion_refused",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "recovered_runtime_acknowledgement",
+        "global_nonce_or_host_rollback_protection",
+        "durable_authority_refusal_appended",
+        "joined_sigkill_matrix_complete",
+        "production_trust_enrollment",
+        "original_start_or_later_cells",
+        "production_consumer_wired",
+        "host_workflow_or_product_workload_allowed",
+        "qualification_or_ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_controller_request_attempt.rs")).unwrap();
+    for marker in [
+        "pub fn retain_request(",
+        "AttemptStorage::for_controller(self.fence)",
+        "capture(attempt.original)? != attempt.raw",
+        "controller_authority_binding()",
+        "storage: Box::new(attempt.storage)",
+        "serde(deny_unknown_fields)",
+        "pub fn validate_retained_controller_attempt",
+        "DiagnosticOperation::Reserve",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "pub fn start",
+        "pub fn into_",
+        "SigningKey",
+        "Command::",
+        "unsafe",
+        "remove_file",
+        "O_TRUNC",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let storage =
+        std::fs::read_to_string(base.join("diagnostic_early_attempt_storage.rs")).unwrap();
+    assert!(storage.contains("diagnostic-controller-attempt-074.json"));
+    assert!(storage.contains("self.name != NAME"));
+    for consumer in [
+        "server.rs",
+        "diagnostic_early_attempt.rs",
+        "diagnostic_initial_consumption.rs",
+        "diagnostic_attempt_publication.rs",
+    ] {
+        let text = std::fs::read_to_string(base.join(consumer)).unwrap();
+        assert!(!text.contains("ControllerRequestAttempt"), "{consumer}");
+    }
+    let compat = std::fs::read_to_string(root().join("docs/COMPAT.md")).unwrap();
+    assert!(compat.contains("diagnostic-controller-attempt-074-v1"));
+}
+
+#[test]
 fn diagnostic_controller_fence_preflight_is_original_read_only_not_replay_or_start() {
     let c = contract("diagnostic-controller-fence-preflight-contract.toml");
     assert_eq!(c["bracket_checks"].as_integer(), Some(5));
