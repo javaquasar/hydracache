@@ -2,6 +2,38 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-signer-root-probe"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_signer_root_probe"
+test = ""
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Nonroot fixed private GNU root preparation; no child launch or runtime authority admission"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo", "strip", "readelf"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_signer_root_probe", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.diagnostic-signer-owned-probe"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs"

@@ -3,6 +3,80 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn normal_fixed_root_preparation_is_not_child_launch_or_runtime_authority() {
+    let c = contract("diagnostic-signer-owned-root-contract.toml");
+    for key in [
+        "normal_binary_private_materializer",
+        "fixed_four_role_gnu_declarations_checked",
+        "original_readonly_source_descriptors_retained",
+        "exclusive_descriptor_relative_creation",
+        "exact_names_metadata_and_content_rechecked",
+        "refusal_latched_without_recapture",
+        "cleanup_preflights_names_before_mutation",
+        "cleanup_fixed_objects_not_recursive",
+        "collision_refuses_without_adoption",
+        "private_test_copy_only_stripped",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "normal_child_launched",
+        "hostile_same_uid_cleanup_race_prevented",
+        "initial_namespace_runtime_provenance_authenticated",
+        "loaded_runtime_or_mapped_bytes_attested",
+        "independent_runtime_custody_authenticated",
+        "original_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, count) in [
+        ("maximum_image_bytes", 8388608),
+        ("source_images", 4),
+        ("root_directories", 4),
+        ("random_name_bytes", 16),
+        ("getrandom_attempts", 8),
+        ("directory_inventory_entries", 5),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(count), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_owned_root.rs")).unwrap();
+    for marker in [
+        "8 * 1024 * 1024",
+        "libc::mkdirat",
+        "libc::openat",
+        "libc::unlinkat",
+        "libc::O_EXCL",
+        "libc::O_NOFOLLOW",
+        "libc::O_CLOEXEC",
+        "libc::SYS_getrandom",
+        "self.refused |= result.is_err()",
+        "self.cleanup_attempted = true",
+        "self.names()?;",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "remove_dir_all",
+        "libc::fork",
+        "libc::execve",
+        "libc::chroot",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    assert!(!std::fs::read_to_string(base.join("lib.rs"))
+        .unwrap()
+        .contains("mod diagnostic_signer_owned_root"));
+}
+
+#[test]
 fn private_owner_loss_is_two_stopped_boundaries_not_full_entry_admission() {
     let c = contract("diagnostic-signer-owned-loss-contract.toml");
     for key in [
