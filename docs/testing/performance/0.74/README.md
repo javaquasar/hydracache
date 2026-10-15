@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original GNU runtime join](diagnostic-signer-runtime-join-design.md) now
+checks a generated catalog and signer bytes from the same retained originals
+against an asserted expected signed receipt. Its
+[packet](local-runs/diagnostic-signer-runtime-join-20261015/README.md) records
+synthetic positives and substitution refusals, not an actual production receipt.
+Independent runtime/job custody and original-start remain before server admission.
+
 The [shared GNU catalog](diagnostic-signer-gnu-catalog-design.md) now compiles the
 existing bounded parser/graph into the ordinary library and reuses it from old
 fixtures. Its [packet](local-runs/diagnostic-signer-gnu-catalog-20261015/README.md)

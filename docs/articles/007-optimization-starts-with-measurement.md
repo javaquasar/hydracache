@@ -9079,3 +9079,39 @@ must bind independently selected original prebuilt/runtime objects and their
 protection before receipt signing or token exposure. Receiver enrollment,
 all-writer cessation and completion cells 2–4 remain separate. No cache
 performance claim follows from making a tooling validator reusable.
+
+## Binding receipt contents to original runtime files
+
+After extracting the GNU catalog, a signed runtime-manifest hash could still
+refer to arbitrary supplied bytes. The next hypothesis was narrower than runtime
+admission: require that this receipt slot describe exactly the files retained
+by the original reader. The new Linux join obtains signer bytes from its retained
+signer descriptor, generates the four-role catalog from those same original
+inputs and checks canonical sorted-key JSON plus one LF as runtime-manifest
+content. The caller can supply lock, log and bootstrap context, but cannot provide
+an alternate binary or runtime manifest through that entry.
+
+The signature authenticates the exact caller-selected expected statement before
+file acquisition. The old numeric-root reader checks ancestors, original context,
+metadata and content around bounded positional reads; its public owner/anchor
+policy is unchanged. Four readers remain retained for subsequent checks. An
+equal-byte replacement is still a different original object, and any error
+permanently refuses the complete owner rather than accepting restored names.
+
+Synthetic tests falsify the tempting shortcut that a valid signature should be
+enough: correctly re-signed opaque manifests, alternate encodings and catalogs
+of changed dependencies all refuse. Tests also cover each companion and role,
+wrong key/domain/signature, equal-byte replacement of every role, content and
+ancestor drift, 64 seeded signed substitutions and four thread-local owners.
+The old build, GNU, issuer, bundle and runtime suites remain green. An initially
+unregistered Linux-only test target failed the gate; registering it in the
+existing fast tier preserves coverage without changing a workflow or threshold.
+
+The [runtime join packet](../testing/performance/0.74/local-runs/diagnostic-signer-runtime-join-20261015/README.md)
+records consistency under synthetic selected keys, not an actual production
+receipt or an independently trusted filesystem. Numeric root ownership and
+sequential rehashing cannot revoke retained writers or establish launcher/job
+custody. Image buffers are bounded and dropped after construction; no cache
+allocation or throughput improvement was measured. The next production join
+still requires independently admitted runtime/root/launcher and protected job
+inputs, followed by original-start and cessation of every P2/P3 writer.

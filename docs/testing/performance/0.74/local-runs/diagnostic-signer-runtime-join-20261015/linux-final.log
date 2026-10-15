@@ -1,0 +1,128 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.52s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_signer_runtime_input::tests::public_constructor_rejects_fixture_and_checks_all_budgets_and_signature_before_io ... ok
+test diagnostic_signer_runtime_input::tests::synthetic_originals_join_signature_and_generated_catalog_without_authority ... ok
+test diagnostic_signer_runtime_input::tests::wrong_domain_key_and_signature_refuse_with_matching_originals ... ok
+test diagnostic_signer_runtime_input::tests::valid_resigned_opaque_noncanonical_or_other_catalog_manifest_cannot_join ... ok
+test diagnostic_signer_runtime_input::tests::every_companion_and_original_role_is_bound_without_alternate_binary_bytes ... ok
+test diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore ... ok
+test diagnostic_signer_runtime_input::tests::content_and_ancestor_mode_drift_latch_the_composed_owner ... ok
+seed=0x0740c077 signed_catalog_mutations=64 independent_thread_local_owners=4 production_custody=false
+test diagnostic_signer_runtime_input::tests::seeded_signed_manifest_substitutions_and_independent_thread_local_owners ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 879 filtered out; finished in 0.92s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.63s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_signer_runtime_input::tests::public_constructor_rejects_fixture_and_checks_all_budgets_and_signature_before_io ... ok
+test diagnostic_signer_runtime_input::tests::synthetic_originals_join_signature_and_generated_catalog_without_authority ... ok
+test diagnostic_signer_runtime_input::tests::wrong_domain_key_and_signature_refuse_with_matching_originals ... ok
+test diagnostic_signer_runtime_input::tests::every_companion_and_original_role_is_bound_without_alternate_binary_bytes ... ok
+test diagnostic_signer_runtime_input::tests::valid_resigned_opaque_noncanonical_or_other_catalog_manifest_cannot_join ... ok
+test diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore ... ok
+test diagnostic_signer_runtime_input::tests::content_and_ancestor_mode_drift_latch_the_composed_owner ... ok
+seed=0x0740c077 signed_catalog_mutations=64 independent_thread_local_owners=4 production_custody=false
+test diagnostic_signer_runtime_input::tests::seeded_signed_manifest_substitutions_and_independent_thread_local_owners ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 879 filtered out; finished in 0.86s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.89s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 13 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_internal_snapshot_keeps_offset_and_latches_budget_or_content_failure ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 874 filtered out; finished in 0.02s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.26s
+     Running tests/diagnostic_root_owned_input.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_root_owned_input-2c247865f0aaa5e9)
+
+running 2 tests
+test caller_owned_copy_cannot_be_promoted_by_readonly_mode ... ok
+test actual_root_owned_system_file_is_inventory_not_execution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_build.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_build-3d5d49a6931b4146)
+
+running 9 tests
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.05s
+
+     Running tests/diagnostic_signer_gnu.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_gnu-2181c0127d1ab9ab)
+
+running 6 tests
+test roles_wrong_soname_and_missing_dependencies_refuse ... ok
+test synthetic_catalog_binds_each_role_and_bytes_without_authority ... ok
+test search_paths_duplicate_needed_writable_exec_and_unknown_tags_refuse ... ok
+test unchanged_declarations_still_record_changed_bytes ... ok
+test scripts_short_oversized_abi_and_interpreter_refuse ... ok
+test seeded_mutations_do_not_panic_and_independent_readers_agree ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/diagnostic_signer_issuer.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_issuer-a5f0757987a3f215)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/diagnostic_signer_runtime_input.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_runtime_input-03dc603205e88f66)
+
+running 1 test
+test supplied_companions_do_not_include_binary_or_runtime_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.93s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 5 tests
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedGnuRuntimeRead (line 105) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedGnuRuntimeRead (line 119) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedGnuRuntimeRead (line 115) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedGnuRuntimeRead (line 101) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedGnuRuntimeRead (line 110) - compile fail ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 110 filtered out; finished in 0.54s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 41.21s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 33.04s

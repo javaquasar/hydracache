@@ -216,3 +216,4 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-root-*/manifest.json 
 docs/testing/performance/0.74/local-runs/diagnostic-enrollment-inventory-*/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/diagnostic-signer-gnu-catalog-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-join-*/** -text whitespace=cr-at-eol

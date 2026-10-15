@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.43s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_root_owned_input::tests::root_input_all_required_statx_fields_and_invalid_times_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_lexical_and_byte_budgets_refuse_before_open ... ok
+test diagnostic_root_owned_input::tests::root_input_fixture_seam_cannot_enter_public_numeric_root_reader ... ok
+test diagnostic_root_owned_input::tests::root_input_ancestor_mode_drift_and_unrelated_entry_changes_are_distinct ... ok
+test diagnostic_root_owned_input::tests::root_input_descriptor_flags_offsets_and_drop_preserve_other_holders ... ok
+test diagnostic_root_owned_input::tests::root_input_hash_catches_same_size_write_even_with_synthetic_metadata_reset ... ok
+actual_root_owned_input=observed original_reader_namespaces=matched initial_host_or_job_enrolled=false input_executed=false
+test diagnostic_root_owned_input::tests::root_input_actual_root_owned_file_and_original_namespaces_are_readonly_inventory ... ok
+test diagnostic_root_owned_input::tests::root_input_equal_byte_file_and_ancestor_replacements_are_sticky ... ok
+test diagnostic_root_owned_input::tests::root_input_owner_type_mode_link_and_size_policy_is_exact ... ok
+test diagnostic_root_owned_input::tests::root_input_file_and_ancestor_symlinks_fifo_hardlinks_and_directories_refuse ... ok
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false
+test diagnostic_root_owned_input::tests::root_input_seeded_full_metadata_mutations_and_independent_observers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 866 filtered out; finished in 0.06s
