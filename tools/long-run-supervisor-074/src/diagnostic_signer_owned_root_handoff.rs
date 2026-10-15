@@ -361,24 +361,22 @@ pub(super) fn loaded(owner: &mut Owner) -> io::Result<()> {
             require(isolation::memory(owner, args[1] as usize, 16)? == MARKER)?;
             returned(owner, 16)?;
             marker = true;
-        } else {
-            if marker {
-                if nr == libc::SYS_getpid as u64 && !killed {
-                    returned(owner, owner.pid as i64)?;
-                } else {
-                    require(
-                        nr == libc::SYS_kill as u64
-                            && !killed
-                            && args[0] == owner.pid as u64
-                            && args[1] == libc::SIGSTOP as u64,
-                    )?;
-                    returned(owner, 0)?;
-                    killed = true;
-                }
+        } else if marker {
+            if nr == libc::SYS_getpid as u64 && !killed {
+                returned(owner, owner.pid as i64)?;
             } else {
-                require(startup_allowed(nr, args))?;
-                require(matches!(event(owner)?, Event::Exit { .. }))?;
+                require(
+                    nr == libc::SYS_kill as u64
+                        && !killed
+                        && args[0] == owner.pid as u64
+                        && args[1] == libc::SIGSTOP as u64,
+                )?;
+                returned(owner, 0)?;
+                killed = true;
             }
+        } else {
+            require(startup_allowed(nr, args))?;
+            require(matches!(event(owner)?, Event::Exit { .. }))?;
         }
         owner.trace(libc::PTRACE_SYSCALL, 0)?;
         let status = owner.wait()?;
