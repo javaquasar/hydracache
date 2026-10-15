@@ -1,0 +1,106 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking hydracache-client-protocol v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-protocol)
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+    Checking hydracache-cache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cache-sim)
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+warning: variables can be used directly in the `format!` string
+    --> crates\hydracache-loadgen\src\metrics_honesty.rs:2543:42
+     |
+2543 |       let archived_path = archive_dir.join(format!(
+     |  __________________________________________^
+2544 | |         "control-plane-{}-reference-v1.raw.json",
+2545 | |         node_count
+2546 | |     ));
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+     = note: `#[warn(clippy::uninlined_format_args)]` on by default
+
+warning: variables can be used directly in the `format!` string
+    --> crates\hydracache-loadgen\src\resp_external.rs:2055:21
+     |
+2055 |               reason: format!(
+     |  _____________________^
+2056 | |                 "expected exact redis-benchmark 7.2.5 header {:?}, observed {header:?}",
+2057 | |                 REDIS_BENCHMARK_CSV_HEADER
+2058 | |             ),
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+warning: variables can be used directly in the `format!` string
+   --> crates\hydracache-loadgen\src\tiers\client_surface.rs:718:60
+    |
+718 |                   return Err(ClientSurfaceTierError::Runtime(format!(
+    |  ____________________________________________________________^
+719 | |                     "declared concurrent in-flight {} but observed high-water {observed}",
+720 | |                     inflight
+721 | |                 )));
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+warning: `hydracache-loadgen` (lib) generated 3 warnings (run `cargo clippy --fix --lib -p hydracache-loadgen` to apply 3 suggestions)
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: variables can be used directly in the `format!` string
+   --> crates\xtask\src\canary_check.rs:423:27
+    |
+423 |               problems.push(format!(
+    |  ___________________________^
+424 | |                 "{}: {item} is registered but has no release-plan section",
+425 | |                 registry_path
+426 | |             ));
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `#[warn(clippy::uninlined_format_args)]` on by default
+
+warning: variables can be used directly in the `format!` string
+   --> crates\xtask\src\canary_check.rs:429:27
+    |
+429 |               problems.push(format!(
+    |  ___________________________^
+430 | |                 "{}: {item} has no registered canary for the release-plan section",
+431 | |                 registry_path
+432 | |             ));
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+warning: variables can be used directly in the `format!` string
+   --> crates\xtask\src\fast_suite.rs:106:23
+    |
+106 |           problems.push(format!(
+    |  _______________________^
+107 | |             "aggregate_budget_seconds must be the reviewed {}s PR ceiling",
+108 | |             PR_BUDGET_SECONDS
+109 | |         ));
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+warning: `xtask` (lib) generated 3 warnings (2 duplicates) (run `cargo clippy --fix --lib -p xtask` to apply 1 suggestion)
+warning: `xtask` (lib test) generated 3 warnings (1 duplicate) (run `cargo clippy --fix --lib -p xtask --tests` to apply 2 suggestions)
+warning: variables can be used directly in the `format!` string
+  --> crates\xtask\tests\perf_bootstrap_0671.rs:61:22
+   |
+61 |         observed_at: format!("2026-08-{:02}T12:00:00Z", run),
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `#[warn(clippy::uninlined_format_args)]` on by default
+help: change this to
+   |
+61 -         observed_at: format!("2026-08-{:02}T12:00:00Z", run),
+61 +         observed_at: format!("2026-08-{run:02}T12:00:00Z"),
+   |
+
+warning: `xtask` (test "perf_bootstrap_0671") generated 1 warning (run `cargo clippy --fix --test "perf_bootstrap_0671"` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 04s

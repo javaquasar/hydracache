@@ -1,0 +1,17 @@
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.71s
+     Running tests\conditional_writes.rs (target\debug\deps\conditional_writes-984ebcf2ff411756.exe)
+
+running 10 tests
+test conditional_writes_lock_survives_partition_via_raft_authority ... ignored, chaos marker: lock survives partition via partition-home authority
+test conditional_writes_cas_at_consistency_one_is_refused ... ok
+test conditional_writes_multi_key_diagnostic_is_stable ... ok
+test conditional_writes_multi_key_conditional_is_rejected_loud ... ok
+test conditional_writes_not_owner_diagnostic_is_stable ... ok
+test conditional_writes_compare_and_set_applies_only_on_match ... ok
+test conditional_writes_fenced_lock_rejects_stale_token ... ok
+test conditional_writes_cas_respects_tombstone_version ... ok
+test conditional_writes_put_if_absent_is_linearizable_under_contention ... ok
+test conditional_writes_weak_consistency_diagnostic_is_stable ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s

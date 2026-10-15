@@ -1,0 +1,7 @@
+    Checking hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+    Checking hydracache-observability v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-loadgen)
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 51.13s

@@ -1,0 +1,2 @@
+error: target `memory_compat_driver_071` in package `hydracache` requires the features: `durable-value-store`
+Consider enabling them by passing, e.g., `--features="durable-value-store"`

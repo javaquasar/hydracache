@@ -1,11 +1,20 @@
 # HydraCache 0.74 RESP/native performance evidence
 
-The [macro MSRV diagnostic cleanup](local-runs/msrv-macro-diagnostics-20261015/README.md)
-removes the seven Rust1.88 Clippy errors recorded by the preceding packets.
+The [conditional diagnostic and example build cleanup](local-runs/msrv-conditional-diagnostics-20261015/README.md)
+preserves the three conditional error messages and declares the compatibility
+example's existing durable feature requirement. Forty focused tests pass per
+Windows/Linux and Rust1.88/1.94 combination, with one existing ignored chaos
+marker. Package all-target checks/strict Clippy and explicit durable-example
+checks/strict Clippy pass in all four lanes. Linux MSRV Clippy is now installed;
+wider MSRV tooling lint still fails separately. No performance or server
+admission follows from these build-quality results.
+
+The preceding [macro MSRV diagnostic cleanup](local-runs/msrv-macro-diagnostics-20261015/README.md)
+removed the seven Rust1.88 Clippy errors recorded by the preceding packets.
 Seven exact-message regressions pass before and after the interpolation change;
-the macro suite now passes 83 tests on Windows/Linux with Rust1.88/1.94. This
-does not make the wider MSRV lint green: it next reports three existing
-`grid/conditional.rs` diagnostics. Historical failures remain unchanged, and no
+the macro suite passes 83 tests on Windows/Linux with Rust1.88/1.94 at that source.
+The wider MSRV lint then reached three `grid/conditional.rs` diagnostics,
+addressed by the separate cleanup above. Historical failures remain unchanged, and no
 performance or server-admission claim follows from this code-quality step.
 
 The [ordinary send-window diagnostic](diagnostic-signer-owned-root-send-windows-design.md)

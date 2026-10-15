@@ -1,0 +1,44 @@
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+error: variables can be used directly in the `format!` string
+    --> crates\hydracache-loadgen\src\metrics_honesty.rs:2543:42
+     |
+2543 |       let archived_path = archive_dir.join(format!(
+     |  __________________________________________^
+2544 | |         "control-plane-{}-reference-v1.raw.json",
+2545 | |         node_count
+2546 | |     ));
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+     = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: variables can be used directly in the `format!` string
+    --> crates\hydracache-loadgen\src\resp_external.rs:2055:21
+     |
+2055 |               reason: format!(
+     |  _____________________^
+2056 | |                 "expected exact redis-benchmark 7.2.5 header {:?}, observed {header:?}",
+2057 | |                 REDIS_BENCHMARK_CSV_HEADER
+2058 | |             ),
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-loadgen\src\tiers\client_surface.rs:718:60
+    |
+718 |                   return Err(ClientSurfaceTierError::Runtime(format!(
+    |  ____________________________________________________________^
+719 | |                     "declared concurrent in-flight {} but observed high-water {observed}",
+720 | |                     inflight
+721 | |                 )));
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: could not compile `hydracache-loadgen` (lib) due to 3 previous errors

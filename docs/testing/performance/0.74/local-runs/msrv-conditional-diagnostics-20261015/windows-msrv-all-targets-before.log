@@ -1,0 +1,138 @@
+    Checking windows-sys v0.61.2
+    Checking smallvec v1.15.2
+    Checking serde v1.0.228
+    Checking zerocopy v0.8.52
+    Checking zerofrom v0.1.8
+    Checking getrandom v0.3.4
+    Checking aho-corasick v1.1.4
+    Checking serde_json v1.0.150
+    Checking byteorder v1.5.0
+    Checking parking_lot_core v0.9.12
+    Checking yoke v0.8.3
+    Checking hash32 v0.2.1
+    Checking zerovec v0.11.6
+    Checking zerotrie v0.2.4
+    Checking parking_lot v0.12.5
+    Checking thiserror v2.0.18
+    Checking rand_core v0.9.5
+    Checking tracing-core v0.1.36
+    Checking log v0.4.33
+    Checking regex-automata v0.4.14
+    Checking bit-vec v0.8.0
+    Checking either v1.16.0
+    Checking tinystr v0.8.3
+    Checking potential_utf v0.1.5
+    Checking bit-set v0.8.0
+    Checking ref-cast v1.0.25
+    Checking heapless v0.7.17
+    Checking icu_locale_core v2.2.0
+    Checking icu_collections v2.2.0
+    Checking cobs v0.3.0
+    Checking crossbeam-deque v0.8.6
+    Checking clap_lex v1.1.0
+    Checking futures-core v0.3.32
+    Checking anstyle v1.0.14
+    Checking ciborium-io v0.2.2
+    Checking slab v0.4.12
+    Checking plotters-backend v0.3.7
+    Checking fluent-uri v0.4.1
+    Checking clap_builder v4.6.0
+    Checking futures-util v0.3.32
+    Checking icu_provider v2.2.0
+    Checking plotters-svg v0.3.7
+    Checking winapi-util v0.1.11
+    Checking socket2 v0.6.4
+    Checking mio v1.2.1
+    Checking icu_properties v2.2.0
+    Checking icu_normalizer v2.2.0
+    Checking same-file v1.0.6
+    Checking tokio v1.52.3
+    Checking tempfile v3.27.0
+    Checking nu-ansi-term v0.50.3
+    Checking rayon-core v1.13.0
+    Checking matchers v0.2.0
+    Checking regex v1.12.4
+    Checking postcard v1.1.3
+    Checking tracing-log v0.2.0
+    Checking tracing v0.1.44
+    Checking idna_adapter v1.2.2
+    Checking winapi v0.3.9
+    Checking half v2.7.1
+    Checking ahash v0.8.12
+    Checking ppv-lite86 v0.2.21
+    Checking itertools v0.13.0
+    Checking sharded-slab v0.1.7
+    Checking thread_local v1.1.9
+    Checking windows-result v0.4.1
+    Checking ciborium-ll v0.2.2
+    Checking wait-timeout v0.2.1
+    Checking cast v0.3.0
+    Checking quick-error v1.2.3
+    Checking hydra-moka v0.12.15-hydra.1
+    Checking ciborium v0.2.2
+    Checking generator v0.8.9
+    Checking tracing-subscriber v0.3.23
+    Checking rusty-fork v0.3.1
+    Checking referencing v0.48.1
+    Checking page_size v0.6.0
+    Checking rand_chacha v0.9.0
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+    Checking idna v1.1.0
+    Checking criterion-plot v0.8.2
+    Checking rayon v1.12.0
+    Checking alloca v0.4.0
+    Checking clap v4.6.1
+    Checking fancy-regex v0.18.0
+    Checking walkdir v2.5.0
+    Checking termcolor v1.4.1
+    Checking plotters v0.3.7
+    Checking target-triple v1.0.0
+    Checking rand v0.9.4
+    Checking rand_xorshift v0.4.0
+    Checking tinytemplate v1.2.1
+    Checking email_address v0.2.9
+    Checking bitflags v2.13.0
+    Checking oorandom v11.1.5
+    Checking glob v0.3.3
+    Checking scoped-tls v1.0.1
+    Checking unarray v0.1.4
+    Checking anes v0.1.6
+    Checking jsonschema v0.48.1
+    Checking loom v0.7.2
+    Checking proptest v1.11.0
+    Checking trybuild v1.0.117
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking criterion v0.8.2
+error[E0432]: unresolved imports `hydracache::DurableValueStore`, `hydracache::DURABLE_VALUE_FORMAT_VERSION`
+   --> crates\hydracache\examples\memory_compat_driver_071.rs:8:19
+    |
+8   |     ClusterEpoch, DurableValueStore, PartitionId, ReplicatedSlot, ReplicatedValueRecord,
+    |                   ^^^^^^^^^^^^^^^^^ no `DurableValueStore` in the root
+9   |     ReplicatedValueStore, DURABLE_VALUE_FORMAT_VERSION,
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `DURABLE_VALUE_FORMAT_VERSION` in the root
+    |
+note: found an item that was configured out
+   --> C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache\src\lib.rs:662:31
+    |
+662 | pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
+    |                               ^^^^^^^^^^^^^^^^^
+note: the item is gated behind the `durable-value-store` feature
+   --> C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache\src\lib.rs:661:7
+    |
+661 | #[cfg(feature = "durable-value-store")]
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache\src\lib.rs:662:50
+    |
+662 | pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
+    |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: the item is gated behind the `durable-value-store` feature
+   --> C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache\src\lib.rs:661:7
+    |
+661 | #[cfg(feature = "durable-value-store")]
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache` (example "memory_compat_driver_071") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

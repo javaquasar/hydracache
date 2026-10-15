@@ -1,0 +1,7 @@
+Protected qualification inputs, supervisor/loadgen/workflow sources, and compatibility example/script have no diff from baseline.
+
+Path : C:\Workspace\prj\jq\cashe\hydracache-074\Cargo.lock
+Hash : 99C8CF65FD709E390727D1441117B85E84FA9FE120CAC9A94E35C5D44FC2FCC7
+
+Path : C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\qualification-manifest.toml
+Hash : 11917570528020B5E1EB275A5AD9509BA358E6A6CA044647D1235B685659B0BC

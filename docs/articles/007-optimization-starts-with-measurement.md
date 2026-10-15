@@ -10020,3 +10020,54 @@ the earlier lifecycle packets keep their original source identities and failures
 This is a compiler-compatibility cleanup, not an allocation or throughput
 improvement. It does not requalify a product candidate or advance authenticated
 original-start, P2/P3 writer cessation, completion or later lifecycle cells.
+
+### Conditional diagnostics and feature aware example builds
+
+The next MSRV cleanup preserves three conditional error messages rather than
+changing consistency or fencing. The baseline strict lint reproduces three
+`uninlined_format_args` errors; the original conditional suite passes six tests
+and leaves its existing chaos marker ignored. Three new characterization tests
+then pass on the old implementation before changing any `write!`. They fix exact
+message bytes across consistency enum values, key counts including `usize::MAX`,
+missing/present owners, Unicode keys, escaped session text and `u64::MAX`.
+Synthetic error construction tests formatting, not a decision to reject every
+consistency level. Only the three interpolations change.
+
+Forty focused tests pass on each Windows/Linux and Rust1.88/1.94 combination:
+conditional writes, tombstone ordering, lock leases, reentrancy and consistency
+levels. The same existing chaos marker remains ignored. The Linux Rust1.88
+Clippy component is installed locally, closing the earlier missing-tool gap.
+This does not retroactively change the preceding packets' results.
+
+The package-wide check exposes another independent build failure: the memory
+compatibility example imports durable types while Cargo tries to compile it
+without the optional durable feature. A separate manifest-only commit declares
+`required-features = ["durable-value-store"]`. Default features stay empty and
+the example source and compatibility workload stay unchanged. Default all-target
+checks now skip that incompatible target through Cargo's normal feature rule.
+An explicit request without the feature fails with Cargo exit101 and the required
+feature message; explicit durable-enabled example checks and strict Clippy pass
+on both platforms/toolchains. Those paired checks retain coverage of the example
+instead of presenting its default exclusion as proof that it compiled.
+
+The package default all-target checks and strict lint pass in all four lanes.
+Wider MSRV tooling lint still fails: Windows reaches three loadgen format
+expressions, while Linux first rejects a nested else/if in the root-handoff
+diagnostic. A separate warning-mode inventory is diagnostic only, never a green
+strict-gate receipt. The
+[local packet](../testing/performance/0.74/local-runs/msrv-conditional-diagnostics-20261015/README.md)
+retains those failures alongside the successful focused checks and build
+metadata comparison. These compiler/build changes add no throughput or allocation
+measurement and do not establish authenticated original-start or writer cessation.
+
+The completed warning inventories identify eight unique remaining locations:
+three loadgen formats, four xtask formats and one Linux-only supervisor branch.
+Duplicate library/test diagnostics are not separate defects. This bounds the
+next local cleanup for the selected targets; the inventory's warning-mode exit0
+does not satisfy the preserved strict MSRV gate.
+
+Post-commit Windows MSRV and Linux current repetitions each pass the same 40
+focused tests. The 165 static performance-contract tests, 175-gate registry and
+non-promotable local contract pass; require-ship still refuses. Wider current
+strict Clippy is green on Windows/Linux, while the recorded MSRV failures remain
+open. No full release gate or server qualification is implied.

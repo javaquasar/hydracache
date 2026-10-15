@@ -1,0 +1,20 @@
+    Checking windows-sys v0.61.2
+    Checking hydracache-core v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-core)
+   Compiling hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+    Checking winapi-util v0.1.11
+    Checking mio v1.2.1
+    Checking socket2 v0.6.4
+    Checking tempfile v3.27.0
+    Checking nu-ansi-term v0.50.3
+    Checking same-file v1.0.6
+    Checking termcolor v1.4.1
+    Checking rusty-fork v0.3.1
+    Checking tracing-subscriber v0.3.23
+    Checking walkdir v2.5.0
+    Checking tokio v1.52.3
+    Checking trybuild v1.0.117
+    Checking proptest v1.11.0
+    Checking loom v0.7.2
+    Checking criterion v0.8.2
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 27.47s

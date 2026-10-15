@@ -1,0 +1,72 @@
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.06s
+     Running tests/conditional_tombstone.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/conditional_tombstone-c18dbb738f499218)
+
+running 12 tests
+test remove_if_value_mismatch_leaves_record_untouched ... ok
+test remove_if_value_writes_tombstone_at_new_version ... ok
+test replace_if_present_after_tombstone_is_mismatch_not_resurrection ... ok
+test removed_key_reads_as_absent_after_tombstone ... ok
+test replace_if_present_on_absent_is_mismatch_not_insert ... ok
+test replace_if_present_applies_only_when_live_value_exists ... ok
+test replicated_record_must_match_its_key_partition ... ok
+test tombstone_from_remove_if_value_is_not_resurrected_by_stale_put ... ok
+test tombstone_watermark_rejects_epoch_change_and_regression ... ok
+test tombstone_watermark_requires_every_effective_replica ... ok
+test tombstone_watermark_uses_the_slowest_replica_and_rejects_malformed_progress ... ok
+test ordering_safe_conditional_tombstone_watermark_reclaims_unique_deletes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/conditional_writes.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/conditional_writes-8697aa70b29cf5fa)
+
+running 10 tests
+test conditional_writes_lock_survives_partition_via_raft_authority ... ignored, chaos marker: lock survives partition via partition-home authority
+test conditional_writes_cas_respects_tombstone_version ... ok
+test conditional_writes_compare_and_set_applies_only_on_match ... ok
+test conditional_writes_cas_at_consistency_one_is_refused ... ok
+test conditional_writes_fenced_lock_rejects_stale_token ... ok
+test conditional_writes_multi_key_diagnostic_is_stable ... ok
+test conditional_writes_not_owner_diagnostic_is_stable ... ok
+test conditional_writes_multi_key_conditional_is_rejected_loud ... ok
+test conditional_writes_weak_consistency_diagnostic_is_stable ... ok
+test conditional_writes_put_if_absent_is_linearizable_under_contention ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/consistency_levels.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/consistency_levels-f95eae05057233e7)
+
+running 6 tests
+test consistency_levels_local_quorum_counts_only_local_region ... ok
+test consistency_levels_required_acks_match_replica_math ... ok
+test consistency_levels_each_quorum_requires_every_region ... ok
+test consistency_levels_deployment_default_is_preserved_as_level ... ok
+test consistency_levels_quorum_read_after_quorum_write_is_read_your_writes ... ok
+test consistency_levels_unsatisfiable_level_fails_not_degrades ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/lock_lease.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/lock_lease-3010da562f379d3b)
+
+running 8 tests
+test expired_lease_can_be_stolen_and_fence_advances ... ok
+test release_by_non_owner_is_rejected_and_counted ... ok
+test diagnostic_reset_clears_owners_without_reusing_fence_tokens ... ok
+test stale_holder_release_after_expiry_is_rejected ... ok
+test heartbeat_renew_keeps_ownership ... ok
+test session_loss_releases_all_its_locks_and_advances_fence ... ok
+test fence_assigned_only_on_apply_not_propose ... ok
+test unique_lock_sessions_release_all_heartbeat_ownership ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/lock_reentrancy.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/lock_reentrancy-70d9442b6bf668ae)
+
+running 5 tests
+test reentrancy_is_acquire_count_on_session ... ok
+test reentrancy_limit_fails_loud ... ok
+test reentrant_acquire_keeps_same_fence_and_counts ... ok
+test unlock_frees_only_at_zero_holds ... ok
+test is_locked_by_owner_reflects_state ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

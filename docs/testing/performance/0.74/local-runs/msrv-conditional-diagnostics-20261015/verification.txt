@@ -1,0 +1,1 @@
+52 capture digests/lengths, four source blobs/tree, source parent chain and two frozen file hashes match. Two wider strict MSRV gates remain failed; warning-mode inventories are non-gating. Unsigned consistency only, no execution attestation or server admission.

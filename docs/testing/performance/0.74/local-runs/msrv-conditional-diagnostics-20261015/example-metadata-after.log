@@ -1,0 +1,21 @@
+diff --git a/crates/hydracache/Cargo.toml b/crates/hydracache/Cargo.toml
+index a9a2a0cb..c3109d42 100644
+--- a/crates/hydracache/Cargo.toml
++++ b/crates/hydracache/Cargo.toml
+@@ -52,5 +52,9 @@ trybuild.workspace = true
+ name = "cache_hot_path"
+ harness = false
+ 
++[[example]]
++name = "memory_compat_driver_071"
++required-features = ["durable-value-store"]
++
+ [lints]
+ workspace = true
+{
+  "name": "memory_compat_driver_071",
+  "required_features": [
+    "durable-value-store"
+  ],
+  "default_features": []
+}

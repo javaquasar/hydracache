@@ -1,0 +1,635 @@
+{
+  "format_version": 1,
+  "date": "2026-10-15",
+  "scope": "Local conditional diagnostic and example Cargo feature cleanup; no product or server admission",
+  "baseline_commit": "2f500651380ce9c130e07c0199a92a6610399820",
+  "diagnostic_commit": "ab882d4d3f82063b771a5a1e2f5269ad9873e057",
+  "example_build_commit": "d0ab5c4986dfe3a33826bc6812557592b60ce466",
+  "source_commit": "d0ab5c4986dfe3a33826bc6812557592b60ce466",
+  "source_tree": "3c158e384633faffd68be4b31160ee44a34219b5",
+  "source_files": [
+    {
+      "path": "crates/hydracache/src/grid/conditional.rs",
+      "git_blob": "c283492b89939d663f8b07cfa1ce83fd0233689b",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache/tests/conditional_writes.rs",
+      "git_blob": "6ed4c80a9b1a1464adc1ff6341477bcae8552865",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache/Cargo.toml",
+      "git_blob": "c3109d42b486c27a8eca912c4b535fd654b43c0b",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache/examples/memory_compat_driver_071.rs",
+      "git_blob": "30e5ea1f4fbd538f6889843d93ca46857942b52a",
+      "changed": false
+    }
+  ],
+  "capture_phases": "baseline-* uses baseline source. test-first-* adds characterization tests before formatting changes. *all-targets-before* uses diagnostic changes without example declaration. *all-targets-check*, *all-targets-clippy* and durable example lanes use the four-line manifest fix. post-* repeats after both source commits. Other focused runs precede the source commits on their corresponding changed files. No clean-worktree or signed execution attestation.",
+  "capture_encoding": "Tool-returned UTF-8/LF text, one final newline for nonempty captures, empty captures remain empty, ANSI preserved",
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "focused_tests": {
+    "pre_fix_original_passed": 6,
+    "pre_fix_characterization_passed": 9,
+    "post_fix_passed_per_lane": 40,
+    "ignored_per_lane": 1,
+    "lanes": [
+      "Windows Rust1.88",
+      "Windows Rust1.94",
+      "Linux Rust1.88",
+      "Linux Rust1.94"
+    ],
+    "post_commit_repetitions": [
+      "Windows Rust1.88",
+      "Linux Rust1.94"
+    ]
+  },
+  "tool_environment_change": "Installed Linux Rust1.88 Clippy with existing rustup; no product dependency/lock update.",
+  "remaining_strict_msrv_gates": [
+    {
+      "capture": "windows-msrv-wide-failed.log",
+      "exit_code": 1,
+      "first_failure_owner": "hydracache-loadgen"
+    },
+    {
+      "capture": "linux-msrv-wide-failed.log",
+      "exit_code": 1,
+      "first_failure_owner": "diagnostic_signer_root_probe"
+    }
+  ],
+  "non_gating_warning_inventory": {
+    "windows": [
+      {
+        "path": "crates/hydracache-loadgen/src/metrics_honesty.rs",
+        "line": 2543,
+        "column": 42
+      },
+      {
+        "path": "crates/hydracache-loadgen/src/resp_external.rs",
+        "line": 2055,
+        "column": 21
+      },
+      {
+        "path": "crates/hydracache-loadgen/src/tiers/client_surface.rs",
+        "line": 718,
+        "column": 60
+      },
+      {
+        "path": "crates/xtask/src/canary_check.rs",
+        "line": 423,
+        "column": 27
+      },
+      {
+        "path": "crates/xtask/src/canary_check.rs",
+        "line": 429,
+        "column": 27
+      },
+      {
+        "path": "crates/xtask/src/fast_suite.rs",
+        "line": 106,
+        "column": 23
+      },
+      {
+        "path": "crates/xtask/tests/perf_bootstrap_0671.rs",
+        "line": 61,
+        "column": 22
+      }
+    ],
+    "linux": [
+      {
+        "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs",
+        "line": 364,
+        "column": 16
+      },
+      {
+        "path": "crates/hydracache-loadgen/src/metrics_honesty.rs",
+        "line": 2543,
+        "column": 42
+      },
+      {
+        "path": "crates/hydracache-loadgen/src/resp_external.rs",
+        "line": 2055,
+        "column": 21
+      },
+      {
+        "path": "crates/hydracache-loadgen/src/tiers/client_surface.rs",
+        "line": 718,
+        "column": 60
+      },
+      {
+        "path": "crates/xtask/src/canary_check.rs",
+        "line": 423,
+        "column": 27
+      },
+      {
+        "path": "crates/xtask/src/canary_check.rs",
+        "line": 429,
+        "column": 27
+      },
+      {
+        "path": "crates/xtask/src/fast_suite.rs",
+        "line": 106,
+        "column": 23
+      },
+      {
+        "path": "crates/xtask/tests/perf_bootstrap_0671.rs",
+        "line": 61,
+        "column": 22
+      }
+    ],
+    "unique_sites_across_lanes": 8,
+    "scope": "Selected supervisor/xtask all-target/all-feature invocations only. Exit0 without -D warnings is NOT strict-gate success."
+  },
+  "unperformed": [
+    "Full release verify",
+    "Exhaustive feature/allocator matrix",
+    "Running the compatibility example",
+    "Product performance workload or qualification",
+    "Authenticated original-start or all-writer cessation",
+    "Server/workflow changes",
+    "Push"
+  ],
+  "captures": [
+    {
+      "file": "doc-check.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- doc-check",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "715c443d9367478aec7be9c7b712d0403ce9cd5e7c1b39e8d17bd740d6f6aaa4",
+      "bytes": 164,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-conditional-tests.log",
+      "command": "cargo +1.88.0 test -p hydracache --test conditional_writes --locked --offline",
+      "exit_code": 0,
+      "classification": "baseline-pass",
+      "sha256": "c2b3d5cd787fc5c9daac4d560272ed8b51456b0a24c3308ff6cffb2de84c07e0",
+      "bytes": 6622,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-msrv-wide.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "classification": "baseline-failed-gate",
+      "sha256": "69d4859781a3a004d816a6a2d385c70c994a3abda85af37aac9ef6d3d64f18ad",
+      "bytes": 2538,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "environment.log",
+      "command": "wsl cargo +1.88.0 clippy --version; wsl rustup component list --toolchain 1.88.0 --installed; cargo +1.88.0 clippy --version; cargo +1.94.0 clippy --version; Get-PSDrive -Name C | Format-List Free",
+      "exit_code": 0,
+      "classification": "environment",
+      "sha256": "86f94dc4d59e153e8b63d01d44b8bc1b5c9f77e8b99beb53fbe77b890f81d227",
+      "bytes": 262,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "example-metadata-after.log",
+      "command": "git diff -- crates/hydracache/Cargo.toml; cargo +1.94.0 metadata --no-deps --locked --offline --format-version 1; assert example required-features and empty defaults",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "0eb508f6d63fb4400a0d024c114f147b3b3e30259645742a3bb49fe568e1b0d9",
+      "bytes": 508,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "example-metadata-before.log",
+      "command": "cargo +1.94.0 metadata --no-deps --locked --offline --format-version 1; inspect hydracache memory_compat_driver_071 target and default features",
+      "exit_code": 0,
+      "classification": "missing-required-feature",
+      "sha256": "a13ba6784e872c83f52edc01e5f86c519ee29332d7ce56f2a5f4bc126ae74f5e",
+      "bytes": 106,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "example-without-feature-refused.log",
+      "command": "cargo +1.94.0 check -p hydracache --example memory_compat_driver_071 --locked --offline; exit $LASTEXITCODE",
+      "exit_code": 101,
+      "classification": "expected-feature-refusal",
+      "sha256": "6c25a89aa469ff32e66fd89c162bdaf1867e1049e8e903860699d66ac5fae2f4",
+      "bytes": 186,
+      "gate_expected_exit": 101
+    },
+    {
+      "file": "format-final.log",
+      "command": "cargo +1.94.0 fmt -p hydracache -- --check",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format.log",
+      "command": "cargo +1.88.0 fmt -p hydracache -- --check; wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "gate-registry.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- gated-test-check",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "2e524103cf12c200177f45570c98a92e5d3bb7e9fb28b79eb1197d77b37b0ae7",
+      "bytes": 380,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-clippy-install.log",
+      "command": "wsl.exe -d Ubuntu --exec /home/artur/.cargo/bin/rustup component add clippy --toolchain 1.88.0",
+      "exit_code": 0,
+      "classification": "local-tool-install",
+      "sha256": "08cc3e5ddf8fdac43e355fa0e3215ff51d62897f38c2b9748679f1984a32d562",
+      "bytes": 35,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-all-targets-before.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 1,
+      "classification": "failed-example-build",
+      "sha256": "4bccb6afa0766cf598fc4c3d26b46e5edc12fc7fd88ea8af472defe8842dc678",
+      "bytes": 5173,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-all-targets-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "ade38357db3df2da72d5066b68d5ed38df2a9f11228b20a38b523b703e5f3827",
+      "bytes": 72,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-all-targets-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache --all-targets --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "388aedeabcdfb913d76791f358e81024a77aab52662188a400b80ee2b66700df",
+      "bytes": 169,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-example-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "8d47ebb9355ed43035f3658afb9c83d2a21ddde3e045d6e5bbbc46ae79008c62",
+      "bytes": 432,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-example-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "aa4cf7724e8178ddf2a7a30b60b305be2c3de88b3b4e4ff48a093d3500340ac1",
+      "bytes": 277,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-focused.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache --lib --tests --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "2cbeebadf9950fcfb4540fae50a5644f38b671772248fad2771ac2e2b2808874",
+      "bytes": 388,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-tests.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "5a03ff32ed97feb0193e13d13235814deb059f522e06de46fabc80711344740a",
+      "bytes": 4096,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-current-wide-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "0999734bc1bd23c5cac339ce14401c513a3e785bff1d467b94192c991b2ea7af",
+      "bytes": 759,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-all-targets-before.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 1,
+      "classification": "failed-example-build",
+      "sha256": "55d9bc43e8a739cf6845814323b36b05a2b757be8f0aef7665d19a06b37ad9e2",
+      "bytes": 5369,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-all-targets-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "391498740d2d9ef95a48247f7803f38c8d25fab55fe0685fcb3d66f6b0af46ee",
+      "bytes": 169,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-all-targets-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache --all-targets --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "6ae904460d3cd2ad1dca68d50719e133e759962dab3839aae1284a9cdd606f15",
+      "bytes": 169,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-example-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "8a61668da39e082b7ded20bd94df5b14b9dd7c2f0abb07b45041efdcd86d22c2",
+      "bytes": 432,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-example-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "274abf37cdccc44fd7ed670bccc93f8a47031400b994a820641c9646660ccfbb",
+      "bytes": 277,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-focused.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache --lib --tests --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "fd0aeda39fcbb633139406c84ad42c5000b69defcc6594c3a9d212729cc40a7d",
+      "bytes": 388,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-tests.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "d7d576b5e63cab42697f1bf886e39f0aa0e12c3d7550c2e1d8db6617e3a86867",
+      "bytes": 9572,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "linux-msrv-warning-inventory.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "non-gating-warning-inventory",
+      "sha256": "15f133a687658552301c4463411b7951bbddf7ee58e0141a2d34eb3944e5b8f5",
+      "bytes": 7605,
+      "gate_expected_exit": null
+    },
+    {
+      "file": "linux-msrv-wide-failed.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "classification": "remaining-failed-gate",
+      "sha256": "91ba35ca3235d2d204e1eb82f07da23d220322e43b92ee1a8fd0927abffcce7f",
+      "bytes": 2981,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "performance-local.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "1513bda2c7a5551de52343d31050d2f26a35a5d46167dab6c121f1d5719c2aa0",
+      "bytes": 212,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "performance-static.log",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "a3da80af9d19e0e0eae805090e1f03dbfa1d81377dae52db6f324f0e3ce803fc",
+      "bytes": 1139,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "post-linux-current-tests.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "fcc4f08f79a4a65203192be73f32145be417f92a01a72405d58a48b1d06c50a1",
+      "bytes": 3998,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "post-windows-msrv-tests.log",
+      "command": "cargo +1.88.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "1e66a738d43cd1736c578eb3c27bcbc9240b26bad08073b26bb1b33647be4340",
+      "bytes": 3833,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "require-ship.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "classification": "expected-closed-admission",
+      "sha256": "63b3ed6232f5038a200ec9c4c02fecfcf5aa580ddef6c55ac93bea4c63c62e06",
+      "bytes": 494,
+      "gate_expected_exit": 1
+    },
+    {
+      "file": "test-first-conditional-tests.log",
+      "command": "cargo +1.88.0 fmt -p hydracache; cargo +1.88.0 test -p hydracache --test conditional_writes --locked --offline",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "20f02ed5f80b6baf9f6ecb9ff0550a42b6f9edf5aa99b87a0043f3eccd3fb88e",
+      "bytes": 1127,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first.patch.log",
+      "command": "git diff -- crates/hydracache/tests/conditional_writes.rs",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "b67a7d1412869ea692d7bf060760382fae53c3585c38e5550e6c043df1e2da00",
+      "bytes": 3406,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "unchanged-inputs.log",
+      "command": "git diff --exit-code 2f500651380ce9c130e07c0199a92a6610399820 HEAD -- Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml tools/long-run-supervisor-074 scripts/perf/performance_long_run_074.py tools/performance-integrated-074 scripts/ci/monitor-long-run-campaign-074.py .github/workflows crates/hydracache-loadgen crates/hydracache/examples/memory_compat_driver_071.rs scripts/perf/memory_compat_071.sh; Get-FileHash Cargo.lock,docs/testing/performance/0.74/qualification-manifest.toml",
+      "exit_code": 0,
+      "classification": "unchanged-input-proof",
+      "sha256": "d0235e289d2de1f9811b40977cbf1d0a453ee8af4aebdeb73abeff100ab42de3",
+      "bytes": 441,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-all-targets-check.log",
+      "command": "cargo +1.94.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "fe648d9a8c986cf7c9de9ef33928288ecd8eda035a1fdca589076629e7aaa0f7",
+      "bytes": 376,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-all-targets-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache --all-targets --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "efeda21845e0b516871f52fabf7b8d75c1fdc15160b1918549d094dc7c60c3c9",
+      "bytes": 165,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-example-check.log",
+      "command": "cargo +1.94.0 check -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "1e4a935d603d05af0cbe90590b180576a204467ac78a610f4db8f0dfccf07f6f",
+      "bytes": 535,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-example-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "80e8e6e9e0a2811316cf63cb56f5c5043465f3b86ae5cbb23190a6fa6b277aa6",
+      "bytes": 268,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-focused.log",
+      "command": "cargo +1.94.0 clippy -p hydracache --lib --tests --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "808b9d62235ac45702607911a63d5b337786f7f64007dc58429e398c65802a14",
+      "bytes": 860,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-tests.log",
+      "command": "cargo +1.94.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "138c13282222bf17523c2ad71e08feaa41121d025cbd80196e80cf915a43ac49",
+      "bytes": 4518,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-current-wide-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "postcommit-pass",
+      "sha256": "d2cd7d4e2f71ae724daa979818f5a0e1e667e0ef11e99c3ad94cc125b7d47cbc",
+      "bytes": 842,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-all-targets-before.log",
+      "command": "cargo +1.88.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 1,
+      "classification": "failed-example-build",
+      "sha256": "b8d755a9534f2501ada786ba5a8dd6409fcb316efdf567c82d0e4c0a39c03fa8",
+      "bytes": 5282,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-all-targets-check.log",
+      "command": "cargo +1.88.0 check -p hydracache --all-targets --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "a4c427a0a79d8fa848bad815a85b2d835d4943ffea99d5f9f762fa56e2dc266c",
+      "bytes": 165,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-all-targets-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache --all-targets --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "c596b771d3d91bfcbc01fa06283b6e81024ccd9b7a1f58b5751fc38b48872504",
+      "bytes": 165,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-example-check.log",
+      "command": "cargo +1.88.0 check -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "4ce55a74745ba5639001c4ddb860c91b5d4068c4efbc79b002e8dd156ec192f0",
+      "bytes": 535,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-example-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache --example memory_compat_driver_071 --features durable-value-store --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-example-declaration",
+      "sha256": "4d62ff7a9615274f16fa149e3937cd8b5b0dd6af1b8f1329771b81300cf18a34",
+      "bytes": 269,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-focused.log",
+      "command": "cargo +1.88.0 check -p hydracache --lib --tests --locked --offline; cargo +1.88.0 clippy -p hydracache --lib --tests --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "3b18e08e9941acd240096fa9caf617ac77f172030fae5490c6713fb8b7f55730",
+      "bytes": 541,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-tests.log",
+      "command": "cargo +1.88.0 test -p hydracache --test conditional_writes --test conditional_tombstone --test lock_lease --test lock_reentrancy --test consistency_levels --locked --offline",
+      "exit_code": 0,
+      "classification": "pass",
+      "sha256": "ad6add20ef6efdd74470f053124421cf22b8d0f206c909fc5532352285177765",
+      "bytes": 3926,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "windows-msrv-warning-inventory.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "non-gating-warning-inventory",
+      "sha256": "633d2dd470cb7c675bf4a2438d9159136b84013b224e5168f84801e5dfb3c88e",
+      "bytes": 5942,
+      "gate_expected_exit": null
+    },
+    {
+      "file": "windows-msrv-wide-failed.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "classification": "remaining-failed-gate",
+      "sha256": "5059c998c4d8d9847dfbe204f9b3212c7b2c013ce9989844cb0d2ff10a52bfd4",
+      "bytes": 2439,
+      "gate_expected_exit": 0
+    }
+  ]
+}
