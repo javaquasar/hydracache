@@ -1,0 +1,137 @@
+{
+  "schema_version": "diagnostic-enrollment-inventory-packet-074-v1",
+  "baseline_source": "323c2509a7d20969b8e9216340675883afa77894",
+  "inventory_scope_authorized": true,
+  "operator_selection_approved": false,
+  "admission_allowed": false,
+  "source_clean_at_capture": false,
+  "collector_source_identity": "packet-local sources and their artifact hashes; no clean-commit execution claim",
+  "capture_semantics": "decoded UTF-8 stdout normalized to LF; original decimal integers preserved; OIDC public bodies retained in base64; GitHub explicit GET projections, no HTTP authentication headers",
+  "remote_mutations": {
+    "configuration": false,
+    "authority": false,
+    "accounts": false,
+    "ownership": false,
+    "services": false,
+    "cgroups": false,
+    "namespaces": false,
+    "workflow_or_environment": false,
+    "secret_registration": false
+  },
+  "ordinary_ssh_authentication_and_audit_logging_expected": true,
+  "real_issuer_private_key_read": false,
+  "actual_oidc_identity_token_requested": false,
+  "product_or_signer_workload_started": false,
+  "enrollment_completed": false,
+  "qualification_started": false,
+  "checks": {
+    "windows_collector": {
+      "passed": 11,
+      "skipped": 2
+    },
+    "linux_collector": {
+      "passed": 13,
+      "skipped": 0
+    },
+    "windows_packet_mutations_passed": 12,
+    "linux_packet_mutations_passed": 12,
+    "windows_existing_python_regressions_passed": 27,
+    "linux_existing_python_regressions_passed": 27,
+    "root_performance_contract_tests_passed": 152,
+    "doc_check_passed": true,
+    "gated_registry_count": 171,
+    "scoped_rust_format_passed": true,
+    "windows_workspace_format": {
+      "passed": false,
+      "os_error": 206
+    },
+    "local_performance_contract_passed": true,
+    "ship_admission_expected_exit": 1,
+    "full_workspace_verify_executed": false
+  },
+  "unchanged_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "scripts/perf/performance_rental_preflight_074.py": "aa42747877eb06b96f6ea940d9c30790d79d8892f71e83081e8eb6a566b06d00",
+    "scripts/perf/diagnostic_oidc_acquisition_074.py": "de74844ad8dc96939485de769e92befbdafc0774374ced7d57d7c2d267863e0c",
+    "scripts/perf/diagnostic_oidc_source_074.py": "df6cf5967b49152c79ddb91565bf3fafdee3dc0452953cd1268f272b2e77d747"
+  },
+  "artifacts": {
+    "collect_host.py": {
+      "bytes": 9628,
+      "sha256": "6dfd51d4c4397ada62685f6c8ec5ef5f5b6dbadc6e5687107d52a4d2373bf912"
+    },
+    "collect_supervisor.py": {
+      "bytes": 3123,
+      "sha256": "e9fc1fb82b22b6b95b5603174c38ef1dd045c2079c053cf71fa54a0a3ce6f85c"
+    },
+    "development-observations.json": {
+      "bytes": 1653,
+      "sha256": "8ff2bffee7234a93020617a7397387625abea5db1b8600ebc8e684c4013b75db"
+    },
+    "docs-format-registry.log": {
+      "bytes": 351,
+      "sha256": "78bc8f8a4009b1ac39d74b42b8735fea496ead853cc53a6b97b4c3c77a416844"
+    },
+    "github-inventory.json": {
+      "bytes": 24074,
+      "sha256": "52417c443fd12ae156d4b42c89c8f32e6b928608c29ff4602a717962d70a2c84"
+    },
+    "host-inventory.json": {
+      "bytes": 19642,
+      "sha256": "31f84536bd49c87a3ddf4dbf2b9932fe7aa85cd0c155193c2047c98fd07864a6"
+    },
+    "linux-checks.log": {
+      "bytes": 678,
+      "sha256": "674d1432a47fcc714d9770e7aec2028da92d4392b380760bac1abd53a8d4476e"
+    },
+    "oidc-acquisition.json": {
+      "bytes": 11115,
+      "sha256": "cf035678cd00d8a37b3ee024587e46813a88d2d80f5bf68fde3f435bc085db54"
+    },
+    "preflight-after.json": {
+      "bytes": 10728,
+      "sha256": "8268ad9eb04ae7e66d21eed180c42756211ed6c38785ef746335d6c83a23c914"
+    },
+    "preflight-before.json": {
+      "bytes": 10708,
+      "sha256": "9137ea9340f17c8d2b9a2c963e39b335ee9a9c3fa480c9d9a6afcdb3afe92f07"
+    },
+    "proposal.json": {
+      "bytes": 5983,
+      "sha256": "685f91703b14d5e91c938a3f34f0e261de996575cfab50e0f11ddacc5f8d0d24"
+    },
+    "README.md": {
+      "bytes": 5325,
+      "sha256": "ff3b6af5971bc25dec84d76c8b6edf617c27b127de81544e3deffc502d21db63"
+    },
+    "root-contract-checks.log": {
+      "bytes": 13846,
+      "sha256": "9c6eadeafa7663f1094488b527876ffb2a2f2a6ff0699a3f08116519484d2e36"
+    },
+    "supervisor-inventory.json": {
+      "bytes": 2162,
+      "sha256": "27511a3958354accfb74ab7b49465ff640825d34615f033c435609254c7a1425"
+    },
+    "test_collect_host.py": {
+      "bytes": 8021,
+      "sha256": "25d13510d70486b0dc9df4ebceec7c3108e9c781820d62a0779508bb01e3e181"
+    },
+    "test_verify_packet.py": {
+      "bytes": 3639,
+      "sha256": "9cf3fe46d05feb3af4f3971d22854cf6d12e44bf42db530936e336c209ccdc30"
+    },
+    "verify_packet.py": {
+      "bytes": 10359,
+      "sha256": "7d1e0c4e4293457904f65d929edf2ecbabfa8d70c349c799bde2fcea50e7e507"
+    },
+    "windows-checks.log": {
+      "bytes": 690,
+      "sha256": "25d3d1026d8e429f822f4c720e46176fd36c93abc7a8a2cbcf5e531696dd0426"
+    },
+    "windows-workspace-format-limit.log": {
+      "bytes": 2815,
+      "sha256": "4ef0c5bb3cd022726ad10a6dc799d5d0295a8564ce431d459b98aafafdddf4b7"
+    }
+  }
+}

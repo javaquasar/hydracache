@@ -8994,3 +8994,48 @@ foreign writer. The local example drops its live guard at exit, so the retained
 packet is not a live capability. Independent host/runtime/job policy and receipt
 acquisition remain before signing, original worker start, P2/P3 cessation and
 completion. No cache performance improvement or server admission follows.
+
+## Inspecting the actual enrollment boundary
+
+The next question was whether the local trust primitives could simply be filled
+with facts from the existing dedicated server. An operator-authorized read-only
+inventory obtained account IDs, account-file hashes, machine/boot and namespace
+observations, installed receipt/binary identity, fixed service properties and
+GitHub policy. It did not install trust or run a candidate. The stable supervisor
+remained active with the same PID and zero restarts; the lifecycle snapshots
+showed no active campaign or fixture marker. Those snapshots do not reserve the
+host against another start.
+
+The useful falsification was a namespace mismatch. The SSH reader and PID 1
+shared mount namespace inode 4026531841, while the confined supervisor occupied
+4026532718. A host inventory is therefore not automatically the receiver context
+that the kernel-policy join will compare. Copying the SSH namespace into a signed
+policy would authenticate the wrong claim. Disabling confinement to make the
+numbers match would discard a protection instead of fixing the enrollment.
+The receiver must be enrolled from its actual controlled lifetime after an exact
+installation; replacing it cannot silently refresh its original namespace pins.
+
+A second misleading shortcut appeared in cgroup inspection. Root lacked
+`cgroup.type` and `cgroup.kill`, but the real supervisor cgroup reported `domain`
+and exposed `cgroup.kill`. An initial collector that required the root-only
+probe aborted; its failure and correction are retained. Neither the corrected
+file presence nor a stable service name proves permission to revoke an original
+worker cgroup or cessation of every pipe/file writer. No kill operation was
+performed to turn inventory into a lifecycle proof.
+
+GitHub configuration supplied another concrete boundary. The dedicated diagnostic
+controller workflow and environment did not exist. The old reference environment
+had signing-secret metadata but no environment protection rules; its existence
+could not supply the future protected signing job. The public OIDC snapshot
+reproduced four keys, while the actual default-subject settings allowed a specific
+environment subject to be proposed. There was still no received job token,
+selected workflow revision or independently admitted prebuilt signer/runtime.
+
+The resulting [enrollment review](../testing/performance/0.74/diagnostic-enrollment-review-20261015.md)
+keeps observations and decisions separate. It proposes the real worker account,
+a deliberately explicit new-authority initialization and a bounded four-key
+roster, without claiming to discover an epoch from an absent directory. Receiver
+namespace and signed-body digest remain unresolved. Approval of the model must
+precede actual configuration, then original-start, watchdog/all-writer cessation,
+completion and cells 2–4. These findings reduce deployment uncertainty; they do
+not measure cache allocation, throughput or readiness to ship.

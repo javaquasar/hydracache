@@ -1,0 +1,6 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: OK (171 discovered gates, all registered)

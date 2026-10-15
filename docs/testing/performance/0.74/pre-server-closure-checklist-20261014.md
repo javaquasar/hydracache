@@ -128,6 +128,24 @@ before real provenance enrollment. P2 and replay/start admission remain open.
 The kernel-input package does not close these items. No green local receipt may
 stand in for an enrolled start, whole-writer revocation or later-cell protocol.
 
+## Actual enrollment inventory and pending selection
+
+The operator-approved October 15 read-only inventory now retains an
+[exact proposal and observations](diagnostic-enrollment-review-20261015.md).
+Worker UID/GID are 986/986; local runner UID is 1001 and its explicit client
+group is 987. No worker/controller/OIDC trust file or authority/intent root was
+present. The actual supervisor remains on the old installed source and has a
+different mount namespace from SSH/PID 1. Do not use SSH namespace facts to
+finalize a receiver policy or weaken service confinement to make them match.
+
+The dedicated controller environment/workflow are absent in GitHub; the old
+reference environment is unprotected. Public acquisition reproduces four RSA
+keys without selecting or installing them. The new packet proposes explicit
+new-authority initialization and a short-lived v2 roster, but current authority,
+actual receiver/workflow/runtime pins, signed policy/receipt and protected job
+enrollment remain unresolved. No service, epoch, configuration or workflow was
+changed. Read-only approval is not enrollment or execution approval.
+
 ## Host gates after local completion
 
 P4 needs actual signed bundle/receipt, ownership, UID/GID, current kernel options,

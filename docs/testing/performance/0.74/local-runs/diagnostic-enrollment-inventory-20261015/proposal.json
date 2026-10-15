@@ -1,0 +1,154 @@
+{
+  "schema_version": "diagnostic-enrollment-review-proposal-074-v1",
+  "state": "draft-for-explicit-operator-selection-not-runtime-configuration",
+  "operator_selection_approved": false,
+  "host_admission": false,
+  "trust_config_installed": false,
+  "policy_signed": false,
+  "workflow_enabled": false,
+  "server_execution_allowed": false,
+  "qualification_allowed": false,
+  "ship_allowed": false,
+  "reviewed_source": "323c2509a7d20969b8e9216340675883afa77894",
+  "host_proposal": {
+    "ssh_alias": "hydracache-ax42",
+    "ssh_host": "37.27.115.91",
+    "ssh_account": "hydracache-admin",
+    "trust_basis": "existing strict known-host SSH channel plus proposed operator trust in kernel and root/runner administration; not remote attestation",
+    "machine_id": "39d3868c53dc43eabec0a9abe675add4",
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "observed_host_namespaces": {
+      "mnt": {
+        "device": 4,
+        "inode": 4026531841,
+        "link": "mnt:[4026531841]"
+      },
+      "pid": {
+        "device": 4,
+        "inode": 4026531836,
+        "link": "pid:[4026531836]"
+      },
+      "time": {
+        "device": 4,
+        "inode": 4026531834,
+        "link": "time:[4026531834]"
+      },
+      "user": {
+        "device": 4,
+        "inode": 4026531837,
+        "link": "user:[4026531837]"
+      }
+    },
+    "observed_supervisor_namespaces": {
+      "mnt": {
+        "device": 4,
+        "inode": 4026532718
+      },
+      "pid": {
+        "device": 4,
+        "inode": 4026531836
+      },
+      "time": {
+        "device": 4,
+        "inode": 4026531834
+      },
+      "user": {
+        "device": 4,
+        "inode": 4026531837
+      }
+    },
+    "actual_receiver_namespace_selected": false,
+    "actual_receiver_mount_namespace": null,
+    "kernel": "6.8.0-138-generic"
+  },
+  "worker_proposal": {
+    "account": "hydracache-perf",
+    "group": "hydracache-perf",
+    "account_source": "local-files",
+    "uid": 986,
+    "gid": 986,
+    "supplementary_gids": [],
+    "passwd_sha256": "8f9be9fe394378826b0fdbe631e08cc0d75775845386d90bef3501ab427aabda",
+    "group_sha256": "adfa40e315c04a2d85b480d54a08652e7d4cd43eb4d11ab5998c89eb40aaac4e",
+    "issuer_key_hex": "e7bd73d40638095eb7fdb3d03eec3c36af688d185fd750b83fc3ee81683a2f59",
+    "observed_current_epoch": null,
+    "proposed_initial_epoch": 1,
+    "epoch_initialization_approved": false,
+    "initialization_condition": "explicit new-authority initialization only after independent history/host review and exclusive empty-root checks; never infer a current epoch from absence or reset existing state",
+    "worker_policy_body_sha256": null,
+    "receiver_binding_required_before_body_signing": true
+  },
+  "controller_proposal": {
+    "repository_id": 1217101761,
+    "actor_ids": [
+      22050429
+    ],
+    "client_uids": [
+      1001
+    ],
+    "client_gid": 987,
+    "controller_key_hex": "c56f89595c45d0656225f1b8915babed046d278dc9ce1908c6bcb6e9c93e2fda",
+    "original_authenticated_transport_implemented": false
+  },
+  "job_proposal": {
+    "workflow_ref": "javaquasar/hydracache/.github/workflows/diagnostic-controller-074.yml@refs/heads/feat/0.74-resp-native-throughput",
+    "workflow_sha": null,
+    "environment": "performance-diagnostic-controller-074",
+    "event": "workflow_dispatch",
+    "runner_environment": "github-hosted",
+    "proposed_subject": "repo:javaquasar/hydracache:environment:performance-diagnostic-controller-074",
+    "actual_protected_job_token_verified": false,
+    "subject_basis": "observed use_default=true, use_immutable_subject=false and GitHub default environment-subject documentation; proposed until selected and matched to a verified token",
+    "required_human_reviewer": {
+      "login": "javaquasar",
+      "id": 22050429
+    },
+    "prevent_self_review": false,
+    "can_admins_bypass": false,
+    "deployment_branch": "feat/0.74-resp-native-throughput",
+    "two_independent_human_reviews_claimed": false,
+    "build_job_has_token_or_signing_authority": false,
+    "sign_job_uses_only_prebuilt_reviewed_launcher_signer_runtime": true,
+    "signer_build_receipt_sha256": null,
+    "signer_runtime_root_sha256": null,
+    "signer_runtime_custody_selected": false,
+    "public_issuer_key_hex": "08f18b0078ad4d754ed615682ec0c9c076109965548d9c674ac606e3625f79ea"
+  },
+  "oidc_proposal": {
+    "schema": "diagnostic-oidc-trust-input-074-v2",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "jwks_sha256": "5f8164c9696c27837ad18c5fe7c7022a433bd5390183e8ff15c74d82233270f4",
+    "proposed_members": [
+      {
+        "kid": "38826b17-6a30-5f9b-b169-8beb8202f723",
+        "modulus_bits": 2048,
+        "public_key_projection_sha256": "6058911b2e98c890c3555e4352abe868b1ee0076e717163b7b8e6dead98a23e4"
+      },
+      {
+        "kid": "38E9B30B3A023A1B72309921A69A42FCC496C42C",
+        "modulus_bits": 2048,
+        "public_key_projection_sha256": "32976250784c9bc1c02f0fa392758f693e209338d28d1203af522f2395741fb5"
+      },
+      {
+        "kid": "4F3E9AD8C9A6F5EB3173006F4FA630E28F43DCE9",
+        "modulus_bits": 2048,
+        "public_key_projection_sha256": "9cd5c0a72b94d5c1352b002c055b0581662817f5c4119d2c67aad8c426f239c2"
+      },
+      {
+        "kid": "cc413527-173f-5a05-976e-9c52b1d7b431",
+        "modulus_bits": 2048,
+        "public_key_projection_sha256": "6aeebd5a89e21c00dd084b0d509b703c67da82518bcc8fb9200bd34d6324380e"
+      }
+    ],
+    "proposed_snapshot_not_before": 1792053035,
+    "proposed_snapshot_expires_at": 1792139435,
+    "proposed_lifetime_seconds": 86400,
+    "selection_approved": false,
+    "automatic_refresh": false,
+    "expiry_rule": "expiry refuses; a delayed activation requires a new independently reviewed public snapshot, never extension based on this report"
+  },
+  "unchanged_inputs": {
+    "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "root_lock_sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+  }
+}

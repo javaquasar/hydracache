@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [read-only enrollment review](diagnostic-enrollment-review-20261015.md) now
+records the actual host/account facts, GitHub configuration and unchanged public
+OIDC roster. Its [packet](local-runs/diagnostic-enrollment-inventory-20261015/README.md)
+exposes different SSH/supervisor mount namespaces and absent controller workflow,
+environment, installed trust and authority roots. The explicit new-authority
+epoch/roster/job proposals await selection; no current epoch or actual receiver
+binding is fabricated. Host inventory does not close P2/P3 or open execution.
+
 The [root-owned input reader](diagnostic-root-owned-input-design.md) retains the
 full numeric-root ancestor chain and original reading thread/user/mount/root
 context around bounded content checks. The [new packet](local-runs/diagnostic-root-owned-input-20261015/README.md)

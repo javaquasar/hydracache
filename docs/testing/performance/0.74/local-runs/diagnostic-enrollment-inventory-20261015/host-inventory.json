@@ -1,0 +1,787 @@
+{
+  "account_inventory": {
+    "accounts": {
+      "github-runner": {
+        "explicit_supplementary_gids": [
+          987
+        ],
+        "gid": 1001,
+        "group_ids_including_primary": [
+          987,
+          1001
+        ],
+        "status": "available",
+        "uid": 1001
+      },
+      "hydracache-perf": {
+        "explicit_supplementary_gids": [],
+        "gid": 986,
+        "group_ids_including_primary": [
+          986
+        ],
+        "status": "available",
+        "uid": 986
+      }
+    },
+    "named_groups": {
+      "github-runner": {
+        "audited_explicit_members": [],
+        "gid": 1001,
+        "status": "available"
+      },
+      "hydracache-perf": {
+        "audited_explicit_members": [],
+        "gid": 986,
+        "status": "available"
+      },
+      "hydracache-perf-client": {
+        "audited_explicit_members": [
+          "github-runner"
+        ],
+        "gid": 987,
+        "status": "available"
+      }
+    },
+    "source": "local-files-not-NSS-or-process-proof",
+    "status": "available"
+  },
+  "captured_at_unix_seconds": 1792053313,
+  "cgroup_controllers": {
+    "status": "available",
+    "value": "cpuset cpu io memory hugetlb pids rdma misc"
+  },
+  "cgroup_kill_file_present": false,
+  "cgroup_type": {
+    "status": "absent-at-read"
+  },
+  "context_after": {
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "namespaces": {
+      "1": {
+        "mnt": {
+          "device": 4,
+          "inode": 4026531841,
+          "link": "mnt:[4026531841]"
+        },
+        "pid": {
+          "device": 4,
+          "inode": 4026531836,
+          "link": "pid:[4026531836]"
+        },
+        "time": {
+          "device": 4,
+          "inode": 4026531834,
+          "link": "time:[4026531834]"
+        },
+        "user": {
+          "device": 4,
+          "inode": 4026531837,
+          "link": "user:[4026531837]"
+        }
+      },
+      "thread-self": {
+        "mnt": {
+          "device": 4,
+          "inode": 4026531841,
+          "link": "mnt:[4026531841]"
+        },
+        "pid": {
+          "device": 4,
+          "inode": 4026531836,
+          "link": "pid:[4026531836]"
+        },
+        "time": {
+          "device": 4,
+          "inode": 4026531834,
+          "link": "time:[4026531834]"
+        },
+        "user": {
+          "device": 4,
+          "inode": 4026531837,
+          "link": "user:[4026531837]"
+        }
+      }
+    },
+    "pid_one_cgroup": "0::/init.scope",
+    "pid_one_root": {
+      "bytes": 4096,
+      "ctime_ns": 1787617892958664531,
+      "device": 2306,
+      "gid": 0,
+      "inode": 2,
+      "links": 23,
+      "mode": "0o755",
+      "mtime_ns": 1787617892958664531,
+      "type": 16384,
+      "uid": 0
+    },
+    "pid_one_uid_map": "0          0 4294967295",
+    "reader_cgroup": "0::/user.slice/user-1000.slice/session-1630.scope",
+    "reader_root": {
+      "bytes": 4096,
+      "ctime_ns": 1787617892958664531,
+      "device": 2306,
+      "gid": 0,
+      "inode": 2,
+      "links": 23,
+      "mode": "0o755",
+      "mtime_ns": 1787617892958664531,
+      "type": 16384,
+      "uid": 0
+    },
+    "reader_uid_map": "0          0 4294967295"
+  },
+  "context_before": {
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "namespaces": {
+      "1": {
+        "mnt": {
+          "device": 4,
+          "inode": 4026531841,
+          "link": "mnt:[4026531841]"
+        },
+        "pid": {
+          "device": 4,
+          "inode": 4026531836,
+          "link": "pid:[4026531836]"
+        },
+        "time": {
+          "device": 4,
+          "inode": 4026531834,
+          "link": "time:[4026531834]"
+        },
+        "user": {
+          "device": 4,
+          "inode": 4026531837,
+          "link": "user:[4026531837]"
+        }
+      },
+      "thread-self": {
+        "mnt": {
+          "device": 4,
+          "inode": 4026531841,
+          "link": "mnt:[4026531841]"
+        },
+        "pid": {
+          "device": 4,
+          "inode": 4026531836,
+          "link": "pid:[4026531836]"
+        },
+        "time": {
+          "device": 4,
+          "inode": 4026531834,
+          "link": "time:[4026531834]"
+        },
+        "user": {
+          "device": 4,
+          "inode": 4026531837,
+          "link": "user:[4026531837]"
+        }
+      }
+    },
+    "pid_one_cgroup": "0::/init.scope",
+    "pid_one_root": {
+      "bytes": 4096,
+      "ctime_ns": 1787617892958664531,
+      "device": 2306,
+      "gid": 0,
+      "inode": 2,
+      "links": 23,
+      "mode": "0o755",
+      "mtime_ns": 1787617892958664531,
+      "type": 16384,
+      "uid": 0
+    },
+    "pid_one_uid_map": "0          0 4294967295",
+    "reader_cgroup": "0::/user.slice/user-1000.slice/session-1630.scope",
+    "reader_root": {
+      "bytes": 4096,
+      "ctime_ns": 1787617892958664531,
+      "device": 2306,
+      "gid": 0,
+      "inode": 2,
+      "links": 23,
+      "mode": "0o755",
+      "mtime_ns": 1787617892958664531,
+      "type": 16384,
+      "uid": 0
+    },
+    "reader_uid_map": "0          0 4294967295"
+  },
+  "directories": {
+    "/etc/hydracache-perf": {
+      "metadata": {
+        "bytes": 4096,
+        "ctime_ns": 1791291819865386307,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8257634,
+        "links": 2,
+        "mode": "0o755",
+        "mtime_ns": 1791291819865386307,
+        "type": 16384,
+        "uid": 0
+      },
+      "status": "present"
+    },
+    "/opt/hydracache-perf": {
+      "metadata": {
+        "bytes": 4096,
+        "ctime_ns": 1791207414518659121,
+        "device": 2306,
+        "gid": 0,
+        "inode": 25841267,
+        "links": 3,
+        "mode": "0o755",
+        "mtime_ns": 1791207414518659121,
+        "type": 16384,
+        "uid": 0
+      },
+      "status": "present"
+    },
+    "/opt/hydracache-perf/bin": {
+      "metadata": {
+        "bytes": 4096,
+        "ctime_ns": 1791291819835387238,
+        "device": 2306,
+        "gid": 0,
+        "inode": 25845328,
+        "links": 2,
+        "mode": "0o755",
+        "mtime_ns": 1791291819835387238,
+        "type": 16384,
+        "uid": 0
+      },
+      "status": "present"
+    },
+    "/sys/fs/cgroup": {
+      "metadata": {
+        "bytes": 0,
+        "ctime_ns": 1791285063909081857,
+        "device": 29,
+        "gid": 0,
+        "inode": 1,
+        "links": 12,
+        "mode": "0o555",
+        "mtime_ns": 1791285063909081857,
+        "type": 16384,
+        "uid": 0
+      },
+      "status": "present"
+    },
+    "/var/lib/hydracache-performance": {
+      "metadata": {
+        "bytes": 4096,
+        "ctime_ns": 1791291820306372633,
+        "device": 2306,
+        "gid": 986,
+        "inode": 18101987,
+        "links": 6,
+        "mode": "0o750",
+        "mtime_ns": 1791291820306372633,
+        "type": 16384,
+        "uid": 0
+      },
+      "status": "present"
+    },
+    "/var/lib/hydracache-performance/diagnostic-intents-074": {
+      "status": "absent-at-read"
+    },
+    "/var/lib/hydracache-performance/worker-authority-074": {
+      "status": "absent-at-read"
+    }
+  },
+  "effective_uid": 0,
+  "host_admission": false,
+  "kernel": "6.8.0-138-generic",
+  "machine_id": "39d3868c53dc43eabec0a9abe675add4",
+  "namespace_initial_host_attested": false,
+  "policy_epoch_selected": false,
+  "policy_signed": false,
+  "public_files": {
+    "/etc/group": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1791291820214375484,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8257537,
+          "links": 107,
+          "mode": "0o755",
+          "mtime_ns": 1791291820214375484,
+          "path": "/etc",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 899,
+      "metadata": {
+        "bytes": 899,
+        "ctime_ns": 1791207414935650974,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8259158,
+        "links": 1,
+        "mode": "0o644",
+        "mtime_ns": 1791207414930651072,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "adfa40e315c04a2d85b480d54a08652e7d4cd43eb4d11ab5998c89eb40aaac4e",
+      "status": "available"
+    },
+    "/etc/hydracache-perf/controller-trust-074.json": {
+      "status": "absent-at-read"
+    },
+    "/etc/hydracache-perf/oidc-trust-074.json": {
+      "status": "absent-at-read"
+    },
+    "/etc/hydracache-perf/worker-trust-074.json": {
+      "status": "absent-at-read"
+    },
+    "/etc/machine-id": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1791291820214375484,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8257537,
+          "links": 107,
+          "mode": "0o755",
+          "mtime_ns": 1791291820214375484,
+          "path": "/etc",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 33,
+      "metadata": {
+        "bytes": 33,
+        "ctime_ns": 1787616755614687763,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8258733,
+        "links": 1,
+        "mode": "0o444",
+        "mtime_ns": 1787616755614687763,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "a9ca81365482bcbf81a956b4545cf1f5af04cb852571c14cc2da94a8d7bca31f",
+      "status": "available"
+    },
+    "/etc/nsswitch.conf": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1791291820214375484,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8257537,
+          "links": 107,
+          "mode": "0o755",
+          "mtime_ns": 1791291820214375484,
+          "path": "/etc",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 526,
+      "metadata": {
+        "bytes": 526,
+        "ctime_ns": 1787616749386671167,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8257742,
+        "links": 1,
+        "mode": "0o644",
+        "mtime_ns": 1770683176000000000,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "b953df1d0016f515fc052ca6bb0ccd092b8d13c8789c51c4eaef2b0461574e57",
+      "status": "available"
+    },
+    "/etc/passwd": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1791291820214375484,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8257537,
+          "links": 107,
+          "mode": "0o755",
+          "mtime_ns": 1791291820214375484,
+          "path": "/etc",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 1893,
+      "metadata": {
+        "bytes": 1893,
+        "ctime_ns": 1791207414507659336,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8259150,
+        "links": 1,
+        "mode": "0o644",
+        "mtime_ns": 1791207414474659980,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "8f9be9fe394378826b0fdbe631e08cc0d75775845386d90bef3501ab427aabda",
+      "status": "available"
+    }
+  },
+  "public_runtime_files": {
+    "/etc/ssl/certs/ca-certificates.crt": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1791291820214375484,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8257537,
+          "links": 107,
+          "mode": "0o755",
+          "mtime_ns": 1791291820214375484,
+          "path": "/etc",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787616753262682260,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8258757,
+          "links": 4,
+          "mode": "0o755",
+          "mtime_ns": 1786854189364952335,
+          "path": "/etc/ssl",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 12288,
+          "ctime_ns": 1787616753262682260,
+          "device": 2306,
+          "gid": 0,
+          "inode": 8258758,
+          "links": 2,
+          "mode": "0o755",
+          "mtime_ns": 1786854232426982683,
+          "path": "/etc/ssl/certs",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 182140,
+      "metadata": {
+        "bytes": 182140,
+        "ctime_ns": 1787616749418671270,
+        "device": 2306,
+        "gid": 0,
+        "inode": 8258946,
+        "links": 1,
+        "mode": "0o644",
+        "mtime_ns": 1786854232419982528,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "ecd9dc38bc3efb7dbd6431f57e29d2f8d6a0f0d211e1464b3fef2cbfe266fcd2",
+      "status": "available"
+    },
+    "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892961664470,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27131905,
+          "links": 13,
+          "mode": "0o755",
+          "mtime_ns": 1787617892961664470,
+          "path": "/usr",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1789202065382797504,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27160729,
+          "links": 82,
+          "mode": "0o755",
+          "mtime_ns": 1789202065382797504,
+          "path": "/usr/lib",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 36864,
+          "ctime_ns": 1787618390326016059,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27165289,
+          "links": 39,
+          "mode": "0o755",
+          "mtime_ns": 1787618390326016059,
+          "path": "/usr/lib/x86_64-linux-gnu",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 236616,
+      "metadata": {
+        "bytes": 236616,
+        "ctime_ns": 1787616752058679118,
+        "device": 2306,
+        "gid": 0,
+        "inode": 27165715,
+        "links": 1,
+        "mode": "0o755",
+        "mtime_ns": 1784827093000000000,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+      "status": "available"
+    },
+    "/usr/lib/x86_64-linux-gnu/libc.so.6": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892961664470,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27131905,
+          "links": 13,
+          "mode": "0o755",
+          "mtime_ns": 1787617892961664470,
+          "path": "/usr",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1789202065382797504,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27160729,
+          "links": 82,
+          "mode": "0o755",
+          "mtime_ns": 1789202065382797504,
+          "path": "/usr/lib",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 36864,
+          "ctime_ns": 1787618390326016059,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27165289,
+          "links": 39,
+          "mode": "0o755",
+          "mtime_ns": 1787618390326016059,
+          "path": "/usr/lib/x86_64-linux-gnu",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 2125328,
+      "metadata": {
+        "bytes": 2125328,
+        "ctime_ns": 1787616752054679108,
+        "device": 2306,
+        "gid": 0,
+        "inode": 27165704,
+        "links": 1,
+        "mode": "0o755",
+        "mtime_ns": 1784827093000000000,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161",
+      "status": "available"
+    },
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1": {
+      "ancestry": [
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892958664531,
+          "device": 2306,
+          "gid": 0,
+          "inode": 2,
+          "links": 23,
+          "mode": "0o755",
+          "mtime_ns": 1787617892958664531,
+          "path": "/",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1787617892961664470,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27131905,
+          "links": 13,
+          "mode": "0o755",
+          "mtime_ns": 1787617892961664470,
+          "path": "/usr",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 4096,
+          "ctime_ns": 1789202065382797504,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27160729,
+          "links": 82,
+          "mode": "0o755",
+          "mtime_ns": 1789202065382797504,
+          "path": "/usr/lib",
+          "type": 16384,
+          "uid": 0
+        },
+        {
+          "bytes": 36864,
+          "ctime_ns": 1787618390326016059,
+          "device": 2306,
+          "gid": 0,
+          "inode": 27165289,
+          "links": 39,
+          "mode": "0o755",
+          "mtime_ns": 1787618390326016059,
+          "path": "/usr/lib/x86_64-linux-gnu",
+          "type": 16384,
+          "uid": 0
+        }
+      ],
+      "bytes": 183024,
+      "metadata": {
+        "bytes": 183024,
+        "ctime_ns": 1787616751906678698,
+        "device": 2306,
+        "gid": 0,
+        "inode": 27165450,
+        "links": 1,
+        "mode": "0o644",
+        "mtime_ns": 1766093810000000000,
+        "type": 32768,
+        "uid": 0
+      },
+      "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb",
+      "status": "available"
+    }
+  },
+  "read_only": true,
+  "schema_version": "diagnostic-enrollment-host-inventory-074-v1",
+  "service_mutation": false,
+  "system_slice_cgroup_kill_present": true,
+  "system_slice_cgroup_type": {
+    "status": "available",
+    "value": "domain"
+  },
+  "workload_started": false
+}

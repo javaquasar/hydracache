@@ -1,0 +1,88 @@
+{
+  "cgroup_type": "domain",
+  "host_admission": false,
+  "numeric_pid_observation_not_original_start_or_cgroup_authority": true,
+  "original_cgroup_kill_file_present": true,
+  "process_after": {
+    "cgroup": "0::/system.slice/hydracache-performance-supervisor-074.service",
+    "namespaces": {
+      "mnt": {
+        "device": 4,
+        "inode": 4026532718
+      },
+      "pid": {
+        "device": 4,
+        "inode": 4026531836
+      },
+      "time": {
+        "device": 4,
+        "inode": 4026531834
+      },
+      "user": {
+        "device": 4,
+        "inode": 4026531837
+      }
+    },
+    "pid": 8839,
+    "start_ticks": 676133
+  },
+  "process_before": {
+    "cgroup": "0::/system.slice/hydracache-performance-supervisor-074.service",
+    "namespaces": {
+      "mnt": {
+        "device": 4,
+        "inode": 4026532718
+      },
+      "pid": {
+        "device": 4,
+        "inode": 4026531836
+      },
+      "time": {
+        "device": 4,
+        "inode": 4026531834
+      },
+      "user": {
+        "device": 4,
+        "inode": 4026531837
+      }
+    },
+    "pid": 8839,
+    "start_ticks": 676133
+  },
+  "read_only": true,
+  "schema_version": "diagnostic-enrollment-supervisor-inventory-074-v1",
+  "service_mutation": false,
+  "unit_after": {
+    "ActiveState": "active",
+    "ControlGroup": "/system.slice/hydracache-performance-supervisor-074.service",
+    "Group": "root",
+    "KillMode": "process",
+    "MainPID": "8839",
+    "NRestarts": "0",
+    "NoNewPrivileges": "yes",
+    "PrivateTmp": "yes",
+    "PrivateUsers": "no",
+    "ProtectControlGroups": "yes",
+    "ProtectHome": "yes",
+    "ProtectSystem": "strict",
+    "SubState": "running",
+    "User": "root"
+  },
+  "unit_before": {
+    "ActiveState": "active",
+    "ControlGroup": "/system.slice/hydracache-performance-supervisor-074.service",
+    "Group": "root",
+    "KillMode": "process",
+    "MainPID": "8839",
+    "NRestarts": "0",
+    "NoNewPrivileges": "yes",
+    "PrivateTmp": "yes",
+    "PrivateUsers": "no",
+    "ProtectControlGroups": "yes",
+    "ProtectHome": "yes",
+    "ProtectSystem": "strict",
+    "SubState": "running",
+    "User": "root"
+  },
+  "workload_started": false
+}

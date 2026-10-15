@@ -1,0 +1,221 @@
+{
+  "schema_version": "diagnostic-enrollment-github-inventory-074-v1",
+  "read_only": true,
+  "workflow_dispatched": false,
+  "environment_changed": false,
+  "token_requested": false,
+  "first": [
+    {
+      "id": "repository",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache",
+      "projection": "{id,full_name,visibility,default_branch,archived,permissions}",
+      "captured_before_utc": "2026-10-15T08:29:22.016Z",
+      "captured_after_utc": "2026-10-15T08:29:24.070Z",
+      "exit_code": 0,
+      "output": "{\"archived\":false,\"default_branch\":\"main\",\"full_name\":\"javaquasar/hydracache\",\"id\":1217101761,\"permissions\":{\"admin\":true,\"maintain\":true,\"pull\":true,\"push\":true,\"triage\":true},\"visibility\":\"public\"}\n"
+    },
+    {
+      "id": "oidc_subject",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/oidc/customization/sub",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:23.539Z",
+      "exit_code": 0,
+      "output": "{\"use_default\":true,\"use_immutable_subject\":false,\"sub_claim_prefix\":\"repo:javaquasar/hydracache\"}"
+    },
+    {
+      "id": "environments",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments?per_page=100",
+      "projection": "{total_count,environments:[.environments[]|{id,name,protection_rules,deployment_branch_policy}]}",
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.004Z",
+      "exit_code": 0,
+      "output": "{\"environments\":[{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":17263536642,\"name\":\"github-pages\",\"protection_rules\":[{\"id\":58401612,\"node_id\":\"GA_kwDOSIt_wc4DeyNM\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":false,\"protected_branches\":true},\"id\":20447296847,\"name\":\"memory-reference-071\",\"protection_rules\":[{\"id\":63486356,\"node_id\":\"GA_kwDOSIt_wc4DyLmU\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":63486357,\"node_id\":\"GA_kwDOSIt_wc4DyLmV\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":23854349572,\"name\":\"performance-diagnostic-builder-074\",\"protection_rules\":[{\"id\":68214984,\"node_id\":\"GA_kwDOSIt_wc4EEODI\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":68214985,\"node_id\":\"GA_kwDOSIt_wc4EEODJ\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":22694657037,\"name\":\"performance-reference-073\",\"protection_rules\":[{\"id\":66633203,\"node_id\":\"GA_kwDOSIt_wc4D-L3z\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":66633204,\"node_id\":\"GA_kwDOSIt_wc4D-L30\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":null,\"id\":23479948272,\"name\":\"performance-reference-074\",\"protection_rules\":[]},{\"deployment_branch_policy\":null,\"id\":18220887333,\"name\":\"release\",\"protection_rules\":[{\"id\":60060730,\"node_id\":\"GA_kwDOSIt_wc4DlHQ6\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"}]}],\"total_count\":6}\n"
+    },
+    {
+      "id": "controller_environment",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments/performance-diagnostic-controller-074",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:23.668Z",
+      "exit_code": 1,
+      "output": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/deployments/environments#get-an-environment\",\"status\":\"404\"}gh: Not Found (HTTP 404)\n"
+    },
+    {
+      "id": "controller_workflow",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/workflows/diagnostic-controller-074.yml",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:23.871Z",
+      "exit_code": 1,
+      "output": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/actions/workflows#get-a-workflow\",\"status\":\"404\"}gh: Not Found (HTTP 404)\n"
+    },
+    {
+      "id": "branch",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/branches/feat%2F0.74-resp-native-throughput",
+      "projection": "{name,protected,commit:{sha:.commit.sha}}",
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.073Z",
+      "exit_code": 0,
+      "output": "{\"commit\":{\"sha\":\"323c2509a7d20969b8e9216340675883afa77894\"},\"name\":\"feat/0.74-resp-native-throughput\",\"protected\":false}\n"
+    },
+    {
+      "id": "oidc_workflow_source",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/contents/.github/workflows/diagnostic-controller-074.yml?ref=323c2509a7d20969b8e9216340675883afa77894",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:23.997Z",
+      "exit_code": 1,
+      "output": "{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/repos/contents#get-repository-content\",\"status\":\"404\"}gh: Not Found (HTTP 404)\n"
+    },
+    {
+      "id": "runners",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runners?per_page=100",
+      "projection": "{total_count,runners:[.runners[]|{id,name,os,status,busy,labels:[.labels[].name]}]}",
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.219Z",
+      "exit_code": 0,
+      "output": "{\"runners\":[{\"busy\":false,\"id\":24,\"labels\":[\"self-hosted\",\"Linux\",\"X64\",\"memory-reference-071\",\"hydracache-release\"],\"name\":\"hydracache-perf-v1\",\"os\":\"Linux\",\"status\":\"offline\"}],\"total_count\":1}\n"
+    },
+    {
+      "id": "running",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runs?status=in_progress&per_page=100",
+      "projection": "{total_count,workflow_runs:[.workflow_runs[]|{id,name,head_sha,status,run_attempt,event,head_branch,actor:{id:.actor.id,login:.actor.login}}]}",
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.002Z",
+      "exit_code": 0,
+      "output": "{\"total_count\":0,\"workflow_runs\":[]}\n"
+    },
+    {
+      "id": "queued",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runs?status=queued&per_page=100",
+      "projection": "{total_count,workflow_runs:[.workflow_runs[]|{id,name,head_sha,status,run_attempt,event,head_branch}]}",
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.042Z",
+      "exit_code": 0,
+      "output": "{\"total_count\":0,\"workflow_runs\":[]}\n"
+    },
+    {
+      "id": "workflow_permissions",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/permissions/workflow",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.056Z",
+      "exit_code": 0,
+      "output": "{\"default_workflow_permissions\":\"read\",\"can_approve_pull_request_reviews\":false}"
+    },
+    {
+      "id": "builder_branches",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/deployment-branch-policies",
+      "projection": null,
+      "captured_before_utc": "2026-10-15T08:29:22.020Z",
+      "captured_after_utc": "2026-10-15T08:29:24.002Z",
+      "exit_code": 0,
+      "output": "{\"total_count\":1,\"branch_policies\":[{\"id\":62458325,\"node_id\":\"MDE2OkdhdGVCcmFuY2hQb2xpY3k2MjQ1ODMyNQ==\",\"name\":\"feat/0.74-resp-native-throughput\",\"type\":\"branch\"}]}"
+    }
+  ],
+  "last": [
+    {
+      "id": "oidc_subject",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/oidc/customization/sub",
+      "projection": null,
+      "recorded_at_utc": "2026-10-15T08:33:51.351Z",
+      "exit_code": 0,
+      "output": "{\"use_default\":true,\"use_immutable_subject\":false,\"sub_claim_prefix\":\"repo:javaquasar/hydracache\"}"
+    },
+    {
+      "id": "environments",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments?per_page=100",
+      "projection": "{total_count,environments:[.environments[]|{id,name,protection_rules,deployment_branch_policy}]}",
+      "recorded_at_utc": "2026-10-15T08:33:51.433Z",
+      "exit_code": 0,
+      "output": "{\"environments\":[{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":17263536642,\"name\":\"github-pages\",\"protection_rules\":[{\"id\":58401612,\"node_id\":\"GA_kwDOSIt_wc4DeyNM\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":false,\"protected_branches\":true},\"id\":20447296847,\"name\":\"memory-reference-071\",\"protection_rules\":[{\"id\":63486356,\"node_id\":\"GA_kwDOSIt_wc4DyLmU\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":63486357,\"node_id\":\"GA_kwDOSIt_wc4DyLmV\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":23854349572,\"name\":\"performance-diagnostic-builder-074\",\"protection_rules\":[{\"id\":68214984,\"node_id\":\"GA_kwDOSIt_wc4EEODI\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":68214985,\"node_id\":\"GA_kwDOSIt_wc4EEODJ\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":22694657037,\"name\":\"performance-reference-073\",\"protection_rules\":[{\"id\":66633203,\"node_id\":\"GA_kwDOSIt_wc4D-L3z\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":66633204,\"node_id\":\"GA_kwDOSIt_wc4D-L30\",\"type\":\"branch_policy\"}]},{\"deployment_branch_policy\":null,\"id\":23479948272,\"name\":\"performance-reference-074\",\"protection_rules\":[]},{\"deployment_branch_policy\":null,\"id\":18220887333,\"name\":\"release\",\"protection_rules\":[{\"id\":60060730,\"node_id\":\"GA_kwDOSIt_wc4DlHQ6\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"}]}],\"total_count\":6}\n"
+    },
+    {
+      "id": "branch",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/branches/feat%2F0.74-resp-native-throughput",
+      "projection": "{name,protected,commit:{sha:.commit.sha}}",
+      "recorded_at_utc": "2026-10-15T08:33:51.471Z",
+      "exit_code": 0,
+      "output": "{\"commit\":{\"sha\":\"323c2509a7d20969b8e9216340675883afa77894\"},\"name\":\"feat/0.74-resp-native-throughput\",\"protected\":false}\n"
+    },
+    {
+      "id": "runners",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runners?per_page=100",
+      "projection": "{total_count,runners:[.runners[]|{id,name,os,status,busy,labels:[.labels[].name]}]}",
+      "recorded_at_utc": "2026-10-15T08:33:51.626Z",
+      "exit_code": 0,
+      "output": "{\"runners\":[{\"busy\":false,\"id\":24,\"labels\":[\"self-hosted\",\"Linux\",\"X64\",\"memory-reference-071\",\"hydracache-release\"],\"name\":\"hydracache-perf-v1\",\"os\":\"Linux\",\"status\":\"offline\"}],\"total_count\":1}\n"
+    },
+    {
+      "id": "running",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runs?status=in_progress&per_page=100",
+      "projection": "{total_count,workflow_runs:[.workflow_runs[]|{id,name,head_sha,status,run_attempt,event,head_branch,actor:{id:.actor.id,login:.actor.login}}]}",
+      "recorded_at_utc": "2026-10-15T08:33:51.474Z",
+      "exit_code": 0,
+      "output": "{\"total_count\":0,\"workflow_runs\":[]}\n"
+    },
+    {
+      "id": "queued",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/runs?status=queued&per_page=100",
+      "projection": "{total_count,workflow_runs:[.workflow_runs[]|{id,name,head_sha,status,run_attempt,event,head_branch}]}",
+      "recorded_at_utc": "2026-10-15T08:33:51.505Z",
+      "exit_code": 0,
+      "output": "{\"total_count\":0,\"workflow_runs\":[]}\n"
+    }
+  ],
+  "secret_metadata": [
+    {
+      "id": "repository_secret_metadata",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/actions/secrets?per_page=100",
+      "projection": "{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}",
+      "recorded_at_utc": "2026-10-15T08:38:37.825Z",
+      "exit_code": 0,
+      "output": "{\"secrets\":[],\"total_count\":0}\n"
+    },
+    {
+      "id": "reference_secret_metadata",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments/performance-reference-074/secrets?per_page=100",
+      "projection": "{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}",
+      "recorded_at_utc": "2026-10-15T08:38:38.564Z",
+      "exit_code": 0,
+      "output": "{\"secrets\":[{\"created_at\":\"2026-10-05T13:28:51Z\",\"name\":\"HYDRACACHE_074_AUTH_SIGNING_KEY_HEX\",\"updated_at\":\"2026-10-05T13:28:51Z\"}],\"total_count\":1}\n"
+    },
+    {
+      "id": "builder_secret_metadata",
+      "method": "GET",
+      "path": "repos/javaquasar/hydracache/environments/performance-diagnostic-builder-074/secrets?per_page=100",
+      "projection": "{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}",
+      "recorded_at_utc": "2026-10-15T08:38:39.339Z",
+      "exit_code": 0,
+      "output": "{\"secrets\":[{\"created_at\":\"2026-10-09T07:20:36Z\",\"name\":\"HYDRACACHE_074_BUILDER_SIGNING_KEY_HEX\",\"updated_at\":\"2026-10-09T07:20:36Z\"}],\"total_count\":1}\n"
+    }
+  ],
+  "builder_environment": {
+    "chunk_id": "2d0f13",
+    "wall_time_seconds": 0.825783,
+    "exit_code": 0,
+    "original_token_count": 343,
+    "output": "{\"can_admins_bypass\":false,\"deployment_branch_policy\":{\"custom_branch_policies\":true,\"protected_branches\":false},\"id\":23854349572,\"name\":\"performance-diagnostic-builder-074\",\"protection_rules\":[{\"id\":68214984,\"node_id\":\"GA_kwDOSIt_wc4EEODI\",\"prevent_self_review\":false,\"reviewers\":[{\"reviewer\":{\"avatar_url\":\"https://avatars.githubusercontent.com/u/22050429?v=4\",\"events_url\":\"https://api.github.com/users/javaquasar/events{/privacy}\",\"followers_url\":\"https://api.github.com/users/javaquasar/followers\",\"following_url\":\"https://api.github.com/users/javaquasar/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/javaquasar/gists{/gist_id}\",\"gravatar_id\":\"\",\"html_url\":\"https://github.com/javaquasar\",\"id\":22050429,\"login\":\"javaquasar\",\"node_id\":\"MDQ6VXNlcjIyMDUwNDI5\",\"organizations_url\":\"https://api.github.com/users/javaquasar/orgs\",\"received_events_url\":\"https://api.github.com/users/javaquasar/received_events\",\"repos_url\":\"https://api.github.com/users/javaquasar/repos\",\"site_admin\":false,\"starred_url\":\"https://api.github.com/users/javaquasar/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/javaquasar/subscriptions\",\"type\":\"User\",\"url\":\"https://api.github.com/users/javaquasar\",\"user_view_type\":\"public\"},\"type\":\"User\"}],\"type\":\"required_reviewers\"},{\"id\":68214985,\"node_id\":\"GA_kwDOSIt_wc4EEODJ\",\"type\":\"branch_policy\"}]}\n"
+  }
+}

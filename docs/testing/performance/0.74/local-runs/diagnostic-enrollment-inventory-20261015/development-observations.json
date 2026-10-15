@@ -1,0 +1,23 @@
+{
+  "schema_version": "diagnostic-enrollment-development-observations-074-v1",
+  "production_admission": false,
+  "observations": [
+    {
+      "id": "powershell-input-redirection",
+      "result": "local parser refused reserved < operator; no SSH executed",
+      "output": "The '<' operator is reserved for future use."
+    },
+    {
+      "id": "root-cgroup-type",
+      "result": "read-only collector aborted; no host configuration mutation",
+      "output": "tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs:10:pub const FIXED_INTENT_STORAGE_PATH: &str =\nTraceback (most recent call last):\n  File \"<stdin>\", line 175, in <module>\n  File \"<stdin>\", line 167, in collect\n  File \"<stdin>\", line 78, in proc_text\nFileNotFoundError: [Errno 2] No such file or directory: '/sys/fs/cgroup/cgroup.type'\n"
+    },
+    {
+      "id": "initial-context-capture",
+      "result": "superseded observation, not used to approve intent storage: development collector used diagnostic-leases-074 instead of fixed diagnostic-intents-074",
+      "output_retained": false
+    }
+  ],
+  "known_host_fingerprints": "256 SHA256:o7QxaqNFkcpgxZ+oduX4fgQGLpNr7r3OM4e9Y210WWk 37.27.115.91 (ED25519)\r\n3072 SHA256:ZyCo6zRiXKA0fC0re+cTtOiZJOQDQriwKCDwqyQH4cQ 37.27.115.91 (RSA)\r\n256 SHA256:V8HqdKId/dI2UjIotVkEuyYsUSW7yUuVhye3Lvy1jEQ 37.27.115.91 (ECDSA)\r\n",
+  "collector_test_output": ".....s.s.....\r\n----------------------------------------------------------------------\r\nRan 13 tests in 0.004s\r\n\r\nOK (skipped=2)\r\n.............\n----------------------------------------------------------------------\nRan 13 tests in 0.009s\n\nOK\n"
+}
