@@ -1,6 +1,7 @@
 //! Private original-parent construction loss, never issuer or worker authority.
 use super::super::super::constructor_guard::{Cut, Fault, Hook, CUTS};
 use super::*;
+use std::os::unix::fs::FileTypeExt;
 const CTOR_ENTRY: &str = "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry";
 const CTOR_ROLE: &str = "HYDRACACHE_LOCAL_SIGNER_CTOR_074";
 const CTOR_SPEC: &str = "HYDRACACHE_LOCAL_SIGNER_CTOR_SPEC_074";
@@ -93,14 +94,21 @@ fn signer_constructor_loss_entry() {
         None => {}
         Some("monitor") => early_monitor(EarlySpec::environment().unwrap()).unwrap(),
         Some("tracer") => early_tracer(EarlySpec::environment().unwrap()).unwrap(),
+        Some("eof-monitor") => {
+            early_monitor_named(EarlySpec::environment().unwrap(), "eof-tracer").unwrap()
+        }
+        Some("eof-tracer") => early_tracer_mode(EarlySpec::environment().unwrap(), true).unwrap(),
         _ => panic!("unknown closed constructor role"),
     }
 }
 fn constructor_loss_case(cut: u8, fault: u8, healthy: bool) -> io::Result<()> {
     let spec = EarlySpec::new(cut, fault, healthy)?;
+    constructor_loss_capture(spec, "monitor").map(|_| ())
+}
+fn constructor_loss_capture(spec: EarlySpec, role: &'static str) -> io::Result<String> {
     let before = subreaper()?;
     let capture = tempfile::tempfile()?;
-    let mut cmd = spec.command("monitor")?;
+    let mut cmd = spec.command(role)?;
     cmd.stdout(capture.try_clone()?)
         .stderr(capture.try_clone()?);
     let mut process = Process::spawn(&mut cmd, true)?;
@@ -129,13 +137,14 @@ fn constructor_loss_case(cut: u8, fault: u8, healthy: bool) -> io::Result<()> {
     {
         return Err(invalid());
     }
-    for line in output
-        .lines()
-        .filter(|l| l.starts_with("constructor_terminal "))
-    {
+    for line in output.lines().filter(|l| {
+        l.starts_with("constructor_terminal ")
+            || l.starts_with("constructor_gate ")
+            || l.starts_with("constructor_eof_control ")
+    }) {
         println!("{line}");
     }
-    Ok(())
+    Ok(output)
 }
 fn original_target(file: &File, tracer: u32, spec: EarlySpec, tid: u32) -> io::Result<()> {
     if tid == 0 || tid > i32::MAX as u32 {
@@ -165,7 +174,78 @@ fn original_target(file: &File, tracer: u32, spec: EarlySpec, tid: u32) -> io::R
     }
     Ok(())
 }
+fn retained_gate(bytes: &[u8], mut fds: Vec<File>, tracer: u32) -> io::Result<File> {
+    if bytes != [b'G'] || fds.len() != 1 {
+        return Err(invalid());
+    }
+    let gate = fds.pop().ok_or_else(invalid)?;
+    let raw = gate.as_raw_fd();
+    let flags = unsafe { libc::fcntl(raw, libc::F_GETFL) };
+    let fd_flags = unsafe { libc::fcntl(raw, libc::F_GETFD) };
+    if !gate.metadata()?.file_type().is_socket()
+        || flags < 0
+        || flags & libc::O_ACCMODE != libc::O_RDWR
+        || flags & libc::O_NONBLOCK == 0
+        || fd_flags < 0
+        || fd_flags & libc::FD_CLOEXEC == 0
+    {
+        return Err(invalid());
+    }
+    for (option, expected) in [
+        (libc::SO_TYPE, libc::SOCK_SEQPACKET),
+        (libc::SO_DOMAIN, libc::AF_UNIX),
+    ] {
+        let mut value = 0i32;
+        let mut len = std::mem::size_of_val(&value) as libc::socklen_t;
+        if unsafe {
+            libc::getsockopt(
+                raw,
+                libc::SOL_SOCKET,
+                option,
+                (&mut value as *mut i32).cast(),
+                &mut len,
+            )
+        } != 0
+            || len as usize != std::mem::size_of_val(&value)
+            || value != expected
+        {
+            return Err(invalid());
+        }
+    }
+    let mut peer: libc::ucred = unsafe { std::mem::zeroed() };
+    let mut len = std::mem::size_of_val(&peer) as libc::socklen_t;
+    if unsafe {
+        libc::getsockopt(
+            raw,
+            libc::SOL_SOCKET,
+            libc::SO_PEERCRED,
+            (&mut peer as *mut libc::ucred).cast(),
+            &mut len,
+        )
+    } != 0
+        || len as usize != std::mem::size_of_val(&peer)
+        || peer.pid as u32 != tracer
+        || unsafe { (peer.uid, peer.gid) != (libc::geteuid(), libc::getegid()) }
+    {
+        return Err(invalid());
+    }
+    Ok(gate)
+}
+fn nonterminal(file: &File) -> io::Result<()> {
+    let mut query = libc::pollfd {
+        fd: file.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    if unsafe { libc::poll(&mut query, 1, 0) } != 0 || query.revents != 0 {
+        return Err(invalid());
+    }
+    Ok(())
+}
 fn early_monitor(spec: EarlySpec) -> io::Result<()> {
+    early_monitor_named(spec, "tracer")
+}
+fn early_monitor_named(spec: EarlySpec, role: &'static str) -> io::Result<()> {
     // SAFETY: this dedicated isolated observer only; ordinary test process unchanged.
     if unsafe { libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1usize, 0usize, 0usize, 0usize) } != 0 {
         return Err(io::Error::last_os_error());
@@ -181,7 +261,7 @@ fn early_monitor(spec: EarlySpec) -> io::Result<()> {
     }
     let (socket, passed) = channel::sockets()?;
     let raw = passed.as_raw_fd();
-    let mut cmd = spec.command("tracer")?;
+    let mut cmd = spec.command(role)?;
     cmd.env("TMPDIR", parent.path());
     // SAFETY: only original scalar dup2 in Command's child; no allocation or caller descriptor.
     unsafe {
@@ -198,6 +278,8 @@ fn early_monitor(spec: EarlySpec) -> io::Result<()> {
     if progress != [0] || !fds.is_empty() {
         return Err(invalid());
     }
+    let (gate_header, gate_fds) = channel::packet(&socket, tracer.child.id())?;
+    let gate = retained_gate(&gate_header, gate_fds, tracer.child.id())?;
     let (bytes, fds) = channel::packet(&socket, tracer.child.id())?;
     if bytes.len() != 32 || fds.len() != 5 {
         return Err(invalid());
@@ -237,6 +319,13 @@ fn early_monitor(spec: EarlySpec) -> io::Result<()> {
         if tracer.wait(5000)?.signal() != Some(libc::SIGKILL) {
             return Err(invalid());
         }
+        // The unarmed child must still be waiting on the retained original peer,
+        // not racing creator task teardown and nonretroactive PDEATHSIG arming.
+        if spec.cut == Cut::BeforeArm || spec.fault == Fault::NoArm {
+            nonterminal(&fds[0])?;
+            eprintln!("constructor_gate cut={} fault={} creator_terminal=true child_nonterminal=true peer_retained=true", spec.cut as u8, spec.fault as u8);
+        }
+        drop(gate);
         readable(&fds[0], 5000)?;
         let actual = wait_info(&fds[0], libc::WNOWAIT)?;
         if !spec.terminal(actual) {
@@ -273,6 +362,13 @@ fn report_cut(own: &RootedExec, hook: &Hook) -> io::Result<()> {
             return Err(invalid());
         }
     }
+    report_original(own)?;
+    if hook.cut != Cut::Stopped {
+        channel::response(&hook.parent, 1)?;
+    }
+    Ok(())
+}
+fn report_original(own: &RootedExec) -> io::Result<()> {
     let spec = EarlySpec::environment()?;
     // SAFETY: borrowed private FD3 is owned by early_tracer throughout this callback.
     let socket = unsafe { std::os::fd::BorrowedFd::borrow_raw(3) };
@@ -286,12 +382,15 @@ fn report_cut(own: &RootedExec, hook: &Hook) -> io::Result<()> {
     if channel::command(&report)? != 1 {
         return Err(invalid());
     }
-    if hook.cut != Cut::Stopped {
-        channel::response(&hook.parent, 1)?;
-    }
     Ok(())
 }
 fn early_tracer(spec: EarlySpec) -> io::Result<()> {
+    early_tracer_mode(spec, false)
+}
+fn early_tracer_mode(spec: EarlySpec, force_early_eof: bool) -> io::Result<()> {
+    if force_early_eof && (spec.cut != Cut::Stopped || spec.fault != Fault::None || spec.healthy) {
+        return Err(invalid());
+    }
     // SAFETY: original privately inherited report endpoint, owned once in this exact role.
     let socket = unsafe { File::from_raw_fd(3) };
     if unsafe { libc::fcntl(socket.as_raw_fd(), libc::F_SETFD, libc::FD_CLOEXEC) } != 0 {
@@ -299,13 +398,24 @@ fn early_tracer(spec: EarlySpec) -> io::Result<()> {
     }
     let (parent, child) = channel::sockets()?;
     let hook = Hook {
-        cut: spec.cut,
+        cut: if force_early_eof {
+            Cut::BeforeArm
+        } else {
+            spec.cut
+        },
         fault: spec.fault,
         parent,
         child,
-        observe: report_cut,
+        observe: if force_early_eof {
+            eof_while_creator_live
+        } else {
+            report_cut
+        },
     };
     channel::response(&socket, 0)?;
+    // Transfer the peer before original fork. The shared parser still accepts
+    // at most five rights per packet; this separate setup packet carries one.
+    channel::send(&socket, b"G", &[hook.parent.as_raw_fd()])?;
     let mut own = RootedExec::build_observed(
         super::super::super::Case::SelfExec,
         Some(super::super::super::namespace::Case::Probe(
@@ -329,6 +439,127 @@ fn early_tracer(spec: EarlySpec) -> io::Result<()> {
     channel::response(&socket, 7)?;
     drop(own);
     Ok(())
+}
+
+fn eof_while_creator_live(own: &RootedExec, hook: &Hook) -> io::Result<()> {
+    let (bytes, fds) = channel::packet(&hook.parent, own.pid as u32)?;
+    if bytes != [Cut::BeforeArm as u8] || !fds.is_empty() {
+        return Err(invalid());
+    }
+    // Counterfactual only: force the old pre-arm EOF while its original creating
+    // thread is still here. Never resume a ptrace stop or install EXITKILL.
+    if unsafe { libc::shutdown(hook.parent.as_raw_fd(), libc::SHUT_WR) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let original = own.pidfd.as_ref().ok_or_else(invalid)?;
+    let until = Instant::now() + Duration::from_secs(5);
+    loop {
+        // WNOWAIT leaves even unexpected terminal events for the original guard;
+        // no child PID adoption, direct signal or consumed wait state here.
+        let event = wait_info(original, libc::WSTOPPED | libc::WNOWAIT | libc::WNOHANG)?;
+        if event == (libc::CLD_TRAPPED, libc::SIGSTOP) {
+            break;
+        }
+        if event != (0, 0) || Instant::now() >= until {
+            return Err(invalid());
+        }
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    eprintln!("constructor_eof_control creator_live=true guard_readback_path_reached=true first_stop=true exitkill_installed=false");
+    report_original(own)?;
+    // This closed loss control never accepts a healthy grant or returns to the
+    // constructor's later PTRACE_SETOPTIONS call.
+    Err(invalid())
+}
+
+#[test]
+fn signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming() {
+    let output =
+        constructor_loss_capture(EarlySpec::new(4, 0, false).unwrap(), "eof-monitor").unwrap();
+    assert_eq!(output.matches("constructor_eof_control creator_live=true guard_readback_path_reached=true first_stop=true exitkill_installed=false").count(), 1);
+    assert!(output.contains("constructor_terminal cut=4 fault=0 healthy=false code=2 status=9"));
+    println!("constructor_control EOF_before_creator_death=true then_guard_SIGKILL=true prearm_exit81_proof=false");
+}
+
+#[test]
+fn signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal() {
+    let output = constructor_loss_capture(EarlySpec::new(0, 0, false).unwrap(), "monitor").unwrap();
+    assert_eq!(output.matches("constructor_gate cut=0 fault=0 creator_terminal=true child_nonterminal=true peer_retained=true").count(), 1);
+}
+
+#[test]
+fn signer_constructor_loss_gate_packet_and_descriptor_faults_refuse() {
+    let tracer = unsafe { libc::getpid() } as u32;
+    let (gate, _child) = channel::sockets().unwrap();
+    retained_gate(b"G", vec![gate.try_clone().unwrap()], tracer).unwrap();
+    for header in [b"".as_slice(), b"GG", b"H", &[0]] {
+        assert!(retained_gate(header, vec![gate.try_clone().unwrap()], tracer).is_err());
+    }
+    assert!(retained_gate(b"G", vec![], tracer).is_err());
+    assert!(retained_gate(
+        b"G",
+        vec![gate.try_clone().unwrap(), gate.try_clone().unwrap()],
+        tracer
+    )
+    .is_err());
+    assert!(retained_gate(b"G", vec![gate.try_clone().unwrap()], tracer ^ 0x8000_0000).is_err());
+    assert!(retained_gate(b"G", vec![tempfile::tempfile().unwrap()], tracer).is_err());
+    let uncloexec = gate.try_clone().unwrap();
+    assert_eq!(
+        unsafe { libc::fcntl(uncloexec.as_raw_fd(), libc::F_SETFD, 0) },
+        0
+    );
+    assert!(retained_gate(b"G", vec![uncloexec], tracer).is_err());
+    let (blocking, _child) = channel::sockets().unwrap();
+    let flags = unsafe { libc::fcntl(blocking.as_raw_fd(), libc::F_GETFL) };
+    assert_eq!(
+        unsafe {
+            libc::fcntl(
+                blocking.as_raw_fd(),
+                libc::F_SETFL,
+                flags & !libc::O_NONBLOCK,
+            )
+        },
+        0
+    );
+    assert!(retained_gate(b"G", vec![blocking], tracer).is_err());
+    let mut stream = [-1; 2];
+    assert_eq!(
+        unsafe {
+            libc::socketpair(
+                libc::AF_UNIX,
+                libc::SOCK_STREAM | libc::SOCK_CLOEXEC | libc::SOCK_NONBLOCK,
+                0,
+                stream.as_mut_ptr(),
+            )
+        },
+        0
+    );
+    let stream_files = unsafe { [File::from_raw_fd(stream[0]), File::from_raw_fd(stream[1])] };
+    assert!(retained_gate(b"G", stream_files.into_iter().take(1).collect(), tracer).is_err());
+    let live = File::from(pidfd(unsafe { libc::getpid() }).unwrap());
+    nonterminal(&live).unwrap();
+    assert!(nonterminal(&tempfile::tempfile().unwrap()).is_err());
+    println!("constructor_gate fault_cases=11 original_peer_required=true unknown_poll_events_refuse=true");
+}
+
+#[test]
+fn signer_constructor_loss_four_independent_prearm_peer_barriers() {
+    let before = subreaper().unwrap();
+    let jobs: Vec<_> = (0..4)
+        .map(|_| {
+            std::thread::spawn(|| {
+                constructor_loss_capture(EarlySpec::new(0, 0, false).unwrap(), "monitor")
+            })
+        })
+        .collect();
+    let results: Vec<_> = jobs.into_iter().map(|job| job.join()).collect();
+    for result in results {
+        let output = result.unwrap().unwrap();
+        assert_eq!(output.matches("constructor_gate cut=0 fault=0 creator_terminal=true child_nonterminal=true peer_retained=true").count(), 1);
+    }
+    assert_eq!(before, subreaper().unwrap());
+    println!("constructor_gate independent_prearm_observers=4 all_joined=true parent_subreaper_unchanged=true");
 }
 #[test]
 fn signer_constructor_loss_before_arm_refuses_original_parent_mismatch() {
@@ -429,8 +660,7 @@ fn signer_constructor_loss_seeded_fresh_and_independent_observers() {
             })
         })
         .collect();
-    for thread in threads {
-        thread.join().unwrap();
-    }
+    let results: Vec<_> = threads.into_iter().map(|thread| thread.join()).collect();
+    assert!(results.into_iter().all(|result| result.is_ok()));
     println!("constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true");
 }

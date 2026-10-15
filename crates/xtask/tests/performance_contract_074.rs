@@ -13121,6 +13121,10 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
         "guard_overlaps_exitkill_before_first_resume",
         "whole_process_parent_loss_at_five_constructor_cuts",
         "healthy_progress_is_exact_hint_not_admission",
+        "independent_monitor_holds_original_gate_until_tracer_reap",
+        "unarmed_child_nonterminal_before_original_peer_release",
+        "separate_gate_packet_keeps_shared_parser_bounds",
+        "forced_early_eof_control_never_counts_as_prearm_refusal",
         "no_child_signal_on_positive_or_control_path",
         "original_pidfd_terminal_reaped_then_echild",
         "original_nested_root_cleanup_only_after_reap",
@@ -13162,7 +13166,10 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
         ("control_bytes", 128),
         ("constructor_cuts", 5),
         ("healthy_progress_packets", 7),
-        ("max_received_packets", 9),
+        ("max_received_packets", 10),
+        ("setup_gate_bytes", 1),
+        ("setup_gate_descriptors", 1),
+        ("gate_setup_revision", 2),
         ("before_arm_refusal_exit", 81),
         ("guard_failure_exit", 82),
         ("no_arm_control_exit", 83),
@@ -13230,11 +13237,20 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
         "dummy_sends=0",
         "decode_frame",
         "CUTS",
+        "retained_gate",
+        "nonterminal(&fds[0])",
+        "constructor_eof_control",
+        "libc::SO_PEERCRED",
+        "libc::WSTOPPED | libc::WNOWAIT | libc::WNOHANG",
         "0x0740_c071",
         ".env_clear()",
     ] {
         assert!(fixture.contains(required), "{required}");
     }
+    let loss = fixture.split("signal(&tracer.fd)?;").nth(1).unwrap();
+    assert!(loss.find("tracer.wait(5000)").unwrap() < loss.find("nonterminal(&fds[0])").unwrap());
+    assert!(loss.find("nonterminal(&fds[0])").unwrap() < loss.find("drop(gate)").unwrap());
+    assert!(loss.find("drop(gate)").unwrap() < loss.find("readable(&fds[0], 5000)").unwrap());
     for text in [&guard, &fixture] {
         for forbidden in [
             "pub fn",

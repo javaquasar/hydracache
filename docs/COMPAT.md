@@ -105,10 +105,16 @@ qualification changes. Removing the test profile disables it. See the
 The private Linux libtest report
 `diagnostic-signer-original-parent-constructor-loss-074-v1` uses distinct magic,
 32 bytes with cut/fault/original-TID/zero reserved fields, exactly five original
-FDs and kernel credentials, after one descriptor-free progress byte. Its private
-child gate admits one fixed cut token and one release byte; EOF exposes actual
-parent loss. Unknown fields, length, descriptor set, peer or ancestry refuse.
-Older binaries have no consumer. It is neither persisted nor connected to a
+FDs and kernel credentials. The unchanged report body uses gate-retention setup
+revision2: one descriptor-free progress byte, exactly `G` with one original gate
+peer FD, then the report. Seven healthy progress records give ten packets total;
+the shared parser's five-FD/32-byte/128-control-byte bounds stay unchanged. The
+private child gate admits one fixed cut token and one release byte. The monitor
+holds its peer until original tracer reap; EOF alone is not lifetime proof.
+Unknown setup/fields/length/descriptor set/peer/ancestry refuses. The old prefix
+and new prefix reject each other; no negotiation or fallback is offered between
+private libtest revisions. Older binaries have no production consumer. It is
+neither persisted nor connected to a
 production receiver; no durable/signed schema, public API, dependency, pin or
 qualification changes. Removing the private fixture disables this test profile.
 See the [constructor boundary](testing/performance/0.74/diagnostic-signer-constructor-loss-design.md).
