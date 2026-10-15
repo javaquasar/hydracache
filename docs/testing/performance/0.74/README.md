@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary selected root execution probe](diagnostic-signer-owned-root-exec-design.md)
+adds a separate fixed `root-exec` mode: original fork/pidfd, same-ID namespace,
+selected root/first exec, initial and loaded VMA identity checks, then original
+SIGKILL/reap/pipe EOF before root cleanup. It stops before the procfs-dependent
+restriction installer and all signing/handoff. This narrows the normal launch
+composition gap; it does not open authenticated start, writers or server admission.
+Its [local packet](local-runs/diagnostic-signer-owned-root-exec-20261015/README.md)
+retains both targeted 25-test successes and two five-second process timeouts during
+overlap with the separate passing 83-test group. Load robustness is not established.
+
 The [ordinary fixed root preparer](diagnostic-signer-owned-root-design.md) now
 materializes/rechecks/removes four selected GNU roles outside cfg(test), without
 launching a child. Rust1.94 normal preparation passes; local Rust1.88's extra-libm
@@ -9,8 +19,8 @@ constructor-loss failure (78/1) is addressed by the
 EOF no longer releases the before-arm child until exact tracer termination/reap.
 Three default-parallel 83-test groups and MSRV83 pass after correction. The
 historical failure stays retained; no exact historical syscall trace or full
-release gate is claimed. Normal root/child composition and server admission
-remain open work.
+release gate is claimed. Normal root/child/policy composition and server admission
+remain open work; the separate root-exec probe above covers launch mechanics only.
 
 The [tracer-thread rooted controls](diagnostic-signer-thread-exit-design.md) now
 distinguish SIGSTOP delivery from a kernel group-stop. Both rooted loss variants

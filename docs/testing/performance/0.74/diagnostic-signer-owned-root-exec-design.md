@@ -65,3 +65,8 @@ not invoked, relaxed, or bypassed by a claimed policy success; no procfs mount,
 host proc descriptor inheritance or general supplied-FD API is added. Composing
 that installer and protected handoff is the next isolated step before credentials,
 original-start, completion/later cells and server admission can open.
+
+The [local evidence](local-runs/diagnostic-signer-owned-root-exec-20261015/README.md)
+retains three targeted current-toolchain 25-test successes and the separate
+overlapping-broad-load failure (two five-second process timeouts). Targeted success
+does not establish load robustness or cleanup after the outer guard kills an owner.

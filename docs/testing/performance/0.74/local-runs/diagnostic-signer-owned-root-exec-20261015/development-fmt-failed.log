@@ -1,0 +1,9 @@
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_signer_owned_root_exec_tests.rs:1:
+ use super::*;
++use crate::root::tests::images;
+ use crate::root::{chmod, Source};
+ use std::os::unix::fs::PermissionsExt;
+-use crate::root::tests::images;
+ fn root() -> (Root, tempfile::TempDir) {
+     let temp = tempfile::tempdir().unwrap();
+     let sources = images::images()

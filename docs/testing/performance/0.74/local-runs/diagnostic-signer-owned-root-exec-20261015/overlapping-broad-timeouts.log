@@ -1,0 +1,64 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.68s
+     Running unittests src/bin/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-3f4eed9fb459e1d2)
+
+running 18 tests
+test root::launch::tests::status_duplicates_missing_identity_and_capability_drift_refuse ... ok
+test root::launch::tests::bounded_maps_require_selected_inodes_roles_offsets_paths_and_private_permissions ... ok
+Original root child quiescence refused; root retained.
+test root::tests::copied_content_mode_and_hardlink_drift_refuse ... ok
+test root::launch::tests::missing_pipe_eof_preserves_root_until_quiescence_is_proved ... ok
+test root::tests::collision_is_not_adopted_or_deleted ... ok
+test root::tests::equal_bytes_replacement_refuses_cleanup_without_mutating_foreign_file ... ok
+test root::launch::tests::initial_drop_and_wrong_phase_kill_reap_original_before_root_cleanup ... ok
+test root::tests::foreign_symlink_and_extra_entry_never_removed_by_cleanup ... ok
+test root::tests::original_source_content_and_mode_drift_refuse_stickily ... ok
+independent_fixed_roots=4 synthetic_graphs=true admission=false
+test root::tests::four_independent_builders_keep_distinct_originals ... ok
+test root::tests::roundtrip_retains_original_sources_and_readonly_copies_then_removes_exact_tree ... ok
+test root::tests::replaced_root_name_preserves_foreign_and_original_trees ... ok
+test root::tests::source_size_type_permissions_and_unknown_graph_refuse_before_root_creation ... ok
+test root::tests::every_owned_partial_construction_prefix_cleans_only_known_names ... ok
+test root::tests::lost_cloexec_and_source_path_replacement_never_recapture_originals ... ok
+test root::launch::tests::actual_root_transition_drift_and_synthetic_nonshim_image_refuse ... ok
+ordinary_root_maps seed=0x0740c07b mutations=4096 admission=false
+test root::launch::tests::seeded_map_mutations_never_panic_and_known_identity_mutations_refuse ... ok
+test root::launch::tests::original_sigkill_and_drop_at_rooted_and_exec_boundaries_reap_before_cleanup ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests/diagnostic_signer_root_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_cli-409ec9d13395b2c0)
+
+running 1 test
+test fixed_root_cli_has_no_caller_selected_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 6 tests
+test nonutf8_environment_writable_hardlinked_and_oversize_self_refuse ... ok
+test root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld ... ok
+normal_fixed_root_prepare=true real_runtime_sources=4 child_launch=false admission=false
+test normal_private_stripped_self_and_real_gnu_runtime_prepare_and_cleanup ... ok
+independent_normal_root_preparations=4 parent_context_unchanged=true admission=false
+test four_independent_normal_preparations_leave_parent_context_unchanged ... ok
+
+thread 'normal_original_root_exec_observes_selected_runtime_then_reaps' (6867) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs:108:13:
+normal root preparation stalled
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test normal_original_root_exec_observes_selected_runtime_then_reaps ... FAILED
+
+thread 'repeated_original_root_execs_leave_parent_context_unchanged' (6869) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs:108:13:
+normal root preparation stalled
+test repeated_original_root_execs_leave_parent_context_unchanged ... FAILED
+
+failures:
+
+failures:
+    normal_original_root_exec_observes_selected_runtime_then_reaps
+    repeated_original_root_execs_leave_parent_context_unchanged
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.70s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_signer_root_probe`

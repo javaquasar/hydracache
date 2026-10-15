@@ -9450,3 +9450,99 @@ neither a kernel fix nor a cache-performance improvement. Selected normal
 root/runtime still needs original-child launch and kernel mapping composition;
 full normal-entry loss, protected handoff, authenticated worker start and all-writer
 cessation remain before completion and server admission.
+
+### Ordinary selected root execution before signer admission
+
+The next hypothesis was narrower than a production launcher: can the normal
+binary, rather than a cfg(test) helper, connect its selected four-image root to
+the original fork, observe that same child's first exec and loaded runtime, and
+terminate it before removing the root? The preparation baseline passed 15 tests.
+A new normal-build `root-exec` test first failed against the old entry with exit 2,
+establishing that preparation alone did not already provide this execution path.
+
+The implementation retains the original sources and copied root, prepares all
+descriptors and fixed arguments before fork, then uses only scalar syscalls and
+stack storage in the raw child. The child arms/readbacks PDEATHSIG/SIGKILL and
+checks its captured parent before requesting tracing and stopping. Parent cleanup
+owns the original fork before pidfd acquisition can fail. TRACEEXEC and EXITKILL
+are installed before the first resume, overlapping the parent-death protection
+before it is cleared for the user-namespace transition. This is launch mechanics,
+not a new credential issuer or authenticated worker-start capability.
+
+Only the child enters a new user namespace, with the same nonzero UID/GID mapped
+and setgroups denied. It changes root/cwd to the selected root, closes the outside
+root descriptor, removes capability sets and enables no_new_privs. Its standard
+descriptors point to the retained null device; the only post-exec extra descriptor
+is a private nonblocking write pipe. The executable descriptor is CLOEXEC and the
+original copied self is executed by execveat, not by searching a supplied path.
+The parent retains the original pidfd and process directory and rechecks root,
+namespace, identities, capabilities, sole task, FD objects and empty environment
+at the relevant stops. No process is adopted by a caller-supplied PID or descriptor.
+
+An exec-stop is not enough. A development unit initially assumed the synthetic
+ELF declaration fixtures could not reach the kernel exec event; that assertion
+failed. The kernel accepted their shape and stopped before user code, even though
+they could not execute the actual Rust child shim. The corrected test separates
+those facts: selected executable identity and an exact kernel exec event establish
+the first boundary; real shim execution and the loaded mapping set establish a
+later, still diagnostic boundary. The synthetic negative must refuse there.
+
+The new normal maps reader has fixed bounds of 65536 bytes and 128 lines. It checks
+ordered page-aligned ranges, private non-WX permissions, selected device/inode
+identities, exact role paths and offsets within rounded image sizes. Initially
+it requires the executable and loader; after dynamic loading it requires all four
+selected images with executable mappings. Restricted stack/vDSO and other known
+pseudomaps are treated separately. These checks describe kernel VMA metadata;
+they do not attest loaded bytes, relocations or immutable runtime custody.
+
+The real child only checks its mechanical context, writes the fixed 16-byte
+`HC074ROOTEXECv1\n` marker and SIGSTOPs. The marker is not an authentication token.
+If unexpectedly resumed, the child exits 93 without signing, running a workload
+or executing another image. After validating the loaded stop, the parent never
+resumes it: original-pidfd SIGKILL, exact terminal wait/reap/ECHILD and private
+stream EOF must precede the final root recheck and fixed-object cleanup.
+
+The extra-writer control explains why these are separate conditions. Retaining
+another writer to that exact pipe allows the original child to be killed and
+reaped while EOF remains unavailable. Drop then explicitly preserves the root.
+This demonstrates a conservative cleanup condition for this private channel,
+not P2/P3 revocation of every possible writer. Mode 0555, direct-child death and
+one channel's EOF still cannot replace independent custody or original cgroup
+and descendant evidence.
+
+Final targeted tests passed 25/25 in three default-parallel current-toolchain
+runs, including one after source commit. Each group includes a real normal launch
+and four further independent sequential owners, with the parent context unchanged.
+The unit group includes 4096 seeded map mutations, status duplicate/identity/capability
+refusals, phase replay and original SIGKILL/drop at initial, rooted and exec stops.
+Old rooted/loss regressions passed 83/83, and another 50 launcher, GNU, isolation and
+first-exec checks passed. Static contracts passed 160; the registry remains 175.
+Rust 1.88 also passed 25 tests, but its observed extra-libm normal image explicitly
+refused the unchanged graph. That result does not claim MSRV runtime-launch support.
+
+There is a retained negative result on the final code. While the separate 83-test
+group was running, two new process tests exceeded the unchanged five-second outer
+guard; the process group finished 4/2, after units 18 and CLI 1 passed. The broad
+group itself passed. Later targeted success used the same default test parallelism
+and deadline, with no widened acceptance predicate. The overlap is known, but CPU
+or scheduler attribution was not traced, so load robustness remains open. Killing
+the owner at that outer deadline may leave its temporary root; a normal Drop
+success is not crash-cleanup evidence. The failed capture is kept alongside the
+positive repeats, not converted into an admission claim.
+
+Source `5ca2cf2ca28f6f39a010a205e9ab649e91ebe977` and its
+[local evidence packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/README.md)
+pin 12 changed files, 13 unchanged sources, frozen inputs and 24 captures. The packet
+also retains the initial marker-size, inventory, synthetic-oracle, lint and format
+failures. Its unsigned verifier checks consistency and source Git objects; it is
+not an execution attestation. No cache-performance numbers are inferred from these
+correctness tests, and product cache code is unchanged.
+
+The remaining composition problem is concrete: the normal restriction installer
+reads procfs, whereas this selected root deliberately contains no procfs. This
+probe stops before that installer; it does not silently weaken policy, inherit
+host-proc directory handles into the child or claim restrictions were installed.
+Composing the genuine installer is the next isolated step, followed by full
+ordinary-entry creator-loss faults and protected handoff. Authenticated original
+start, real credentials, all-writer cessation, completion/later cells and server
+qualification remain closed.

@@ -6,10 +6,18 @@ portable `--test diagnostic_signer_root_cli` and registered Linux x86_64
 `hydracache-long-run-supervisor-074`. Linux process tests need `/usr/bin/strip`
 and `/usr/bin/readelf`; only private test copies are stripped. Rust1.94 must
 actually prepare the four-role root, while the observed Rust1.88 extra-libm
-profile must refuse without a parser exception. No root child is launched.
+profile must refuse without a parser exception. `prepare` launches no child.
 The [design/evidence](testing/performance/0.74/diagnostic-signer-owned-root-design.md)
 retains the earlier broader constructor-loss baseline failure; the subsequent
 peer barrier correction below does not establish full-release/server admission.
+
+The same binary also has the separate fixed `root-exec` diagnostic. Its normal
+process tests must actually observe selected original exec and loaded maps on
+Rust1.94; extra-libm MSRV remains an attributed refusal. Unit tests cover bounded
+maps/status, rooted/exec SIGKILL/drop, sticky wrong-phase refusal and preservation
+when stream EOF is missing. See the
+[root-exec design](testing/performance/0.74/diagnostic-signer-owned-root-exec-design.md).
+This is not restriction-policy composition, creator-loss qualification or signing.
 
 Constructor loss uses `--lib signer_constructor_loss` (11 cases), including a
 forced-EOF control before EXITKILL and the retained-original-peer barrier.

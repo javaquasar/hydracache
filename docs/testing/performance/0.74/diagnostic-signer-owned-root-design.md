@@ -46,9 +46,11 @@ observer. Focused 7/7 successes alone did not resolve it. The subsequent
 reproduces early EOF before creator death and keeps the before-arm gate held
 until exact tracer termination/reap; repeated broader scoped gates now pass.
 The original normal-root packet remains historical evidence of its own state.
-Next join selected originals with the normal original
-child, namespace/root transition and kernel post-exec mappings. Existing child
-restrictions need procfs and must not be silently weakened inside a proc-less root.
+The separate [ordinary root-exec probe](diagnostic-signer-owned-root-exec-design.md)
+now joins selected originals with a normal original child, namespace/root transition
+and initial/loaded kernel mappings, stopping before the restriction installer.
+Existing child restrictions need procfs and must not be silently weakened inside
+a proc-less root.
 Full normal-entry loss, authenticated custody/handoff, original worker start and
 P2/P3 writers remain open. Credentials, completion/cells 2–4 and server/ship
 admission remain closed under the [contract](diagnostic-signer-owned-root-contract.toml).

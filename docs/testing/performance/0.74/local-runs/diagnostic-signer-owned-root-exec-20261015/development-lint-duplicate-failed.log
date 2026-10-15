@@ -1,0 +1,23 @@
+    Checking hydracache-redis-compat v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-redis-compat)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: file is loaded as a module multiple times: `tools/long-run-supervisor-074/src/bin/../../tests/support/diagnostic_gnu_images.rs`
+ --> tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_exec_tests.rs:4:1
+  |
+4 | / #[path = "../t...
+5 | | mod images;
+  | |___________^ first loaded here
+  |
+ ::: tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_tests.rs:3:1
+  |
+3 | / #[path = "../t...
+4 | | mod images;
+  | |___________^ loaded again here
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+  = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+    Checking hydracache-loadgen v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-loadgen)
+error: could not compile `hydracache-long-run-supervisor-074` (bin "diagnostic_signer_root_probe" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

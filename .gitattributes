@@ -213,6 +213,7 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-root-*/*.log -text wh
 docs/testing/performance/0.74/local-runs/diagnostic-signer-root-*/manifest.json -text
 
 # Enrollment inventory hashes retained public observations and collector bytes.
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-*/** -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-enrollment-inventory-*/** -text whitespace=cr-at-eol
 
 docs/testing/performance/0.74/local-runs/diagnostic-signer-gnu-catalog-*/** -text whitespace=cr-at-eol
