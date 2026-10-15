@@ -13770,3 +13770,100 @@ fn original_gnu_runtime_receipt_join_keeps_observations_separate_from_authority(
             .contains("diagnostic_signer_runtime_input"));
     }
 }
+
+#[test]
+fn structured_bootstrap_context_is_declared_policy_not_observed_custody() {
+    let c = contract("diagnostic-signer-bootstrap-context-contract.toml");
+    for key in [
+        "optional_stronger_path_preserves_opaque_readers",
+        "expected_build_and_context_content_bound",
+        "canonical_lf_and_strict_schema",
+        "separate_nonzero_launcher_assertion",
+        "fixed_job_requirements_and_explicit_workflow_sha",
+        "shared_oidc_workflow_environment_constants",
+        "linux_context_checks_before_original_acquisition",
+        "stronger_results_have_no_weak_guard_extraction",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_launcher_acquired_or_executed",
+        "actual_workflow_sha_selected",
+        "job_protection_observed",
+        "independent_runtime_or_job_custody",
+        "actual_private_key_or_token_read",
+        "host_or_github_mutated",
+        "original_start_authenticated",
+        "all_writers_revoked",
+        "completion_or_later_cells_enabled",
+        "signing_allowed",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("context_bytes", 65536),
+        ("launcher_bytes", 134217728),
+        ("mutation_seed", 121684088),
+        ("signed_mutations", 64),
+        ("independent_models", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value));
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code =
+        std::fs::read_to_string(base.join("diagnostic_signer_bootstrap_context.rs")).unwrap();
+    for marker in [
+        "deny_unknown_fields",
+        "canonical != raw",
+        "c.binary != expected.binary",
+        "c.runtime_manifest != expected.runtime_manifest",
+        "c.launcher.sha256 == expected.binary.sha256",
+        "c.workflow_ref != WORKFLOW_REF",
+        "c.subject != SUBJECT",
+        "c.build_has_signing_authority",
+        "c.build_has_oidc_authority",
+        "c.signer_compilation_allowed",
+        "c.signer_dependency_install_allowed",
+        "c.signer_checkout_allowed",
+        "c.inherits_unreviewed_environment",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for forbidden in ["std::fs", "Command::", "SigningKey", "execve(", "PTRACE_"] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let oidc = std::fs::read_to_string(base.join("diagnostic_oidc_profile.rs")).unwrap();
+    assert!(oidc.contains("crate::diagnostic_signer_bootstrap_context::WORKFLOW_REF"));
+    assert!(oidc.contains("crate::diagnostic_signer_bootstrap_context::ENVIRONMENT"));
+    let runtime = std::fs::read_to_string(base.join("diagnostic_signer_runtime_input.rs")).unwrap();
+    let entry = runtime
+        .split("pub fn retain_asserted_bootstrap_runtime(")
+        .nth(1)
+        .unwrap()
+        .split("/// Owns")
+        .next()
+        .unwrap();
+    assert!(
+        entry.find("selection.check_receipt(receipt)?").unwrap()
+            < entry.find("selection.check_bootstrap_context(").unwrap()
+    );
+    assert!(
+        entry.find("selection.check_bootstrap_context(").unwrap()
+            < entry
+                .find("let original = retain_asserted_gnu_runtime(")
+                .unwrap()
+    );
+    assert!(!runtime.contains("pub fn into_"));
+    for consumer in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("bootstrap_context"));
+    }
+}

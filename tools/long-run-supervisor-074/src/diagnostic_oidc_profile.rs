@@ -9,8 +9,8 @@ const ROSTER_SCHEMA: &str = "diagnostic-oidc-trust-input-074-v2";
 pub(super) const MAX_ROSTER_BYTES: usize = 8192;
 pub(super) const MAX_ROSTER_KEYS: usize = 8;
 pub(super) const ISSUER: &str = "https://token.actions.githubusercontent.com";
-pub(super) const WORKFLOW: &str = "javaquasar/hydracache/.github/workflows/diagnostic-controller-074.yml@refs/heads/feat/0.74-resp-native-throughput";
-pub(super) const ENVIRONMENT: &str = "performance-diagnostic-controller-074";
+pub(super) const WORKFLOW: &str = crate::diagnostic_signer_bootstrap_context::WORKFLOW_REF;
+pub(super) const ENVIRONMENT: &str = crate::diagnostic_signer_bootstrap_context::ENVIRONMENT;
 pub(super) const MAX_TOKEN: usize = 16384;
 
 #[derive(Serialize, Deserialize)]

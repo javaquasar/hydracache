@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+The optional `diagnostic-signer-bootstrap-context-074-v1` inner document uses
+canonical sorted-key JSON plus one LF and strict unknown/future/type/duplicate
+refusal. Stronger portable/Linux APIs require it in the unchanged signer receipt's
+bootstrap-context slot; legacy opaque build/runtime readers remain compatible.
+No new signing domain, config loader, wire negotiation, installed workflow or
+default behavior changes. Rust-only stronger results cannot deserialize or
+extract weaker guards; see the
+[context design](testing/performance/0.74/diagnostic-signer-bootstrap-context-design.md).
+
 The opt-in Linux original GNU runtime join uses the unchanged
 `diagnostic-signer-build-074-v1` receipt/domain. For this path only, the existing
 runtime-manifest slot must contain canonical sorted-key JSON plus one LF of

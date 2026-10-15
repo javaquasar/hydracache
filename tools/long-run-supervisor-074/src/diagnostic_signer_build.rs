@@ -113,6 +113,30 @@ impl CheckedSignerBuildModel {
 }
 
 impl AssertedSignerBuildSelection {
+    /// Stronger opt-in context syntax/binding, still caller-asserted policy.
+    /// The legacy verifier deliberately retains its opaque-context semantics.
+    pub fn verify_supplied_with_bootstrap_context(
+        &self,
+        bytes: &[u8],
+        contents: &SignerBuildContents<'_>,
+    ) -> Result<
+        crate::diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel,
+        ArtifactError,
+    > {
+        let model = self.verify_supplied(bytes, contents)?;
+        self.check_bootstrap_context(contents.bootstrap_context)?;
+        Ok(
+            crate::diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel::new(
+                model.receipt_sha256().to_owned(),
+                crate::sha256_hex(contents.bootstrap_context),
+            ),
+        )
+    }
+
+    pub(crate) fn check_bootstrap_context(&self, bytes: &[u8]) -> Result<(), ArtifactError> {
+        crate::diagnostic_signer_bootstrap_context::check(bytes, &self.expected)
+    }
+
     pub fn new(key: VerifyingKey, expected: SignerBuildStatement) -> Result<Self, ArtifactError> {
         if key.is_weak() {
             return Err(ArtifactError::Invalid);

@@ -283,3 +283,54 @@ fn seeded_signed_manifest_substitutions_and_independent_thread_local_owners() {
     }
     println!("seed=0x0740c077 signed_catalog_mutations=64 independent_thread_local_owners=4 production_custody=false");
 }
+
+#[test]
+fn bootstrap_runtime_stronger_path_refuses_opaque_and_public_nonroot_inputs() {
+    let mut f = Fixture::new();
+    let paths = [f.path(0), f.path(1), f.path(2), f.path(3)];
+    let inputs = || std::array::from_fn(|i| (paths[i].as_path(), ArtifactDigest::of(&f.images[i])));
+    assert!(matches!(
+        retain_asserted_bootstrap_runtime(inputs(), f.selection(), &f.receipt(), &f.companions()),
+        Err(ArtifactError::Json(_))
+    ));
+    f.read().unwrap(); // legacy original runtime join keeps opaque context compatibility.
+    let c = serde_json::json!({
+        "schema_version": crate::diagnostic_signer_bootstrap_context::SCHEMA,
+        "repository_id": f.statement.repository_id,
+        "source_commit": f.statement.source_commit, "source_tree": f.statement.source_tree,
+        "binary": f.statement.binary, "runtime_manifest": f.statement.runtime_manifest,
+        "launcher": ArtifactDigest::of(b"synthetic separate launcher"),
+        "workflow_ref": crate::diagnostic_signer_bootstrap_context::WORKFLOW_REF,
+        "workflow_sha": "c".repeat(40), "environment": crate::diagnostic_signer_bootstrap_context::ENVIRONMENT,
+        "subject": crate::diagnostic_signer_bootstrap_context::SUBJECT,
+        "event_name": "workflow_dispatch", "runner_environment": "github-hosted",
+        "build_has_signing_authority": false, "build_has_oidc_authority": false,
+        "signer_compilation_allowed": false, "signer_dependency_install_allowed": false,
+        "signer_checkout_allowed": false, "inherits_unreviewed_environment": false
+    });
+    f.companion_bytes[2] = lf(&c);
+    f.statement.bootstrap_context = ArtifactDigest::of(&f.companion_bytes[2]);
+    let selection = f.selection();
+    selection.check_receipt(&f.receipt()).unwrap();
+    selection
+        .check_bootstrap_context(&f.companion_bytes[2])
+        .unwrap();
+    let mut strong = AssertedBootstrapRuntimeRead {
+        original: join(f.originals(), selection, &f.receipt(), &f.companions()).unwrap(),
+    };
+    strong.check_original().unwrap();
+    assert!(!strong.is_refused());
+    assert!(retain_asserted_bootstrap_runtime(
+        inputs(),
+        f.selection(),
+        &f.receipt(),
+        &f.companions()
+    )
+    .is_err());
+    fs::set_permissions(f.path(0), fs::Permissions::from_mode(0o755)).unwrap();
+    let mut changed = f.images[0].clone();
+    changed[4095] ^= 1;
+    fs::write(f.path(0), changed).unwrap();
+    assert!(strong.check_original().is_err());
+    assert!(strong.is_refused());
+}

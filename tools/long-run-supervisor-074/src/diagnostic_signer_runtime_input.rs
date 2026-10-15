@@ -50,6 +50,40 @@ fn refuse_all(originals: &mut [RootOwnedInputRead]) {
     }
 }
 
+/// Stronger optional declared-context check, not launcher/job or runtime admission.
+pub fn retain_asserted_bootstrap_runtime(
+    inputs: [(&Path, ArtifactDigest); 4],
+    selection: AssertedSignerBuildSelection,
+    receipt: &[u8],
+    companions: &SignerRuntimeCompanions<'_>,
+) -> Result<AssertedBootstrapRuntimeRead, ArtifactError> {
+    selection.check_receipt(receipt)?;
+    selection.check_bootstrap_context(companions.bootstrap_context)?;
+    let original = retain_asserted_gnu_runtime(inputs, selection, receipt, companions)?;
+    Ok(AssertedBootstrapRuntimeRead { original })
+}
+
+/// Owns the stronger context+runtime consistency result, without guard extraction.
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_signer_runtime_input::{AssertedBootstrapRuntimeRead, AssertedGnuRuntimeRead};
+/// fn weaken(r: AssertedBootstrapRuntimeRead) -> AssertedGnuRuntimeRead { r.into() }
+/// ```
+/// ```compile_fail
+/// use hydracache_long_run_supervisor_074::diagnostic_signer_runtime_input::AssertedBootstrapRuntimeRead;
+/// fn start(r: AssertedBootstrapRuntimeRead) { r.start_worker(); }
+/// ```
+pub struct AssertedBootstrapRuntimeRead {
+    original: AssertedGnuRuntimeRead,
+}
+impl AssertedBootstrapRuntimeRead {
+    pub fn is_refused(&self) -> bool {
+        self.original.is_refused()
+    }
+    pub fn check_original(&mut self) -> Result<(&str, &str), ArtifactError> {
+        self.original.check_original()
+    }
+}
+
 fn join(
     originals: Vec<RootOwnedInputRead>,
     selection: AssertedSignerBuildSelection,

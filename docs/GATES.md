@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+Structured bootstrap context uses ordinary portable tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_bootstrap_context --locked`.
+Also run Linux original-runtime composition/OIDC regressions and doctests filtered
+by `diagnostic_signer_bootstrap_context` and `AssertedBootstrapRuntimeRead`.
+These validate declarations and consistency, not installed protection or runtime
+admission; see the [context contract](testing/performance/0.74/diagnostic-signer-bootstrap-context-contract.toml).
+
 Original GNU runtime/receipt consistency uses Linux ordinary tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib diagnostic_signer_runtime_input::tests --locked`
 plus the root-owned input corpus, signer build/GNU integration tests and five
