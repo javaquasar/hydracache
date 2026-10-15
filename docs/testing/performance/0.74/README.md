@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [controller/common-fence preflight](local-runs/controller-fence-preflight-20261015/README.md)
+connects the original configured OIDC/controller/kernel/authority chain with the
+already held common empty fence. A fixed five-check bracket preserves first
+errors, cross-refusal and original lock lifetime, including constructor failure.
+This is read-only preflight, not durable replay/nonce consumption, authenticated
+original-start, all-writer cessation or server admission.
+
 The [SCM_RIGHTS EOF fixture experiment](local-runs/scm-rights-eof-isolation-20261015/README.md)
 reproduces EAGAIN with an acknowledged inherited CLOEXEC writer after fork, then
 requires original-child exit/reap before EOF. Both existing received-rights EOF

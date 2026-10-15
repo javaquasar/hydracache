@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_constructor_refuses_both_chains_and_keeps_lock ... ok
+controller_fence_independent_originals=4 actual_issuer_enrolled=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_independent_concurrent_originals_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_late_trust_and_authority_drift_retains_refused_fence ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_keeps_original_lock_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_original_lock_and_directory_replacement_never_adopted ... ok
+controller_fence_seed=0x0740c093 bracket_positions=5 admission=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_seeded_every_bracket_position_preserves_first_error ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_original_source_and_kernel_faults_cross_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_each_late_context_refuses_without_repair_or_io_retry ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 898 filtered out; finished in 13.59s
+

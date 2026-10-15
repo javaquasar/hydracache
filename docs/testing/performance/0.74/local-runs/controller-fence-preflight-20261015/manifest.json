@@ -1,0 +1,746 @@
+{
+  "format_version": 1,
+  "date": "2026-10-15",
+  "scope": "Local optional read-only original controller/common-fence preflight. No durable replay/nonce, start, production enrollment or server admission.",
+  "baseline_commit": "5ae106823a73af8e2a9b7929f7dc716a2267b221",
+  "preregistration_commit": "7fde7707710e7536d320dcff589436f1c4b0e5be",
+  "implementation_commit": "de1a42169369242c73dce7e11ea684992f66d6ad",
+  "source_commit": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+  "source_tree": "7f3dafb2e4b3fbb4ac8bd9ca13b7fa68541ca763",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "git_blob": "1ed02217b184d4af0135b385792c7a8f9e0c1a0c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs",
+      "git_blob": "7e837d1752a976aefdc2cea2102c3f0319002877"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs",
+      "git_blob": "1ba27fd6f512bb1f8b5fccc868513d54915639da"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs",
+      "git_blob": "1252fc5224d46ada7466ea1a0c54b85ed68ee32a"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "f2156b1cc640afdbe08fa51986353e19a47e9d8e"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-controller-fence-preflight-contract.toml",
+      "git_blob": "c1e3c7fdc748bce76122e2fee5df7ad684dac48a"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+      "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "git_blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-20261015/manifest.json",
+      "sha256": "0189d0da136b14207e7b677a7e4a284df823cc2cba44736e9198bca21592e3c9",
+      "git_blob": "e28047f783cac340ed93908bbe5d3989e61af049"
+    }
+  ],
+  "commit_chain": [
+    {
+      "commit": "7fde7707710e7536d320dcff589436f1c4b0e5be",
+      "parent": "5ae106823a73af8e2a9b7929f7dc716a2267b221"
+    },
+    {
+      "commit": "de1a42169369242c73dce7e11ea684992f66d6ad",
+      "parent": "7fde7707710e7536d320dcff589436f1c4b0e5be"
+    },
+    {
+      "commit": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "parent": "de1a42169369242c73dce7e11ea684992f66d6ad"
+    }
+  ],
+  "source_binding": "Capture source identity denotes matching relevant files, not signed execution attestation or a clean-whole-tree claim. Development/diagnostic stages before final Err boxing have no final-source binding; post-commit receipts identify the final source.",
+  "additive_registrations": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "addition": "#[path = \"diagnostic_controller_fence_preflight.rs\"]\npub mod fenced_preflight;\n\n"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs",
+      "addition": "#[path = \"diagnostic_controller_fence_preflight_tests.rs\"]\nmod fence_preflight_tests;\n"
+    }
+  ],
+  "capture_encoding": "UTF-8 LF normalized from CRLF, terminal newline appended if missing. ANSI and blank lines preserved; empty formatter logs are zero bytes.",
+  "result_scope": {
+    "baseline_oidc": 17,
+    "baseline_empty_fence": 11,
+    "new_tests": 8,
+    "focused_development_starts": 3,
+    "final_trust_regression_current": 57,
+    "final_oidc_msrv": 25,
+    "compile_fail_cases_each": 9,
+    "postcommit_focused": 8,
+    "postcommit_root": 71,
+    "static_contracts": 166,
+    "registry_tests": 6,
+    "registered_gates": 176,
+    "package_check_and_strict_lint": "supervisor and xtask, all targets/features, Windows/Linux Rust1.88/1.94",
+    "new_persistent_write_boundaries": 0,
+    "product_claim": false
+  },
+  "controlled_matrix": {
+    "late_contexts": 8,
+    "original_input_kernel_policy_faults": 10,
+    "original_lock_directory_replacements": 4,
+    "logical_bracket_positions": 5,
+    "independent_concurrent_originals": 4,
+    "seed": "0x0740c093",
+    "positive_roots_and_issuer": "private synthetic fixtures with actual local kernel packet/context observations"
+  },
+  "negative_outcomes": {
+    "missing_method": "E0599 test first, retained",
+    "initial_doctests": "cargo exit0 but internal compiler panic; not accepted",
+    "initial_msrv_lint": "at least 176-byte Err; original failure-owned fence boxed without suppression",
+    "initial_source_audit": "PowerShell tuple/string construction corrected to named records; source conditions unchanged",
+    "initial_static_link": "LNK1180 disk full before tests; eight precisely checked ignored debug artifacts removed; identical command passes166"
+  },
+  "captures": [
+    {
+      "file": "baseline-oidc.log",
+      "bytes": 3475,
+      "sha256": "8849b0cfc514de84e1aff7b921cbf0b5bb07dae7a6d21fcfda9ae7a276b431fd",
+      "phase": "baseline",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "5ae106823a73af8e2a9b7929f7dc716a2267b221",
+      "outer_test_totals": {
+        "passed": 17,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "baseline-fence.log",
+      "bytes": 2530,
+      "sha256": "6e59f9ff84b8317bcb069df4fc562668a740967536fd5978b34c7631d1e99db6",
+      "phase": "baseline",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib empty_reservation_fence_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "5ae106823a73af8e2a9b7929f7dc716a2267b221",
+      "outer_test_totals": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "missing-api-red.log",
+      "bytes": 896,
+      "sha256": "54ab1c55d5bf3f1704ccddaf9f45a1764786637921766a5150e83bbf8cfd75ab",
+      "phase": "test-first",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": false,
+      "source_file_identity": null
+    },
+    {
+      "file": "test-first-source.log",
+      "bytes": 3864,
+      "sha256": "3ef2552426ce6e6c2aa135d87a208e736bf63cbbac3680715c3033733b01a7a1",
+      "phase": "test-first-diff",
+      "command": "git diff -- tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs; git diff --no-index -- /dev/null tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs",
+      "exit_code": 1,
+      "gate_expected_exit": 1,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "first-green.log",
+      "bytes": 2225,
+      "sha256": "8a61a8438051ced1a1df51fd0f26b9a39f11f7091f397b486c3183f1147a1913",
+      "phase": "development",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "format-step.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "development",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074 -p xtask",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "focused-1.log",
+      "bytes": 2224,
+      "sha256": "62c91fd550125729cc0daabebb4b80e46f514ee1b47c2a3d129b1f0ff8663974",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "focused-2.log",
+      "bytes": 2092,
+      "sha256": "4171faeacac088a3de2fb4ffb123f5712a5f8496c665ecff791942b10feefd0d",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "focused-3.log",
+      "bytes": 2092,
+      "sha256": "39628e8e5ba5679e83be815b01ad00c7b10a7306133f335c4622a5c16267463e",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "trust-regression-before-box.log",
+      "bytes": 10160,
+      "sha256": "4d8d01abf6f5779ad812f2f42444863e17fa5667f34c8ce3ed7610e62be9edcf",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_worker_policy::trusted_input:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 57,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "fence-regression.log",
+      "bytes": 2530,
+      "sha256": "135a9373f0e246a0d449eff2e12f6c1827bfb42c1dc8c2f30fc06b262e2653ff",
+      "phase": "unchanged-fence",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib empty_reservation_fence_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "msrv-before-box.log",
+      "bytes": 5368,
+      "sha256": "8e31d9b0bfd3908a3d25f659952b18d335f6180f60e0181aa9f5d43c24ee4fad",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 25,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "doctest-internal-panic.log",
+      "bytes": 18619,
+      "sha256": "82429d05c1349341afacc5d9a6f0913b3114f66e7a7b8d02255835d6531c58ff",
+      "phase": "invalid-api-proof",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --doc FencedControllerPreflight --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": false,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      },
+      "reason": "cargo exit0/9 passed summary is invalid API proof: one internal compiler panic instead of the intended extraction refusal"
+    },
+    {
+      "file": "doctest-corrected-current-before-box.log",
+      "bytes": 10706,
+      "sha256": "c448f4a5b5ef5cd3417ed88b90a69ae5b74e7fabd01d275a3f569433c1f914fc",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --doc FencedControllerPreflight --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "doctest-corrected-msrv-before-box.log",
+      "bytes": 12191,
+      "sha256": "8c88dcdff5b7fe5a061b1dc0f941b1717a37a8cc0ba4be88642d3d838b6c7101",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --doc FencedControllerPreflight --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "before-box-windows-1.88.0-check.log",
+      "bytes": 863,
+      "sha256": "aef6b1b02f966ff42b9c479f6c2c4c1eac66122884b9e42fa83f45eaeb8a1d06",
+      "phase": "before-box",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "before-box-windows-1.88.0-clippy.log",
+      "bytes": 393,
+      "sha256": "d9544bbdef1d6056a8d5ea35a2c39640e3f0bd666354841e99e9554410b32f4b",
+      "phase": "before-box",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "before-box-windows-1.94.0-check.log",
+      "bytes": 863,
+      "sha256": "cea4877790cbbd923598e56b85e4bc7f4209c998bd7d632c13a1e487617bd2fb",
+      "phase": "before-box",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "before-box-windows-1.94.0-clippy.log",
+      "bytes": 393,
+      "sha256": "cf7a024ae85de8b50379fa6d8ad99130252087f43ca671f66c159589406e3f4a",
+      "phase": "before-box",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "before-box-linux-1.88.0-check.log",
+      "bytes": 945,
+      "sha256": "9bfef95c6dc82fb6c1d0cfb6fb7ac5e965b0c143d4f52f9d257c5a407da65711",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "before-box-linux-1.88.0-clippy.log",
+      "bytes": 1808,
+      "sha256": "3afba624ef3dce64baa1a609c0c36f35eaf6ed24369036c314febc6b80688db3",
+      "phase": "before-box",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": false,
+      "source_file_identity": null
+    },
+    {
+      "file": "final-trust-current.log",
+      "bytes": 10293,
+      "sha256": "8ca0e5aba80ebca1fbe8f2eb7a8bac17db1ee25bbd2620059f2bb0d6650ec351",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_worker_policy::trusted_input:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 57,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "final-oidc-msrv.log",
+      "bytes": 5368,
+      "sha256": "ac3657b200f638c67dca133025414d23df99adf261fbb87f41556bb02f78f4ae",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --lib diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 25,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "final-doctest-current.log",
+      "bytes": 10706,
+      "sha256": "0bcbeb7afef80ec5913ed232fdc41de3683c855bd52dc04654d29331eca8246d",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --doc FencedControllerPreflight --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "source-audit-first-failed.log",
+      "bytes": 220,
+      "sha256": "972b1b3a328ed284565789c97263f2bca031cf0146c5875c5551d00f6181449d",
+      "phase": "audit-helper-negative",
+      "command": "$ErrorActionPreference='Stop'\n$base='5ae10682'\nforeach($spec in @(@('diagnostic_oidc_input.rs', '#[path = \"diagnostic_controller_fence_preflight.rs\"]'+\"`n\"+'pub mod fenced_preflight;'+\"`n`n\"),@('diagnostic_oidc_input_tests.rs', '#[path = \"diagnostic_controller_fence_preflight_tests.rs\"]'+\"`n\"+'mod fence_preflight_tests;'+\"`n\"))){\n $path='tools/long-run-supervisor-074/src/'+$spec[0]\n $old=(git show \"${base}:$path\") -join \"`n\"\n $new=(Get-Content -LiteralPath $path) -join \"`n\"\n if([regex]::Matches($new,[regex]::Escape($spec[1])).Count -ne 1 -or $new.Replace($spec[1],'') -cne $old){throw 'existing input code/test changed'}\n}\n$expected=@('crates/xtask/tests/performance_contract_074.rs','tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs','tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs')\n$changed=@(git diff --name-only $base -- crates tools Cargo.toml Cargo.lock .github)\nif(@(Compare-Object $expected $changed).Count -ne 0){throw 'tracked source inventory'}\n$gate='crates/xtask/tests/performance_contract_074.rs'\n$old=(git show \"${base}:$gate\") -join \"`n\"\n$new=(Get-Content -LiteralPath $gate) -join \"`n\"\n$entry='#[test]'+\"`n\"+'fn diagnostic_controller_fence_preflight_is_original_read_only_not_replay_or_start() {'\n$start=$new.IndexOf($entry)\n$next=$new.IndexOf('#[test]',$start+$entry.Length)\nif($start -lt 0 -or $next -lt 0 -or $new.Remove($start,$next-$start) -cne $old){throw 'old static contracts changed'}\nforeach($f in @('Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml')){Get-FileHash -Algorithm SHA256 -LiteralPath $f | Select-Object Hash,Path}\nWrite-Output 'Verified two additive module registrations only in existing input sources/tests, one additive static contract only, no old verifier/fence/guard, product/dependency/workflow change. New source/test/contract files remain explicit additions.'",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": false,
+      "source_file_identity": null
+    },
+    {
+      "file": "source-audit.log",
+      "bytes": 1059,
+      "sha256": "e992fe0d18705d01f57ed08e5883cac31649c5256970c17a0a98b5459c354d92",
+      "phase": "final-source",
+      "command": "$ErrorActionPreference='Stop'\n$base='5ae10682'\n$specs=@(\n @{path='tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs';addition=('#[path = \"diagnostic_controller_fence_preflight.rs\"]'+\"`n\"+'pub mod fenced_preflight;'+\"`n`n\")},\n @{path='tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs';addition=('#[path = \"diagnostic_controller_fence_preflight_tests.rs\"]'+\"`n\"+'mod fence_preflight_tests;'+\"`n\")}\n)\nforeach($spec in $specs){\n $old=(git show \"$($base):$($spec.path)\") -join \"`n\"\n $new=(Get-Content -LiteralPath $spec.path) -join \"`n\"\n if([regex]::Matches($new,[regex]::Escape($spec.addition)).Count -ne 1 -or $new.Replace($spec.addition,'') -cne $old){throw \"existing input code/test changed: $($spec.path)\"}\n}\n$expected=@('crates/xtask/tests/performance_contract_074.rs','tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs','tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs','tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs','tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs')\n$changed=@(git diff --name-only $base -- crates tools Cargo.toml Cargo.lock .github)+@(git ls-files --others --exclude-standard -- crates tools Cargo.toml Cargo.lock .github)\nif(@(Compare-Object $expected $changed).Count -ne 0){throw 'source inventory'}\n$gate='crates/xtask/tests/performance_contract_074.rs'\n$old=(git show \"$($base):$gate\") -join \"`n\"\n$new=(Get-Content -LiteralPath $gate) -join \"`n\"\n$entry='#[test]'+\"`n\"+'fn diagnostic_controller_fence_preflight_is_original_read_only_not_replay_or_start() {'\n$start=$new.IndexOf($entry)\n$next=$new.IndexOf('#[test]',$start+$entry.Length)\nif($start -lt 0 -or $next -lt 0 -or $new.Remove($start,$next-$start) -cne $old){throw 'old static contracts changed'}\nforeach($f in @('Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml')){Get-FileHash -Algorithm SHA256 -LiteralPath $f | Select-Object Hash,Path}\nWrite-Output 'Verified two additive module registrations only in existing input sources/tests, one additive static contract only, and exact five-file new/changed source inventory. No old verifier/fence/guard, product/dependency/workflow change.'",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "windows-1.88.0-check.log",
+      "bytes": 155,
+      "sha256": "cd54c4e2123181b2548b10885ef46cdcd753f1dd27c7a729b4d00b835595536b",
+      "phase": "final-source",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "windows-1.88.0-clippy.log",
+      "bytes": 155,
+      "sha256": "1e42ca71ca4015df9d9763f533af5c3eb5989e5f099d1190c4ffe3f1c8006a47",
+      "phase": "final-source",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "windows-1.94.0-check.log",
+      "bytes": 155,
+      "sha256": "83cdcbb6bf855dd9c04193b650744dc6d9f6fb60920be2cafe849ddbed6e7b92",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "windows-1.94.0-clippy.log",
+      "bytes": 155,
+      "sha256": "1a1fe73605b66fc4447353f79f4059f28ec6e256c983e2e47d0367b4f457281a",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "linux-1.88.0-check.log",
+      "bytes": 292,
+      "sha256": "24842c51cc3ae72964056865bfe4244a14b5a1fd429b1ee7225af54d50e81c6f",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "linux-1.88.0-clippy.log",
+      "bytes": 292,
+      "sha256": "0424326a51a43ce25e6cf6b2a20dffaad88b50e541c61686a2f4b9630a24a760",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "linux-1.94.0-check.log",
+      "bytes": 891,
+      "sha256": "2b957950500317a84c9478ec2951543828a1719a4a9bd3a6d6c4274e889d6305",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "linux-1.94.0-clippy.log",
+      "bytes": 405,
+      "sha256": "94a42e66ded6c6402f5c0949f95f4c0c49580f804bd40b6dd5279b1b108dd3cf",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "static-link-disk-full.log",
+      "bytes": 17968,
+      "sha256": "642a2afbf80d978853f0d70ff683a2b88f4cad837797eeb837ba3e2bae0e623d",
+      "phase": "build-negative",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": false,
+      "source_file_identity": null
+    },
+    {
+      "file": "build-cache-cleanup.log",
+      "bytes": 2041,
+      "sha256": "895fa8353ccd4df006255b93150e3d75da611774623ce567938cef7a00bb7574",
+      "phase": "local-maintenance",
+      "command": "$ErrorActionPreference='Stop'\n$cacheRoot074=(Resolve-Path -LiteralPath 'C:/Workspace/prj/jq/cashe/hydracache-074/target/debug').Path\n$names074=@('xtask','deps/xtask-25925af3cee3f985','deps/performance_contract_074-a829b5a0a79f5677','deps/performance_contract_074-35c180f6b9a4adfc.pdb','deps/performance_contract_074-20e240c4e5e125cb.pdb','deps/performance_contract_074-6e7177044aaa8c23.pdb','deps/libxtask-23ed7b242c299be5.rlib','deps/libxtask-80aa8ce315e21d3f.rlib')\n$running074=@(Get-Process cargo,rustc,link,xtask,performance_contract_074* -ErrorAction SilentlyContinue)\nif($running074.Count -ne 0){throw 'compiler or selected test process still running; no cleanup'}\n$targets074=@($names074 | ForEach-Object {\n $file074=Get-Item -LiteralPath (Join-Path $cacheRoot074 $_)\n if($file074.PSIsContainer -or -not $file074.FullName.StartsWith($cacheRoot074+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase) -or ($file074.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $file074.LastWriteTime -ge [datetime]'2026-10-09'){throw 'unsafe/nonobsolete cache target'}\n git check-ignore -- $file074.FullName | Out-Null\n if($LASTEXITCODE -ne 0){throw 'not an ignored build artifact'}\n $file074\n})\n$before074=(Get-PSDrive C).Free\n$inventory074=@($targets074|ForEach-Object{[ordered]@{path=$_.FullName;bytes=$_.Length;last_write=$_.LastWriteTime.ToString('o')}})\nforeach($file074 in $targets074){Remove-Item -LiteralPath $file074.FullName}\n$after074=(Get-PSDrive C).Free\n[ordered]@{scope=$cacheRoot074;removed=$inventory074;free_before=$before074;free_after=$after074;freed_bytes=$after074-$before074;recursive=$false;recovery='Rebuildable ignored debug artifacts only; binaries/PDBs removed permanently, source and retained evidence untouched'} | ConvertTo-Json -Depth 5",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    },
+    {
+      "file": "performance-contract-tests.log",
+      "bytes": 561,
+      "sha256": "20796cbccb2f6b1ffa18c556f131eeff0b8f45ce5972c12578949ba421c3904b",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 166,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "gate-registry-tests.log",
+      "bytes": 713,
+      "sha256": "bedab4bf6a48c1f834e77a083e9a2410edae0d6709829ece1da977975453b37e",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 test -p xtask --test gated_tests --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "gate-registry.log",
+      "bytes": 270,
+      "sha256": "f919c736ef4831fff7d93583c257d1924964c14dbbe07d066e1b8fc48e3a5dd5",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- gated-test-check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "local-contract.log",
+      "bytes": 212,
+      "sha256": "c906e5caaee6393144c5afebcb446f762dedb4f3187dabfebc03b17f33497b0b",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "require-ship.log",
+      "bytes": 494,
+      "sha256": "1098b706e6db558cc5a858a66591977bc08786041b2c0af26e1500c869cb3058",
+      "phase": "final-source",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "gate_expected_exit": 1,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "format-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "final-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all --check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf"
+    },
+    {
+      "file": "postcommit-focused.log",
+      "bytes": 2092,
+      "sha256": "7059c45ffb0f368bdb6c7814b0f1cec016e3c68c4d31cc117bdf7e6c10031bd6",
+      "phase": "source-commit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --lib controller_fence_preflight_ --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-root.log",
+      "bytes": 19166,
+      "sha256": "63e7c22fef399486a5442efec0dd0c45584459aadcd8d388024682f596fb0322",
+      "phase": "source-commit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "final-doctest-msrv.log",
+      "bytes": 12189,
+      "sha256": "17c7f8e1f20a0cf004b18207387253045aa6ef105f1b3ae06cda3e919c51ef83",
+      "phase": "source-commit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --doc FencedControllerPreflight --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": "862a7984e0923b7633202bb85a54a5d0ca8ba1bf",
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "doc-check.log",
+      "bytes": 164,
+      "sha256": "2354d07b387911c821885ed39894c8e064834f05d54f77af9b363d5ef6990938",
+      "phase": "documentation",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- doc-check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "semantic_gate_pass": true,
+      "source_file_identity": null
+    }
+  ],
+  "extra_artifacts": [
+    {
+      "file": "README.md",
+      "bytes": 4953,
+      "sha256": "bd8158caf405cd3c34cff922bddf5842c40dee0822ff63c31307909dd4a13f71"
+    },
+    {
+      "file": "verify.ps1",
+      "bytes": 8573,
+      "sha256": "b34ab5d77a3066a7d237ad086ebf319073f4515c042ca51a9938c02cc7534161"
+    }
+  ],
+  "verification_command": "& './docs/testing/performance/0.74/local-runs/controller-fence-preflight-20261015/verify.ps1'",
+  "verification_scope": "Artifact bytes and historical source Git objects, not current-working-tree equivalence or authenticated host execution. verification.txt is excluded from its own manifest.",
+  "closed_claims": [
+    "Production receiver/runtime/job policy selection",
+    "Durable nonce or acknowledged attempt",
+    "Durable authority revocation",
+    "Atomic snapshot/whole-operation deadline",
+    "Authenticated worker original-start",
+    "P2/P3 all-writer cessation and watchdog",
+    "Completion/later cells",
+    "Server/GitHub execution or qualification",
+    "Numerical RESP/native improvement"
+  ]
+}

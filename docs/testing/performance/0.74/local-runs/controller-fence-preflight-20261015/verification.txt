@@ -1,0 +1,6 @@
+Verified 46 captures, extra artifacts, historical source tree/six blobs/commit chain and frozen inputs.
+Verified two additive registrations and one additive static gate; old input verifiers, tests, contracts and product/dependency/workflow sources remain unchanged.
+Verified final 57/25 input regressions, 8 post-commit cases, 71 root tests with 25/14/6 modes, 166 contracts, 6 registry tests and 176 gates.
+The cargo-exit0 compiler panic remains invalid API evidence. Corrected doctests have nine ordinary errors per run, including E0616, and no compiler panic.
+Missing API, MSRV large-Err lint, initial audit helper and disk-full link failures stay retained. Rebuildable cache cleanup is recorded; ship remains closed.
+Unsigned artifact/historical-source consistency only, not execution attestation, current production enrollment, durable nonce/start authority or a performance claim.

@@ -1,0 +1,22 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking hydracache-client-transport-axum v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-client-transport-axum)
+    Checking hydracache-redis-compat v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-redis-compat)
+    Checking hydracache-loadgen v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-loadgen)
+error: the `Err`-variant returned from this function is very large
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:155:10
+    |
+155 |       ) -> Result<
+    |  __________^
+156 | |         FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
+157 | |         ControllerFenceFailure<'storage>,
+158 | |     > {
+    | |_____^ the `Err`-variant is at least 176 bytes
+    |
+    = help: try reducing the size of `diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::ControllerFenceFailure<'_>`, for example by boxing large elements or replacing it with `Box<diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::ControllerFenceFailure<'_>>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+    = note: `-D clippy::result-large-err` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::result_large_err)]`
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

@@ -1,0 +1,50 @@
+{
+  "scope": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug",
+  "removed": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask",
+      "bytes": 347168360,
+      "last_write": "2026-10-06T13:57:41.5788752+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\xtask-25925af3cee3f985",
+      "bytes": 347168360,
+      "last_write": "2026-10-06T13:57:41.5788752+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-a829b5a0a79f5677",
+      "bytes": 294825736,
+      "last_write": "2026-10-06T14:08:12.2786381+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-35c180f6b9a4adfc.pdb",
+      "bytes": 244887552,
+      "last_write": "2026-10-07T11:30:31.7012307+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-20e240c4e5e125cb.pdb",
+      "bytes": 243560448,
+      "last_write": "2026-10-06T17:29:13.1626298+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-6e7177044aaa8c23.pdb",
+      "bytes": 239357952,
+      "last_write": "2026-10-08T00:51:46.3879592+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\libxtask-23ed7b242c299be5.rlib",
+      "bytes": 274306362,
+      "last_write": "2026-10-07T00:54:41.6999520+02:00"
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\libxtask-80aa8ce315e21d3f.rlib",
+      "bytes": 274150132,
+      "last_write": "2026-10-07T07:24:18.6038413+02:00"
+    }
+  ],
+  "free_before": 38825984,
+  "free_after": 1957093376,
+  "freed_bytes": 1918267392,
+  "recursive": false,
+  "recovery": "Rebuildable ignored debug artifacts only; binaries/PDBs removed permanently, source and retained evidence untouched"
+}

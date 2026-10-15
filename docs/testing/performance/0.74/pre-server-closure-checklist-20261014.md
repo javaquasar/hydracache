@@ -108,6 +108,13 @@ Independently authenticated GitHub key selection/custody/rotation, actual workfl
 policy selection and a protected diagnostic signing-job receipt remain required
 before real provenance enrollment. P2 and replay/start admission remain open.
 
+The [original controller/common-fence preflight](diagnostic-controller-fence-preflight-design.md)
+now brackets the retained OIDC/controller/kernel/authority chain under an already
+owned common empty fence. Errors refuse both chains and retain the original lock
+until the result/failure is dropped. This read-only connection creates no durable
+attempt, consumes no nonce and has no start conversion. The writable replay/
+attempt join and its crash matrix remain required; real trust selection is unchanged.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

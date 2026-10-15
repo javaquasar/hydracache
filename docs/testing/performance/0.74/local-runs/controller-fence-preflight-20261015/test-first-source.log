@@ -1,0 +1,81 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs
+index 1bfb74bc..39ef2e43 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs
+@@ -1,6 +1,8 @@
+ //! This RSA private test fixture is publicly committed, never a production key.
+ #[path = "diagnostic_oidc_roster_tests.rs"]
+ mod roster_tests;
++#[path = "diagnostic_controller_fence_preflight_tests.rs"]
++mod fence_preflight_tests;
+ use super::profile::Profile;
+ use super::*;
+ use crate::diagnostic_ipc::DiagnosticRequest;
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs
+new file mode 100644
+index 00000000..393682dd
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs
+@@ -0,0 +1,60 @@
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::with_owned_empty_fence_for_test;
++use crate::host_execution::{HostExecutionClaim, HostExecutionError};
++
++fn with_original(
++    refused: bool,
++    run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Path),
++) {
++    let model = Model::new();
++    let r = request(&model);
++    let p = policy(&r);
++    let t = token(&header(&p), &serde_json::to_vec(&claims(&r, &p)).unwrap());
++    let bytes = model.sign(r.clone(), &model.key);
++    let (_root, _authority_root, mut source, mut authority, worker_bytes) =
++        controller_worker_fixture();
++    let mut packet = kernel_packet_bytes(&bytes);
++    let mut worker = source
++        .verify_kernel_policy(&worker_bytes, &mut packet, &mut authority)
++        .unwrap();
++    let mut controller = model.input();
++    let mut oidc = TrustModel::new(&r);
++    let path = oidc.path();
++    {
++        let mut original = controller.authenticate_controller(&mut worker).unwrap();
++        let mut build = original
++            .bind_reviewed_build(BUILDER_POLICY, RECEIPT)
++            .unwrap();
++        let mut guard = build.bind_oidc(&mut oidc.trust, &t).unwrap();
++        run(&mut guard, &path);
++        assert_eq!(guard.is_refused(), refused);
++    }
++    assert_eq!(oidc.trust.is_refused(), refused);
++    assert_eq!(controller.is_refused(), refused);
++    assert_eq!(worker.is_refused(), refused);
++    drop(worker);
++    assert_eq!(source.is_refused(), refused);
++    assert_eq!(authority.is_failed(), refused);
++    assert_eq!(packet.is_refused(), refused);
++}
++
++#[test]
++fn controller_fence_preflight_keeps_original_lock_and_healthy_drop() {
++    with_original(false, |original, _| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let mut preflight = original.bind_common_empty_fence(fence).unwrap();
++            for _ in 0..3 {
++                preflight.revalidate().unwrap();
++                assert!(matches!(
++                    HostExecutionClaim::acquire(root, &"a".repeat(64)),
++                    Err(HostExecutionError::Busy)
++                ));
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 0);
++            }
++            drop(preflight);
++            original.revalidate().unwrap();
++            drop(HostExecutionClaim::acquire(root, &"a".repeat(64)).unwrap());
++            assert_eq!(fs::read_dir(leaf).unwrap().count(), 0);
++        });
++    });
++}

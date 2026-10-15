@@ -10259,3 +10259,61 @@ possible mechanism, not the identity of the writer in that historical run.
 This test-only correction also does not establish production P2/P3 all-writer
 cessation. Trusted runtime/issuer/job custody, authenticated original-start,
 completion/later cells and server admission remain separate W11 work.
+
+### Keeping controller verification inside the original fence
+
+The next P2 step addresses an ownership gap: controller provenance and common
+campaign exclusion existed as separate original guards. Checking one and then
+discarding it before taking the other is not a retained preflight for a later
+write. The local baseline passes seventeen OIDC cases and eleven empty-fence
+cases. A new positive composition test first fails on the missing binding method.
+
+The new opaque preflight exclusively borrows the original OIDC guard and owns
+the already acquired original empty fence. That OIDC owner still retains its
+original builder/controller/worker/kernel/configuration/authority chain. The
+composition acquires no new journal or lock and accepts no replacement peer,
+time, request or token. It checks fence, controller, fence, controller, fence;
+the existing controller verifier obtains freshness from the same original kernel
+context, while the existing fence verifier checks the same objects and empty
+storage. No verification condition is removed or cached away.
+
+A failed check preserves its typed error, stops the bracket and refuses both
+chains. Constructor failure owns the refused fence rather than releasing its
+lock as a side effect of returning an error. Later failure also retains that
+original lock until the preflight is dropped. A refused repeat performs no more
+observations; restoring public files cannot repair the guard. Healthy drop
+releases only the fence and leaves the controller inputs healthy. Error/debug
+output contains status rather than token or descriptor data.
+
+Eight local unit cases cover these lifetimes, eight late context names, ten
+original input/kernel/policy faults, four lock/directory replacement cases,
+post-binding trust/authority drift and independent concurrent owners. A seeded
+five-position test mutates an actual modeled source immediately before each
+check and requires the corresponding first error with no later checkpoint.
+An independently opened witness of the original lock still observes exclusion
+even after the public lock name changes. These are private nonroot filesystem
+and synthetic issuer fixtures with actual local kernel packet/context checks,
+not a verified protected GitHub job or positive production enrollment.
+
+The first API-proof run illustrates another false-green risk: cargo reports nine
+compile-fail examples passed even though Rust1.94 internally panics while
+diagnosing a nonexistent extractor. That run is retained but not accepted as
+proof. The example instead attempts the private original field and gets E0616;
+all nine examples then produce ordinary expected errors on Rust1.94 and Rust1.88,
+without a compiler panic. The runtime API and compiler versions are unchanged.
+
+Strict Linux MSRV lint separately rejects the constructor's at-least176-byte Err
+variant. Boxing only the original fence inside the failure value preserves its
+ownership and drop/unlock behavior without suppressing the lint. This bounded
+failure-path representation is not an allocations/op or throughput result.
+
+This addition writes nothing: it consumes no nonce, acknowledges no attempt and
+publishes no state or durable refusal. Its sequential bracket is neither an
+atomic snapshot nor a new whole-operation deadline. Existing publication/start
+APIs cannot consume it. The next writable join must retain this same fence and
+original authority through durable attempt acknowledgement, then exercise every
+new SIGKILL/lost-ack boundary. Production runtime/job/issuer selection, authenticated
+original-start and P2/P3 all-writer cessation remain before completion and server
+admission. The [evidence packet](../testing/performance/0.74/local-runs/controller-fence-preflight-20261015/README.md)
+keeps the missing-method negative and separates modeled checks from those still
+unopened execution rights. No RESP/native performance claim follows.

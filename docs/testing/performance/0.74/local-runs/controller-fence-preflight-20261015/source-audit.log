@@ -1,0 +1,10 @@
+warning: in the working copy of 'crates/xtask/tests/performance_contract_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_oidc_input_tests.rs', LF will be replaced by CRLF the next time Git touches it
+
+Hash                                                             Path
+----                                                             ----
+99C8CF65FD709E390727D1441117B85E84FA9FE120CAC9A94E35C5D44FC2FCC7 C:\Workspace\prj\jq\cashe\hydracache-074\Cargo.lock
+11917570528020B5E1EB275A5AD9509BA358E6A6CA044647D1235B685659B0BC C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing…
+Verified two additive module registrations only in existing input sources/tests, one additive static contract only, and exact five-file new/changed source inventory. No old verifier/fence/guard, product/dependency/workflow change.
+

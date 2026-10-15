@@ -1,0 +1,228 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.70s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 9 tests
+error[E0499]: cannot borrow `*g` as mutable more than once at a time
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:86:5
+   |
+85 |     let mut bound = g.bi...
+   |                     - first mutable borrow occurs here
+86 |     g.revalidate().unwra...
+   |     ^ second mutable borrow occurs here
+87 |     bound.revalidate().u...
+   |     ----- first borrow later used here
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0499`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 80) - compile fail ... ok
+error[E0277]: the trait bound `FencedControllerPreflight<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>: serde::de::DeserializeOwned` is not satisfied
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:67:10
+   |
+67 | ...::<Fen...static>>();
+   |       ^^^...^^^^^^^ unsatisfied trait bound
+   |
+   = help: the trait `for<'de> Deserialize<'de>` is not implemented for `FencedControllerPreflight<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+   = help: the following other types implement trait `Deserialize<'de>`:
+             `&[u8]` implements `Deserialize<'de>`
+             `&...` implements `Deserialize<'de>`
+             `&str` implements `Deserialize<'de>`
+             `()` implements `Deserialize<'de>`
+             `(...,)` implements `Deserialize<'de>`
+             `(..., ...)` implements `Deserialize<'de>`
+             `(..., ..., ...)` implements `Deserialize<'de>`
+             `(..., ..., ..., ...)` implements `Deserialize<'de>`
+           and 278 others
+   = note: required for `FencedControllerPreflight<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>` to implement `DeserializeOwned`
+note: required by a bound in `decode`
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:66:14
+   |
+66 | ...T: serde::...ned>() {}
+   |       ^^^^^^^...^^^ required by this bound in `decode`
+   = note: the full name for the type has been written to '/tmp/rustdoctestMRYpFi/rust_out.long-type-15374325045192028644.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 63) - compile fail ... ok
+error[E0277]: `Rc<()>` cannot be sent between threads safely
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:71:150
+    |
+ 71 | ... { std::thread::spawn(move || drop(g)); }
+    |       ------------------ -------^^^^^^^^
+    |       |                  |
+    |       |                  `Rc<()>` cannot be sent between threads safely
+    |       |                  within this `{closure@...}`
+    |       required by a bound introduced by this call
+    |
+    = help: within `{closure@...}`, the trait `Send` is not implemented for `Rc<()>`
+note: required because it appears within the type `PhantomData<...>`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/core/src/marker.rs:819:11
+note: required because it appears within the type `FixedIntentStorageRead`
+   --> tools/long-run-supervisor-074/src/diagnostic_intent_fixed_storage.rs:103:12
+    |
+103 | ...ct Fixe...geRead {
+    |       ^^^^...^^^^^^
+    = note: required because it appears within the type `&mut ...`
+note: required because it appears within the type `OriginalEmptyReservationFence<'_>`
+   --> tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence.rs:63:12
+    |
+ 63 | ...ct Orig...nFence<'s...
+    |       ^^^^...^^^^^^
+note: required because it appears within the type `FencedControllerPreflight<'_, '_, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:103:12
+    |
+103 | ...ct Fenc...flight<'j...
+    |       ^^^^...^^^^^^
+note: required because it's used within this closure
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:71:150
+    |
+ 71 | ...wn(move || dr...
+    |       ^^^^^^^
+note: required by a bound in `spawn`
+   --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/thread/functions.rs:125:0
+    = note: the full name for the type has been written to '/tmp/rustdoctesten2pCu/rust_out.long-type-6978631064886679760.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 68) - compile fail ... ok
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:97:90
+    |
+ 97 | ... g.revalidate(b"replacement"); }
+    |       ^^^^^^^^^^ -------------- unexpected argument of type `&'static [u8; 11]`
+    |
+note: method defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:123:12
+    |
+123 | ...fn revalidate(&m...
+    |       ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 97 - fn replace(mut g: FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(b"replacement"); }
+ 97 + fn replace(mut g: FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(); }
+    |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0061`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 94) - compile fail ... ok
+error[E0599]: no method named `start_once` found for struct `FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:79:88
+   |
+79 | ... g.start_once(); }
+   |       ^^^^^^^^^^ method not found in `FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 76) - compile fail ... ok
+error[E0277]: the trait bound `FencedControllerPreflight<'_, '_, 'a, 'a, 'a, 'a, 'a, 'a, 'a, 'a>: From<...>` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:102:148
+    |
+102 | ... g.into() }
+    |       ^^^^ unsatisfied trait bound
+    |
+    = help: the trait `From<FixtureAuthorityIntentRead<'_, 'a, 'a, 'a, 'a, 'a, 'a>>` is not implemented for `FencedControllerPreflight<'_, '_, 'a, 'a, 'a, 'a, 'a, 'a, 'a, 'a>`
+    = note: required for `FixtureAuthorityIntentRead<'_, 'a, 'a, 'a, 'a, 'a, 'a>` to implement `Into<FencedControllerPreflight<'_, '_, 'a, 'a, 'a, 'a, 'a, 'a, 'a, 'a>>`
+    = note: the full name for the type has been written to '/tmp/rustdoctestALNx1p/rust_out.long-type-968280956384474779.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 98) - compile fail ... ok
+error[E0599]: no method named `as_raw_fd` found for struct `FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:93:85
+   |
+93 | ... g.as_raw_fd(); }
+   |       ^^^^^^^^^ method not found in `FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 89) - compile fail ... ok
+error[E0599]: no method named `clone` found for struct `FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:62:91
+   |
+62 | ... g.clone(); }
+   |       ^^^^^ method not found in `FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 59) - compile fail ... ok
+
+thread 'rustc' (1533) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 89 but ends at 88
+stack backtrace:
+   0:     0x7b4baca5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7b4bad00e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7b4bae4f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7b4baca29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7b4baca29993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7b4baba10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7b4baca29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7b4baca29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7b4baca23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7b4baca0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7b4ba958e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7b4ba9266c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7b4bab3697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7b4bae3d5d8f - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7b4bae3c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7b4bae5004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7b4bae4fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  17:     0x7b4bae4f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  18:     0x7b4bae4f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  19:     0x7b4bae4f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  20:     0x7b4bae4f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  21:     0x7b4babd222e1 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_no_match_method_error
+  22:     0x7b4babd0bfce - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::report_method_error
+  23:     0x7b4bad40a1d4 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_method_call
+  24:     0x7b4bad43df6f - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  25:     0x7b4bad439158 - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_block
+  26:     0x7b4bad43df8b - <rustc_hir_typeck[fff352aa671ae9c1]::fn_ctxt::FnCtxt>::check_expr_with_expectation_and_args
+  27:     0x7b4bad4177ab - rustc_hir_typeck[fff352aa671ae9c1]::check::check_fn
+  28:     0x7b4badd28673 - rustc_hir_typeck[fff352aa671ae9c1]::typeck_with_inspect::{closure#0}
+  29:     0x7b4badd26ff4 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>>
+  30:     0x7b4bad343d2a - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_data_structures[721127a3047d6cb5]::vec_cache::VecCache<rustc_span[56e001752d96add4]::def_id::LocalDefId, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[5bf9c757c7651d1c]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  31:     0x7b4bad343609 - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::typeck::get_query_non_incr::__rust_end_short_backtrace
+  32:     0x7b4bad341235 - <rustc_middle[f9db403ed88df217]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_hir_analysis[c14eb0767420332]::check_crate::{closure#2}>::{closure#0}
+  33:     0x7b4bad340c44 - rustc_hir_analysis[c14eb0767420332]::check_crate
+  34:     0x7b4badf2909b - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  35:     0x7b4badf28cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  36:     0x7b4bae1ff963 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, false>
+  37:     0x7b4bae1ff74e - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_non_incr::__rust_end_short_backtrace
+  38:     0x7b4bae390111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  39:     0x7b4bae1810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  40:     0x7b4bae129b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  41:     0x7b4bae12993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  42:     0x7b4bae12b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  43:     0x7b4ba7a9cb84 - <unknown>
+  44:     0x7b4ba7b29ecc - <unknown>
+  45:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: --crate-type bin
+
+query stack during panic:
+#0 [typeck] type-checking `main::_doctest_main_tools_long_run_supervisor_074_src_diagnostic_controller_fence_preflight_rs_72_0::weaken`
+#1 [analysis] running analysis passes on crate `rust_out`
+end of query stack
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::FencedControllerPreflight (line 72) - compile fail ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 120 filtered out; finished in 0.14s
+
