@@ -12789,3 +12789,153 @@ fn signer_tracer_loss_is_original_private_proof_not_production_enrollment() {
         );
     }
 }
+
+#[test]
+fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary() {
+    let c = contract("diagnostic-signer-constructor-loss-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "original_parent_tgid_captured_before_original_fork",
+        "child_parent_death_guard_before_descriptor_or_credential_changes",
+        "original_parent_check_after_nonretroactive_arming",
+        "guard_overlaps_exitkill_before_first_resume",
+        "whole_process_parent_loss_at_five_constructor_cuts",
+        "healthy_progress_is_exact_hint_not_admission",
+        "no_child_signal_on_positive_or_control_path",
+        "original_pidfd_terminal_reaped_then_echild",
+        "original_nested_root_cleanup_only_after_reap",
+        "healthy_original_handoff_at_all_five_cuts",
+        "negative_controls_terminate_before_exec",
+        "negative_controls_never_satisfy_positive_oracle",
+        "closed_current_libtest_roles_only",
+        "original_kernel_credentials_and_five_descriptors_checked",
+        "ordinary_test_subreaper_unchanged",
+        "old_helper_and_policy_bytes_unchanged",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "pre_arm_creating_thread_only_loss_proved",
+        "arbitrary_multithreaded_signer_supported",
+        "production_tracer_lifetime_enrolled",
+        "independent_runtime_custody",
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_attested",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_namespace_mount_account_service_or_cgroup_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("report_bytes", 32),
+        ("report_descriptors", 5),
+        ("control_bytes", 128),
+        ("constructor_cuts", 5),
+        ("healthy_progress_packets", 7),
+        ("max_received_packets", 9),
+        ("before_arm_refusal_exit", 81),
+        ("guard_failure_exit", 82),
+        ("no_arm_control_exit", 83),
+        ("no_parent_check_control_exit", 84),
+        ("gate_failure_exit", 85),
+        ("logical_stall_millis", 5000),
+        ("outer_stall_millis", 30000),
+        ("capture_bytes", 8192),
+        ("seeded_cases", 8),
+        ("independent_observers", 4),
+        ("frame_mutations", 256),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let owner =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    assert!(
+        owner
+            .find("let original_parent = unsafe { libc::getpid() }")
+            .unwrap()
+            < owner.find("let pid = unsafe { libc::fork() }").unwrap()
+    );
+    let child = owner.split("fn child(").nth(1).unwrap();
+    assert!(
+        child
+            .find("constructor_guard::arm(original_parent, hook)")
+            .unwrap()
+            < child.find("libc::dup2").unwrap()
+    );
+    assert!(
+        child
+            .find("libc::kill(libc::getpid(), libc::SIGSTOP)")
+            .unwrap()
+            < child.find("libc::PR_SET_PDEATHSIG, 0usize").unwrap()
+    );
+    assert!(owner.contains("PTRACE_O_EXITKILL"));
+    let guard =
+        std::fs::read_to_string(base.join("diagnostic_signer_constructor_guard.rs")).unwrap();
+    for required in [
+        "PR_SET_PDEATHSIG",
+        "PR_GET_PDEATHSIG",
+        "installed != libc::SIGKILL",
+        "libc::getppid() != original_parent",
+        "libc::_exit(81)",
+        "libc::_exit(82)",
+        "libc::_exit(83)",
+        "libc::_exit(84)",
+        "libc::close(hook.parent.as_raw_fd())",
+    ] {
+        assert!(guard.contains(required), "{required}");
+    }
+    let fixture =
+        std::fs::read_to_string(base.join("diagnostic_signer_constructor_loss_fixture.rs"))
+            .unwrap();
+    for required in [
+        "build_observed",
+        "original_target",
+        "directories(",
+        "channel::packet",
+        "signal(&tracer.fd)",
+        "libc::WNOWAIT",
+        "libc::ECHILD",
+        "child_signaled=false",
+        "dummy_sends=0",
+        "decode_frame",
+        "CUTS",
+        "0x0740_c071",
+        ".env_clear()",
+    ] {
+        assert!(fixture.contains(required), "{required}");
+    }
+    for text in [&guard, &fixture] {
+        for forbidden in [
+            "pub fn",
+            "pub struct",
+            "PTRACE_ATTACH",
+            "PTRACE_POKE",
+            "waitpid(-1",
+            "SigningKey",
+            "sign_prepared_files",
+            "CLONE_NEWNS",
+        ] {
+            assert!(!text.contains(forbidden), "{forbidden}");
+        }
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(path))
+            .unwrap()
+            .contains("constructor_guard"));
+    }
+}

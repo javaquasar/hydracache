@@ -6,6 +6,8 @@ use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::process::{Child, Command, ExitStatus, Stdio};
 #[path = "diagnostic_signer_tracer_loss_channel.rs"]
 mod channel;
+#[path = "diagnostic_signer_constructor_loss_fixture.rs"]
+mod early;
 const ENTRY: &str =
     "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_entry";
 const ROLE: &str = "HYDRACACHE_LOCAL_SIGNER_LOSS_074";

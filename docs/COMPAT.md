@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+The private Linux libtest report
+`diagnostic-signer-original-parent-constructor-loss-074-v1` uses distinct magic,
+32 bytes with cut/fault/original-TID/zero reserved fields, exactly five original
+FDs and kernel credentials, after one descriptor-free progress byte. Its private
+child gate admits one fixed cut token and one release byte; EOF exposes actual
+parent loss. Unknown fields, length, descriptor set, peer or ancestry refuse.
+Older binaries have no consumer. It is neither persisted nor connected to a
+production receiver; no durable/signed schema, public API, dependency, pin or
+qualification changes. Removing the private fixture disables this test profile.
+See the [constructor boundary](testing/performance/0.74/diagnostic-signer-constructor-loss-design.md).
+
 The private Linux libtest report `diagnostic-signer-tracer-loss-report-074-v1`
 uses 32 bytes, fixed stage/send-count/TID/reserved fields and exactly five original
 SCM_RIGHTS descriptors with kernel credentials, plus a closed one-byte response.

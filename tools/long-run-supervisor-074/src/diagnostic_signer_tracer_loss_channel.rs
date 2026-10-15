@@ -65,7 +65,7 @@ pub(super) struct Report {
     pub(super) bytes: [u8; 32],
     pub(super) fds: Vec<File>,
 }
-fn packet(fd: &File, original_tracer: u32) -> io::Result<(Vec<u8>, Vec<File>)> {
+pub(super) fn packet(fd: &File, original_tracer: u32) -> io::Result<(Vec<u8>, Vec<File>)> {
     readable(fd, 5000)?;
     let mut bytes = [0u8; 32];
     let mut control = [0usize; 16];

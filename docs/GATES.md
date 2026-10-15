@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11's pre-options original-parent guard uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_constructor_loss -- --nocapture`.
+Seven tests cover five actual whole-parent-loss cuts, exact original-child
+terminal/reap, healthy handovers, distinct negative controls, mutations and
+independent observers. Pre-arm creating-thread-only loss remains outside this
+proof. No manual gate, production enrollment or server admission is added.
+See the [constructor contract](testing/performance/0.74/diagnostic-signer-constructor-loss-contract.toml).
+
 W11's independent actual tracer-loss fixture uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_tracer_loss -- --nocapture`.
 Eleven tests include the closed role entry, six-stage actual tracer SIGKILL, exact

@@ -10,6 +10,8 @@ use std::os::unix::fs::{FileExt, OpenOptionsExt};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+#[path = "diagnostic_signer_constructor_guard.rs"]
+mod constructor_guard;
 #[path = "diagnostic_signer_handoff_fixture.rs"]
 mod handoff;
 #[path = "diagnostic_signer_rooted_maps.rs"]
@@ -89,6 +91,14 @@ impl RootedExec {
         namespace_case: Option<namespace::Case>,
         handoff_case: Option<handoff::Case>,
     ) -> io::Result<Self> {
+        Self::build_observed(case, namespace_case, handoff_case, None)
+    }
+    fn build_observed(
+        case: Case,
+        namespace_case: Option<namespace::Case>,
+        handoff_case: Option<handoff::Case>,
+        hook: Option<&constructor_guard::Hook>,
+    ) -> io::Result<Self> {
         let mut root = if handoff_case.is_some() {
             handoff::root()?
         } else if namespace_case.is_some() {
@@ -163,6 +173,8 @@ impl RootedExec {
             },
             std::ptr::null(),
         ];
+        // SAFETY: capture the actual parent TGID before its original fork, never a caller PID.
+        let original_parent = unsafe { libc::getpid() };
         // SAFETY: prepared fixed scalars/strings; only libc/_exit after fork.
         let pid = unsafe { libc::fork() };
         if pid < 0 {
@@ -175,6 +187,8 @@ impl RootedExec {
                 &argv,
                 &env,
                 pair.as_ref().map(|(_, child)| child.as_raw_fd()),
+                original_parent,
+                hook,
             );
         }
         drop(null);
@@ -206,8 +220,14 @@ impl RootedExec {
         }
         // SAFETY: fresh original pidfd transferred once.
         owner.pidfd = Some(unsafe { OwnedFd::from_raw_fd(fd as i32) });
+        if let Some(hook) = hook.filter(|h| h.cut != constructor_guard::Cut::Stopped) {
+            (hook.observe)(&owner, hook)?;
+        }
         if owner.wait()? != STOP {
             return Err(invalid());
+        }
+        if let Some(hook) = hook.filter(|h| h.cut == constructor_guard::Cut::Stopped) {
+            (hook.observe)(&owner, hook)?;
         }
         owner.trace(
             libc::PTRACE_SETOPTIONS,
@@ -721,7 +741,10 @@ fn child(
     argv: &[*const libc::c_char; 3],
     env: &[*const libc::c_char; 2],
     channel: Option<i32>,
+    original_parent: libc::pid_t,
+    hook: Option<&constructor_guard::Hook>,
 ) -> ! {
+    constructor_guard::arm(original_parent, hook);
     // SAFETY: all inputs prepared; only scalar libc and stack storage after raw fork.
     unsafe {
         if libc::dup2(fds[0], 0) < 0 || libc::dup2(fds[0], 1) < 0 || libc::dup2(fds[0], 2) < 0 {
@@ -737,7 +760,14 @@ fn child(
             if libc::dup2(channel, 3) < 0 {
                 libc::_exit(70);
             }
-            4
+            if let Some(hook) = hook {
+                if libc::dup2(hook.child.as_raw_fd(), 4) < 0 {
+                    libc::_exit(70);
+                }
+                5
+            } else {
+                4
+            }
         } else {
             3
         };
@@ -746,9 +776,19 @@ fn child(
             || libc::syscall(libc::SYS_close_range, hi + 1, u32::MAX, 0u32) < 0
             || libc::setrlimit(libc::RLIMIT_CORE, &limit) < 0
             || libc::ptrace(libc::PTRACE_TRACEME, 0, 0usize, 0usize) < 0
-            || libc::kill(libc::getpid(), libc::SIGSTOP) < 0
         {
             libc::_exit(71);
+        }
+        constructor_guard::checkpoint(hook, constructor_guard::Cut::Traceme, 4);
+        if hook.is_some() && libc::close(4) < 0 {
+            libc::_exit(71);
+        }
+        if libc::kill(libc::getpid(), libc::SIGSTOP) < 0 {
+            libc::_exit(71);
+        }
+        // Original parent installs EXITKILL before this first resume. Overlap, then clear.
+        if libc::prctl(libc::PR_SET_PDEATHSIG, 0usize, 0usize, 0usize, 0usize) != 0 {
+            libc::_exit(82);
         }
         if libc::unshare(libc::CLONE_NEWUSER) < 0 || libc::kill(libc::getpid(), libc::SIGSTOP) < 0 {
             libc::_exit(72);
