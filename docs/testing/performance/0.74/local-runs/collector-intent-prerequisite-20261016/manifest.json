@@ -1,0 +1,58 @@
+{
+  "format_version": 1,
+  "date": "2026-10-16",
+  "baseline_commit": "c34add1ba481b889c5dc46b571501d77d7b4aa5a",
+  "preregistration_commit": "ae45a09d3728212850a78e4f6389fed5da0de65c",
+  "status": "environment-blocked-before-implementation",
+  "implementation_added": false,
+  "missing_api_compiler_refusal_observed": false,
+  "server_admitted": false,
+  "performance_claim": false,
+  "captures": [
+    {
+      "file": "baseline-interrupted.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 intent_projection --locked --offline",
+      "exit_code": 1,
+      "outcome": "operator SIGINT before completion"
+    },
+    {
+      "file": "baseline.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_intent_projection --locked --offline",
+      "exit_code": 0,
+      "outcome": "16 existing integration tests pass"
+    },
+    {
+      "file": "test-environment-refusal.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_intent_projection collector_intent_requires --locked --offline",
+      "exit_code": 1,
+      "outcome": "WSL process creation fails before Rust starts"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "baseline-interrupted.log",
+      "bytes": 132,
+      "sha256": "880af7fe11e7c75c3d268bfdda1f892c09b2d8dcfcc37c418877ccdb45ac027a"
+    },
+    {
+      "file": "baseline.log",
+      "bytes": 1589,
+      "sha256": "96d09ba4a3914a1be20fd922f747557370330660f8cc263f2052c4fc38cea273"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2039,
+      "sha256": "2a3dccc2ae89a8cd63ee89b1ed151b617906e0d48dc74fc54f4ea206ad03094b"
+    },
+    {
+      "file": "test-environment-refusal.log",
+      "bytes": 381,
+      "sha256": "6a7cb3f79d8a839e7be79d10add61dd3f2553c09c12f40026a9a416b31625714"
+    },
+    {
+      "file": "test-first-probe.patch",
+      "bytes": 1010,
+      "sha256": "8b87ab2461d87b9257e46e8928251a023590dff81a37f5587a33f8feb90f274f"
+    }
+  ]
+}

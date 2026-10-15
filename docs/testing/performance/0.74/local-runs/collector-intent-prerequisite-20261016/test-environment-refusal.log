@@ -1,0 +1,5 @@
+<3>WSL (5580 - Relay) ERROR: CreateProcessParseCommon:1008: getpwuid(1000) failed 5
+<3>WSL (5580 - Relay) ERROR: ConfigUpdateLanguage:2580: fopen(/etc/default/locale) failed 5
+<3>WSL (5580 - Relay) ERROR: operator():519: getpwuid(0) failed 5
+<3>WSL (5580) ERROR: I/O error @util.cpp:1327 (UtilInitGroups)
+<3>WSL (5580 - Relay) ERROR: CreateProcessCommon:742: Create process failed
