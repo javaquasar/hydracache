@@ -370,5 +370,7 @@ fn run(owner: &mut RootedExec) -> io::Result<()> {
     deliver(owner)?;
     complete(owner)
 }
+#[path = "diagnostic_signer_tracer_loss_fixture.rs"]
+mod loss;
 #[path = "diagnostic_signer_handoff_tests.rs"]
 mod tests;

@@ -1,5 +1,17 @@
 # HydraCache Compatibility Register
 
+The private Linux libtest report `diagnostic-signer-tracer-loss-report-074-v1`
+uses 32 bytes, fixed stage/send-count/TID/reserved fields and exactly five original
+SCM_RIGHTS descriptors with kernel credentials, plus a closed one-byte response.
+A setup prefix has exactly stage+2 credential-checked one-byte ordinals0..6 with
+no FDs, at most eight received packets total. Those hints never grant authority.
+Unknown fields, length, descriptor set, peer, ancestry or sequence refuse before
+fault admission. Older binaries have no consumer; it is not persisted, negotiated
+or accepted by the production ancillary receiver. No durable/signed schema,
+normal-library API, dependency, pin, production policy or qualification input
+changes. Removing the private test module disables it. See the
+[tracer-loss boundary](testing/performance/0.74/diagnostic-signer-tracer-loss-design.md).
+
 The private Linux x86_64 libtest handoff protocol
 `diagnostic-signer-original-synthetic-handoff-074-v1` uses three exact 16-byte
 READY/DUMMY/ACK records on an original-owner-created unnamed channel. It accepts

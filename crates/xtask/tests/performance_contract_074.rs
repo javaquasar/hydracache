@@ -12644,3 +12644,148 @@ fn signer_handoff_original_private_channel_cannot_enable_production_authority() 
         );
     }
 }
+
+#[test]
+fn signer_tracer_loss_is_original_private_proof_not_production_enrollment() {
+    let c = contract("diagnostic-signer-tracer-loss-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "fixed_current_libtest_subprocess_roles_only",
+        "subreaper_changed_only_in_isolated_monitor",
+        "ordinary_test_parent_subreaper_flag_checked_unchanged",
+        "kernel_sender_credentials_match_original_tracer",
+        "original_pidfd_parent_and_tracer_thread_checked",
+        "received_descriptors_owned_before_payload_refusal",
+        "received_writer_eof_proves_descriptor_release",
+        "fd_lifetime_oracle_isolated_after_exec_no_fork",
+        "exact_setup_progress_is_hint_not_admission",
+        "no_unvalidated_received_pidfd_signaling",
+        "retained_parent_nested_root_and_four_directory_inodes_checked",
+        "original_tracer_pidfd_is_only_positive_kill_target",
+        "actual_original_child_sigkill_after_tracer_loss",
+        "exact_pidfd_waitid_terminal_consumed_then_echild",
+        "cleanup_chmod_only_after_original_child_terminal_reap",
+        "emergency_cleanup_never_counts_as_exitkill_proof",
+        "bounded_natural_no_exitkill_controls_distinguished",
+        "failed_exact_exit_prediction_retained",
+        "healthy_and_attributed_report_refusal_controls",
+        "old_helpers_policy_root_owner_and_handoff_body_unchanged",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "pre_options_constructor_window_proved",
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_attested",
+        "independent_runtime_custody",
+        "complete_sandbox",
+        "multithreaded_signer_supported",
+        "production_tracer_lifetime_enrolled",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_namespace_mount_account_service_or_cgroup_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("report_bytes", 32),
+        ("max_setup_progress_packets", 7),
+        ("max_received_packets", 8),
+        ("control_bytes", 128),
+        ("report_descriptors", 5),
+        ("original_directories", 4),
+        ("temporary_name_bytes", 64),
+        ("observer_parent_mode", 448),
+        ("runtime_container_mode", 493),
+        ("runtime_directory_mode", 365),
+        ("logical_stall_millis", 5000),
+        ("outer_stall_millis", 30000),
+        ("capture_bytes", 8192),
+        ("original_boundaries", 6),
+        ("report_faults", 6),
+        ("seeded_cases", 8),
+        ("independent_monitors", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_signer_tracer_loss_fixture.rs")).unwrap();
+    for required in [
+        "PR_SET_CHILD_SUBREAPER",
+        "PR_GET_CHILD_SUBREAPER",
+        "process_group(0)",
+        "libc::P_PIDFD",
+        "libc::WNOWAIT",
+        "libc::CLD_KILLED",
+        "libc::SIGKILL",
+        "libc::ECHILD",
+        "signal(&tracer.fd)?",
+        "death_admitted",
+        "parent.close()?",
+        "libc::fchmod",
+        "libc::O_NOFOLLOW",
+        "TracerPid",
+        "RootedExec::handoff(Case::Good)",
+        "channel::receive",
+        "channel::response",
+        "after.mode() & 0o7777 != 0o700",
+        ".env_clear()",
+        "8193",
+        "30000",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    let ipc =
+        std::fs::read_to_string(base.join("diagnostic_signer_tracer_loss_channel.rs")).unwrap();
+    for required in [
+        "SO_PASSCRED",
+        "SCM_CREDENTIALS",
+        "SCM_RIGHTS",
+        "[0usize; 16]",
+        "MSG_CMSG_CLOEXEC",
+        "MSG_DONTWAIT",
+        "MSG_TRUNC",
+        "File::from_raw_fd",
+        "fds.len() != 5",
+        "bytes.len() != 32",
+        "creds.pid as u32 != original_tracer",
+    ] {
+        assert!(ipc.contains(required), "{required}");
+    }
+    for text in [&source, &ipc] {
+        for forbidden in [
+            "pub fn",
+            "pub struct",
+            "PTRACE_ATTACH",
+            "PTRACE_POKE",
+            "waitpid(-1",
+            "SigningKey",
+            "sign_prepared_files",
+            "CLONE_NEWNS",
+        ] {
+            assert!(!text.contains(forbidden), "{forbidden}");
+        }
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("tracer_loss"),
+            "{path}"
+        );
+    }
+}

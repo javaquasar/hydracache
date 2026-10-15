@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11's independent actual tracer-loss fixture uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_tracer_loss -- --nocapture`.
+Eleven tests include the closed role entry, six-stage actual tracer SIGKILL, exact
+child pidfd SIGKILL/reap, no-EXITKILL and healthy controls, attributed report faults,
+finite oracle/mutations, FD lifetime and independent monitors. Emergency cleanup is never a
+positive proof. No new manual gate, production custody, worker or server admission.
+See the [tracer-loss contract](testing/performance/0.74/diagnostic-signer-tracer-loss-contract.toml).
+
 W11's one-shot synthetic original-child handoff uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_handoff -- --nocapture`.
 Thirteen cases cover exact bounded transfer, pre-read withholding, malformed and
