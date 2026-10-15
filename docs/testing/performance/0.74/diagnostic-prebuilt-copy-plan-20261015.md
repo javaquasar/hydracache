@@ -35,6 +35,10 @@ same-attempt/independent-attempt checks, source alias and source-mutation cases,
 destination substitution and sticky refusal, owned writer flag/close checks and
 compile-fail FD/clone/authorization guards. Exercise write/read short progress and
 failure seams where possible; injected failures are not real SIGKILL or power loss.
+Also kill an owned libtest subprocess at each of the seven copy checkpoints,
+using a local socket barrier before the exact child kill/reap. This executes only
+the fixture, not the prepared binary. Every retained attempt must refuse reuse,
+including the completed-looking final checkpoint; this is not power-loss proof.
 Run Linux repeated focused tests, existing bundle/executable and issuer regressions,
 current and MSRV checks, strict lint, source contracts, docs and local non-promotable
 performance contracts. Preserve frozen qualification and all old pin/reader bytes.
