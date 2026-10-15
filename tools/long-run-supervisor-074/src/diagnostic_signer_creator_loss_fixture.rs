@@ -3,6 +3,8 @@ use super::super::super::constructor_guard::{Cut, Fault, Hook, CUTS};
 use super::super::super::creator_task as task;
 use super::*;
 use std::sync::{mpsc, OnceLock};
+#[path = "diagnostic_signer_thread_exit_fixture.rs"]
+mod thread_exit;
 const ENTRY_TASK: &str = "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry";
 const ROLE_TASK: &str = "HYDRACACHE_LOCAL_SIGNER_TASK_074";
 const SPEC_TASK: &str = "HYDRACACHE_LOCAL_SIGNER_TASK_SPEC_074";

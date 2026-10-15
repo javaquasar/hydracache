@@ -12941,6 +12941,120 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
 }
 
 #[test]
+fn signer_thread_exit_is_original_thread_only_and_does_not_open_server_admission() {
+    let c = contract("diagnostic-signer-thread-exit-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "same_original_rooted_exec_constructor",
+        "actual_original_tracer_thread_sys_exit",
+        "original_task_proc_directory_retained_before_fork",
+        "original_tgid_nonterminal_at_child_terminal",
+        "six_fixed_cuts_require_exact_child_sigkill",
+        "initial_cut_overlaps_parent_death_guard",
+        "later_cuts_follow_original_pdeathsig_clear",
+        "positive_paths_never_signal_child",
+        "no_exitkill_rooted_control_detaches_and_is_nonterminal",
+        "negative_cleanup_is_never_positive_evidence",
+        "keeper_wnowait_then_independent_same_tuple_reap",
+        "healthy_six_cut_original_ack_close_exit0",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "arbitrary_threads_supported",
+        "forced_tid_reuse_reproduced",
+        "production_runtime_or_issuer_custody",
+        "actual_private_key_or_token_read",
+        "authenticated_original_worker_start",
+        "all_writers_revoked",
+        "completion_or_later_cells_enabled",
+        "host_services_or_cgroups_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("report_bytes", 32),
+        ("prefix_descriptors", 1),
+        ("report_descriptors", 5),
+        ("max_received_packets", 10),
+        ("stages", 6),
+        ("logical_stall_millis", 5000),
+        ("outer_stall_millis", 30000),
+        ("capture_bytes", 8192),
+        ("seeded_cases", 8),
+        ("independent_observers", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let f = std::fs::read_to_string(base.join("diagnostic_signer_thread_exit_fixture.rs")).unwrap();
+    for required in [
+        "SYS_exit",
+        "RootedExec::handoff",
+        "creator_target",
+        "own.creator.task",
+        "PTRACE_O_TRACEEXEC | libc::PTRACE_O_TRACESYSGOOD",
+        "gone(&original[0])",
+        "pending(&tracer.fd)",
+        "at_status(&child_proc)",
+        "libc::WNOWAIT",
+        "libc::ECHILD",
+        "cleanup_is_not_positive=true",
+        "spec.mode == 0 && !spec.positive(actual)",
+        "signal(&fds[0])",
+        "0x0740_d073",
+        ".env_clear()",
+        "join.join()",
+        "own.channel.as_ref().ok_or_else(invalid)?.sends",
+    ] {
+        assert!(f.contains(required), "{required}");
+    }
+    assert_eq!(f.matches("signal(&fds[0])").count(), 1);
+    let cleanup = f.find("signal(&fds[0])").unwrap();
+    let negative = f[..cleanup].rfind("if spec.mode == 1").unwrap();
+    assert!(f[negative..cleanup].contains("!pending(&fds[0])"));
+    assert!(f[negative..cleanup].contains("scalar(&status, \"TracerPid\")? == 0"));
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "PTRACE_ATTACH",
+        "PTRACE_POKE",
+        "waitpid(-1",
+        "SigningKey",
+        "sign_prepared_files",
+        "CLONE_NEWNS",
+    ] {
+        assert!(!f.contains(forbidden), "{forbidden}");
+    }
+    let old =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    // The old first-resume clear remains in the original constructor, not a caller assertion.
+    let clear = old
+        .find("libc::prctl(libc::PR_SET_PDEATHSIG, 0usize")
+        .unwrap();
+    let initial_stop = old
+        .find("libc::kill(libc::getpid(), libc::SIGSTOP)")
+        .unwrap();
+    let unshare = old.find("libc::unshare(libc::CLONE_NEWUSER)").unwrap();
+    assert!(initial_stop < clear && clear < unshare);
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(path))
+            .unwrap()
+            .contains("thread_exit"));
+    }
+}
+
+#[test]
 fn signer_creator_loss_pins_original_task_without_production_or_numeric_refresh() {
     let c = contract("diagnostic-signer-creator-loss-contract.toml");
     for key in [

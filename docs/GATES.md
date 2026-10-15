@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11's post-options original tracing-thread loss uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_thread_exit -- --nocapture`.
+Six tests cover actual thread exit at six cuts while the original TGID survives,
+independent exact child reap, the rooted no-EXITKILL counterfactual, six healthy
+handoffs, frame/oracle mutations and independent concurrent observers. Negative
+control cleanup cannot establish positive proof. No new manual or server gate.
+See the [thread-exit contract](testing/performance/0.74/diagnostic-signer-thread-exit-contract.toml).
+
 W11's original creating-thread guard uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_creator_loss -- --nocapture`.
 Eight tests include actual thread-only exit at five cuts while the original TGID

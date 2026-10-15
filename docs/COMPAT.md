@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The private Linux libtest report `diagnostic-signer-original-thread-exit-074-v1`
+uses distinct 32-byte magic/stage/mode/original-TID/zero-reserved fields. A fixed
+prefix transfers one retained creator task FD, followed by five original child
+and root FDs. The unchanged receiver checks kernel peer credentials and at most
+five FDs per packet; at most ten packets are received, including closed progress
+or terminal records. Unknown schema, fields, lengths, FD set or peer refuse.
+Old binaries have no consumer. No normal CLI, persisted/signed schema, public API,
+dependency, pin or qualification changes; removing the private fixture disables
+it. See the [thread-exit boundary](testing/performance/0.74/diagnostic-signer-thread-exit-design.md).
+
 The private Linux libtest report `diagnostic-signer-original-creator-loss-074-v1`
 has distinct 32-byte magic/cut/control/healthy/TID/reserved fields. After one
 descriptor-free setup byte, a fixed prefix transfers gate/task FDs, then five
