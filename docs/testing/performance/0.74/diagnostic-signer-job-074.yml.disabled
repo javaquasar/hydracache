@@ -1,0 +1,29 @@
+# DESIGN ONLY: outside .github/workflows, no executable signing route.
+# Exact issuer/launcher/runtime/workflow/subject pins remain unapproved.
+name: Draft isolated controller signer 0.74
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build_without_authority:
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Closed until exact build acquisition and receipt policy are reviewed
+        run: exit 1
+  sign_prebuilt_only:
+    if: ${{ false }}
+    needs: build_without_authority
+    runs-on: ubuntu-24.04
+    environment: UNAPPROVED_SIGNER_ENVIRONMENT
+    permissions:
+      contents: read
+      id-token: write # Draft future job scope only; NOT installed or dispatched.
+    steps:
+      - name: Closed until independent prebuilt launcher and GNU runtime custody are admitted
+        run: exit 1
+# No signing secret, download, checkout, compiler, package installer or launcher
+# invocation is executable here. Removing a guard is not an enrollment procedure.

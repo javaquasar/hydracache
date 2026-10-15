@@ -12941,6 +12941,72 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
 }
 
 #[test]
+fn signer_custody_preparation_does_not_install_a_trust_root_or_signing_job() {
+    let base = root();
+    let helper =
+        std::fs::read_to_string(base.join("scripts/perf/diagnostic_signer_key_074.py")).unwrap();
+    for required in [
+        "signer-build-private.pem",
+        "signer-build-public.json",
+        "OLD_ROLES",
+        "O_NOFOLLOW",
+        "O_EXCL",
+        "O_NONBLOCK",
+        "same_named",
+        "same_directory",
+        "diagnostic-signer-build-issuer-selection-074-v1",
+        "not-a-build-receipt",
+        "\"public_pin_approved\": False",
+        "\"production_trust_enrolled\": False",
+        "\"signer_build_receipt_signed\": False",
+        "\"workflow_installed\": False",
+        "\"admission_allowed\": False",
+    ] {
+        assert!(helper.contains(required), "{required}");
+    }
+    let inspect = helper.split("def inspect(path):").nth(1).unwrap();
+    assert!(
+        inspect.find("read_public(public)").unwrap() < inspect.find("os.open(PRIVATE").unwrap()
+    );
+    for forbidden in [
+        "issuer-private.pem",
+        "SigningKey",
+        "diagnostic_worker_key_074",
+        "github.token",
+    ] {
+        assert!(!helper.contains(forbidden), "{forbidden}");
+    }
+    let draft = std::fs::read_to_string(
+        base.join("docs/testing/performance/0.74/diagnostic-signer-job-074.yml.disabled"),
+    )
+    .unwrap();
+    assert_eq!(draft.matches("if: ${{ false }}").count(), 2);
+    assert_eq!(draft.matches("run: exit 1").count(), 2);
+    assert!(draft.contains("UNAPPROVED_SIGNER_ENVIRONMENT"));
+    for forbidden in ["uses:", "cargo ", "rustup ", "apt-get", "secrets."] {
+        assert!(!draft.contains(forbidden), "{forbidden}");
+    }
+    assert!(!base
+        .join(".github/workflows/diagnostic-controller-signer-074.yml")
+        .exists());
+    let public = std::fs::read_to_string(
+        base.join("tools/long-run-supervisor-074/examples/verify_signer_issuer_public.rs"),
+    )
+    .unwrap();
+    for required in [
+        "verify_strict(PROBE",
+        "key.is_weak()",
+        "deny_unknown_fields",
+        "take(4097)",
+        "p.public_pin_approved",
+        "p.production_trust_enrolled",
+        "p.admission_allowed",
+    ] {
+        assert!(public.contains(required), "{required}");
+    }
+}
+
+#[test]
 fn signer_thread_exit_is_original_thread_only_and_does_not_open_server_admission() {
     let c = contract("diagnostic-signer-thread-exit-contract.toml");
     for key in [

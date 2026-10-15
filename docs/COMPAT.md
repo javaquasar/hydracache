@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The local public inventory `diagnostic-signer-build-issuer-selection-074-v1`
+has a separate purpose, public key/fingerprint and fixed selfcheck domain. It
+contains no private material and keeps pin approval, production enrollment,
+receipt signing, workflow installation and admission false. Unknown/duplicate
+fields, noncanonical encoding, role confusion or changed flags refuse. It is
+not a signed build receipt or a production trust configuration; old worker and
+observer readers do not consume it. Rotation requires a new destination and
+explicit public selection, not overwriting an old key. See the
+[custody design](testing/performance/0.74/diagnostic-signer-custody-design.md).
+
 The private Linux libtest report `diagnostic-signer-original-thread-exit-074-v1`
 uses distinct 32-byte magic/stage/mode/original-TID/zero-reserved fields. A fixed
 prefix transfers one retained creator task FD, followed by five original child

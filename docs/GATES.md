@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+The local separate signer-key helper uses
+`python -m unittest scripts.perf.test_diagnostic_signer_key_074` (nonroot Linux
+for actual disposable key fixtures; Windows reports those cases skipped).
+`cargo test -p hydracache-long-run-supervisor-074 --example verify_signer_issuer_public --locked`
+checks strict public selfcheck inventory with synthetic keys. No manual gate,
+issuer approval, installed workflow or server authority follows. See the
+[custody design](testing/performance/0.74/diagnostic-signer-custody-design.md).
+
 W11's post-options original tracing-thread loss uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_thread_exit -- --nocapture`.
 Six tests cover actual thread exit at six cuts while the original TGID survives,
