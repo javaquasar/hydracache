@@ -59,8 +59,19 @@ The [original controller attempt](diagnostic-controller-attempt-design.md) now
 consumes the original common-fence preflight into a durable Reserve request,
 retaining its original OIDC/kernel/authority chain and uninterrupted lock.
 The standalone bytes are unsigned consistency data, not recovered admission.
-Joined SIGKILL/lost-ack proof, owned lifecycle integration, actual production
-trust and original-start/all-writer cessation remain before server execution.
+The separate [joined SIGKILL/lost-ack matrix](diagnostic-controller-attempt-crash-contract.toml)
+now covers the eight write cuts and AfterReturn with owned nonroot processes.
+It preserves retained bytes and refusal in two fresh readers per case; its
+kernel sender is the fixture child itself, not an enrolled external controller.
+Owned lifecycle integration, actual production trust and original-start/
+all-writer cessation remain before server execution.
+
+The [process packet](local-runs/controller-attempt-crash-20261016/README.md)
+also retains one unexplained Kernel(Invalid) while constructing the original
+guard before a write checkpoint. Same-source isolated and full-suite successes
+do not identify its cause. Attribute that refusal before treating the integrated
+admission path as stable or enrolling it for server execution; do not relax the
+kernel/time guards to remove the failure.
 
 The [fixed trust input](diagnostic-worker-trust-input-design.md) now retains the
 selected issuer and explicitly configured body pin/epoch from a bounded original
@@ -119,8 +130,9 @@ The [original controller/common-fence preflight](diagnostic-controller-fence-pre
 now brackets the retained OIDC/controller/kernel/authority chain under an already
 owned common empty fence. Errors refuse both chains and retain the original lock
 until the result/failure is dropped. This read-only connection creates no durable
-attempt, consumes no nonce and has no start conversion. The writable replay/
-attempt join and its crash matrix remain required; real trust selection is unchanged.
+attempt, consumes no nonce and has no start conversion. The separate consuming
+request-retention API and its process matrix do not make that constructor writable
+or provide lifecycle/start conversion; real trust selection is unchanged.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace

@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.36s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_trust_drift_at_each_write_boundary_cross_refuses ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 918 filtered out; finished in 43.58s
+
+

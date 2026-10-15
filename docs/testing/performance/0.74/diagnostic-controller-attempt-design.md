@@ -68,13 +68,61 @@ unsupported signed operations, all eight interruption and trust-drift cuts,
 late source/object/inventory drift, no-I/O refusal, strict reader mutations,
 legacy conversion refusal and independently created concurrent chains.
 
-The joined SIGKILL/lost-ack matrix remains a separate required process-harness
-stage. Existing storage process-loss proofs do not establish the new composition.
-No real issuer/job/host enrollment, original start, all-writer cessation, fixed
-cells two through four or server admission follows from these local callbacks.
+The separate [joined process matrix](diagnostic-controller-attempt-crash-plan-20261016.md)
+now exercises the original composition, rather than inferring its behavior from
+callbacks or legacy storage proofs. Its [contract](diagnostic-controller-attempt-crash-contract.toml)
+keeps original-start, production trust and later lifecycle rights closed.
 
 Runtime implementation `865dab48` and final source `f459aff1` have a
 [local packet](local-runs/controller-attempt-20261015/README.md) with three
 ten-case repeats, MSRV, the 67-case original-input and 124-case legacy-intent
 regressions, nine separate existing process-loss proofs and eleven fence cases.
-Those existing process proofs do not close the new joined boundary above.
+That historical packet does not itself close the joined boundary.
+
+## Original composition under actual process loss
+
+The private manual Linux nonroot matrix uses seed `0x0740c095` for all eight
+write cuts plus AfterReturn, with an uninterrupted AfterReturn control. The
+child retains the original signed request, OIDC/build/worker trust, live kernel
+packet, authority owner and uninterrupted common fence. Its kernel sender is the
+same fixture child, with actual SOCK_SEQPACKET credentials and pidfd; it is not
+a separately enrolled production controller. Synthetic issuers and temporary
+configuration roots remain test-only.
+
+The parent owns every temporary origin, pins the exact child by pidfd, waits for
+an explicit bounded checkpoint and proves the original common flock is busy.
+It sends SIGKILL through that pidfd, requires signal 9 on wait and proves the
+same lock is available afterward. The test never selects foreign PIDs, units,
+services or production paths. Guard timeouts are harness failures, not passing
+correctness oracles, and no existing deadline is increased.
+
+BeforeCreate remains empty and unadmitted. Created leaves zero bytes;
+PrefixWritten leaves incomplete JSON; subsequent cuts retain strict canonical
+data. Checks bind complete data back to original configuration digests,
+builder policy/receipt and active authority revision/epoch/policy. Mode changes
+from 0600 to 0400 only at sealing. The exact fixed leaf inventory excludes any
+legacy lifecycle publication or campaign marker.
+
+After each kill, two fresh processes open the fixed storage read-only and attempt
+only its existing empty-fence admission. BeforeCreate accepts empty; every
+retained partial or complete entry returns Conflict, including AfterReturn when
+the runtime acknowledgement is lost. Intent, campaign, authority and retained
+trust-context inventories preserve bytes, inode, ownership, mode, size and
+mtime/ctime. Read atime is intentionally not compared. Healthy drop may remove
+only its disposable trust fixtures; fixed intent and parent-owned authority
+remain unchanged. Temporary test directories are removed by their owning parent
+after inspection, not by a recovered admission route.
+
+This proves local process loss on the current filesystem, not power-loss,
+reboot, globally consumed nonces or rollback resistance. No acknowledgement
+constructor, durable authority refusal, retry, lifecycle conversion or runtime
+API/schema change is added. Owned lifecycle integration, independent production
+enrollment, authenticated original-start, whole-writer cessation and cells two
+through four remain required before server execution.
+
+The [final-source process packet](local-runs/controller-attempt-crash-20261016/README.md)
+pins `11a7e5cf`, with three current-Rust repetitions and one MSRV repetition of
+the nine-kill/control/twenty-inspection matrix. It also retains an unexplained
+pre-write Kernel(Invalid) in the original-input regression before its isolated
+and full-suite successes. Neither the repeats nor the timesync journal identify
+that failure's cause; integrated admission stability remains unclaimed.

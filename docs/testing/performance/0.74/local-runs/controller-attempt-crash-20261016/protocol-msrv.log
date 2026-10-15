@@ -1,0 +1,10 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.91s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_protocol_accepts_only_bounded_expected_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 918 filtered out; finished in 0.00s
+
+

@@ -333,3 +333,22 @@ ownership is acquired only after kernel-parent and original-generation checks.
 This closes a necessary observation gap, not P1 completion or cells two through
 four. The next implementation must own and authenticate original start and
 writer revocation, then journal completion under the retained authority/fence.
+
+## P2 Original controller attempt process loss
+
+The [controller attempt](diagnostic-controller-attempt-design.md) consumes its
+original common-fence preflight into one durable Reserve request without
+releasing the lock or replacing the original controller/kernel/authority chain.
+Its separate [process matrix](diagnostic-controller-attempt-crash-contract.toml)
+now checks eight write cuts, AfterReturn lost runtime acknowledgement and an
+uninterrupted control with actual owned pidfd SIGKILL. Two fresh readers per
+case preserve bytes/metadata and refuse every retained partial or complete
+context. BeforeCreate stays empty and unadmitted.
+
+The sender is the same synthetic fixture child. This closes only the local
+joined process-loss boundary, not independent production policy/epoch/job
+enrollment, global nonce consumption, reboot or rollback. The implementation
+still has no lifecycle/start conversion. Keep authentic original-start,
+collector/output ownership and autonomous all-writer revocation ahead of
+completion and cells two through four; P1 through P5 and server admission
+remain open.

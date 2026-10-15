@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.37s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack ... 
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_child' (678) panicked at tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs:128:18:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack' (675) panicked at tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs:263:9:
+assertion `left == right` failed
+  left: None
+ right: Some(("PrefixWritten", 676))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 918 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
+

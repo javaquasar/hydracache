@@ -10365,7 +10365,7 @@ tests release without changing the admission context. The negative run remains
 evidence of the fixture correction, not a production lock defect.
 
 These callbacks establish local interruption behavior, not actual process death.
-The joined original-kernel SIGKILL/lost-ack matrix is the next required proof;
+At this stage the joined original-kernel SIGKILL/lost-ack matrix is still required;
 older storage-only crash tests cannot substitute for it. The runtime result has
 no start or lifecycle conversion. Actual production policy/epoch and issuer/job
 enrollment, authenticated original-start, watchdog and all-writer cessation
@@ -10375,4 +10375,67 @@ throughput improvement is inferred from this control-plane implementation.
 The [local evidence packet](../testing/performance/0.74/local-runs/controller-attempt-20261015/README.md)
 retains the development negatives and the final ten-case repetitions, MSRV/API
 checks and legacy process-loss regression. The new composition's real process
-loss remains a separate prerequisite, not a result inferred from those tests.
+loss is not a result inferred from those tests.
+
+### Killing the original controller attempt owner
+
+The next experiment tests a narrower question than server readiness: does the
+actual controller/OIDC/kernel/authority/common-fence composition preserve an
+incomplete or acknowledged request when its original process dies? Logical
+callbacks cannot answer that question because Rust destructors still run after
+a returned error. SIGKILL bypasses those destructors and releases ownership
+through kernel process teardown.
+
+A separate ignored nonroot Linux matrix uses seed `0x0740c095` to permute all
+eight existing write checkpoints and AfterReturn. The child constructs the same
+original chain with synthetic trust fixtures and an actual local SOCK_SEQPACKET
+packet. Its sender is the child itself, not an external production controller.
+At each selected checkpoint it flushes a bounded readiness record and waits.
+The parent pins its exact child by pidfd, proves the common lock is busy, sends
+SIGKILL through that descriptor and requires signal 9 on wait. An uninterrupted
+AfterReturn control distinguishes process loss from normal drop.
+
+The first development run fails before any checkpoint: putting the authority
+fixture under the nested child TMPDIR violates the existing strict /tmp leaf
+rule. That is an invalid test origin, not evidence that the runtime should
+accept more paths. A private helper now uses a separate parent-owned authority
+leaf of the already permitted form; the opener and its rejection rule remain
+unchanged. All other temporary fixture roots stay below the parent's private
+TMPDIR. The failed run is retained alongside the corrected run.
+
+The parent inspects exact leaf inventory, ownership, inode, mode, size, bytes and
+mtime/ctime before and after termination. Complete documents also match the
+original configuration digests, builder policy/receipt and active authority
+revision/epoch/policy. Created leaves an empty file; PrefixWritten leaves
+incomplete JSON; complete bytes appear before sealing and become mode 0400 at
+Sealed. No lifecycle record, campaign marker or durable refusal appears.
+
+Two separately started readers then attempt only the existing empty-fence
+admission. BeforeCreate is still empty and unadmitted. Every retained partial
+or complete entry returns Conflict without rewriting or deleting anything.
+AfterReturn is especially important: even a complete synced document cannot
+reconstruct the runtime acknowledgement lost with its owner. The same original
+lock is available after termination, but that availability does not erase the
+retained refusal context or authorize another attempt.
+
+This is process-loss evidence on a live local filesystem, not a power-loss,
+reboot, rollback or global nonce-consumption proof. The test adds no runtime API,
+format or execution route. Owned lifecycle integration, independently selected
+production policy/epoch and job trust, authenticated original-start, autonomous
+watchdog and cessation of every writer remain separate prerequisites. No
+allocation, goodput or latency result follows from this safety experiment.
+
+The regression run also retains an unexplained Kernel(Invalid) while constructing
+the original build-bound guard, before the attempt's first write. Its isolated
+same-source rerun and subsequent full original-input suite pass. The available
+timesync journal does not establish which predicate refused or why. This remains
+an attribution task before integrated production admission; later green matrices
+must not be used to erase it or justify relaxing kernel/time checks.
+
+The [separate process packet](../testing/performance/0.74/local-runs/controller-attempt-crash-20261016/README.md)
+pins final source `11a7e5cf`. Three Rust1.94 repetitions and one Rust1.88 repetition
+each pass nine actual SIGKILL cases, one uninterrupted control and twenty fresh
+inspections. The original-input regression subsequently passes 69 tests and the
+fence group passes eleven, while all development failures remain retained.
+These are scoped safety results, not permission to start a server or a numerical
+performance claim.

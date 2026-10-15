@@ -1,0 +1,25 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs
+index f2511cd7..1c9480b2 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs
+@@ -1,4 +1,6 @@
+ use super::*;
++#[path = "diagnostic_controller_attempt_crash_tests.rs"]
++mod process_crash_tests;
+ use super::super::super::fenced_preflight::request_attempt::{
+     validate_retained_controller_attempt, AttemptStage, ControllerAttemptError, StorageAttemptError,
+ };
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs
+new file mode 100644
+index 00000000..0975024c
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs
+@@ -0,0 +1,8 @@
++//! Private original-controller SIGKILL proof, never an installed entry point.
++use super::*;
++
++#[test]
++#[ignore = "manual nonroot Linux original controller attempt SIGKILL proof"]
++fn controller_attempt_process_crash_all_stages_and_lost_ack() {
++    run_controller_crash_matrix();
++}

@@ -7,11 +7,12 @@ The earlier logical fault matrix and legacy process proofs do not establish
 process-loss behavior for this composition.
 
 Add a private Linux nonroot unit-test subprocess harness under the OIDC original
-fixture. Keep synthetic controller, worker, OIDC and authority fixtures below a
+fixture. Keep synthetic controller, worker and OIDC fixtures below a
 parent-owned mode-0700 temporary root by supplying the child TMPDIR. Preserve
 the strict modeled authority rule: its separate parent-owned mode-0700 temporary
 leaf stays directly under /tmp. A private fixture helper supplies that original
-authority path, without changing the default helper or runtime opener. The kernel packet uses the child's actual
+authority path, without changing the default helper or runtime opener. The
+kernel packet uses the child's actual
 SOCK_SEQPACKET message credentials, pidfd, host context and clock observations,
 with the child itself as sender. This is not independent production enrollment
 or a separate external controller process.
