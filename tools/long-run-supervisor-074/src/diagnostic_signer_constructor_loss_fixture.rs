@@ -110,7 +110,10 @@ fn constructor_loss_case(cut: u8, fault: u8, healthy: bool) -> io::Result<()> {
     let n = capture.read_at(&mut bytes, 0)?;
     if actual != (libc::CLD_EXITED, 0) || n > 8192 {
         eprintln!(
-            "constructor monitor refused: {}",
+            "constructor monitor refused cut={} fault={} healthy={}: {}",
+            spec.cut as u8,
+            spec.fault as u8,
+            spec.healthy,
             String::from_utf8_lossy(&bytes[..n.min(8192)])
         );
         return Err(invalid());
@@ -238,7 +241,8 @@ fn early_monitor(spec: EarlySpec) -> io::Result<()> {
         let actual = wait_info(&fds[0], libc::WNOWAIT)?;
         if !spec.terminal(actual) {
             return Err(io::Error::other(format!(
-                "constructor death {actual:?} refused"
+                "constructor death cut={} fault={} healthy={} actual={actual:?} refused",
+                spec.cut as u8, spec.fault as u8, spec.healthy
             )));
         }
         if wait_info(&fds[0], 0)? != actual
