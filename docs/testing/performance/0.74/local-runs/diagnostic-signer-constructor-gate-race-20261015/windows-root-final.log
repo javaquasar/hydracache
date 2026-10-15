@@ -1,0 +1,9 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.15s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 159 tests
+....................................................................................... 87/159
+.......................................................................test w12_generic_evidence_report_retains_closed_ship_admission has been running for over 60 seconds
+.
+test result: ok. 159 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 72.09s

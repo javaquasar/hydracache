@@ -3,10 +3,14 @@
 The [ordinary fixed root preparer](diagnostic-signer-owned-root-design.md) now
 materializes/rechecks/removes four selected GNU roles outside cfg(test), without
 launching a child. Rust1.94 normal preparation passes; local Rust1.88's extra-libm
-profile deliberately refuses, not expanded runtime support. The unchanged broad
-old-root baseline exposed a constructor-loss seeded observer failure (78/1);
-later focused passes do not resolve it. All-regressions/server admission remain
-closed pending attribution and normal root/child composition.
+profile deliberately refuses, not expanded runtime support. The earlier broad
+constructor-loss failure (78/1) is addressed by the
+[original peer lifetime barrier](diagnostic-signer-constructor-loss-design.md):
+EOF no longer releases the before-arm child until exact tracer termination/reap.
+Three default-parallel 83-test groups and MSRV83 pass after correction. The
+historical failure stays retained; no exact historical syscall trace or full
+release gate is claimed. Normal root/child composition and server admission
+remain open work.
 
 The [tracer-thread rooted controls](diagnostic-signer-thread-exit-design.md) now
 distinguish SIGSTOP delivery from a kernel group-stop. Both rooted loss variants

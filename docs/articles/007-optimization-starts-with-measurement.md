@@ -9396,3 +9396,57 @@ child launch and kernel post-exec mappings. Existing child restrictions depend o
 procfs and must not be weakened to accommodate a proc-less root. Protected handoff,
 full normal-entry loss, authenticated worker start and all-writer fencing remain
 open. No server operation, performance sample or release-readiness claim follows.
+
+## EOF is not original creator termination
+
+The broader constructor failure above exposed a fixture ordering problem. Before
+arming PDEATHSIG, the raw child waited for EOF from a private gate whose peer
+belonged to its tracer. The fixture then treated that EOF as though the original
+creator had already finished terminating. A fresh baseline and an instrumented
+broad group each passed79, which explains why a successful rerun was insufficient.
+The retained failed seeded loop used fault=None/healthy=false; its closed oracle
+rejects SIGKILL only at before-arm, where it requires exit81. That identifies the
+failed cut without inventing a missing historical syscall trace.
+
+The controlled experiment separates the events. While the original creator is
+alive, the fixture forces EOF through the same gate. The unchanged raw guard
+passes its PDEATHSIG readback and parent checks and reaches the first ptrace stop.
+The callback has not returned to PTRACE_SETOPTIONS, so EXITKILL is not installed.
+Killing only the original creator then yields original-child SIGKILL, exact pidfd
+reap and ECHILD. EOF clearly did not establish creator death before arming. This
+demonstrates the ordering defect; it is not a syscall recording of the earlier
+failed run or a positive before-arm exit81 result.
+
+The correction belongs in the observer, not in the guard or terminal oracle. The
+independent monitor retains the original gate peer through exact original tracer
+termination and reap. For unarmed cuts it also requires the original child pidfd
+to remain nonterminal before dropping the peer. Only then does EOF release the
+child. Before-arm still requires exit81; negative controls still require83/84,
+and armed cuts still require SIGKILL followed by original reap/ECHILD. The new
+barrier regression was red before this change even when the old terminal result
+happened to be81. Cleanup never substitutes for a passing death observation.
+
+One bounded setup packet carries exactly `G` and the peer FD before original fork.
+Socket kind/domain, CLOEXEC/nonblocking flags and kernel creator credentials are
+checked. Healthy runs now have ten packets rather than nine; the shared parser's
+five-FD,32-byte data and128-byte control bounds, five-second step bounds and
+30-second outer bound are unchanged. Compatibility documentation registers this
+private setup revision; mixed old/new prefixes refuse without fallback. This is
+a cooperative local fixture, not authenticated endpoint or runtime custody against
+arbitrary same-UID actors. Four independent pre-arm observers and eleven input
+fault cases supplement the original five cuts and healthy controls.
+
+Three final default-parallel groups pass83 each, and MSRV passes83 with the same
+pinned Rust1.94 helpers. Ordinary launcher/root/GNU/isolation regressions pass54,
+first-exec11 and root contracts159. Windows portability, strict lint/check,
+175 registered gates and local contracts pass; ship still refuses. The
+[gate lifetime packet](../testing/performance/0.74/local-runs/diagnostic-signer-constructor-gate-race-20261015/README.md)
+retains the old negative evidence, both fresh baseline successes, controlled EOF,
+red ordering regression and final checks, with15 verifier tests on both platforms.
+
+This removes the identified observer ordering gap without changing the raw guard,
+normal launcher/preparer, pinned helper, policy or qualification inputs. It is
+neither a kernel fix nor a cache-performance improvement. Selected normal
+root/runtime still needs original-child launch and kernel mapping composition;
+full normal-entry loss, protected handoff, authenticated worker start and all-writer
+cessation remain before completion and server admission.

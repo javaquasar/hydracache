@@ -40,3 +40,13 @@ No production code, normal CLI/policy, credentials, signing, server/GitHub actio
 workload, qualification, original-start, all-writer, completion/later-cell or ship
 admission change. Root/normal child composition follows this attribution; it is
 not part of this isolated fixture correction.
+
+Attribution: fresh baseline and instrumented broad groups both passed79, so the
+old failure was not reobserved in those runs. The retained fresh seeded failure
+uses fault=None/healthy=false; only cut0 rejects SIGKILL in its closed oracle.
+A deterministic counterfactual now forces gate EOF while the original creator
+is alive. The same raw guard reaches its readback/parent-check path and first
+ptrace stop before EXITKILL, then original creator SIGKILL produces child SIGKILL.
+This confirms the EOF-versus-lifetime ordering defect, not an exact syscall trace
+of the old failed run. The before-arm retained-peer regression was red before
+the correction. No production guard change or broadened exit oracle is selected.

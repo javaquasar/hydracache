@@ -40,10 +40,13 @@ fixed GNU runtime images. Local Rust1.88 adds libm and deliberately refuses the
 unchanged four-role graph; its unit materialization still passes. This is neither
 MSRV runtime support nor release-profile/build attestation.
 
-The unchanged old-root broad baseline failed 78/1 in the constructor-loss seeded
-observer. The focused root and constructor groups later passed 7/7 each, but no
-cause or repair is claimed. Attribute that broader failure before calling the
-regression gate green. Then join selected originals with the normal original
+The earlier old-root broad baseline failed 78/1 in the constructor-loss seeded
+observer. Focused 7/7 successes alone did not resolve it. The subsequent
+[constructor peer barrier correction](diagnostic-signer-constructor-loss-design.md)
+reproduces early EOF before creator death and keeps the before-arm gate held
+until exact tracer termination/reap; repeated broader scoped gates now pass.
+The original normal-root packet remains historical evidence of its own state.
+Next join selected originals with the normal original
 child, namespace/root transition and kernel post-exec mappings. Existing child
 restrictions need procfs and must not be silently weakened inside a proc-less root.
 Full normal-entry loss, authenticated custody/handoff, original worker start and

@@ -1,0 +1,53 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.02s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+constructor_gate fault_cases=11 original_peer_required=true unknown_poll_events_refuse=true
+constructor_frame seed=0x0740c071 mutations=256 exact_terminal_oracle=true controls_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_gate_packet_and_descriptor_faults_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_finite_oracle_and_closed_frame_mutations ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=1 healthy=false code=1 status=83 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_control EOF_before_creator_death=true then_guard_SIGKILL=true prearm_exit81_proof=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_gate independent_prearm_observers=4 all_joined=true parent_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_four_independent_prearm_peer_barriers ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=2 healthy=false code=1 status=84 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill ... ok
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers ... ok
+constructor_terminal cut=1 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=2 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=3 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=4 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 887 filtered out; finished in 17.62s

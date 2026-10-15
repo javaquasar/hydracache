@@ -8,8 +8,16 @@ and `/usr/bin/readelf`; only private test copies are stripped. Rust1.94 must
 actually prepare the four-role root, while the observed Rust1.88 extra-libm
 profile must refuse without a parser exception. No root child is launched.
 The [design/evidence](testing/performance/0.74/diagnostic-signer-owned-root-design.md)
-retains an unresolved broader constructor-loss baseline failure; isolated green
-groups do not establish all-regressions or server admission.
+retains the earlier broader constructor-loss baseline failure; the subsequent
+peer barrier correction below does not establish full-release/server admission.
+
+Constructor loss uses `--lib signer_constructor_loss` (11 cases), including a
+forced-EOF control before EXITKILL and the retained-original-peer barrier.
+Also run `--lib signer_root_` with default parallelism (83 tests) on current
+and MSRV, repeating the current group. Do not substitute serial success or
+widened terminal predicates.
+The [constructor design](testing/performance/0.74/diagnostic-signer-constructor-loss-design.md)
+records setup revision2, unchanged shared parser bounds and exact terminal checks.
 
 Tracer-thread loss fixtures require a kernel-proven group-stop for both rooted
 loss controls before EXITKILL options diverge. The `--lib signer_thread_exit`

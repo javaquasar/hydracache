@@ -1,0 +1,32 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.43s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_control EOF_before_creator_death=true then_guard_SIGKILL=true prearm_exit81_proof=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_kernel_eof_can_precede_creator_death_and_arming ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 895 filtered out; finished in 0.54s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.62s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal' (714) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:405:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal ... FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_requires_peer_held_until_original_tracer_terminal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 895 filtered out; finished in 0.49s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
