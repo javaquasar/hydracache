@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.78s
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 1 test
+normal_root_exec=true initial_images=2 loaded_images=4 original_reaped=true stream_eof=true admission=false
+normal_root_policy mode=root-native actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_policy mode=root-x32 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_policy mode=root-i386 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_policy_cleanup mode=root-kill-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_policy_cleanup mode=root-drop-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_creator_loss mode=root-loss-initial monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-rooted monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-exec monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-loaded monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-installed monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-initial monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-installed monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-no-exitkill-installed monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+test normal_original_root_exec_observes_selected_runtime_then_reaps ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 36.91s

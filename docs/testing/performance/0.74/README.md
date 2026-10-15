@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary root creator-loss diagnostic](diagnostic-signer-owned-root-loss-design.md)
+adds five stopped-boundary creator SIGKILL checks, two healthy controls and one
+matched no-EXITKILL survivor control. A fresh local monitor retains original root,
+pidfds and stream identity; terminal/reap/ECHILD/EOF precede cleanup. This is not
+pre-arm/running/thread-only loss or authenticated start. Protected handoff,
+all-writer cessation and server admission remain closed. See the
+[local packet](local-runs/diagnostic-signer-owned-root-loss-20261015/README.md).
+
 The [ordinary root restriction composition](diagnostic-signer-owned-root-isolation-design.md)
 connects the selected proc-less root with the unchanged fixed policy. Parent-owned
 syscall/BPF and kernel-status checks precede native/alternate-ABI exercises and

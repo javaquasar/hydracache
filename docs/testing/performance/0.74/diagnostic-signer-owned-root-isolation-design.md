@@ -79,7 +79,9 @@ phase behavior and memory bounds. A private pre-exec owned-child stack fixture
 uses test-only POKEDATA to check header and 256 seeded BPF mutations; production
 observation only reads memory. This fixture is not a loaded-runtime attestation.
 
-Full ordinary-entry creator-loss faults, protected one-shot handoff, independently
+The subsequent [creator-loss diagnostic](diagnostic-signer-owned-root-loss-design.md)
+covers five owned stops, not full ordinary-entry loss. Remaining loss boundaries,
+protected one-shot handoff, independently
 authenticated runtime custody and production inputs remain separate. The prior
 overlapping-broad-load timeouts remain retained; isolated default-parallel success
 does not establish load robustness or root cleanup after owner SIGKILL. P2/P3

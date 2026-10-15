@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+     Running tests\diagnostic_signer_isolation.rs (target\debug\deps\diagnostic_signer_isolation-1c338e8d9844f6a1.exe)
+
+running 7 tests
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\diagnostic_signer_root_cli.rs (target\debug\deps\diagnostic_signer_root_cli-dbb62bcca48a8224.exe)
+
+running 1 test
+test fixed_root_cli_has_no_caller_selected_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s

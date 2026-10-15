@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+The same ordinary root targets now cover fixed `root-loss-*` diagnostics at five
+owned stops, healthy acknowledgements and a matched no-EXITKILL negative. See the
+[design](testing/performance/0.74/diagnostic-signer-owned-root-loss-design.md).
+Require actual original creator/worker terminal and stream evidence on Rust1.94;
+all eight MSRV extra-libm invocations remain attributed refusals. Parser, kernel
+credentials, received-FD cleanup and original pipe binding have separate units.
+These checks neither establish full-entry loss nor open protected handoff,
+authenticated worker start, writers, server or release qualification.
+
 Ordinary proc-less root restriction composition uses the same root-probe targets
 plus `--test diagnostic_signer_child_entry` and `--test diagnostic_signer_isolation`.
 The [design](testing/performance/0.74/diagnostic-signer-owned-root-isolation-design.md)

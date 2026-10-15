@@ -9619,3 +9619,79 @@ The result closes ordinary root/restriction composition for these diagnostics.
 Next come full ordinary-entry creator-loss faults and protected one-shot handoff.
 Independent runtime custody, real credentials, authenticated worker original-start,
 all-writer cessation, completion/later cells and server qualification remain closed.
+
+### Losing the ordinary root creator without confusing cleanup with protection
+
+Installing restrictions and killing the worker itself left a different question
+unanswered: what happens when the original creator dies? A passing Drop path
+cannot answer it, because Drop is precisely what SIGKILL prevents. We preregistered
+a bounded experiment at five owned stops, rather than describing it as full crash
+recovery. The ordinary 43-test baseline passed; the old binary then refused the
+new loss mode with exit 2. That red is retained before implementation results.
+
+The normal diagnostic now starts from a fresh sole-main nonroot monitor. It creates
+the selected four-image root and retains its original objects before a fixture-only
+creator fork. The creator uses the existing ordinary Owner, raw worker child,
+namespace, first-exec, loaded-map and unchanged-policy methods. This is normal-build
+composition, but the outer creator is not a fresh exec of the creator CLI. We did
+not turn a PID/path supplied by a report into a general process-adoption API.
+
+A private seqpacket setup transfers the original worker pidfd and stream reader.
+Kernel SCM_CREDENTIALS must identify the expected creator PID/UID/GID. Procfs must
+show that creator's sole original traced child, the pidfd must refer to that child,
+and pipe identity must match its actual initial FD3. An O_PATH metadata handle
+checks the FIFO without opening it for I/O. Received rights become owned RAII
+objects before rejection; both payload and ancillary truncation refuse. Tests
+detect leaked duplicate writers by requiring EOF on the original reader. These
+checks bind this fixture's objects, not independently authenticated runtime custody.
+
+The loss monitor signals only the original creator pidfd and keeps its endpoint
+open until exact creator SIGKILL and reap. This preserves the earlier lesson that
+channel EOF can precede creator death; EOF is not used as that death oracle. The
+monitor temporarily becomes a subreaper and requires exact adopted original-worker
+SIGKILL via WNOWAIT, reap/ECHILD and stream EOF. Only then, after explicit cleanup
+of its unrelated pause child, can it recheck and remove the original root. Unknown
+quiescence preserves the tree. Emergency original-child cleanup cannot convert a
+failed proof into a success, and the monitor restores its own subreaper state.
+
+The strongest control is intentionally a survivor. At installed loss we first
+establish a kernel group-stop, distinguishing it from SIGSTOP delivery via the
+GETSIGINFO/EINVAL check. A matched control removes EXITKILL at that same stop.
+After creator death it must remain live, adopted, untraced and stopped. Only an
+explicit later worker kill cleans it up. It passed as a **negative control**, not
+as automatic termination. Two healthy acknowledgements instead let the original
+creator terminate/reap its worker. Final markers label loss, healthy and negative
+separately; a generic "child eventually died" would lose the attribution.
+
+The five positive stopped cuts—initial after options, rooted, first exec, loaded
+and installed—passed in three current-toolchain 52-test groups, two after source
+commit. Each group also passes the healthy/negative controls and four additional
+fresh sequential installed-loss monitors, with unchanged caller context. Nine new
+units cover fixed frames, credentials, descriptor cleanup, original pipe identity,
+status shapes and conservative tree preservation. The final source leaves the
+ordinary owner/raw child, exact policy and earlier fixtures unchanged. No wait,
+image graph or proc-text bound was widened to obtain acceptance.
+
+MSRV passes 52 tests while explicitly refusing all eight root-loss modes for its
+extra-libm image. That is a successful refusal test, not accepted runtime support.
+Separate old regressions pass 121; static contracts pass 162 and the gated registry
+remains 175. Current-toolchain strict Clippy passes on Linux and Windows, as do
+current/MSRV checks. MSRV Clippy could not run because its component is absent;
+the failed invocation is retained, not reported green or hidden behind a toolchain
+change. Local contract passes while require-ship still refuses. No throughput,
+allocation or latency improvement is inferred from these lifecycle test counts.
+
+Source `1f399e0a7040d2a0733825aed2fd13fc6caf85a4` and the
+[local evidence packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-loss-20261015/README.md)
+retain baseline/red/development/final captures, frozen inputs, unchanged sources
+and earlier overlapping-load failures. The unsigned verifier checks historical
+consistency and rejects promotion of the survivor or MSRV refusal. It is not an
+execution attestation. Those earlier five-second overload timeouts remain open.
+
+The result supports automatic termination after creator process loss at these
+five **stopped** boundaries. It says nothing about pre-arm loss, a running worker,
+creator-thread-only death, fresh creator CLI exec or hostile same-UID custody.
+The next isolated step is protected one-shot dummy handoff through the ordinary
+root/policy path, followed by the remaining loss boundaries. Real credentials,
+authenticated worker original-start, P2/P3 cessation of all writers, completion and
+later cells, server rehearsal and release qualification remain separate gates.
