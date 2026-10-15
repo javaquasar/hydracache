@@ -1141,8 +1141,11 @@ route, host mutation, workload or qualification is enabled.
 The local [ordinary selected-self dummy handoff](../testing/performance/0.74/diagnostic-signer-owned-root-handoff-design.md)
 composes the existing root/policy diagnostic with one attempted public-dummy
 transfer, exact original native trace, ACK/close/zero exit and owned cleanup.
-It leaves original-start authority closed: creator loss at transfer boundaries,
-trusted runtime/issuer/job custody, real credentials and P2/P3 all-writer
+The separate [stopped transfer-loss composition](../testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-design.md)
+covers six exact stops with healthy and no-EXITKILL controls. It leaves
+original-start authority closed: creator-side attempt/send uncertainty windows,
+running/pre-arm/thread-only loss, trusted
+runtime/issuer/job custody, real credentials and P2/P3 all-writer
 cessation remain prerequisites before completion/later cells or server admission.
 This local W11 prerequisite adds no measurement or qualification admission.
 

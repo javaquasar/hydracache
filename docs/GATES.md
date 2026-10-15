@@ -1,12 +1,22 @@
 # HydraCache — Enforcement Gates
 
+The same registered ordinary root targets cover the
+[six stopped transfer-loss cuts](testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-design.md).
+Require six actual original creator-only SIGKILL/worker-death controls, six
+ACK/close/zero-exit healthy continuations and two matched no-EXITKILL survivors,
+plus original socket identity and cut-state units. All 14 MSRV extra-libm modes
+must refuse explicitly. Run these cases after the old 25 in their existing
+process test, retaining default harness parallelism and the unchanged five-second
+outer guard. This is not a fix for the retained overlapping-load timeout.
+
 The existing ordinary root targets also cover the
 [one-shot dummy protocol](testing/performance/0.74/diagnostic-signer-owned-root-handoff-design.md).
 Require all 25 current-toolchain modes, eight new private units, unchanged old
 pipe/policy controls and attributed refusals of all 25 MSRV extra-libm modes.
 Full context checks at installed/recv/close bracket the exact bounded trace;
 the five-second wait/outer guard is unchanged. Child SIGKILL/Drop controls do
-not prove creator loss at transfer boundaries or open credential/start admission.
+not prove creator loss at transfer boundaries; the separate stopped-cut matrix
+above remains distinct from credential/start admission.
 
 The same ordinary root targets now cover fixed `root-loss-*` diagnostics at five
 owned stops, healthy acknowledgements and a matched no-EXITKILL negative. See the

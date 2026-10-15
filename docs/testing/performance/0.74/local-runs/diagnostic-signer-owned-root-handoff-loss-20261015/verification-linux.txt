@@ -1,0 +1,7 @@
+owned-root-handoff-loss packet consistent; unsigned=true execution_attested=false admission=false
+.......
+----------------------------------------------------------------------
+owned-root-handoff-loss packet consistent; unsigned=true execution_attested=false admission=false
+Ran 7 tests in 10.216s
+
+OK

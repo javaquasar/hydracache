@@ -1,0 +1,106 @@
+    Checking equivalent v1.0.2
+    Checking hashbrown v0.17.1
+    Checking unicode-ident v1.0.24
+    Checking winnow v1.0.3
+    Checking toml_datetime v1.1.1+spec-1.1.0
+    Checking proc-macro2 v1.0.106
+    Checking quote v1.0.46
+    Checking indexmap v2.14.0
+    Checking syn v2.0.118
+    Checking toml_parser v1.1.2+spec-1.1.0
+    Checking toml_edit v0.25.12+spec-1.1.0
+    Checking proc-macro-crate v3.5.0
+    Checking hydracache-macros v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-macros)
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\cacheable.rs:447:13
+    |
+447 |             format!("duplicate cacheable {} option", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+    |
+447 -             format!("duplicate cacheable {} option", option),
+447 +             format!("duplicate cacheable {option} option"),
+    |
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\cacheable.rs:463:13
+    |
+463 |             format!("duplicate cacheable {} option", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+463 -             format!("duplicate cacheable {} option", option),
+463 +             format!("duplicate cacheable {option} option"),
+    |
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\policy.rs:614:13
+    |
+614 |             format!("duplicate query_cache_policy {} option", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+614 -             format!("duplicate query_cache_policy {} option", option),
+614 +             format!("duplicate query_cache_policy {option} option"),
+    |
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\policy.rs:625:38
+    |
+625 |               return Err(content.error(format!(
+    |  ______________________________________^
+626 | |                 "query_cache_policy {} expects comma-separated expressions",
+627 | |                 option
+628 | |             )));
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\policy.rs:635:13
+    |
+635 |             format!("query_cache_policy {} cannot be empty", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+635 -             format!("query_cache_policy {} cannot be empty", option),
+635 +             format!("query_cache_policy {option} cannot be empty"),
+    |
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\policy.rs:701:13
+    |
+701 |             format!("duplicate query_cache_policy {} option", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+701 -             format!("duplicate query_cache_policy {} option", option),
+701 +             format!("duplicate query_cache_policy {option} option"),
+    |
+
+error: variables can be used directly in the `format!` string
+   --> crates\hydracache-macros\src\prepared_policy.rs:321:13
+    |
+321 |             format!("duplicate prepared_query_policy {} option", option),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+321 -             format!("duplicate prepared_query_policy {} option", option),
+321 +             format!("duplicate prepared_query_policy {option} option"),
+    |
+
+error: could not compile `hydracache-macros` (lib) due to 7 previous errors

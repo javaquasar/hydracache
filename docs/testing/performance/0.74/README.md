@@ -1,11 +1,21 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary transfer creator-loss diagnostic](diagnostic-signer-owned-root-handoff-loss-design.md)
+adds six stopped public-dummy cuts, six healthy continuations and two matched
+no-EXITKILL survivor controls. Original root/socket objects precede the fixture
+creator fork; exact terminal/reap/ECHILD and EOF precede cleanup. This does not
+prove running/pre-arm/thread-only loss, trusted credentials, authenticated worker
+start, all-writer cessation or server admission. The new cases follow the old
+25-mode process matrix without increasing concurrent fixtures; the retained
+parallel-fixture timeout leaves overlapping-load robustness open.
+
 The [ordinary root dummy handoff](diagnostic-signer-owned-root-handoff-design.md)
 adds the original traced READY/read/dummy/ACK/close/exit sequence to a separate
 fixed socket profile. All 25 modes distinguish one-shot success from refusal and
 cleanup controls; lost ACK and failed send never permit retry. Existing pipe
-profiles and exact policy stay separate. Creator loss at transfer boundaries,
-trusted credentials, worker start, writers and server admission remain closed.
+profiles and exact policy stay separate. Creator loss at six fixed stopped
+transfer boundaries is covered separately above; trusted credentials, worker
+start, writers and server admission remain closed.
 
 The [ordinary root creator-loss diagnostic](diagnostic-signer-owned-root-loss-design.md)
 adds five stopped-boundary creator SIGKILL checks, two healthy controls and one

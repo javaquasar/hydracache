@@ -1,0 +1,46 @@
+normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false
+normal_root_policy mode=root-native actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy mode=root-x32 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy mode=root-i386 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy_cleanup mode=root-kill-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy_cleanup mode=root-drop-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_creator_loss mode=root-loss-initial kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-rooted kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+independent_root_exec_owners=4 extra_libm_refusal=false parent_context_unchanged=true admission=false
+independent_root_loss_monitors=4 sequential=true extra_libm_refusal=false parent_context_unchanged=true admission=false
+test repeated_original_root_execs_leave_parent_context_unchanged ... ok
+normal_root_creator_loss mode=root-loss-exec kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-loaded kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-installed kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-initial kind=healthy automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-installed kind=healthy automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-no-exitkill-installed kind=negative automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+test normal_original_root_exec_observes_selected_runtime_then_reaps ... ok
+normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff has been running for over 60 seconds
+normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 92.26s

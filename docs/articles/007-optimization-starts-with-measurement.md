@@ -9784,3 +9784,115 @@ The earlier five stopped cuts do not establish that result automatically.
 Real credentials, independent runtime/issuer/job custody, authenticated original
 worker start, all-writer cessation, completion/later cells and server admission
 remain separate. This protocol adds no throughput or allocation claim.
+
+### Creator loss during ordinary dummy transfer
+
+The ordinary transfer and earlier stopped-creator-loss results did not by
+themselves prove that the same original worker would stop if its creator died
+between READY, delivery and ACK. The next local experiment composes those paths
+using public dummy bytes only. It retains the 61-test baseline and the unchanged
+binary's exit2 refusal under the new scenario before implementation. The
+[preregistration](../testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-preregistration.md)
+fixes six boundaries: installed, READY received, original recv entry before any
+attempt, original recv return with the dummy, ACK received and close return
+before exit. Each boundary has a loss and a healthy continuation; installed
+and delivered also have matched no-EXITKILL survivor controls.
+
+Socket ownership required a different check from the old pipe experiment.
+Opposite ends of a socketpair have different inodes. Comparing the monitor's
+reader to the child's endpoint as if they were a pipe would reject the real
+pair or encourage an invalid identity shortcut. Instead, the monitor creates
+the pair and retains the original Root before its fixture-only creator fork.
+The same private Owner construction body receives this fixed transport, without
+changing the raw worker child, root/exec transitions, policy or child protocol.
+The monitor compares the transferred parent endpoint to its original parent,
+and initial child FD3 O_PATH metadata to its original peer. Original pidfd,
+sole-child, parent/tracer and per-packet kernel credential checks remain.
+
+The monitor must close its extra child-end copy before allowing G. Otherwise
+the worker could die while that copy prevents EOF, making lifetime evidence
+incorrect. Conversely, the parent endpoint must stay live until creator terminal
+and reap; early peer closure must not cause the worker's apparent automatic
+death. These are object-lifetime requirements, not optimizations. Received
+descriptors retain CLOEXEC, socket type/domain and nonblocking read/write checks.
+No caller can choose a process, endpoint, root, payload or continuation pointer.
+
+For each passing loss the monitor sends SIGKILL only to the original creator
+pidfd. It observes exact creator terminal/reap, then adopted original worker
+SIGKILL through WNOWAIT/reap/ECHILD, bounded socket EOF and unrelated original
+child survival before original root cleanup. Installed and delivered pairs
+first establish a genuine group-stop: delivered queues SIGSTOP at the original
+recv exit, reaches its signal-delivery stop, reinjects SIGSTOP and requires
+GETSIGINFO EINVAL. The matched no-EXITKILL controls must instead survive as
+adopted, untraced State T. Their later explicit worker kill is cleanup and must
+never be counted as automatic-death proof. The other four loss points are ptrace
+stops, not evidence for a freely running worker.
+
+Healthy H resumes the original protocol from each boundary, including the
+observed recv-entry stack pointer, and requires ACK/close/zero exit and ordinary
+reap. The sticky one-attempt latch remains unchanged. Before delivery, send and
+attempt counts must be zero; after verified receipt they must be one. New units
+reject wrong step/attempt/send/close combinations, foreign/swapped/equal socket
+endpoints and altered flags. Existing exact frame-bit mutations cover all 14
+new modes. The private frame stays version1/16 bytes with two setup descriptors,
+the same gates, four-packet budget and five-second waits.
+
+The first isolated 14-mode matrix passed. Adding it as a separate test increased
+the number of concurrent ordinary root fixtures, and the old handoff test then
+hit its unchanged five-second guard. No scheduler trace establishes the cause.
+That red remains in the packet. Before the next candidate we recorded a fixture
+scheduling correction: run the 14 cases after the old 25 in their existing
+process test, reusing its original Image. This preserves the baseline number of
+concurrent fixtures and default test parallelism without adding lifetime locks,
+ignored tests or a larger timeout. It controls added fixture load; it does not
+fix or close overlapping-load robustness. A compile-time FixedProbe equality
+error was fixed with pattern matching, not by changing the shared enum.
+
+Two corrected targeted groups pass 63 tests each, the second after source commit
+`97d9304f162a548ba0181cb4334960598b5f1cac`: 43 root units, five ordinary
+child-entry, seven policy, one CLI and seven process tests. The process matrix
+executes all 25 old handoff cases followed by the 14 new controls. The
+[local packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-20261015/README.md)
+retains failures, repeated checks and source consistency separately. Its baseline
+raw capture contains only the process tail; the complete baseline result was
+observed but is not represented as a complete saved transcript.
+
+Current Linux/Windows strict Clippy and current/MSRV checks pass. MSRV's 63-test
+group explicitly refuses all 14 new extra-libm modes rather than claiming runtime
+support; portable Windows current/MSRV groups pass eight each. Static contracts
+pass 164 and all 175 discovered gates remain registered. The local performance
+contract is non-promotable and require-ship still refuses. The MSRV lint gap is
+now more precise: its Linux component is absent, while Windows strict Clippy was
+executed and found seven existing uninlined_format_args errors in the unchanged
+macro crate. Linting that package alone reproduces them. Their original three
+source blobs are pinned in the packet; no unrelated formatting or lint allowance
+was mixed into the lifecycle implementation. This is not an all-checks-green
+or full release-gate result.
+
+After the second ordinary group completes, the separate old regressions pass
+121 tests: 83 rooted/loss, 11 first-exec, three policy parsers and 24 old
+owned/GNU/CLI/process checks. They do not overlap the ordinary process guards.
+Historical Git comparison preserves 22 original function bodies, including raw
+child, original waits, credential channel, pipe binding/group-stop, fixed child
+protocol, startup and the outer guard. Frozen qualification inputs remain byte
+identical. These checks protect the existing paths without turning a local
+dummy experiment into server or performance evidence.
+
+The packet seals 32 raw captures and pins source/tree, frozen inputs and earlier
+negative results. Its consistency verifier and seven mutation/unit tests pass
+on Windows and Linux; final verifier transcripts are kept separately from the
+sealed logs. These unsigned checks detect inconsistent records, not forged
+execution. Neither a complete baseline transcript nor signed/clean-checkout
+execution attestation is claimed.
+
+The result closes only these six stopped public-dummy boundaries. It does not
+interrupt the creator between the attempt latch and send, or between successful
+send and resuming the original recv. Those uncertain-send windows are the next
+bounded local experiment; permission recovery after creator restart is not
+tested. It also does not
+establish pre-arm, running or creator-thread-only loss, fresh creator CLI exec,
+hostile same-UID custody or signed execution attestation. Trusted runtime/issuer/
+job custody and credentials, authenticated original worker start, P2/P3 cessation
+of every writer, completion/later cells and server admission remain separate.
+No product candidate, expensive qualification or numerical performance claim
+was enabled by these lifecycle checks.

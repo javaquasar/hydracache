@@ -85,8 +85,9 @@ endpoint flags, packet lengths/queues, actual failure-drain lengths, finite
 startup calls and full-width argument mutations. The ordinary process target
 covers all 25 modes; MSRV's extra-libm graph refuses all of them explicitly.
 
-Creator loss at these transfer boundaries is the next separate experiment, not
-proved by child SIGKILL/Drop. Pre-arm/running/thread-only loss, trusted credentials,
+The separate [creator-loss composition](diagnostic-signer-owned-root-handoff-loss-design.md)
+covers six fixed stopped transfer boundaries; child SIGKILL/Drop alone does not
+prove that result. Pre-arm/running/thread-only loss, trusted credentials,
 issuer/job/runtime custody, continuous memory attestation, authenticated worker
 original-start, P2/P3 all-writer cessation, completion/later cells, server rehearsal,
 qualification and performance claims remain closed. Earlier overlapping-load

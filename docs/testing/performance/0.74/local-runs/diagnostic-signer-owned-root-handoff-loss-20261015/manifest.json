@@ -1,0 +1,641 @@
+{
+  "schema_version": "diagnostic-signer-owned-root-handoff-loss-074-v1",
+  "source_commit": "97d9304f162a548ba0181cb4334960598b5f1cac",
+  "source_tree": "85a1857c1a307d05150440279b5b67c9ef5cc717",
+  "baseline": "89f81f454bfc5fcdb2d87619337d141a1dd95452",
+  "preregistration": "22b92daf03672779599f4004eff425dd2f04c2c7",
+  "amendment": "4887964a0e675c742dc13e8fa1ba04efc4cc0562",
+  "current_toolchain_scoped_checks_passed": true,
+  "all_checks_passed": false,
+  "msrv_linux_lint_executed": false,
+  "msrv_windows_lint_executed": true,
+  "msrv_windows_lint_passed": false,
+  "full_release_gate_executed": false,
+  "execution_attested": false,
+  "clean_checkout_execution_attested": false,
+  "capture_normalization": "LF and one final newline; empty format output recorded as one newline",
+  "fixture_scheduling": "Default-parallel harness; new 14-mode helper follows existing 25-mode handoff matrix without an additional competing process test. Load robustness not proved.",
+  "sources": {
+    "crates/xtask/tests/performance_contract_074.rs": "0deeb5c35ff9c64a9f5fc9e5526a4481d9871c2139f3bae2e3b6e6bd34f1170f",
+    "docs/COMPAT.md": "2a124b6b30d6344d9d90d05f1236dabcdc7d8c433b44c98a9f642dc83f3ef4bb",
+    "docs/testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-contract.toml": "ba5d77f75c501f58cae64138f62ea12198c779519134a06fac2d38f9e594d4e0",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs": "004636e32ec7f43a15627889f87c32ed111d9fb777917fcc9084476264bcf9fb",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs": "53d5f03d9d2064fa6245709d81716dca6f6b5beaf89b2ffc4277478c4c2f8821",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs": "2f097773cfa41b7b4d6fd8ba7ee18f6c50dec617a055dd33b10293aedc8d3cbb",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff_tests.rs": "1d5018d039f18c1cb3be4cf98c1e36383e84f58766a0711f201b6e9b1dbc955a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs": "27d8f2e4f70cb4be54d6df617c2edad66e11adbdfd395a533ad06f66ba9c5c34",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs": "e30d8f4035d82fa3cbb4ea08f9560960468b62c15e1d1967758aefa83f54ac86",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs": "8a19150d337dadda012e55616e6fcf7d1159ea96a53674a180be5aa48feae237"
+  },
+  "unchanged_sources": {
+    "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_maps.rs": "d6c2194679db6f4fd61503da55d0a4ad611bcc2475d20f623e605667aa0aa27f",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs": "e0c331986047ab4c046dce0c9795e600b7ed4107fbd89729c38675b45e33a3a5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs": "29d8abde786bd644f1de38e7af8921745dc6af450d72e8a8a9128a2cabb9edad",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs": "259f9aa219e58cb980a25f13c23e4003e277eb746ce276774aaf317a013a446d",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs": "282492bb23e4d2e7ac5e14ff0a1ddf18f55721d4a4bc4e9e9604702412072d2c",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs": "1a4c41df0b617255d078a070046822ebe4dc008a7e0699553fd863a6237dc1c4",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation_tests.rs": "a18a991134a00d43c848ab4f21d6500ad3d168b8059c7d70e702570926e4d708",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs": "66680bb06d3149746778b738c8fd7c0be8e5495c9ac5d0d2303fdb60dbdae831",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_creator_task.rs": "0106d7be6c478891ba67590db46478c6be034aa33d752339530ee07ff7de0781",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs": "515bf7766ee15e2bd629a36dd5f1f3d3e613d9b137fb519c02b6aa7e6ef4d4cf",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "tools/long-run-supervisor-074/src/lib.rs": "36c054f56ae80437bea158a17da6bc02b2a11873f57b41fb3bc6f0dc90b909b1",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs": "6a30cec47443f912715a0f5dcd0477552761790ad3c2b50e35efeae7a45b8547",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec_tests.rs": "5561657515b8056e29b67c2d33b18c9f3c4ad857cf63cf96822c95726de89ef6",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs": "ad90885859bf1f542354ff64759477c9689d551582ca450780fcc9fe517c9179",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs": "cf2e31eb2f3d11577d52aa0d137403cbf3b5c322f55bab6aa19ffa202e971d3c",
+    "crates/hydracache-macros/src/cacheable.rs": "adcf0a41b7b027cb216a76e8b2912976f94ea6a4ed720c7f7327119eeefc5bb4",
+    "crates/hydracache-macros/src/policy.rs": "9224340e32b756080abd3e3fd0539287fcaf811829f0ec8bd696ef5d8e068080",
+    "crates/hydracache-macros/src/prepared_policy.rs": "9cb17ea1093ac8d5b26da169c49acbcf2795c35096323d0fa75c406c63bfb717"
+  },
+  "bounds": {
+    "fixed_modes": 14,
+    "positive_stopped_boundaries": 6,
+    "healthy_controls": 6,
+    "negative_controls": 2,
+    "private_frame_version": 1,
+    "private_frame_bytes": 16,
+    "setup_descriptors": 2,
+    "cut_descriptors": 0,
+    "maximum_packets_per_direction": 4,
+    "maximum_ancillary_bytes": 128,
+    "wait_seconds": 5,
+    "maximum_send_attempts": 1,
+    "startup_syscall_pairs": 256,
+    "maximum_protocol_events": 16,
+    "maximum_failure_drain_bytes": 48,
+    "maximum_image_bytes": 8388608,
+    "maximum_proc_text_bytes": 65536,
+    "maximum_map_lines": 128
+  },
+  "closed_claims": {
+    "fresh_creator_cli_exec_proved": false,
+    "pre_arm_loss_proved": false,
+    "running_child_loss_proved": false,
+    "creator_thread_only_loss_proved": false,
+    "full_normal_entry_creator_loss_proved": false,
+    "overlapping_broad_load_robustness_proved": false,
+    "credential_handoff_authenticated": false,
+    "runtime_custody_authenticated": false,
+    "original_worker_start_authenticated": false,
+    "all_writers_revoked": false,
+    "real_credentials_or_signing": false,
+    "completion_or_later_cells_enabled": false,
+    "server_or_github_mutated": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "frozen_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "prior_negatives": [
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/overlapping-broad-timeouts.log",
+      "sha256": "a0bec2f2a448ffb7765839f58c9d854a98e250b77471f9de364486ec3a942037"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-20261015/baseline-old-root-failed.log",
+      "sha256": "932dbd554732825d78d36dd34b2b360b47b866afa1e021a05cdba4418cc61a99"
+    }
+  ],
+  "unchanged_functions": {
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs": [
+      "fn raw_child(",
+      "fn wait(",
+      "fn enter(",
+      "fn first_exec(",
+      "fn advance("
+    ],
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs": [
+      "fn poll(",
+      "fn nonterminal(",
+      "fn receive(",
+      "fn send(",
+      "fn wait(",
+      "fn arm(",
+      "fn unrelated(",
+      "fn same_pipe(",
+      "fn group_stop(",
+      "fn detached_stopped("
+    ],
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs": [
+      "fn child(",
+      "fn loaded(",
+      "fn startup_allowed(",
+      "fn awaiting_read(",
+      "fn attempt(",
+      "fn drain_socket("
+    ],
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs": [
+      "fn output("
+    ]
+  },
+  "captures": {
+    "baseline-process-tail.log": {
+      "sha256": "6a0367d10decb4ed5bfa8f9ab1353aadbfd147fb7acc481442436d4bf5dc2474",
+      "bytes": 5694,
+      "results": [
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": false,
+      "required_markers": [
+        "test result: ok. 7 passed; 0 failed;"
+      ]
+    },
+    "current-1.log": {
+      "sha256": "be7513098062e29734b44afc9866869094992fb81e1d2315104bbf439d486ae3",
+      "bytes": 15974,
+      "results": [
+        [
+          "ok",
+          43,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "current-2.log": {
+      "sha256": "a2ebba75592d40e0646957c71a5f3574a53709202523c6c4124c24764de1fd00",
+      "bytes": 15842,
+      "results": [
+        [
+          "ok",
+          43,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "development-parallel-timeout.log": {
+      "sha256": "dead6374972d26cc98db060bcb5f91c837cef2756c18315eafdf2e739d4836ba",
+      "bytes": 13382,
+      "results": [
+        [
+          "ok",
+          43,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "FAILED",
+          7,
+          1
+        ]
+      ],
+      "exit_code": 1,
+      "capture_complete": true,
+      "required_markers": [
+        "normal root preparation stalled",
+        "test result: FAILED. 7 passed; 1 failed;"
+      ]
+    },
+    "development-standalone.log": {
+      "sha256": "ef1c347482c93d2f7f20f416c4b5c3911b56d3d0a4ff4fee5c8c61bc44b43b53",
+      "bytes": 2916,
+      "results": [
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "normal_root_transfer kind=no-exitkill cut=delivered",
+        "test result: ok. 1 passed; 0 failed;"
+      ]
+    },
+    "doc-check.log": {
+      "sha256": "037be77b0c72433a705a4f08a86293623e9696d7a1dbf56d91cde5b44e6d7bed",
+      "bytes": 164,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "doc-check: OK (releases.toml is consistent)"
+      ]
+    },
+    "fmt.log": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "linux-check.log": {
+      "sha256": "a57673c7a72feb1a4e32767fa931f4e6f7e4c98a8eaa598c680bc54ac60bee8f",
+      "bytes": 291,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "linux-clippy.log": {
+      "sha256": "18421b3f60e00a2e01ae5f5ac03bd74bd484562eef0b989df20bea2a99317ebc",
+      "bytes": 292,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "msrv-components-linux.log": {
+      "sha256": "a13769c18a7a74ea492ab633b644d6c238ae81e536d30d3f168eddb57e86000e",
+      "bytes": 96,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "cargo-x86_64-unknown-linux-gnu"
+      ]
+    },
+    "msrv-components-windows.log": {
+      "sha256": "e0c86d53610c4a8392a1622849ce29a01fffc31b342dfb78a8b3c9490ba4a523",
+      "bytes": 184,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "clippy-x86_64-pc-windows-msvc"
+      ]
+    },
+    "msrv-linux-check.log": {
+      "sha256": "6742daf78d13f140883484a780425fe1af1c00c4f3ef607cf99bd393325186d6",
+      "bytes": 291,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "msrv-macros-clippy-failed.log": {
+      "sha256": "5a4ed042e8a1e13246c618c7416cf81b01874d783a7ae8f8ac5b21509b856eca",
+      "bytes": 4741,
+      "results": [],
+      "exit_code": 1,
+      "capture_complete": true,
+      "required_markers": [
+        "due to 7 previous errors"
+      ]
+    },
+    "msrv-windows-check.log": {
+      "sha256": "46b9b2df8b00983057fe8d57689806acba0d4d329b7d4a3cd4e97d099989a796",
+      "bytes": 283,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "msrv-windows-clippy-failed.log": {
+      "sha256": "09e2170554397d9d4060ff625037c578d74c86f9062e1281c2723891d4ce2f1c",
+      "bytes": 5106,
+      "results": [],
+      "exit_code": 1,
+      "capture_complete": true,
+      "required_markers": [
+        "due to 7 previous errors"
+      ]
+    },
+    "msrv-windows-portable.log": {
+      "sha256": "8d303f4bc194805878f18e05d45b32d0b159930fe583e1d427acef30e5f23cdf",
+      "bytes": 1209,
+      "results": [
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 7 passed; 0 failed;",
+        "test result: ok. 1 passed; 0 failed;"
+      ]
+    },
+    "msrv.log": {
+      "sha256": "3fde27ac3d8f028f772ce2493bb409b83465b2f2548a29719ad1f5d481116150",
+      "bytes": 9016,
+      "results": [
+        [
+          "ok",
+          43,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "extra_libm_root_transfer_modes=14 refused=true unchanged_four_role_graph=true admission=false",
+        "extra_libm_root_handoff_modes=25 refused=true"
+      ]
+    },
+    "old-first-exec.log": {
+      "sha256": "aa6c4bb1ac105300acac6b699f92ddc2dfbf01dfbc73d2c3ef2409d991871df7",
+      "bytes": 2035,
+      "results": [
+        [
+          "ok",
+          11,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 11 passed; 0 failed;"
+      ]
+    },
+    "old-handoff-packet.log": {
+      "sha256": "e2bb35b9c807861b6cf8e4db6e00c4e1595abfbaee088929e02622e89a10202b",
+      "bytes": 93,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "owned-root-handoff packet consistent"
+      ]
+    },
+    "old-loss-packet.log": {
+      "sha256": "dfe157b5f9b34e238ef27783d020b87f0ca26314be2f6b4822396b0b9315de8c",
+      "bytes": 90,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "owned-root-loss packet consistent"
+      ]
+    },
+    "old-owned.log": {
+      "sha256": "77a457239abf57de2e94aac21c3b733a47ae24415d95029ebf98fa1cf08c1a48",
+      "bytes": 4426,
+      "results": [
+        [
+          "ok",
+          12,
+          0
+        ],
+        [
+          "ok",
+          6,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 12 passed; 0 failed;",
+        "test result: ok. 6 passed; 0 failed;",
+        "test result: ok. 1 passed; 0 failed;",
+        "test result: ok. 5 passed; 0 failed;"
+      ]
+    },
+    "old-policy.log": {
+      "sha256": "5264895829a0c392cbc0e90988220134f34e5a5b228b9e580a41ffdb43a1936a",
+      "bytes": 686,
+      "results": [
+        [
+          "ok",
+          3,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 3 passed; 0 failed;"
+      ]
+    },
+    "old-root.log": {
+      "sha256": "1af96cf625007caecb32f51007cd908787551f4693c94e70e4b719f202e94877",
+      "bytes": 31825,
+      "results": [
+        [
+          "ok",
+          83,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 83 passed; 0 failed;"
+      ]
+    },
+    "performance-contract.log": {
+      "sha256": "85fbb4fdd4bda5b76aa4322f4840751d354501b526872eb3ff46b4c3708de149",
+      "bytes": 212,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "performance-contract-check 0.74: OK (local, non-promotable)"
+      ]
+    },
+    "red-new-mode.log": {
+      "sha256": "2788ca5fb8df0bce2794da30ca09f831ddb4b5e08d1345e57e5ce97d2a6564fd",
+      "bytes": 1192,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "exit_code": 1,
+      "capture_complete": true,
+      "required_markers": [
+        "root-transfer-loss-installed: Output",
+        "test result: FAILED. 0 passed; 1 failed;"
+      ]
+    },
+    "registry.log": {
+      "sha256": "f4ebeafe484c75a63d26dcad7d08a55eaf30ce15cea04d8eeac8846ffde656c8",
+      "bytes": 270,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "gated-test-check: OK (175 discovered gates, all registered)"
+      ]
+    },
+    "require-ship-refused.log": {
+      "sha256": "31c3a9535345c323b152443f748b4faeb01c82dcc322f3afc109960a0d295128",
+      "bytes": 494,
+      "results": [],
+      "exit_code": 1,
+      "capture_complete": true,
+      "required_markers": [
+        "0.74 ship admission is closed"
+      ]
+    },
+    "static-contracts.log": {
+      "sha256": "1facf7f3e5b025935dcd470051dc2e960d40104f2ee229082168e584085f6abb",
+      "bytes": 558,
+      "results": [
+        [
+          "ok",
+          164,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 164 passed; 0 failed;"
+      ]
+    },
+    "unchanged-functions.log": {
+      "sha256": "1b77b7319ecb7979b1a058a1f64cdb5f15e4f22374dc5462ca7cc77db94b609a",
+      "bytes": 145,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "original function bodies unchanged=22"
+      ]
+    },
+    "windows-check.log": {
+      "sha256": "7cb4f69d8b131c0979c2451182073861e2794a7d2536392a421218a080c36771",
+      "bytes": 283,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "windows-clippy.log": {
+      "sha256": "ed92afc91434e0ca5e8dfa47379b523b39a7d57ac5f60a0cf8ec65342eb457c2",
+      "bytes": 284,
+      "results": [],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": []
+    },
+    "windows-portable.log": {
+      "sha256": "b2bcb03c23fc9e2aa8f2b39d330042f14a625e40a3a3bcff66bc3985a4abc940",
+      "bytes": 1209,
+      "results": [
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "exit_code": 0,
+      "capture_complete": true,
+      "required_markers": [
+        "test result: ok. 7 passed; 0 failed;",
+        "test result: ok. 1 passed; 0 failed;"
+      ]
+    }
+  }
+}

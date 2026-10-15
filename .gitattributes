@@ -235,3 +235,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-loss-*/** 
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
