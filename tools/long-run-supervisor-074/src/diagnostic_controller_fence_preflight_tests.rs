@@ -4,6 +4,9 @@ use crate::host_execution::{HostExecutionClaim, HostExecutionError};
 use super::super::fenced_preflight::{ControllerFenceError, Step};
 use fs2::FileExt;
 
+#[path = "diagnostic_controller_attempt_tests.rs"]
+mod attempt_tests;
+
 struct Paths {
     oidc: PathBuf,
     worker: PathBuf,
@@ -14,8 +17,23 @@ fn with_original(
     refused: bool,
     run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
 ) {
+    with_original_operation(
+        crate::diagnostic_ipc::DiagnosticOperation::Reserve,
+        refused,
+        run,
+    );
+}
+
+fn with_original_operation(
+    operation: crate::diagnostic_ipc::DiagnosticOperation,
+    refused: bool,
+    run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
+) {
     let model = Model::new();
-    let r = request(&model);
+    let mut r = request(&model);
+    r.operation = operation;
+    r.expected_state_revision =
+        u64::from(operation != crate::diagnostic_ipc::DiagnosticOperation::Reserve);
     let p = policy(&r);
     let t = token(&header(&p), &serde_json::to_vec(&claims(&r, &p)).unwrap());
     let bytes = model.sign(r.clone(), &model.key);

@@ -12,6 +12,7 @@ use std::os::unix::fs::{FileExt, MetadataExt};
 use thiserror::Error;
 
 pub(super) const NAME: &str = "diagnostic-attempt-074.json";
+pub(crate) const CONTROLLER_NAME: &str = "diagnostic-controller-attempt-074.json";
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AttemptStage {
     BeforeCreate,
@@ -58,6 +59,7 @@ fn stamp(m: &Metadata) -> [u64; 11] {
     ]
 }
 pub(super) struct Document {
+    name: &'static str,
     file: File,
     stamp: [u64; 11],
     raw: Vec<u8>,
@@ -103,7 +105,7 @@ impl Document {
         if stamp(&m) != self.stamp {
             return Err(StorageAttemptError::Document);
         }
-        let named = open_at(leaf, NAME, libc::O_RDONLY, 0)?;
+        let named = open_at(leaf, self.name, libc::O_RDONLY, 0)?;
         if stamp(&named.metadata()?) != self.stamp {
             return Err(StorageAttemptError::Document);
         }
@@ -142,6 +144,7 @@ impl Document {
     }
 }
 pub(crate) struct AttemptStorage<'storage> {
+    name: &'static str,
     pub(crate) empty: OriginalEmptyReservationFence<'storage>,
     document: Option<Document>,
     attempted: bool,
@@ -150,10 +153,17 @@ pub(crate) struct AttemptStorage<'storage> {
 impl<'storage> AttemptStorage<'storage> {
     pub(crate) fn new(empty: OriginalEmptyReservationFence<'storage>) -> Self {
         Self {
+            name: NAME,
             empty,
             document: None,
             attempted: false,
             acknowledged: false,
+        }
+    }
+    pub(crate) fn for_controller(empty: OriginalEmptyReservationFence<'storage>) -> Self {
+        Self {
+            name: CONTROLLER_NAME,
+            ..Self::new(empty)
         }
     }
     pub(crate) fn is_refused(&self) -> bool {
@@ -191,7 +201,7 @@ impl<'storage> AttemptStorage<'storage> {
         let fresh = open_at(self.leaf()?, ".", libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
         let mut seen = false;
         for entry in std::fs::read_dir(format!("/proc/self/fd/{}", fresh.as_raw_fd()))? {
-            if seen || entry?.file_name() != NAME {
+            if seen || entry?.file_name() != self.name {
                 return Err(StorageAttemptError::Context);
             }
             seen = true;
@@ -233,12 +243,13 @@ impl<'storage> AttemptStorage<'storage> {
         self.empty.revalidate().map_err(StorageAttemptError::from)?;
         let file = open_at(
             self.leaf()?,
-            NAME,
+            self.name,
             libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
             0o600,
         )
         .map_err(StorageAttemptError::from)?;
         self.document = Some(Document {
+            name: self.name,
             stamp: stamp(&file.metadata().map_err(StorageAttemptError::from)?),
             file,
             raw: Vec::new(),
@@ -288,7 +299,7 @@ impl<'storage> AttemptStorage<'storage> {
     pub(crate) fn into_publication(
         self,
     ) -> Result<super::publication_storage::PublicationStorage<'storage>, Box<Self>> {
-        if !self.acknowledged || self.is_refused() || self.document.is_none() {
+        if !self.acknowledged || self.is_refused() || self.document.is_none() || self.name != NAME {
             return Err(Box::new(self));
         }
         // Move the original descriptor and fence. No path-based reconstruction.

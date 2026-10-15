@@ -103,6 +103,26 @@ pub struct KernelWorkerPolicyInput<'s, 'a, 'p> {
     probe: Probe,
 }
 impl KernelWorkerPolicyInput<'_, '_, '_> {
+    // Private capture for the original controller attempt. No second journal owner.
+    pub(super) fn controller_authority_binding(
+        &mut self,
+    ) -> Result<(String, u64, u64, String), TrustInputError> {
+        self.revalidate()?;
+        let view = active(
+            self.policy.authority,
+            &self.policy.input.source.trust,
+            &self.policy.host,
+        )?;
+        let result = (
+            self.policy.policy_sha256().to_owned(),
+            view.epoch,
+            view.revision,
+            crate::sha256_hex(&self.policy.input.source.snapshot.raw),
+        );
+        self.revalidate()?;
+        Ok(result)
+    }
+
     pub(super) fn original_unix_seconds(&mut self) -> Result<u64, TrustInputError> {
         let result = (|| {
             self.revalidate()?;

@@ -5,6 +5,9 @@ use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::
 };
 use std::fmt;
 
+#[path = "diagnostic_controller_request_attempt.rs"]
+pub mod request_attempt;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ControllerFenceError {
     #[error("original controller/common-fence preflight permanently refused")]
