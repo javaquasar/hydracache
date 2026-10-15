@@ -8,9 +8,10 @@ process-loss behavior for this composition.
 
 Add a private Linux nonroot unit-test subprocess harness under the OIDC original
 fixture. Keep synthetic controller, worker, OIDC and authority fixtures below a
-parent-owned mode-0700 temporary root by supplying the child TMPDIR. Make the
-worker test fixture's authority temporary directory honor that same temporary
-root; preserve its default behavior. The kernel packet uses the child's actual
+parent-owned mode-0700 temporary root by supplying the child TMPDIR. Preserve
+the strict modeled authority rule: its separate parent-owned mode-0700 temporary
+leaf stays directly under /tmp. A private fixture helper supplies that original
+authority path, without changing the default helper or runtime opener. The kernel packet uses the child's actual
 SOCK_SEQPACKET message credentials, pidfd, host context and clock observations,
 with the child itself as sender. This is not independent production enrollment
 or a separate external controller process.
@@ -52,3 +53,12 @@ evidence packet, then update the design, checklist, README and article.
 Only the new local joined SIGKILL boundary can close. Server, GitHub, actual
 keys/tokens, product measurements, qualification, push and release admission
 remain outside this slice.
+
+## Fixture origin correction before acceptance
+
+The first development run fails before its checkpoint because the existing
+authority fixture correctly refuses a nested TMPDIR origin. Retain this negative.
+Do not loosen that opener: use the separate parent-owned /tmp authority leaf
+above and include its complete byte/metadata inventory in every crash/control
+and fresh-reader comparison. This is test fixture plumbing, not an admitted
+change to the authority namespace.
