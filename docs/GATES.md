@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+Root-owned input inventory uses ordinary nonroot Linux tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_root_owned_input::tests -- --nocapture`
+and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_root_owned_input --locked`.
+Six compile-fail doctests prohibit FD/clone/owner override/deserialization/bundle/
+thread-transfer APIs. Current namespaces and numeric root ownership are observed,
+not initial-host or signing authority. No manual/server gate; see the
+[root-owned input design](testing/performance/0.74/diagnostic-root-owned-input-design.md).
+
 Unsigned prebuilt copy preparation uses ordinary nonroot Linux tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_prebuilt_copy::tests -- --nocapture`
 and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_prebuilt_copy --locked`.

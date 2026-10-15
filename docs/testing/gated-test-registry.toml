@@ -2,6 +2,38 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-root-owned-input"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_root_owned_input"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Nonroot Linux original path/context inventory and caller-owned input refusal; no runtime/job enrollment"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_root_owned_input", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.diagnostic-prebuilt-copy"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/diagnostic_prebuilt_copy.rs"

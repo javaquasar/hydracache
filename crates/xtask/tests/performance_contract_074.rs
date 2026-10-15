@@ -13118,6 +13118,134 @@ fn unsigned_prebuilt_copy_never_manufactures_original_custody_or_start_authority
 }
 
 #[test]
+fn root_owned_input_inventory_cannot_authenticate_host_runtime_job_or_writers() {
+    let c = contract("diagnostic-root-owned-input-contract.toml");
+    for key in [
+        "public_owner_fixed_numeric_zero_no_override",
+        "caller_path_digest_not_independent_runtime_policy",
+        "all_original_ancestor_descriptors_retained",
+        "strict_absolute_lexical_path_and_component_budgets",
+        "readonly_nofollow_cloexec_nonblock_children",
+        "statx_required_mask_and_mount_id_without_fallback",
+        "original_user_mount_nsfs_kind_and_root_brackets",
+        "original_reading_thread_guard_not_send_or_sync",
+        "bounded_positional_content_hash_not_metadata_only",
+        "leaf_original_and_named_metadata_match",
+        "fresh_full_walks_bracket_content",
+        "ancestor_timestamps_allow_unrelated_entries",
+        "first_refusal_sticky_no_refresh_or_conversion",
+        "private_fixture_owner_and_anchor_not_public",
+        "actual_root_owned_system_file_readonly_positive",
+        "user_owned_readonly_input_cannot_enter_public_root_reader",
+        "old_copy_bundle_pins_dependencies_and_qualification_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "initial_host_or_filesystem_authenticated",
+        "independent_runtime_root_or_job_policy_enrolled",
+        "loaded_runtime_closure_or_memory_attested",
+        "root_ancestor_namespace_or_mount_mutated",
+        "foreign_writer_revoked_or_continuous_immutability",
+        "actual_signing_or_private_key_token_access",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "server_route_or_workflow_enabled",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("path_bytes", 4096),
+        ("components", 32),
+        ("component_bytes", 255),
+        ("file_budget_bytes", 134217728),
+        ("hash_buffer_bytes", 65536),
+        ("seed", 0x0740_c075),
+        ("metadata_mutations", 64),
+        ("metadata_fields", 13),
+        ("independent_observers", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    for (key, expected) in [
+        ("directory_modes", vec!["0555", "0755"]),
+        ("leaf_modes", vec!["0444", "0555", "0644", "0755"]),
+    ] {
+        assert_eq!(
+            c[key]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap())
+                .collect::<Vec<_>>(),
+            expected
+        );
+    }
+    let base = root().join("tools/long-run-supervisor-074");
+    let code = std::fs::read_to_string(base.join("src/diagnostic_root_owned_input.rs")).unwrap();
+    for required in [
+        "inspect_at(path, expected, Path::new(\"/\"), (0, 0))",
+        "STATX_MNT_ID",
+        "stx_mask & MASK != MASK",
+        "AT_EMPTY_PATH",
+        "NS_GET_NSTYPE",
+        "/proc/thread-self/ns/user",
+        "/proc/thread-self/ns/mnt",
+        "PhantomData<Rc<()>>",
+        "libc::O_NOFOLLOW",
+        "libc::O_NONBLOCK",
+        "libc::O_CLOEXEC",
+        "self.refused = true",
+        "self.context.check()?",
+        "read_at",
+        "compile_fail",
+    ] {
+        assert!(code.contains(required), "{required}");
+    }
+    for forbidden in [
+        "SigningKey",
+        "Command",
+        "canonicalize",
+        "set_permissions",
+        "libc::chown",
+        "libc::setns",
+        "libc::unshare",
+        "libc::mount(",
+        "File::create",
+        "pub fn inspect_at",
+        "impl AsRawFd for RootOwned",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    let tests =
+        std::fs::read_to_string(base.join("src/diagnostic_root_owned_input_tests.rs")).unwrap();
+    for required in [
+        "0x0740_c075",
+        "root_input_hash_catches_same_size_write",
+        "mutated.check_original().is_err()",
+        "read.context.tid = -1",
+        "root_input_all_required_statx_fields",
+        "root_input_equal_byte_file",
+    ] {
+        assert!(tests.contains(required), "{required}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join("src").join(path))
+            .unwrap()
+            .contains("diagnostic_root_owned_input"));
+    }
+}
+
+#[test]
 fn signer_custody_preparation_does_not_install_a_trust_root_or_signing_job() {
     let base = root();
     let helper =

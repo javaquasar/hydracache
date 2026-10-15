@@ -50,6 +50,8 @@ pub mod diagnostic_prebuilt_copy;
 pub mod diagnostic_process;
 pub mod diagnostic_receipts;
 pub mod diagnostic_reviewed_trust;
+#[cfg(target_os = "linux")]
+pub mod diagnostic_root_owned_input;
 pub mod diagnostic_signer_build;
 pub mod diagnostic_signer_issuer;
 // Owned local mechanics only; no launch symbols exist in a normal library.

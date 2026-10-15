@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+The new Linux root-owned input guard is Rust-only original-descriptor inventory,
+not a persisted/wire artifact or authenticated bundle. Its observed system-file
+profile allows root-owned 0444/0555/0644/0755 leaves under 0555/0755 ancestors;
+the old bundle's exact 0555 rule and schemas stay unchanged. Missing required
+statx support or original context/path/content drift refuses without fallback
+or refresh. The local example prints diagnostic inventory only and exposes no
+server reader or negotiation. See the
+[root-owned input design](testing/performance/0.74/diagnostic-root-owned-input-design.md).
+
 The opt-in local `diagnostic-prebuilt-copy-local-074-v1` filesystem layout reserves
 an absent `attempt-<32 lowercase hex>` directory with one `diagnostic_controller`
 file. Success leaves both at 0555 and the file single-linked; no marker, receipt
