@@ -13009,6 +13009,115 @@ fn signer_selected_issuer_does_not_promote_asserted_build_or_runtime_custody() {
 }
 
 #[test]
+fn unsigned_prebuilt_copy_never_manufactures_original_custody_or_start_authority() {
+    let c = contract("diagnostic-prebuilt-copy-contract.toml");
+    for key in [
+        "linux_nonroot_only",
+        "original_source_and_parent_readonly_cloexec_descriptors",
+        "parent_exact_effective_uid_gid_and_mode_0700",
+        "expected_digest_and_ancestry_explicitly_asserted",
+        "descriptor_relative_exclusive_absent_attempt_and_fixed_child",
+        "bounded_positional_copy_keeps_source_offset",
+        "source_metadata_brackets_copy_without_chmod_or_unlink",
+        "source_content_rehashed_after_copy_without_timestamp_delay",
+        "new_inode_single_link_mode_0555_readonly_rehash",
+        "owned_writer_close_error_checked_once_without_retry",
+        "file_directory_and_parent_sync_before_success",
+        "original_name_descriptor_and_content_rechecks_sticky",
+        "all_failed_attempts_retained_no_overwrite_resume_or_repair",
+        "foreign_retained_writer_survives_chmod_counterexample",
+        "same_attempt_concurrency_has_one_owner",
+        "independent_attempts_have_distinct_files",
+        "actual_owned_subprocess_sigkill_at_all_copy_checkpoints",
+        "completed_looking_killed_attempt_cannot_be_resumed",
+        "normal_server_and_controller_do_not_consume_preparer",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "authenticated_original_prebuilt_custody",
+        "protected_ancestry_or_account_runtime_job_enrolled",
+        "foreign_writer_revoked_or_continuous_immutability",
+        "power_loss_or_storage_durability_proved",
+        "actual_prepared_binary_executed_or_signed",
+        "private_key_or_token_read",
+        "github_or_server_operated",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("binary_budget_bytes", 134217728),
+        ("copy_buffer_bytes", 65536),
+        ("nonce_hex_bytes", 32),
+        ("copy_checkpoints", 7),
+        ("seed", 0x0740_c074),
+        ("seeded_boundary_lengths", 5),
+        ("seeded_corruptions", 40),
+        ("concurrent_observers", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074");
+    let source = std::fs::read_to_string(base.join("src/diagnostic_prebuilt_copy.rs")).unwrap();
+    for required in [
+        "mkdirat",
+        "libc::O_EXCL",
+        "libc::O_NOFOLLOW",
+        "libc::O_CLOEXEC",
+        "source.metadata()",
+        "[0u8; 65536]",
+        "close_owned(writer, linux_close)?",
+        "copy.check_original()?",
+        "self.refused = true",
+        "compile_fail",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "remove_file",
+        "remove_dir",
+        "rename(",
+        "Command",
+        "SigningKey",
+        "impl AsRawFd for Asserted",
+        "impl Clone for Asserted",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let tests =
+        std::fs::read_to_string(base.join("src/diagnostic_prebuilt_copy_tests.rs")).unwrap();
+    for required in [
+        "retained_foreign_writer_survives_0555=true",
+        "Some(libc::SIGKILL)",
+        "target in 0..7",
+        "child.0.wait()",
+        "target == 6",
+        "0x0740_c074",
+        "libc::ENOSPC",
+        "libc::EIO",
+        "late close failure",
+    ] {
+        assert!(tests.contains(required), "{required}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join("src").join(path))
+            .unwrap()
+            .contains("diagnostic_prebuilt_copy"));
+    }
+}
+
+#[test]
 fn signer_custody_preparation_does_not_install_a_trust_root_or_signing_job() {
     let base = root();
     let helper =

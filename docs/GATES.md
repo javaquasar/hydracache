@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+Unsigned prebuilt copy preparation uses ordinary nonroot Linux tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_prebuilt_copy::tests -- --nocapture`
+and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_prebuilt_copy --locked`.
+Doctests cover clone/FD export/bundle conversion refusal. The owned-child test
+SIGKILLs only its libtest subprocesses at seven copy checkpoints; it never runs
+the prepared executable. Foreign-writer survival after chmod is an explicit
+counterexample, not a passing revocation gate. No manual/server gate is added;
+see the [copy design](testing/performance/0.74/diagnostic-prebuilt-copy-design.md).
+
 The selected signer issuer uses ordinary portable tests:
 `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_issuer --locked`.
 Six tests cover fixed key/fingerprint, old-role separation, the original public

@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The opt-in local `diagnostic-prebuilt-copy-local-074-v1` filesystem layout reserves
+an absent `attempt-<32 lowercase hex>` directory with one `diagnostic_controller`
+file. Success leaves both at 0555 and the file single-linked; no marker, receipt
+or signed production artifact is minted. Older readers have no new negotiation
+or recovery path. Existing/partial/complete attempts refuse reuse, and unknown
+names or extra children refuse inventory. The returned Rust-only guard is not
+persisted/deserializable or convertible to old bundle/launch authority. Existing
+signer schemas, pins and bundle readers are unchanged. See the
+[copy design](testing/performance/0.74/diagnostic-prebuilt-copy-design.md).
+
 The local audit record `diagnostic-signer-issuer-selection-074-v1` records only
 operator selection of a separate signer-build public key. It is not the earlier
 generation selfcheck record, a signed receipt or a production trust loader.

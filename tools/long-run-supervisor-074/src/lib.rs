@@ -45,6 +45,8 @@ pub mod diagnostic_output_preparation;
 #[cfg(target_os = "linux")]
 pub use diagnostic_output_preparation::fixed_intent_storage::preflight as diagnostic_storage_preflight;
 #[cfg(target_os = "linux")]
+pub mod diagnostic_prebuilt_copy;
+#[cfg(target_os = "linux")]
 pub mod diagnostic_process;
 pub mod diagnostic_receipts;
 pub mod diagnostic_reviewed_trust;
