@@ -55,3 +55,23 @@ arbitrary-instruction or transfer-boundary creator-loss, continuous memory or
 independent custody attestation follows. Actual trusted credentials/issuer/job
 enrollment, authenticated worker start, P2/P3 all-writer cessation, completion and
 later cells, server rehearsal, qualification and performance claims stay closed.
+
+## Feasibility correction before the next candidate
+
+The first implementation read the loaded marker through the stack-only reader
+while the ordinary marker remained in rodata. Keep old pipe marker behavior and
+put only the new socket-profile marker on stack. Its full-context checks then
+repeated before and after every fixed call; the unchanged five-second outer guard
+expired before protocol completion. An instrumented development capture attributes
+substantial time to those repeated full root/context reads. Preserve these reds.
+
+For the new fixed protocol, validate full context/maps at installed stop, at the
+exact recv entry immediately before the sole attempted send, and after observed
+close before zero exit. Between these boundaries, check phase, original endpoint,
+nonterminal original pidfd, exact syscall entry/exit and bounded stack bytes.
+The fully observed sequence allows no FD, root, namespace or process mutation
+except that final close3. This does not remove any old Owner/context/install
+check or authorize a general cached-context guard. Final original root validation,
+reap/ECHILD and EOF stay mandatory. Restrict new-profile startup to a finite
+loader/context-query syscall set, rather than a broad syscall-number denylist.
+No timeout, graph, policy, compiler/profile or release threshold changes.
