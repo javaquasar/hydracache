@@ -778,41 +778,9 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
 mod tests {
     use super::*;
     use std::io::Write;
-    use std::process::{Command, Stdio};
-    use std::sync::Mutex;
 
     fn isolated(name: &str, test: impl FnOnce()) {
-        let namespace = module_path!().split_once("::").unwrap().1;
-        let selected = format!("{namespace}::{name}");
-        const MARKER: &str = "HC074_ISOLATED_RIGHTS_UNIT";
-        let done = format!("isolated_rights_done test={selected} admission=false");
-        if let Some(child) = std::env::var_os(MARKER) {
-            assert_eq!(child, selected.as_str());
-            test();
-            println!("{done}");
-            return;
-        }
-        // Exec closes incidental inherited CLOEXEC writers before this one
-        // fixture runs. No global lock, test retry or harness thread reduction.
-        let mut command = Command::new(std::env::current_exe().unwrap());
-        command
-            .args(["--exact", &selected, "--nocapture"])
-            .env_clear()
-            .env(MARKER, &selected)
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-        let result =
-            super::super::super::tests::process_guard::output(&mut command, &Mutex::new(()));
-        assert!(result.status.success(), "{result:?}");
-        assert!(result.stderr.is_empty(), "{result:?}");
-        let stdout = String::from_utf8(result.stdout).unwrap();
-        assert_eq!(
-            stdout.lines().filter(|line| *line == done).count(),
-            1,
-            "selected isolated rights test did not complete"
-        );
-        println!("{done}");
+        super::super::super::tests::isolated_rights_unit(module_path!(), name, test);
     }
 
     #[test]

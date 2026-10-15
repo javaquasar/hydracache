@@ -3,7 +3,43 @@ use std::os::unix::fs::PermissionsExt;
 #[path = "../tests/support/diagnostic_gnu_images.rs"]
 pub(super) mod images;
 #[path = "../tests/support/root_process_guard.rs"]
-pub(super) mod process_guard;
+mod process_guard;
+
+pub(super) fn isolated_rights_unit(namespace: &str, name: &str, test: impl FnOnce()) {
+    use std::process::{Command, Stdio};
+    use std::sync::Mutex;
+
+    let namespace = namespace.split_once("::").unwrap().1;
+    let selected = format!("{namespace}::{name}");
+    const MARKER: &str = "HC074_ISOLATED_RIGHTS_UNIT";
+    let done = format!("isolated_rights_done test={selected} admission=false");
+    if let Some(child) = std::env::var_os(MARKER) {
+        assert_eq!(child, selected.as_str());
+        test();
+        println!("{done}");
+        return;
+    }
+    // Exec closes incidental inherited CLOEXEC writers before this one
+    // fixture runs. No global lock, test retry or harness thread reduction.
+    let mut command = Command::new(std::env::current_exe().unwrap());
+    command
+        .args(["--exact", &selected, "--nocapture"])
+        .env_clear()
+        .env(MARKER, &selected)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let result = process_guard::output(&mut command, &Mutex::new(()));
+    assert!(result.status.success(), "{result:?}");
+    assert!(result.stderr.is_empty(), "{result:?}");
+    let stdout = String::from_utf8(result.stdout).unwrap();
+    assert_eq!(
+        stdout.lines().filter(|line| *line == done).count(),
+        1,
+        "selected isolated rights test did not complete"
+    );
+    println!("{done}");
+}
 
 #[test]
 fn sha256_matches_known_vectors_and_seeded_image_boundaries() {
