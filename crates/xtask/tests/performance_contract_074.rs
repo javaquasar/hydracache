@@ -14509,3 +14509,109 @@ fn ordinary_root_creator_loss_is_owned_stops_only_not_authority() {
             .contains("diagnostic_signer_owned_root_loss"));
     }
 }
+
+#[test]
+fn ordinary_root_dummy_handoff_never_becomes_a_credential_or_start_producer() {
+    let c = contract("diagnostic-signer-owned-root-handoff-contract.toml");
+    for key in [
+        "ordinary_selected_self_dummy_handoff",
+        "binary_private_fixed_profile_only",
+        "old_pipe_profiles_preserved",
+        "original_raw_fork_child_unchanged",
+        "same_unchanged_policy_and_installer",
+        "startup_finite_syscall_allowlist",
+        "original_endpoint_identity_and_flags_checked",
+        "ready_does_not_release_dummy",
+        "original_recv_entry_before_attempt",
+        "attempt_latched_before_send_no_retry",
+        "original_native_syscalls_and_stack_bytes_observed",
+        "full_context_at_installed_recv_and_close",
+        "exact_close_stdio_only_and_zero_exit_required",
+        "lost_ack_refuses_without_resend",
+        "failed_send_stays_attempted",
+        "owned_sigkill_drop_at_transfer_stops",
+        "actual_record_length_used_for_failure_drain",
+        "unknown_quiescence_preserves_root",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "credential_handoff_authenticated",
+        "runtime_custody_authenticated",
+        "mapped_memory_attested",
+        "transfer_boundary_creator_loss_proved",
+        "full_normal_entry_creator_loss_proved",
+        "overlapping_broad_load_robustness_proved",
+        "original_worker_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("fixed_modes", 25),
+        ("child_cases", 16),
+        ("parent_controls", 9),
+        ("packet_version", 1),
+        ("packet_bytes", 16),
+        ("maximum_send_attempts", 1),
+        ("child_channel_fd", 3),
+        ("startup_syscall_pairs", 256),
+        ("maximum_protocol_events", 16),
+        ("policy_instructions", 64),
+        ("policy_bytes", 512),
+        ("maximum_image_bytes", 8388608),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+        ("directory_read_bytes", 512),
+        ("directory_reads", 3),
+        ("directory_records", 8),
+        ("maximum_failure_drain_bytes", 48),
+        ("wait_seconds", 5),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_root_handoff.rs")).unwrap();
+    for marker in [
+        "SOCK_SEQPACKET",
+        "SOCK_CLOEXEC",
+        "SOCK_NONBLOCK",
+        "MSG_NOSIGNAL",
+        "MSG_TRUNC",
+        "HC074-DUMMY-v001",
+        "PTRACE_SYSCALL",
+        "isolation::memory",
+        "context(owner)?",
+        "channel.attempt()",
+        "child_closed = true",
+        "SYS_exit_group",
+        "ECHILD",
+        "total <= 48",
+        "events < 16",
+        "0..256",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "SigningKey",
+        "Command::",
+        "pub fn ",
+        "PTRACE_POKEDATA",
+        "SO_PEERCRED",
+        "eprintln!",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    for consumer in ["lib.rs", "server.rs", "bin/diagnostic_controller.rs"] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("diagnostic_signer_owned_root_handoff"));
+    }
+}

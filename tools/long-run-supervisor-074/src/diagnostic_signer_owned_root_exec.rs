@@ -10,6 +10,8 @@ use std::time::{Duration, Instant};
 
 #[path = "diagnostic_signer_isolation_core.rs"]
 mod core;
+#[path = "diagnostic_signer_owned_root_handoff.rs"]
+mod handoff;
 #[path = "diagnostic_signer_owned_root_isolation.rs"]
 mod isolation;
 #[path = "diagnostic_signer_owned_root_loss.rs"]
@@ -92,12 +94,20 @@ struct Owner {
     readers: Option<isolation::Readers>,
     stack: Option<(usize, usize)>,
     filters: Option<u64>,
+    handoff: Option<handoff::State>,
 }
 impl Owner {
     fn new(root: Root) -> io::Result<Self> {
         Self::build(root, None)
     }
-    fn build(mut root: Root, probe: Option<FixedProbe>) -> io::Result<Self> {
+    fn build(root: Root, probe: Option<FixedProbe>) -> io::Result<Self> {
+        Self::build_profile(root, probe, None)
+    }
+    fn build_profile(
+        mut root: Root,
+        probe: Option<FixedProbe>,
+        case: Option<handoff::Case>,
+    ) -> io::Result<Self> {
         root.check()?;
         let last: u32 = bounded(open("/proc/sys/kernel/cap_last_cap")?)?
             .trim()
@@ -114,12 +124,7 @@ impl Owner {
             null_stamp.mode & libc::S_IFMT == libc::S_IFCHR
                 && null.metadata()?.rdev() == libc::makedev(1, 3),
         )?;
-        let mut pipes = [-1; 2];
-        require(
-            unsafe { libc::pipe2(pipes.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) } == 0,
-        )?;
-        let pipe = file(pipes[0])?;
-        let writer = file(pipes[1])?;
+        let (pipe, writer, handoff) = handoff::transport(case)?;
         let pipe_stamp = Stamp::of(&writer.metadata()?);
         let root_fd =
             file(unsafe { libc::fcntl(root.dirs[0].file.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 10) })?;
@@ -133,11 +138,15 @@ impl Owner {
         let creator = unsafe { libc::getpid() };
         let argv = [
             c"/signer".as_ptr(),
-            match probe {
-                None => c"--root-child",
-                Some(FixedProbe::Native) => c"--root-native-child",
-                Some(FixedProbe::X32) => c"--root-x32-child",
-                Some(FixedProbe::I386) => c"--root-i386-child",
+            if let Some(case) = case {
+                case.arg()
+            } else {
+                match probe {
+                    None => c"--root-child",
+                    Some(FixedProbe::Native) => c"--root-native-child",
+                    Some(FixedProbe::X32) => c"--root-x32-child",
+                    Some(FixedProbe::I386) => c"--root-i386-child",
+                }
             }
             .as_ptr(),
             std::ptr::null(),
@@ -181,6 +190,7 @@ impl Owner {
             readers: None,
             stack: None,
             filters: None,
+            handoff,
         };
         drop(writer);
         owner.pidfd = Some(file(unsafe {
@@ -316,6 +326,12 @@ impl Owner {
         )?;
         require(tasks == [self.pid.to_string()].into())?;
         let mut expected: BTreeSet<_> = ["0", "1", "2", "3"].map(str::to_owned).into();
+        if let Some(channel) = &self.handoff {
+            channel.check(&self.pipe)?;
+            if channel.closed() {
+                expected.remove("3");
+            }
+        }
         if before_exec {
             expected.insert(self.exec_fd.to_string());
         }
@@ -381,8 +397,12 @@ impl Owner {
     fn loaded(&mut self) -> io::Result<()> {
         require(self.phase == Phase::Exec)?;
         self.context(false)?;
-        self.trace(libc::PTRACE_CONT, 0)?;
-        require(self.wait()? == STOP)?;
+        if self.handoff.is_some() {
+            handoff::loaded(self)?;
+        } else {
+            self.trace(libc::PTRACE_CONT, 0)?;
+            require(self.wait()? == STOP)?;
+        }
         self.context(false)?;
         self.stack = Some(maps::validate(&self.text("maps")?, &self.root, true)?);
         let mut marker = [0; 17];
@@ -428,6 +448,9 @@ impl Owner {
             unsafe { libc::waitpid(self.pid, &mut status, libc::WNOHANG | libc::__WALL) } == -1
                 && io::Error::last_os_error().raw_os_error() == Some(libc::ECHILD),
         )?;
+        if self.handoff.is_some() {
+            return handoff::drain(self);
+        }
         let mut bytes = [0; 17];
         let mut count = 0;
         loop {
@@ -537,6 +560,12 @@ pub(super) fn installed_cleanup(root: Root, kill: bool) -> io::Result<()> {
 }
 pub(super) fn creator_loss(mode: &str) -> io::Result<()> {
     loss::run(mode)
+}
+pub(super) fn handoff(mode: &str) -> io::Result<()> {
+    handoff::run(mode)
+}
+pub(super) fn handoff_child(mode: &str) -> ! {
+    handoff::child(mode)
 }
 fn status(raw: &str, uid: u32, gid: u32, pid: i32, creator: i32, tracer: i32) -> io::Result<()> {
     require(!raw.is_empty() && raw.len() <= 65536 && raw.ends_with('\n'))?;
@@ -676,6 +705,13 @@ fn raw_child(
     }
 }
 fn child_context() -> io::Result<()> {
+    child_context_profile(false)
+}
+fn child_context_profile(socket: bool) -> io::Result<()> {
+    child_assertions(socket)?;
+    child_loaded(socket)
+}
+fn child_assertions(socket: bool) -> io::Result<()> {
     // Fixed diagnostic only. These context assertions DO NOT authenticate a parent.
     require(std::env::vars_os().next().is_none())?;
     let uid = unsafe { libc::getuid() };
@@ -717,15 +753,31 @@ fn child_context() -> io::Result<()> {
     )?;
     let mut stat: libc::stat = unsafe { std::mem::zeroed() };
     require(
-        unsafe { libc::fstat(3, &mut stat) } == 0 && stat.st_mode & libc::S_IFMT == libc::S_IFIFO,
+        unsafe { libc::fstat(3, &mut stat) } == 0
+            && stat.st_mode & libc::S_IFMT
+                == if socket {
+                    libc::S_IFSOCK
+                } else {
+                    libc::S_IFIFO
+                },
     )?;
     let flags = unsafe { libc::fcntl(3, libc::F_GETFL) };
     require(
         flags >= 0
-            && flags & (libc::O_ACCMODE | libc::O_NONBLOCK) == (libc::O_WRONLY | libc::O_NONBLOCK)
+            && flags & (libc::O_ACCMODE | libc::O_NONBLOCK)
+                == ((if socket { libc::O_RDWR } else { libc::O_WRONLY }) | libc::O_NONBLOCK)
             && unsafe { libc::fcntl(3, libc::F_GETFD) } == 0,
     )?;
-    require(unsafe { libc::write(3, MARKER.as_ptr().cast(), MARKER.len()) } == 16)?;
+    Ok(())
+}
+fn child_loaded(socket: bool) -> io::Result<()> {
+    let marker = *MARKER;
+    let pointer = if socket {
+        marker.as_ptr()
+    } else {
+        MARKER.as_ptr()
+    };
+    require(unsafe { libc::write(3, pointer.cast(), MARKER.len()) } == 16)?;
     require(unsafe { libc::kill(libc::getpid(), libc::SIGSTOP) } == 0)
 }
 pub(super) fn child_entry() -> ! {

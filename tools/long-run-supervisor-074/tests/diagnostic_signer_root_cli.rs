@@ -18,6 +18,9 @@ fn fixed_root_cli_has_no_caller_selected_inputs() {
         vec!["root-loss-healthy-installed", "extra"],
         vec!["root-loss-no-exitkill-installed", "extra"],
         vec!["root-loss-unknown"],
+        vec!["root-handoff-good", "extra"],
+        vec!["--root-handoff-good", "extra"],
+        vec!["root-handoff-unknown"],
     ] {
         let out = std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_signer_root_probe"))
             .env_clear()

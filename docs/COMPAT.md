@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+The binary-private `root-handoff-*` profile uses an unnamed seqpacket at FD3,
+not a product listener or credential API. It reuses version1 exact 16-byte
+`HC074-READY-v001`, `HC074-DUMMY-v001`, `HC074-ACK---v001` records plus the existing
+loaded/installed markers. The fixed original native trace binds each message
+to its stack bytes and syscall; READY is not authorization. One attempted send
+is latched before dispatch, including failure. Unknown/short/oversized/duplicate
+records, wrong calls/FD/flags/pointers, lost ACK and replay refuse without resend.
+No ancillary operation is dispatched. Exact close3, stdio-only inventory, zero
+exit, reap/ECHILD and EOF precede successful cleanup. Old pipe modes remain
+separate; no persistent schema, public process API or product protocol changes.
+
 Fixed `root-loss-*` modes add only a binary-private local seqpacket diagnostic,
 not a product wire protocol. Version1 frame `HC074RL1` is exactly16 bytes: magic8,
 positive original child PID LE i32, fixed cut byte0..4, mode0..2, stage0..1,

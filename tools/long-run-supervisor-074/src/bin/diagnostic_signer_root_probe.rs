@@ -10,6 +10,13 @@ fn main() {
         let mode = args.next();
         if args.next().is_none() {
             if let Some(name) = mode.as_deref().and_then(std::ffi::OsStr::to_str) {
+                if name.starts_with("--root-handoff-") {
+                    root::handoff_child(name);
+                }
+                if name.starts_with("root-handoff-") && root::handoff(name).is_ok() {
+                    println!("selected rooted one-shot dummy observation passed; admission=false");
+                    return;
+                }
                 if name.starts_with("root-loss-") && root::creator_loss(name).is_ok() {
                     println!("selected rooted creator-loss observation passed; admission=false");
                     return;

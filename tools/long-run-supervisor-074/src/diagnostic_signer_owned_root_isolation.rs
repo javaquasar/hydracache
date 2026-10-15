@@ -127,11 +127,11 @@ pub(super) fn filter_state(raw: &str) -> io::Result<(u64, u64)> {
     Ok((pair[0], pair[1]))
 }
 #[derive(Debug, PartialEq, Eq)]
-enum Event {
+pub(super) enum Event {
     Entry { nr: u64, args: [u64; 6] },
     Exit { value: i64, error: bool },
 }
-fn decode(info: &libc::ptrace_syscall_info, bytes: usize) -> io::Result<Event> {
+pub(super) fn decode(info: &libc::ptrace_syscall_info, bytes: usize) -> io::Result<Event> {
     require(bytes <= std::mem::size_of_val(info) && info.flags == 0 && info.arch == 0xc000_003e)?;
     match info.op {
         1 if bytes >= 80 => {
@@ -152,7 +152,7 @@ fn decode(info: &libc::ptrace_syscall_info, bytes: usize) -> io::Result<Event> {
         _ => Err(refused()),
     }
 }
-fn memory(owner: &Owner, address: usize, count: usize) -> io::Result<Vec<u8>> {
+pub(super) fn memory(owner: &Owner, address: usize, count: usize) -> io::Result<Vec<u8>> {
     let (low, high) = owner.stack.ok_or_else(refused)?;
     let end = address.checked_add(count).ok_or_else(refused)?;
     let begin = address & !7;
@@ -315,6 +315,16 @@ pub(super) fn finish(owner: &mut Owner) -> io::Result<()> {
     Ok(())
 }
 pub(super) fn child(probe: FixedProbe) -> ! {
+    install_child();
+    if !super::core::exercise(probe) {
+        unsafe { libc::_exit(95) }
+    }
+    if unsafe { libc::write(3, DONE.as_ptr().cast(), DONE.len()) } != 16 {
+        unsafe { libc::_exit(94) }
+    }
+    unsafe { libc::_exit(0) }
+}
+pub(super) fn install_child() {
     let bytes = hydracache_long_run_supervisor_074::diagnostic_signer_isolation::policy_bytes();
     let mut filters = [libc::sock_filter {
         code: 0,
@@ -338,13 +348,6 @@ pub(super) fn child(probe: FixedProbe) -> ! {
     {
         unsafe { libc::_exit(94) }
     }
-    if !super::core::exercise(probe) {
-        unsafe { libc::_exit(95) }
-    }
-    if unsafe { libc::write(3, DONE.as_ptr().cast(), DONE.len()) } != 16 {
-        unsafe { libc::_exit(94) }
-    }
-    unsafe { libc::_exit(0) }
 }
 
 #[cfg(test)]

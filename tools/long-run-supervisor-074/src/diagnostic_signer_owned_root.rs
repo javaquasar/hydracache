@@ -436,3 +436,10 @@ pub(super) fn creator_loss(mode: &str) -> io::Result<()> {
     launch::preflight()?;
     launch::creator_loss(mode)
 }
+pub(super) fn handoff(mode: &str) -> io::Result<()> {
+    launch::preflight()?;
+    launch::handoff(mode)
+}
+pub(super) fn handoff_child(mode: &str) -> ! {
+    launch::handoff_child(mode)
+}

@@ -6,6 +6,33 @@ use std::os::unix::process::CommandExt;
 use std::process::{Command, Output, Stdio};
 use std::time::{Duration, Instant};
 static COPY_AND_SPAWN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+const HANDOFF_CASES: [&str; 25] = [
+    "good",
+    "wrong-ready",
+    "duplicate-ready",
+    "short",
+    "oversized",
+    "wrong-fd",
+    "early",
+    "leak",
+    "no-ack",
+    "wrong-ack",
+    "duplicate-ack",
+    "closed",
+    "exit",
+    "ancillary",
+    "replace",
+    "rodata",
+    "withhold",
+    "send-failure",
+    "replay",
+    "kill-installed",
+    "drop-installed",
+    "kill-ready",
+    "drop-ready",
+    "kill-delivered",
+    "drop-delivered",
+];
 const LOSS_MODES: [&str; 8] = [
     "root-loss-initial",
     "root-loss-rooted",
@@ -324,6 +351,40 @@ fn repeated_original_root_execs_leave_parent_context_unchanged() {
     println!("independent_root_loss_monitors=4 sequential=true extra_libm_refusal={} parent_context_unchanged=true admission=false", image.extra_libm);
 }
 #[test]
+fn normal_original_root_one_shot_dummy_handoff() {
+    let image = Image::new();
+    if image.extra_libm {
+        for case in HANDOFF_CASES {
+            refused(image.command().arg(format!("root-handoff-{case}")));
+        }
+        println!("extra_libm_root_handoff_modes=25 refused=true unchanged_four_role_graph=true admission=false");
+        return;
+    }
+    let out = output(image.command().arg("root-handoff-good"));
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    assert_eq!(
+        out.stdout,
+        b"selected rooted one-shot dummy observation passed; admission=false\n"
+    );
+    assert!(out.stderr.is_empty(), "{out:?}");
+    println!("normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false");
+    for case in HANDOFF_CASES.into_iter().skip(1) {
+        let out = output(image.command().arg(format!("root-handoff-{case}")));
+        assert_eq!(out.status.code(), Some(0), "{case}: {out:?}");
+        assert_eq!(
+            out.stdout,
+            b"selected rooted one-shot dummy observation passed; admission=false\n"
+        );
+        assert!(out.stderr.is_empty(), "{case}: {out:?}");
+        let sends = u8::from(matches!(
+            case,
+            "no-ack" | "wrong-ack" | "duplicate-ack" | "kill-delivered" | "drop-delivered"
+        ));
+        let attempted = u8::from(sends == 1 || case == "send-failure");
+        println!("normal_root_handoff mode={case} attempted={attempted} sends={sends} success_claim=false original_reaped=true eof=true admission=false");
+    }
+}
+#[test]
 fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
     let image = Image::new();
     refused(
@@ -376,6 +437,15 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
         refused(image.command().args([mode, "extra"]));
     }
     refused(image.command().arg("root-loss-unknown"));
+    for case in HANDOFF_CASES {
+        let mode = format!("root-handoff-{case}");
+        refused(image.command().arg(&mode).env("UNTRUSTED_ROOT_PROBE", "1"));
+        refused(image.command().arg(&mode).arg("extra"));
+        let out = output(image.command().arg(format!("--{mode}")));
+        assert_eq!(out.status.code(), Some(92), "{case}: {out:?}");
+        assert!(out.stdout.is_empty() && out.stderr.is_empty());
+    }
+    refused(image.command().arg("root-handoff-unknown"));
     for mode in [
         "--root-native-child",
         "--root-x32-child",
