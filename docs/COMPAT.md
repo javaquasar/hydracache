@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The opt-in offline `diagnostic-signer-gnu-declarations-074-v1` catalog is
+serialize-only inventory data: four logical roles with byte digests and ELF
+declarations, with all authority flags false. There is no runtime trust reader,
+negotiation or migration from a signer-build receipt or old fixture result.
+Existing signing/policy domains and old readers stay unchanged; unknown catalog
+shapes cannot enter any configuration/receipt/start reader. See the
+[shared catalog design](testing/performance/0.74/diagnostic-signer-gnu-catalog-design.md).
+
 The new Linux root-owned input guard is Rust-only original-descriptor inventory,
 not a persisted/wire artifact or authenticated bundle. Its observed system-file
 profile allows root-owned 0444/0555/0644/0755 leaves under 0555/0755 ancestors;

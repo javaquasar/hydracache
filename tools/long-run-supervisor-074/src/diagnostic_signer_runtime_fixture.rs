@@ -9,14 +9,7 @@ use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-#[path = "diagnostic_signer_runtime_elf.rs"]
-mod elf;
-const NAMES: [&str; 4] = [
-    "signer",
-    "ld-linux-x86-64.so.2",
-    "libc.so.6",
-    "libgcc_s.so.1",
-];
+use crate::diagnostic_signer_gnu::{elf, graph, NAMES};
 fn invalid() -> io::Error {
     io::Error::new(
         io::ErrorKind::InvalidData,
@@ -181,42 +174,6 @@ fn entries(root: &File) -> io::Result<()> {
         .map(|e| e.map(|e| e.file_name()))
         .collect::<io::Result<BTreeSet<_>>>()?;
     if names != NAMES.map(std::ffi::OsString::from).into_iter().collect() {
-        return Err(invalid());
-    }
-    Ok(())
-}
-fn graph(info: &[elf::Info]) -> io::Result<()> {
-    if info.len() != 4
-        || info[0].interpreter.as_deref() != Some(elf::LOADER)
-        || info[0].soname.is_some()
-        || info[1].interpreter.is_some()
-        || !info[1].needed.is_empty()
-    {
-        return Err(invalid());
-    }
-    for index in 1..4 {
-        if info[index].soname.as_deref() != Some(NAMES[index]) {
-            return Err(invalid());
-        }
-    }
-    let mut reached = BTreeSet::from([0usize, 1]);
-    for _ in 0..4 {
-        for (index, item) in info.iter().enumerate() {
-            for name in &item.needed {
-                let next = NAMES
-                    .iter()
-                    .position(|candidate| candidate == name)
-                    .ok_or_else(invalid)?;
-                if next == 0 || next == index {
-                    return Err(invalid());
-                }
-                if reached.contains(&index) {
-                    reached.insert(next);
-                }
-            }
-        }
-    }
-    if reached.len() != 4 {
         return Err(invalid());
     }
     Ok(())

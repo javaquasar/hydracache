@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+The shared GNU signer catalog uses ordinary portable integration tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_gnu --locked`.
+On Linux also run `--example inspect_signer_gnu_catalog` tests and the unchanged
+`--lib diagnostic_signer_runtime_fixture::tests` corpus. Two compile-fail
+examples reject catalog-to-bootstrap and deserialization. This is byte/declaration
+inventory, not signing/start admission; see the
+[catalog contract](testing/performance/0.74/diagnostic-signer-gnu-catalog-contract.toml).
+
 Root-owned input inventory uses ordinary nonroot Linux tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_root_owned_input::tests -- --nocapture`
 and `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_root_owned_input --locked`.

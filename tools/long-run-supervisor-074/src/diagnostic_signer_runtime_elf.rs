@@ -3,15 +3,15 @@ use super::invalid;
 use std::collections::BTreeSet;
 use std::io;
 
-pub(super) const MAX_IMAGE: usize = 8 * 1024 * 1024;
-pub(super) const LOADER: &str = "/lib64/ld-linux-x86-64.so.2";
+pub(crate) const MAX_IMAGE: usize = 8 * 1024 * 1024;
+pub(crate) const LOADER: &str = "/lib64/ld-linux-x86-64.so.2";
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct Info {
-    pub(super) interpreter: Option<String>,
-    pub(super) needed: Vec<String>,
-    pub(super) soname: Option<String>,
-    pub(super) kind: u16,
-    pub(super) program_headers: usize,
+pub(crate) struct Info {
+    pub(crate) interpreter: Option<String>,
+    pub(crate) needed: Vec<String>,
+    pub(crate) soname: Option<String>,
+    pub(crate) kind: u16,
+    pub(crate) program_headers: usize,
 }
 #[derive(Clone)]
 struct Segment {
@@ -86,7 +86,7 @@ fn name(table: &[u8], offset: u64) -> io::Result<String> {
     }
     String::from_utf8(raw.to_vec()).map_err(|_| invalid())
 }
-pub(super) fn parse(bytes: &[u8], executable: bool) -> io::Result<Info> {
+pub(crate) fn parse(bytes: &[u8], executable: bool) -> io::Result<Info> {
     if bytes.len() < 64
         || bytes.len() > MAX_IMAGE
         || &bytes[..7] != b"\x7fELF\x02\x01\x01"

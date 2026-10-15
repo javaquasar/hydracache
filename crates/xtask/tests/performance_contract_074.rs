@@ -13591,3 +13591,79 @@ fn signer_creator_loss_pins_original_task_without_production_or_numeric_refresh(
         assert!(!text.contains("creator_task") && !text.contains("creator_loss"));
     }
 }
+#[test]
+fn shared_signer_gnu_catalog_is_data_not_bootstrap_or_runtime_custody() {
+    let c = contract("diagnostic-signer-gnu-catalog-contract.toml");
+    for key in [
+        "shared_parser_and_graph_with_old_fixtures",
+        "portable_library_and_fixed_four_roles",
+        "all_input_bounds_checked_before_parsing_or_hashing",
+        "per_role_digest_size_and_declarations",
+        "example_reads_regular_original_leaves_without_execution",
+        "old_fixture_launch_and_filesystem_mechanics_stay_test_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "complete_elf_validation",
+        "loaded_closure_proved",
+        "runtime_custody_authenticated",
+        "original_start_authenticated",
+        "signing_allowed",
+        "admission_allowed",
+        "actual_issuer_private_key_or_token_read",
+        "host_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074");
+    let source = std::fs::read_to_string(base.join("src/diagnostic_signer_gnu.rs")).unwrap();
+    let fixture =
+        std::fs::read_to_string(base.join("src/diagnostic_signer_runtime_fixture.rs")).unwrap();
+    assert!(fixture.contains("use crate::diagnostic_signer_gnu::{elf, graph, NAMES};"));
+    assert!(!fixture.contains("fn graph("));
+    assert!(source.contains("#[path = \"diagnostic_signer_runtime_elf.rs\"]"));
+    assert!(source.contains("pub(crate) fn graph("));
+    let compact: String = source.chars().filter(|c| !c.is_whitespace()).collect();
+    assert!(compact.find("images.iter().any").unwrap() < compact.find("elf::parse(").unwrap());
+    assert!(
+        source.find("graph(&info)?").unwrap()
+            < source.find("crate::sha256_hex(images[i])").unwrap()
+    );
+    for text in [
+        "std::fs",
+        "File::open",
+        "Command::",
+        "SigningKey",
+        "execve(",
+        "PTRACE_",
+    ] {
+        assert!(!source.contains(text), "{text}");
+    }
+    for consumer in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join("src").join(consumer))
+            .unwrap()
+            .contains("inspect_gnu_declarations"));
+    }
+    let parser =
+        std::fs::read_to_string(base.join("src/diagnostic_signer_runtime_elf.rs")).unwrap();
+    for (key, value, marker) in [
+        ("image_bytes", 8388608, "8 * 1024 * 1024"),
+        ("program_headers", 32, "count > 32"),
+        ("load_segments", 16, "loads.len() >= 16"),
+        ("dynamic_entries", 512, "d.file / 16 > 512"),
+        ("string_table_bytes", 65536, "string_size > 65536"),
+        ("needed_names", 8, "needed.len() >= 8"),
+        ("name_bytes", 128, "count > 128"),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value));
+        assert!(parser.contains(marker), "{marker}");
+    }
+}
