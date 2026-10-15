@@ -1,18 +1,21 @@
 use super::*;
 #[test]
 fn transfer_cut_counters_refuse_wrong_step_attempt_send_and_close() {
-    for (cut, step, sent, closed) in [
-        (5, Step::Fresh, 0, false),
-        (6, Step::Ready, 0, false),
-        (7, Step::Ready, 0, false),
-        (8, Step::Delivered, 1, false),
-        (9, Step::Acked, 1, false),
-        (10, Step::Acked, 1, true),
+    for (cut, step, sent, attempted, closed) in [
+        (5, Step::Fresh, 0, false, false),
+        (6, Step::Ready, 0, false, false),
+        (7, Step::Ready, 0, false, false),
+        (8, Step::Delivered, 1, true, false),
+        (9, Step::Acked, 1, true, false),
+        (10, Step::Acked, 1, true, true),
+        (11, Step::Ready, 0, true, false),
+        (12, Step::Ready, 1, true, false),
     ] {
         let (_, _, mut state) = pair();
         state.step = step;
         state.sends = sent;
-        state.attempted = sent == 1;
+        state.attempted = attempted;
+        state.dispatched = sent == 1;
         state.child_closed = closed;
         state.counts(cut).unwrap();
         state.step = Step::Refused;
@@ -21,6 +24,9 @@ fn transfer_cut_counters_refuse_wrong_step_attempt_send_and_close() {
         state.attempted = !state.attempted;
         assert!(state.counts(cut).is_err());
         state.attempted = !state.attempted;
+        state.dispatched = !state.dispatched;
+        assert!(state.counts(cut).is_err());
+        state.dispatched = !state.dispatched;
         state.child_closed = !closed;
         assert!(state.counts(cut).is_err());
         state.child_closed = closed;
@@ -30,7 +36,7 @@ fn transfer_cut_counters_refuse_wrong_step_attempt_send_and_close() {
         }
     }
     let (_, _, state) = pair();
-    for cut in [0, 4, 11, u8::MAX] {
+    for cut in [0, 4, 13, u8::MAX] {
         assert!(state.counts(cut).is_err());
     }
 }
@@ -115,6 +121,7 @@ fn attempt_and_event_budgets_are_sticky_without_a_transport_success() {
     assert!(state.attempt().is_err());
     state.step = Step::Ready;
     state.attempt().unwrap();
+    state.dispatch().unwrap();
     assert_eq!(
         unsafe { libc::shutdown(parent.as_raw_fd(), libc::SHUT_WR) },
         0
@@ -130,8 +137,9 @@ fn attempt_and_event_budgets_are_sticky_without_a_transport_success() {
         },
         -1
     );
-    assert!(state.attempted && state.sends == 0);
+    assert!(state.attempted && state.dispatched && state.sends == 0);
     assert!(state.attempt().is_err());
+    assert!(state.dispatch().is_err());
     state.step = Step::Refused;
     assert!(state.attempt().is_err());
     for _ in 0..16 {
@@ -139,6 +147,105 @@ fn attempt_and_event_budgets_are_sticky_without_a_transport_success() {
     }
     assert!(state.next_event().is_err());
     assert_eq!(state.events, 16);
+}
+
+#[test]
+fn dispatch_latch_rejects_early_duplicate_and_failed_send_reuse() {
+    let (parent, _peer, mut state) = pair();
+    assert!(state.dispatch().is_err());
+    state.step = Step::Ready;
+    assert!(state.dispatch().is_err());
+    state.attempt().unwrap();
+    state.counts(11).unwrap();
+    assert!(state.counts(7).is_err());
+    state.dispatch().unwrap();
+    assert!(state.counts(11).is_err());
+    assert!(state.counts(12).is_err());
+    assert!(state.dispatch().is_err());
+    assert!(state.attempt().is_err());
+    assert_eq!(
+        unsafe { libc::shutdown(parent.as_raw_fd(), libc::SHUT_WR) },
+        0
+    );
+    assert_eq!(
+        unsafe {
+            libc::send(
+                parent.as_raw_fd(),
+                DUMMY.as_ptr().cast(),
+                16,
+                libc::MSG_NOSIGNAL,
+            )
+        },
+        -1
+    );
+    assert_eq!(io::Error::last_os_error().raw_os_error(), Some(libc::EPIPE));
+    assert!(state.attempted && state.dispatched && state.sends == 0);
+    assert!(state.dispatch().is_err() && state.attempt().is_err());
+}
+
+#[test]
+fn unread_dummy_requires_exact_reset_prefix_and_then_real_eof() {
+    // The original old drain must still refuse reset; consuming it is not EOF.
+    let (parent, peer, _) = pair();
+    send(&parent, DUMMY);
+    drop(peer);
+    assert!(drain_socket(&parent).is_err());
+    for pending in [false, true] {
+        let (parent, peer, _) = pair();
+        if pending {
+            send(&parent, DUMMY);
+        }
+        drop(peer);
+        assert_eq!(send_window_terminal(&parent, 12, 0).is_ok(), pending);
+    }
+    for (cut, mode) in [(11, 0), (11, 1), (11, 3), (12, 1)] {
+        let (parent, peer, _) = pair();
+        drop(peer);
+        send_window_terminal(&parent, cut, mode).unwrap();
+        let (parent, peer, _) = pair();
+        send(&parent, DUMMY);
+        drop(peer);
+        assert!(send_window_terminal(&parent, cut, mode).is_err());
+    }
+}
+
+#[test]
+fn untraced_ack_requires_exact_single_packet_not_duplicate_or_missing() {
+    for case in 0..7 {
+        let (parent, peer, _) = pair();
+        match case {
+            0 => send(&peer, ACK),
+            1 => {}
+            2 => send(&peer, READY),
+            3 => {
+                send(&peer, ACK);
+                send(&peer, ACK);
+            }
+            4 => send(&peer, &ACK[..15]),
+            5 => send(&peer, &[0; 17]),
+            _ => {
+                send(&peer, ACK);
+                send(&peer, &[0; 64]);
+            }
+        }
+        drop(peer);
+        assert_eq!(send_window_terminal(&parent, 12, 3).is_ok(), case == 0);
+    }
+}
+
+#[test]
+fn send_window_terminal_refuses_unknown_modes_and_live_peer_zero_records() {
+    for (cut, mode) in [(10, 0), (13, 0), (11, 2), (12, 2), (11, 4), (255, 255)] {
+        let (parent, _peer, _) = pair();
+        assert!(send_window_terminal(&parent, cut, mode).is_err());
+    }
+    for zero in [false, true] {
+        let (parent, peer, _) = pair();
+        if zero {
+            send(&peer, &[]);
+        }
+        assert!(send_window_terminal(&parent, 11, 0).is_err());
+    }
 }
 #[test]
 fn original_endpoint_and_read_write_nonblock_cloexec_are_mandatory() {

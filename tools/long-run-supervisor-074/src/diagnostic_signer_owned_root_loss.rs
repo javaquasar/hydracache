@@ -38,6 +38,12 @@ impl Spec {
             "root-transfer-healthy-closed" => (10, 1),
             "root-transfer-no-exitkill-installed" => (5, 2),
             "root-transfer-no-exitkill-delivered" => (8, 2),
+            "root-transfer-loss-latched" => (11, 0),
+            "root-transfer-loss-sent" => (12, 0),
+            "root-transfer-healthy-latched" => (11, 1),
+            "root-transfer-healthy-sent" => (12, 1),
+            "root-transfer-no-exitkill-latched" => (11, 3),
+            "root-transfer-no-exitkill-sent" => (12, 3),
             _ => return Err(refused()),
         };
         Ok(Self { cut, mode })
@@ -609,7 +615,7 @@ fn creator(
             }
             group_stop(&mut owner)?;
         }
-        if spec.mode == 2 {
+        if matches!(spec.mode, 2 | 3) {
             owner.trace(
                 libc::PTRACE_SETOPTIONS,
                 (libc::PTRACE_O_TRACEEXEC | libc::PTRACE_O_TRACESYSGOOD) as usize,
@@ -731,9 +737,18 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
                 // Explicit negative cleanup, NEVER automatic-death evidence.
                 signal(child.fd()?)?;
             }
-            child.wait(libc::CLD_KILLED, libc::SIGKILL)?;
+            if spec.mode == 3 {
+                require(matches!(spec.cut, 11 | 12))?;
+                // Matched recv-entry counterexample: no group-stop or worker kill.
+                // This untraced execution must never become a healthy handoff.
+                child.wait(libc::CLD_EXITED, if spec.cut == 11 { 74 } else { 0 })?;
+            } else {
+                child.wait(libc::CLD_KILLED, libc::SIGKILL)?;
+            }
         }
-        if spec.cut >= 5 {
+        if matches!(spec.cut, 11 | 12) {
+            handoff::send_window_terminal(&pipe, spec.cut, spec.mode)?;
+        } else if spec.cut >= 5 {
             handoff::drain_socket(&pipe)?;
         } else {
             let mut extra = [0];
@@ -800,6 +815,12 @@ mod tests {
             "root-transfer-healthy-closed",
             "root-transfer-no-exitkill-installed",
             "root-transfer-no-exitkill-delivered",
+            "root-transfer-loss-latched",
+            "root-transfer-loss-sent",
+            "root-transfer-healthy-latched",
+            "root-transfer-healthy-sent",
+            "root-transfer-no-exitkill-latched",
+            "root-transfer-no-exitkill-sent",
         ] {
             let spec = Spec::parse(name).unwrap();
             for stage in 0..2 {
@@ -835,6 +856,9 @@ mod tests {
             "root-transfer-no-exitkill-receive",
             "root-transfer-no-exitkill-acked",
             "root-transfer-no-exitkill-closed",
+            "root-transfer-no-exitkill-sent-extra",
+            "root-transfer-loss-sending",
+            "root-transfer-healthy-latched-extra",
         ] {
             assert!(Spec::parse(name).is_err());
         }

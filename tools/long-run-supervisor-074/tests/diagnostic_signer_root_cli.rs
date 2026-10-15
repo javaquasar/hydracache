@@ -26,6 +26,11 @@ fn fixed_root_cli_has_no_caller_selected_inputs() {
         vec!["root-transfer-no-exitkill-delivered", "extra"],
         vec!["root-transfer-no-exitkill-ready"],
         vec!["root-transfer-loss-unknown"],
+        vec!["root-transfer-loss-latched", "extra"],
+        vec!["root-transfer-loss-sent", "extra"],
+        vec!["root-transfer-healthy-sent", "extra"],
+        vec!["root-transfer-no-exitkill-sent", "extra"],
+        vec!["root-transfer-loss-sending"],
     ] {
         let out = std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_signer_root_probe"))
             .env_clear()

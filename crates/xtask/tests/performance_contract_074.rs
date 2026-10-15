@@ -14702,3 +14702,117 @@ fn ordinary_transfer_loss_is_stopped_dummy_evidence_not_server_admission() {
         assert!(!text.contains("root-transfer-") && !text.contains("owned_root_handoff"));
     }
 }
+
+#[test]
+fn original_send_windows_keep_dispatch_reset_and_untraced_controls_fail_closed() {
+    let c = contract("diagnostic-signer-owned-root-send-windows-contract.toml");
+    for key in [
+        "fixed_send_window_diagnostic",
+        "original_recv_entry_stop_retained_at_both_cuts",
+        "attempt_dispatch_success_are_separate",
+        "dispatch_latched_before_syscall_even_on_failure",
+        "no_second_attempt_or_dispatch",
+        "healthy_resumes_original_cursor_without_resend",
+        "positive_loss_sigkill_only_original_creator",
+        "original_worker_sigkill_nowait_reap_echild_required",
+        "no_exitkill_controls_continue_untraced",
+        "untraced_ack_and_zero_exit_never_positive_handoff",
+        "sent_loss_requires_exact_reset_prefix",
+        "reset_never_substitutes_for_eof",
+        "old_drain_body_and_48_byte_bound_unchanged",
+        "exact_prefix_then_no_extra_record_then_old_eof_guard",
+        "original_root_socket_pair_and_credential_channel_reused",
+        "unrelated_original_child_survives",
+        "unknown_quiescence_preserves_root",
+        "raw_worker_child_protocol_policy_installer_unchanged",
+        "default_parallel_harness_without_extra_fixture",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "in_syscall_creator_loss_proved",
+        "permission_recovery_after_restart_proved",
+        "fresh_creator_cli_exec_proved",
+        "pre_arm_loss_proved",
+        "running_child_loss_proved",
+        "creator_thread_only_loss_proved",
+        "full_normal_entry_creator_loss_proved",
+        "overlapping_broad_load_robustness_proved",
+        "credential_handoff_authenticated",
+        "runtime_custody_authenticated",
+        "original_worker_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("fixed_modes", 6),
+        ("additional_stopped_boundaries", 2),
+        ("healthy_controls", 2),
+        ("untraced_negative_controls", 2),
+        ("private_frame_version", 1),
+        ("private_frame_bytes", 16),
+        ("latched_cut", 11),
+        ("sent_cut", 12),
+        ("untraced_negative_mode", 3),
+        ("setup_descriptors", 2),
+        ("cut_descriptors", 0),
+        ("maximum_packets_per_direction", 4),
+        ("maximum_ancillary_bytes", 128),
+        ("maximum_attempts", 1),
+        ("maximum_dispatches", 1),
+        ("maximum_successful_sends", 1),
+        ("maximum_terminal_prefix_reads", 1),
+        ("maximum_terminal_peek_reads", 1),
+        ("unchanged_eof_drain_reads", 5),
+        ("maximum_failure_drain_bytes", 48),
+        ("wait_seconds", 5),
+        ("startup_syscall_pairs", 256),
+        ("maximum_protocol_events", 16),
+        ("maximum_image_bytes", 8388608),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let handoff =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_root_handoff.rs")).unwrap();
+    for marker in [
+        "dispatched: bool",
+        "self.dispatched = true",
+        "fn send_latched(",
+        "fn receive_at_read(",
+        "Checkpoint::Latched",
+        "Checkpoint::Sent",
+        "fn send_window_terminal(",
+        "(12, 0)",
+        "(12, 3)",
+        "ECONNRESET",
+        "MSG_PEEK",
+        "drain_socket(socket)",
+    ] {
+        assert!(handoff.contains(marker), "{marker}");
+    }
+    let loss = std::fs::read_to_string(base.join("diagnostic_signer_owned_root_loss.rs")).unwrap();
+    for marker in [
+        "root-transfer-no-exitkill-sent",
+        "matches!(spec.mode, 2 | 3)",
+        "if spec.mode == 3",
+        "CLD_EXITED, if spec.cut == 11 { 74 } else { 0 }",
+        "handoff::send_window_terminal(",
+    ] {
+        assert!(loss.contains(marker), "{marker}");
+    }
+    for consumer in ["lib.rs", "server.rs", "bin/diagnostic_controller.rs"] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("send_window_terminal"));
+    }
+}

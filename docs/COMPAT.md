@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The binary-private version1 `HC074RL1` vocabulary additionally selects cuts11/12
+for latched-before-send and sent-before-recv-resume. Mode3 is permitted only for
+the two new no-EXITKILL controls, which continue untraced and must never be
+accepted as authenticated handoff. Old cut/mode pairs keep their exact meaning;
+old readers refuse these additions. Frame16, original setup2 FDs, G/H gates,
+kernel credentials and packet limits are unchanged. A required ECONNRESET prefix
+is confined to the new sent-loss socket disposition; it is not EOF, and actual
+zero/HUP plus the unchanged EOF guard remain mandatory. No product wire or
+durable schema changes.
+
 Fixed `root-transfer-{loss,healthy}-*` and two `root-transfer-no-exitkill-*`
 diagnostics extend the binary-private version1 `HC074RL1` selected-cut vocabulary
 with cuts5..10: installed, ready, receive-entry, delivered, acked and closed.

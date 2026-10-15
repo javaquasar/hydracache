@@ -422,6 +422,7 @@ fn transfer_creator_loss_and_healthy_controls(image: &Image) {
     if image.extra_libm {
         println!("extra_libm_root_transfer_modes=14 refused=true unchanged_four_role_graph=true admission=false");
     }
+    send_window_creator_loss_controls(image);
 }
 #[test]
 fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
@@ -499,6 +500,13 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
     ] {
         refused(image.command().arg(mode));
     }
+    for kind in ["loss", "healthy", "no-exitkill"] {
+        for cut in ["latched", "sent"] {
+            let mode = format!("root-transfer-{kind}-{cut}");
+            refused(image.command().arg(&mode).env("UNTRUSTED_ROOT_PROBE", "1"));
+            refused(image.command().arg(&mode).arg("extra"));
+        }
+    }
     for mode in [
         "--root-native-child",
         "--root-x32-child",
@@ -507,5 +515,41 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
         let out = output(image.command().arg(mode));
         assert_eq!(out.status.code(), Some(92));
         assert!(out.stdout.is_empty() && out.stderr.is_empty());
+    }
+}
+
+fn send_window_creator_loss_controls(image: &Image) {
+    for kind in ["loss", "healthy", "no-exitkill"] {
+        for cut in ["latched", "sent"] {
+            let mode = format!("root-transfer-{kind}-{cut}");
+            if image.extra_libm {
+                refused(image.command().arg(mode));
+                continue;
+            }
+            let out = output(image.command().arg(&mode));
+            assert_eq!(out.status.code(), Some(0), "{mode}: {out:?}");
+            assert_eq!(
+                out.stdout,
+                b"selected rooted creator-loss observation passed; admission=false\n"
+            );
+            assert!(out.stderr.is_empty(), "{mode}: {out:?}");
+            let sent = u8::from(cut == "sent");
+            let automatic = kind == "loss";
+            let healthy = kind == "healthy";
+            let reset = automatic && cut == "sent";
+            let untraced = if kind == "no-exitkill" {
+                if cut == "sent" {
+                    "0"
+                } else {
+                    "74"
+                }
+            } else {
+                "none"
+            };
+            println!("normal_root_send_window kind={kind} cut={cut} attempts_at_cut=1 dispatches_at_cut={sent} sends_at_cut={sent} automatic_death={automatic} traced_completion={healthy} untraced_exit={untraced} reset_before_eof={reset} original_reaped=true eof=true unrelated_alive=true admission=false");
+        }
+    }
+    if image.extra_libm {
+        println!("extra_libm_root_send_window_modes=6 refused=true unchanged_four_role_graph=true admission=false");
     }
 }

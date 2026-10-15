@@ -120,6 +120,7 @@ pub(super) struct State {
     original: Stamp,
     step: Step,
     attempted: bool,
+    dispatched: bool,
     sends: u32,
     child_closed: bool,
     events: u8,
@@ -138,23 +139,34 @@ impl State {
         socket_flags(socket)
     }
     fn attempt(&mut self) -> io::Result<()> {
-        require(self.step == Step::Ready && !self.attempted && self.sends == 0)?;
+        require(
+            self.step == Step::Ready && !self.attempted && !self.dispatched && self.sends == 0,
+        )?;
         self.attempted = true;
         Ok(())
     }
+    fn dispatch(&mut self) -> io::Result<()> {
+        require(self.step == Step::Ready && self.attempted && !self.dispatched && self.sends == 0)?;
+        // This fact is terminal even if the actual send returns an error.
+        self.dispatched = true;
+        Ok(())
+    }
     fn counts(&self, cut: u8) -> io::Result<()> {
-        let (step, sends, closed) = match cut {
-            5 => (Step::Fresh, 0, false),
-            6 | 7 => (Step::Ready, 0, false),
-            8 => (Step::Delivered, 1, false),
-            9 => (Step::Acked, 1, false),
-            10 => (Step::Acked, 1, true),
+        let (step, sends, attempted, dispatched, closed) = match cut {
+            5 => (Step::Fresh, 0, false, false, false),
+            6 | 7 => (Step::Ready, 0, false, false, false),
+            8 => (Step::Delivered, 1, true, true, false),
+            9 => (Step::Acked, 1, true, true, false),
+            10 => (Step::Acked, 1, true, true, true),
+            11 => (Step::Ready, 0, true, false, false),
+            12 => (Step::Ready, 1, true, true, false),
             _ => return Err(refused()),
         };
         require(
             self.step == step
                 && self.sends == sends
-                && self.attempted == (sends == 1)
+                && self.attempted == attempted
+                && self.dispatched == dispatched
                 && self.child_closed == closed,
         )
     }
@@ -215,6 +227,7 @@ pub(super) fn transport(case: Option<Case>) -> io::Result<Transport> {
             original: Stamp::of(&parent.metadata()?),
             step: Step::Fresh,
             attempted: false,
+            dispatched: false,
             sends: 0,
             child_closed: false,
             events: 0,
@@ -472,6 +485,12 @@ fn deliver(owner: &mut Owner, failed_send: bool) -> io::Result<()> {
 fn send_at_read(owner: &mut Owner, pointer: usize, failed_send: bool) -> io::Result<()> {
     let channel = owner.handoff.as_mut().ok_or_else(refused)?;
     channel.attempt()?;
+    send_latched(owner, failed_send)?;
+    receive_at_read(owner, pointer)
+}
+fn send_latched(owner: &mut Owner, failed_send: bool) -> io::Result<()> {
+    state(owner, Step::Ready)?;
+    owner.handoff.as_mut().ok_or_else(refused)?.dispatch()?;
     if failed_send {
         require(unsafe { libc::shutdown(owner.pipe.as_raw_fd(), libc::SHUT_WR) } == 0)?;
     }
@@ -485,6 +504,12 @@ fn send_at_read(owner: &mut Owner, pointer: usize, failed_send: bool) -> io::Res
     };
     require(n == 16)?;
     owner.handoff.as_mut().ok_or_else(refused)?.sends += 1;
+    Ok(())
+}
+fn receive_at_read(owner: &mut Owner, pointer: usize) -> io::Result<()> {
+    state(owner, Step::Ready)?;
+    let channel = owner.handoff.as_ref().ok_or_else(refused)?;
+    require(channel.attempted && channel.dispatched && channel.sends == 1)?;
     returned(owner, 16)?;
     require(isolation::memory(owner, pointer, 16)? == DUMMY)?;
     state(owner, Step::Ready)?;
@@ -531,12 +556,14 @@ pub(super) enum Checkpoint {
     Installed,
     Ready,
     Receive(usize),
+    Latched(usize),
+    Sent(usize),
     Delivered,
     Acked,
     Closed,
 }
 pub(super) fn pause(owner: &mut Owner, cut: u8) -> io::Result<Checkpoint> {
-    require((5..=10).contains(&cut))?;
+    require((5..=12).contains(&cut))?;
     state(owner, Step::Fresh)?;
     if cut == 5 {
         return Ok(Checkpoint::Installed);
@@ -547,6 +574,15 @@ pub(super) fn pause(owner: &mut Owner, cut: u8) -> io::Result<Checkpoint> {
     }
     if cut == 7 {
         return Ok(Checkpoint::Receive(awaiting_read(owner)?));
+    }
+    if matches!(cut, 11 | 12) {
+        let pointer = awaiting_read(owner)?;
+        owner.handoff.as_mut().ok_or_else(refused)?.attempt()?;
+        if cut == 11 {
+            return Ok(Checkpoint::Latched(pointer));
+        }
+        send_latched(owner, false)?;
+        return Ok(Checkpoint::Sent(pointer));
     }
     deliver(owner, false)?;
     if cut == 8 {
@@ -577,6 +613,15 @@ pub(super) fn resume(owner: &mut Owner, checkpoint: Checkpoint) -> io::Result<()
             send_at_read(owner, pointer, false)?;
             complete(owner)?;
         }
+        Checkpoint::Latched(pointer) => {
+            send_latched(owner, false)?;
+            receive_at_read(owner, pointer)?;
+            complete(owner)?;
+        }
+        Checkpoint::Sent(pointer) => {
+            receive_at_read(owner, pointer)?;
+            complete(owner)?;
+        }
         Checkpoint::Delivered => complete(owner)?,
         Checkpoint::Acked => {
             close(owner)?;
@@ -585,7 +630,50 @@ pub(super) fn resume(owner: &mut Owner, checkpoint: Checkpoint) -> io::Result<()
         Checkpoint::Closed => finish(owner)?,
     }
     owner.terminate()?;
-    require(owner.phase == Phase::Terminal && owner.terminal == Some(0))
+    let channel = owner.handoff.as_ref().ok_or_else(refused)?;
+    require(
+        owner.phase == Phase::Terminal
+            && owner.terminal == Some(0)
+            && channel.step == Step::Done
+            && channel.attempted
+            && channel.dispatched
+            && channel.sends == 1,
+    )
+}
+pub(super) fn send_window_terminal(socket: &File, cut: u8, mode: u8) -> io::Result<()> {
+    match (cut, mode) {
+        (11, 0 | 1 | 3) | (12, 1) => {}
+        (12, 0) => {
+            // Only this original sent-but-unread loss must discard pending input.
+            // ECONNRESET is a required transport observation, never EOF proof.
+            let mut bytes = [0; 17];
+            require(
+                unsafe {
+                    libc::recv(
+                        socket.as_raw_fd(),
+                        bytes.as_mut_ptr().cast(),
+                        bytes.len(),
+                        libc::MSG_DONTWAIT | libc::MSG_TRUNC,
+                    )
+                } == -1
+                    && io::Error::last_os_error().raw_os_error() == Some(libc::ECONNRESET),
+            )?;
+        }
+        (12, 3) => receive(socket, ACK)?,
+        _ => return Err(refused()),
+    }
+    let mut extra = [0; 17];
+    require(
+        unsafe {
+            libc::recv(
+                socket.as_raw_fd(),
+                extra.as_mut_ptr().cast(),
+                extra.len(),
+                libc::MSG_PEEK | libc::MSG_DONTWAIT | libc::MSG_TRUNC,
+            )
+        } == 0,
+    )?;
+    drain_socket(socket)
 }
 pub(super) fn drain(owner: &Owner) -> io::Result<()> {
     drain_socket(&owner.pipe)
