@@ -1,0 +1,597 @@
+{
+  "format_version": 1,
+  "date": "2026-10-15",
+  "scope": "Local closure of eight observed MSRV tooling/trace lint sites; no performance, production or server admission",
+  "baseline_commit": "55e4e5f7eaf230d48527330c6a884f5bef162871",
+  "format_commit": "06579cb21ce9bb6aa2266fd49505bb600870c416",
+  "source_commit": "8a22f2199e2759681bc47f88746cf972a33345ee",
+  "source_tree": "87fd540992fc46aadd922b722c6ad27f1f36c8df",
+  "source_files": [
+    {
+      "path": "crates/hydracache-loadgen/src/metrics_honesty.rs",
+      "git_blob": "5b9027c8dc20dbc74e3b6e3ac5ca315b981caf0b",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache-loadgen/src/resp_external.rs",
+      "git_blob": "021a5ac5d673ddd16237da12598f864cc6dcf06e",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache-loadgen/src/tiers/client_surface.rs",
+      "git_blob": "d710c90de314cb836f98cab7e86f006f926147cd",
+      "changed": true
+    },
+    {
+      "path": "crates/hydracache-loadgen/tests/resp_external_067.rs",
+      "git_blob": "59f2b51a0ff20c8d82166bece608fe3c29e18a9f",
+      "changed": true
+    },
+    {
+      "path": "crates/xtask/src/canary_check.rs",
+      "git_blob": "baf939c26c5c1806cfc19d43308f0c899ca6554d",
+      "changed": true
+    },
+    {
+      "path": "crates/xtask/src/fast_suite.rs",
+      "git_blob": "cf1b50bc047334dc108b46d11d2e33bcd9590807",
+      "changed": true
+    },
+    {
+      "path": "crates/xtask/tests/canary_check.rs",
+      "git_blob": "3519ea9a014b8aee381bd1c6daa97c0a8ac8dc77",
+      "changed": true
+    },
+    {
+      "path": "crates/xtask/tests/fast_suite.rs",
+      "git_blob": "64c7f67f0f88ab5b327d7bf515265b0eb6c07b5a",
+      "changed": true
+    },
+    {
+      "path": "crates/xtask/tests/perf_bootstrap_0671.rs",
+      "git_blob": "814384bf7a340432a8f708714c96048b35df9b8b",
+      "changed": true
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs",
+      "git_blob": "87ec9ee8a95c53893b9bbc41aa32c1f416a6eee8",
+      "changed": true
+    }
+  ],
+  "format_parent": "55e4e5f7eaf230d48527330c6a884f5bef162871",
+  "trace_parent": "06579cb21ce9bb6aa2266fd49505bb600870c416",
+  "capture_encoding": "Complete tool-returned UTF-8/LF text, one final newline for nonempty captures; empty captures remain empty and ANSI controls are preserved.",
+  "capture_phases": "baseline-* uses original source. test-first-* adds characterization fixtures before format edits. format-* and after-format-* use format edits before their commit. final-* compiler logs and after-trace-process-timeout use the trace edit before its commit. control-original-trace-process restores only the original supervisor branch at the format commit. repeat-trace-process restores the exact registered trace edit before its commit. postcommit-trace-process repeats after both source commits. Documentation/evidence remains dirty during checks; no signed or clean-worktree execution attestation.",
+  "focused_format_tests": {
+    "pre_fix_new_characterization_tests": 5,
+    "post_format_passed": 60,
+    "runtime_lane": "Windows Rust1.94",
+    "suite_counts": [
+      7,
+      22,
+      4,
+      13,
+      8,
+      6
+    ],
+    "measurement_smoke_validator": "explicitly skipped, not counted as passed",
+    "inflight_mismatch_branch": "exact source rewrite only; not forced through a measurement run",
+    "other_runtime_lanes": "not performed for this 60-test group"
+  },
+  "compiler_lanes": {
+    "platforms": [
+      "Windows",
+      "Linux/WSL"
+    ],
+    "rust": [
+      "1.88.0",
+      "1.94.0"
+    ],
+    "selected_packages": [
+      "hydracache-loadgen",
+      "xtask",
+      "hydracache-long-run-supervisor-074"
+    ],
+    "checks": "all-target/all-feature cargo check and Clippy -D warnings",
+    "coverage_limit": "Not an exhaustive workspace/allocator/feature/runtime-support or release matrix"
+  },
+  "process_tests": {
+    "runtime_lane": "Linux/WSL Rust1.94",
+    "suite_counts": [
+      47,
+      5,
+      7,
+      1,
+      7
+    ],
+    "baseline_passed": 67,
+    "first_trace_attempt": {
+      "passed": 66,
+      "failed": 1,
+      "exit_code": 1,
+      "capture": "after-trace-process-timeout.log",
+      "failure": "five-second normal root preparation stalled guard before first good-mode receipt",
+      "cause": "unresolved; no exact stalled syscall identified; no deliberate overlapping heavy compilation"
+    },
+    "original_trace_control_passed": 67,
+    "restored_trace_repeat_passed": 67,
+    "guard": "unchanged five-second per-process bound; default test concurrency",
+    "load_robustness": "not established; later success does not waive the retained failure",
+    "post_commit_repeat_passed": 67
+  },
+  "static_contract": {
+    "tests_passed": 165,
+    "registered_gates": 175,
+    "local_contract": "non-promotable",
+    "require_ship_exit_code": 1,
+    "full_release_gate": "not performed"
+  },
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  ],
+  "preserved_negatives": [
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/overlapping-broad-timeouts.log",
+      "sha256": "a0bec2f2a448ffb7765839f58c9d854a98e250b77471f9de364486ec3a942037"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-20261015/baseline-old-root-failed.log",
+      "sha256": "932dbd554732825d78d36dd34b2b360b47b866afa1e021a05cdba4418cc61a99"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-20261015/development-parallel-timeout.log",
+      "sha256": "dead6374972d26cc98db060bcb5f91c837cef2756c18315eafdf2e739d4836ba"
+    }
+  ],
+  "claims": {
+    "observed_eight_site_lint_inventory_closed": true,
+    "numerical_performance_claim": false,
+    "authenticated_original_start": false,
+    "all_writers_stopped": false,
+    "completion_or_later_cells": false,
+    "server_admission": false,
+    "old_receipts_rebound": false
+  },
+  "remaining_work": [
+    "Localize the intermittent handoff guard timeout without changing admission, scheduling or bounds",
+    "Trusted runtime/issuer/job custody and real credentials",
+    "Authenticated original-start and P2/P3 cessation of every writer",
+    "Completion/later cells and separate server admission/qualification"
+  ],
+  "verification_scope": "Unsigned artifact/source/digest consistency only, not execution attestation",
+  "captures": [
+    {
+      "file": "baseline-windows-msrv-failed.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "classification": "baseline-failed-gate",
+      "sha256": "b9b52a4b49253f258bc81adc85b0fbbc27fdd0e858d580f5d0ac9f4792f41f60",
+      "bytes": 3261,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-linux-msrv-failed.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 1,
+      "classification": "baseline-failed-gate",
+      "sha256": "108f389ff1edd936254ce61ae61481905cd98e6ccc82437b734698f4771f59f7",
+      "bytes": 2717,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-metrics.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --lib metrics_honesty::tests:: --locked --offline",
+      "exit_code": 0,
+      "classification": "baseline-pass",
+      "sha256": "f15ea2ca791cf821972ca96493f4ecc1dd519a684557b584183209bc35b9174a",
+      "bytes": 2781,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-csv.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --test resp_external_067 --locked --offline",
+      "exit_code": 0,
+      "classification": "baseline-pass",
+      "sha256": "fe1eb4bb5f9060ba9e3fa41418b930c9c309be9acde414fe3bf93555e4aa96c1",
+      "bytes": 2200,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-xtask.log",
+      "command": "cargo +1.94.0 test -p xtask --test canary_check --test fast_suite --test perf_bootstrap_0671 --locked --offline",
+      "exit_code": 0,
+      "classification": "baseline-pass",
+      "sha256": "1fd49cafcb439bc582a89879748c3ba505014f91c17347338da67d54078ebad3",
+      "bytes": 2633,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "baseline-supervisor.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "classification": "baseline-pass",
+      "sha256": "55e169be92c7ce13e65f149d7137b7fee20851c3d1adcef7e71275831741287a",
+      "bytes": 17792,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first-metrics.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --lib metrics_honesty::tests:: --locked --offline",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "bd160a780f154d045f2923b1d54c7f5418587b69d6053703f97ccbd58caf2d31",
+      "bytes": 1048,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first-csv.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --test resp_external_067 --locked --offline",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "1a8510370070694f2aca263b110cfd8cbfdf8c891fd64466afdaf9cec7690c3c",
+      "bytes": 2290,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first-xtask.log",
+      "command": "cargo +1.94.0 test -p xtask --test canary_check --test fast_suite --test perf_bootstrap_0671 --locked --offline",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "bb09df485e566ee5389d0b73835bcbc9a56e05f027d8e91a2d1e03196b5786f0",
+      "bytes": 2934,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first-pure-client.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --lib tiers::client_surface::tests:: --locked --offline -- --skip strict_reference_validator_rejects_smoke_evidence",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "32a39173c002d8280c5873ba74a12ed9e8a676b284c920b45920b085e226df00",
+      "bytes": 680,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "test-first.patch.log",
+      "command": "git diff -- crates/hydracache-loadgen crates/xtask",
+      "exit_code": 0,
+      "classification": "pre-fix-characterization",
+      "sha256": "e2058010850d76dad87ac054b7eaeb87576b2a4a674c17efdfce112c6d1bb621",
+      "bytes": 6021,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-windows-1.88.0-check.log",
+      "command": "cargo +1.88.0 check -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "d837f32d0a74e497d71b00f4ee223273332dd4f8f3b306ba4e93e1c6d982eaf3",
+      "bytes": 1443,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-windows-1.88.0-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "ce00103a1b2d71007acc8c67071fbc13e48c9448c5b96d7c98e6a710dcc02e6e",
+      "bytes": 981,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-windows-1.94.0-check.log",
+      "command": "cargo +1.94.0 check -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "c46324832754a17f275ae91b89c5c2c7bb5431cacdc3d2c90540847c65424496",
+      "bytes": 1443,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-windows-1.94.0-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "710084d79680a18ff53bfa69d888d1c58b5d5ccc513b75b56349a039e890f640",
+      "bytes": 981,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "after-format-metrics.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --lib metrics_honesty::tests:: --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "e6ec20ff71a3fb3fc50057603c8d0da8f439f417e697218260f9c21d9d4d9217",
+      "bytes": 1049,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "after-format-csv.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --test resp_external_067 --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "7bc1bfddc14d07c759993286425da4f0763ed0efb78c5302a9065f9a2a7c1c28",
+      "bytes": 2291,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "after-format-pure-client.log",
+      "command": "cargo +1.94.0 test -p hydracache-loadgen --lib tiers::client_surface::tests:: --locked --offline -- --skip strict_reference_validator_rejects_smoke_evidence",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "79cb48acd0ee8885af3d64f46eac89ea90b2bf3303d3914fa15a976216a963ae",
+      "bytes": 680,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "after-format-xtask.log",
+      "command": "cargo +1.94.0 test -p xtask --test canary_check --test fast_suite --test perf_bootstrap_0671 --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "b774c820d8c87c43639ea5a87dc6cd579e12b4345989f4c27b4e0a384d73e133",
+      "bytes": 2933,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-source-guard.log",
+      "command": "$rewriteData = Get-Content -Raw -LiteralPath docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-20261015/source-rewrites.json | ConvertFrom-Json; $transformCount = 0; foreach ($source in $rewriteData.format_sources) { $old = (git show \"$($rewriteData.baseline):$($source.path)\") -join \"`n\"; if ($LASTEXITCODE -ne 0) { throw 'baseline source' }; $new = (Get-Content -Raw -LiteralPath $source.path).Replace(\"`r`n\", \"`n\"); if ($source.marker) { $oldCut = $old.IndexOf($source.marker); $newCut = $new.IndexOf($source.marker); if ($oldCut -lt 0 -or $newCut -lt 0) { throw 'test boundary' }; $old = $old.Substring(0, $oldCut); $new = $new.Substring(0, $newCut) }; foreach ($rewrite in $source.rewrites) { if ([regex]::Matches($old, [regex]::Escape($rewrite.before)).Count -ne 1) { throw \"nonunique rewrite: $($source.path)\" }; $old = $old.Replace($rewrite.before, $rewrite.after); $transformCount++ }; if ($old.TrimEnd() -cne $new.TrimEnd()) { throw \"unregistered source change: $($source.path)\" } }; if ($transformCount -ne 7) { throw 'rewrite count' }; Write-Output 'Seven exact format rewrites across six source/fixture prefixes match; no other prefix changes. New tests excluded; structural comparison is not runtime mismatch-path or execution proof.'",
+      "exit_code": 0,
+      "classification": "structural-check",
+      "sha256": "a6c922cd0f25b100ba68b75b7dfc638a5ecb14706aae89e618dc35b589b57661",
+      "bytes": 186,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-linux-1.88.0-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "acd13ef2c7b1d2d7cbaa25965187adae2f5b237c4bb536adf7df468662faf342",
+      "bytes": 1526,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-linux-1.88.0-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "dca90d85d13002430aaafb0a5f4b0a5503464230cf278d2fd4a07f5ef9f0ad5b",
+      "bytes": 1145,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-linux-1.94.0-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "847119f1dac164b42d2bde130f73e00b3e439089c1935b9434652001ab2d70ec",
+      "bytes": 1526,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "format-linux-1.94.0-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-loadgen -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-format",
+      "sha256": "1e41fdc27a90d91e9ecd5f0154c4643e690c466bf474247b22ba2ea55adfb094",
+      "bytes": 1145,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-windows-1.88.0-check.log",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "9794d9a468615292bbff35b2fb0475a72f167da111aa2a1f598268262079103c",
+      "bytes": 73,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-windows-1.88.0-clippy.log",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "9dba31fa3ef9bdb0c6f8545f7bf4432c271b9cabefdc97589bba0cf53421b9d6",
+      "bytes": 72,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-windows-1.94.0-check.log",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "883c05ea5335174e83f8221a4db109bde6470f911415ddd627160f5b49f3ac66",
+      "bytes": 72,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-windows-1.94.0-clippy.log",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "d1cacef54d68628c509b57a2a168146f93c361684e14fab8e45944e192fe2e8e",
+      "bytes": 72,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-linux-1.88.0-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "b35f508175a28ba94fbc315987f3d174aef8516b386b2f3bb9ddd5b1a8f97fe9",
+      "bytes": 205,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-linux-1.88.0-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "fe1c3a7e92c42a68a47896e70c65c13830d592debaa9816a99b84d4531e1d4f9",
+      "bytes": 205,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-linux-1.94.0-check.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "267627597f9b4bcccbdd3055dd60fb222f68ba5ec8b4ff35c5f9822a798f610e",
+      "bytes": 205,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "final-linux-1.94.0-clippy.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask -p hydracache-loadgen --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "8179ed7781bd26ca8fe346bdf713aac1c04e1ba2767558dbda98a5e3dc2c1b89",
+      "bytes": 205,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "workspace-format.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 0,
+      "classification": "pass-after-trace-collapse",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "full-source-guard.log",
+      "command": "$rewriteData = Get-Content -Raw -LiteralPath docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-20261015/source-rewrites.json | ConvertFrom-Json; $transformCount = 0; foreach ($source in $rewriteData.format_sources) { $old = (git show \"$($rewriteData.baseline):$($source.path)\") -join \"`n\"; if ($LASTEXITCODE -ne 0) { throw 'baseline source' }; $new = (Get-Content -Raw -LiteralPath $source.path).Replace(\"`r`n\", \"`n\"); if ($source.marker) { $oldCut = $old.IndexOf($source.marker); $newCut = $new.IndexOf($source.marker); if ($oldCut -lt 0 -or $newCut -lt 0) { throw 'test boundary' }; $old = $old.Substring(0, $oldCut); $new = $new.Substring(0, $newCut) }; foreach ($rewrite in $source.rewrites) { if ([regex]::Matches($old, [regex]::Escape($rewrite.before)).Count -ne 1) { throw \"nonunique rewrite: $($source.path)\" }; $old = $old.Replace($rewrite.before, $rewrite.after); $transformCount++ }; if ($old.TrimEnd() -cne $new.TrimEnd()) { throw \"unregistered source change: $($source.path)\" } }; if ($transformCount -ne 7) { throw 'rewrite count' }; Write-Output 'Seven exact format rewrites across six source/fixture prefixes match; no other prefix changes. New tests excluded; structural comparison is not runtime mismatch-path or execution proof.'; $traceSource = $rewriteData.supervisor_source; $old = (git show \"$($rewriteData.baseline):$($traceSource.path)\") -join \"`n\"; if ($LASTEXITCODE -ne 0) { throw 'baseline trace source' }; $new = (Get-Content -Raw -LiteralPath $traceSource.path).Replace(\"`r`n\", \"`n\"); foreach ($rewrite in $traceSource.rewrites) { if ([regex]::Matches($old, [regex]::Escape($rewrite.before)).Count -ne 1) { throw 'nonunique trace rewrite' }; $old = $old.Replace($rewrite.before, $rewrite.after) }; if ($old.TrimEnd() -cne $new.TrimEnd()) { throw 'unregistered trace source change' }; $tracePaths = @(git diff --name-only $rewriteData.baseline -- tools/long-run-supervisor-074); if ($tracePaths.Count -ne 1 -or $tracePaths[0] -cne $traceSource.path) { throw 'unregistered supervisor file change' }; Write-Output 'The entire trace source matches the single registered else-if collapse. READY priority, marker/getpid/kill/startup checks, ptrace/wait ordering, event budget and other supervisor files are unchanged; structural comparison is not runtime or production execution attestation.'",
+      "exit_code": 0,
+      "classification": "structural-check",
+      "sha256": "b1cd4f247be5a398ca8c44ee8edf2be6a493bc6672130fc9d53c1964a092466e",
+      "bytes": 626,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "frozen-inputs.log",
+      "command": "$expectedHashes = [ordered]@{\n 'Cargo.lock'='99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7'\n 'docs/testing/performance/0.74/qualification-manifest.toml'='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'\n 'docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/overlapping-broad-timeouts.log'='a0bec2f2a448ffb7765839f58c9d854a98e250b77471f9de364486ec3a942037'\n 'docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-20261015/baseline-old-root-failed.log'='932dbd554732825d78d36dd34b2b360b47b866afa1e021a05cdba4418cc61a99'\n 'docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-20261015/development-parallel-timeout.log'='dead6374972d26cc98db060bcb5f91c837cef2756c18315eafdf2e739d4836ba'\n}; foreach ($entry in $expectedHashes.GetEnumerator()) { $actual=(Get-FileHash -LiteralPath $entry.Key -Algorithm SHA256).Hash.ToLowerInvariant(); if ($actual -cne $entry.Value) { throw \"hash changed: $($entry.Key)\" }; Write-Output \"$actual $($entry.Key)\" }; git cat-file -t 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b; if ($LASTEXITCODE -ne 0) { throw 'frozen B73 missing' }; Write-Output 'Frozen inputs and previous negative captures are unchanged; no qualification source receipt is rebound.'",
+      "exit_code": 0,
+      "classification": "structural-check",
+      "sha256": "7fbe3df7090371ad92a4768073ec6a4b4f98a6b560b0304921bde2df470b33f3",
+      "bytes": 853,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "performance-contract-tests.log",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 0,
+      "classification": "pass-static-contract",
+      "sha256": "d4bd64651bde375d56ba3fe671dca78dd509d894485c2ecb2b85d0c6fc75c4e2",
+      "bytes": 559,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "gate-registry.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- gated-test-check",
+      "exit_code": 0,
+      "classification": "pass-static-contract",
+      "sha256": "6308dd07e5f05111ea7a58145762694552c26cf024e063a398e96fec08194ee2",
+      "bytes": 380,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "local-contract.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "classification": "pass-non-promotable",
+      "sha256": "31a39d0b7fecf5ef9490bb996d289c7c0f5d01346b32ebe093ca4ef770a22084",
+      "bytes": 212,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "require-ship.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "classification": "expected-closed-admission",
+      "sha256": "31c3a9535345c323b152443f748b4faeb01c82dcc322f3afc109960a0d295128",
+      "bytes": 494,
+      "gate_expected_exit": 1
+    },
+    {
+      "file": "after-trace-process-timeout.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 1,
+      "classification": "failed-process-guard",
+      "sha256": "68a7578991d31c025830eb45348346461812d14a5b6e92794fd0985fcbfaab12",
+      "bytes": 11362,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "control-original-trace-process.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "classification": "pass-restored-original-trace-control",
+      "sha256": "24dbfba56b87f27ee2295ff630a41d76566277078576314da79bce175345239a",
+      "bytes": 17924,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "repeat-trace-process.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "classification": "pass-restored-trace-candidate",
+      "sha256": "63ccd9ac124c24f0e5f01abbd9bb3ec45174ee713f118d9e7730885e0f901ac4",
+      "bytes": 17924,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "postcommit-trace-process.log",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "classification": "postcommit-process-pass",
+      "sha256": "7ff14ffc3079dd7c972ce1a028fa2f6ffe4250472661d7a550aac88652f1c3cd",
+      "bytes": 17792,
+      "gate_expected_exit": 0
+    },
+    {
+      "file": "doc-check.log",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- doc-check",
+      "exit_code": 0,
+      "classification": "postcommit-doc-pass",
+      "sha256": "83ae56af86d8ee97a9afdf61d017259c3f27385809885b92c07bafe76ff5113d",
+      "bytes": 164,
+      "gate_expected_exit": 0
+    }
+  ],
+  "extra_artifacts": [
+    {
+      "file": "manifest-first-failed.json",
+      "sha256": "28f7fb8755e51b57176136b8a0e491ceca0906d5592de1fbf3bfe5a833161c8f",
+      "bytes": 39341
+    },
+    {
+      "file": "README.md",
+      "sha256": "fedd63de82e3e244ab8a99563069aa6d93fef4a0b638d6c5fc94c52ef9b26c63",
+      "bytes": 8147
+    },
+    {
+      "file": "source-rewrites.json",
+      "sha256": "36d15454f3008a624b4d113658f0f9239539f759d9b10d12bdd480825bacfac2",
+      "bytes": 4370
+    },
+    {
+      "file": "verification-first-failed.txt",
+      "sha256": "57a37f4bc27fe2409c78518fdff4cf343e81053086d91c3a1d00947119ec53cb",
+      "bytes": 381
+    }
+  ],
+  "verification_command": "$ErrorActionPreference = 'Stop'\n$packetRoot = 'docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-20261015'\n$manifest = Get-Content -Raw -LiteralPath \"$packetRoot/manifest.json\" | ConvertFrom-Json\n$names = @($manifest.captures.file)\nif ($names.Count -ne 44 -or @($names | Sort-Object -Unique).Count -ne 44) { throw 'capture inventory' }\n$diskNames = @(Get-ChildItem -LiteralPath $packetRoot -File -Filter '*.log' | Select-Object -ExpandProperty Name)\nif (@(Compare-Object $names $diskNames).Count -ne 0) { throw 'unlisted raw capture' }\nforeach ($entry in @($manifest.captures) + @($manifest.extra_artifacts)) {\n    if ((Split-Path -Leaf $entry.file) -cne $entry.file) { throw 'artifact basename' }\n    $artifact = Get-Item -LiteralPath \"$packetRoot/$($entry.file)\"\n    $digest = (Get-FileHash -LiteralPath $artifact.FullName -Algorithm SHA256).Hash.ToLowerInvariant()\n    if ($digest -cne $entry.sha256 -or $artifact.Length -ne $entry.bytes) { throw \"artifact changed: $($entry.file)\" }\n}\nforeach ($entry in @($manifest.frozen_files) + @($manifest.preserved_negatives)) {\n    if ((Get-FileHash -LiteralPath $entry.path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $entry.sha256) { throw \"frozen input changed: $($entry.path)\" }\n}\n$tree = git rev-parse \"$($manifest.source_commit)^{tree}\"\nif ($LASTEXITCODE -ne 0 -or $tree -cne $manifest.source_tree) { throw 'source tree' }\nforeach ($entry in $manifest.source_files) {\n    $blob = git rev-parse \"$($manifest.source_commit):$($entry.path)\"\n    if ($LASTEXITCODE -ne 0 -or $blob -cne $entry.git_blob) { throw 'source blob' }\n}\n$formatParent = git rev-parse \"$($manifest.format_commit)^\"\n$traceParent = git rev-parse \"$($manifest.trace_commit)^\"\nif ($formatParent -cne $manifest.baseline_commit -or $traceParent -cne $manifest.format_commit -or $manifest.trace_commit -cne $manifest.source_commit) { throw 'source chain' }\n$changed = @(git diff --name-only $manifest.baseline_commit $manifest.source_commit -- crates tools)\nif ($LASTEXITCODE -ne 0 -or $changed.Count -ne 10 -or @(Compare-Object $changed @($manifest.source_files.path)).Count -ne 0) { throw 'source inventory' }\n$rewriteData = Get-Content -Raw -LiteralPath \"$packetRoot/source-rewrites.json\" | ConvertFrom-Json\nif ($rewriteData.baseline -cne $manifest.baseline_commit) { throw 'rewrite baseline' }\n$transformCount = 0\nforeach ($source in $rewriteData.format_sources) {\n    $old = (git show \"$($manifest.baseline_commit):$($source.path)\") -join \"`n\"\n    if ($LASTEXITCODE -ne 0) { throw 'old format source' }\n    $new = (git show \"$($manifest.source_commit):$($source.path)\") -join \"`n\"\n    if ($LASTEXITCODE -ne 0) { throw 'new format source' }\n    if ($source.marker) {\n        $oldCut = $old.IndexOf($source.marker)\n        $newCut = $new.IndexOf($source.marker)\n        if ($oldCut -lt 0 -or $newCut -lt 0) { throw 'test boundary' }\n        $old = $old.Substring(0, $oldCut)\n        $new = $new.Substring(0, $newCut)\n    }\n    foreach ($rewrite in $source.rewrites) {\n        if ([regex]::Matches($old, [regex]::Escape($rewrite.before)).Count -ne 1) { throw 'nonunique format rewrite' }\n        $old = $old.Replace($rewrite.before, $rewrite.after)\n        $transformCount++\n    }\n    if ($old.TrimEnd() -cne $new.TrimEnd()) { throw 'unregistered format source change' }\n}\nif ($transformCount -ne 7) { throw 'format rewrite count' }\n$traceSource = $rewriteData.supervisor_source\n$old = (git show \"$($manifest.baseline_commit):$($traceSource.path)\") -join \"`n\"\nif ($LASTEXITCODE -ne 0) { throw 'old trace source' }\n$new = (git show \"$($manifest.source_commit):$($traceSource.path)\") -join \"`n\"\nif ($LASTEXITCODE -ne 0) { throw 'new trace source' }\nif (@($traceSource.rewrites).Count -ne 1) { throw 'trace rewrite count' }\nforeach ($rewrite in $traceSource.rewrites) {\n    if ([regex]::Matches($old, [regex]::Escape($rewrite.before)).Count -ne 1) { throw 'nonunique trace rewrite' }\n    $old = $old.Replace($rewrite.before, $rewrite.after)\n}\nif ($old.TrimEnd() -cne $new.TrimEnd()) { throw 'unregistered trace source change' }\n$tracePaths = @(git diff --name-only $manifest.format_commit $manifest.trace_commit)\nif ($LASTEXITCODE -ne 0 -or $tracePaths.Count -ne 1 -or $tracePaths[0] -cne $traceSource.path) { throw 'trace-only commit' }\n$failedGateFiles = @('baseline-windows-msrv-failed.log', 'baseline-linux-msrv-failed.log', 'after-trace-process-timeout.log')\nforeach ($capture in $manifest.captures) {\n    if ($failedGateFiles -contains $capture.file) {\n        if ($capture.exit_code -ne 1 -or $capture.gate_expected_exit -ne 0) { throw 'failed gate reclassified' }\n    } elseif ($capture.file -ceq 'require-ship.log') {\n        if ($capture.exit_code -ne 1 -or $capture.gate_expected_exit -ne 1 -or $capture.classification -cne 'expected-closed-admission') { throw 'ship refusal reclassified' }\n    } elseif ($capture.exit_code -ne 0 -or $capture.gate_expected_exit -ne 0) { throw 'unexpected capture status' }\n}\nfunction Assert-TestTotals($file, $passed, $failed) {\n    $captureText = Get-Content -Raw -LiteralPath \"$packetRoot/$file\"\n    $totals = [regex]::Matches($captureText, 'test result: (?:ok|FAILED)\\. (\\d+) passed; (\\d+) failed; (\\d+) ignored;')\n    $passedTotal = 0\n    $failedTotal = 0\n    foreach ($total in $totals) {\n        $passedTotal += [int]$total.Groups[1].Value\n        $failedTotal += [int]$total.Groups[2].Value\n        if ([int]$total.Groups[3].Value -ne 0) { throw 'unreported ignored test' }\n    }\n    if ($totals.Count -eq 0 -or $passedTotal -ne $passed -or $failedTotal -ne $failed) { throw \"test totals: $file\" }\n}\nAssert-TestTotals 'baseline-supervisor.log' 67 0\nAssert-TestTotals 'after-trace-process-timeout.log' 66 1\nAssert-TestTotals 'control-original-trace-process.log' 67 0\nAssert-TestTotals 'repeat-trace-process.log' 67 0\nAssert-TestTotals 'postcommit-trace-process.log' 67 0\nAssert-TestTotals 'after-format-metrics.log' 7 0\nAssert-TestTotals 'after-format-csv.log' 22 0\nAssert-TestTotals 'after-format-pure-client.log' 4 0\nAssert-TestTotals 'after-format-xtask.log' 27 0\nAssert-TestTotals 'performance-contract-tests.log' 165 0\nif ((Get-Content -Raw -LiteralPath \"$packetRoot/gate-registry.log\") -notmatch '175 discovered gates, all registered') { throw 'registry total' }\nif ((Get-Content -Raw -LiteralPath \"$packetRoot/local-contract.log\") -notmatch 'OK \\(local, non-promotable\\)') { throw 'local contract classification' }\nWrite-Output 'Verified 44 complete captures, 4 extra artifacts, 10 source blobs/tree/parent chain, 7 exact format rewrites, 1 whole-file trace rewrite and frozen inputs/negative hashes.'\nWrite-Output 'Verified test totals and retained three actual-exit1/expected-exit0 failed gates. Require-ship alone is an expected refusal. Original trace passes twice; trace candidate fails 66/1 once and later passes 67 twice. The timeout cause and load robustness remain open.'\nWrite-Output 'Unsigned consistency only: not execution attestation, runtime support, performance evidence, authenticated original-start, all-writer cessation or server admission.'",
+  "trace_commit": "8a22f2199e2759681bc47f88746cf972a33345ee",
+  "consistency_development_negative": {
+    "manifest": "manifest-first-failed.json",
+    "transcript": "verification-first-failed.txt",
+    "failure": "Draft omitted trace_commit; first consistency attempt refused before accepting the source chain",
+    "resolution": "Restored trace_commit from the pinned source_commit; no source or runtime evidence changed"
+  }
+}

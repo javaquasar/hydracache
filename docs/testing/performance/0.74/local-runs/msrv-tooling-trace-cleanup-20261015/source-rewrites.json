@@ -1,0 +1,76 @@
+{
+  "baseline": "55e4e5f7eaf230d48527330c6a884f5bef162871",
+  "scope": "Exact source rewrites, excluding new test bodies; unsigned structural checks, not execution attestation.",
+  "format_sources": [
+    {
+      "path": "crates/hydracache-loadgen/src/metrics_honesty.rs",
+      "marker": "#[cfg(test)]",
+      "rewrites": [
+        {
+          "before": "    let archived_path = archive_dir.join(format!(\n        \"control-plane-{}-reference-v1.raw.json\",\n        node_count\n    ));",
+          "after": "    let archived_path =\n        archive_dir.join(format!(\"control-plane-{node_count}-reference-v1.raw.json\"));"
+        }
+      ]
+    },
+    {
+      "path": "crates/hydracache-loadgen/src/resp_external.rs",
+      "rewrites": [
+        {
+          "before": "                \"expected exact redis-benchmark 7.2.5 header {:?}, observed {header:?}\",\n                REDIS_BENCHMARK_CSV_HEADER",
+          "after": "                \"expected exact redis-benchmark 7.2.5 header {REDIS_BENCHMARK_CSV_HEADER:?}, observed {header:?}\""
+        }
+      ]
+    },
+    {
+      "path": "crates/hydracache-loadgen/src/tiers/client_surface.rs",
+      "marker": "#[cfg(test)]",
+      "rewrites": [
+        {
+          "before": "                    \"declared concurrent in-flight {} but observed high-water {observed}\",\n                    inflight",
+          "after": "                    \"declared concurrent in-flight {inflight} but observed high-water {observed}\""
+        }
+      ]
+    },
+    {
+      "path": "crates/xtask/src/canary_check.rs",
+      "rewrites": [
+        {
+          "before": "                \"{}: {item} is registered but has no release-plan section\",\n                registry_path",
+          "after": "                \"{registry_path}: {item} is registered but has no release-plan section\""
+        },
+        {
+          "before": "                \"{}: {item} has no registered canary for the release-plan section\",\n                registry_path",
+          "after": "                \"{registry_path}: {item} has no registered canary for the release-plan section\""
+        }
+      ]
+    },
+    {
+      "path": "crates/xtask/src/fast_suite.rs",
+      "rewrites": [
+        {
+          "before": "            \"aggregate_budget_seconds must be the reviewed {}s PR ceiling\",\n            PR_BUDGET_SECONDS",
+          "after": "            \"aggregate_budget_seconds must be the reviewed {PR_BUDGET_SECONDS}s PR ceiling\""
+        }
+      ]
+    },
+    {
+      "path": "crates/xtask/tests/perf_bootstrap_0671.rs",
+      "marker": "#[test]",
+      "rewrites": [
+        {
+          "before": "observed_at: format!(\"2026-08-{:02}T12:00:00Z\", run),",
+          "after": "observed_at: format!(\"2026-08-{run:02}T12:00:00Z\"),"
+        }
+      ]
+    }
+  ],
+  "supervisor_source": {
+    "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs",
+    "rewrites": [
+      {
+        "before": "        } else {\n            if marker {\n                if nr == libc::SYS_getpid as u64 && !killed {\n                    returned(owner, owner.pid as i64)?;\n                } else {\n                    require(\n                        nr == libc::SYS_kill as u64\n                            && !killed\n                            && args[0] == owner.pid as u64\n                            && args[1] == libc::SIGSTOP as u64,\n                    )?;\n                    returned(owner, 0)?;\n                    killed = true;\n                }\n            } else {\n                require(startup_allowed(nr, args))?;\n                require(matches!(event(owner)?, Event::Exit { .. }))?;\n            }\n        }",
+        "after": "        } else if marker {\n            if nr == libc::SYS_getpid as u64 && !killed {\n                returned(owner, owner.pid as i64)?;\n            } else {\n                require(\n                    nr == libc::SYS_kill as u64\n                        && !killed\n                        && args[0] == owner.pid as u64\n                        && args[1] == libc::SIGSTOP as u64,\n                )?;\n                returned(owner, 0)?;\n                killed = true;\n            }\n        } else {\n            require(startup_allowed(nr, args))?;\n            require(matches!(event(owner)?, Event::Exit { .. }))?;\n        }"
+      }
+    ]
+  }
+}

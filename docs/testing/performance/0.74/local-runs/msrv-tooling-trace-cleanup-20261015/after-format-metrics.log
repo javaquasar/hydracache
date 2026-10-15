@@ -1,0 +1,14 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.82s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_loadgen-56e8a9019ded0c7b.exe)
+
+running 7 tests
+test metrics_honesty::tests::raw_observer_accounting_tamper_is_rejected_after_rehash ... ok
+test metrics_honesty::tests::predecessor_capture_accepts_an_ordinary_absolute_path_and_persists_canonical_form ... ok
+test metrics_honesty::tests::persisted_predecessor_path_rejects_missing_artifact ... ok
+test metrics_honesty::tests::w9_raw_archive_survives_later_w7_source_replacement ... ok
+test metrics_honesty::tests::persisted_predecessor_path_rejects_late_artifact_replacement ... ok
+test metrics_honesty::tests::w9_archive_names_preserve_decimal_node_counts ... ok
+test metrics_honesty::tests::archived_log_receipt_rehash_rejects_same_length_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 101 filtered out; finished in 0.03s

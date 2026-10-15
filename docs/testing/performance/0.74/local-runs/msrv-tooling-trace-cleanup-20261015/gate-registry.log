@@ -1,0 +1,5 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 15.55s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: OK (175 discovered gates, all registered)

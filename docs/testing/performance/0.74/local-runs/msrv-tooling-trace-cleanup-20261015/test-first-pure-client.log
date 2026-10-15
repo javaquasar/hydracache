@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.78s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_loadgen-56e8a9019ded0c7b.exe)
+
+running 4 tests
+test tiers::client_surface::tests::reference_profile_is_not_a_smoke_alias ... ok
+test tiers::client_surface::tests::reference_concurrency_window_covers_one_hundred_max_inflight_waves ... ok
+test tiers::client_surface::tests::committed_abc_taxonomy_is_exact_and_digest_bound ... ok
+test tiers::client_surface::tests::reference_dispatch_rejects_missing_and_mismatched_context_without_downgrade ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.00s

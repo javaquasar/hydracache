@@ -10071,3 +10071,72 @@ focused tests. The 165 static performance-contract tests, 175-gate registry and
 non-promotable local contract pass; require-ship still refuses. Wider current
 strict Clippy is green on Windows/Linux, while the recorded MSRV failures remain
 open. No full release gate or server qualification is implied.
+
+### Closing the tooling lint inventory without changing lifecycle authority
+
+The next local step addresses the eight observed sites, not another performance
+hypothesis. Its baseline reproduces the strict MSRV failures before touching
+the source. Seven sites interpolate already-present values in archive names,
+CSV and in-flight diagnostics, canary/fast-suite messages and bootstrap dates.
+The eighth is a nested else/if in the Linux-only private `loaded` trace routine.
+The changes are split into a formatting/test commit and a separate trace-control
+commit so their review and evidence are not conflated.
+
+Five new characterization tests pass on the old formatting first. They pin
+decimal archive names and hard-linked bytes, the full expected/observed CSV
+header message, both missing-plan/canary messages, the existing 1680-second
+ceiling message, and zero-padded dates. The ceiling is mutated only in a local
+fixture; no real budget changes. After the seven implicit captures, Windows
+Rust1.94 passes 60 focused tests. Four of those are pure client-surface checks;
+the measurement smoke validator is explicitly skipped. The actual in-flight
+mismatch branch is not driven by a measurement run. Its unchanged arguments and
+message structure are established by the exact source comparison, not claimed
+runtime coverage. Scripted external-tool tests are not a Redis benchmark.
+
+The supervisor edit collapses only `else { if marker ... }` into `else if marker`.
+The initial READY-write branch still has priority, followed by the same marker,
+getpid/kill and startup checks in the same order. Whole-file comparison against
+the baseline permits only that registered rewrite; other supervisor sources,
+the 256-event budget, five-second guards and default process-test concurrency
+are unchanged. The `loaded` body does change syntactically, so this is not a
+claim that all historical function bodies or tooling source identities match.
+
+After both edits, all-target/all-feature checks and strict Clippy for the selected
+loadgen/xtask/supervisor packages pass on Windows/Linux with Rust1.88/1.94.
+This closes the observed strict lint inventory without suppressing warnings.
+It is neither an exhaustive workspace/feature matrix nor new Rust1.88 runtime
+support for the ordinary selected-root profile. The preceding failed captures
+remain historical facts under their original source IDs.
+
+The first process group after the trace edit passes 66 tests but fails the
+handoff integration test at its unchanged five-second guard, before its first
+good-mode receipt. The preceding baseline passed 67. No separate heavy build is
+deliberately overlapping this group, so the failure is not attributed to the
+earlier compiler-overlap explanation. Its generic timeout does not identify the
+stalled instruction. The complete negative is retained, not hidden by the green
+compiler checks; baseline controls and later repetitions are separate evidence.
+
+Restoring only the original branch passes the same 67-test group; restoring
+the registered edit also passes 67. The latter includes actual public-dummy
+handoff and stopped loss/healthy/no-EXITKILL controls, with unchanged default
+parallelism and five-second guards. This makes the observed failure intermittent,
+but neither the passing control nor the repetition establishes its cause. It is
+not a load-robustness receipt or a waiver of the failed run.
+
+The post-commit repetition also passes all 67. The packet therefore preserves
+two original-trace successes, the trace candidate's initial 66/1 failure and two
+later trace successes separately. The next diagnostic task is to identify the
+intermittent stall without changing bounds or scheduling, before claiming robust
+lifecycle behavior. It does not remove the separate authority and
+all-writer cessation requirements.
+
+The result is build-quality compatibility and more precise regression coverage,
+not a measured allocation or throughput gain. The static 165-test contract and
+175-gate registry pass, while the local contract stays non-promotable and ship
+admission still refuses. The
+[local packet](../testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-20261015/README.md)
+separates baseline, test-first, compiler, process and structural checks. Unsigned
+hash consistency does not attest execution, and new source commits cannot reuse
+old qualification receipts as if they described the new tools. Authenticated
+original-start, trusted runtime/issuer/job custody, P2/P3 all-writer cessation,
+completion/later cells and server admission remain the substantive W11 work.

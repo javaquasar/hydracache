@@ -243,3 +243,6 @@ docs/testing/performance/0.74/local-runs/msrv-macro-diagnostics-*/** -text white
 docs/testing/performance/0.74/local-runs/msrv-macro-diagnostics-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/msrv-conditional-diagnostics-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/msrv-conditional-diagnostics-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/verification-first-failed.txt -text whitespace=cr-at-eol,-blank-at-eol

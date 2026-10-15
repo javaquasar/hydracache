@@ -1,0 +1,47 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 57.13s
+     Running tests\canary_check.rs (target\debug\deps\canary_check-07bac277767920d7.exe)
+
+running 13 tests
+test dynamic_canary_fixture_process ... ok
+test dynamic_canary_runner_rejects_a_guard_that_stays_green ... ok
+test dynamic_canary_runner_rejects_timeout_compile_failure_or_unrelated_panic_as_red_evidence ... ok
+test each_canary_makes_its_paired_guard_fail_red ... ok
+test requested_release_does_not_borrow_an_older_canary_registry ... ok
+test release_070_canary_registry_covers_every_declared_work_item ... ok
+test canary_receipt_artifact_cannot_escape_the_evidence_directory ... ok
+test canary_registry_lists_a_canary_that_does_not_fail_its_guard ... ok
+test missing_plan_section_and_canary_diagnostics_are_exact ... ok
+test requested_release_without_work_items_is_rejected_before_canary_evidence ... ok
+test every_w_item_has_a_registered_canary_that_references_real_functions ... ok
+test dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit ... ok
+test equal_work_item_receipts_from_different_releases_do_not_shadow_each_other ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.65s
+
+     Running tests\fast_suite.rs (target\debug\deps\fast_suite-430ddaea34a46a36.exe)
+
+running 8 tests
+test nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout ... ok
+test fast_suite_check_rejects_invented_baseline_and_aggregate_budget_overrun ... ok
+test fast_suite_registry_has_pinned_nextest_and_bounded_unmeasured_baselines ... ok
+test fast_suite_reviewed_ceiling_diagnostic_is_exact ... ok
+test fast_suite_registry_baseline_covers_the_next_release_but_not_an_older_one ... ok
+test fast_suite_registry_rejects_missing_timeout_budget_or_command ... ok
+test fast_suite_budget_rejects_an_unreviewed_runtime_regression ... ok
+test fast_suite_check_rejects_slow_receipt_without_reclassifying_the_suite ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\perf_bootstrap_0671.rs (target\debug\deps\perf_bootstrap_0671-3459e0c17817d1b4.exe)
+
+running 6 tests
+test sample_fixture_timestamp_preserves_two_digit_padding ... ok
+test bootstrap_context_is_manual_trusted_main_and_distinct_from_qualification ... ok
+test committed_acquisition_manifest_is_empty_and_non_promotable_before_collection ... ok
+test bootstrap_workflow_collects_full_reference_families_without_ship_promotion ... ok
+test canary_bootstrap_accepts_a_mixed_fingerprint_sample_set ... ok
+test sample_set_requires_five_unique_same_fingerprint_and_contract_receipts ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s

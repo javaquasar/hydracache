@@ -1,0 +1,3 @@
+Verified 44 complete captures, 4 extra artifacts, 10 source blobs/tree/parent chain, 7 exact format rewrites, 1 whole-file trace rewrite and frozen inputs/negative hashes.
+Verified test totals and retained three actual-exit1/expected-exit0 failed gates. Require-ship alone is an expected refusal. Original trace passes twice; trace candidate fails 66/1 once and later passes 67 twice. The timeout cause and load robustness remain open.
+Unsigned consistency only: not execution attestation, runtime support, performance evidence, authenticated original-start, all-writer cessation or server admission.

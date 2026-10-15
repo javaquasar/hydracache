@@ -1,0 +1,8 @@
+fatal: ambiguous argument '^': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+Exception: 
+Line |
+  26 |  … t.trace_commit -cne $manifest.source_commit) { throw 'source chain' }
+     |                                                   ~~~~~~~~~~~~~~~~~~~~
+     | source chain

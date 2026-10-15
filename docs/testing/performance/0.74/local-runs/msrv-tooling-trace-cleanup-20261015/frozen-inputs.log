@@ -1,0 +1,7 @@
+99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7 Cargo.lock
+11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc docs/testing/performance/0.74/qualification-manifest.toml
+a0bec2f2a448ffb7765839f58c9d854a98e250b77471f9de364486ec3a942037 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/overlapping-broad-timeouts.log
+932dbd554732825d78d36dd34b2b360b47b866afa1e021a05cdba4418cc61a99 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-20261015/baseline-old-root-failed.log
+dead6374972d26cc98db060bcb5f91c837cef2756c18315eafdf2e739d4836ba docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-20261015/development-parallel-timeout.log
+commit
+Frozen inputs and previous negative captures are unchanged; no qualification source receipt is rebound.

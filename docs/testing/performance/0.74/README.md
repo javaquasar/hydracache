@@ -1,13 +1,25 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [tooling/trace MSRV cleanup](local-runs/msrv-tooling-trace-cleanup-20261015/README.md)
+closes the next eight observed lint sites: seven existing format arguments and
+one private Linux trace branch collapse. Five new characterization tests pass
+before the format changes; 60 focused tooling tests pass afterward on Windows
+Rust1.94. Selected supervisor/xtask/loadgen all-target checks and strict Clippy
+pass on Windows/Linux with Rust1.88/1.94. This is build-quality evidence, not a
+performance result, exhaustive runtime matrix or server admission. Earlier failed
+captures retain their original source identities.
+The process packet also retains an unexplained 66/1 timeout before its successful
+67-test original-trace control and two candidate repetitions, one post-commit;
+guard robustness is not established by the later successes.
+
 The [conditional diagnostic and example build cleanup](local-runs/msrv-conditional-diagnostics-20261015/README.md)
 preserves the three conditional error messages and declares the compatibility
 example's existing durable feature requirement. Forty focused tests pass per
 Windows/Linux and Rust1.88/1.94 combination, with one existing ignored chaos
 marker. Package all-target checks/strict Clippy and explicit durable-example
 checks/strict Clippy pass in all four lanes. Linux MSRV Clippy is now installed;
-wider MSRV tooling lint still fails separately. No performance or server
-admission follows from these build-quality results.
+wider MSRV tooling lint was still failed at that source and is addressed above.
+No performance or server admission follows from these build-quality results.
 
 The preceding [macro MSRV diagnostic cleanup](local-runs/msrv-macro-diagnostics-20261015/README.md)
 removed the seven Rust1.88 Clippy errors recorded by the preceding packets.

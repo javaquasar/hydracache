@@ -1,0 +1,28 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 03s
+     Running tests\resp_external_067.rs (target\debug\deps\resp_external_067-d2472dc4b7480c5b.exe)
+
+running 21 tests
+test external_tool_pipe_capture_rejects_read_errors_and_bytes_beyond_the_committed_cap ... ok
+test redis_benchmark_contract_builds_exact_argv_and_preserves_closed_loop_identity ... ok
+test mandatory_run_cross_binds_actual_tool_sha_and_prebuild_receipt ... ok
+test mandatory_external_run_rejects_an_ineligible_runner_before_tool_resolution ... ok
+test redis_benchmark_csv_parser_accepts_only_the_exact_complete_row_set ... ok
+test external_report_fails_closed_on_open_loop_endpoint_or_capability_mismatch ... ok
+test redis_benchmark_contract_rejects_version_argv_and_claim_relabeling ... ok
+test redis_benchmark_csv_parser_rejects_truncated_duplicate_missing_unknown_and_swallowed_output ... ok
+test redis_benchmark_csv_parser_rejects_nan_inf_zero_and_malformed_rows ... ok
+test completed_high_spread_external_run_is_not_suite_ship_evidence ... ok
+test redis_benchmark_provenance_pins_the_real_725_source_archive_and_recipe ... ok
+test redis_benchmark_missing_tool_skips_loud_locally_and_fails_closed_when_mandatory ... ok
+test committed_external_contract_digest_is_stable_when_the_selected_daemon_port_changes ... ok
+test external_report_recomputes_repeat_statistics_and_rejects_tampering ... ok
+test redis_benchmark_timeout_is_rejected_with_raw_stream_hashes ... ok
+test redis_benchmark_process_limits_and_identity_policy_are_bounded_and_digest_bound ... ok
+test redis_benchmark_rejects_canonical_path_or_binary_sha_drift_after_the_version_probe ... ok
+test unsupported_platform_skips_loud_locally_and_fails_before_resolution_when_mandatory ... ok
+test redis_benchmark_tool_disappearing_after_version_probe_is_never_a_local_skip ... ok
+test redis_benchmark_evidence_binds_version_exact_argv_and_raw_stream_hashes ... ok
+test redis_benchmark_rejects_nonzero_stderr_version_drift_and_truncated_csv ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

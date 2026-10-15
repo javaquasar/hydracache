@@ -1,0 +1,3 @@
+Seven exact format rewrites across six source/fixture prefixes match; no other prefix changes. New tests excluded; structural comparison is not runtime mismatch-path or execution proof.
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs', LF will be replaced by CRLF the next time Git touches it
+The entire trace source matches the single registered else-if collapse. READY priority, marker/getpid/kill/startup checks, ptrace/wait ordering, event budget and other supervisor files are unchanged; structural comparison is not runtime or production execution attestation.
