@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.17s
+     Running `target\debug\xtask.exe gate-coverage-check`
+Error: "unsupported xtask command: gate-coverage-check"
+error: process didn't exit successfully: `target\debug\xtask.exe gate-coverage-check` (exit code: 1)

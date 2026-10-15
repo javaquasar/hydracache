@@ -1,0 +1,71 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.56s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 7 tests
+constructor_frame seed=0x0740c071 mutations=256 exact_terminal_oracle=true controls_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_finite_oracle_and_closed_frame_mutations ... ok
+constructor_terminal cut=1 fault=1 healthy=false code=1 status=83 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch ... ok
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=2 healthy=false code=1 status=84 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor monitor refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+loss_root_binding parent=/tmp/.tmp5hsMfC original_root=/tmp/.tmp5hsMfC/.tmpG3pomw/root
+loss_container mode=755 uid=1000
+loss_directory actual=[2096, 260021] original=[2096, 260021] mode=555 flags=231424
+loss_directory actual=[2096, 260024] original=[2096, 260024] mode=555 flags=231424
+loss_directory actual=[2096, 260027] original=[2096, 260027] mode=555 flags=231424
+loss_directory actual=[2096, 260029] original=[2096, 260029] mode=555 flags=231424
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry' panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:93:77:
+called `Result::unwrap()` on an `Err` value: Custom { kind: TimedOut, error: "original loss observer stalled" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 835 filtered out; finished in 5.79s
+
+
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff' panicked at tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:325:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff ... FAILED
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers ... ok
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 829 filtered out; finished in 11.62s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

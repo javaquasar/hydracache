@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [constructor parent-loss guard](diagnostic-signer-constructor-loss-design.md)
+adds PDEATHSIG plus an original-parent check before the existing EXITKILL boundary.
+Five whole-process loss cuts distinguish the pre-arm refusal from armed SIGKILL;
+healthy and separate negative controls retain exact original-child reap. The
+[constructor packet](local-runs/diagnostic-signer-constructor-loss-20261015/README.md)
+retains the MSRV healthy-wait failure and shell/filter mistakes beside the final
+source-specific checks. Pre-arm creating-thread-only loss, production custody,
+worker/all-writer completion and server/qualification remain unproved.
+
 The [actual tracer-loss observer](diagnostic-signer-tracer-loss-design.md) now
 kills the original tracer and independently requires the original child's SIGKILL
 and exact pidfd reap at six boundaries. Three eleven-case repeats, 112 prior

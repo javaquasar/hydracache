@@ -1,0 +1,41 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.13s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 7 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ok
+constructor_frame seed=0x0740c071 mutations=256 exact_terminal_oracle=true controls_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_finite_oracle_and_closed_frame_mutations ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=1 healthy=false code=1 status=83 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch ... ok
+constructor_terminal cut=0 fault=2 healthy=false code=1 status=84 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof ... constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill ... ok
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=true original_ACK_close_exit0=true
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers ... ok
+constructor_terminal cut=1 fault=0 healthy=true original_ACK_close_exit0=true
+constructor_terminal cut=2 fault=0 healthy=true original_ACK_close_exit0=true
+constructor_terminal cut=3 fault=0 healthy=true original_ACK_close_exit0=true
+constructor_terminal cut=4 fault=0 healthy=true original_ACK_close_exit0=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 829 filtered out; finished in 17.68s
+

@@ -8677,3 +8677,52 @@ remains outside this proof. Independent runtime/job/issuer custody, real token
 producer and authenticated receiver/replay/fence, worker original-start and all
 writers, completion/cells 2–4 and server admission remain separate. No cache
 throughput, allocation, latency or release qualification claim follows.
+
+## Parent loss before EXITKILL installation
+
+The previous tracer-loss proof started after the original owner had installed
+EXITKILL. A real fork can outlive its parent before that installation. The next
+local hypothesis therefore places PDEATHSIG(SIGKILL) at the beginning of the
+same raw child and checks its original parent immediately afterwards. The
+signal alone is not retroactive: if the whole parent already died, getppid must
+detect reparenting and exit before descriptor, root or credential setup. The
+kernel's [PDEATHSIG semantics](https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html)
+make that second check essential. The guard remains active until the original
+owner installs EXITKILL and resumes the child; only then may it clear.
+
+The independent observer kills the original tracer at five constructor cuts.
+Before arming it requires the exact parent-mismatch exit 81. At the four armed
+cuts it requires SIGKILL, consumes the same original child pidfd's terminal
+record and requires ECHILD before releasing the original runtime directories.
+No child signal, replacement process, dummy input or emergency cleanup can
+create a positive. Five healthy controls still complete the existing original
+ACK/close/zero-exit protocol. Two negative controls omit only arming or only the
+parent check and terminate with distinct natural exits 83/84 before exec. Those
+outcomes cannot satisfy the positive oracle and are not live-orphan claims.
+
+The first MSRV pressure run passed six tests and stalled in a healthy control
+after root checks. At that point one five-second wait covered the entire
+remaining constructor/root/exec/install/handshake chain. A separately committed
+amendment adds seven credential-checked success hints with exact ordinals and no
+FDs. Every gap retains five seconds; the outer bound remains 30 seconds and final
+exit/reap/cleanup checks are unchanged. The final MSRV passes. The aggregate
+wait structure is known; attributing the earlier stall entirely to pressure
+remains a hypothesis rather than a proven kernel or product defect.
+
+Verification selection also needs an oracle. A shell expansion removed a test
+filter; other mistyped filters returned zero tests or the wrong scope despite
+successful cargo exits. Those captures remain retained and are not promoted.
+The final packet requires the exact per-suite vector, so deleting a suite or
+changing 18 passes to zero fails even if the raw-log hash is updated. Three
+seven-case repeats, all 123 prior signer regressions, MSRV, 146 source contracts
+and Windows portability form the focused gate, not a release qualification.
+
+The [design](../testing/performance/0.74/diagnostic-signer-constructor-loss-design.md)
+and [evidence](../testing/performance/0.74/local-runs/diagnostic-signer-constructor-loss-20261015/README.md)
+limit the result to whole-parent-process loss. Linux associates PDEATHSIG with
+the creating thread, while getppid identifies its thread group. A thread dying
+before arming while other parent threads stay live is a separate gap requiring
+an explicit launcher thread model. Actual issuer/job/runtime custody, token
+integration, worker original-start and all-writer cessation, later cells and
+server admission remain separate. This is a lifecycle safety improvement, not
+a measured cache throughput or allocation win.

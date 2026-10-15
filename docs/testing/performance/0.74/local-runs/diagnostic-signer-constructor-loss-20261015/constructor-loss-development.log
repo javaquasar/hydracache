@@ -1,0 +1,57 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `ready` found for struct `RootedExec` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:193:9
+    |
+193 | ...wn.ready()?;
+    |       ^^^^^ method not found in `RootedExec`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:59:1
+    |
+ 59 |... RootedExec {
+    |...----------- method `ready` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273.long-type-11986327620036765595.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no method named `deliver` found for struct `RootedExec` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:194:9
+    |
+194 | ...wn.deliver()?;
+    |       ^^^^^^^ method not found in `RootedExec`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:59:1
+    |
+ 59 |... RootedExec {
+    |...----------- method `deliver` not found for this struct
+    |
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273.long-type-11986327620036765595.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0599]: no method named `complete` found for struct `RootedExec` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:195:9
+    |
+195 | ...wn.complete()?;
+    |       ^^^^^^^^ method not found in `RootedExec`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs:59:1
+    |
+ 59 |... RootedExec {
+    |...----------- method `complete` not found for this struct
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `complete`, perhaps you need to implement it:
+            candidate #1: `winnow::stream::StreamIsPartial`
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273.long-type-11986327620036765595.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0133]: call to unsafe function `BorrowedFd::<'_>::borrow_raw` is unsafe and requires unsafe function or block
+   --> tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs:166:18
+    |
+166 | ... = std::os::f...;
+    |       ^^^^^^^^^^... call to unsafe function
+    |
+    = note: consult the function's documentation for information on how to avoid undefined behavior
+
+Some errors have detailed explanations: E0133, E0599.
+For more information about an error, try `rustc --explain E0133`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors

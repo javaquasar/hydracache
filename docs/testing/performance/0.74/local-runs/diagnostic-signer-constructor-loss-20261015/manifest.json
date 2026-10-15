@@ -1,0 +1,582 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-signer-constructor-loss-20261015",
+  "source_commit": "815fc5d7527153387b3b4c095c035cda03df523e",
+  "baseline_source": "e4eaea4cd4af5e09082cf8cb8b759ff40ae09d7c",
+  "preregistration": "6a02eeef9e09b319f2711953b80a9afb694be0b1",
+  "progress_amendment": "32237eb368e230f72fca636747cbc06984bf85ed",
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs",
+      "sha256_lf": "02ddcfd53bac6b2f0c3e5e082e68af5c6178b3ab18c097a14f5822110cdb7e4f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs",
+      "sha256_lf": "65638f7e6fb1138435e6da70e51a54a3b84672d58e44477e4dbe8164d40bf189"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs",
+      "sha256_lf": "e33be81238ffb3a39f82d68c7f3faf519eceb309921720d47d9d15298857eaf4"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_fixture.rs",
+      "sha256_lf": "cd4b1209a95a3983a925d816973dfa6e0750277c3f7787c410003f69d2c1dc37"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_channel.rs",
+      "sha256_lf": "5d8554823f6fb1e88351a117aa7b2068a0f5fe9a45e488f7b230a99ca7d76350"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "323340191ba2d99ffa65efc8e3122886d93e2b87ea17877fc15548b39ddea70a"
+    },
+    {
+      "path": "docs/GATES.md",
+      "sha256_lf": "7728856d1809b10490027026c74dec1f4a2d620e4e76eea6c4d3a9643bf2ef87"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "e23b674e159c350c18bb70370c9c5c2ee4ada71e96606183b84041e24b1ea8ed"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-constructor-loss-contract.toml",
+      "sha256_lf": "e0bc5db24a95906707cb00c0cc5b8c534ee4b57eea138f0a14feaa05c3a7d46e"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-constructor-loss-design.md",
+      "sha256_lf": "0624394d511e40099c8570960287356d6ec52249a3c7c084223b34b1e0a4a500"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-constructor-loss-plan-20261015.md",
+      "sha256_lf": "e241fc2fda8ed38f5fde5d60181a40aeb26a20fe4b8e401497feef5f837e3e89"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-constructor-loss-progress-20261015.md",
+      "sha256_lf": "026f06c7f48c52d8acf516874ae7b9da27451924ddd01ba5750999e4e1c452f8"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs",
+      "sha256_lf": "b3acf60064ecc6bd84a6941aeb30f8cc282d95b42785202a77938e1d584fb750"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs",
+      "sha256_lf": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs",
+      "sha256_lf": "c55eacf5de3ff872fa67353a1d94d4a3a063d00a9b07739f0044f4bf5abf9c29"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-handoff-contract.toml",
+      "sha256_lf": "42b5e1d0ba11316867bfde2a491d41f84ab52e380c4fef4f68644f4138f7d38e"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-handoff-design.md",
+      "sha256_lf": "be74c947fd2f6e630a3b0cd94016a5a741799ab46c6dcbb0e847f9a395f265da"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-handoff-plan-20261015.md",
+      "sha256_lf": "d429171077a527ada5d2d577c7a1dc1a202b05dc680f7fe337595b0cde58341b"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs",
+      "sha256_lf": "6873afcec923a19a53e2a19393c1d67290d37f0fa61375aa04bd8380d185183e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs",
+      "sha256_lf": "9101a388d67240a26f19efa8da3efb24d1bdcb303ce11f4faf0ceea8f8985328"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+      "sha256_lf": "d998a01bfdfe073ae40cce0470c9037ce66bd03c980811cb695f86db5bccc109"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+      "sha256_lf": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs",
+      "sha256_lf": "701dd5770ec5250b453a94625649bc5ab294156706f875f78d00996bf9d6afa2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+      "sha256_lf": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256_lf": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "docs/plans/releases.toml",
+      "sha256_lf": "ec94101f04e4734f7ff12975625db025e0140456e1b7c243c48d3fae1666f74a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json",
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs",
+      "sha256_lf": "f15b21ccdf556394749505513799c3c3520cb1f96c3853037f5a9aefec295bfc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-first-exec-contract.toml",
+      "sha256_lf": "01f2ec3e42a713f292514ab39911d97203f168fc763adff5da8d019db9b7a6fa"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs",
+      "sha256_lf": "e11c2934b1eb6d320bbf433242b45429559dc7f5a9bad08651cb24c2c333fd54"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-seccomp-contract.toml",
+      "sha256_lf": "4db0e6bf51602cc40145845791d34c718781a518364c256f94eaa76a9868be41"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs",
+      "sha256_lf": "6f95dda5cf4ee94c7c49cec3f6d26129349dbdbdccb70804be12b9f71b9fb243"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs",
+      "sha256_lf": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs",
+      "sha256_lf": "139d97d4a4858f4becd22965a94bfc1675da156b1d088bce084a1918403663cb"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs",
+      "sha256_lf": "b5cbe86d230ba684a5a3bb4851a5ac2092b9d16c5f4bfd536b5269a6a9629c09"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-joined-contract.toml",
+      "sha256_lf": "bd3bde3db9d83ef5a8cdbeb1a4fe75e4070bea330f289b113ef3304bf7be07b7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs",
+      "sha256_lf": "41a04acee1c0e3876dd208fae705936fc54946f23379118594a2c89704b0f683"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs",
+      "sha256_lf": "03b4d33741068f620c0cf7b6a85db0400b325785fe31ecdc8a686e42b988247e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs",
+      "sha256_lf": "1b3824cb2f9ee8d94095ab9f90747926eb65972abac935a2e90988c8db9074e5"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-runtime-contract.toml",
+      "sha256_lf": "a851a3bd420e6317d5d27a80b8240fcc6bb1fec2b3f8e00e3ec4b8a76934e87c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs",
+      "sha256_lf": "e2a5bc2df2bd6f8c34a5fb47982e24530cd01d55d10455b50856ca26544e1df7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-root-contract.toml",
+      "sha256_lf": "2b2ace23474b398f872702323669b7a85685831188291f53687a2a7620f1f7c5"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-root-design.md",
+      "sha256_lf": "31c88ccbcd8a342cdcb35e665d82a6e3bb9bddd39d3b9a733074b885977f3f4b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs",
+      "sha256_lf": "66680bb06d3149746778b738c8fd7c0be8e5495c9ac5d0d2303fdb60dbdae831"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs",
+      "sha256_lf": "7423b2bc12386418eb9a54279ba7d4c27673e447cc5645eca92b7dba1bff91d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs",
+      "sha256_lf": "bd690f9a56bcd65e89000f3d530869ebfe02b65346eb416bb9d17dda6bc578bf"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-rooted-exec-contract.toml",
+      "sha256_lf": "ec6c72f4154ec4ad36057e044164dd77f2ffa07d41e6f1da8021c6f13696e7f7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-rooted-exec-design.md",
+      "sha256_lf": "20f9cb189c89a3e14d82f580a6e3144369597877b224fab0b0d62ef94d7c5e5e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs",
+      "sha256_lf": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs",
+      "sha256_lf": "576cf9ff56e7b7eaf085f7bf6c90800d871e4e501589698ad1a0c0cd150b487f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs",
+      "sha256_lf": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-contract.toml",
+      "sha256_lf": "10e9ef129e77eb3251f9e86ecf8bf59af1c8128d5ef0914036fd232c02303ae0"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-design.md",
+      "sha256_lf": "cb6a5537e2a846efb4137ce9a6231bfeb8a0a139d42c9b18ca9322c57093fe99"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-plan-20261015.md",
+      "sha256_lf": "a5aab13aa7220feecfa992c98b5120d33a5f05526eb6b1acd282e4efc04e3fb8"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-environ-amendment-20261015.md",
+      "sha256_lf": "246f637f9539ccea7f76af451af09c1d126491b2389b9ee987ceae9ca994db87"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-fd-amendment-20261015.md",
+      "sha256_lf": "23a4fa770b0504b15d87e8ed06c34628f64689369ebb77593bb787f45b1dd5fd"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-control-result-20261015.md",
+      "sha256_lf": "71fba22ae7d1219ccc6b30fa518bf89c7e41219f76cfc42a6fbf5fe9f01ae1e6"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_ancillary.rs",
+      "sha256_lf": "b5206f8051330c11f7979f6afd61376054fd5c2ca38030e60b2bdbf40972543d"
+    },
+    {
+      "path": "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md",
+      "sha256_lf": "cff351817e9d83c3ec72b587e4ad7580bb8b882c8fab154f88c31b63aebb9828"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "21431390bdf037de63e29b0e7b7fe0c7ff285c0b9cc65e0aa0dc54bb42749438"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_fixture.rs",
+      "sha256_lf": "e60e416792b3a26768e053cd5bb578a14b833245ecd8d9dae409030bf7cd959d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_tracer_loss_tests.rs",
+      "sha256_lf": "1e6e7b2dc1efe57a13549a571171d9dcc08b751fd6f2f85584e42f496957bf5c"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-contract.toml",
+      "sha256_lf": "7191e48152c50603248e3e6d4cf252b7ec95ef008770f3de5933b01266d2cdff"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-design.md",
+      "sha256_lf": "536d5c99e2c6b7341645745177d1c2a791004c17c0318b4a82a2a706ce1b5cdc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-plan-20261015.md",
+      "sha256_lf": "e8a54129d53ad057da75b70eeba5df2bd4b269bb1d9ece547ccb97dcd822d70e"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-root-amendment-20261015.md",
+      "sha256_lf": "686ea8a52f9e9ae652195b7d9f4a00970e3744457b0ba43f52398c7bbce25db1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-mode-amendment-20261015.md",
+      "sha256_lf": "218072e6b1ea9496eeb0a372ce4c31c0f544c20cb5949264edb2db2193dbabf0"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-control-result-20261015.md",
+      "sha256_lf": "a145f31a277436e1b4c5f01b73adc0332587c57321b4b9386b388989b4d57c6c"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-progress-amendment-20261015.md",
+      "sha256_lf": "f15317cab3a72407c607e77021bc507138fd66d3fe5912188e871b028787aa81"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-tracer-loss-fd-amendment-20261015.md",
+      "sha256_lf": "c9e2debac145f0f2adf94e069c1ef8addf6880a7a81507545a16d1f34f5afce5"
+    }
+  ],
+  "captures": [
+    {
+      "path": "constructor-loss-baseline.log",
+      "sha256": "3f510410a3d4603e4af8e995c059c9d8bae1d13260af06afd0d9b2c4d48b110d",
+      "bytes": 4058,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-baseline-check.log",
+      "sha256": "390d2df793e0c961372e406ea5dd955a30d7a93aa2ce62be153fcc316c4c115f",
+      "bytes": 204,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-missing-guard.log",
+      "sha256": "94d2dcdbf348959e1a42d4dc27b1771dd10faf73af3b5c49ecdbc353c1b58e7c",
+      "bytes": 1873,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-development.log",
+      "sha256": "336c87ad02214d9a553c9bd11e685446b03b3de05bc9ba4960c1840841cde766",
+      "bytes": 3218,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-development-2.log",
+      "sha256": "03a88fab5e5bc82614fa34e6ba6bcc9fcdbfeaaf735bc2bb6eb9692f01a2bdde",
+      "bytes": 2446,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-development-3.log",
+      "sha256": "f844136b77e2e744c3b77fa578527ca037a2203ef259b4c0cc4190d0ae4211a8",
+      "bytes": 4459,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-shell-selection.log",
+      "sha256": "3a24c4189b876b333dfa0b5f8bab2a45d85ff02b02536ecebe421b299687c3a0",
+      "bytes": 8652,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-selection-development.log",
+      "sha256": "bcd393eb06e7eaeb88d9616493b12d50309b8f25f3716872c23bb89affc6b5c8",
+      "bytes": 51281,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-msrv-pressure.log",
+      "sha256": "a26926ab0764f67c7031bf2396eeb6fb1ef7c91ae73b658095ad34eefd8c1c96",
+      "bytes": 6248,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-source-contracts.log",
+      "sha256": "666cf5d44fe7560ff8415b21c79d160cfe6ad93135f82e1f0f5c5f623cdb3b4f",
+      "bytes": 12521,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-source-contracts-final.log",
+      "sha256": "bca97f5158376d6f70752fa407629fe7cf4c7bedd1c043dfe560b1b7cb2a0c3a",
+      "bytes": 12622,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-check.log",
+      "sha256": "a0a09f1c24750e8bd77604ce36d298c5ef0aef21a5955c99a3d76e8d00fadbb3",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-tests.log",
+      "sha256": "8bb402e9833f79fc1590fc51fded5428d5aa881c642c4dfa20fbe408f5280c62",
+      "bytes": 433,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-portable.log",
+      "sha256": "59be2542945eb2e21018a50fd0a12f6b71c17f179cf919b68b32078c2a6856bf",
+      "bytes": 1045,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-lint.log",
+      "sha256": "00067b8d7aa7fe1b24e34b5ee754a45a22ff23a466547c93e630ef9cccf8ea04",
+      "bytes": 202,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-msrv.log",
+      "sha256": "b69fc43da68fc15f09dab08ea8c4ed8e6f48d1e1ede593119e76d146228b8ec7",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-xtask-check.log",
+      "sha256": "7f5a4a3fc4c47261de75406c0bffd01e55d1d9abbf72c74e21622b077b81e38b",
+      "bytes": 157,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-xtask-lint.log",
+      "sha256": "841dae56c8fbf1cbb794601a38512c503bce33f594651a87907adae78a777ce9",
+      "bytes": 287,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-xtask-lint-final.log",
+      "sha256": "e4bd39477dd22055d4154a99dd29de4ed5dbd3ac33c1cc70f6906f47fe673d1b",
+      "bytes": 157,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-doc-check.log",
+      "sha256": "8120b3bd688bf4ccb4ad1b1aed36242c78cbc6cc951c9f408bae538e2bd268f0",
+      "bytes": 251,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-doc-final.log",
+      "sha256": "426139bb9087021101a23d7802871c8a15da033cbeeed0d39179eaf231e23578",
+      "bytes": 167,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-local-contract.log",
+      "sha256": "ac84ce70b6c681ba6084c565be9f05592236053b8e5f809ac6a201e7489fa420",
+      "bytes": 215,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-require-ship.log",
+      "sha256": "f3e3548aff0889cc68d153714b90c77f27ef4131c2edb356613a576566234b59",
+      "bytes": 2819,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-linux-check-lint.log",
+      "sha256": "c073b22e3d9dc32881a63d94f15c97f93d8195e3cdac5a28e6f89e68e5699d29",
+      "bytes": 410,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-linux-msrv-final.log",
+      "sha256": "778883e1f96e7b00c286a687805924706e418e2a49dd4b478ca19a7444698578",
+      "bytes": 4761,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-gate-registry.log",
+      "sha256": "e4f070d4f82e4c3ac2cc9dc83cfbab8791e9a0ef7cadfccb0831571e3c0c1ef8",
+      "bytes": 375,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "constructor-loss-gate-registry-final.log",
+      "sha256": "7909e477f2eb13a1d60ff9d744138e37b7d0b0634916c943b48e969674b8a35f",
+      "bytes": 190,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-format-final.log",
+      "sha256": "3d4fe3312fbe20a45df5f882f8dc07561236f7ea381b54332843c0c4992705e2",
+      "bytes": 38,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-normal-library.log",
+      "sha256": "fbb6a1b50b85475782fafa4e0da7bf3a867a7d036a89cafa172195420cbe4474",
+      "bytes": 148,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-check-final.log",
+      "sha256": "a905345a90ddc157b63ecbee3cde890835d78819c7377bd2c2edc186eb82ade1",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-windows-lint-final.log",
+      "sha256": "e5efe19cb285cfa80045b9d8385c66424271531b07c3f4d5aa859d01dfd6cbe1",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-final-verified.log",
+      "sha256": "1bfe5519d2cdc7c53ddc18e9c7cbb407348443bfa3807a7a57f3e916611c619a",
+      "bytes": 41224,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-packet-windows.log",
+      "sha256": "f5e9e62e46a3e9ea90afa3c8c67c02285182ae8ccfed20892cc9ae5c01ced0a4",
+      "bytes": 225,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "constructor-loss-packet-linux.log",
+      "sha256": "35db4b07ade528c382a1becccf8a3333fdf0e0f512ae77a51ecd0cf842f642c1",
+      "bytes": 220,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    }
+  ],
+  "admission_claims": {
+    "pre_arm_creating_thread_only_loss_proved": false,
+    "arbitrary_multithreaded_signer_supported": false,
+    "production_tracer_lifetime_enrolled": false,
+    "independent_runtime_custody": false,
+    "continuous_loaded_runtime_closure_proved": false,
+    "mapped_memory_attested": false,
+    "production_issuer_root_or_job_enrolled": false,
+    "actual_private_key_or_token_read": false,
+    "bootstrap_signing_or_worker_start_authority": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "host_namespace_mount_account_service_or_cgroup_changed": false,
+    "server_entry_wired": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "verifier_sha256_lf": "afe08d42375d41c078e37ca0ef9c38a400b64f9e2d2be7e9e8bbb4f7eb3799fe",
+  "packet_test_sha256_lf": "5db885697b518dc47cec0b395a028e2056fb964b5f5a03391f29308579347443"
+}
