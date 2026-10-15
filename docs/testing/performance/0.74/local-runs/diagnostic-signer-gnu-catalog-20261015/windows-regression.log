@@ -1,0 +1,31 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.66s
+     Running tests\diagnostic_signer_build.rs (target\debug\deps\diagnostic_signer_build-4af158bf5a6ef0f1.exe)
+
+running 9 tests
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
+     Running tests\diagnostic_signer_issuer.rs (target\debug\deps\diagnostic_signer_issuer-33cda14add80c2ec.exe)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.42s

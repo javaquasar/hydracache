@@ -9039,3 +9039,43 @@ namespace and signed-body digest remain unresolved. Approval of the model must
 precede actual configuration, then original-start, watchdog/all-writer cessation,
 completion and cells 2–4. These findings reduce deployment uncertainty; they do
 not measure cache allocation, throughput or readiness to ship.
+
+## Sharing declaration checks before admitting the signer runtime
+
+The enrollment review exposed a code-level gap as well as missing deployment
+facts: GNU declarations were checked only by test fixtures, while signer-build
+runtime/context digests still treated their bodies as opaque bytes. The next
+local slice moved the existing strict ELF parser and four-role graph into the
+normal library. Owned fixtures import that same implementation, so their parser
+mutation and rooted-exec regressions exercise the code used by the ordinary
+catalog entry rather than a second test-only validator. Bounds, unknown-tag
+refusal and GNU role rules were preserved.
+
+The catalog accepts exactly signer, loader, libc and libgcc byte snapshots and
+records their lengths, hashes, interpreter, NEEDED, SONAME and header shape.
+Portable tests construct independent synthetic images, change role/ABI/range/
+search-path/size inputs, run 256 seeded no-panic mutations and compare four
+independent readers. A byte outside the declaration tables can change without
+changing those declarations; the recorded digest still changes. This distinction
+matters because a syntactically accepted ELF is not necessarily safe to load.
+
+One clean implementation commit then supplied an ordinary local inspection
+example. It read the existing unsigned 1,922,976-byte controller copy and three
+GNU files, without requesting execution of the controller or ldd. Their declared
+graph passed; swapped loader/libc roles refused. Independent hashes and metadata
+matched before and after. Ordinary inspection/compiler tools still use their
+host runtime, whose actual mappings are not certified by this catalog.
+
+Current and MSRV tests, old runtime/rooted-exec regressions and the new source
+contract pass. A development source guard initially depended on rustfmt's line
+layout; preserving its ordering check over whitespace-normalized source fixed
+that test without changing a runtime limit. The negative is retained with the
+missing-API baseline and the other local evidence.
+
+The [catalog packet](../testing/performance/0.74/local-runs/diagnostic-signer-gnu-catalog-20261015/README.md)
+is a preparation result, not a signed runtime admission. Its custody, loaded
+closure, original-start, signing and admission flags remain false. The next join
+must bind independently selected original prebuilt/runtime objects and their
+protection before receipt signing or token exposure. Receiver enrollment,
+all-writer cessation and completion cells 2–4 remain separate. No cache
+performance claim follows from making a tooling validator reusable.

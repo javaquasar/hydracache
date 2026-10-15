@@ -1,0 +1,27 @@
+{
+  "schema_version": "diagnostic-signer-gnu-catalog-inventory-074-v1",
+  "tooling_source": "f10f5d64bdc752dabb40b403d9c055dd5a1d59ac",
+  "tooling_tree": "5018405379547bc02f0b61f9adfde961e6f4851b",
+  "git_clean_before_and_after_observations": true,
+  "inspector_binary": "/home/artur/.cache/hydracache-074-194-check/debug/examples/inspect_signer_gnu_catalog",
+  "inspector_sha256": "38db69bf0b1a8ec5ef1e4bc3bae3626369a40bcfd8e336d682904a1a8e9cdf64",
+  "input_paths": [
+    "/home/artur/.cache/hydracache-074-prebuilt-copy-20261015.Ruo6eQvc/attempt-00000000000000000000000000000074/diagnostic_controller",
+    "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+    "/usr/lib/x86_64-linux-gnu/libc.so.6",
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1"
+  ],
+  "positive_exit_code": 0,
+  "negative_native_exit_code": 2,
+  "initial_negative_shell_exit_code": 1,
+  "negative_readonly_invocations": 2,
+  "inputs_and_inspector_hash_metadata_unchanged": true,
+  "signer_source_reported_by_prior_unsigned_inventory": "16e9420313ef842e19183c7f6f189eb2e10207cf",
+  "new_receipt_signed": false,
+  "explicit_inspected_image_execution_requested": false,
+  "loaded_runtime_attested": false,
+  "signing_or_token_authority_exposed": false,
+  "server_or_github_operation": false,
+  "qualification_allowed": false,
+  "ship_allowed": false
+}

@@ -1,0 +1,32 @@
+warning: in the working copy of 'crates/xtask/tests/performance_contract_074.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/lib.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-signer-gnu-catalog-contract.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/performance/0.74/diagnostic-signer-gnu-catalog-design.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/examples/inspect_signer_gnu_catalog.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/diagnostic_signer_gnu.rs', LF will be replaced by CRLF the next time Git touches it
+ crates/xtask/tests/performance_contract_074.rs     |  76 ++++++++
+ docs/COMPAT.md                                     |   8 +
+ docs/GATES.md                                      |   8 +
+ .../diagnostic-signer-gnu-catalog-contract.toml    |  32 +++
+ .../0.74/diagnostic-signer-gnu-catalog-design.md   |  71 +++++++
+ .../examples/inspect_signer_gnu_catalog.rs         | 108 +++++++++++
+ .../src/diagnostic_signer_gnu.rs                   | 132 +++++++++++++
+ .../src/diagnostic_signer_runtime_elf.rs           |  18 +-
+ .../src/diagnostic_signer_runtime_fixture.rs       |  45 +----
+ tools/long-run-supervisor-074/src/lib.rs           |   1 +
+ .../tests/diagnostic_signer_gnu.rs                 | 216 +++++++++++++++++++++
+ 11 files changed, 662 insertions(+), 53 deletions(-)
+[feat/0.74-resp-native-throughput f10f5d64] feat: share bounded GNU signer declaration catalog outside fixtures
+ 11 files changed, 662 insertions(+), 53 deletions(-)
+ create mode 100644 docs/testing/performance/0.74/diagnostic-signer-gnu-catalog-contract.toml
+ create mode 100644 docs/testing/performance/0.74/diagnostic-signer-gnu-catalog-design.md
+ create mode 100644 tools/long-run-supervisor-074/examples/inspect_signer_gnu_catalog.rs
+ create mode 100644 tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs
+ create mode 100644 tools/long-run-supervisor-074/tests/diagnostic_signer_gnu.rs
+f10f5d64bdc752dabb40b403d9c055dd5a1d59ac
+5018405379547bc02f0b61f9adfde961e6f4851b
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.90s

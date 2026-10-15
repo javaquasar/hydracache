@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_signer_gnu`
+ --> tools\long-run-supervisor-074\tests\diagnostic_signer_gnu.rs:1:41
+  |
+1 | use hydracache_long_run_supervisor_074::diagnostic_signer_gnu::inspect_gnu_declarations;
+  |                                         ^^^^^^^^^^^^^^^^^^^^^ could not find `diagnostic_signer_gnu` in `hydracache_long_run_supervisor_074`
+
+error[E0603]: function `sha256_hex` is private
+   --> tools\long-run-supervisor-074\tests\diagnostic_signer_gnu.rs:62:82
+    |
+ 62 |         assert_eq!(c["images"][i]["sha256"], hydracache_long_run_supervisor_074::sha256_hex(&b[i]));
+    |                                                                                  ^^^^^^^^^^ private function
+    |
+note: the function `sha256_hex` is defined here
+   --> tools\long-run-supervisor-074\src\lib.rs:506:1
+    |
+506 | pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0432, E0603.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_signer_gnu") due to 2 previous errors

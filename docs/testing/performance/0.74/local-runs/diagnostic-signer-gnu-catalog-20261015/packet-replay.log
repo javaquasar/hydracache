@@ -1,0 +1,18 @@
+Verified local GNU declaration packet; custody, signing, start and ship remain closed.
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 2.003s
+
+OK
+Verified local GNU declaration packet; custody, signing, start and ship remain closed.
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 7.280s
+
+OK
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`
+performance-contract-check 0.74: OK (local, non-promotable)

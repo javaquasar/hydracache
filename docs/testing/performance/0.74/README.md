@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [shared GNU catalog](diagnostic-signer-gnu-catalog-design.md) now compiles the
+existing bounded parser/graph into the ordinary library and reuses it from old
+fixtures. Its [packet](local-runs/diagnostic-signer-gnu-catalog-20261015/README.md)
+binds one actual unsigned controller's declared inputs without executing it.
+The catalog is serialize-only data with all custody/signing/start/admission flags
+false, not a replacement for independently selected original runtime inputs.
+
 The [read-only enrollment review](diagnostic-enrollment-review-20261015.md) now
 records the actual host/account facts, GitHub configuration and unchanged public
 OIDC roster. Its [packet](local-runs/diagnostic-enrollment-inventory-20261015/README.md)

@@ -143,12 +143,15 @@ platform CA store is not itself production issuer/custody enrollment.
 
 ## Approval and implementation order
 
-First approve or amend the host/kernel/administrator trust model, worker/account
-and new-authority initialization proposal, protected signing-job profile and
-bounded roster policy. That approval selects policy intent; it does not fill
-missing executable, receiver or workflow facts with assertions.
+The operator's subsequent instruction to proceed authorizes local implementation
+under this proposed host/account, new-authority, protected-job and bounded-roster
+model. This selects implementation intent, not installed authority or missing
+executable, receiver and workflow facts. The earlier captured proposal retains
+its historical unapproved flags; it is not rewritten as a runtime trust file.
 
-Next implement and review the exact bootstrap/runtime and workflow artifacts,
+The first [shared GNU catalog slice](diagnostic-signer-gnu-catalog-design.md)
+removes the test-only declaration parser boundary. Finish and review the exact
+bootstrap/runtime and workflow artifacts,
 then separately authorize protected configuration and quiescent installation.
 Capture the actual receiver context, finalize canonical worker policy and its
 independent body pin, and obtain the real signer-build receipt under the selected
