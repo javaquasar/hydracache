@@ -12395,3 +12395,129 @@ fn signer_rooted_original_exec_keeps_production_and_late_namespace_policy_closed
         );
     }
 }
+
+#[test]
+fn signer_namespace_policy_preserves_original_owner_and_closed_authority() {
+    let c = contract("diagnostic-signer-namespace-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "internal_closed_profile_creates_original_root_and_child",
+        "original_pidfd_thread_bound_no_adoption",
+        "original_exec_and_exact_tsync_entry_bytes_zero_exit_checked",
+        "old_policy_prefix_and_tail_preserved",
+        "all_fifteen_native_mutations_denied_after_nd0",
+        "original_environment_mm_fd_and_live_fd_directory_retained",
+        "post_hardening_context_and_mapping_guards_not_skipped",
+        "actual_x32_i386_sigsys_in_rooted_candidate",
+        "three_old_policy_control_effects_distinguished",
+        "failed_nested_regain_prediction_retained_and_refused",
+        "actual_sigkill_drop_and_sticky_refusal_reap_original",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "nested_capability_regain_counterexample_reproduced",
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_attested",
+        "independent_runtime_custody",
+        "complete_sandbox",
+        "multithreaded_signer_supported",
+        "dummy_handoff_implemented",
+        "actual_tracer_loss_exitkill_proved",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_namespace_mount_account_service_or_cgroup_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("filter_instructions", 64),
+        ("filter_bytes", 512),
+        ("control_filter_instructions", 34),
+        ("control_filter_bytes", 272),
+        ("added_native_denials", 15),
+        ("original_files", 4),
+        ("original_directories", 4),
+        ("mapping_bytes", 65536),
+        ("mapping_records", 128),
+        ("directory_buffer_bytes", 512),
+        ("directory_reads", 3),
+        ("directory_records", 8),
+        ("environment_read_bytes", 1),
+        ("startup_pairs", 256),
+        ("stall_seconds", 5),
+        ("seeded_probes", 8),
+        ("independent_owners", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let owner =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    for required in [
+        "namespace_case: Option<namespace::Case>",
+        "environment: Option<(File, [u64; 2])>",
+        "fd_directory: Option<(File, [u64; 2])>",
+        "file.read_at(&mut byte, 0)",
+        "namespace::descriptors",
+        "namespace::root()",
+        "namespace::expected",
+        "PTRACE_O_TRACEEXEC",
+        "PTRACE_O_EXITKILL",
+        "SYS_execveat",
+    ] {
+        assert!(owner.contains(required), "{required}");
+    }
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_signer_namespace_fixture.rs")).unwrap();
+    for required in [
+        "old[..22]",
+        "old[22..]",
+        "libc::SECCOMP_RET_ERRNO",
+        "Case::ControlUnshare",
+        "regain_not_reproduced=true",
+        "owner.context(false)?",
+        "maps::validate",
+        "libc::SIGSYS",
+        "SYS_getdents64",
+        "for _ in 0..3",
+        "[0u8; 512]",
+        "names.len() >= 8",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "PTRACE_ATTACH",
+        "PTRACE_POKE",
+        "waitpid(-1",
+        "SigningKey",
+        "sign_prepared_files",
+        "libc::mount(",
+        "CLONE_NEWNS",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("namespace_fixture"),
+            "{path}"
+        );
+    }
+}

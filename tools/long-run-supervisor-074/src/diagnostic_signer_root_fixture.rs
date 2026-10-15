@@ -116,6 +116,12 @@ impl Root {
             prepare().map_err(|e| e.to_string())
         });
         let images = images.as_ref().map_err(|e| io::Error::other(e.clone()))?;
+        Self::materialize(images, uid, gid)
+    }
+    fn materialize(images: &[Vec<u8>; 4], uid: u32, gid: u32) -> io::Result<Self> {
+        if uid == 0 {
+            return Err(invalid());
+        }
         validate_images(images)?;
         let temp = tempfile::tempdir()?;
         let path = temp.path().join("root");

@@ -1,7 +1,15 @@
 # HydraCache — Enforcement Gates
 
+W11's local post-install mutation policy uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_namespace -- --nocapture`.
+Thirteen cases cover the exact 64-instruction candidate, fifteen native denials,
+old-policy controls, retained post-ND0 context sources, actual ABI kills and owned
+SIGKILL/drop. The regain prediction is retained as not reproduced, not an escape.
+No new manual gate, credential/handoff, production custody or server admission.
+See the [namespace contract](testing/performance/0.74/diagnostic-signer-namespace-contract.toml).
+
 W11's selected-root original-exec composition uses ordinary Linux x86_64 tests:
-`cargo test -p hydracache-long-run-supervisor-074 --lib --locked rooted_exec -- --nocapture`.
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked diagnostic_signer_root_fixture::rooted_exec::tests:: -- --nocapture`.
 Eleven cases check the original child exec, selected kernel VMA file identities,
 exact unchanged filter installation, refusals and SIGKILL at four boundaries.
 No new manual gate, production custody, post-install namespace policy, handoff or

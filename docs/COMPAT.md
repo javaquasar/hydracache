@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The post-install namespace policy is a private child of the existing Linux x86_64
+rooted libtest module. Root materialization and original-owner observation plumbing
+are reused with a closed internal selector; old helper and 34-instruction policy
+remain exact. New helper/64-instruction bytes and retained proc sources are local
+fixture mechanics, not a normal-library API, public profile or issuer authority.
+No durable/wire/schema/dependency/pin/qualification input changes. See the
+[namespace boundary](testing/performance/0.74/diagnostic-signer-namespace-design.md).
+
 The selected-root original-exec composition is a private child of the existing
 Linux x86_64 libtest root module. It owns its own root/child and observes stopped
 kernel file mappings and exact unchanged filter bytes. No caller adoption, public

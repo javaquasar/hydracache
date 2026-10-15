@@ -6,12 +6,14 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{self, Write};
 use std::marker::PhantomData;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
-use std::os::unix::fs::OpenOptionsExt;
+use std::os::unix::fs::{FileExt, OpenOptionsExt};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 #[path = "diagnostic_signer_rooted_maps.rs"]
 mod maps;
+#[path = "diagnostic_signer_namespace_fixture.rs"]
+mod namespace;
 const ARCH: u32 = 0xc000_003e;
 const EXEC_STOP: i32 = (libc::PTRACE_EVENT_EXEC << 16) | (libc::SIGTRAP << 8) | 0x7f;
 const SYSCALL_STOP: i32 = ((libc::SIGTRAP | 0x80) << 8) | 0x7f;
@@ -59,11 +61,24 @@ struct RootedExec {
     reaped: bool,
     phase: Phase,
     case: Case,
+    namespace_case: Option<namespace::Case>,
+    environment: Option<(File, [u64; 2])>,
+    fd_directory: Option<(File, [u64; 2])>,
     _thread: PhantomData<Rc<()>>,
 }
 impl RootedExec {
     fn new(case: Case) -> io::Result<Self> {
-        let mut root = Root::new()?;
+        Self::build(case, None)
+    }
+    fn namespace(case: namespace::Case) -> io::Result<Self> {
+        Self::build(Case::SelfExec, Some(case))
+    }
+    fn build(case: Case, namespace_case: Option<namespace::Case>) -> io::Result<Self> {
+        let mut root = if namespace_case.is_some() {
+            namespace::root()?
+        } else {
+            Root::new()?
+        };
         root.check()?;
         root.attempted = true;
         // SAFETY: local parent identity queries, no account or permission changes.
@@ -98,11 +113,13 @@ impl RootedExec {
         }
         let argv = [
             c"owned-rooted-helper".as_ptr(),
-            case.arg().as_ptr(),
+            namespace_case
+                .map_or_else(|| case.arg(), namespace::Case::arg)
+                .as_ptr(),
             std::ptr::null(),
         ];
         let env = [
-            if case == Case::Env {
+            if case == Case::Env || namespace_case == Some(namespace::Case::Env) {
                 c"ROOTED_ENV_FAULT=1".as_ptr()
             } else {
                 std::ptr::null()
@@ -127,6 +144,9 @@ impl RootedExec {
             reaped: false,
             phase: Phase::Initial,
             case,
+            namespace_case,
+            environment: None,
+            fd_directory: None,
             _thread: PhantomData,
         };
         // SAFETY: own unreaped direct child, never caller PID adoption.
@@ -260,10 +280,14 @@ impl RootedExec {
         if tasks != [std::ffi::OsString::from(self.pid.to_string())] {
             return Err(invalid());
         }
-        let names = fs::read_dir(format!("/proc/{}/fd", self.pid))?
-            .take(5)
-            .map(|e| e.map(|e| e.file_name()))
-            .collect::<io::Result<BTreeSet<_>>>()?;
+        let names = if !before_exec && self.namespace_case.is_some() {
+            namespace::descriptors(self.fd_directory.as_ref().ok_or_else(invalid)?)?
+        } else {
+            fs::read_dir(format!("/proc/{}/fd", self.pid))?
+                .take(5)
+                .map(|e| e.map(|e| e.file_name()))
+                .collect::<io::Result<BTreeSet<_>>>()?
+        };
         let mut expected: BTreeSet<_> = ["0", "1", "2"]
             .map(std::ffi::OsString::from)
             .into_iter()
@@ -277,11 +301,40 @@ impl RootedExec {
         if !before_exec
             && (super::Stamp::of(magic(format!("/proc/{}/exe", self.pid))?.metadata()?)
                 != self.root.files[0].stamp
-                || !text(format!("/proc/{}/environ", self.pid))?.is_empty())
+                || !self.empty_environment()?)
         {
             return Err(invalid());
         }
         self.root.check()
+    }
+    fn empty_environment(&self) -> io::Result<bool> {
+        if self.namespace_case.is_none() {
+            return Ok(text(format!("/proc/{}/environ", self.pid))?.is_empty());
+        }
+        let (file, original) = self.environment.as_ref().ok_or_else(invalid)?;
+        // SAFETY: initialized kernel statfs output and queries on an owned live FD.
+        let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
+        // SAFETY: fixed metadata/flag queries, no ownership or permission changes.
+        let (result, flags, fd_flags) = unsafe {
+            (
+                libc::fstatfs(file.as_raw_fd(), &mut fs),
+                libc::fcntl(file.as_raw_fd(), libc::F_GETFL),
+                libc::fcntl(file.as_raw_fd(), libc::F_GETFD),
+            )
+        };
+        if result != 0
+            || fs.f_type != 0x9fa0
+            || flags < 0
+            || fd_flags < 0
+            || flags & (libc::O_ACCMODE | libc::O_PATH) != libc::O_RDONLY
+            || fd_flags & libc::FD_CLOEXEC == 0
+            || !file.metadata()?.is_file()
+            || super::Stamp::of(file.metadata()?).identity() != *original
+        {
+            return Err(invalid());
+        }
+        let mut byte = [0];
+        Ok(file.read_at(&mut byte, 0)? == 0)
     }
     fn first_exec(&mut self) -> io::Result<()> {
         let result = self.first_inner();
@@ -301,6 +354,20 @@ impl RootedExec {
             return Err(io::Error::other(format!(
                 "rooted original exec refused: {status:#x}"
             )));
+        }
+        if self.namespace_case.is_some() {
+            let file = OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
+                .open(format!("/proc/{}/environ", self.pid))?;
+            let identity = super::Stamp::of(file.metadata()?).identity();
+            self.environment = Some((file, identity));
+            let directory = OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_DIRECTORY)
+                .open(format!("/proc/{}/fd", self.pid))?;
+            let identity = super::Stamp::of(directory.metadata()?).identity();
+            self.fd_directory = Some((directory, identity));
         }
         self.context(false)?;
         maps::validate(
@@ -339,7 +406,7 @@ impl RootedExec {
         let end = address.checked_add(count).ok_or_else(invalid)?;
         let start = address & !7;
         let padded = end.checked_add(7).ok_or_else(invalid)? & !7;
-        if count == 0 || count > 272 || start < bounds.0 || padded > bounds.1 {
+        if count == 0 || count > self.program_size() || start < bounds.0 || padded > bounds.1 {
             return Err(invalid());
         }
         let mut raw = Vec::with_capacity(count + 14);
@@ -361,13 +428,23 @@ impl RootedExec {
     }
     fn installer(&self, stack: (usize, usize), header: usize, program: usize) -> io::Result<()> {
         let raw = self.memory(stack, header, 16)?;
-        if u16::from_le_bytes(raw[..2].try_into().unwrap()) != 34
+        let expected = self
+            .namespace_case
+            .map_or_else(|| encoded(&policy()), namespace::expected);
+        if u16::from_le_bytes(raw[..2].try_into().unwrap()) as usize * 8 != expected.len()
             || u64::from_le_bytes(raw[8..16].try_into().unwrap()) != program as u64
-            || self.memory(stack, program, 272)? != encoded(&policy())
+            || self.memory(stack, program, expected.len())? != expected
         {
             return Err(invalid());
         }
         Ok(())
+    }
+    fn program_size(&self) -> usize {
+        if self.namespace_case.is_some_and(|case| !case.control()) {
+            512
+        } else {
+            272
+        }
     }
     fn install(&mut self) -> io::Result<()> {
         let result = self.install_inner();
@@ -559,6 +636,13 @@ fn startup_allowed(nr: u64) -> bool {
             libc::SYS_mount,
             libc::SYS_umount2,
             libc::SYS_pivot_root,
+            libc::SYS_open_tree,
+            libc::SYS_move_mount,
+            libc::SYS_fsopen,
+            libc::SYS_fsconfig,
+            libc::SYS_fsmount,
+            libc::SYS_fspick,
+            libc::SYS_mount_setattr,
         ]
         .contains(&(nr as i64))
 }
