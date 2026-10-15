@@ -8575,3 +8575,45 @@ and lint correction alongside final results. This improves the test launch bound
 it measures no cache goodput, allocations or latency. Bounded dummy handoff and
 actual tracer loss come next, with production custody, authenticated worker start,
 all writers and later lifecycle/server admission still separate.
+
+## One shot synthetic transfer after original launch (2026-10-15)
+
+The next hypothesis was whether launch proof could gate an actual bounded local
+handoff rather than merely observe a process. A new fixed GNU helper uses the
+existing original rooted owner and unchanged namespace policy, with one private
+unnamed packet channel at FD3. No caller PID, descriptor or readiness assertion
+can construct that owner. This evaluates bootstrap mechanics, not cache speed or
+production credential custody.
+
+READY is necessary but insufficient. The parent first verifies original exec,
+exact filter installation, non-dumpable hardening, original context and the
+16-byte READY send. The next original syscall must be the exact bounded read.
+Only then does the parent latch its sole send attempt and transfer the public
+dummy. It verifies the received stack bytes, ACK, channel close, final descriptor
+inventory and zero original exit. A duplicate READY is rejected before transfer;
+a lost or duplicate ACK is terminal after transfer and cannot authorize resend.
+Unexpected FD-replacement and ancillary-capable syscalls are stopped at entry.
+The inherited channel's creation credentials are not mistaken for the child's
+PID; original trace history establishes the participant under this fixture's
+trusted-launcher assumptions, consistent with
+[UNIX socket semantics](https://man7.org/linux/man-pages/man7/unix.7.html).
+
+The first startup guard was too broad: blocking all reads also blocked the GNU
+loader before installation. The failed 2pass/9fail run and focused install error
+remain retained. Restricting that guard to FD3 preserved ordinary selected-library
+reads and all previous runtime checks. This was an implementation correction,
+not a new filter policy, weakened bound or changed GNU profile. A mistaken test
+target and a zero-test correction also remain visible; only the final correct
+18+12 module runs complete that part of the regression ledger.
+
+Three thirteen-case repeats pass, including pre-read withholding, malformed and
+duplicate records, transport/ACK failures, context/endpoint faults, actual child
+SIGKILL/drop at three transfer boundaries, seeded cases and independent owners.
+All 99 old regressions, MSRV1.88, Windows portable9, strict lint and 144 source
+contracts pass. The [design](../testing/performance/0.74/diagnostic-signer-handoff-design.md)
+and [source-bound packet](../testing/performance/0.74/local-runs/diagnostic-signer-handoff-20261015/README.md)
+separate these confirmed results from actual tracer-loss EXITKILL, which remains
+the next experiment. A one-shot public dummy is not a signing credential, and
+these tests do not authenticate production issuer/job custody, worker original-
+start or cessation of all writers. Server and release admission remain closed;
+no goodput, allocation or latency improvement follows from this safety fixture.

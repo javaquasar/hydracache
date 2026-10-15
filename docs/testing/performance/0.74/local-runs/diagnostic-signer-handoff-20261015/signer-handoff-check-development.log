@@ -1,0 +1,35 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.41s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 13 tests
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+handoff_original_ready_dummy_ack_close_exit=exact packets=16 sends=1 real_credentials=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes ... ok
+handoff_sendmsg_dup2_nonstack=refused_before_dispatch ancillary_FDs_received=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse ... ok
+handoff_withheld=initial,rooted,exec,installed,ready no_send_before_original_read_entry=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary ... ok
+handoff_foreign_endpoint_refused original_inode_and_flags_required=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seqpacket_bounds_eof_and_empty_queue_are_explicit ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse ... ok
+handoff_send_failure=latched attempted=true sends=0 retry=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry ... ok
+handoff_ACK_fault_cases=3 exactly_one_dummy_no_retry=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable ... ok
+handoff_child_SIGKILL_drop=installed,ready,delivered tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries ... ok
+handoff_bad_ready_cases=7 sends=0 replacement=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send ... ok
+handoff_seed=0x07404a11 fresh_cases=8 independent_owners=4 multithreaded_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 805 filtered out; finished in 31.37s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.34s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.08s

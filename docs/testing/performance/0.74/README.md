@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original synthetic handoff](diagnostic-signer-handoff-design.md) now binds
+one 16-byte dummy transfer to the original exec/install/ND0/read-entry chain.
+Three thirteen-case repeats, 99 old regressions, MSRV, Windows portability and 144
+source contracts pass. The [handoff packet](local-runs/diagnostic-signer-handoff-20261015/README.md)
+retains failed startup plumbing and command-runner mistakes, including a zero-test
+filter that is not credited. Lost ACK or uncertain send cannot resend. Actual child
+SIGKILL/drop is covered; actual tracer loss, real custody/credentials, worker/all-
+writer completion and server/qualification remain closed. Earlier packets below
+retain their source-specific narrower scope.
+
 The [post-install namespace policy](diagnostic-signer-namespace-design.md) adds
 fifteen native denial pairs to the unchanged old ABI/exec/control/hardening policy.
 Three thirteen-case repeats, actual rooted x32/i386 SIGSYS, retained post-ND0

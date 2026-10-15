@@ -1,0 +1,9 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
+Verified original synthetic handoff evidence, 29 captures; tracer loss and production remain closed.
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 26.542s
+
+OK

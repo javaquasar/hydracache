@@ -1,0 +1,49 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 18 tests
+seed=0x07403b24 fresh_process_observations=16 independent_originals=4 production_custody=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_cloexec_and_additional_descriptor_release ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_absolute_normal_path_and_symlink_ancestry_refuse ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_different_inode_exec_keeps_generation_but_cross_refuses ... ok
+actual_same_inode_reexec=observed object_and_generation_match=true original_invocation_or_runtime_proved=false
+test diagnostic_signer_bundle::executable::tests::signer_executable_same_inode_reexec_is_not_original_invocation_proof ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_equal_byte_foreign_inode_and_wrong_process_refuse_bundle ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_process_exit_and_failed_initial_binding_stay_refused ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_bundle_drift_and_prior_refusal_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_original_kernel_object_positive_and_healthy_drop ... ok
+seed=0x07403b23 fresh_substitutions=32 independent_originals=4 actual_bootstrap=false
+test diagnostic_signer_bundle::tests::signer_bundle_original_positive_cloexec_and_drop_release_owned_descriptors ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_empty_oversized_missing_and_extra_entries_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_bad_signature_selection_and_each_initial_content_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_streaming_hash_chunk_boundary_empty_and_read_ceiling ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_initial_permissions_and_asserted_owner_mismatch_refuse ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_symlink_hardlink_directory_and_fifo_children_refuse_without_blocking ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_equal_byte_named_replacement_root_replacement_and_sticky_refusal ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_in_place_write_metadata_or_namespace_drift_cannot_be_repaired ... ok
+test diagnostic_signer_bundle::tests::signer_bundle_seeded_substitutions_and_independent_concurrent_originals ... ok
+test diagnostic_signer_bundle::executable::tests::signer_executable_seeded_live_and_exec_cases_and_independent_originals ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 800 filtered out; finished in 0.67s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.24s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 12 tests
+test diagnostic_controller_producer::linux::tests::producer_linux_checks_public_request_before_opening_any_secret ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_valid_other_body_with_previous_audience_refuses_before_key ... ok
+test diagnostic_controller_producer::tests::producer_roundtrip_exact_request_domain_audience_and_synthetic_signature ... ok
+test diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_bad_audience_and_expiry_refuse_before_key_io ... ok
+test diagnostic_controller_producer::tests::producer_retained_audience_and_internal_body_corruption_refuse ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_signs_original_body_after_public_files_change_or_disappear ... ok
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_public_entry_keeps_controller_pin_and_exclusive_output ... ok
+test diagnostic_controller_producer::tests::producer_wrong_selected_key_time_and_retained_identity_refuse ... ok
+test diagnostic_controller_producer::linux::tests::producer_linux_private_synthetic_output_is_exclusive_and_never_real_controller ... ok
+seed=0x07562074 signed_model_requests=32 independent_preparations=4 real_controller_signing=false
+test diagnostic_controller_producer::tests::producer_seeded_valid_messages_and_independent_preparations ... ok
+seed=0x07403b21 retained_body_cases=32 independent_preparations=4 actual_token_or_signer_custody=false
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_seeded_body_replacements_and_independent_preparations ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 806 filtered out; finished in 0.86s
+

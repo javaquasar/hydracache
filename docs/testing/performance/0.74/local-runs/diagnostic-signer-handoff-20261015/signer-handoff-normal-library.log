@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.74s
+awk: cmd. line:1: BEGIN{found=0} /diagnostic_signer_root|diagnostic_signer_namespace|diagnostic_signer_handoff/ {found=1} END{if(!found) print \normal-library
+awk: cmd. line:1:                                                                                                                              ^ backslash not last character on line

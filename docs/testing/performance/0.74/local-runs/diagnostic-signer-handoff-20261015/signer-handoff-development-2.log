@@ -1,0 +1,62 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.79s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+fixture_handoff_helper_sha256=f00b02c2c668ccbaf27e101e91bedf97b9b3c1c6cd4812e3e5d5a901800ce056 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend' (685) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:63:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries' (689) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:137:45:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries ... FAILED
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seqpacket_bounds_eof_and_empty_queue_are_explicit ... ok
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable' (690) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:77:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse' (684) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:93:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse' (688) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:119:41:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send' (686) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:42:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes' (687) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:11:37:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners' (771) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:189:35:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary' (683) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_handoff_tests.rs:27:39:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary ... FAILED
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse ... ok
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable
+    diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners
+
+test result: FAILED. 2 passed; 9 failed; 0 ignored; 0 measured; 805 filtered out; finished in 4.65s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
