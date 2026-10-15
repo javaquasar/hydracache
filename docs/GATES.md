@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+The selected signer issuer uses ordinary portable tests:
+`cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_issuer --locked`.
+Six tests cover fixed key/fingerprint, old-role separation, the original public
+selfcheck/signature mutations, synthetic-issuer refusal, invalid asserted profiles,
+selection scope and independent concurrent factories. Compile-fail issuer-override
+coverage runs with doctests. This adds no manual or server gate; see the
+[selected-issuer design](testing/performance/0.74/diagnostic-signer-pin-design.md).
+
 The local separate signer-key helper uses
 `python -m unittest scripts.perf.test_diagnostic_signer_key_074` (nonroot Linux
 for actual disposable key fixtures; Windows reports those cases skipped).

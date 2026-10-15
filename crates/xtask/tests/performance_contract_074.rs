@@ -12941,6 +12941,74 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
 }
 
 #[test]
+fn signer_selected_issuer_does_not_promote_asserted_build_or_runtime_custody() {
+    let base = root();
+    let p: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            base.join("docs/testing/performance/0.74/diagnostic-signer-issuer-selection.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(p["operator_public_key_selected"], true);
+    for key in [
+        "artifact_selected",
+        "job_enrolled",
+        "runtime_custody_enrolled",
+        "production_signing_enabled",
+        "server_admission",
+    ] {
+        assert_eq!(p[key], false, "{key}");
+    }
+    let module = std::fs::read_to_string(
+        base.join("tools/long-run-supervisor-074/src/diagnostic_signer_issuer.rs"),
+    )
+    .unwrap();
+    for required in [
+        "08f18b0078ad4d754ed615682ec0c9c076109965548d9c674ac606e3625f79ea",
+        "0c22ba7d6c6d16b334e4b1d4a0ce161117800135a977aa30020906caa70af884",
+        "key.is_weak()",
+        "sha256_hex(key.as_bytes())",
+        "AssertedSignerBuildSelection::new(issuer_key()?, expected)",
+        "compile_fail",
+    ] {
+        assert!(module.contains(required), "{required}");
+    }
+    for forbidden in [
+        "std::fs",
+        "std::env",
+        "SigningKey",
+        "File::open",
+        "sign_prepared",
+        "pub struct",
+    ] {
+        assert!(!module.contains(forbidden), "{forbidden}");
+    }
+    let generation: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            base.join("docs/testing/performance/0.74/diagnostic-signer-issuer-public.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(generation["public_pin_approved"], false);
+    assert_eq!(generation["public_key_hex"], p["public_key_hex"]);
+    assert!(!base
+        .join(".github/workflows/diagnostic-controller-signer-074.yml")
+        .exists());
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        let source =
+            std::fs::read_to_string(base.join("tools/long-run-supervisor-074/src").join(path))
+                .unwrap();
+        assert!(!source.contains("diagnostic_signer_issuer"));
+    }
+}
+
+#[test]
 fn signer_custody_preparation_does_not_install_a_trust_root_or_signing_job() {
     let base = root();
     let helper =

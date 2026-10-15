@@ -2,8 +2,10 @@
 
 The operator authorized this new local Ed25519 pair on October 15, 2026 for the
 signer-build receipt role. It is distinct from SSH, controller, observer builder
-and worker-policy keys. Generation is complete; approval of its public fingerprint
-and enrollment of production custody remain separate.
+and worker-policy keys. The operator subsequently selected its public fingerprint
+for the signer-build issuer role. Production custody is not enrolled. The separate
+[selection record](diagnostic-signer-issuer-selection.json) and
+[selected-issuer design](diagnostic-signer-pin-design.md) describe this later decision.
 
 ## Current public candidate
 
@@ -15,11 +17,12 @@ computed over the 32 raw public bytes, is:
 0c22ba7d6c6d16b334e4b1d4a0ce161117800135a977aa30020906caa70af884
 ```
 
-This is not a private-file hash, SSH fingerprint, signed build receipt, approved
-trust pin or host authority. OpenSSL inspection and independent Rust strict
+This is not a private-file hash, SSH fingerprint, signed build receipt or host
+authority. OpenSSL inspection and independent Rust strict
 Ed25519 verification on Windows/Linux agree. The public record deliberately
 keeps pin approval, production enrollment, receipt signing, workflow installation
-and admission false. It is inventory, not an automatically loaded trust file.
+and admission false as an immutable record of generation. The later operator
+selection does not rewrite it. It is inventory, not an automatically loaded trust file.
 
 ## Storage and commands
 

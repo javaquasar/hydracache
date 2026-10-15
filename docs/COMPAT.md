@@ -1,5 +1,14 @@
 # HydraCache Compatibility Register
 
+The local audit record `diagnostic-signer-issuer-selection-074-v1` records only
+operator selection of a separate signer-build public key. It is not the earlier
+generation selfcheck record, a signed receipt or a production trust loader.
+Code pins select the issuer independently of incoming records. Artifact/runtime/
+job/signing/server fields remain false; no new wire reader or negotiation exists.
+Old receipt readers and key roles remain unchanged. Rotation requires a new
+reviewed code pin/selection, not changing the old generation event. See the
+[selected-issuer design](testing/performance/0.74/diagnostic-signer-pin-design.md).
+
 The local public inventory `diagnostic-signer-build-issuer-selection-074-v1`
 has a separate purpose, public key/fingerprint and fixed selfcheck domain. It
 contains no private material and keeps pin approval, production enrollment,
