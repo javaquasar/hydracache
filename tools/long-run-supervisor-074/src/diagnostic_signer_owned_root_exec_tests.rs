@@ -2,7 +2,7 @@ use super::*;
 use crate::root::tests::images;
 use crate::root::{chmod, Source};
 use std::os::unix::fs::PermissionsExt;
-fn root() -> (Root, tempfile::TempDir) {
+pub(super) fn root() -> (Root, tempfile::TempDir) {
     let temp = tempfile::tempdir().unwrap();
     let sources = images::images()
         .into_iter()

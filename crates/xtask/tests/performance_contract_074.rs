@@ -3,6 +3,108 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
+    let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
+    for key in [
+        "normal_fixed_root_restriction_diagnostic_composed",
+        "same_private_installer_used_by_both_entries",
+        "old_entry_proc_pre_post_checks_retained",
+        "fixed_policy_bytes_unchanged",
+        "actual_tsync_and_stack_bpf_observed",
+        "actual_nd0_set_success_observed",
+        "filter_count_increment_checked",
+        "strict_install_order_excludes_fd_mutation",
+        "parent_only_retained_proc_readers",
+        "post_nd0_readers_have_no_reopen_fallback",
+        "native_eperm_and_alternate_abi_sigsys_checked",
+        "installed_original_sigkill_and_drop_checked",
+        "original_reap_echild_eof_precede_cleanup",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "direct_post_install_dumpability_query",
+        "root_exec_mode_installs_policy",
+        "full_normal_entry_creator_loss_proved",
+        "overlapping_broad_load_robustness_proved",
+        "credential_handoff_authenticated",
+        "runtime_custody_authenticated",
+        "mapped_memory_attested",
+        "original_worker_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("policy_instructions", 64),
+        ("policy_bytes", 512),
+        ("header_bytes", 16),
+        ("maximum_syscall_events", 128),
+        ("install_syscall_pairs", 8),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+        ("directory_read_bytes", 512),
+        ("directory_reads", 3),
+        ("directory_records", 8),
+        ("maximum_image_bytes", 8388608),
+        ("wait_seconds", 5),
+        ("private_marker_version", 1),
+        ("private_marker_bytes", 16),
+        ("maximum_failure_drain_bytes", 48),
+        ("memory_mutation_seed", 121684092),
+        ("memory_mutations", 256),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let core = std::fs::read_to_string(base.join("diagnostic_signer_isolation_core.rs")).unwrap();
+    let old = std::fs::read_to_string(base.join("diagnostic_signer_isolation_linux.rs")).unwrap();
+    let launch =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_root_exec.rs")).unwrap();
+    let check =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_root_isolation.rs")).unwrap();
+    assert!(old.contains("core::install(&mut filters)?"));
+    assert!(check.contains("super::core::install(&mut filters)"));
+    assert!(launch.contains("mod core;"));
+    for marker in [
+        "libc::SYS_seccomp",
+        "SECCOMP_FILTER_FLAG_TSYNC",
+        "PR_SET_DUMPABLE",
+        "PR_GET_NO_NEW_PRIVS",
+    ] {
+        assert!(core.contains(marker), "{marker}");
+    }
+    assert!(!core.contains("PR_GET_DUMPABLE"));
+    for marker in [
+        "PTRACE_GET_SYSCALL_INFO",
+        "PTRACE_PEEKDATA",
+        "0..128",
+        "step == 8",
+        "policy(owner",
+        "Readers::capture",
+        "libc::SYS_getdents64",
+        "owner.phase = Phase::Installed",
+    ] {
+        assert!(check.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "remove_dir_all",
+        "libc::mount(",
+        "PTRACE_POKEDATA",
+        "sign_with",
+        "Command::new",
+    ] {
+        assert!(!check.contains(forbidden), "{forbidden}");
+    }
+}
+
+#[test]
 fn ordinary_selected_root_exec_is_metadata_diagnostic_not_signer_admission() {
     let c = contract("diagnostic-signer-owned-root-exec-contract.toml");
     for key in [
@@ -376,7 +478,12 @@ fn ordinary_child_entry_is_fixed_kernel_restriction_not_launch_admission() {
         assert_eq!(c[key].as_integer(), Some(value), "{key}");
     }
     let base = root().join("tools/long-run-supervisor-074/src");
-    let code = std::fs::read_to_string(base.join("diagnostic_signer_isolation_linux.rs")).unwrap();
+    let mut code =
+        std::fs::read_to_string(base.join("diagnostic_signer_isolation_linux.rs")).unwrap();
+    assert!(code.contains("core::install(&mut filters)?"));
+    code.push_str(
+        &std::fs::read_to_string(base.join("diagnostic_signer_isolation_core.rs")).unwrap(),
+    );
     assert!(code.contains("fn install() -> io::Result<()>"));
     assert!(!code.contains("pub fn install"));
     for marker in [

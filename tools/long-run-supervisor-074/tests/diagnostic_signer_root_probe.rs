@@ -204,6 +204,16 @@ fn normal_original_root_exec_observes_selected_runtime_then_reaps() {
     if image.extra_libm {
         refused(image.command().arg("root-exec"));
         println!("extra_libm_root_exec=refused admission=false");
+        for mode in [
+            "root-native",
+            "root-x32",
+            "root-i386",
+            "root-kill-installed",
+            "root-drop-installed",
+        ] {
+            refused(image.command().arg(mode));
+        }
+        println!("extra_libm_root_policy_modes=5 refused=true unchanged_four_role_graph=true admission=false");
         return;
     }
     let out = output(image.command().arg("root-exec"));
@@ -214,6 +224,26 @@ fn normal_original_root_exec_observes_selected_runtime_then_reaps() {
     );
     assert!(out.stderr.is_empty(), "{out:?}");
     println!("normal_root_exec=true initial_images=2 loaded_images=4 original_reaped=true stream_eof=true admission=false");
+    for mode in ["root-native", "root-x32", "root-i386"] {
+        let out = output(image.command().arg(mode));
+        assert_eq!(out.status.code(), Some(0), "{mode}: {out:?}");
+        assert_eq!(
+            out.stdout,
+            b"selected rooted isolation observed; admission=false\n"
+        );
+        assert!(out.stderr.is_empty(), "{out:?}");
+        println!("normal_root_policy mode={mode} actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false");
+    }
+    for mode in ["root-kill-installed", "root-drop-installed"] {
+        let out = output(image.command().arg(mode));
+        assert_eq!(out.status.code(), Some(0), "{mode}: {out:?}");
+        assert_eq!(
+            out.stdout,
+            b"selected rooted installed cleanup observed; admission=false\n"
+        );
+        assert!(out.stderr.is_empty(), "{out:?}");
+        println!("normal_root_policy_cleanup mode={mode} installed_stop=true original_reaped=true stream_eof=true admission=false");
+    }
 }
 
 #[test]
@@ -287,4 +317,23 @@ fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
         });
     }
     refused(ignored.arg("root-exec"));
+    for mode in [
+        "root-native",
+        "root-x32",
+        "root-i386",
+        "root-kill-installed",
+        "root-drop-installed",
+    ] {
+        refused(image.command().arg(mode).env("UNTRUSTED_ROOT_PROBE", "1"));
+        refused(image.command().args([mode, "extra"]));
+    }
+    for mode in [
+        "--root-native-child",
+        "--root-x32-child",
+        "--root-i386-child",
+    ] {
+        let out = output(image.command().arg(mode));
+        assert_eq!(out.status.code(), Some(92));
+        assert!(out.stdout.is_empty() && out.stderr.is_empty());
+    }
 }

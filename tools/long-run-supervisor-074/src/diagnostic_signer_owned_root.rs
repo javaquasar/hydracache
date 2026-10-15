@@ -412,7 +412,23 @@ pub(super) fn rooted_probe() -> io::Result<()> {
 pub(super) fn rooted_child() -> ! {
     launch::child_entry()
 }
+pub(super) fn isolated_probe(
+    probe: hydracache_long_run_supervisor_074::diagnostic_signer_isolation::FixedProbe,
+) -> io::Result<()> {
+    launch::preflight()?;
+    launch::run_isolated(acquire()?, probe)
+}
+pub(super) fn isolated_child(
+    probe: hydracache_long_run_supervisor_074::diagnostic_signer_isolation::FixedProbe,
+) -> ! {
+    launch::isolated_child_entry(probe)
+}
 
 #[cfg(test)]
 #[path = "diagnostic_signer_owned_root_tests.rs"]
 mod tests;
+
+pub(super) fn installed_cleanup(kill: bool) -> io::Result<()> {
+    launch::preflight()?;
+    launch::installed_cleanup(acquire()?, kill)
+}

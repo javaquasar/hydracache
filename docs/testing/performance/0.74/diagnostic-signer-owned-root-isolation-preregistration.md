@@ -55,3 +55,14 @@ runtime custody, full normal-entry creator-loss proof, worker original-start,
 P2/P3 all-writer revocation, completion/later cells, server or GitHub operation,
 product measurement, release qualification or ship admission. Proc-less restriction
 composition is not a complete sandbox or mapped-memory attestation.
+
+## Feasibility correction before acceptance
+
+The first instrumented attempt observes successful TSYNC and SET_DUMPABLE(0),
+then PR_GET_DUMPABLE returns EPERM under the unchanged policy. The existing
+prctl tail permits only SET_DUMPABLE(0), not the proposed readback. Remove that
+incompatible new readback, not the denial. Parent acceptance instead requires
+observed successful SET_DUMPABLE(0), exact BPF, filter-count increment and the
+existing restoration-denial exercise. The exact sequence consequently has eight
+entry/exit pairs rather than nine; the 128-event bound is unchanged. No direct
+post-install dumpability-query claim is made. Preserve the failed attempt.

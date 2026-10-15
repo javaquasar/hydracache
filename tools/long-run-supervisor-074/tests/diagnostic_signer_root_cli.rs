@@ -7,6 +7,12 @@ fn fixed_root_cli_has_no_caller_selected_inputs() {
         vec!["--fd", "3"],
         vec!["root-exec", "extra"],
         vec!["--root-child", "extra"],
+        vec!["root-native", "extra"],
+        vec!["root-x32", "extra"],
+        vec!["root-i386", "extra"],
+        vec!["root-kill-installed", "extra"],
+        vec!["root-drop-installed", "extra"],
+        vec!["--root-native-child", "extra"],
     ] {
         let out = std::process::Command::new(env!("CARGO_BIN_EXE_diagnostic_signer_root_probe"))
             .env_clear()

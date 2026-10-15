@@ -1,5 +1,6 @@
 //! Ordinary binary-private launch mechanics. No credential or authority inputs.
 use super::{refused, require, Root, Stamp};
+use hydracache_long_run_supervisor_074::diagnostic_signer_isolation::FixedProbe;
 use std::collections::BTreeSet;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -7,6 +8,10 @@ use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::time::{Duration, Instant};
 
+#[path = "diagnostic_signer_isolation_core.rs"]
+mod core;
+#[path = "diagnostic_signer_owned_root_isolation.rs"]
+mod isolation;
 #[path = "diagnostic_signer_owned_root_maps.rs"]
 mod maps;
 const STOP: i32 = (libc::SIGSTOP << 8) | 0x7f;
@@ -18,6 +23,7 @@ enum Phase {
     Rooted,
     Exec,
     Loaded,
+    Installed,
     Terminal,
     Refused,
 }
@@ -80,9 +86,16 @@ struct Owner {
     reaped: bool,
     terminal: Option<i32>,
     phase: Phase,
+    probe: Option<FixedProbe>,
+    readers: Option<isolation::Readers>,
+    stack: Option<(usize, usize)>,
+    filters: Option<u64>,
 }
 impl Owner {
-    fn new(mut root: Root) -> io::Result<Self> {
+    fn new(root: Root) -> io::Result<Self> {
+        Self::build(root, None)
+    }
+    fn build(mut root: Root, probe: Option<FixedProbe>) -> io::Result<Self> {
         root.check()?;
         let last: u32 = bounded(open("/proc/sys/kernel/cap_last_cap")?)?
             .trim()
@@ -118,7 +131,13 @@ impl Owner {
         let creator = unsafe { libc::getpid() };
         let argv = [
             c"/signer".as_ptr(),
-            c"--root-child".as_ptr(),
+            match probe {
+                None => c"--root-child",
+                Some(FixedProbe::Native) => c"--root-native-child",
+                Some(FixedProbe::X32) => c"--root-x32-child",
+                Some(FixedProbe::I386) => c"--root-i386-child",
+            }
+            .as_ptr(),
             std::ptr::null(),
         ];
         let env = [std::ptr::null::<libc::c_char>()];
@@ -156,6 +175,10 @@ impl Owner {
             reaped: false,
             terminal: None,
             phase: Phase::Initial,
+            probe,
+            readers: None,
+            stack: None,
+            filters: None,
         };
         drop(writer);
         owner.pidfd = Some(file(unsafe {
@@ -180,7 +203,8 @@ impl Owner {
         )?;
         owner.trace(
             libc::PTRACE_SETOPTIONS,
-            (libc::PTRACE_O_TRACEEXEC | libc::PTRACE_O_EXITKILL) as usize,
+            (libc::PTRACE_O_TRACEEXEC | libc::PTRACE_O_EXITKILL | libc::PTRACE_O_TRACESYSGOOD)
+                as usize,
         )?;
         Ok(owner)
     }
@@ -289,13 +313,19 @@ impl Owner {
             1,
         )?;
         require(tasks == [self.pid.to_string()].into())?;
-        let descriptors = self.relative("fd", libc::O_RDONLY | libc::O_DIRECTORY)?;
         let mut expected: BTreeSet<_> = ["0", "1", "2", "3"].map(str::to_owned).into();
         if before_exec {
             expected.insert(self.exec_fd.to_string());
         }
-        require(names(&descriptors, 5)? == expected)?;
-        for fd in 0..4 {
+        let descriptors = if let Some(readers) = &self.readers {
+            readers.names()?
+        } else {
+            names(&self.relative("fd", libc::O_RDONLY | libc::O_DIRECTORY)?, 5)?
+        };
+        require(descriptors == expected)?;
+        // After ND0, original FD object bindings follow from the fully observed
+        // install sequence (which permits no FD mutation), not fresh proc opens.
+        for fd in 0..if self.phase == Phase::Installed { 0 } else { 4 } {
             let original = if fd == 3 {
                 &self.pipe_stamp
             } else {
@@ -322,8 +352,17 @@ impl Owner {
             require(
                 Stamp::of(&self.relative("exe", libc::O_PATH)?.metadata()?)
                     == self.root.files[0].stamp
-                    && self.text("environ")?.is_empty(),
+                    && if let Some(readers) = &self.readers {
+                        readers.empty_environment()?
+                    } else {
+                        self.text("environ")?.is_empty()
+                    },
             )?;
+        }
+        if self.phase == Phase::Installed {
+            require(self.readers.is_some())?;
+            let (mode, filters) = isolation::filter_state(&self.text("status")?)?;
+            require(mode == 2 && filters == self.filters.ok_or_else(refused)? + 1)?;
         }
         self.root.check()
     }
@@ -343,7 +382,7 @@ impl Owner {
         self.trace(libc::PTRACE_CONT, 0)?;
         require(self.wait()? == STOP)?;
         self.context(false)?;
-        maps::validate(&self.text("maps")?, &self.root, true)?;
+        self.stack = Some(maps::validate(&self.text("maps")?, &self.root, true)?);
         let mut marker = [0; 17];
         require(self.pipe.read(&mut marker)? == MARKER.len() && &marker[..16] == MARKER)?;
         require(
@@ -395,7 +434,7 @@ impl Owner {
                 break;
             }
             count += got;
-            require(count <= 16)?;
+            require(count <= if self.probe.is_some() { 48 } else { 16 })?;
         }
         Ok(())
     }
@@ -436,6 +475,63 @@ pub(super) fn run(root: Root) -> io::Result<()> {
     owner.advance(Phase::Rooted, Owner::first_exec)?;
     owner.advance(Phase::Exec, Owner::loaded)?;
     owner.advance(Phase::Loaded, Owner::finish)
+}
+pub(super) fn run_isolated(root: Root, probe: FixedProbe) -> io::Result<()> {
+    let mut owner = Owner::build(root, Some(probe))?;
+    owner.advance(Phase::Initial, Owner::enter)?;
+    owner.advance(Phase::Rooted, Owner::first_exec)?;
+    owner.advance(Phase::Exec, Owner::loaded)?;
+    owner.advance(Phase::Loaded, isolation::install)?;
+    owner.advance(Phase::Installed, isolation::finish)
+}
+pub(super) fn installed_cleanup(root: Root, kill: bool) -> io::Result<()> {
+    let mut owner = Owner::build(root, Some(FixedProbe::Native))?;
+    owner.advance(Phase::Initial, Owner::enter)?;
+    owner.advance(Phase::Rooted, Owner::first_exec)?;
+    owner.advance(Phase::Exec, Owner::loaded)?;
+    owner.advance(Phase::Loaded, isolation::install)?;
+    if kill {
+        owner.terminate()?;
+        require(owner.terminal == Some(libc::SIGKILL))?;
+        owner.root.check()?;
+        owner.root.cleanup()?;
+        owner.phase = Phase::Terminal;
+    } else {
+        // Verify ordinary Drop using originals retained BEFORE releasing ownership.
+        let pid = owner.pid;
+        let pidfd = owner.pidfd.as_ref().ok_or_else(refused)?.try_clone()?;
+        let parent = owner.root.parent.try_clone()?;
+        let name = owner.root.name.clone();
+        drop(owner);
+        let mut ready = libc::pollfd {
+            fd: pidfd.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        require(
+            unsafe { libc::poll(&mut ready, 1, 0) } == 1
+                && ready.revents & libc::POLLIN != 0
+                && ready.revents & !(libc::POLLIN | libc::POLLHUP) == 0,
+        )?;
+        let mut status = 0;
+        require(
+            unsafe { libc::waitpid(pid, &mut status, libc::WNOHANG | libc::__WALL) } == -1
+                && io::Error::last_os_error().raw_os_error() == Some(libc::ECHILD),
+        )?;
+        let mut metadata: libc::stat = unsafe { std::mem::zeroed() };
+        require(
+            unsafe {
+                libc::fstatat(
+                    parent.as_raw_fd(),
+                    name.as_ptr(),
+                    &mut metadata,
+                    libc::AT_SYMLINK_NOFOLLOW,
+                )
+            } == -1
+                && io::Error::last_os_error().raw_os_error() == Some(libc::ENOENT),
+        )?;
+    }
+    Ok(())
 }
 fn status(raw: &str, uid: u32, gid: u32, pid: i32, creator: i32, tracer: i32) -> io::Result<()> {
     require(!raw.is_empty() && raw.len() <= 65536 && raw.ends_with('\n'))?;
@@ -574,65 +670,69 @@ fn raw_child(
         libc::_exit(80);
     }
 }
-pub(super) fn child_entry() -> ! {
+fn child_context() -> io::Result<()> {
     // Fixed diagnostic only. These context assertions DO NOT authenticate a parent.
-    let okay = (|| -> io::Result<()> {
-        require(std::env::vars_os().next().is_none())?;
-        let uid = unsafe { libc::getuid() };
-        let gid = unsafe { libc::getgid() };
-        require(
-            uid != 0
-                && gid != 0
-                && uid == unsafe { libc::geteuid() }
-                && gid == unsafe { libc::getegid() },
-        )?;
-        let mut core: libc::rlimit = unsafe { std::mem::zeroed() };
-        let mut signal = -1i32;
-        require(
-            unsafe { libc::getrlimit(libc::RLIMIT_CORE, &mut core) } == 0
-                && core.rlim_cur == 0
-                && core.rlim_max == 0,
-        )?;
-        require(
-            unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0usize, 0usize, 0usize, 0usize) } == 1,
-        )?;
-        require(
-            unsafe { libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal, 0usize, 0usize, 0usize) }
-                == 0
-                && signal == 0,
-        )?;
-        let mut header = CapHeader {
-            version: 0x2008_0522,
-            pid: 0,
-        };
-        let mut caps = [CapData {
-            effective: 0,
-            permitted: 0,
-            inheritable: 0,
-        }; 2];
-        require(
-            unsafe { libc::syscall(libc::SYS_capget, &mut header, caps.as_mut_ptr()) } == 0
-                && caps
-                    .iter()
-                    .all(|c| c.effective == 0 && c.permitted == 0 && c.inheritable == 0),
-        )?;
-        let mut stat: libc::stat = unsafe { std::mem::zeroed() };
-        require(
-            unsafe { libc::fstat(3, &mut stat) } == 0
-                && stat.st_mode & libc::S_IFMT == libc::S_IFIFO,
-        )?;
-        let flags = unsafe { libc::fcntl(3, libc::F_GETFL) };
-        require(
-            flags >= 0
-                && flags & (libc::O_ACCMODE | libc::O_NONBLOCK)
-                    == (libc::O_WRONLY | libc::O_NONBLOCK)
-                && unsafe { libc::fcntl(3, libc::F_GETFD) } == 0,
-        )?;
-        require(unsafe { libc::write(3, MARKER.as_ptr().cast(), MARKER.len()) } == 16)?;
-        require(unsafe { libc::kill(libc::getpid(), libc::SIGSTOP) } == 0)
-    })();
+    require(std::env::vars_os().next().is_none())?;
+    let uid = unsafe { libc::getuid() };
+    let gid = unsafe { libc::getgid() };
+    require(
+        uid != 0
+            && gid != 0
+            && uid == unsafe { libc::geteuid() }
+            && gid == unsafe { libc::getegid() },
+    )?;
+    let mut core: libc::rlimit = unsafe { std::mem::zeroed() };
+    let mut signal = -1i32;
+    require(
+        unsafe { libc::getrlimit(libc::RLIMIT_CORE, &mut core) } == 0
+            && core.rlim_cur == 0
+            && core.rlim_max == 0,
+    )?;
+    require(
+        unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0usize, 0usize, 0usize, 0usize) } == 1,
+    )?;
+    require(
+        unsafe { libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal, 0usize, 0usize, 0usize) } == 0
+            && signal == 0,
+    )?;
+    let mut header = CapHeader {
+        version: 0x2008_0522,
+        pid: 0,
+    };
+    let mut caps = [CapData {
+        effective: 0,
+        permitted: 0,
+        inheritable: 0,
+    }; 2];
+    require(
+        unsafe { libc::syscall(libc::SYS_capget, &mut header, caps.as_mut_ptr()) } == 0
+            && caps
+                .iter()
+                .all(|c| c.effective == 0 && c.permitted == 0 && c.inheritable == 0),
+    )?;
+    let mut stat: libc::stat = unsafe { std::mem::zeroed() };
+    require(
+        unsafe { libc::fstat(3, &mut stat) } == 0 && stat.st_mode & libc::S_IFMT == libc::S_IFIFO,
+    )?;
+    let flags = unsafe { libc::fcntl(3, libc::F_GETFL) };
+    require(
+        flags >= 0
+            && flags & (libc::O_ACCMODE | libc::O_NONBLOCK) == (libc::O_WRONLY | libc::O_NONBLOCK)
+            && unsafe { libc::fcntl(3, libc::F_GETFD) } == 0,
+    )?;
+    require(unsafe { libc::write(3, MARKER.as_ptr().cast(), MARKER.len()) } == 16)?;
+    require(unsafe { libc::kill(libc::getpid(), libc::SIGSTOP) } == 0)
+}
+pub(super) fn child_entry() -> ! {
+    let okay = child_context();
     // Never continue to a workload, second exec, signing or handoff even if resumed.
     unsafe { libc::_exit(if okay.is_ok() { 93 } else { 92 }) }
+}
+pub(super) fn isolated_child_entry(probe: FixedProbe) -> ! {
+    if child_context().is_err() {
+        unsafe { libc::_exit(92) }
+    }
+    isolation::child(probe)
 }
 
 #[cfg(test)]

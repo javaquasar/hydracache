@@ -6,7 +6,7 @@ fn hex(raw: &str) -> io::Result<u64> {
     require(!raw.is_empty() && raw.len() <= 16 && raw.bytes().all(|b| b.is_ascii_hexdigit()))?;
     u64::from_str_radix(raw, 16).map_err(|_| refused())
 }
-pub(super) fn validate(raw: &str, root: &Root, loaded: bool) -> io::Result<()> {
+pub(super) fn validate(raw: &str, root: &Root, loaded: bool) -> io::Result<(usize, usize)> {
     require(!raw.is_empty() && raw.len() <= 65536 && raw.ends_with('\n') && root.files.len() == 4)?;
     let path = std::fs::read_link(format!(
         "/proc/self/fd/{}",
@@ -22,6 +22,7 @@ pub(super) fn validate(raw: &str, root: &Root, loaded: bool) -> io::Result<()> {
     let mut seen = BTreeSet::new();
     let mut executable = BTreeSet::new();
     let mut pseudo = BTreeSet::new();
+    let mut stack = None;
     for (index, line) in raw.lines().enumerate() {
         require(index < 128)?;
         let p: Vec<_> = line.split_whitespace().collect();
@@ -76,7 +77,10 @@ pub(super) fn validate(raw: &str, root: &Root, loaded: bool) -> io::Result<()> {
             require(major == 0 && minor == 0 && offset == 0)?;
             match name {
                 "" if !p[1].contains('x') => (),
-                "[stack]" | "[heap]" if p[1] == "rw-p" && pseudo.insert(name) => (),
+                "[stack]" if p[1] == "rw-p" && pseudo.insert(name) => {
+                    stack = Some((lo as usize, hi as usize));
+                }
+                "[heap]" if p[1] == "rw-p" && pseudo.insert(name) => (),
                 "[vvar]" | "[vvar_vclock]" if p[1] == "r--p" && pseudo.insert(name) => (),
                 "[vdso]" if p[1] == "r-xp" && pseudo.insert(name) => (),
                 "[vsyscall]"
@@ -94,5 +98,6 @@ pub(super) fn validate(raw: &str, root: &Root, loaded: bool) -> io::Result<()> {
             && executable == expected
             && pseudo.contains("[stack]")
             && pseudo.contains("[vdso]"),
-    )
+    )?;
+    stack.ok_or_else(refused)
 }

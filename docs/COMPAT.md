@@ -1,5 +1,22 @@
 # HydraCache Compatibility Register
 
+The separate fixed `diagnostic_signer_root_probe` modes `root-native`, `root-x32`
+and `root-i386` compose the selected root with the existing 64-instruction policy.
+Binary-private child modes accept no extra input. A shared private installer adds
+no public process-mutating API; the old ordinary entry retains its proc checks.
+The root parent checks actual TSYNC/header/BPF, successful SET_DUMPABLE(0), one
+new kernel filter and a strict syscall sequence. Direct GET_DUMPABLE remains
+forbidden by the unchanged policy, not added as an exception.
+The version1 private pipe messages are distinct fixed 16-byte loaded
+`HC074ROOTEXECv1\n`, installed `HC074ROOTGUARD1\n` and native-done
+`HC074ROOTDONEv1\n`; none is authentication or authority. Native completion is
+exit0; alternate ABI must be coreless SIGSYS without a done marker. The fixed
+`root-kill-installed` and `root-drop-installed` diagnostics prove original cleanup
+from the installed stop, not creator loss. Every accepted path requires reap,
+ECHILD, EOF and original root removal; unknown input refuses. `root-exec` still
+kills at loaded stop without installing policy. No credentials, protected handoff,
+worker start, product protocol, qualification or ship admission changes.
+
 `diagnostic_signer_root_probe root-exec` adds a fixed local empty-environment
 diagnostic, not a public launcher or signer service. The binary-private
 `--root-child` emits only the 16-byte `HC074ROOTEXECv1\n` marker on its fixed

@@ -1,5 +1,7 @@
 //! Private process-mutating entry; only the terminating fixed probe can call it.
 use super::{program, FixedProbe};
+#[path = "diagnostic_signer_isolation_core.rs"]
+mod core;
 use std::collections::BTreeSet;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read};
@@ -189,40 +191,13 @@ fn install() -> io::Result<()> {
         return Err(invalid());
     }
     stdio_only()?;
-    let limit = libc::rlimit {
-        rlim_cur: 0,
-        rlim_max: 0,
-    };
-    // SAFETY: restrict only this owned child, fixed arguments, no privilege escalation.
-    if unsafe { libc::setrlimit(libc::RLIMIT_CORE, &limit) } != 0
-        || unsafe { libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1usize, 0usize, 0usize, 0usize) } != 0
-        || unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0usize, 0usize, 0usize, 0usize) } != 1
-    {
-        return Err(invalid());
-    }
     let mut filters = program().map(|i| libc::sock_filter {
         code: i.code,
         jt: i.jt,
         jf: i.jf,
         k: i.k,
     });
-    let header = libc::sock_fprog {
-        len: 64,
-        filter: filters.as_mut_ptr(),
-    };
-    // SAFETY: fixed complete BPF array/header remain live across the synchronous TSYNC install.
-    if unsafe {
-        libc::syscall(
-            libc::SYS_seccomp,
-            libc::SECCOMP_SET_MODE_FILTER,
-            libc::SECCOMP_FILTER_FLAG_TSYNC,
-            &header,
-        )
-    } != 0
-        || unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0usize, 0usize, 0usize, 0usize) } != 0
-    {
-        return Err(invalid());
-    }
+    core::install(&mut filters)?;
     let after = status()?;
     stdio_only()?;
     if after.uid != before.uid
@@ -240,79 +215,19 @@ fn finish(code: i32) -> ! {
     // SAFETY: terminal current probe process only; never resume after a partial install.
     unsafe { libc::_exit(code) }
 }
-fn native() -> bool {
-    let path = c"/".as_ptr() as u64;
-    for (nr, args) in [
-        (272, [0, 0, 0, 0, 0, 0]),
-        (308, [u64::MAX, 0, 0, 0, 0, 0]),
-        (161, [0, 0, 0, 0, 0, 0]),
-        (80, [path, 0, 0, 0, 0, 0]),
-        (81, [u64::MAX, 0, 0, 0, 0, 0]),
-        (165, [0, 0, 0, 0, 0, 0]),
-        (166, [0, 0, 0, 0, 0, 0]),
-        (155, [0, 0, 0, 0, 0, 0]),
-        (428, [u64::MAX, 0, 0, 0, 0, 0]),
-        (429, [u64::MAX, 0, u64::MAX, 0, 0, 0]),
-        (430, [0, 0, 0, 0, 0, 0]),
-        (431, [u64::MAX, 0, 0, 0, 0, 0]),
-        (432, [u64::MAX, 0, 0, 0, 0, 0]),
-        (433, [u64::MAX, 0, 0, 0, 0, 0]),
-        (442, [u64::MAX, 0, 0, 0, 0, 0]),
-        (59, [0, 0, 0, 0, 0, 0]),
-        (322, [u64::MAX, 0, 0, 0, 0, 0]),
-        (101, [u64::MAX, 0, 0, 0, 0, 0]),
-        (317, [u64::MAX, 0, 0, 0, 0, 0]),
-        (157, [4, 1, 0, 0, 0, 0]),
-    ] {
-        // SAFETY: fixed nonproduct denial probes. Bad pointers/FDs cannot exec/mount;
-        // chdir('/') affects only this child if a filter defect is found.
-        if unsafe {
-            libc::syscall(
-                nr as libc::c_long,
-                args[0],
-                args[1],
-                args[2],
-                args[3],
-                args[4],
-                args[5],
-            )
-        } != -1
-            || io::Error::last_os_error().raw_os_error() != Some(libc::EPERM)
-        {
-            return false;
-        }
-    }
-    true
-}
 pub(super) fn run(probe: FixedProbe) -> ! {
     if install().is_err() {
         finish(2);
     }
-    match probe {
-        FixedProbe::Native => {
-            if !native() {
-                finish(3);
-            }
-            let line = b"fixed child isolation probe passed; admission=false\n";
-            // SAFETY: fixed public diagnostic bytes; no key/token/PID or authority output.
-            if unsafe { libc::write(1, line.as_ptr().cast(), line.len()) } != line.len() as isize {
-                finish(2);
-            }
-            finish(0)
-        }
-        FixedProbe::X32 => {
-            // SAFETY: owned core-disabled child must be killed by the fixed architecture gate.
-            unsafe { libc::syscall(0x4000_0027 as libc::c_long) };
-            finish(3)
-        }
-        FixedProbe::I386 => {
-            // SAFETY: fixed getpid compat probe in an owned core-disabled child; no pointer arguments.
-            unsafe {
-                core::arch::asm!("push rbx","xor ebx, ebx","xor ecx, ecx","xor edx, edx","mov eax, 20","int 0x80","pop rbx",lateout("eax") _,lateout("ecx") _,lateout("edx") _)
-            };
-            finish(3)
-        }
+    if !core::exercise(probe) {
+        finish(3);
     }
+    let line = b"fixed child isolation probe passed; admission=false\n";
+    // SAFETY: fixed diagnostic bytes only; no credential or authority output.
+    if unsafe { libc::write(1, line.as_ptr().cast(), line.len()) } != line.len() as isize {
+        finish(2);
+    }
+    finish(0)
 }
 
 #[cfg(test)]
