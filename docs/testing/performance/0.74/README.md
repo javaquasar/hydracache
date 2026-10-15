@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+A separate [local signer-build issuer candidate](diagnostic-signer-issuer-key.md)
+has been generated outside Git. Its public selfcheck is independently verified
+on Windows/Linux, but its fingerprint is not yet approved as a trust pin. The
+[custody design](diagnostic-signer-custody-design.md) and disabled job draft
+separate compilation from the future signing lifetime without changing GitHub
+or exposing credentials. Production runtime/root/job selection, actual receipt
+signing, worker original-start and all-writer cessation remain open. See the
+[local custody packet](local-runs/diagnostic-signer-custody-20261015/README.md).
+
 The [post-options original tracing-thread fixture](diagnostic-signer-thread-exit-design.md)
 extends the creator-only loss experiment through six original exec/handoff cuts.
 The independent observer requires child SIGKILL while the original TGID remains

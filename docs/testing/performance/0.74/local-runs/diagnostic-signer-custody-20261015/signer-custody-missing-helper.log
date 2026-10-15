@@ -1,0 +1,17 @@
+E
+======================================================================
+ERROR: test_diagnostic_signer_key_074 (unittest.loader._FailedTest.test_diagnostic_signer_key_074)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_diagnostic_signer_key_074
+Traceback (most recent call last):
+  File "C:\Python313\Lib\unittest\loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\perf\test_diagnostic_signer_key_074.py", line 3, in <module>
+    from scripts.perf import diagnostic_signer_key_074 as keytool
+ImportError: cannot import name 'diagnostic_signer_key_074' from 'scripts.perf' (unknown location)
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

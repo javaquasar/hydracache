@@ -1,0 +1,75 @@
+.......................
+----------------------------------------------------------------------
+Ran 23 tests in 0.316s
+
+OK
+.......................
+----------------------------------------------------------------------
+Ran 23 tests in 0.329s
+
+OK
+.......................
+----------------------------------------------------------------------
+Ran 23 tests in 4.508s
+
+OK
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.52s
+     Running unittests examples/verify_signer_issuer_public.rs (/home/artur/.cache/hydracache-074-194-check/debug/examples/verify_signer_issuer_public-0a9a5040d8e9f74a)
+
+running 3 tests
+test tests::unknown_duplicate_noncanonical_and_oversized_reports_refuse ... ok
+test tests::synthetic_public_proof_is_not_an_approved_pin ... ok
+test tests::each_field_and_every_signature_byte_is_bound ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.92s
+     Running tests/diagnostic_signer_build.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_build-3d5d49a6931b4146)
+
+running 9 tests
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.91s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.26s
+     Running tests/diagnostic_reviewed_trust.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_reviewed_trust-c1a3da263462f4e0)
+
+running 8 tests
+test reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse ... ok
+test reviewed_trust_controller_check_requires_exact_repository_and_key ... ok
+test reviewed_trust_existing_public_policy_matches_independent_pins ... ok
+test reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust ... ok
+test reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution ... ok
+test reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment ... ok
+test reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins ... ok
+test reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.05s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.53s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.15s
+     Running unittests examples/verify_signer_issuer_public.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/examples/verify_signer_issuer_public-7429ebb5436be5f9)
+
+running 3 tests
+test tests::unknown_duplicate_noncanonical_and_oversized_reports_refuse ... ok
+test tests::synthetic_public_proof_is_not_an_approved_pin ... ok
+test tests::each_field_and_every_signature_byte_is_bound ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.59s

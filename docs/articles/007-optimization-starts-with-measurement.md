@@ -8822,3 +8822,45 @@ close this fixed thread-loss gap while keeping real runtime/job/issuer custody,
 actual credential integration, authenticated worker start and cessation of all
 P2/P3 writers separate. Those are still needed before completion cells 2–4 and
 server admission; no key, host service or qualification input changed here.
+
+## Preparing a signer issuer without enrolling production authority
+
+The local launch and thread-loss proofs do not choose who may certify the
+actual signer build. That needs a separate issuer from the controller, observer
+builder and worker-policy roles. A new local Ed25519 pair now has a role-fixed
+generation/inspection helper, different filenames and a non-receipt selfcheck
+domain. Public role and canonical shape are checked before a private file is
+opened; old reviewed key roles, unknown fields, changed admission flags, links,
+permission drift and replacement refuse. Existing or partial state cannot be
+overwritten or repaired by rerunning generation.
+
+The real pair was generated once under an owned 0700 WSL directory, with a 0600
+single-link unencrypted private file and a 0400 public record. Only public data
+entered the repository. A second inspection matched exactly, and an independent
+Rust verifier checked the public fingerprint and strict Ed25519 selfcheck on
+Windows and Linux. This proves a local key/selfcheck relationship, not approved
+production ownership, storage encryption or an authorized build. The record
+keeps pin approval and production enrollment false until the operator selects
+the fingerprint explicitly. The [operator note](../testing/performance/0.74/diagnostic-signer-issuer-key.md)
+documents storage, commands, future signing domain and rotation without exposing
+the private material.
+
+The other preparation is an explicitly disabled signing-job draft outside
+GitHub's workflow directory. Both jobs fail unconditionally even if their false
+guards are removed. Its future compilation/dependency phase has no signing or
+OIDC authority; its future signer phase must consume independently admitted
+prebuilt launcher, signer and GNU runtime instead of compiling in that lifetime.
+GitHub's [OIDC permission is job-scoped](https://docs.github.com/en/actions/reference/security/oidc#workflow-permissions-for-the-requesting-the-oidc-token),
+so clearing one process environment cannot remove authority from an already
+untrusted job. Exact workflow/subject/protection, runtime/root custody and issuer
+snapshot validity remain unresolved, rather than filled with plausible defaults.
+
+Three 23-case Python runs, three strict public-verifier tests on both parent
+toolchains, existing signer/trust regressions and 149 source contracts pass.
+Windows explicitly skips Linux-only custody cases. The
+[evidence packet](../testing/performance/0.74/local-runs/diagnostic-signer-custody-20261015/README.md)
+distinguishes disposable crypto fixtures, actual local generation and the
+unapproved production boundary. No build receipt, worker policy or OIDC token
+was produced; no existing key, GitHub configuration, server or qualification
+input changed. Authenticated prebuilt custody and token coordination come next,
+then worker original-start and all-writer cessation before completion cells 2–4.
