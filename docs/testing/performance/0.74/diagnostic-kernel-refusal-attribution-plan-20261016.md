@@ -17,14 +17,16 @@ nested and concurrent fixtures cannot share or overwrite first refusal.
 Instrument Invalid construction sites in kernel admission and origin, the paths
 reachable during original revalidation. Ancillary parsing remains unchanged.
 A macro expands to the same KernelError::Invalid in non-test builds; the capture
-module and numeric expressions exist only under cfg(test). Convert eager
-ok_or(Invalid) sites to lazy error construction so successful checks never
-manufacture trace events. Keep every predicate, observation order, refusal
+module and numeric expressions exist only under cfg(test). A separate Option
+macro keeps the original eager ok_or(Invalid) in non-test builds, using lazy
+recording only in tests so successful checks never manufacture trace events.
+Keep every predicate, observation order, refusal
 latch, budget and 60-second hold unchanged. No retry or clock fallback is added.
 
 An independent token-level source comparison against baseline must erase only
 the exact approved trace header, replace trace invocations with their original
-enum constructor and normalize the lazy zero-effect constructor. Everything
+enum constructor and expand the Option macro to its original ok_or. Normalize
+only non-semantic question-mark joint spacing caused by line wrapping. Everything
 else must match. Canary mutations to a guard or deadline must still differ.
 This proves restricted source equivalence, not binary identity or performance.
 
@@ -44,3 +46,7 @@ packet and update the article/checklist with established findings versus open
 attribution. Commit instrumentation separately from evidence. No server,
 GitHub, actual signing credentials, product workload, qualification, push,
 production enrollment, original-start or writer-revocation rights are opened.
+
+The first strict Linux Clippy run correctly rejects globally lazy construction
+once cfg(test) recording disappears. Keep that negative. The compile-time Option
+split above resolves it without lint suppression or moving any observation.
