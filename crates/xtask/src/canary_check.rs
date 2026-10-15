@@ -421,14 +421,12 @@ fn plan_canary_problems(
     for item in required {
         if !plan.contains(&format!("## {item}.")) && !plan.contains(&format!("### {item}.")) {
             problems.push(format!(
-                "{}: {item} is registered but has no release-plan section",
-                registry_path
+                "{registry_path}: {item} is registered but has no release-plan section"
             ));
         }
         if !registered.contains(item) {
             problems.push(format!(
-                "{}: {item} has no registered canary for the release-plan section",
-                registry_path
+                "{registry_path}: {item} has no registered canary for the release-plan section"
             ));
         }
     }

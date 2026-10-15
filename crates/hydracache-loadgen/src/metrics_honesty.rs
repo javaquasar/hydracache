@@ -2540,10 +2540,8 @@ fn create_w9_raw_archive(
             "W9 predecessor archive escaped the evidence root".to_owned(),
         ));
     }
-    let archived_path = archive_dir.join(format!(
-        "control-plane-{}-reference-v1.raw.json",
-        node_count
-    ));
+    let archived_path =
+        archive_dir.join(format!("control-plane-{node_count}-reference-v1.raw.json"));
     fs::hard_link(&source_path, &archived_path)?;
     Ok(archived_path)
 }
@@ -2932,6 +2930,32 @@ mod tests {
         fs::remove_file(&path).expect("remove artifact");
         assert!(receipt.validate_archived().is_err());
         fs::remove_dir_all(&root).expect("remove temp root");
+    }
+
+    #[test]
+    fn w9_archive_names_preserve_decimal_node_counts() {
+        let root = std::env::temp_dir().join(format!(
+            "hydracache-w9-archive-names-{}-{}",
+            std::process::id(),
+            unix_nanos().expect("clock")
+        ));
+        fs::create_dir(&root).expect("temp root");
+        for (node_count, expected) in [
+            (0, "control-plane-0-reference-v1.raw.json"),
+            (12, "control-plane-12-reference-v1.raw.json"),
+        ] {
+            let parent = root.join(node_count.to_string());
+            fs::create_dir(&parent).expect("case root");
+            let source = parent.join("source.json");
+            fs::write(&source, b"raw-report").expect("raw source");
+            let archived = create_w9_raw_archive(&source, node_count).expect("archive");
+            assert_eq!(
+                archived.file_name().and_then(|name| name.to_str()),
+                Some(expected)
+            );
+            assert_eq!(fs::read(archived).expect("archive bytes"), b"raw-report");
+        }
+        fs::remove_dir_all(root).expect("remove temp root");
     }
 
     #[test]

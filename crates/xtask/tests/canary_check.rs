@@ -16,6 +16,30 @@ use xtask::canary_sweep::{
 static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[test]
+fn missing_plan_section_and_canary_diagnostics_are_exact() {
+    let root = scratch_root();
+    write_scratch_contract(&root);
+    fs::write(
+        root.join("docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md"),
+        "# Fixture without work-item sections\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/testing/canary-registry.json"),
+        r#"{"version":2,"release":"0.64.0","entries":[]}"#,
+    )
+    .unwrap();
+    let problems = check_canary_registry(&root).unwrap();
+    cleanup(&root);
+    for expected in [
+        "docs/testing/canary-registry.json: W1 is registered but has no release-plan section",
+        "docs/testing/canary-registry.json: W1 has no registered canary for the release-plan section",
+    ] {
+        assert!(problems.iter().any(|problem| problem == expected), "{problems:?}");
+    }
+}
+
+#[test]
 fn every_w_item_has_a_registered_canary_that_references_real_functions() {
     let root = workspace_root();
     let problems = check_canary_registry(&root).unwrap();

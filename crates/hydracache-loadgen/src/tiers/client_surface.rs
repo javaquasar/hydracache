@@ -716,8 +716,7 @@ async fn client_surface_concurrency_measurement(
             let (sample, observed) = concurrent_sample(target, *inflight, operations).await?;
             if observed != *inflight as u64 {
                 return Err(ClientSurfaceTierError::Runtime(format!(
-                    "declared concurrent in-flight {} but observed high-water {observed}",
-                    inflight
+                    "declared concurrent in-flight {inflight} but observed high-water {observed}"
                 )));
             }
             samples.push(sample);

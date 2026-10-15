@@ -104,8 +104,7 @@ pub fn validate_registry(
     }
     if registry.aggregate_budget_seconds != PR_BUDGET_SECONDS {
         problems.push(format!(
-            "aggregate_budget_seconds must be the reviewed {}s PR ceiling",
-            PR_BUDGET_SECONDS
+            "aggregate_budget_seconds must be the reviewed {PR_BUDGET_SECONDS}s PR ceiling"
         ));
     }
     let budget_sum: u64 = registry

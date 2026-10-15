@@ -2053,8 +2053,7 @@ pub fn parse_redis_benchmark_csv(
         return Err(RedisBenchmarkCsvError::InvalidRow {
             line: 1,
             reason: format!(
-                "expected exact redis-benchmark 7.2.5 header {:?}, observed {header:?}",
-                REDIS_BENCHMARK_CSV_HEADER
+                "expected exact redis-benchmark 7.2.5 header {REDIS_BENCHMARK_CSV_HEADER:?}, observed {header:?}"
             ),
         });
     }

@@ -437,6 +437,15 @@ fn redis_benchmark_contract_rejects_version_argv_and_claim_relabeling() {
 }
 
 #[test]
+fn redis_benchmark_header_diagnostic_preserves_exact_expected_and_observed_fields() {
+    let error = parse_redis_benchmark_csv(b"\"wrong\"\n", &["GET".to_owned()]).unwrap_err();
+    assert_eq!(error, RedisBenchmarkCsvError::InvalidRow {
+        line: 1,
+        reason: r#"expected exact redis-benchmark 7.2.5 header ["test", "rps", "avg_latency_ms", "min_latency_ms", "p50_latency_ms", "p95_latency_ms", "p99_latency_ms", "max_latency_ms"], observed ["wrong"]"#.to_owned(),
+    });
+}
+
+#[test]
 fn redis_benchmark_csv_parser_accepts_only_the_exact_complete_row_set() {
     let expected = vec![
         "GET".to_owned(),

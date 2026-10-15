@@ -58,7 +58,7 @@ fn sample(
         profile: "reference-v1".to_owned(),
         source_commit: SHA.to_owned(),
         github_run_id: run.to_string(),
-        observed_at: format!("2026-08-{:02}T12:00:00Z", run),
+        observed_at: format!("2026-08-{run:02}T12:00:00Z"),
         runner_fingerprint: fingerprint.to_owned(),
         observed_runner: RunnerFingerprint {
             runner_class: REFERENCE_RUNNER_CLASS.to_owned(),
@@ -127,6 +127,17 @@ fn write_samples(directory: &Path, fingerprints: &[String]) {
             .map(|byte| format!("{byte:02x}"))
             .collect();
         predecessor = Some((receipt.github_run_id, digest));
+    }
+}
+
+#[test]
+fn sample_fixture_timestamp_preserves_two_digit_padding() {
+    for (run, expected) in [
+        (1, "2026-08-01T12:00:00Z"),
+        (9, "2026-08-09T12:00:00Z"),
+        (10, "2026-08-10T12:00:00Z"),
+    ] {
+        assert_eq!(sample(run, "fixture", None).observed_at, expected);
     }
 }
 

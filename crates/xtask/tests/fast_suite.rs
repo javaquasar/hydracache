@@ -1,6 +1,20 @@
 use std::fs;
 
 #[test]
+fn fast_suite_reviewed_ceiling_diagnostic_is_exact() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let mut registry = xtask::fast_suite::load_registry(&root).unwrap();
+    registry.aggregate_budget_seconds += 1;
+    let problems = xtask::fast_suite::validate_registry(&root, &registry, "0.64", None).unwrap();
+    assert!(
+        problems
+            .iter()
+            .any(|problem| problem
+                == "aggregate_budget_seconds must be the reviewed 1680s PR ceiling")
+    );
+}
+
+#[test]
 fn fast_suite_registry_has_pinned_nextest_and_bounded_unmeasured_baselines() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::fast_suite::load_registry(&root).unwrap();
