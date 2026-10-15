@@ -4,7 +4,8 @@ use std::os::unix::ffi::OsStringExt;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::process::CommandExt;
 use std::process::{Command, Output, Stdio};
-use std::time::{Duration, Instant};
+#[path = "support/root_process_guard.rs"]
+mod root_process_guard;
 static COPY_AND_SPAWN: std::sync::Mutex<()> = std::sync::Mutex::new(());
 const HANDOFF_CASES: [&str; 25] = [
     "good",
@@ -139,21 +140,7 @@ impl Image {
     }
 }
 fn output(command: &mut Command) -> Output {
-    let guard = COPY_AND_SPAWN.lock().unwrap();
-    let mut child = command.spawn().unwrap();
-    drop(guard);
-    let until = Instant::now() + Duration::from_secs(5);
-    loop {
-        if child.try_wait().unwrap().is_some() {
-            return child.wait_with_output().unwrap();
-        }
-        if Instant::now() >= until {
-            let _ = child.kill();
-            let _ = child.wait();
-            panic!("normal root preparation stalled");
-        }
-        std::thread::sleep(Duration::from_millis(5));
-    }
+    root_process_guard::output(command, &COPY_AND_SPAWN)
 }
 fn fixed_profile_outcome(image: &Image) {
     if image.extra_libm {
