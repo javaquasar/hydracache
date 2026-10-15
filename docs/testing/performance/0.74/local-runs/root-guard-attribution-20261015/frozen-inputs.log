@@ -1,0 +1,12 @@
+11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc docs/testing/performance/0.74/qualification-manifest.toml
+99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7 Cargo.lock
+f04328a58ace3f0bd0f1bc712abda91d2245cf27 tools/long-run-supervisor-074/Cargo.toml
+1aabf455e4634a13b1170993da8e0f5f9463483f tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs
+7219b4bb1a374d7882fb9ecae34c33d88cb11536 tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs
+87ec9ee8a95c53893b9bbc41aa32c1f416a6eee8 tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs
+f16c2d78f4b31a2f87feea3e1dba68e5ddfbd2ec tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs
+7baa50f4359756bf84e6be1ff6fc5f593084d793 tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs
+44dedfb636e0c4d53545901d79e13eca357766f9 tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs
+a3c1d4149132b11f00fb1d6948549ca277710f0e docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-20261015/after-trace-process-timeout.log
+commit
+Frozen inputs, original CLI/child/policy/trace/cleanup and previous timeout retained; no tooling receipt rebound.

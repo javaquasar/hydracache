@@ -1,0 +1,87 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs
+index 87ec9ee8..90adcfbf 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs
+@@ -759,16 +759,36 @@ fn cleanup(mut owner: Owner, ordinary_drop: bool) -> io::Result<()> {
+ 
+ pub(super) fn run(mode: &str) -> io::Result<()> {
+     let (case, action) = spec(mode)?;
+-    let mut owner = Owner::build_profile(
+-        super::super::acquire()?,
+-        Some(FixedProbe::Native),
+-        Some(case),
+-    )?;
++    // TEMPORARY D1 PARENT INSTRUMENTATION; never a canonical pass receipt.
++    fn cpu_us() -> Option<u64> {
++        let mut value: libc::timespec = unsafe { std::mem::zeroed() };
++        (unsafe { libc::clock_gettime(libc::CLOCK_THREAD_CPUTIME_ID, &mut value) } == 0)
++            .then_some(value.tv_sec as u64 * 1_000_000 + value.tv_nsec as u64 / 1000)
++    }
++    let observed = mode == "root-handoff-good" && std::env::vars_os().next().is_none();
++    let started = std::time::Instant::now();
++    let cpu_started = cpu_us();
++    let note = |stage: &str| {
++        if observed {
++            let cpu_us = cpu_us().zip(cpu_started).and_then(|(now, start)| now.checked_sub(start));
++            eprintln!("root_handoff_attribution stage={stage} wall_us={} cpu_us={cpu_us:?}", started.elapsed().as_micros());
++        }
++    };
++    note("start");
++    let root = super::super::acquire()?;
++    note("acquired");
++    let mut owner = Owner::build_profile(root, Some(FixedProbe::Native), Some(case))?;
++    note("owner-built");
+     let prepared = (|| {
+         owner.advance(Phase::Initial, Owner::enter)?;
++        note("rooted");
+         owner.advance(Phase::Rooted, Owner::first_exec)?;
++        note("exec");
+         owner.advance(Phase::Exec, Owner::loaded)?;
+-        owner.advance(Phase::Loaded, isolation::install)
++        note("loaded");
++        let result = owner.advance(Phase::Loaded, isolation::install);
++        note("installed");
++        result
+     })();
+     if matches!(case, Case::Early | Case::Leak) {
+         require(prepared.is_err())?;
+@@ -780,6 +800,7 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
+     }
+     let result = (|| {
+         ready(&mut owner)?;
++        note("ready");
+         if matches!(action, Action::KillReady | Action::DropReady) {
+             return Ok(());
+         }
+@@ -791,10 +812,13 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
+             return ready(&mut owner);
+         }
+         deliver(&mut owner, action == Action::SendFail)?;
++        note("delivered");
+         if matches!(action, Action::KillDelivered | Action::DropDelivered) {
+             return Ok(());
+         }
+-        complete(&mut owner)
++        let result = complete(&mut owner);
++        note("completed");
++        result
+     })();
+     let channel = owner.handoff.as_mut().ok_or_else(refused)?;
+     let sent = if action == Action::Run {
+@@ -814,10 +838,13 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
+         channel.step = Step::Refused;
+         owner.phase = Phase::Refused;
+     }
+-    cleanup(
++    note("cleanup-begin");
++    let result = cleanup(
+         owner,
+         matches!(action, Action::DropReady | Action::DropDelivered),
+-    )
++    );
++    note("cleanup-done");
++    result
+ }
+ pub(super) fn child(mode: &str) -> ! {
+     let case = match mode

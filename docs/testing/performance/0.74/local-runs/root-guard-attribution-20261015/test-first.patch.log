@@ -1,0 +1,141 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs b/tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs
+new file mode 100644
+index 00000000..306ab683
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs
+@@ -0,0 +1,68 @@
++#![cfg(all(target_os = "linux", target_arch = "x86_64"))]
++#[path = "support/root_process_guard.rs"]
++mod root_process_guard;
++
++use std::io::Write;
++use std::os::fd::OwnedFd;
++use std::os::unix::net::UnixStream;
++use std::process::{Command, Stdio};
++use std::sync::Mutex;
++
++static SPAWN: Mutex<()> = Mutex::new(());
++
++fn cat() -> (Command, UnixStream) {
++    let (input, mut writer) = UnixStream::pair().unwrap();
++    writer.write_all(b"public root guard fixture\n").unwrap();
++    let input: OwnedFd = input.into();
++    let mut command = Command::new("/bin/cat");
++    command
++        .env_clear()
++        .stdin(Stdio::from(input))
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped());
++    (command, writer)
++}
++
++#[test]
++fn successful_exit_keeps_exact_streams_and_status() {
++    let (mut command, writer) = cat();
++    drop(writer);
++    let result = root_process_guard::output(&mut command, &SPAWN);
++    assert!(result.status.success());
++    assert_eq!(result.stdout, b"public root guard fixture\n");
++    assert!(result.stderr.is_empty());
++}
++
++#[test]
++fn nonzero_exit_is_returned_not_promoted_or_retried() {
++    let mut command = Command::new("/bin/cat");
++    command
++        .arg("--hc074-guard-invalid-option")
++        .env_clear()
++        .stdin(Stdio::null())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped());
++    let result = root_process_guard::output(&mut command, &SPAWN);
++    assert!(!result.status.success());
++    assert!(result.stdout.is_empty());
++    assert!(!result.stderr.is_empty());
++}
++
++#[test]
++fn timeout_reports_original_kill_reap_and_public_output() {
++    let (mut command, writer) = cat();
++    let failure = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        root_process_guard::output(&mut command, &SPAWN)
++    }))
++    .expect_err("open input must reach the unchanged timeout");
++    drop(writer);
++    let message = failure
++        .downcast_ref::<String>()
++        .map(String::as_str)
++        .or_else(|| failure.downcast_ref::<&str>().copied())
++        .unwrap();
++    assert!(message.contains("normal root preparation stalled"));
++    assert!(message.contains("signal=Some(9)"), "{message}");
++    assert!(message.contains("recheck_echild=true"), "{message}");
++    assert!(message.contains("public root guard fixture\\n"), "{message}");
++}
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs b/tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs
+index 1b84bf88..7b84c5fe 100644
+--- a/tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs
++++ b/tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs
+@@ -4,7 +4,8 @@ use std::os::unix::ffi::OsStringExt;
+ use std::os::unix::fs::PermissionsExt;
+ use std::os::unix::process::CommandExt;
+ use std::process::{Command, Output, Stdio};
+-use std::time::{Duration, Instant};
++#[path = "support/root_process_guard.rs"]
++mod root_process_guard;
+ static COPY_AND_SPAWN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+ const HANDOFF_CASES: [&str; 25] = [
+     "good",
+@@ -139,21 +140,7 @@ impl Image {
+     }
+ }
+ fn output(command: &mut Command) -> Output {
+-    let guard = COPY_AND_SPAWN.lock().unwrap();
+-    let mut child = command.spawn().unwrap();
+-    drop(guard);
+-    let until = Instant::now() + Duration::from_secs(5);
+-    loop {
+-        if child.try_wait().unwrap().is_some() {
+-            return child.wait_with_output().unwrap();
+-        }
+-        if Instant::now() >= until {
+-            let _ = child.kill();
+-            let _ = child.wait();
+-            panic!("normal root preparation stalled");
+-        }
+-        std::thread::sleep(Duration::from_millis(5));
+-    }
++    root_process_guard::output(command, &COPY_AND_SPAWN)
+ }
+ fn fixed_prwarning: in the working copy of 'tools/long-run-supervisor-074/tests/support/root_process_guard.rs', LF will be replaced by CRLF the next time Git touches it
+ofile_outcome(image: &Image) {
+     if image.extra_libm {
+diff --git a/tools/long-run-supervisor-074/tests/support/root_process_guard.rs b/tools/long-run-supervisor-074/tests/support/root_process_guard.rs
+new file mode 100644
+index 00000000..c136c410
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/support/root_process_guard.rs
+@@ -0,0 +1,21 @@
++use std::process::{Command, Output};
++use std::sync::Mutex;
++use std::time::{Duration, Instant};
++
++pub fn output(command: &mut Command, gate: &Mutex<()>) -> Output {
++    let guard = gate.lock().unwrap();
++    let mut child = command.spawn().unwrap();
++    drop(guard);
++    let until = Instant::now() + Duration::from_secs(5);
++    loop {
++        if child.try_wait().unwrap().is_some() {
++            return child.wait_with_output().unwrap();
++        }
++        if Instant::now() >= until {
++            let _ = child.kill();
++            let _ = child.wait();
++            panic!("normal root preparation stalled");
++        }
++        std::thread::sleep(Duration::from_millis(5));
++    }
++}

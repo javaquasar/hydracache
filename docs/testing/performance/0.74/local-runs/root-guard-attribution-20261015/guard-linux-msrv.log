@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.76s
+     Running tests/diagnostic_signer_root_guard.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_signer_root_guard-b10e3c85cc82e0ee)
+
+running 9 tests
+test an_io_error_preserves_only_the_preceding_prefix ... ok
+test a_live_writer_is_would_block_not_eof_or_an_unbounded_read ... ok
+test missing_and_invalid_handles_refuse_capture_without_reading ... ok
+test eof_and_byte_cap_are_distinct ... ok
+root_guard_prefix seed=0x0740c091 lengths=11 admission=false
+test seeded_binary_prefixes_never_overread_or_claim_unobserved_eof ... ok
+test repeated_eintr_consumes_the_fixed_read_budget ... ok
+test nonzero_exit_is_returned_not_promoted_or_retried ... ok
+test successful_exit_keeps_exact_streams_and_status ... ok
+
+thread 'timeout_reports_original_kill_reap_and_public_output' panicked at tools/long-run-supervisor-074/tests/support/root_process_guard.rs:108:13:
+normal root preparation stalled; pid=761 arg0_prefix=None kill=Ok(()) signal=Some(9) wait=Ok(ExitStatus(unix_wait_status(9))) original_wait_ok=true stdout=Capture { prefix: "public root guard fixture\n", end: Eof } stderr=Capture { prefix: "", end: Eof }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test timeout_reports_original_kill_reap_and_public_output ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.00s

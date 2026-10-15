@@ -1,0 +1,3 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs', LF will be replaced by CRLF the next time Git touches it
+Exact private hash rewrite, one pure hash test addition and test-guard delegation verified. All other existing source text, original probe logic/policy/child/wait/cleanup and process fixture tests match baseline. No instrumentation remains.

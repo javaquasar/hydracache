@@ -1,0 +1,66 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
+index 79d46d8e..37e33516 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
+@@ -3,6 +3,60 @@ use std::os::unix::fs::PermissionsExt;
+ #[path = "../tests/support/diagnostic_gnu_images.rs"]
+ pub(super) mod images;
+ 
++#[test]
++fn sha256_matches_known_vectors_and_seeded_image_boundaries() {
++    use sha2::{Digest, Sha256};
++    for (input, expected) in [
++        (
++            b"".as_slice(),
++            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++        ),
++        (
++            b"abc".as_slice(),
++            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
++        ),
++    ] {
++        let observed = digest(input)
++            .iter()
++            .map(|byte| format!("{byte:02x}"))
++            .collect::<String>();
++        assert_eq!(observed, expected);
++    }
++    let mut seed = 0x0740_c092_u64;
++    for len in [
++        0,
++        1,
++        55,
++        56,
++        63,
++        64,
++        65,
++        119,
++        120,
++        127,
++        128,
++        129,
++        4095,
++        4096,
++        4097,
++        MAX_IMAGE as usize,
++    ] {
++        let input = (0..len)
++            .map(|_| {
++                seed ^= seed << 13;
++                seed ^= seed >> 7;
++                seed ^= seed << 17;
++                seed as u8
++            })
++            .collect::<Vec<_>>();
++        let expected: [u8; 32] = Sha256::digest(&input).into();
++        assert_eq!(digest(&input), expected, "input bytes={len}");
++    }
++    println!(
++        "root_sha256 seed=0x0740c092 boundary_lengths=16 maximum_bytes={MAX_IMAGE} admission=false"
++    );
++}
++
+ struct Fixture {
+     root: Root,
+     path: std::path::PathBuf,

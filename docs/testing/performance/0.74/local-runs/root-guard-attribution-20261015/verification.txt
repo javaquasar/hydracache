@@ -1,0 +1,3 @@
+Verified 49 captures, 5 extra artifacts, source/tree/5 blobs/registry/commit chain and frozen inputs. Registered source rewrites preserve other existing code; one additive registry entry preserves all old entries.
+Verified test counts and canonical 25/14/6 modes; MSRV remains extra-libm refusal. Seven negative captures stay exit1/expected-gate0, including a real attribution timeout, unexpected SCM_RIGHTS unit EAGAIN and missing registry entry. Require-ship alone is an expected refusal.
+Unsigned consistency only, not execution attestation or a product performance/robustness/server-admission claim. Historical timeout instruction and SCM_RIGHTS writer lifetime remain open.

@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [root guard attribution](local-runs/root-guard-attribution-20261015/README.md)
+adds bounded post-kill test diagnostics and identifies repeated private SHA-256
+verification as the dominant observed parent CPU cost near the five-second guard.
+A separate byte-equivalent backend change retains every check. Three ordinary
+Linux Rust1.94 groups pass 68 afterward; the original seven process fixtures and
+five-second guard remain unchanged. An unexpected SCM_RIGHTS unit EAGAIN remains
+retained/open. This is local diagnostic tooling, not a RESP/native performance
+claim, authenticated start, all-writer cessation or server admission.
+
 The [tooling/trace MSRV cleanup](local-runs/msrv-tooling-trace-cleanup-20261015/README.md)
 closes the next eight observed lint sites: seven existing format arguments and
 one private Linux trace branch collapse. Five new characterization tests pass

@@ -1,0 +1,39 @@
+{
+  "baseline": "f1ca6e13235a69d81931ce9455821b25077776ae",
+  "guard_commit": "40c1ed1037cff63c66e6673ed4e1a2cfe9a65a65",
+  "scope": "Exact registered retained source changes; all other existing source text must match baseline. New test support files are pinned separately by Git blobs.",
+  "sources": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs",
+      "rewrites": [
+        {
+          "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs",
+          "before": "fn digest(bytes: &[u8]) -> [u8; 32] {\n    use sha2::{Digest, Sha256};\n    Sha256::digest(bytes).into()\n}",
+          "after": "fn digest(bytes: &[u8]) -> [u8; 32] {\n    let value = ring::digest::digest(&ring::digest::SHA256, bytes);\n    let mut output = [0; 32];\n    output.copy_from_slice(value.as_ref());\n    output\n}"
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs",
+      "rewrites": [
+        {
+          "before": "use std::time::{Duration, Instant};",
+          "after": "#[path = \"support/root_process_guard.rs\"]\nmod root_process_guard;"
+        },
+        {
+          "before": "fn output(command: &mut Command) -> Output {\n    let guard = COPY_AND_SPAWN.lock().unwrap();\n    let mut child = command.spawn().unwrap();\n    drop(guard);\n    let until = Instant::now() + Duration::from_secs(5);\n    loop {\n        if child.try_wait().unwrap().is_some() {\n            return child.wait_with_output().unwrap();\n        }\n        if Instant::now() >= until {\n            let _ = child.kill();\n            let _ = child.wait();\n            panic!(\"normal root preparation stalled\");\n        }\n        std::thread::sleep(Duration::from_millis(5));\n    }\n}",
+          "after": "fn output(command: &mut Command) -> Output {\n    root_process_guard::output(command, &COPY_AND_SPAWN)\n}"
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs",
+      "rewrites": [
+        {
+          "before": "pub(super) mod images;\n\nstruct Fixture",
+          "after": "pub(super) mod images;\n\n#[test]\nfn sha256_matches_known_vectors_and_seeded_image_boundaries() {\n    use sha2::{Digest, Sha256};\n    for (input, expected) in [\n        (\n            b\"\".as_slice(),\n            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n        ),\n        (\n            b\"abc\".as_slice(),\n            \"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\",\n        ),\n    ] {\n        let observed = digest(input)\n            .iter()\n            .map(|byte| format!(\"{byte:02x}\"))\n            .collect::<String>();\n        assert_eq!(observed, expected);\n    }\n    let mut seed = 0x0740_c092_u64;\n    for len in [\n        0,\n        1,\n        55,\n        56,\n        63,\n        64,\n        65,\n        119,\n        120,\n        127,\n        128,\n        129,\n        4095,\n        4096,\n        4097,\n        MAX_IMAGE as usize,\n    ] {\n        let input = (0..len)\n            .map(|_| {\n                seed ^= seed << 13;\n                seed ^= seed >> 7;\n                seed ^= seed << 17;\n                seed as u8\n            })\n            .collect::<Vec<_>>();\n        let expected: [u8; 32] = Sha256::digest(&input).into();\n        assert_eq!(digest(&input), expected, \"input bytes={len}\");\n    }\n    println!(\n        \"root_sha256 seed=0x0740c092 boundary_lengths=16 maximum_bytes={MAX_IMAGE} admission=false\"\n    );\n}\n\nstruct Fixture"
+        }
+      ]
+    }
+  ]
+}

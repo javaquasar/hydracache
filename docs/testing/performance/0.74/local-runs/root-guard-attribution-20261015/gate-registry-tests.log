@@ -1,0 +1,13 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.69s
+     Running tests\gated_tests.rs (target\debug\deps\gated_tests-58a3dd14022333f6.exe)
+
+running 6 tests
+test redis_multinode_gate_cannot_drift_to_the_generic_daemon_target ... ok
+test registry_rejects_missing_command_ci_tier_owner_or_timeout ... ok
+test wildcard_registration_does_not_hide_a_new_ignored_test ... ok
+test registry_rejects_stale_entries_that_no_longer_resolve_to_a_test ... ok
+test registry_accepts_only_a_complete_set_of_environment_gate_shards ... ok
+test gated_test_registry_covers_every_ignored_cfg_and_env_gated_test ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.02s

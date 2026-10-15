@@ -1,0 +1,6 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.85s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: docs/testing/gated-test-registry.toml: unregistered cfg-gated target hydracache-long-run-supervisor-074/diagnostic_signer_root_guard (all (target_os = "linux" , target_arch = "x86_64")) in tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs
+Error: "gated-test-check found 1 problem(s)"
+error: process didn't exit successfully: `target\debug\xtask.exe gated-test-check` (exit code: 1)

@@ -1,0 +1,361 @@
+{
+  "scope": "Preliminary instrumented local diagnostic counters; not product performance or historical timeout instruction attribution",
+  "observations": [
+    {
+      "capture_key": "stall_attribution1",
+      "exit_code": 1,
+      "frames": [
+        {
+          "stage": "start",
+          "wall_us": 1,
+          "parent_thread_cpu_us": 0
+        },
+        {
+          "stage": "acquired",
+          "wall_us": 536826,
+          "parent_thread_cpu_us": 534315
+        },
+        {
+          "stage": "owner-built",
+          "wall_us": 758115,
+          "parent_thread_cpu_us": 752762
+        },
+        {
+          "stage": "rooted",
+          "wall_us": 1369073,
+          "parent_thread_cpu_us": 1361559
+        },
+        {
+          "stage": "exec",
+          "wall_us": 2108534,
+          "parent_thread_cpu_us": 2099933
+        },
+        {
+          "stage": "loaded",
+          "wall_us": 3021099,
+          "parent_thread_cpu_us": 2869505
+        },
+        {
+          "stage": "installed",
+          "wall_us": 3785071,
+          "parent_thread_cpu_us": 3615085
+        },
+        {
+          "stage": "ready",
+          "wall_us": 3786561,
+          "parent_thread_cpu_us": 3615468
+        },
+        {
+          "stage": "delivered",
+          "wall_us": 4173907,
+          "parent_thread_cpu_us": 4000544
+        },
+        {
+          "stage": "completed",
+          "wall_us": 4558413,
+          "parent_thread_cpu_us": 4378377
+        },
+        {
+          "stage": "cleanup-begin",
+          "wall_us": 4558424,
+          "parent_thread_cpu_us": 4378388
+        },
+        {
+          "stage": "cleanup-done",
+          "wall_us": 4745491,
+          "parent_thread_cpu_us": 4565436
+        }
+      ]
+    },
+    {
+      "capture_key": "stall_attribution2",
+      "exit_code": 1,
+      "frames": [
+        {
+          "stage": "start",
+          "wall_us": 1,
+          "parent_thread_cpu_us": 0
+        },
+        {
+          "stage": "acquired",
+          "wall_us": 567979,
+          "parent_thread_cpu_us": 562651
+        },
+        {
+          "stage": "owner-built",
+          "wall_us": 817083,
+          "parent_thread_cpu_us": 803249
+        },
+        {
+          "stage": "rooted",
+          "wall_us": 1515733,
+          "parent_thread_cpu_us": 1482604
+        },
+        {
+          "stage": "exec",
+          "wall_us": 2275952,
+          "parent_thread_cpu_us": 2241666
+        },
+        {
+          "stage": "loaded",
+          "wall_us": 3193360,
+          "parent_thread_cpu_us": 3011144
+        },
+        {
+          "stage": "installed",
+          "wall_us": 3953642,
+          "parent_thread_cpu_us": 3752084
+        },
+        {
+          "stage": "ready",
+          "wall_us": 3955825,
+          "parent_thread_cpu_us": 3752143
+        },
+        {
+          "stage": "delivered",
+          "wall_us": 4336923,
+          "parent_thread_cpu_us": 4131054
+        },
+        {
+          "stage": "completed",
+          "wall_us": 4717322,
+          "parent_thread_cpu_us": 4504911
+        },
+        {
+          "stage": "cleanup-begin",
+          "wall_us": 4717332,
+          "parent_thread_cpu_us": 4504922
+        },
+        {
+          "stage": "cleanup-done",
+          "wall_us": 4903473,
+          "parent_thread_cpu_us": 4691025
+        }
+      ]
+    },
+    {
+      "capture_key": "stall_hash_attribution1",
+      "exit_code": 1,
+      "frames": [
+        {
+          "stage": "start",
+          "wall_us": 3,
+          "parent_thread_cpu_us": 2,
+          "sha_calls": 0,
+          "sha_input_bytes": 0,
+          "sha_thread_cpu_us": 0,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "acquired",
+          "wall_us": 590750,
+          "parent_thread_cpu_us": 590708,
+          "sha_calls": 16,
+          "sha_input_bytes": 24606048,
+          "sha_thread_cpu_us": 455072,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "owner-built",
+          "wall_us": 924876,
+          "parent_thread_cpu_us": 917847,
+          "sha_calls": 24,
+          "sha_input_bytes": 36909072,
+          "sha_thread_cpu_us": 774271,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "rooted",
+          "wall_us": 1646581,
+          "parent_thread_cpu_us": 1634333,
+          "sha_calls": 48,
+          "sha_input_bytes": 73818144,
+          "sha_thread_cpu_us": 1479980,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "exec",
+          "wall_us": 2425209,
+          "parent_thread_cpu_us": 2411645,
+          "sha_calls": 80,
+          "sha_input_bytes": 123030240,
+          "sha_thread_cpu_us": 2247349,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "loaded",
+          "wall_us": 3362228,
+          "parent_thread_cpu_us": 3200864,
+          "sha_calls": 112,
+          "sha_input_bytes": 172242336,
+          "sha_thread_cpu_us": 3024603,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "installed",
+          "wall_us": 4132180,
+          "parent_thread_cpu_us": 3953012,
+          "sha_calls": 144,
+          "sha_input_bytes": 221454432,
+          "sha_thread_cpu_us": 3767047,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "ready",
+          "wall_us": 4134424,
+          "parent_thread_cpu_us": 3953122,
+          "sha_calls": 144,
+          "sha_input_bytes": 221454432,
+          "sha_thread_cpu_us": 3767047,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "delivered",
+          "wall_us": 4516668,
+          "parent_thread_cpu_us": 4333219,
+          "sha_calls": 160,
+          "sha_input_bytes": 246060480,
+          "sha_thread_cpu_us": 4142343,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "completed",
+          "wall_us": 4896969,
+          "parent_thread_cpu_us": 4706879,
+          "sha_calls": 176,
+          "sha_input_bytes": 270666528,
+          "sha_thread_cpu_us": 4510946,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "cleanup-begin",
+          "wall_us": 4896982,
+          "parent_thread_cpu_us": 4706894,
+          "sha_calls": 176,
+          "sha_input_bytes": 270666528,
+          "sha_thread_cpu_us": 4510946,
+          "sha_clock_errors": 0
+        }
+      ]
+    },
+    {
+      "capture_key": "stall_hash_attribution2",
+      "exit_code": 1,
+      "frames": []
+    },
+    {
+      "capture_key": "stall_hash_attribution3",
+      "exit_code": 1,
+      "frames": [
+        {
+          "stage": "start",
+          "wall_us": 184,
+          "parent_thread_cpu_us": 5,
+          "sha_calls": 0,
+          "sha_input_bytes": 0,
+          "sha_thread_cpu_us": 0,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "acquired",
+          "wall_us": 657972,
+          "parent_thread_cpu_us": 623658,
+          "sha_calls": 16,
+          "sha_input_bytes": 24606048,
+          "sha_thread_cpu_us": 498027,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "owner-built",
+          "wall_us": 863724,
+          "parent_thread_cpu_us": 828344,
+          "sha_calls": 24,
+          "sha_input_bytes": 36909072,
+          "sha_thread_cpu_us": 700194,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "rooted",
+          "wall_us": 1451898,
+          "parent_thread_cpu_us": 1411510,
+          "sha_calls": 48,
+          "sha_input_bytes": 73818144,
+          "sha_thread_cpu_us": 1274058,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "exec",
+          "wall_us": 2205183,
+          "parent_thread_cpu_us": 2163678,
+          "sha_calls": 80,
+          "sha_input_bytes": 123030240,
+          "sha_thread_cpu_us": 2017942,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "loaded",
+          "wall_us": 3101826,
+          "parent_thread_cpu_us": 2910385,
+          "sha_calls": 112,
+          "sha_input_bytes": 172242336,
+          "sha_thread_cpu_us": 2752485,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "installed",
+          "wall_us": 3887946,
+          "parent_thread_cpu_us": 3677801,
+          "sha_calls": 144,
+          "sha_input_bytes": 221454432,
+          "sha_thread_cpu_us": 3510506,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "ready",
+          "wall_us": 3890271,
+          "parent_thread_cpu_us": 3677917,
+          "sha_calls": 144,
+          "sha_input_bytes": 221454432,
+          "sha_thread_cpu_us": 3510506,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "delivered",
+          "wall_us": 4266381,
+          "parent_thread_cpu_us": 4051858,
+          "sha_calls": 160,
+          "sha_input_bytes": 246060480,
+          "sha_thread_cpu_us": 3880164,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "completed",
+          "wall_us": 4646352,
+          "parent_thread_cpu_us": 4425122,
+          "sha_calls": 176,
+          "sha_input_bytes": 270666528,
+          "sha_thread_cpu_us": 4249260,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "cleanup-begin",
+          "wall_us": 4646363,
+          "parent_thread_cpu_us": 4425135,
+          "sha_calls": 176,
+          "sha_input_bytes": 270666528,
+          "sha_thread_cpu_us": 4249260,
+          "sha_clock_errors": 0
+        },
+        {
+          "stage": "cleanup-done",
+          "wall_us": 4835068,
+          "parent_thread_cpu_us": 4613836,
+          "sha_calls": 184,
+          "sha_input_bytes": 282969552,
+          "sha_thread_cpu_us": 4434593,
+          "sha_clock_errors": 0
+        }
+      ]
+    }
+  ]
+}

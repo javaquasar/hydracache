@@ -1,0 +1,169 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.71s
+     Running unittests src/bin/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-3f4eed9fb459e1d2)
+
+running 47 tests
+test root::launch::handoff::tests::fixed_native_protocol_entry_rejects_every_argument_class_change ... ok
+test root::launch::handoff::tests::selectors_are_closed_and_child_modes_cannot_select_parent_controls ... ok
+test root::launch::handoff::tests::original_endpoint_and_read_write_nonblock_cloexec_are_mandatory ... ok
+test root::launch::handoff::tests::attempt_and_event_budgets_are_sticky_without_a_transport_success ... ok
+test root::launch::handoff::tests::datagram_lengths_and_duplicate_packets_do_not_pass_as_empty_or_eof ... ok
+test root::launch::handoff::tests::only_the_expected_fault_classes_may_have_received_the_public_dummy ... ok
+test root::launch::handoff::tests::send_window_terminal_refuses_unknown_modes_and_live_peer_zero_records ... ok
+test root::launch::handoff::tests::dispatch_latch_rejects_early_duplicate_and_failed_send_reuse ... ok
+test root::launch::handoff::tests::failure_drain_uses_actual_record_length_and_keeps_the_48_byte_limit ... ok
+test root::launch::handoff::tests::startup_finite_allowlist_rejects_channel_io_replacement_and_mutating_prctl ... ok
+test root::launch::handoff::tests::transfer_cut_counters_refuse_wrong_step_attempt_send_and_close ... ok
+test root::launch::handoff::tests::untraced_ack_requires_exact_single_packet_not_duplicate_or_missing ... ok
+test root::launch::isolation::tests::syscall_decoder_rejects_short_foreign_abi_unknown_operation_and_exit_shape ... ok
+test root::launch::isolation::tests::retained_directory_decoder_refuses_noncanonical_duplicate_and_malformed_records ... ok
+test root::launch::handoff::tests::unread_dummy_requires_exact_reset_prefix_and_then_real_eof ... ok
+test root::launch::loss::tests::channel_uses_kernel_credentials_cloexec_and_fixed_packet_budget ... ok
+test root::launch::loss::tests::channel_rejects_missing_credentials_wrong_gate_and_malformed_requests ... ok
+test root::launch::loss::tests::original_pipe_identity_rejects_unrelated_pipe_and_wrong_access ... ok
+test root::launch::loss::tests::scalar_fields_refuse_duplicates_signs_overflow_and_non_decimal ... ok
+test root::launch::loss::tests::stopped_negative_requires_detachment_and_never_accepts_running_as_stopped ... ok
+test root::launch::loss::tests::rejected_rights_are_closed_even_for_foreign_credentials_or_truncation ... ok
+test root::launch::loss::tests::original_socket_endpoints_require_each_original_not_equal_peer_inodes ... ok
+test root::launch::isolation::tests::kernel_filter_state_requires_single_bounded_consistent_pair ... ok
+test root::launch::loss::tests::truncated_ancillary_rights_close_every_delivered_or_truncated_writer ... ok
+test root::launch::loss::tests::fixed_frames_reject_every_non_pid_bit_and_unregistered_modes ... ok
+test root::launch::tests::bounded_maps_require_selected_inodes_roles_offsets_paths_and_private_permissions ... ok
+test root::launch::isolation::tests::fixed_install_order_duplicate_entry_missing_exit_and_failed_syscall_refuse ... ok
+test root::launch::loss::tests::tree_drop_preserves_original_names_without_quiescence ... ok
+test root::launch::isolation::tests::retained_proc_readers_require_original_procfs_cloexec_and_no_foreign_replacement ... ok
+test root::launch::tests::status_duplicates_missing_identity_and_capability_drift_refuse ... ok
+Original root child quiescence refused; root retained.
+test root::launch::tests::missing_pipe_eof_preserves_root_until_quiescence_is_proved ... ok
+test root::tests::collision_is_not_adopted_or_deleted ... ok
+root_policy_memory seed=0x0740c07c mutations=256 original_child=true ptrace_words=true authority=false
+test root::launch::isolation::tests::original_stopped_child_memory_header_policy_and_seeded_mutations_are_bounded ... ok
+test root::tests::equal_bytes_replacement_refuses_cleanup_without_mutating_foreign_file ... ok
+test root::launch::tests::initial_drop_and_wrong_phase_kill_reap_original_before_root_cleanup ... ok
+test root::tests::copied_content_mode_and_hardlink_drift_refuse ... ok
+independent_fixed_roots=4 synthetic_graphs=true admission=false
+test root::tests::foreign_symlink_and_extra_entry_never_removed_by_cleanup ... ok
+test root::tests::four_independent_builders_keep_distinct_originals ... ok
+test root::tests::every_owned_partial_construction_prefix_cleans_only_known_names ... ok
+test root::tests::replaced_root_name_preserves_foreign_and_original_trees ... ok
+test root::tests::original_source_content_and_mode_drift_refuse_stickily ... ok
+test root::launch::tests::actual_root_transition_drift_and_synthetic_nonshim_image_refuse ... ok
+test root::tests::roundtrip_retains_original_sources_and_readonly_copies_then_removes_exact_tree ... ok
+test root::tests::source_size_type_permissions_and_unknown_graph_refuse_before_root_creation ... ok
+test root::tests::lost_cloexec_and_source_path_replacement_never_recapture_originals ... ok
+ordinary_root_maps seed=0x0740c07b mutations=4096 admission=false
+test root::launch::tests::seeded_map_mutations_never_panic_and_known_identity_mutations_refuse ... ok
+test root::launch::tests::original_sigkill_and_drop_at_rooted_and_exec_boundaries_reap_before_cleanup ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-028243e09de0963b)
+
+running 5 tests
+x32=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+unfiltered_chdir=0 fixed_native_probes=20 exact_EPERM=true admission=false
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+i386=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+owned_native_children=8 parent_restrictions_and_cwd_unchanged=true
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/diagnostic_signer_isolation.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_isolation-64abf905635b2274)
+
+running 7 tests
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_root_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_cli-409ec9d13395b2c0)
+
+running 1 test
+test fixed_root_cli_has_no_caller_selected_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 7 tests
+test nonutf8_environment_writable_hardlinked_and_oversize_self_refuse ... ok
+normal_fixed_root_prepare=true real_runtime_sources=4 child_launch=false admission=false
+test normal_private_stripped_self_and_real_gnu_runtime_prepare_and_cleanup ... ok
+independent_normal_root_preparations=4 parent_context_unchanged=true admission=false
+test four_independent_normal_preparations_leave_parent_context_unchanged ... ok
+test root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld ... ok
+normal_root_exec=true initial_images=2 loaded_images=4 original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false
+normal_root_policy mode=root-native actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy mode=root-x32 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy mode=root-i386 actual_tsync=true exact_bpf=true nd0=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy_cleanup mode=root-kill-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_policy_cleanup mode=root-drop-installed installed_stop=true original_reaped=true stream_eof=true admission=false
+normal_root_creator_loss mode=root-loss-initial kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-rooted kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+independent_root_exec_owners=4 extra_libm_refusal=false parent_context_unchanged=true admission=false
+independent_root_loss_monitors=4 sequential=true extra_libm_refusal=false parent_context_unchanged=true admission=false
+test repeated_original_root_execs_leave_parent_context_unchanged ... ok
+normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-exec kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-loaded kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-installed kind=loss automatic_death=true monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-initial kind=healthy automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_creator_loss mode=root-loss-healthy-installed kind=healthy automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+normal_root_creator_loss mode=root-loss-no-exitkill-installed kind=negative automatic_death=false monitor_originals=true child_reaped=true stream_eof=true unrelated_alive=true admission=false
+test normal_original_root_exec_observes_selected_runtime_then_reaps ... ok
+normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff has been running for over 60 seconds
+normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_transfer kind=loss cut=installed sends_at_cut=0 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=loss cut=ready sends_at_cut=0 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=loss cut=receive sends_at_cut=0 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=loss cut=delivered sends_at_cut=1 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=loss cut=acked sends_at_cut=1 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=loss cut=closed sends_at_cut=1 automatic_death=true ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=installed sends_at_cut=0 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=ready sends_at_cut=0 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=receive sends_at_cut=0 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=delivered sends_at_cut=1 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=acked sends_at_cut=1 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=healthy cut=closed sends_at_cut=1 automatic_death=false ack_close_exit=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=no-exitkill cut=installed sends_at_cut=0 automatic_death=false ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_transfer kind=no-exitkill cut=delivered sends_at_cut=1 automatic_death=false ack_close_exit=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=loss cut=latched attempts_at_cut=1 dispatches_at_cut=0 sends_at_cut=0 automatic_death=true traced_completion=false untraced_exit=none reset_before_eof=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=loss cut=sent attempts_at_cut=1 dispatches_at_cut=1 sends_at_cut=1 automatic_death=true traced_completion=false untraced_exit=none reset_before_eof=true original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=healthy cut=latched attempts_at_cut=1 dispatches_at_cut=0 sends_at_cut=0 automatic_death=false traced_completion=true untraced_exit=none reset_before_eof=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=healthy cut=sent attempts_at_cut=1 dispatches_at_cut=1 sends_at_cut=1 automatic_death=false traced_completion=true untraced_exit=none reset_before_eof=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=no-exitkill cut=latched attempts_at_cut=1 dispatches_at_cut=0 sends_at_cut=0 automatic_death=false traced_completion=false untraced_exit=74 reset_before_eof=false original_reaped=true eof=true unrelated_alive=true admission=false
+normal_root_send_window kind=no-exitkill cut=sent attempts_at_cut=1 dispatches_at_cut=1 sends_at_cut=1 automatic_death=false traced_completion=false untraced_exit=0 reset_before_eof=false original_reaped=true eof=true unrelated_alive=true admission=false
+test normal_original_root_one_shot_dummy_handoff ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 170.81s

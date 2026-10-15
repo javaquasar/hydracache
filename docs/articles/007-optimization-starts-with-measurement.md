@@ -10140,3 +10140,71 @@ hash consistency does not attest execution, and new source commits cannot reuse
 old qualification receipts as if they described the new tools. Authenticated
 original-start, trusted runtime/issuer/job custody, P2/P3 all-writer cessation,
 completion/later cells and server admission remain the substantive W11 work.
+
+### Bounded fault output identifies expensive probe verification
+
+The next experiment keeps the five-second guard and asks what happens before
+it kills the probe. Another original-source group passes 67, so a successful
+repeat still cannot explain the earlier failure. A new controlled test supplies
+public bytes to an owned cat process but keeps its input open. The old guard
+kills/reaps that original process and loses its output; the characterization
+test fails on the missing terminal/output facts before any implementation change.
+
+Only the test-side guard is extracted. Its deadline, five-millisecond polling,
+kill/wait order and the original seven process fixtures remain unchanged. After
+kill/wait, each owned output read end becomes nonblocking and supplies at most
+4096 bytes/eight reads. EOF, would-block, capacity/read budget and IO/setup errors
+are distinct: a live writer cannot turn diagnostic capture into an unbounded
+read or an invented EOF. Nine tests cover the real SIGKILL, exact successful and
+nonzero output, live writers, byte limits, repeated EINTR, failures and seeded
+binary prefixes. They pass on Linux Rust1.88 and Rust1.94. The report uses the
+original Child wait, not a numeric PID recheck after release that could address
+a reused process. It makes no claim about unobserved descendant writers.
+
+Parent-only timing instrumentation is a separate source overlay, never a green
+canonical receipt. Two stage runs complete in about 4.75/4.90 seconds wall with
+4.57/4.69 seconds parent CPU; the normal stderr-empty assertion rejects their
+extra output. A separate leaf overlay then catches a real guard timeout after
+completed and cleanup-begin. Its last frame records 4.51 seconds in completed
+SHA-256 calls out of 4.71 seconds parent CPU. Another leaf run completes with
+184 hashes over 282969552 input bytes, 4.43 seconds hash CPU and 4.61 seconds
+parent CPU. Those are hashed public runtime-image bytes, not copied bytes or
+product payloads. The counters identify this local verification owner; the last
+frame does not identify the exact interrupted instruction or prove completion
+of cleanup, nor retrospectively explain the old uninstrumented timeout.
+
+The conditional candidate changes only the private root materializer's digest
+implementation to the already pinned ring 0.17.14 SHA-256 backend. It does not
+cache hashes or skip a source, copy, binding, metadata or cleanup check. Before
+that edit, known empty/abc vectors and seeded comparisons against the old sha2
+reference pass across sixteen padding/block/page/image boundaries up to eight
+MiB. They pass afterward as well. The complete 32-byte digest is preserved;
+dependencies, lockfile, compiler profile, runtime graph and limits stay fixed.
+The probe is binary-private: embedded/native/RESP product paths are untouched.
+
+All temporary stage/counter code is removed before canonical checks. Three
+current-toolchain Linux groups pass 68 afterward: the original 67 plus one pure
+hash-equivalence test. Their unchanged seven-process-test target reports about
+16.83/16.88/17.02 seconds versus the baseline's 170.81. These are local test-run
+observations, not paired throughput evidence, a portable speedup ratio or a
+product performance claim. Different executable identities also change the
+self-image bytes being hashed. Strict package checks/lint pass on Windows/Linux
+Rust1.88/1.94. The MSRV group passes its tests while still refusing the extra-libm
+normal root image; that refusal is not new runtime support.
+
+One leaf-attribution attempt stops earlier with EAGAIN in the unchanged
+SCM_RIGHTS cleanup unit. It supplies no handoff sample and remains an unexpected
+negative. Concurrent fork inheritance of a writer is a hypothesis to test with
+owned process/FD gates, not a proven explanation or a reason to add retries or
+relax EOF. Later green groups do not waive it. The
+[evidence packet](../testing/performance/0.74/local-runs/root-guard-attribution-20261015/README.md)
+keeps raw negatives, temporary overlays, test-first snapshots and separate source
+identities. Next work must address that fixture/lifetime uncertainty alongside
+trusted runtime/issuer/job custody, authenticated original-start and P2/P3
+all-writer cessation; server and release qualification remain closed.
+
+The first global registry check also catches the missing registration of the
+new Linux-only guard test target. A separate entry fixes that omission without
+changing existing gates or CI workflows. The registry now covers 176 gates and
+all six registry validator tests pass; the 165 performance-contract tests pass
+again. Local admission stays non-promotable and require-ship still refuses.
