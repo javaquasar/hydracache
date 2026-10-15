@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [post-install namespace policy](diagnostic-signer-namespace-design.md) adds
+fifteen native denial pairs to the unchanged old ABI/exec/control/hardening policy.
+Three thirteen-case repeats, actual rooted x32/i386 SIGSYS, retained post-ND0
+environment/live-FD context, MSRV, 86 regressions and 143 root contracts pass.
+The [local namespace packet](local-runs/diagnostic-signer-namespace-20261015/README.md)
+retains procfs access failures and the negative nested-regain prediction: the
+old-policy rooted kernel call returns EPERM, not regained capabilities.
+No hardening/guard is skipped. Next bounded dummy handoff and actual tracer loss;
+production custody, worker/all-writer completion and server/qualification stay closed.
+
 The [selected-root original-exec composition](diagnostic-signer-rooted-exec-design.md)
 now observes original descriptor exec, selected kernel VMA file identities and
 the unchanged exact filter installation in one owned child. Three eleven-case

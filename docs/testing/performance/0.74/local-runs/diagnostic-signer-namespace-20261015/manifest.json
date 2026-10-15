@@ -1,0 +1,445 @@
+{
+  "schema_version": 1,
+  "packet_id": "diagnostic-signer-namespace-20261015",
+  "source_commit": "6eb187642f0b7d1bd51fc98f49a5eeefcdaef4eb",
+  "baseline_source": "7a38c07cd38fc105067b186235cd49753561dd9a",
+  "preregistration": "7cdf6c8461533e0a644c02cb1253ee15d5635ed6",
+  "amendments": [
+    "91a15d886d40e49a493ee27ba5bb7a5117abfa52",
+    "f579355171d7441fbb4da8a94e84615f46ad70bf",
+    "ae6de2fd2f180b1638840dc9ff0028d87ae652bd"
+  ],
+  "b73_frozen_product": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "qualification_sha256_raw": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "fixture_helper_sha256": "bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081",
+  "old_fixture_helper_sha256": "e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37",
+  "environments": [
+    "Local nonroot WSL Ubuntu UID/GID1000 Linux x86_64 kernel6.6.87.2; Rust1.94.0 and parent MSRV1.88.0, fixed GNU O3/panic-abort helper",
+    "Local Windows portable tests/current/MSRV checks; namespace fixture excluded"
+  ],
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "sha256_lf": "21431390bdf037de63e29b0e7b7fe0c7ff285c0b9cc65e0aa0dc54bb42749438"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs",
+      "sha256_lf": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs",
+      "sha256_lf": "d6f62e22c9b4594826ad2d4051e221dbf52cb3c57202efb954c32b64a700db82"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs",
+      "sha256_lf": "9ba888d34becaa6153465378227daaf90753d239f1bf05846f75eb0cba8578d0"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs",
+      "sha256_lf": "576cf9ff56e7b7eaf085f7bf6c90800d871e4e501589698ad1a0c0cd150b487f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs",
+      "sha256_lf": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256_lf": "a93080b9bf589bacd3d9f586774133f78bf4ec83ea9b17ec04ae9e00dc97f981"
+    },
+    {
+      "path": "docs/GATES.md",
+      "sha256_lf": "b279fe5efb9dae6b0d1458fbe6d84ac9cfc60dcdee10a7c6ffb6677355d7b56a"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256_lf": "3f5a3cd5354c2229d26a0b6d46fc65f3640f0e5e3994f7a27188b2695c68cfcb"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-contract.toml",
+      "sha256_lf": "10e9ef129e77eb3251f9e86ecf8bf59af1c8128d5ef0914036fd232c02303ae0"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-design.md",
+      "sha256_lf": "cb6a5537e2a846efb4137ce9a6231bfeb8a0a139d42c9b18ca9322c57093fe99"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-plan-20261015.md",
+      "sha256_lf": "a5aab13aa7220feecfa992c98b5120d33a5f05526eb6b1acd282e4efc04e3fb8"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-environ-amendment-20261015.md",
+      "sha256_lf": "246f637f9539ccea7f76af451af09c1d126491b2389b9ee987ceae9ca994db87"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-fd-amendment-20261015.md",
+      "sha256_lf": "23a4fa770b0504b15d87e8ed06c34628f64689369ebb77593bb787f45b1dd5fd"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-namespace-control-result-20261015.md",
+      "sha256_lf": "71fba22ae7d1219ccc6b30fa518bf89c7e41219f76cfc42a6fbf5fe9f01ae1e6"
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.toml",
+      "sha256_lf": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256_lf": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256_lf": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process.rs",
+      "sha256_lf": "6873afcec923a19a53e2a19393c1d67290d37f0fa61375aa04bd8380d185183e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_process_io.rs",
+      "sha256_lf": "9101a388d67240a26f19efa8da3efb24d1bdcb303ce11f4faf0ceea8f8985328"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_build.rs",
+      "sha256_lf": "d998a01bfdfe073ae40cce0470c9037ce66bd03c980811cb695f86db5bccc109"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_bundle.rs",
+      "sha256_lf": "a285435ecc18aa1a38889b0305b2ea7b478a979bee83875dd050e44d5dcbdcb1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_executable.rs",
+      "sha256_lf": "701dd5770ec5250b453a94625649bc5ab294156706f875f78d00996bf9d6afa2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_reviewed_trust.rs",
+      "sha256_lf": "b950578f1363d6c0dc2b42ed4e702fb99db55d931f97a2088f9ed655c7090b13"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_producer_linux.rs",
+      "sha256_lf": "ebf098a81265d120b7a39232d16167a16eff85b59c49b73d252e3e549e0590fd"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs",
+      "sha256_lf": "27db522a25c0fed49d372db4dfb60e6968e28c0ed325e83266e1151b6940b9d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "sha256_lf": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256_lf": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "docs/plans/releases.toml",
+      "sha256_lf": "ec94101f04e4734f7ff12975625db025e0140456e1b7c243c48d3fae1666f74a"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json",
+      "sha256_lf": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-builder-public-policy.json",
+      "sha256_lf": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture_tests.rs",
+      "sha256_lf": "f15b21ccdf556394749505513799c3c3520cb1f96c3853037f5a9aefec295bfc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-first-exec-contract.toml",
+      "sha256_lf": "01f2ec3e42a713f292514ab39911d97203f168fc763adff5da8d019db9b7a6fa"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture_tests.rs",
+      "sha256_lf": "e11c2934b1eb6d320bbf433242b45429559dc7f5a9bad08651cb24c2c333fd54"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-seccomp-contract.toml",
+      "sha256_lf": "4db0e6bf51602cc40145845791d34c718781a518364c256f94eaa76a9868be41"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_first_exec_fixture.rs",
+      "sha256_lf": "6f95dda5cf4ee94c7c49cec3f6d26129349dbdbdccb70804be12b9f71b9fb243"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs",
+      "sha256_lf": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_helper.rs",
+      "sha256_lf": "139d97d4a4858f4becd22965a94bfc1675da156b1d088bce084a1918403663cb"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture_tests.rs",
+      "sha256_lf": "b5cbe86d230ba684a5a3bb4851a5ac2092b9d16c5f4bfd536b5269a6a9629c09"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-joined-contract.toml",
+      "sha256_lf": "bd3bde3db9d83ef5a8cdbeb1a4fe75e4070bea330f289b113ef3304bf7be07b7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_joined_fixture.rs",
+      "sha256_lf": "41a04acee1c0e3876dd208fae705936fc54946f23379118594a2c89704b0f683"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_elf.rs",
+      "sha256_lf": "03b4d33741068f620c0cf7b6a85db0400b325785fe31ecdc8a686e42b988247e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture_tests.rs",
+      "sha256_lf": "1b3824cb2f9ee8d94095ab9f90747926eb65972abac935a2e90988c8db9074e5"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-runtime-contract.toml",
+      "sha256_lf": "a851a3bd420e6317d5d27a80b8240fcc6bb1fec2b3f8e00e3ec4b8a76934e87c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture_tests.rs",
+      "sha256_lf": "e2a5bc2df2bd6f8c34a5fb47982e24530cd01d55d10455b50856ca26544e1df7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-root-contract.toml",
+      "sha256_lf": "2b2ace23474b398f872702323669b7a85685831188291f53687a2a7620f1f7c5"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-root-design.md",
+      "sha256_lf": "31c88ccbcd8a342cdcb35e665d82a6e3bb9bddd39d3b9a733074b885977f3f4b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs",
+      "sha256_lf": "66680bb06d3149746778b738c8fd7c0be8e5495c9ac5d0d2303fdb60dbdae831"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture_tests.rs",
+      "sha256_lf": "7423b2bc12386418eb9a54279ba7d4c27673e447cc5645eca92b7dba1bff91d9"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_runtime_fixture.rs",
+      "sha256_lf": "bd690f9a56bcd65e89000f3d530869ebfe02b65346eb416bb9d17dda6bc578bf"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-rooted-exec-contract.toml",
+      "sha256_lf": "ec6c72f4154ec4ad36057e044164dd77f2ffa07d41e6f1da8021c6f13696e7f7"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-signer-rooted-exec-design.md",
+      "sha256_lf": "20f9cb189c89a3e14d82f580a6e3144369597877b224fab0b0d62ef94d7c5e5e"
+    }
+  ],
+  "captures": [
+    {
+      "path": "signer-namespace-baseline.log",
+      "sha256": "47981793c075e7a463684525850a3f9f829b0739d6ebe2943d514ccf6592163a",
+      "bytes": 3874,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-missing-owner.log",
+      "sha256": "692ae39b1899befe31995ec2cfd8212f96005b3e7216c616e2eb6d10c34ab8bf",
+      "bytes": 9598,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-development.log",
+      "sha256": "0f2ccd56893aab90eb2ab47c516dd8c59629350e9bf84afbc2742c070c692ea6",
+      "bytes": 4766,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-proc-access.log",
+      "sha256": "3c4cda110a326a7acf490b1cf088025e3097aa9c77ff65185450a71f23cf6fbd",
+      "bytes": 1119,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-retained-development.log",
+      "sha256": "65ef344c13f15509d65b9ebaf9b25f61ddd0d41ad47eaf028cd344bf7496ad66",
+      "bytes": 5835,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-directory-access.log",
+      "sha256": "35c89d4505fdc43eff8d86698a03f758fcfb9b67f3a09c26208093aaa6f1aee5",
+      "bytes": 1223,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-directory-development.log",
+      "sha256": "3adfdf3c3fd3e17ca5734541a91a9e28a1677aac87225276a5077c422ef1ec17",
+      "bytes": 4048,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-control-development.log",
+      "sha256": "d3730d55317963942fa117e4d1fe776b30cef5dbabdbe491d63f68be02ff2126",
+      "bytes": 1525,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-check-development.log",
+      "sha256": "6c485a58ced6bf7ac4866c5c1e35df56809ae888d0f0d9efe951d92cabe147fa",
+      "bytes": 4519,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-linux-final.log",
+      "sha256": "0288364eabb114c1f8ff023c90fe5fc6e77119522cef56f3aebd98d0a135983e",
+      "bytes": 27844,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-linux-msrv.log",
+      "sha256": "60bb46d3526b81bc8162f99af39e2773d4a2f2990d96a2223d1dce030d7be946",
+      "bytes": 3924,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-helper-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-normal-library.log",
+      "sha256": "752aa4d2d24d044409d997eb91698ce803c157d48c7a9343488f68e823b22f32",
+      "bytes": 120,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-root-contracts.log",
+      "sha256": "d616a4337a1d9b5efd97e8615da4dc3355fee19c8d1524fe2ad0c960b43f1a40",
+      "bytes": 12259,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-windows-tests.log",
+      "sha256": "f5f3887e3102225489b45737e5eb87409043b8c3e63364c1f06b6e0994bffd86",
+      "bytes": 1045,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-windows-check.log",
+      "sha256": "aafd3034f887dae404f1f43f1cd1d192ce5cd6efd020446fc83a066790cd9aad",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-windows-lint.log",
+      "sha256": "988486adb888f8549b5e6105808ef711533bfa91782714c86adf4aa260b9ec67",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-windows-msrv.log",
+      "sha256": "87b2556a753d902e0a7e8f6d49a6b1bf192351009f047240475e5c30bb801373",
+      "bytes": 73,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-xtask-check.log",
+      "sha256": "1238115100580a09d2fb4ee39a1d8c09324ecc9fe53bd86eb43e26d28b3cf351",
+      "bytes": 157,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-xtask-lint.log",
+      "sha256": "3f3b68f89e57471948b4116874acd877994e25ff473ca96982ffcdc781149289",
+      "bytes": 157,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-doc-check.log",
+      "sha256": "bb62502f40b6dea9f86928657ef4f411c9c6fcd044e8e1a9dc8b912009a2f4ef",
+      "bytes": 251,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-gate-registry.log",
+      "sha256": "3dbf9afaf8a542c438139e1c3b61e5b97df152676524df1936b11b96cf8a1ad9",
+      "bytes": 190,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-local-contract.log",
+      "sha256": "7493a463fcc9bc86b1d714a632545d8409a1f29976245c31cb33696b104c4a0a",
+      "bytes": 215,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-require-ship.log",
+      "sha256": "1db5e0ea033c1d3f6a86147dd74cceb89ea3f2ba2ed5c9df8aca24ca7b7ead7b",
+      "bytes": 499,
+      "expected_outer_exit": 1,
+      "observed_outer_exit": 1
+    },
+    {
+      "path": "signer-namespace-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-packet-windows.log",
+      "sha256": "0d4fcd9f3748b6c93c4cb277fac012eaf192b09f6db2959fbae9128540758826",
+      "bytes": 218,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    },
+    {
+      "path": "signer-namespace-packet-linux.log",
+      "sha256": "f1bfa29b6237c0c5acf7d617cc9e4b4570260b332c2f03791079c90a007e5f61",
+      "bytes": 213,
+      "expected_outer_exit": 0,
+      "observed_outer_exit": 0
+    }
+  ],
+  "admission_claims": {
+    "nested_capability_regain_counterexample_reproduced": false,
+    "continuous_loaded_runtime_closure_proved": false,
+    "mapped_memory_attested": false,
+    "independent_runtime_custody": false,
+    "complete_sandbox": false,
+    "multithreaded_signer_supported": false,
+    "dummy_handoff_implemented": false,
+    "actual_tracer_loss_exitkill_proved": false,
+    "production_issuer_root_or_job_enrolled": false,
+    "actual_private_key_or_token_read": false,
+    "bootstrap_signing_or_worker_start_authority": false,
+    "whole_writer_revocation": false,
+    "completion_or_later_cells_enabled": false,
+    "host_namespace_mount_account_service_or_cgroup_changed": false,
+    "server_entry_wired": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "verifier_sha256_lf": "dc75dc668e40dd6be188b8d0d22a4d8682d6886b861c39de32bab3bc6d6cf08f",
+  "packet_test_sha256_lf": "201971944aff1d0d559fabb9446b8475a48716e93b2ade71cd11c0a135c0aa4c"
+}

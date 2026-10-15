@@ -1,0 +1,21 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.29s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+fixture_namespace_helper_sha256=bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+post_ND0_magic_ns/user=true
+post_ND0_magic_root=true
+post_ND0_magic_cwd=true
+post_ND0_magic_exe=true
+post_ND0_text_uid_map=true
+post_ND0_text_gid_map=true
+post_ND0_text_setgroups=true
+post_ND0_text_status=true
+post_ND0_text_environ=false
+post_ND0_text_maps=true
+post_ND0_context_result=Err(Os { code: 13, kind: PermissionDenied, message: "Permission denied" })
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_after_dumpable_proc_access_is_not_a_root_proof ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 801 filtered out; finished in 2.01s
+

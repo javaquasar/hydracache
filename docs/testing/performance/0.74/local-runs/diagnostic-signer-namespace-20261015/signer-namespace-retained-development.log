@@ -1,0 +1,63 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.89s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+namespace_policy_instructions=64 bytes=512 added_native_denials=15 old_prefix_tail_exact=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_exact_extension_and_abi_model ... ok
+namespace_policy_seed=0x07403b2b bounded_mutations=256
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_mutations_and_native_args_are_bounded ... ok
+fixture_namespace_helper_sha256=bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+post_ND0_magic_ns/user=true
+post_ND0_magic_root=true
+post_ND0_magic_cwd=true
+post_ND0_magic_exe=true
+post_ND0_text_uid_map=true
+post_ND0_text_gid_map=true
+post_ND0_text_setgroups=true
+post_ND0_text_status=true
+post_ND0_text_environ=false
+post_ND0_text_maps=true
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback' (657) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:32:24:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain' (656) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:222:26:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners' (661) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:386:26:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install' (653) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:202:26:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse' (651) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:305:34:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse ... FAILED
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys' (652) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:251:25:
+called `Result::unwrap()` on an `Err` value: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys ... FAILED
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses ... ok
+namespace_original_SIGKILL_drop=initial,rooted,first_exec,installed tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse ... ok
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners
+
+test result: FAILED. 5 passed; 6 failed; 0 ignored; 0 measured; 792 filtered out; finished in 11.90s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

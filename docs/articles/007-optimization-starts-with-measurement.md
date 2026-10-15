@@ -8531,3 +8531,47 @@ preserve the actual captures, and an additional verifier compares every packet
 file against its exact published Git object. Attribute/committed-byte substitutions
 are now tested too. Evidence transport must preserve observations, not silently
 rewrite them or compensate by changing expected hashes to normalized output.
+
+## Restricting namespace root and mount changes after installation (2026-10-15)
+
+The next local hypothesis was explicit confinement of the selected root, not
+another throughput optimization. The old filter prohibited exec and task/control
+operations but allowed namespace/root/mount syscall numbers. Rejecting them only
+during traced startup did not constrain the post-install phase. The candidate
+therefore preserves the old policy's ABI prefix and hardening tail, adding fifteen
+EPERM pairs for namespace/root/cwd and legacy/new mount APIs. Its 64 instructions
+are independently checked against all 512 bytes at original installation entry
+and zero exit. This remains a private fixed helper, not a production sandbox.
+
+Hardening exposed an observation seam. After dumpable-zero, fresh environ and fd
+directory opens refuse EACCES. The first diagnostic omitted directory enumeration
+and initially attributed the problem only to environ; the next failed run showed
+that conclusion was incomplete. The owner now retains both original readonly
+sources at the exact exec stop. Positional EOF reads check the original environment
+mm, and bounded getdents64 obtains a live FD inventory rather than replaying a
+saved list. Original namespace/root/cwd/executable/credentials/task/mapping checks
+still bracket probes. Hardening was not disabled and inaccessible checks were not
+silently omitted. Retained source identity remains dependent on original exec
+history and exec denial, not mapped-memory attestation.
+
+The planned regain counterexample also failed usefully. Under the old filter,
+unshare(CLONE_NEWUSER) returned EPERM inside this chroot instead of creating
+another namespace. That is consistent with the documented
+[unshare chroot restriction](https://man7.org/linux/man-pages/man2/unshare.2.html).
+No successful escape or regained capability is claimed. The exact failed result
+is retained, and that control is refused/reaped before its helper continues.
+Changing to unshare(0) or removing the root would test another hypothesis.
+Three other old-policy controls distinguish successful chdir, ENOTDIR fchdir and
+EBADF setns from candidate EPERM. Exact BPF semantics, not EPERM alone, attributes
+denial where ordinary kernel permissions could produce the same result.
+
+Three thirteen-case repeats pass, including all fifteen native denials, actual
+rooted x32/i386 SIGSYS and original-child SIGKILL/drop at four boundaries. MSRV,
+86 previous regressions, strict lint and 143 root contracts pass. The
+[design](../testing/performance/0.74/diagnostic-signer-namespace-design.md) and
+[source-bound packet](../testing/performance/0.74/local-runs/diagnostic-signer-namespace-20261015/README.md)
+retain the compiler ICE, failed observation plumbing, rejected regain prediction
+and lint correction alongside final results. This improves the test launch boundary;
+it measures no cache goodput, allocations or latency. Bounded dummy handoff and
+actual tracer loss come next, with production custody, authenticated worker start,
+all writers and later lifecycle/server admission still separate.

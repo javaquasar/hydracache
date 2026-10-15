@@ -1,0 +1,20 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.56s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+fixture_namespace_helper_sha256=bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain' (645) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs:312:26:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "namespace fixed probe ControlUnshare exit refused: Exit { arch: 3221225534, value: -1, error: true }" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain ... FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_expose_nested_user_namespace_regain
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 804 filtered out; finished in 2.10s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`
