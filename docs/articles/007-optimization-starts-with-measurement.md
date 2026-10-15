@@ -10317,3 +10317,62 @@ original-start and P2/P3 all-writer cessation remain before completion and serve
 admission. The [evidence packet](../testing/performance/0.74/local-runs/controller-fence-preflight-20261015/README.md)
 keeps the missing-method negative and separates modeled checks from those still
 unopened execution rights. No RESP/native performance claim follows.
+
+### Retaining the original controller request before execution
+
+The next P2 gap is the transition from a healthy read-only preflight to a
+durable attempt. The existing P1 attempt API takes a different signed intent.
+Passing an extracted request into that API, or opening another authority owner,
+would discard the original controller/OIDC/kernel binding. The new opt-in path
+instead consumes the original common-fence preflight by value and keeps its
+same exclusive controller chain and uninterrupted lock.
+
+Only the original Reserve request at expected revision zero can enter. The
+canonical record binds its request/hash, token digest, builder-policy/receipt
+digests, original public configuration digests, and active original authority
+revision, policy digest and epoch. It contains no bearer token or private key.
+The token and signatures remain verified through the runtime owners; the stored
+record itself is unsigned. Its standalone validator establishes byte consistency,
+not independent origin authenticity or recovered permission.
+
+The private descriptor-relative attempt engine now selects between two fixed
+filenames. Existing signed-intent attempts keep their old name and bytes; the
+controller request uses `diagnostic-controller-attempt-074.json` and a separately
+registered v1 schema. The file is created exclusively in the original empty
+leaf, retained by descriptor, sealed read-only and synced with its directory.
+All eight creation/write/seal/sync boundaries recheck the same original
+controller and captured binding. A final storage/controller bracket must pass
+before returning runtime acknowledgement.
+
+Any first error retains partial bytes and the original lock while permanently
+refusing both original chains. Even after healthy drop, the retained leaf blocks
+a fresh empty-fence reservation. This is conservative host-leaf exclusion, not
+a global nonce ledger: before the first create there is no durable admission,
+and whole-host rollback is not prevented. Lost acknowledgement never becomes
+permission to retry from a readable file. The old lifecycle publisher explicitly
+rejects controller-attempt documents, preventing a format-compatible-looking
+storage object from becoming a signed-intent execution path.
+
+The test-first positive case fails on the missing retention method. Logical
+fault tests then cut all eight write boundaries with seed `0x0740c094`, while a
+second matrix changes the original trust source at each boundary. Other cases
+check strict reader mutations, signed non-Reserve rejection, original-object
+and namespace drift, retained-byte integrity, sticky no-I/O refusal, lock
+lifetime and independent concurrent chains. One development test incorrectly
+used campaign acquisition to demonstrate lock release; that operation itself
+created a campaign marker. Replacing it with the existing lock-only operation
+tests release without changing the admission context. The negative run remains
+evidence of the fixture correction, not a production lock defect.
+
+These callbacks establish local interruption behavior, not actual process death.
+The joined original-kernel SIGKILL/lost-ack matrix is the next required proof;
+older storage-only crash tests cannot substitute for it. The runtime result has
+no start or lifecycle conversion. Actual production policy/epoch and issuer/job
+enrollment, authenticated original-start, watchdog and all-writer cessation
+remain before completion, later cells and server admission. No allocation or
+throughput improvement is inferred from this control-plane implementation.
+
+The [local evidence packet](../testing/performance/0.74/local-runs/controller-attempt-20261015/README.md)
+retains the development negatives and the final ten-case repetitions, MSRV/API
+checks and legacy process-loss regression. The new composition's real process
+loss remains a separate prerequisite, not a result inferred from those tests.

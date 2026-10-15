@@ -1,0 +1,7 @@
+error: patch failed: tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs:5
+error: tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs: patch does not apply
+Exception: 
+Line |
+   2 |  … DE -ne 0) { throw 'Test-first patch does not apply to baseline' }; Wr …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Test-first patch does not apply to baseline

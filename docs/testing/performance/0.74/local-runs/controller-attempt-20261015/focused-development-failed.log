@@ -1,0 +1,29 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.21s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_engine_cannot_convert_to_legacy_intent_publication ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_pre_refused_original_does_no_write_or_checkpoint ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_canonical_reader_refuses_mutations_not_admission ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_independent_concurrent_originals_remain_isolated ... ok
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock' (649) panicked at tools/long-run-supervisor-074/src/diagnostic_empty_reservation_fence_tests.rs:80:5:
+assertion failed: matches!(bind_original_empty_reservation_fence(&mut storage),
+    Err(EmptyReservationFenceError::Conflict))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock ... FAILED
+controller_attempt_seed=0x0740c094 logical_boundaries=8 sigkill_proof=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_seeded_all_logical_write_faults_keep_lock_and_partial_context ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_trust_drift_at_each_write_boundary_cross_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused has been running for over 60 seconds
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused ... ok
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 906 filtered out; finished in 78.73s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

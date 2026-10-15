@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original controller attempt](diagnostic-controller-attempt-design.md)
+consumes the original common-fence preflight into bounded durable request
+retention, preserving the same lock and authority chain. Partial or complete
+context blocks fresh reservation, but readable bytes cannot recover runtime
+acknowledgement. Joined SIGKILL/lost-ack proof, lifecycle integration and authentic
+start remain required; production/server/qualification admission stays closed.
+
 The [controller/common-fence preflight](local-runs/controller-fence-preflight-20261015/README.md)
 connects the original configured OIDC/controller/kernel/authority chain with the
 already held common empty fence. A fixed five-check bracket preserves first

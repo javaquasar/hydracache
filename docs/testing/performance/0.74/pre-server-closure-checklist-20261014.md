@@ -55,6 +55,13 @@ stored and controlled is a deployment decision, not an implicit test default.
 
 ## Code and local gates still open
 
+The [original controller attempt](diagnostic-controller-attempt-design.md) now
+consumes the original common-fence preflight into a durable Reserve request,
+retaining its original OIDC/kernel/authority chain and uninterrupted lock.
+The standalone bytes are unsigned consistency data, not recovered admission.
+Joined SIGKILL/lost-ack proof, owned lifecycle integration, actual production
+trust and original-start/all-writer cessation remain before server execution.
+
 The [fixed trust input](diagnostic-worker-trust-input-design.md) now retains the
 selected issuer and explicitly configured body pin/epoch from a bounded original
 root-owned file, with an owned config/journal/policy join. Its positive filesystem

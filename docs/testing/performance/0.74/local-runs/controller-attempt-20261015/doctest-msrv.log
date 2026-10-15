@@ -1,0 +1,151 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.23s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 7 tests
+error[E0616]: field `original` of struct `ControllerRequestAttempt` is private
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:165:93
+  |
+6 | fn extract(g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { let _ = g.original; }
+  |                                                                                             ^^^^^^^^ private field
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0616`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 162) - compile fail ... ok
+error[E0382]: use of moved value: `g`
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:184:18
+    |
+6   | fn replay(g: FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
+    |           - move occurs because `g` has type `FencedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`, which does not implement the `Copy` trait
+7   |     let first = g.retain_request();
+    |                   ---------------- `g` moved due to this method call
+8   |     let second = g.retain_request();
+    |                  ^ value used here after move
+    |
+note: `request_attempt::<impl FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>::retain_request` takes ownership of the receiver `self`, which moves `g`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:233:9
+    |
+233 |         self,
+    |         ^^^^
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0382`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 179) - compile fail ... ok
+error[E0277]: the trait bound `ControllerRequestAttempt<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>: serde::de::DeserializeOwned` is not satisfied
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:170:10
+  |
+7 | decode::<ControllerRequestAttempt<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+  |
+  = help: the trait `for<'de> Deserialize<'de>` is not implemented for `ControllerRequestAttempt<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+  = help: the following other types implement trait `Deserialize<'de>`:
+            `&'a [u8]` implements `Deserialize<'de>`
+            `&'a std::path::Path` implements `Deserialize<'de>`
+            `&'a str` implements `Deserialize<'de>`
+            `()` implements `Deserialize<'de>`
+            `(T,)` implements `Deserialize<'de>`
+            `(T0, T1)` implements `Deserialize<'de>`
+            `(T0, T1, T2)` implements `Deserialize<'de>`
+            `(T0, T1, T2, T3)` implements `Deserialize<'de>`
+          and 278 others
+  = note: required for `ControllerRequestAttempt<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>` to implement `DeserializeOwned`
+note: required by a bound in `decode`
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:169:14
+  |
+6 | fn decode<T: serde::de::DeserializeOwned>() {}
+  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `decode`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 166) - compile fail ... ok
+error[E0277]: `Rc<()>` cannot be sent between threads safely
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:174:149
+    |
+6   | ...tic, 'static, 'static>) { std::thread::spawn(move || drop(g)); }
+    |                              ------------------ -------^^^^^^^^
+    |                              |                  |
+    |                              |                  `Rc<()>` cannot be sent between threads safely
+    |                              |                  within this `{closure@...}`
+    |                              required by a bound introduced by this call
+    |
+    = help: within `{closure@...}`, the trait `Send` is not implemented for `Rc<()>`
+note: required because it appears within the type `PhantomData<Rc<()>>`
+   --> /rustc/6b00bc3880198600130e1cf62b8f8a93494488cc/library/core/src/marker.rs:778:12
+note: required because it appears within the type `OidcTrustInput`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs:97:12
+    |
+97  | pub struct OidcTrustInput {
+    |            ^^^^^^^^^^^^^^
+    = note: required because it appears within the type `&'static mut OidcTrustInput`
+note: required because it appears within the type `OidcControllerInput<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs:190:12
+    |
+190 | pub struct OidcControllerInput<'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
+    |            ^^^^^^^^^^^^^^^^^^^
+    = note: required because it appears within the type `&mut ...`
+note: required because it appears within the type `ControllerRequestAttempt<'_, '_, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:186:12
+    |
+186 | pub struct ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+note: required because it's used within this closure
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:174:149
+    |
+6   | ...tic, 'static, 'static, 'static, 'static>) { std::thread::spawn(move || drop(g)); }
+    |                                                                   ^^^^^^^
+note: required by a bound in `spawn`
+   --> /rustc/6b00bc3880198600130e1cf62b8f8a93494488cc/library/std/src/thread/mod.rs:723:1
+    = note: the full name for the type has been written to '/tmp/rustdocteste650Xz/rust_out.long-type-2641965990965960257.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 171) - compile fail ... ok
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:178:89
+    |
+6   | fn replace(mut g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(b"replacement"); }
+    |                                                                                         ^^^^^^^^^^ -------------- unexpected argument of type `&'static [u8; 11]`
+    |
+note: method defined here
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:206:12
+    |
+206 |     pub fn revalidate(&mut self) -> Result<(), ControllerAttemptError> {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+6   - fn replace(mut g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(b"replacement"); }
+6   + fn replace(mut g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(); }
+    |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0061`.
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 175) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 154) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt (line 158) - compile fail ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 129 filtered out; finished in 0.55s
+
+error[E0599]: no method named `clone` found for struct `ControllerRequestAttempt` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:157:82
+  |
+6 | fn copy(g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.clone(); }
+  |                                                                                  ^^^^^ method not found in `ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start_once` found for struct `ControllerRequestAttempt` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:161:87
+  |
+6 | fn start(mut g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.start_once(); }
+  |                                                                                       ^^^^^^^^^^ method not found in `ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.

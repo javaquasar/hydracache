@@ -252,3 +252,6 @@ docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-*/** -text whi
 docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/controller-fence-preflight-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/controller-fence-preflight-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol

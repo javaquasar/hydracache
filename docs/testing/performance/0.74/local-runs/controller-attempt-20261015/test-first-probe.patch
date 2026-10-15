@@ -1,0 +1,47 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs
+--- a/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight_tests.rs
+@@ -3,8 +3,11 @@
+ use crate::host_execution::{HostExecutionClaim, HostExecutionError};
+ use super::super::fenced_preflight::{ControllerFenceError, Step};
+ use fs2::FileExt;
+ 
++#[path = "diagnostic_controller_attempt_tests.rs"]
++mod attempt_tests;
++
+ struct Paths {
+     oidc: PathBuf,
+     worker: PathBuf,
+     authority: PathBuf,
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs
+@@ -0,0 +1,27 @@
++use super::*;
++
++#[test]
++fn controller_attempt_retains_original_request_and_lock() {
++    with_original(false, |original, _| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let preflight = original.bind_common_empty_fence(fence).unwrap();
++            let mut attempt = preflight.retain_request().unwrap();
++            attempt.revalidate().unwrap();
++            busy(root);
++            assert_eq!(fs::read_dir(leaf).unwrap().count(), 1);
++            let file = leaf.join("diagnostic-controller-attempt-074.json");
++            let raw = fs::read(&file).unwrap();
++            assert_eq!(raw.last(), Some(&b'\n'));
++            assert_eq!(fs::metadata(&file).unwrap().permissions().mode() & 0o7777, 0o400);
++            let document: Value = serde_json::from_slice(&raw).unwrap();
++            assert_eq!(document["schema_version"], "diagnostic-controller-attempt-074-v1");
++            assert_eq!(document["authority_revision"], 1);
++            assert_eq!(document["policy_epoch"], 7);
++            assert!(document.get("token").is_none());
++            assert!(document.get("signature_hex").is_none());
++            drop(attempt);
++            original.revalidate().unwrap();
++            drop(HostExecutionClaim::acquire(root, &"a".repeat(64)).unwrap());
++        });
++    });
++}

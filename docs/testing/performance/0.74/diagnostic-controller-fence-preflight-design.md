@@ -61,7 +61,13 @@ keeps the missing-method negative, focused repeats, regressions and source pins.
 Synthetic positives do not enroll a real GitHub key, job or production filesystem.
 There is no new persistent write and therefore no new SIGKILL publication boundary.
 
-The next writable join must bind the same original request/nonce, policy/epoch
+The separate [original controller attempt](diagnostic-controller-attempt-design.md)
+now adds opt-in request retention by consuming this preflight. The constructor
+and revalidation described above remain read-only; the new method is not used by
+the old intent/publication APIs or any production consumer. Its acknowledgement
+cannot authorize start, and its joined SIGKILL/lost-ack matrix is still required.
+
+A writable lifecycle join must bind the same original request/nonce, policy/epoch
 and common fence to an acknowledged durable attempt without releasing/reacquiring
 the lock, opening another journal owner or reconstructing permission from bytes.
 It needs explicit owned progression, uncertainty handling and SIGKILL/lost-ack

@@ -1,0 +1,14 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `retain_request` found for struct `FencedControllerPreflight<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_controller_attempt_tests.rs:8:41
+    |
+  8 | ...ht.retain_request()....
+    |       ^^^^^^^^^^^^^^ method not found i...encedControllerPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_fence_preflight.rs:103:1
+    |
+103 |...'s, 'a, 'p> {
+    |...----------- method `retain_request` not found for this struct
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

@@ -1,0 +1,235 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/perf_budget_067-39ub4md5t6gbc/s-hn8w1gah1l-087apz9-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/diagnostic_worker_files-263wtyoqjrq9h/s-hn8w1gaeuq-0mczhr8-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/perf_exploratory_harness-33268mdn7yyy6/s-hn8w1gaexv-0kl50ai-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/diagnostic_builder-2bx7t7kjhf0ng/s-hn8w1gaiov-12ap9k2-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/memory_contracts_071-2fnu3s1xhc140/s-hn8w1gamzs-0kim0wx-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/diagnostic_signer_issuer-0ju5z96fdr3f5/s-hn8w1gamg2-1hun7kl-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/diagnostic_signer_isolation_probe-2d3hlebtweg2p/s-hn8w1gaog9-0o6bddl-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+error[E0463]: can't find crate for `xtask`
+ --> crates/xtask/tests/perf_exploratory_harness.rs:8:16
+  |
+8 | ... = xtask::d...
+  |       ^^^^^ can't find crate
+
+error[E0463]: can't find crate for `xtask`
+  --> crates/xtask/tests/memory_contracts_071.rs:22:9
+   |
+22 | ...   xtask::m...
+   |       ^^^^^ can't find crate
+
+warning: `hydracache-long-run-supervisor-074` (bin "diagnostic_signer_isolation_probe" test) generated 1 warning
+error[E0282]: type annotations needed
+  --> crates/xtask/tests/memory_contracts_071.rs:72:15
+   |
+72 | ...y(|problem| problem.co...
+   |       ^^^^^^^  ------- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+72 |         .any(|problem: /* Type */| problem.contains("candidate-derived")));
+   |                      ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/xtask/tests/memory_contracts_071.rs:75:15
+   |
+75 | ...y(|problem| problem.co...
+   |       ^^^^^^^  ------- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+75 |         .any(|problem: /* Type */| problem.contains("ordered transition receipts")));
+   |                      ++++++++++++
+
+warning: `hydracache-long-run-supervisor-074` (bin "diagnostic_builder") generated 1 warning
+error[E0282]: type annotations needed
+  --> crates/xtask/tests/memory_contracts_071.rs:78:15
+   |
+78 | ...y(|problem| problem.co...
+   |       ^^^^^^^  ------- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+78 |         .any(|problem: /* Type */| problem.contains("without frozen baselines")));
+   |                      ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/xtask/tests/memory_contracts_071.rs:96:34
+   |
+96 | ...y(|problem| problem.co...
+   |       ^^^^^^^  ------- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+96 |             problems.iter().any(|problem: /* Type */| problem.contains(expected)),
+   |                                         ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:113:15
+    |
+113 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+113 |         .any(|problem: /* Type */| problem.contains("sole portable default")));
+    |                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:116:15
+    |
+116 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+116 |         .any(|problem: /* Type */| problem.contains("unavailable(reason)")));
+    |                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:161:15
+    |
+161 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+161 |         .any(|problem: /* Type */| problem.contains("resolves to")));
+    |                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:164:15
+    |
+164 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+164 |         .any(|problem: /* Type */| problem.contains("candidate-to-baseline-compatible-rollback")));
+    |                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:174:15
+    |
+174 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+174 |         .any(|problem: /* Type */| problem.contains("pending optional work")));
+    |                      ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/xtask/tests/memory_contracts_071.rs:181:15
+    |
+181 | ...y(|problem| problem.co...
+    |       ^^^^^^^  ------- type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+181 |         .any(|problem: /* Type */| problem.contains("bounded and correct")));
+    |                      ++++++++++++
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+For more information about this error, try `rustc --explain E0463`.
+warning: `xtask` (test "memory_contracts_071") generated 1 warning
+error: could not compile `xtask` (test "memory_contracts_071") due to 11 previous errors; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...
+warning: `xtask` (test "perf_exploratory_harness") generated 1 warning
+error: could not compile `xtask` (test "perf_exploratory_harness") due to 1 previous error; 1 warning emitted
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/mutants-13pcns5jnu25o/s-hn8w1gd3en-0y91tnt-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+error[E0463]: can't find crate for `xtask`
+ --> crates/xtask/tests/mutants.rs:6:5
+  |
+6 | use xtask::m...
+  |     ^^^^^ can't find crate
+
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/watchdog-2ead3p31g5fyf/s-hn8w1gdg04-0bol3c6-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: `xtask` (test "mutants") generated 1 warning
+error: could not compile `xtask` (test "mutants") due to 1 previous error; 1 warning emitted
+error[E0786]: found invalid metadata files for crate `hydracache_loadgen`
+  --> crates/xtask/tests/../src/perf_budget.rs:23:5
+   |
+23 | use ...he_loadgen::o...
+   |     ...^^^^^^^^^^
+   |
+   = note: corrupt metadata encountered in /home/artur/.cache/hydracache-074-194-check/debug/deps/libhydracache_loadgen-6aaae1401e578114.rmeta
+
+
+thread 'rustc' (1501) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 32 but ends at 31
+stack backtrace:
+warning: `hydracache-long-run-supervisor-074` (test "diagnostic_signer_issuer") generated 1 warning
+warning: `hydracache-long-run-supervisor-074` (test "diagnostic_worker_files") generated 1 warning
+   0:     0x76d718e5c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x76d71940e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x76d71a8f8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x76d718e29b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x76d718e29993 - std::panicking::default_hook::hf0ea8939246f43a9
+warning: `hydracache-long-run-supervisor-074` (test "watchdog") generated 1 warning
+   5:     0x76d717e10aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x76d718e29e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x76d718e29c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x76d718e23ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x76d718e0448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x76d71598e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x76d715666c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x76d7177697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x76d71a7d5d67 - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x76d71a7c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x76d71a9004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x76d71a902cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x76d71a9023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x76d71a8fc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x76d71a8f9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x76d71a8f8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x76d71a8f8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x76d71a8f85a8 - <rustc_span[56e001752d96add4]::ErrorGuaranteed as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x76d7189c0d32 - <rustc_resolve[d253235bfa1f2b45]::Resolver>::throw_unresolved_import_error
+  24:     0x76d719af8d7e - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate::{closure#0}
+  25:     0x76d719af054d - <rustc_resolve[d253235bfa1f2b45]::Resolver>::resolve_crate
+  26:     0x76d719bc3eb0 - rustc_interface[c6a26c9f392246cf]::passes::configure_and_expand
+  27:     0x76d71a602895 - rustc_interface[c6a26c9f392246cf]::passes::resolver_for_lowering_raw
+  28:     0x76d71a60260d - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>
+  29:     0x76d71a6025e7 - <rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::dynamic_query::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(rustc_middle[f9db403ed88df217]::ty::context::TyCtxt, ())>>::call_once
+  30:     0x76d71a79d578 - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 16usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  31:     0x76d71a79cf4f - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::resolver_for_lowering_raw::get_query_incr::__rust_end_short_backtrace
+  32:     0x76d71a790038 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  33:     0x76d71a5810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  34:     0x76d71a529b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  35:     0x76d71a52993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  36:     0x76d71a52b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  37:     0x76d713e9cb84 - <unknown>
+  38:     0x76d713f29ecc - <unknown>
+  39:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust-clippy/issues/new?template=ice.yml
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [resolver_for_lowering_raw] getting the resolver for lowering
+end of query stack
+note: Clippy version: clippy 0.1.94 (4a4ef493e3 2026-03-02)
+
+Some errors have detailed explanations: E0432, E0786.
+For more information about an error, try `rustc --explain E0432`.
+warning: `xtask` (test "perf_budget_067") generated 1 warning
+error: could not compile `xtask` (test "perf_budget_067") due to 1 previous error; 1 warning emitted

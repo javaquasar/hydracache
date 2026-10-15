@@ -1,0 +1,5 @@
+Verified 39 command captures, source tree/nine blobs, scoped changes and frozen inputs.
+Verified 67 trust tests, three 10-case focused repeats and 10 MSRV cases; 7 ordinary compile-fail examples on each compiler.
+Verified legacy intent/empty-fence regression, eight build/lint lanes, 167 contracts and the unchanged 176-gate registry.
+Missing API, fixture failure and corrupt-cache/compiler failure remain retained; cleanup was scoped to three rebuildable package caches.
+Unsigned consistency only. Joined SIGKILL/lost-ack, production enrollment, original-start/all-writer cessation and server admission remain open.
