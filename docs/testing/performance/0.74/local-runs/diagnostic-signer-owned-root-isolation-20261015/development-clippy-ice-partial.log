@@ -1,0 +1,89 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+Warning: truncated output (original token count: 4242)
+Total output lines: 99
+
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+
+thread 'rustc' (499) panicked at /rustc-dev/4a4ef493e3a1488c6e321570238084b38948f6db/library/alloc/src/vec/mod.rs:2873:36:
+slice index starts at 34 but ends at 33
+stack backtrace:
+   0:     0x7f78e405c603 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::h93773fc827e3113d
+   1:     0x7f78e460e488 - core::fmt::write::hed7b5c73d82ecb7c
+   2:     0x7f78e5af8142 - std::io::Write::write_fmt::h6f0185aecf0ed75f
+   3:     0x7f78e4029b65 - std::panicking::default_hook::{{closure}}::h2be84df4f189ae36
+   4:     0x7f78e4029993 - std::panicking::default_hook::hf0ea8939246f43a9
+   5:     0x7f78e3010aea - std[765ed69a96918746]::panicking::update_hook::<alloc[7a43974b6697a11c]::boxed::Box<rustc_driver_impl[252c3262fddb99f]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7f78e4029e92 - std::panicking::panic_with_hook::hb4bd9ac1123582a0
+   7:     0x7f78e4029c28 - std::panicking::panic_handler::{{closure}}::hde00dd15f5637fe2
+   8:     0x7f78e4023ac9 - std::sys::backtrace::__rust_end_short_backtrace::hb72197fa777c1785
+   9:     0x7f78e400448d - __rustc[4425a7e20b4c8619]::rust_begin_unwind
+  10:     0x7f78e0b8e35c - core::panicking::panic_fmt::ha59b517dd231f4da
+  11:     0x7f78e0866c1d - core::slice::index::slice_index_fail::h172ece6e023ae9aa
+  12:     0x7f78e29697f5 - <annotate_snippets[6ed311536602540c]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7f78e59d5d8f - annotate_snippets[6ed311536602540c]::renderer::render::render
+  14:     0x7f78e59c9180 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7f78e5b004a1 - <rustc_errors[45351c624685c6c4]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  16:     0x7f78e5b02cc0 - <rustc_errors[45351c624685c6c4]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7f78e5b023ea - <rustc_errors[45351c624685c6c4]::json::JsonEmitter as rustc_errors[45351c624685c6c4]::emitter::Emitter>::emit_diagnostic
+  18:     0x7f78e5afc46a - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7f78e5af9eb3 - rustc_interface[c6a26c9f392246cf]::callbacks::track_diagnostic::<core[32850a7867c2faaf]::option::Option<rustc_span[56e001752d96add4]::ErrorGuaranteed>>
+  20:     0x7f78e5af8f3c - <rustc_errors[45351c624685c6c4]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7f78e5af8ded - <rustc_errors[45351c624685c6c4]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7f78e5af8cab - <() as rustc_errors[45351c624685c6c4]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7f78e556bd00 - rustc_middle[f9db403ed88df217]::lint::lint_level::lint_level_impl
+  24:     0x5cb7f39b386d - clippy_utils[2cc5735641526601]::diagnostics::span_lint_and_sugg::<rustc_lint[f010c191817006a2]::context::LateContext, &str, &str>
+  25:     0x5cb7f3d7a066 - <clippy_lints[f167c669c1844aa5]::operators::Operators as rustc_lint[f010c191817006a2]::passes::LateLintPass>::check_expr
+  26:     0x7f78e3529d1e - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  27:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  28:     0x7f78e3529f88 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  29:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  30:     0x7f78e3529f9b - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  31:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  32:     0x7f78e352a365 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  33:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  34:     0x7f78e352a365 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  35:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  36:     0x7f78e352a13b - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  37:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  38:     0x7f78e3599568 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_block
+  39:     0x7f78e352a3aa - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  40:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  41:     0x7f78e352a390 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr::{closure#0}::{closure#0}
+  42:     0x7f78e35992ed - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_expr
+  43:     0x7f78e359…742 tokens truncated…ndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass> as rustc_hir[41466cadac454391]::intravisit::Visitor>::visit_nested_item
+  58:     0x7f78e3533c09 - <rustc_lint[f010c191817006a2]::late::LateContextAndPass<rustc_lint[f010c191817006a2]::late::RuntimeCombinedLateLintPass>>::process_mod
+  59:     0x7f78e55261ef - rustc_lint[f010c191817006a2]::late::check_crate::{closure#0}
+  60:     0x7f78e55264ad - rustc_lint[f010c191817006a2]::late::check_crate
+  61:     0x7f78e55295ce - rustc_interface[c6a26c9f392246cf]::passes::analysis
+  62:     0x7f78e5528cf5 - rustc_query_impl[d9e05d596e7fb2e4]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>
+  63:     0x7f78e59874cf - rustc_query_system[5bf9c757c7651d1c]::query::plumbing::try_execute_query::<rustc_query_impl[d9e05d596e7fb2e4]::DynamicConfig<rustc_query_system[5bf9c757c7651d1c]::query::caches::SingleCache<rustc_middle[f9db403ed88df217]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[d9e05d596e7fb2e4]::plumbing::QueryCtxt, true>
+  64:     0x7f78e5986d7f - rustc_query_impl[d9e05d596e7fb2e4]::query_impl::analysis::get_query_incr::__rust_end_short_backtrace
+  65:     0x7f78e5990111 - <rustc_interface[c6a26c9f392246cf]::passes::create_and_enter_global_ctxt<core[32850a7867c2faaf]::option::Option<rustc_interface[c6a26c9f392246cf]::queries::Linker>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[32850a7867c2faaf]::ops::function::FnOnce<(&rustc_session[eab982bd009dcc5a]::session::Session, rustc_middle[f9db403ed88df217]::ty::context::CurrentGcx, alloc[7a43974b6697a11c]::sync::Arc<rustc_data_structures[721127a3047d6cb5]::jobserver::Proxy>, &std[765ed69a96918746]::sync::once_lock::OnceLock<rustc_middle[f9db403ed88df217]::ty::context::GlobalCtxt>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_middle[f9db403ed88df217]::arena::Arena>, &rustc_data_structures[721127a3047d6cb5]::sync::worker_local::WorkerLocal<rustc_hir[41466cadac454391]::Arena>, rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  66:     0x7f78e57810b4 - rustc_interface[c6a26c9f392246cf]::interface::run_compiler::<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}
+  67:     0x7f78e5729b7a - std[765ed69a96918746]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  68:     0x7f78e572993e - <std[765ed69a96918746]::thread::lifecycle::spawn_unchecked<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_with_globals<rustc_interface[c6a26c9f392246cf]::util::run_in_thread_pool_with_globals<rustc_interface[c6a26c9f392246cf]::interface::run_compiler<(), rustc_driver_impl[252c3262fddb99f]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[32850a7867c2faaf]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  69:     0x7f78e572b702 - std::sys::thread::unix::Thread::new::thread_start::h982f9ea829d1b5fb
+  70:     0x7f78df09cb84 - <unknown>
+  71:     0x7f78df129ecc - <unknown>
+  72:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust-clippy/issues/new?template=ice.yml
+
+note: rustc 1.94.0 (4a4ef493e 2026-03-02) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [analysis] running analysis passes on crate `diagnostic_signer_root_probe`
+end of query stack
+note: Clippy version: clippy 0.1.94 (4a4ef493e3 2026-03-02)
+
+error: could not compile `hydracache-long-run-supervisor-074` (bin "diagnostic_signer_root_probe" test)
+
+Caused by:
+  process didn't exit successfully: `/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/clippy-driver /home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc --crate-name diagnostic_signer_root_probe --edition=2021 tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,metadata -C embed-bitcode=no -C debuginfo=2 --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=6e0cc28ee462b8ed -C extra-filename=-c522c02927035580 --out-dir /home/artur/.cache/hydracache-074-194-check/debug/deps -C incremental=/home/artur/.cache/hydracache-074-194-check/debug/incremental -L dependency=/home/artur/.cache/hydracache-074-194-check/debug/deps --extern base64=/home/artur/.cache/hydracache-074-194-check/debug/deps/libbase64-fb574de13cbc350c.rmeta --extern ed25519_dalek=/home/artur/.cache/hydracache-074-194-check/debug/deps/libed25519_dalek-aac0b404913fb1f3.rmeta --extern fs2=/home/artur/.cache/hydracache-074-194-check/debug/deps/libfs2-e51a8b47987ca457.rmeta --extern hydracache_long_run_supervisor_074=/home/artur/.cache/hydracache-074-194-check/debug/deps/libhydracache_long_run_supervisor_074-94e59222e00dcf31.rmeta --extern libc=/home/artur/.cache/hydracache-074-194-check/debug/deps/liblibc-c702ab78335a0d64.rmeta --extern ring=/home/artur/.cache/hydracache-074-194-check/debug/deps/libring-850ef5aec3321945.rmeta --extern serde=/home/artur/.cache/hydracache-074-194-check/debug/deps/libserde-a37002f9ddc355b6.rmeta --extern serde_json=/home/artur/.cache/hydracache-074-194-check/debug/deps/libserde_json-49bbceb2ea31376b.rmeta --extern sha2=/home/artur/.cache/hydracache-074-194-check/debug/deps/libsha2-3e6eed2c56b85910.rmeta --extern tar=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtar-28096b1b85dfbd33.rmeta --extern tempfile=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtempfile-0a0ea59aed7174c1.rmeta --extern thiserror=/home/artur/.cache/hydracache-074-194-check/debug/deps/libthiserror-19ee2b8ad170218c.rmeta --extern toml=/home/artur/.cache/hydracache-074-194-check/debug/deps/libtoml-b2defe87b112e1d7.rmeta --extern zbus=/home/artur/.cache/hydracache-074-194-check/debug/deps/libzbus-2da1b0fca31660b8.rmeta --extern zstd=/home/artur/.cache/hydracache-074-194-check/debug/deps/libzstd-2f920ebbc50b1437.rmeta -L native=/home/artur/.cache/hydracache-074-194-check/debug/build/ring-265c5b2a4b73d020/out -L native=/home/artur/.cache/hydracache-074-194-check/debug/build/zstd-sys-8ff8431d19750c91/out` (exit status: 101)
+warning: build failed, waiting for other jobs to finish...

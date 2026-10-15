@@ -62,9 +62,11 @@ child reap plus private pipe EOF does not establish P2/P3 all-writer revocation.
 Normal entry creator-loss races still need their own fault matrix. The current
 normal restriction installer reads procfs, absent from this selected root. It is
 not invoked, relaxed, or bypassed by a claimed policy success; no procfs mount,
-host proc descriptor inheritance or general supplied-FD API is added. Composing
-that installer and protected handoff is the next isolated step before credentials,
-original-start, completion/later cells and server admission can open.
+host proc descriptor inheritance or general supplied-FD API is added. The separate
+[root restriction diagnostic](diagnostic-signer-owned-root-isolation-design.md)
+now composes the unchanged installer using parent-owned checks and retained reads.
+Root-exec itself remains narrower. Creator-loss and protected handoff still precede
+credentials, original-start, completion/later cells and server admission.
 
 The [local evidence](local-runs/diagnostic-signer-owned-root-exec-20261015/README.md)
 retains three targeted current-toolchain 25-test successes and the separate

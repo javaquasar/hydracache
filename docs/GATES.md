@@ -1,5 +1,14 @@
 # HydraCache — Enforcement Gates
 
+Ordinary proc-less root restriction composition uses the same root-probe targets
+plus `--test diagnostic_signer_child_entry` and `--test diagnostic_signer_isolation`.
+The [design](testing/performance/0.74/diagnostic-signer-owned-root-isolation-design.md)
+requires actual current-toolchain TSYNC/BPF/ND0-set observation, native EPERM,
+x32/i386 SIGSYS and installed-stop child SIGKILL/Drop cleanup. Old ordinary entry
+proc checks and the exact policy are retained; GET_DUMPABLE remains denied. Run
+targeted tests with default parallelism separately from the retained broad-load
+timeout case; success does not establish creator-loss, handoff or server admission.
+
 Normal fixed GNU root preparation uses `--bin diagnostic_signer_root_probe`,
 portable `--test diagnostic_signer_root_cli` and registered Linux x86_64
 `--test diagnostic_signer_root_probe` in package

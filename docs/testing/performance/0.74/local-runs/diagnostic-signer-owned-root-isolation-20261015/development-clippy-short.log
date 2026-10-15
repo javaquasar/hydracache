@@ -1,0 +1,6 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_isolation.rs:93:30: error: manual implementation of `.is_multiple_of()`: help: replace with: `len.is_multiple_of(8)`
+tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_isolation.rs:209:35: error: casting to the same type is unnecessary (`u64` -> `u64`): help: try: `libc::SECCOMP_FILTER_FLAG_TSYNC`
+error: could not compile `hydracache-long-run-supervisor-074` (bin "diagnostic_signer_root_probe" test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

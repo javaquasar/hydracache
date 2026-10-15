@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary root restriction composition](diagnostic-signer-owned-root-isolation-design.md)
+connects the selected proc-less root with the unchanged fixed policy. Parent-owned
+syscall/BPF and kernel-status checks precede native/alternate-ABI exercises and
+original cleanup. It does not add procfs or host-proc FDs to the child. A direct
+GET_DUMPABLE readback was rejected by the existing policy and removed, not allowed
+through a policy exception. Creator-loss, protected handoff, custody, worker start,
+all-writer cessation and server admission remain separate.
+The [local packet](local-runs/diagnostic-signer-owned-root-isolation-20261015/README.md)
+pins repeated current-toolchain 43-test groups and the direct-readback negative.
+
 The [ordinary selected root execution probe](diagnostic-signer-owned-root-exec-design.md)
 adds a separate fixed `root-exec` mode: original fork/pidfd, same-ID namespace,
 selected root/first exec, initial and loaded VMA identity checks, then original
@@ -19,8 +29,9 @@ constructor-loss failure (78/1) is addressed by the
 EOF no longer releases the before-arm child until exact tracer termination/reap.
 Three default-parallel 83-test groups and MSRV83 pass after correction. The
 historical failure stays retained; no exact historical syscall trace or full
-release gate is claimed. Normal root/child/policy composition and server admission
-remain open work; the separate root-exec probe above covers launch mechanics only.
+release gate is claimed. Normal root/child/policy diagnostics are now composed in
+the separate restriction probe; full creator-loss/handoff and server admission
+remain open. The narrower root-exec probe still covers launch mechanics only.
 
 The [tracer-thread rooted controls](diagnostic-signer-thread-exit-design.md) now
 distinguish SIGSTOP delivery from a kernel group-stop. Both rooted loss variants

@@ -85,3 +85,8 @@ overlapping-broad-load timeouts remain retained; isolated default-parallel succe
 does not establish load robustness or root cleanup after owner SIGKILL. P2/P3
 worker start/all-writer cessation, completion/later cells, server rehearsal and
 release qualification are not enabled by this diagnostic.
+
+The [local packet](local-runs/diagnostic-signer-owned-root-isolation-20261015/README.md)
+retains three final current-toolchain 43-test groups, the MSRV profile refusals,
+121 old regressions, direct-readback rejection and the tooling failures. Its
+consistency verifier does not confer execution or authority attestation.

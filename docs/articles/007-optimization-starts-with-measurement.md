@@ -9546,3 +9546,76 @@ Composing the genuine installer is the next isolated step, followed by full
 ordinary-entry creator-loss faults and protected handoff. Authenticated original
 start, real credentials, all-writer cessation, completion/later cells and server
 qualification remain closed.
+
+### Installing unchanged restrictions in the ordinary selected root
+
+The next hypothesis concerned composition, not a new syscall policy: could the
+ordinary selected-root launcher use the existing restriction installer without
+mounting procfs in the child or passing host-proc descriptors into it? Preparation
+and root-exec alone could not answer that. Their baseline group, combined with
+ordinary child/policy regressions, passed 37 tests; a new root-native invocation
+first failed against the old binary with exit 2.
+
+The implementation separates the syscall-mutating core from context verification.
+The original ordinary entry retains its procfs preflight and post-install checks;
+both entries use one private installer and the existing native/x32/i386 exercises.
+The selected root gains no procfs or extra files. Its parent already owns the
+original fork/pidfd, selected images, namespace and process directory, and checks
+the real first exec and loaded mappings. It retains the original environ and FD
+directory before no-dumpability, in the parent only. Those readers keep their
+identity/flags/procfs checks after ND0, without a fresh-open fallback.
+
+The parent's new proof is actual syscall observation, not another readiness claim.
+At the real seccomp entry it reads the child's 16-byte sock_fprog and all 512 policy
+bytes from the previously validated stack range. Checked spans and aligned ptrace
+reads bound access. The complete bytes must match the existing 64-instruction
+policy, and mode FILTER/flag TSYNC must succeed. The fixed eight-pair entry/exit
+sequence includes core limits, no_new_privs, filter installation, SET_DUMPABLE(0),
+the installed marker and stop. Unknown calls, order, ABI, results or stops refuse.
+In particular, descriptor mutation, fork and a second exec cannot hide inside
+the accepted sequence. Kernel status must show exactly one additional filter.
+
+A proposed extra check failed for a useful reason. After successful TSYNC and
+SET_DUMPABLE(0), PR_GET_DUMPABLE returned EPERM. The unchanged prctl tail permits
+the disabling operation but denies the query as well as restoration. Allowing
+the query would change the policy being tested. We removed the new readback and
+retained observed SET_DUMPABLE success, exact BPF, filter-count increment and the
+existing restoration-denial exercise. The failed trace and preregistration
+correction remain evidence; there is no successful direct-query claim.
+
+Only after installed-state validation does the parent resume the fixed denial
+exercise. Native checks all 20 existing EPERM probes and must exit 0 with its
+distinct done marker. x32 and i386 must die with coreless SIGSYS and no done
+marker. Loaded, installed and done messages are fixed 16-byte diagnostic data,
+not authentication tokens. Original reap/ECHILD and pipe EOF still precede root
+cleanup. Two further fixed modes exercise original-pidfd SIGKILL and ordinary Drop
+from the validated installed stop. They demonstrate child cleanup, not loss of
+the original creator or P2/P3 revocation of every writer.
+
+Final current-toolchain tests passed 43/43 in three default-parallel groups, two
+after source commit. The six new units include real original-child ptrace memory
+reads and 256 seeded BPF mutations in a private pre-exec stack fixture. Only that
+test fixture writes child memory; normal observation is read-only. Separate old
+rooted/loss/first-exec/launcher regressions passed 121 tests. Static contracts passed
+161 and the gate registry remains 175. MSRV passed 43 tests, with all five new
+normal root modes explicitly refusing its extra-libm runtime graph. Its successful
+test summary must not be read as admission of that unsupported runtime shape.
+
+Strict lint initially hit an internal diagnostic-rendering panic. The available
+capture is explicitly incomplete. A short-format retry exposed two code issues;
+after correction, ordinary-format strict Clippy passed too. None of these results
+required a new compiler, widened timeout, policy exception or lint suppression.
+The prior overlapping-broad-load timeouts remain pinned; targeted success does
+not resolve load robustness or prove root cleanup after owner SIGKILL.
+
+Source `3c774c88ba99a2ea82d2d0840bdebdab97a0173f` and its
+[evidence packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-isolation-20261015/README.md)
+pin changed sources, unchanged policy/fixture sources, frozen inputs and the
+negative observations. The verifier also compares the original entry's pre/post
+checks and native exercise with the extracted implementation. This is local
+consistency evidence, not execution attestation or a cache-throughput measurement.
+
+The result closes ordinary root/restriction composition for these diagnostics.
+Next come full ordinary-entry creator-loss faults and protected one-shot handoff.
+Independent runtime custody, real credentials, authenticated worker original-start,
+all-writer cessation, completion/later cells and server qualification remain closed.

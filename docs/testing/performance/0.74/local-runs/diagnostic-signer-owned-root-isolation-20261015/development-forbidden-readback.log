@@ -1,0 +1,22 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.59s
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 1 test
+normal_root_exec=true initial_images=2 loaded_images=4 original_reaped=true stream_eof=true admission=false
+
+thread 'normal_original_root_exec_observes_selected_runtime_then_reaps' (469) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs:219:9:
+assertion `left == right` failed: root-native: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "development install step=0 event=Entry { nr: 302, args: [0, 4, 140721967126800, 0, 97040608836880, 140721967126984] }\ndevelopment install step=0 event=Exit { value: 0, error: false }\ndevelopment install step=1 event=Entry { nr: 157, args: [38, 1, 0, 0, 0, 140721967126984] }\ndevelopment install step=1 event=Exit { value: 0, error: false }\ndevelopment install step=2 event=Entry { nr: 157, args: [39, 0, 0, 0, 0, 140721967126984] }\ndevelopment install step=2 event=Exit { value: 1, error: false }\ndevelopment install step=3 event=Entry { nr: 317, args: [1, 1, 140721967126816, 0, 140721967126984, 140721967127496] }\ndevelopment install step=3 event=Exit { value: 0, error: false }\ndevelopment install step=4 event=Entry { nr: 157, args: [4, 0, 0, 0, 0, 140721967127496] }\ndevelopment install step=4 event=Exit { value: 0, error: false }\ndevelopment install step=5 event=Entry { nr: 157, args: [3, 0, 0, 0, 0, 140721967127496] }\ndevelopment install step=5 event=Exit { value: -1, error: true }\ndevelopment install refused: fixed private GNU root refused\nFixed root preparation refused.\n" }
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test normal_original_root_exec_observes_selected_runtime_then_reaps ... FAILED
+
+failures:
+
+failures:
+    normal_original_root_exec_observes_selected_runtime_then_reaps
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 5.26s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_signer_root_probe`
