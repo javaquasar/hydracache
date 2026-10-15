@@ -21,6 +21,11 @@ binding as a pipe-to-collector binding. Local fixture outputs use new exclusive
 names `collector-stdout.bin` and `collector-stderr.bin`; no production reader
 accepts them as a completed cell. No migration or overwrite is allowed.
 
+The separate [collector intent](diagnostic-collector-intent-design.md) now signs
+those output requirements under distinct body/envelope/unit schemas and domain.
+It is byte-only verification, not a start or a proof of actual pipe/sink ownership.
+The root constructor and authenticated producer below remain necessary.
+
 ## Collector implementation sequence
 
 First implement the actual bounded pipe-to-file writer and test its kernel EOF

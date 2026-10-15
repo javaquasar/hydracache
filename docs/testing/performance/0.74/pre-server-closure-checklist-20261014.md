@@ -145,8 +145,9 @@ or provide lifecycle/start conversion; real trust selection is unchanged.
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted
    host enrollment.
-2. Add the separately signed collector start projection and private root output
-   constructor. Preserve legacy signed projections; bind original executable,
+2. Join the [separately signed collector requirements](diagnostic-collector-intent-design.md)
+   to a private root output constructor. The byte-only projection now exists;
+   it does not prove original start. Preserve legacy signatures; bind executable,
    environment, pipes, collector, process and manager invocation/cgroup.
 3. Implement autonomous watchdog and exact original-cgroup revocation/emptiness.
    Missing EOF, uncertain stop, collector loss and leaked writers retain failure;

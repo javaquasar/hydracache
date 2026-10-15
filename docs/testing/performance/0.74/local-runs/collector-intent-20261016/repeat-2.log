@@ -1,0 +1,39 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.44s
+     Running tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_intent_projection-fa194d21ccbab1d0)
+
+running 30 tests
+test collector_intent_requires_a_distinct_output_projection ... ok
+test boot_change_never_rebinds_an_original_worker ... ok
+test authenticated_worker_trust_drift_revokes_original_not_just_wrapper ... ok
+test body_budget_nested_schema_and_hash_encoding_are_strict ... ok
+test checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily ... ok
+test collector_intent_tests::collector_projection_removes_regular_file_access_and_preserves_other_properties ... ok
+test collector_intent_tests::collector_reserved_state_and_budget_grammar_cannot_be_relaxed ... ok
+test collector_intent_tests::collector_original_worker_refusal_survives_guard_drop ... ok
+test collector_intent_tests::collector_and_legacy_domains_and_output_digests_cannot_be_relabelled ... ok
+test collector_intent_tests::collector_document_budget_canonical_schema_and_duplicate_fields_refuse ... ok
+test collector_intent_tests::collector_strict_signature_key_and_encoding ... ok
+test collector_intent_tests::collector_original_guard_latches_packet_state_peer_and_time_drift ... ok
+test collector_intent_tests::collector_principal_configuration_stays_independent_and_bounded ... ok
+test controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope ... ok
+test collector_intent_tests::collector_signed_field_mutations_are_not_production_authority ... ok
+test collector_intent_tests::collector_window_is_bounded_and_expiry_exclusive ... ok
+test controller_fields_and_bounded_configuration_fail_closed ... ok
+test malformed_noncanonical_unknown_duplicate_and_oversize_refuse ... ok
+test collector_intent_tests::collector_four_modeled_cells_keep_distinct_exact_pins ... ok
+test original_worker_refusal_survives_intent_drop_and_restoration ... ok
+test state_hash_includes_every_field_and_unit_hash_changes_with_budget ... ok
+collector_output_requirements fields=10 order_mutations=2 durable_replay_prevention=false
+test collector_intent_tests::collector_every_output_requirement_is_hashed_not_supplied_as_authority ... ok
+test state_projection_rejects_interrupted_expired_and_admission_states ... ok
+test signature_domain_key_and_lowercase_encoding_are_strict ... ok
+test independent_concurrent_checks_are_not_a_replay_ledger ... ok
+test signed_binding_mutations_are_not_authority ... ok
+test window_is_positive_bounded_and_expiry_exclusive ... ok
+test four_cells_bind_exact_projection_without_execution ... ok
+test seeded_state_mutations_bind_full_state_not_only_cell ... ok
+collector_intent seed=0x0740c097 state_mutations=64 independent_threads=4 production_start=false
+test collector_intent_tests::collector_seeded_full_state_binding_and_independent_concurrency ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.00s
+

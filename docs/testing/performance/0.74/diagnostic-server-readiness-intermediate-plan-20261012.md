@@ -82,8 +82,11 @@ pipe-to-file writer with a nonroot fixture entry; see its
 [EOF and process-loss evidence](local-runs/diagnostic-collector-20261014/README.md).
 It retains partial attempts and returns local drain data only after both kernel
 EOFs, retained byte/hash reconciliation, sync and explicit descriptor close.
-Root enrollment, the new signed projection, trusted admission, original start
-and watchdog/cgroup revocation are still open. No fixture result advances P1.
+The separate [signed collector requirements](diagnostic-collector-intent-design.md)
+now bind the new pipe-to-collector output contract without accepting legacy
+regular-file signatures. They are byte-only requirements, not a fulfilled launch
+or a descriptor transfer. Root enrollment, trusted admission, original start and
+watchdog/cgroup revocation remain open. No fixture result advances P1.
 
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed

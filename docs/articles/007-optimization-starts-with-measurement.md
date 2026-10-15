@@ -10496,3 +10496,50 @@ compiler versions passed the 25-test kernel group. The useful result is a
 guard-preserving attribution tool, not a reproduced or repaired historical
 failure. The [local evidence packet](../testing/performance/0.74/local-runs/kernel-refusal-attribution-20261016/README.md)
 retains development failures alongside final checks; the old cause remains open.
+
+### Keeping collector requirements separate from evidence of original start
+
+Changing output ownership changes what a launch signature must mean. The old
+unit projection sends worker output to ordinary append files. In the approved
+collector architecture the worker receives only pipe writers, while a root-owned
+collector exclusively writes evidence files. Signing the old projection and
+silently substituting pipes would leave a gap between reviewed intent and the
+actual launch requirements, even if both versions use the same executable.
+
+The [collector intent projection](../testing/performance/0.74/diagnostic-collector-intent-design.md)
+therefore has distinct body, envelope, unit and signature-domain identities.
+Its unit digest includes typed ordered worker properties and a separate output
+contract. The fixed command, arguments, environment and runtime/isolation limits
+are retained. Worker regular-file output and writable output paths are removed;
+the worker uses the root working directory and a zero regular-file size limit.
+Semantic stdout/stderr slots name the future owned pipe writers without treating
+an arbitrary FD number as a stable identity.
+
+The output contract commits exclusive root-private collector sinks, bounded
+stream bytes and the finalization obligations: authenticated original start,
+revocation and emptiness of the original cgroup, closure of every creator/manager
+writer copy, both actual read EOFs, byte/hash reconciliation, sync, read-only
+conversion and explicit evidence-writer close. A signature authenticates those
+requirements; it does not establish that any operation has occurred. The returned
+projection is deliberately not a transient-unit specification or start capability.
+
+Tests use synthetic keys to check old/new refusal in both directions, domain
+substitution even under the same key, re-signed wrong output digests, every
+output requirement's inclusion in the hash and ordered slot/finalization arrays.
+The checked guard retains its original worker, full state, peer, configuration
+and envelope. Restoring a changed input cannot clear its refusal, and original
+worker trust failures survive wrapper destruction. Independent byte verifications
+remain possible: replay prevention belongs to retained admission ownership, not
+to this signature verifier. The existing v1 verifier and unit builder remain
+unchanged. Actual root preparation, original-start authentication and autonomous
+all-writer cessation are the next integration boundary, not a result of this
+byte-only slice or a numerical throughput/allocations claim.
+
+The [retained local packet](../testing/performance/0.74/local-runs/collector-intent-20261016/README.md)
+pins runtime `9e936fcf` and final source `9303bb7e`. Three Rust 1.94 repetitions
+and one Rust 1.88 repetition each pass 30 tests, including the 16 legacy cases.
+Both compilers pass two existing typed-projection units and five compile-fail
+examples; the full static suite passes 170 tests. Eight Linux/Windows
+check/strict-Clippy lanes pass, while ship admission remains expected-red.
+The confirmed result is separation of signed output requirements, not production
+execution, performance improvement or closure of the historical kernel refusal.

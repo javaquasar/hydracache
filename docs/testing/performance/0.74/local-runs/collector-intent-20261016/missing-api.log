@@ -1,0 +1,12 @@
+warning: corrupt incremental compilation artifact found at `/home/artur/.cache/hydracache-074-194-check/debug/incremental/diagnostic_builder-2a8710aw5bbcf/s-hn8z1dh5qp-1w11ar6-working/dep-graph.bin`. This file will automatically be ignored and deleted. If you see this message repeatedly or can provoke it without manually manipulating the compiler's artifacts, please file an issue. The incremental compilation system relies on hardlinks and filesystem locks behaving correctly, and may not deal well with OS crashes, so whatever information you can provide about your filesystem or other state may be very relevant.
+
+warning: `hydracache-long-run-supervisor-074` (bin "diagnostic_builder") generated 1 warning
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::intent_projection::collector`
+  --> tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs:18:90
+   |
+18 | ...n::collector::p...
+   |       ^^^^^^^^^ could not find `collector` in `intent_projection`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `hydracache-long-run-supervisor-074` (test "diagnostic_intent_projection") due to 1 previous error

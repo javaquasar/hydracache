@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The distinct [signed collector requirements](diagnostic-collector-intent-design.md)
+bind pipe-to-root-collector output under their own schemas/domain without
+reinterpreting the v1 regular-file signature. The checked guard retains original
+worker/state/peer/configuration pins; projection bytes cannot start a unit or
+prove the required EOF, sync, close and cgroup revocation. Root output preparation
+and authenticated original-start remain open.
+The [local packet](local-runs/collector-intent-20261016/README.md) retains four
+30-test repetitions, current/MSRV negative API checks and the unchanged legacy
+runtime boundary, with no server execution or numerical admission.
+
 The [kernel refusal attribution](diagnostic-kernel-refusal-attribution-design.md)
 adds scoped test-only first-site/phase capture for the original controller
 fixture. Thirty-two Invalid sites and three test-only lazy Option constructors

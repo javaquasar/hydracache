@@ -1,0 +1,82 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 5 tests
+error[E0277]: the trait bound `CheckedCollectorIntentProjection<'static>: serde::de::DeserializeOwned` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:123:10
+    |
+123 | ...::<Ch...'static>>();
+    |       ^^...^^^^^^^^ unsatisfied trait bound
+    |
+    = help: the trait `for<'de> Deserialize<'de>` is not implemented for `CheckedCollectorIntentProjection<'static>`
+    = help: the following other types implement trait `Deserialize<'de>`:
+              `&[u8]` implements `Deserialize<'de>`
+              `&...` implements `Deserialize<'de>`
+              `&str` implements `Deserialize<'de>`
+              `()` implements `Deserialize<'de>`
+              `(...,)` implements `Deserialize<'de>`
+              `(..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ..., ...)` implements `Deserialize<'de>`
+            and 279 others
+    = note: required for `CheckedCollectorIntentProjection<'static>` to implement `DeserializeOwned`
+note: required by a bound in `decode`
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:122:14
+    |
+122 | ...T: serde:...wned>() {}
+    |       ^^^^^^...^^^^ required by this bound in `decode`
+    = note: the full name for the type has been written to '/tmp/rustdoctest3m1UDH/rust_out.long-type-4134765930365469787.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+error[E0277]: the trait bound `CheckedCollectorIntentProjection<'_>: From<...>` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:118:94
+    |
+118 | ... g.into(); }
+    |       ^^^^ unsatisfied trait bound
+    |
+    = help: the trait `From<CheckedIntentProjection<'_>>` is not implemented for `CheckedCollectorIntentProjection<'_>`
+    = note: required for `CheckedIntentProjection<'_>` to implement `Into<CheckedCollectorIntentProjection<'_>>`
+    = note: the full name for the type has been written to '/tmp/rustdoctest4fJjyW/rust_out.long-type-4565970574427959466.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs - diagnostic_worker_policy::intent_projection::collector::CheckedCollectorIntentProjection (line 119) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs - diagnostic_worker_policy::intent_projection::collector::CheckedCollectorIntentProjection (line 115) - compile fail ... ok
+error[E0599]: no method named `clone` found for struct `CheckedCollectorIntentProjection<'worker>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:110:55
+    |
+110 | ... g.clone(); }
+    |       ^^^^^ method not found in `CheckedCollectorIntentProjection<'_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start_once` found for struct `CheckedCollectorIntentProjection<'worker>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:114:59
+    |
+114 | ... g.start_once(); }
+    |       ^^^^^^^^^^ method not found in `CheckedCollectorIntentProjection<'_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `publish_completion` found for struct `CheckedCollectorIntentProjection<'worker>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs:127:62
+    |
+127 | ... g.publish_completion(); }
+    |       ^^^^^^^^^^^^^^^^^^ method not found in `CheckedCollect...Projection<'_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs - diagnostic_worker_policy::intent_projection::collector::CheckedCollectorIntentProjection (line 107) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs - diagnostic_worker_policy::intent_projection::collector::CheckedCollectorIntentProjection (line 111) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs - diagnostic_worker_policy::intent_projection::collector::CheckedCollectorIntentProjection (line 124) - compile fail ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 136 filtered out; finished in 0.46s
+
