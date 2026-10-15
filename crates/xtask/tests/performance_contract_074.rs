@@ -1261,6 +1261,84 @@ fn diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_s
 }
 
 #[test]
+fn diagnostic_controller_fence_preflight_is_original_read_only_not_replay_or_start() {
+    let c = contract("diagnostic-controller-fence-preflight-contract.toml");
+    assert_eq!(c["bracket_checks"].as_integer(), Some(5));
+    for field in [
+        "original_oidc_chain_exclusively_borrowed",
+        "already_held_original_empty_fence_owned",
+        "same_journal_kernel_packet_and_request_retained",
+        "no_replacement_inputs_or_second_authority_owner",
+        "first_error_preserved_and_later_observations_stopped",
+        "both_chains_sticky_runtime_refusal",
+        "constructor_failure_retains_original_lock_until_drop",
+        "healthy_drop_releases_only_original_fence",
+        "positive_roots_and_issuer_are_private_synthetic_models",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "durable_nonce_consumption",
+        "durable_refusal_publication",
+        "acknowledged_attempt_created",
+        "trusted_production_enrollment",
+        "atomic_snapshot_or_whole_operation_deadline",
+        "publication_or_existing_attempt_conversion",
+        "authenticated_original_start",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "production_consumer_wired",
+        "actual_credentials_or_signing",
+        "host_or_workflow_mutated",
+        "product_workload_or_qualification_allowed",
+        "ship_or_performance_claim_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_controller_fence_preflight.rs")).unwrap();
+    for marker in [
+        "original: &'join mut OidcControllerInput",
+        "fence: OriginalEmptyReservationFence",
+        "const BRACKET: [Step; 5]",
+        "Step::Fence => self.fence.revalidate()?",
+        "Step::Controller => self.original.revalidate()?",
+        "self.fence.latch_refusal()",
+        "self.original.trust.refused = true",
+        "self.original.original.original.latch_refusal()",
+        "fence: Box::new(read.fence)",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "O_CREAT",
+        "write_all",
+        "fs::rename",
+        "SigningKey",
+        "Command::",
+        "pub fn start",
+        "pub fn into_",
+        "pub fn token",
+        "pub fn request",
+        "unsafe",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    for name in [
+        "server.rs",
+        "diagnostic_early_attempt.rs",
+        "diagnostic_initial_consumption.rs",
+    ] {
+        let consumer = std::fs::read_to_string(base.join(name)).unwrap();
+        assert!(
+            !consumer.contains("FencedControllerPreflight")
+                && !consumer.contains("bind_common_empty_fence")
+        );
+    }
+}
+
+#[test]
 fn diagnostic_controller_build_binds_reviewed_statement_without_execution_or_run_provenance() {
     let c = contract("diagnostic-controller-build-input-contract.toml");
     for key in [
