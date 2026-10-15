@@ -12,6 +12,8 @@ use std::time::{Duration, Instant};
 
 #[path = "diagnostic_signer_constructor_guard.rs"]
 mod constructor_guard;
+#[path = "diagnostic_signer_creator_task.rs"]
+mod creator_task;
 #[path = "diagnostic_signer_handoff_fixture.rs"]
 mod handoff;
 #[path = "diagnostic_signer_rooted_maps.rs"]
@@ -57,6 +59,7 @@ enum Phase {
     Refused,
 }
 struct RootedExec {
+    creator: creator_task::Creator,
     root: Root,
     pid: libc::pid_t,
     pidfd: Option<OwnedFd>,
@@ -175,6 +178,7 @@ impl RootedExec {
         ];
         // SAFETY: capture the actual parent TGID before its original fork, never a caller PID.
         let original_parent = unsafe { libc::getpid() };
+        let creator = creator_task::Creator::capture(original_parent)?;
         // SAFETY: prepared fixed scalars/strings; only libc/_exit after fork.
         let pid = unsafe { libc::fork() };
         if pid < 0 {
@@ -187,7 +191,7 @@ impl RootedExec {
                 &argv,
                 &env,
                 pair.as_ref().map(|(_, child)| child.as_raw_fd()),
-                original_parent,
+                &creator,
                 hook,
             );
         }
@@ -198,6 +202,7 @@ impl RootedExec {
             channel
         });
         let mut owner = Self {
+            creator,
             root,
             pid,
             pidfd: None,
@@ -741,10 +746,11 @@ fn child(
     argv: &[*const libc::c_char; 3],
     env: &[*const libc::c_char; 2],
     channel: Option<i32>,
-    original_parent: libc::pid_t,
+    creator: &creator_task::Creator,
     hook: Option<&constructor_guard::Hook>,
 ) -> ! {
-    constructor_guard::arm(original_parent, hook);
+    let original_parent = creator.tgid;
+    constructor_guard::arm(original_parent, hook, creator);
     // SAFETY: all inputs prepared; only scalar libc and stack storage after raw fork.
     unsafe {
         if libc::dup2(fds[0], 0) < 0 || libc::dup2(fds[0], 1) < 0 || libc::dup2(fds[0], 2) < 0 {

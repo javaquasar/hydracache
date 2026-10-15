@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+The private Linux libtest report `diagnostic-signer-original-creator-loss-074-v1`
+has distinct 32-byte magic/cut/control/healthy/TID/reserved fields. After one
+descriptor-free setup byte, a fixed prefix transfers gate/task FDs, then five
+original child/root FDs. The unchanged credential-checked receiver accepts at
+most five FDs per packet and 128 ancillary bytes; at most ten packets total.
+Closed progress/terminal records and one-byte commands do not grant authority.
+Unknown shape/peer/ancestry/sequence refuses. Old binaries have no consumer;
+no persisted/signed schema, public API, normal CLI, pin, dependency or frozen
+qualification changes. Removing the test profile disables it. See the
+[creator-loss boundary](testing/performance/0.74/diagnostic-signer-creator-loss-design.md).
+
 The private Linux libtest report
 `diagnostic-signer-original-parent-constructor-loss-074-v1` uses distinct magic,
 32 bytes with cut/fault/original-TID/zero reserved fields, exactly five original

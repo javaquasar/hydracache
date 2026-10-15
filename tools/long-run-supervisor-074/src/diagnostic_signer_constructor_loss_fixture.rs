@@ -70,6 +70,7 @@ impl EarlySpec {
         let expected = match self.fault {
             Fault::NoArm => (libc::CLD_EXITED, 83),
             Fault::NoParentCheck => (libc::CLD_EXITED, 84),
+            Fault::NoCreatorCheck => return false,
             Fault::None if self.cut == Cut::BeforeArm => (libc::CLD_EXITED, 81),
             Fault::None => (libc::CLD_KILLED, libc::SIGKILL),
         };

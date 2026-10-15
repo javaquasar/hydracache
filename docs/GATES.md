@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+W11's original creating-thread guard uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_creator_loss -- --nocapture`.
+Eight tests include actual thread-only exit at five cuts while the original TGID
+remains alive, independent child terminal/reap, the old-getppid counterfactual,
+healthy controls, status/frame mutations, retained-task/FD checks and concurrency.
+No manual gate, arbitrary signer-thread support or production/server enrollment.
+See the [creator-loss contract](testing/performance/0.74/diagnostic-signer-creator-loss-contract.toml).
+
 W11's pre-options original-parent guard uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_constructor_loss -- --nocapture`.
 Seven tests cover five actual whole-parent-loss cuts, exact original-child

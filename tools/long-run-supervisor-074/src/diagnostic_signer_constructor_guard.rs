@@ -22,6 +22,7 @@ pub(super) enum Fault {
     None,
     NoArm,
     NoParentCheck,
+    NoCreatorCheck,
 }
 pub(super) struct Hook {
     pub(super) cut: Cut,
@@ -73,7 +74,11 @@ pub(super) fn checkpoint(hook: Option<&Hook>, cut: Cut, raw: i32) {
         }
     }
 }
-pub(super) fn arm(original_parent: libc::pid_t, hook: Option<&Hook>) {
+pub(super) fn arm(
+    original_parent: libc::pid_t,
+    hook: Option<&Hook>,
+    creator: &super::creator_task::Creator,
+) {
     if let Some(hook) = hook {
         // SAFETY: raw child must not retain the opposite gate endpoint and hide parent EOF.
         if unsafe { libc::close(hook.parent.as_raw_fd()) } != 0 {
@@ -113,6 +118,13 @@ pub(super) fn arm(original_parent: libc::pid_t, hook: Option<&Hook>) {
             libc::_exit(84);
         }
         if libc::getppid() != original_parent {
+            libc::_exit(81);
+        }
+        if fault == Fault::NoCreatorCheck {
+            // Counterfactual terminates only after the old TGID check passed, before exec.
+            libc::_exit(86);
+        }
+        if !super::creator_task::live(creator.task.as_raw_fd(), creator.tgid, creator.tid) {
             libc::_exit(81);
         }
         checkpoint(hook, Cut::Checked, raw);

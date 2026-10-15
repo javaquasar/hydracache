@@ -12869,7 +12869,7 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
     let child = owner.split("fn child(").nth(1).unwrap();
     assert!(
         child
-            .find("constructor_guard::arm(original_parent, hook)")
+            .find("constructor_guard::arm(original_parent, hook, creator)")
             .unwrap()
             < child.find("libc::dup2").unwrap()
     );
@@ -12937,5 +12937,172 @@ fn signer_constructor_loss_keeps_original_parent_and_closed_production_boundary(
         assert!(!std::fs::read_to_string(base.join(path))
             .unwrap()
             .contains("constructor_guard"));
+    }
+}
+
+#[test]
+fn signer_creator_loss_pins_original_task_without_production_or_numeric_refresh() {
+    let c = contract("diagnostic-signer-creator-loss-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "actual_creator_tgid_tid_captured_before_original_fork",
+        "original_proc_task_directory_pinned_before_fork",
+        "raw_child_status_open_is_descriptor_relative_no_numeric_tid_reopen",
+        "parent_tgid_and_original_creator_checked_after_arming",
+        "missing_dead_duplicate_future_or_oversized_status_refuses",
+        "raw_child_reader_has_fixed_stack_and_read_call_bounds",
+        "actual_creator_sys_exit_not_whole_group_kill",
+        "original_task_and_children_bracket_checked_before_fault",
+        "pre_arm_creator_only_loss_proved_in_fixed_fixture",
+        "four_armed_creator_loss_cuts_require_sigkill",
+        "child_pidfd_terminal_while_original_parent_pidfd_nonterminal",
+        "keeper_wnowait_does_not_reap_original_child",
+        "independent_reparented_same_tuple_reap_then_echild",
+        "no_direct_child_signal_or_dummy_in_loss_cases",
+        "negative_tgid_control_never_satisfies_positive_oracle",
+        "healthy_five_cut_handoff_and_keeper_join",
+        "original_task_death_duplicate_release_and_reader_fds_checked",
+        "ordinary_test_subreaper_unchanged",
+        "old_helper_policy_runtime_and_dependencies_unchanged",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "forced_tid_reuse_reproduced",
+        "arbitrary_multithreaded_signer_supported",
+        "all_thread_credential_or_policy_attestation",
+        "production_tracer_lifetime_enrolled",
+        "independent_runtime_custody",
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_attested",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_namespace_mount_account_service_or_cgroup_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("report_bytes", 32),
+        ("control_bytes", 128),
+        ("prefix_descriptors", 2),
+        ("report_descriptors", 5),
+        ("total_descriptors", 7),
+        ("max_received_packets", 10),
+        ("constructor_cuts", 5),
+        ("status_bytes", 8192),
+        ("status_read_calls", 8),
+        ("dead_creator_refusal_exit", 81),
+        ("old_tgid_only_control_exit", 86),
+        ("logical_stall_millis", 5000),
+        ("outer_stall_millis", 30000),
+        ("capture_bytes", 8192),
+        ("seeded_cases", 8),
+        ("independent_observers", 4),
+        ("frame_status_mutations", 256),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let original = std::fs::read_to_string(base.join("diagnostic_signer_creator_task.rs")).unwrap();
+    for required in [
+        "SYS_gettid",
+        "/proc/thread-self",
+        "PROC_SUPER_MAGIC",
+        "FD_CLOEXEC",
+        "libc::openat",
+        "c\"status\"",
+        "O_NOFOLLOW",
+        "O_NONBLOCK",
+        "[0u8; 8193]",
+        "for _ in 0..8",
+        "bytes.len() > 8192",
+        "libc::close(fd)",
+        "group == Some(tgid)",
+        "task == Some(tid)",
+        "state == Some(true)",
+    ] {
+        assert!(original.contains(required), "{required}");
+    }
+    let raw = original.split("pub(super) fn live(").nth(1).unwrap();
+    for forbidden in [
+        "format!",
+        "File::open",
+        "std::fs",
+        "println!",
+        "Vec",
+        "String",
+        "Box",
+        "Mutex",
+    ] {
+        assert!(!raw.contains(forbidden), "{forbidden}");
+    }
+    let owner =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    assert!(
+        owner.find("Creator::capture(original_parent)").unwrap()
+            < owner.find("libc::fork()").unwrap()
+    );
+    assert!(owner.contains("creator: creator_task::Creator"));
+    let arm = std::fs::read_to_string(base.join("diagnostic_signer_constructor_guard.rs")).unwrap();
+    assert!(
+        arm.find("PR_SET_PDEATHSIG").unwrap() < arm.find("super::creator_task::live(").unwrap()
+    );
+    assert!(
+        arm.find("libc::getppid() != original_parent").unwrap()
+            < arm.find("libc::_exit(86)").unwrap()
+    );
+    let fixture =
+        std::fs::read_to_string(base.join("diagnostic_signer_creator_loss_fixture.rs")).unwrap();
+    for required in [
+        "SYS_exit",
+        "libc::WNOWAIT",
+        "libc::ECHILD",
+        "pending(&tracer.fd)",
+        "gone(&extra[1])",
+        "creator_target",
+        "c\"children\"",
+        "directory(original)",
+        "own.creator.task.as_raw_fd()",
+        "child_signaled=false",
+        "dummy_sends=0",
+        "reader_fds_reconciled=true",
+        "0x0740_c072",
+        "join.join()",
+        ".env_clear()",
+    ] {
+        assert!(fixture.contains(required), "{required}");
+    }
+    for text in [&original, &fixture] {
+        for forbidden in [
+            "pub fn",
+            "pub struct",
+            "PTRACE_ATTACH",
+            "PTRACE_POKE",
+            "waitpid(-1",
+            "SigningKey",
+            "sign_prepared_files",
+            "CLONE_NEWNS",
+            "pidfd_send_signal",
+            "signal(&",
+        ] {
+            assert!(!text.contains(forbidden), "{forbidden}");
+        }
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        let text = std::fs::read_to_string(base.join(path)).unwrap();
+        assert!(!text.contains("creator_task") && !text.contains("creator_loss"));
     }
 }
