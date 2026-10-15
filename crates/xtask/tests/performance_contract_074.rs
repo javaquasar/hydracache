@@ -12521,3 +12521,126 @@ fn signer_namespace_policy_preserves_original_owner_and_closed_authority() {
         );
     }
 }
+
+#[test]
+fn signer_handoff_original_private_channel_cannot_enable_production_authority() {
+    let c = contract("diagnostic-signer-handoff-contract.toml");
+    for key in [
+        "test_build_linux_x86_64_only",
+        "internal_original_root_child_and_private_channel",
+        "original_exec_exact_tsync_and_nd0_before_dummy",
+        "original_trace_authenticates_protocol_not_asserted_peer",
+        "ready_then_original_read_entry_before_send",
+        "exact_bounded_stack_messages_and_native_entry_exit",
+        "original_endpoint_inode_and_flags_checked",
+        "attempt_latched_before_sole_send_no_retry",
+        "lost_wrong_duplicate_ack_refuse_and_reap",
+        "post_install_unexpected_syscall_refuses_before_dispatch",
+        "actual_child_sigkill_drop_at_transfer_boundaries",
+        "old_helpers_and_policy_bytes_unchanged",
+        "normal_library_excludes_fixture_symbols",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_tracer_loss_exitkill_proved",
+        "continuous_loaded_runtime_closure_proved",
+        "mapped_memory_attested",
+        "independent_runtime_custody",
+        "complete_sandbox",
+        "multithreaded_signer_supported",
+        "production_issuer_root_or_job_enrolled",
+        "actual_private_key_or_token_read",
+        "bootstrap_signing_or_worker_start_authority",
+        "whole_writer_revocation",
+        "completion_or_later_cells_enabled",
+        "host_namespace_mount_account_service_or_cgroup_changed",
+        "server_entry_wired",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("schema_version", 1),
+        ("packet_bytes", 16),
+        ("max_send_attempts", 1),
+        ("child_channel_fd", 3),
+        ("filter_instructions", 64),
+        ("filter_bytes", 512),
+        ("startup_pairs", 256),
+        ("mapping_bytes", 65536),
+        ("mapping_records", 128),
+        ("directory_buffer_bytes", 512),
+        ("directory_reads", 3),
+        ("directory_records", 8),
+        ("stall_seconds", 5),
+        ("seeded_cases", 8),
+        ("independent_owners", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let source =
+        std::fs::read_to_string(base.join("diagnostic_signer_handoff_fixture.rs")).unwrap();
+    for required in [
+        "SOCK_SEQPACKET",
+        "SOCK_CLOEXEC",
+        "SOCK_NONBLOCK",
+        "MSG_TRUNC",
+        "channel.attempted = true",
+        "channel.empty()?",
+        "channel.sends != 0",
+        "owner.context(false)?",
+        "maps::validate",
+        "owner.memory(bounds, pointer, 16)",
+        "Step::Refused",
+        "owner.refuse()?",
+        "libc::SYS_recvfrom",
+        "libc::SYS_close",
+        "libc::SYS_exit_group",
+        ".child_closed = true",
+    ] {
+        assert!(source.contains(required), "{required}");
+    }
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "SO_PEERCRED",
+        "PTRACE_ATTACH",
+        "PTRACE_POKE",
+        "waitpid(-1",
+        "SigningKey",
+        "sign_prepared_files",
+        "CLONE_NEWNS",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let owner =
+        std::fs::read_to_string(base.join("diagnostic_signer_rooted_exec_fixture.rs")).unwrap();
+    for required in [
+        "channel: Option<handoff::Channel>",
+        "handoff::root()?",
+        "F_DUPFD_CLOEXEC",
+        "channel_operation(nr)",
+        "channel.child_inode",
+        "drop(child)",
+        "PTRACE_O_EXITKILL",
+        "PTRACE_O_TRACEEXEC",
+    ] {
+        assert!(owner.contains(required), "{required}");
+    }
+    for path in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(
+            !std::fs::read_to_string(base.join(path))
+                .unwrap()
+                .contains("handoff_fixture"),
+            "{path}"
+        );
+    }
+}

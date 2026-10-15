@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+W11's one-shot synthetic original-child handoff uses ordinary Linux x86_64 tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_handoff -- --nocapture`.
+Thirteen cases cover exact bounded transfer, pre-read withholding, malformed and
+duplicate protocol, FD/context faults, lost ACK, no retry and owned child SIGKILL.
+No manual gate, real credential, tracer-loss proof, worker or server admission.
+See the [handoff contract](testing/performance/0.74/diagnostic-signer-handoff-contract.toml).
+
 W11's local post-install mutation policy uses ordinary Linux x86_64 tests:
 `cargo test -p hydracache-long-run-supervisor-074 --lib --locked signer_namespace -- --nocapture`.
 Thirteen cases cover the exact 64-instruction candidate, fifteen native denials,

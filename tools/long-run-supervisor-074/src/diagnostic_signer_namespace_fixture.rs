@@ -176,6 +176,12 @@ pub(super) fn root() -> io::Result<Root> {
     )
 }
 fn compile() -> io::Result<Vec<u8>> {
+    compile_helper(
+        include_str!("diagnostic_signer_namespace_helper.rs"),
+        "namespace",
+    )
+}
+pub(super) fn compile_helper(source_text: &str, label: &str) -> io::Result<Vec<u8>> {
     let home = std::env::var_os("HOME").ok_or_else(invalid)?;
     let rustup = PathBuf::from(&home).join(".cargo/bin/rustup");
     let tool = Command::new(rustup)
@@ -204,10 +210,7 @@ fn compile() -> io::Result<Vec<u8>> {
     let temp = tempfile::tempdir()?;
     let source = temp.path().join("helper.rs");
     let binary = temp.path().join("helper");
-    fs::write(
-        &source,
-        include_str!("diagnostic_signer_namespace_helper.rs"),
-    )?;
+    fs::write(&source, source_text)?;
     let result = Command::new(compiler)
         .arg(&source)
         .args([
@@ -239,7 +242,7 @@ fn compile() -> io::Result<Vec<u8>> {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect();
-    println!("fixture_namespace_helper_sha256={digest} compiler=Rust1.94 profile=O3_abort runtime_admission=false");
+    println!("fixture_{label}_helper_sha256={digest} compiler=Rust1.94 profile=O3_abort runtime_admission=false");
     Ok(bytes)
 }
 fn owner(case: Case) -> io::Result<RootedExec> {

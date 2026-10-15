@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The private Linux x86_64 libtest handoff protocol
+`diagnostic-signer-original-synthetic-handoff-074-v1` uses three exact 16-byte
+READY/DUMMY/ACK records on an original-owner-created unnamed channel. It accepts
+no negotiation, future version, caller FD/PID or variable credential. Unknown
+bytes/length/sequence refuse and reap; old binaries have no protocol consumer.
+It is test wire only, not persisted or connected to any CLI/server/issuer, with
+no migration or production rollback artifact. Removing the test profile disables
+it; normal-library behavior and frozen inputs are unchanged. See the
+[handoff boundary](testing/performance/0.74/diagnostic-signer-handoff-design.md).
+
 The post-install namespace policy is a private child of the existing Linux x86_64
 rooted libtest module. Root materialization and original-owner observation plumbing
 are reused with a closed internal selector; old helper and 34-instruction policy

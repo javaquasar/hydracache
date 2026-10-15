@@ -10,6 +10,8 @@ use std::os::unix::fs::{FileExt, OpenOptionsExt};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+#[path = "diagnostic_signer_handoff_fixture.rs"]
+mod handoff;
 #[path = "diagnostic_signer_rooted_maps.rs"]
 mod maps;
 #[path = "diagnostic_signer_namespace_fixture.rs"]
@@ -64,17 +66,32 @@ struct RootedExec {
     namespace_case: Option<namespace::Case>,
     environment: Option<(File, [u64; 2])>,
     fd_directory: Option<(File, [u64; 2])>,
+    channel: Option<handoff::Channel>,
+    exec_descriptor: i32,
     _thread: PhantomData<Rc<()>>,
 }
 impl RootedExec {
     fn new(case: Case) -> io::Result<Self> {
-        Self::build(case, None)
+        Self::build(case, None, None)
     }
     fn namespace(case: namespace::Case) -> io::Result<Self> {
-        Self::build(Case::SelfExec, Some(case))
+        Self::build(Case::SelfExec, Some(case), None)
     }
-    fn build(case: Case, namespace_case: Option<namespace::Case>) -> io::Result<Self> {
-        let mut root = if namespace_case.is_some() {
+    fn handoff(case: handoff::Case) -> io::Result<Self> {
+        Self::build(
+            Case::SelfExec,
+            Some(namespace::Case::Probe(namespace::Probe::Unshare)),
+            Some(case),
+        )
+    }
+    fn build(
+        case: Case,
+        namespace_case: Option<namespace::Case>,
+        handoff_case: Option<handoff::Case>,
+    ) -> io::Result<Self> {
+        let mut root = if handoff_case.is_some() {
+            handoff::root()?
+        } else if namespace_case.is_some() {
             namespace::root()?
         } else {
             Root::new()?
@@ -103,7 +120,7 @@ impl RootedExec {
             .write(true)
             .custom_flags(libc::O_CLOEXEC)
             .open("/dev/null")?;
-        let fds = [
+        let mut fds = [
             null.as_raw_fd(),
             root.dirs[0].file.as_raw_fd(),
             root.files[0].file.as_raw_fd(),
@@ -111,10 +128,30 @@ impl RootedExec {
         if fds.iter().any(|fd| *fd < 3) {
             return Err(invalid());
         }
+        let pair = handoff_case.map(handoff::pair).transpose()?;
+        let retained = if pair.is_some() {
+            let mut held = Vec::new();
+            for slot in &mut fds[1..] {
+                // SAFETY: private duplicates keep root/exec above the sole inherited channel.
+                let fd = unsafe { libc::fcntl(*slot, libc::F_DUPFD_CLOEXEC, 10) };
+                if fd < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                // SAFETY: fresh private duplicate transferred exactly once.
+                held.push(unsafe { OwnedFd::from_raw_fd(fd) });
+                *slot = fd;
+            }
+            held
+        } else {
+            Vec::new()
+        };
         let argv = [
             c"owned-rooted-helper".as_ptr(),
-            namespace_case
-                .map_or_else(|| case.arg(), namespace::Case::arg)
+            handoff_case
+                .map_or_else(
+                    || namespace_case.map_or_else(|| case.arg(), namespace::Case::arg),
+                    handoff::Case::arg,
+                )
                 .as_ptr(),
             std::ptr::null(),
         ];
@@ -132,9 +169,20 @@ impl RootedExec {
             return Err(io::Error::last_os_error());
         }
         if pid == 0 {
-            child(fds, last, &argv, &env);
+            child(
+                fds,
+                last,
+                &argv,
+                &env,
+                pair.as_ref().map(|(_, child)| child.as_raw_fd()),
+            );
         }
         drop(null);
+        drop(retained);
+        let channel = pair.map(|(channel, child)| {
+            drop(child);
+            channel
+        });
         let mut owner = Self {
             root,
             pid,
@@ -147,6 +195,8 @@ impl RootedExec {
             namespace_case,
             environment: None,
             fd_directory: None,
+            channel,
+            exec_descriptor: fds[2],
             _thread: PhantomData,
         };
         // SAFETY: own unreaped direct child, never caller PID adoption.
@@ -284,7 +334,7 @@ impl RootedExec {
             namespace::descriptors(self.fd_directory.as_ref().ok_or_else(invalid)?)?
         } else {
             fs::read_dir(format!("/proc/{}/fd", self.pid))?
-                .take(5)
+                .take(if self.channel.is_some() { 6 } else { 5 })
                 .map(|e| e.map(|e| e.file_name()))
                 .collect::<io::Result<BTreeSet<_>>>()?
         };
@@ -293,7 +343,18 @@ impl RootedExec {
             .into_iter()
             .collect();
         if before_exec {
-            expected.insert(self.root.files[0].file.as_raw_fd().to_string().into());
+            expected.insert(self.exec_descriptor.to_string().into());
+        }
+        if let Some(channel) = &self.channel {
+            channel.check()?;
+            if !channel.child_closed {
+                expected.insert("3".into());
+                if self.phase != Phase::Installed
+                    && identity(&magic(format!("/proc/{}/fd/3", self.pid))?)? != channel.child_inode
+                {
+                    return Err(invalid());
+                }
+            }
         }
         if names != expected {
             return Err(invalid());
@@ -484,7 +545,15 @@ impl RootedExec {
                     header = Some(usize::try_from(args[2]).map_err(|_| invalid())?);
                     break;
                 }
-                Event::Entry { arch: ARCH, nr, .. } if startup_allowed(nr) => {
+                Event::Entry {
+                    arch: ARCH,
+                    nr,
+                    args,
+                } if startup_allowed(nr)
+                    && (self.channel.is_none()
+                        || args[0] != 3
+                        || !handoff::channel_operation(nr)) =>
+                {
                     if !matches!(self.event()?, Event::Exit { arch: ARCH, .. }) {
                         return Err(invalid());
                     }
@@ -651,6 +720,7 @@ fn child(
     last: u32,
     argv: &[*const libc::c_char; 3],
     env: &[*const libc::c_char; 2],
+    channel: Option<i32>,
 ) -> ! {
     // SAFETY: all inputs prepared; only scalar libc and stack storage after raw fork.
     unsafe {
@@ -663,7 +733,15 @@ fn child(
             rlim_cur: 0,
             rlim_max: 0,
         };
-        if (lo > 3 && libc::syscall(libc::SYS_close_range, 3u32, lo - 1, 0u32) < 0)
+        let first = if let Some(channel) = channel {
+            if libc::dup2(channel, 3) < 0 {
+                libc::_exit(70);
+            }
+            4
+        } else {
+            3
+        };
+        if (lo > first && libc::syscall(libc::SYS_close_range, first, lo - 1, 0u32) < 0)
             || (hi > lo + 1 && libc::syscall(libc::SYS_close_range, lo + 1, hi - 1, 0u32) < 0)
             || libc::syscall(libc::SYS_close_range, hi + 1, u32::MAX, 0u32) < 0
             || libc::setrlimit(libc::RLIMIT_CORE, &limit) < 0
