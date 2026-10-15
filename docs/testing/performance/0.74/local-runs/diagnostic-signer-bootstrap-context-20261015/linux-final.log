@@ -1,0 +1,126 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.84s
+     Running tests/diagnostic_signer_bootstrap_context.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_bootstrap_context-e6607fc999353416)
+
+running 7 tests
+test fixed_bootstrap_schema_is_statement_data_not_authority ... ok
+test matching_declared_context_checks_signature_and_all_content_without_enrollment ... ok
+test wrong_receipt_key_signature_and_unbound_content_cannot_gain_stronger_result ... ok
+test launcher_and_workflow_pins_are_bounded_assertions_not_discovered_authority ... ok
+test canonical_schema_unknown_duplicate_missing_types_and_budget_refuse ... ok
+test every_binding_fixed_profile_and_false_declaration_is_checked_even_after_resigning ... ok
+seed=0x0740c078 resigned_context_mutations=64 independent_models=4 actual_launcher_or_job_enrolled=false
+test seeded_signed_context_mutations_and_four_independent_models ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s
+
+     Running tests/diagnostic_signer_build.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_build-3d5d49a6931b4146)
+
+running 9 tests
+seed=0x07403b22 content_mutations=64 independent_models=4 actual_build_or_bootstrap=false
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+
+     Running tests/diagnostic_signer_gnu.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_gnu-2181c0127d1ab9ab)
+
+running 6 tests
+test roles_wrong_soname_and_missing_dependencies_refuse ... ok
+test synthetic_catalog_binds_each_role_and_bytes_without_authority ... ok
+test search_paths_duplicate_needed_writable_exec_and_unknown_tags_refuse ... ok
+test unchanged_declarations_still_record_changed_bytes ... ok
+test scripts_short_oversized_abi_and_interpreter_refuse ... ok
+seed=0x0740c076 mutations=256 independent_readers=4 authority=false
+test seeded_mutations_do_not_panic_and_independent_readers_agree ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/diagnostic_signer_issuer.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_issuer-a5f0757987a3f215)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.12s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 9 tests
+test diagnostic_signer_runtime_input::tests::public_constructor_rejects_fixture_and_checks_all_budgets_and_signature_before_io ... ok
+test diagnostic_signer_runtime_input::tests::synthetic_originals_join_signature_and_generated_catalog_without_authority ... ok
+test diagnostic_signer_runtime_input::tests::wrong_domain_key_and_signature_refuse_with_matching_originals ... ok
+test diagnostic_signer_runtime_input::tests::valid_resigned_opaque_noncanonical_or_other_catalog_manifest_cannot_join ... ok
+test diagnostic_signer_runtime_input::tests::bootstrap_runtime_stronger_path_refuses_opaque_and_public_nonroot_inputs ... ok
+test diagnostic_signer_runtime_input::tests::every_companion_and_original_role_is_bound_without_alternate_binary_bytes ... ok
+test diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore ... ok
+test diagnostic_signer_runtime_input::tests::content_and_ancestor_mode_drift_latch_the_composed_owner ... ok
+seed=0x0740c077 signed_catalog_mutations=64 independent_thread_local_owners=4 production_custody=false
+test diagnostic_signer_runtime_input::tests::seeded_signed_manifest_substitutions_and_independent_thread_local_owners ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 879 filtered out; finished in 1.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.83s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 18 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_canonical_schema_snapshot_and_rsa_key_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_original_jws_bytes_and_time_boundaries ... ok
+test diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_key_header_and_compact_encoding_confusion_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_additional_scalar_claim_budget_and_duplicate_header_boundaries ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_document_rsa_and_canonical_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_origin_header_and_exclusive_windows_are_unchanged ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_source_nofollow_modes_links_bounds_and_fixed_nonroot_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_shape_types_order_and_duplicate_material_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_snapshot_read_budget_is_original_and_other_sources_stay_small ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_each_origin_time_type_and_duplicate_claim_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_membership_each_position_v1_compatibility_and_no_try_all ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_source_metadata_bounds_and_nofollow ... ok
+seed=0x07402a11 membership_mutations=64 independent_bindings=4 actual_issuer_enrolled=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_seeded_membership_mutations_and_independent_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_constructor_bad_token_source_and_prior_refusal_cross_latch_all_owners ... ok
+seed=0x07552074 signature_mutations=32 independent_bindings=4 real_github_issuer_enrollment=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_seeded_signature_mutations_and_independent_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_original_binding_constructor_and_rotation_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_original_binding_owned_bytes_healthy_drop_and_sticky_faults ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 870 filtered out; finished in 22.41s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.65s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 3 tests
+test tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 98) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 93) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_bootstrap_context.rs - diagnostic_signer_bootstrap_context::CheckedSignerBootstrapModel (line 89) - compile fail ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 117 filtered out; finished in 0.50s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.40s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 2 tests
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedBootstrapRuntimeRead (line 67) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_signer_runtime_input.rs - diagnostic_signer_runtime_input::AssertedBootstrapRuntimeRead (line 71) - compile fail ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 118 filtered out; finished in 0.38s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.42s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.48s

@@ -9115,3 +9115,36 @@ custody. Image buffers are bounded and dropped after construction; no cache
 allocation or throughput improvement was measured. The next production join
 still requires independently admitted runtime/root/launcher and protected job
 inputs, followed by original-start and cessation of every P2/P3 writer.
+
+## Checking the bootstrap context inside a signed receipt
+
+The runtime join removed an opaque runtime-manifest seam, but the receipt could
+still bind any bootstrap-context bytes. The next isolated change adds a stronger
+optional reader for that inner document. It checks exact signer source/tree,
+binary and runtime-manifest bindings, a separate bounded launcher assertion and
+the fixed controller workflow/environment/default-subject profile. An explicit
+nonzero workflow revision is required; no actual revision is chosen by the parser.
+
+The declared build must have neither signing nor OIDC authority. The declared
+signing job must not compile, install dependencies, checkout code or inherit an
+unreviewed environment. Correctly re-signing a context with any of those permissions
+enabled passes the old opaque receipt model but fails the stronger path. Strict
+canonical LF encoding and schema/type/duplicate checks prevent ambiguity. The
+Linux composition checks this context before acquiring its original GNU files,
+then retains the existing sticky original-file checks. The old APIs remain
+compatible and no installed job or producer is changed.
+
+Tests cover every field, content/signature drift, 64 signed schema mutations and
+four independent models. Existing OIDC regressions pass after sharing the fixed
+workflow/environment strings, and the full root suite now passes 155 contracts.
+The [context packet](../testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-context-20261015/README.md)
+also keeps an important negative control: explicitly reselecting another complete
+expected statement with well-formed launcher/workflow pins can pass syntax.
+Consistency cannot independently authenticate those pins or prove that a job
+actually obeys signed requirements.
+
+This closes malformed and internally inconsistent declared contexts, not the
+remaining launcher/root/job custody or writer revocation. No real private key,
+token, production receipt or server execution was involved, and no cache
+performance measurement follows from this tooling change. Actual enforcement
+and independently reviewed original-start still precede completion and cells 2–4.

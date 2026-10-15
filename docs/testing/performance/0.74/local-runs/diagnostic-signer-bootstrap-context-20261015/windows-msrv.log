@@ -1,0 +1,18 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.57s
+     Running tests\diagnostic_signer_bootstrap_context.rs (target\debug\deps\diagnostic_signer_bootstrap_context-20ac80329ae965a1.exe)
+
+running 7 tests
+test fixed_bootstrap_schema_is_statement_data_not_authority ... ok
+test matching_declared_context_checks_signature_and_all_content_without_enrollment ... ok
+test wrong_receipt_key_signature_and_unbound_content_cannot_gain_stronger_result ... ok
+test launcher_and_workflow_pins_are_bounded_assertions_not_discovered_authority ... ok
+test canonical_schema_unknown_duplicate_missing_types_and_budget_refuse ... ok
+test every_binding_fixed_profile_and_false_declaration_is_checked_even_after_resigning ... ok
+seed=0x0740c078 resigned_context_mutations=64 independent_models=4 actual_launcher_or_job_enrolled=false
+test seeded_signed_context_mutations_and_four_independent_models ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.28s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.54s

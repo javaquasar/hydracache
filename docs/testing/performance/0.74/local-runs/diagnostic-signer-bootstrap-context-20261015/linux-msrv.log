@@ -1,0 +1,37 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.13s
+     Running tests/diagnostic_signer_bootstrap_context.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_signer_bootstrap_context-2aaf7ea6ce967723)
+
+running 7 tests
+test fixed_bootstrap_schema_is_statement_data_not_authority ... ok
+test matching_declared_context_checks_signature_and_all_content_without_enrollment ... ok
+test wrong_receipt_key_signature_and_unbound_content_cannot_gain_stronger_result ... ok
+test launcher_and_workflow_pins_are_bounded_assertions_not_discovered_authority ... ok
+test canonical_schema_unknown_duplicate_missing_types_and_budget_refuse ... ok
+test every_binding_fixed_profile_and_false_declaration_is_checked_even_after_resigning ... ok
+seed=0x0740c078 resigned_context_mutations=64 independent_models=4 actual_launcher_or_job_enrolled=false
+test seeded_signed_context_mutations_and_four_independent_models ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.20s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 9 tests
+test diagnostic_signer_runtime_input::tests::public_constructor_rejects_fixture_and_checks_all_budgets_and_signature_before_io ... ok
+test diagnostic_signer_runtime_input::tests::synthetic_originals_join_signature_and_generated_catalog_without_authority ... ok
+test diagnostic_signer_runtime_input::tests::valid_resigned_opaque_noncanonical_or_other_catalog_manifest_cannot_join ... ok
+test diagnostic_signer_runtime_input::tests::wrong_domain_key_and_signature_refuse_with_matching_originals ... ok
+test diagnostic_signer_runtime_input::tests::bootstrap_runtime_stronger_path_refuses_opaque_and_public_nonroot_inputs ... ok
+test diagnostic_signer_runtime_input::tests::every_companion_and_original_role_is_bound_without_alternate_binary_bytes ... ok
+test diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore ... ok
+test diagnostic_signer_runtime_input::tests::content_and_ancestor_mode_drift_latch_the_composed_owner ... ok
+test diagnostic_signer_runtime_input::tests::seeded_signed_manifest_substitutions_and_independent_thread_local_owners ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 879 filtered out; finished in 0.92s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.55s

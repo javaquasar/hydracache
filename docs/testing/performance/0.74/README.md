@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The optional [structured bootstrap context](diagnostic-signer-bootstrap-context-design.md)
+binds declared source/binary/runtime and fixed job requirements inside the existing
+receipt. Its [packet](local-runs/diagnostic-signer-bootstrap-context-20261015/README.md)
+retains correctly re-signed unsafe-context refusals and legacy compatibility.
+It selects no real launcher/workflow SHA and observes no job protection; actual
+custody and original-start remain before server admission.
+
 The [original GNU runtime join](diagnostic-signer-runtime-join-design.md) now
 checks a generated catalog and signer bytes from the same retained originals
 against an asserted expected signed receipt. Its

@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.49s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 8 tests
+test diagnostic_signer_runtime_input::tests::public_constructor_rejects_fixture_and_checks_all_budgets_and_signature_before_io ... ok
+test diagnostic_signer_runtime_input::tests::synthetic_originals_join_signature_and_generated_catalog_without_authority ... ok
+test diagnostic_signer_runtime_input::tests::wrong_domain_key_and_signature_refuse_with_matching_originals ... ok
+test diagnostic_signer_runtime_input::tests::valid_resigned_opaque_noncanonical_or_other_catalog_manifest_cannot_join ... ok
+test diagnostic_signer_runtime_input::tests::every_companion_and_original_role_is_bound_without_alternate_binary_bytes ... ok
+test diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore ... ok
+test diagnostic_signer_runtime_input::tests::content_and_ancestor_mode_drift_latch_the_composed_owner ... ok
+seed=0x0740c077 signed_catalog_mutations=64 independent_thread_local_owners=4 production_custody=false
+test diagnostic_signer_runtime_input::tests::seeded_signed_manifest_substitutions_and_independent_thread_local_owners ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 879 filtered out; finished in 0.86s
