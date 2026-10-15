@@ -33,12 +33,12 @@ pub(super) fn filesystem(file: &File, magic: libc::c_long) -> Result<(), KernelE
         return Err(std::io::Error::last_os_error().into());
     }
     if stat.f_type != magic {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("filesystem-type"));
     }
     Ok(())
 }
 pub(super) fn child(parent: &File, name: &str, directory: bool) -> Result<File, KernelError> {
-    let name = CString::new(name).map_err(|_| KernelError::Invalid)?;
+    let name = CString::new(name).map_err(|_| kernel_invalid!("proc-child-name"))?;
     let flags = libc::O_RDONLY
         | libc::O_NOFOLLOW
         | libc::O_CLOEXEC
@@ -77,9 +77,9 @@ fn boot(root: &File) -> Result<String, KernelError> {
             }
         })
     {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("boot-document"));
     }
-    String::from_utf8(raw[..36].to_vec()).map_err(|_| KernelError::Invalid)
+    String::from_utf8(raw[..36].to_vec()).map_err(|_| kernel_invalid!("boot-utf8"))
 }
 fn clock(id: libc::clockid_t) -> Result<u64, KernelError> {
     let mut value: libc::timespec = unsafe { std::mem::zeroed() };
@@ -96,22 +96,24 @@ fn require_namespace(
     filesystem(file, libc::NSFS_MAGIC as libc::c_long)?;
     // SAFETY: retained nsfs descriptor; NS_GET_NSTYPE takes no pointer.
     if unsafe { libc::ioctl(file.as_raw_fd(), libc::NS_GET_NSTYPE) } != kind {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("namespace-type"));
     }
     let metadata = file.metadata()?;
     if (metadata.dev(), metadata.ino()) != expected {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("namespace-object"));
     }
     Ok(())
 }
 pub(super) fn timespec(sec: libc::time_t, ns: libc::c_long) -> Result<u64, KernelError> {
     if sec < 0 || !(0..1_000_000_000).contains(&ns) {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("clock-timespec"));
     }
-    (sec as u64)
-        .checked_mul(1_000_000_000)
-        .and_then(|s| s.checked_add(ns as u64))
-        .ok_or(KernelError::Invalid)
+    kernel_required!(
+        (sec as u64)
+            .checked_mul(1_000_000_000)
+            .and_then(|s| s.checked_add(ns as u64)),
+        "clock-overflow"
+    )
 }
 impl Origin {
     pub(super) fn open() -> Result<Self, KernelError> {
@@ -142,14 +144,14 @@ impl Origin {
             filesystem(file, 0x9fa0)?;
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != self.id || boot(file)? != self.boot {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("proc-origin-or-boot"));
             }
         }
         for (index, (file, id)) in self.namespaces.iter().enumerate() {
             filesystem(file, 0x6e736673)?;
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != *id || namespace(NAMES[index])?.1 != *id {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("namespace-origin"));
             }
         }
         Ok(())
@@ -171,7 +173,7 @@ impl Origin {
     ) -> Result<(), KernelError> {
         self.revalidate()?;
         if self.boot != expected.boot_id {
-            return Err(KernelError::Invalid);
+            return Err(kernel_invalid!("worker-boot"));
         }
         for (index, (identity, kind)) in [
             (expected.user_namespace, libc::CLONE_NEWUSER),
@@ -182,7 +184,7 @@ impl Origin {
         {
             let (file, retained) = &self.namespaces[index];
             if *retained != (identity.device, identity.inode) {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("worker-namespace"));
             }
             require_namespace(file, *retained, kind)?;
         }
@@ -196,6 +198,90 @@ impl Origin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn kernel_refusal_capture_seeded_clock_and_namespace_classification() {
+        use crate::diagnostic_kernel_admission::refusal_trace::capture;
+        let mut seed = 0x0740_c096_u64;
+        let mut order = [0, 1, 2, 3, 4, 5];
+        for i in (1..order.len()).rev() {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            order.swap(i, seed as usize % (i + 1));
+        }
+        let before = KernelTimePoint {
+            boot: "original".into(),
+            boottime: 10,
+            realtime_ns: 100,
+        };
+        for case in order {
+            let mut after = before.clone();
+            match case {
+                0 => after.boot = "changed".into(),
+                1 => after.boottime -= 1,
+                2 => after.realtime_ns -= 1,
+                3 => after.boottime += HOLD_NS,
+                4 => after.boottime += HOLD_NS - 1,
+                _ => (),
+            }
+            let (result, event) = capture(|| valid_hold(&before, &after));
+            if case < 4 {
+                assert!(matches!(result, Err(KernelError::Invalid)));
+                let event = event.unwrap();
+                assert_eq!(
+                    event.site,
+                    if case < 3 {
+                        "clock-order"
+                    } else {
+                        "packet-hold"
+                    }
+                );
+                assert_eq!(
+                    event.clock,
+                    [
+                        before.boottime,
+                        after.boottime,
+                        before.realtime_ns,
+                        after.realtime_ns,
+                        u64::from(before.boot == after.boot),
+                        HOLD_NS
+                    ]
+                );
+            } else {
+                result.unwrap();
+                assert!(event.is_none());
+            }
+        }
+        for (s, n, expected) in [
+            (1, 0, None),
+            (-1, 0, Some("clock-timespec")),
+            (libc::time_t::MAX, 0, Some("clock-overflow")),
+        ] {
+            let (result, event) = capture(|| timespec(s, n));
+            assert_eq!(result.is_ok(), expected.is_none());
+            assert_eq!(event.map(|e| e.site), expected);
+        }
+        let (file, id) = namespace("mnt").unwrap();
+        for (expected, kind, site) in [
+            (id, libc::CLONE_NEWUSER, Some("namespace-type")),
+            (
+                (id.0, id.1 + 1),
+                libc::CLONE_NEWNS,
+                Some("namespace-object"),
+            ),
+            (id, libc::CLONE_NEWNS, None),
+        ] {
+            let (result, event) = capture(|| require_namespace(&file, expected, kind));
+            assert_eq!(result.is_ok(), site.is_none());
+            assert_eq!(event.map(|e| e.site), site);
+        }
+        let mut origin = Origin::open().unwrap();
+        origin.id.1 += 1;
+        let (result, event) = capture(|| origin.revalidate());
+        assert!(result.is_err());
+        assert_eq!(event.unwrap().site, "proc-origin-or-boot");
+        println!("kernel_refusal_classification seed=0x0740c096 clock_cases=6 namespace_cases=3 historical_cause_proved=false");
+    }
     #[test]
     fn kernel_worker_context_namespace_type_and_object_are_independent_checks() {
         let (file, id) = namespace("mnt").unwrap();

@@ -38,6 +38,19 @@ fn with_original_operation_at(
     authority_path: Option<&Path>,
     run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
 ) {
+    crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
+        with_original_operation_at_inner(operation, refused, authority_path, run);
+    });
+}
+
+fn with_original_operation_at_inner(
+    operation: crate::diagnostic_ipc::DiagnosticOperation,
+    refused: bool,
+    authority_path: Option<&Path>,
+    run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
+) {
+    use crate::diagnostic_kernel_admission::refusal_trace::phase;
+    phase("fixture-policy");
     let model = Model::new();
     let mut r = request(&model);
     r.operation = operation;
@@ -57,7 +70,9 @@ fn with_original_operation_at(
             let (root, authority_root, source, authority, bytes) = controller_worker_fixture();
             (root, Some(authority_root), source, authority, bytes)
         };
+    phase("packet");
     let mut packet = kernel_packet_bytes(&bytes);
+    phase("worker");
     let mut worker = source
         .verify_kernel_policy(&worker_bytes, &mut packet, &mut authority)
         .unwrap();
@@ -73,12 +88,17 @@ fn with_original_operation_at(
             .into(),
     };
     {
+        phase("controller");
         let mut original = controller.authenticate_controller(&mut worker).unwrap();
+        phase("build");
         let mut build = original
             .bind_reviewed_build(BUILDER_POLICY, RECEIPT)
             .unwrap();
+        phase("oidc");
         let mut guard = build.bind_oidc(&mut oidc.trust, &t).unwrap();
+        phase("callback");
         run(&mut guard, &paths);
+        phase("postconditions");
         assert_eq!(guard.is_refused(), refused);
     }
     assert_eq!(oidc.trust.is_refused(), refused);

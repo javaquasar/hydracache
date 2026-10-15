@@ -1,4 +1,74 @@
 use super::*;
+
+#[test]
+fn kernel_refusal_capture_healthy_has_no_event() {
+    let (value, event) = super::refusal_trace::capture(|| 7);
+    assert_eq!(value, 7);
+    assert!(event.is_none());
+}
+
+#[test]
+fn kernel_refusal_capture_projection_is_lazy_and_redacted() {
+    use super::refusal_trace::capture;
+    let credentials = libc::ucred {
+        pid: 23,
+        uid: 24,
+        gid: 25,
+    };
+    let good = "Pid: 23\nTgid: 23\nUid: 24 24 24 24\nGid: 25 25 25 25\nGroups: 26 27\n";
+    let (result, event) = capture(|| projection(good.as_bytes(), &credentials));
+    result.unwrap();
+    assert!(
+        event.is_none(),
+        "successful ok_or must not emit an error event"
+    );
+    for (raw, site) in [
+        (vec![0xff], "projection-utf8"),
+        (
+            good.replace("Pid: 23\n", "").into_bytes(),
+            "projection-missing-field",
+        ),
+        (
+            format!("{good}Pid: 23\n").into_bytes(),
+            "projection-duplicate-field",
+        ),
+        (
+            good.replace("Uid: 24", "Uid: DO_NOT_RETAIN_BEARER_OR_PROC")
+                .into_bytes(),
+            "proc-u32",
+        ),
+        (
+            good.replace("Pid: 23", "Pid: 99").into_bytes(),
+            "projection-process-id",
+        ),
+        (
+            good.replace("Uid: 24 24 24 24", "Uid: 24").into_bytes(),
+            "projection-uid-width",
+        ),
+        (
+            good.replace("Gid: 25 25 25 25", "Gid: 25").into_bytes(),
+            "projection-gid-width",
+        ),
+        (
+            good.replace("Groups: 26 27", "Groups: 27 26").into_bytes(),
+            "projection-credentials-or-groups",
+        ),
+        (
+            good.replace("Groups: 26 27", &format!("Groups: {}", "26 ".repeat(33)))
+                .into_bytes(),
+            "projection-group-budget",
+        ),
+    ] {
+        let (result, event) = capture(|| projection(&raw, &credentials));
+        assert!(matches!(result, Err(KernelError::Invalid)));
+        let event = event.unwrap();
+        assert_eq!(event.site, site);
+        assert_eq!(event.clock, [0; 6]);
+        let report = format!("{event:?}");
+        assert!(!report.contains("DO_NOT_RETAIN_BEARER_OR_PROC"));
+        assert!(!report.contains("Uid:") && !report.contains("Groups:"));
+    }
+}
 use std::io::Read;
 use std::os::fd::FromRawFd;
 use std::os::unix::process::{CommandExt, ExitStatusExt};

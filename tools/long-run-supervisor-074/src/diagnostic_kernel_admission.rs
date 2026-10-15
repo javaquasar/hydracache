@@ -8,6 +8,34 @@ use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::sync::Arc;
 use thiserror::Error;
 
+// BEGIN TEST ONLY KERNEL REFUSAL TRACE
+#[cfg(test)]
+#[path = "diagnostic_kernel_refusal_trace.rs"]
+pub(crate) mod refusal_trace;
+macro_rules! kernel_invalid {
+    ($site:literal) => {
+        kernel_invalid!($site, [0; 6])
+    };
+    ($site:literal, $facts:expr) => {{
+        #[cfg(test)]
+        $crate::diagnostic_kernel_admission::refusal_trace::record($site, file!(), line!(), $facts);
+        KernelError::Invalid
+    }};
+}
+macro_rules! kernel_required {
+    ($option:expr, $site:literal) => {{
+        #[cfg(test)]
+        {
+            ($option).ok_or_else(|| kernel_invalid!($site))
+        }
+        #[cfg(not(test))]
+        {
+            ($option).ok_or(KernelError::Invalid)
+        }
+    }};
+}
+// END TEST ONLY KERNEL REFUSAL TRACE
+
 #[path = "diagnostic_kernel_ancillary.rs"]
 mod ancillary;
 #[path = "diagnostic_kernel_origin.rs"]
@@ -78,7 +106,7 @@ impl KernelReceiver {
         let file = File::from(self.fd.try_clone()?);
         let m = file.metadata()?;
         if (m.dev(), m.ino()) != self.id {
-            return Err(KernelError::Invalid);
+            return Err(kernel_invalid!("receiver-object"));
         }
         let before = self.origin.sample()?;
         let Some((bytes, credentials, pidfd)) = ancillary::receive(&self.fd)? else {
@@ -134,7 +162,7 @@ impl KernelPacket {
         }
         if crate::diagnostic_reviewed_trust::require_controller_pin(policy).is_err() {
             self.refused = true;
-            return Err(KernelError::Invalid);
+            return Err(kernel_invalid!("reviewed-controller-pin"));
         }
         self.authenticate(policy)
     }
@@ -201,7 +229,7 @@ impl KernelPacket {
                 now.unix_seconds(),
             )?;
             if request.identity.boot_id != now.boot_id() {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("request-boot"));
             }
             self.sender.revalidate(&self.origin)?;
             Ok(request)
@@ -217,14 +245,34 @@ fn ordered(before: &TimePoint, after: &TimePoint) -> Result<(), KernelError> {
         || after.boottime_ns() < before.boottime_ns()
         || after.realtime_ns < before.realtime_ns
     {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!(
+            "clock-order",
+            [
+                before.boottime_ns(),
+                after.boottime_ns(),
+                before.realtime_ns,
+                after.realtime_ns,
+                u64::from(before.boot_id() == after.boot_id()),
+                HOLD_NS
+            ]
+        ));
     }
     Ok(())
 }
 fn valid_hold(before: &TimePoint, after: &TimePoint) -> Result<(), KernelError> {
     ordered(before, after)?;
     if after.boottime_ns() - before.boottime_ns() >= HOLD_NS {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!(
+            "packet-hold",
+            [
+                before.boottime_ns(),
+                after.boottime_ns(),
+                before.realtime_ns,
+                after.realtime_ns,
+                u64::from(before.boot_id() == after.boot_id()),
+                HOLD_NS
+            ]
+        ));
     }
     Ok(())
 }
@@ -232,7 +280,7 @@ fn bounded(file: &File) -> Result<Vec<u8>, KernelError> {
     let mut bytes = vec![0; DOC_BYTES + 1];
     let count = file.read_at(&mut bytes, 0)?;
     if count == 0 || count > DOC_BYTES {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("proc-document-budget"));
     }
     bytes.truncate(count);
     Ok(bytes)
@@ -244,35 +292,39 @@ struct Projection {
     groups: Vec<u32>,
 }
 fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {
-    let text = std::str::from_utf8(bytes).map_err(|_| KernelError::Invalid)?;
+    let text = std::str::from_utf8(bytes).map_err(|_| kernel_invalid!("projection-utf8"))?;
     let field = |name: &str| -> Result<Vec<u32>, KernelError> {
         let prefix = format!("{name}:");
         let mut lines = text.lines().filter_map(|line| line.strip_prefix(&prefix));
-        let body = lines.next().ok_or(KernelError::Invalid)?;
+        let body = kernel_required!(lines.next(), "projection-missing-field")?;
         if lines.next().is_some() {
-            return Err(KernelError::Invalid);
+            return Err(kernel_invalid!("projection-duplicate-field"));
         }
         let values = body
             .split_ascii_whitespace()
             .take(33)
-            .map(|v| v.parse::<u32>().map_err(|_| KernelError::Invalid))
+            .map(|v| v.parse::<u32>().map_err(|_| kernel_invalid!("proc-u32")))
             .collect::<Result<Vec<_>, _>>()?;
         if values.len() > 32 {
-            return Err(KernelError::Invalid);
+            return Err(kernel_invalid!("projection-group-budget"));
         }
         Ok(values)
     };
     if field("Pid")? != [credentials.pid as u32] || field("Tgid")? != [credentials.pid as u32] {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("projection-process-id"));
     }
-    let uid: [u32; 4] = field("Uid")?.try_into().map_err(|_| KernelError::Invalid)?;
-    let gid: [u32; 4] = field("Gid")?.try_into().map_err(|_| KernelError::Invalid)?;
+    let uid: [u32; 4] = field("Uid")?
+        .try_into()
+        .map_err(|_| kernel_invalid!("projection-uid-width"))?;
+    let gid: [u32; 4] = field("Gid")?
+        .try_into()
+        .map_err(|_| kernel_invalid!("projection-gid-width"))?;
     let groups = field("Groups")?;
     if uid != [credentials.uid; 4]
         || gid != [credentials.gid; 4]
         || groups.windows(2).any(|v| v[0] >= v[1])
     {
-        return Err(KernelError::Invalid);
+        return Err(kernel_invalid!("projection-credentials-or-groups"));
     }
     Ok(Projection { uid, gid, groups })
 }
@@ -312,7 +364,7 @@ impl Sender {
         for file in [&directory, &self.directory] {
             let m = file.metadata()?;
             if (m.dev(), m.ino()) != self.directory_id {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("sender-directory"));
             }
         }
         let named = origin::child(&self.directory, "status", false)?;
@@ -321,7 +373,7 @@ impl Sender {
             if (m.dev(), m.ino()) != self.status_id
                 || projection(&bounded(file)?, &self.credentials)? != self.projection
             {
-                return Err(KernelError::Invalid);
+                return Err(kernel_invalid!("sender-status-binding"));
             }
         }
         alive(&self.pidfd, self.credentials.pid)?;
@@ -347,14 +399,12 @@ fn alive(pidfd: &OwnedFd, pid: libc::pid_t) -> Result<(), KernelError> {
         .open(format!("/proc/thread-self/fdinfo/{}", pidfd.as_raw_fd()))?;
     let raw = bounded(&info)?;
     origin::filesystem(&info, 0x9fa0)?;
-    let text = std::str::from_utf8(&raw).map_err(|_| KernelError::Invalid)?;
+    let text = std::str::from_utf8(&raw).map_err(|_| kernel_invalid!("pidfd-info-utf8"))?;
     let mut lines = text.lines().filter_map(|line| line.strip_prefix("Pid:"));
-    let observed = lines
-        .next()
-        .ok_or(KernelError::Invalid)?
+    let observed = kernel_required!(lines.next(), "pidfd-info-missing-pid")?
         .trim()
         .parse::<i32>()
-        .map_err(|_| KernelError::Invalid)?;
+        .map_err(|_| kernel_invalid!("pidfd-info-pid-number"))?;
     if lines.next().is_some() || observed != pid || pid <= 0 {
         return Err(KernelError::NotLive);
     }
