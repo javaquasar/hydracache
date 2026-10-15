@@ -13,6 +13,19 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
+#[path = "support/diagnostic_collector_intent.rs"]
+mod collector_intent_tests;
+
+#[test]
+fn collector_intent_requires_a_distinct_output_projection() {
+    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::intent_projection::collector::project_collector_reserved_state;
+    let f = Fixture::new(0);
+    let old = project_reserved_state(&f.state).unwrap();
+    let new = project_collector_reserved_state(&f.state).unwrap();
+    assert_eq!(old.state_sha256, new.state_sha256);
+    assert_ne!(old.unit_spec_sha256, new.unit_spec_sha256);
+}
+
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }

@@ -647,6 +647,29 @@ This byte contract does not change the existing diagnostic request protocol,
 persist an intent, prevent replay, authenticate live state or authorize execution.
 See [design](testing/performance/0.74/diagnostic-intent-projection-local-design.md).
 
+The separate opt-in Linux collector requirement projection registers
+`diagnostic-collector-intent-074-v1`,
+`diagnostic-signed-collector-intent-074-v1`, and
+`diagnostic-collector-unit-projection-074-v1`. Body fields reuse the unverified
+intent layout, but require the collector body schema. The signature covers
+`hydracache-diagnostic-collector-intent-074-v1`, NUL and canonical body JSON plus
+LF, with unchanged 4096/8192-byte and exclusive 60-second bounds. The unit hash
+covers canonical JSON plus LF for `{schema_version, worker, output}`. Worker
+properties retain typed ordering, fixed argv/environment and isolation/budget
+controls, but omit both regular-file append properties and use WorkingDirectory
+`/`, empty ReadWritePaths and LimitFSIZE zero. Output commits ordered semantic
+stdout/stderr pipe slots, exclusive root-private collector sinks, byte ceilings
+and the required original-start/revocation/EOF/sync/close obligations. It contains
+no raw FD numbers and is not a D-Bus unit specification.
+
+Legacy and collector envelopes, domains and unit hashes are not interchangeable.
+Old readers reject collector schemas; the new verifier accepts no legacy intent
+or checked guard. Unknown/duplicate/future fields, noncanonical bytes, wrong
+signatures, pins or windows refuse. No migration, persisted record, start,
+completion, replay prevention or production enrollment is added; signed
+requirements are not evidence of their fulfillment. See the
+[collector intent design](testing/performance/0.74/diagnostic-collector-intent-design.md).
+
 The opt-in 0.74 local diagnostic authority fixture journal registers
 `diagnostic-authority-record-074-v1`: canonical JSON plus LF, at most 2048 bytes,
 128 contiguous generations, with a 65-byte SHA-256-plus-LF marker for each record.

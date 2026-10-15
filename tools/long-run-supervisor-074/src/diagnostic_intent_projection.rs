@@ -21,6 +21,9 @@ const PRINCIPAL_LIMIT: usize = 32;
 #[path = "diagnostic_signed_history.rs"]
 pub mod signed_history;
 
+#[path = "diagnostic_collector_intent.rs"]
+pub mod collector;
+
 /// Unverified wire body. A signature does not authenticate live host state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
