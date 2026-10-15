@@ -1,5 +1,10 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [private-owner loss matrix](diagnostic-signer-owned-loss-design.md) tests real
+owner SIGKILL at initial and first-exec child stops, with adopted pidfd death/reap,
+two healthy drop controls and an unaffected unrelated child. This is the unchanged
+private constructor in test roles, not full normal CLI or all-boundary loss proof.
+
 The [ordinary original owner](diagnostic-signer-owned-probe-design.md) now
 composes a fixed normal self-exec child, original pidfd/kernel exec-stop and
 the existing restriction probe. It authenticates no selected signer root/runtime

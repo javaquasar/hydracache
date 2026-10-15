@@ -1,5 +1,11 @@
 # HydraCache — Enforcement Gates
 
+The private-owner loss matrix is included in `--bin diagnostic_signer_owned_probe`
+unit tests (`owned_probe_parent_loss_matrix`). It kills the owner, observes the
+adopted original child and retains healthy/unrelated controls, unlike child-kill
+cleanup tests. It does not prove full normal-entry or all-boundary loss; see the
+[loss contract](testing/performance/0.74/diagnostic-signer-owned-loss-contract.toml).
+
 The ordinary original-self-exec probe uses `--bin diagnostic_signer_owned_probe`
 unit tests, portable `--test diagnostic_signer_owned_cli` and registered Linux
 x86_64 `--test diagnostic_signer_owned_probe`, package

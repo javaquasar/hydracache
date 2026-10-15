@@ -3,6 +3,78 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn private_owner_loss_is_two_stopped_boundaries_not_full_entry_admission() {
+    let c = contract("diagnostic-signer-owned-loss-contract.toml");
+    for key in [
+        "normal_owner_and_child_code_unchanged",
+        "isolated_monitor_subreaper_only",
+        "original_parent_tracer_and_sole_child_checked",
+        "logical_ack_gate_before_owner_cleanup",
+        "actual_owner_sigkill_via_original_pidfd",
+        "adopted_child_sigkill_reaped_and_echild",
+        "monitor_does_not_signal_child_on_passing_path",
+        "unrelated_live_original_preserved",
+        "temporary_image_directory_owned_by_monitor",
+        "initial_cut_precedes_exitkill_installation",
+        "monitor_and_owner_observer_loss_cleanup_armed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "full_normal_entry_parent_loss_proved",
+        "pre_arm_or_running_child_loss_proved",
+        "after_exec_kill_mechanism_attributed",
+        "selected_root_or_runtime_authenticated",
+        "real_credentials_or_signing",
+        "worker_original_start_or_all_writers_revoked",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("owner_sigkill_cases", 2),
+        ("healthy_drop_controls", 2),
+        ("fixed_report_bytes", 24),
+        ("capture_bytes", 16384),
+        ("status_bytes", 65536),
+        ("wait_seconds", 5),
+        ("fixed_report_bit_mutations", 512),
+        ("seeded_identity_shapes", 128),
+        ("mutation_seed", 121684090),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_probe_loss_tests.rs")).unwrap();
+    for marker in [
+        "Owner::create(file, Case::Native)",
+        "own.first()",
+        "libc::P_PIDFD",
+        "libc::WNOWAIT",
+        "libc::ECHILD",
+        "libc::CLD_KILLED",
+        "TracerPid:",
+        "reader.write_all(&[1])",
+        "signal(owner.fd(), libc::SIGKILL)",
+        "full_normal_entry_loss_proved=false",
+        "assert!(!dead(dummy.fd())",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    let unit =
+        std::fs::read_to_string(base.join("diagnostic_signer_owned_probe_tests.rs")).unwrap();
+    assert!(unit.contains("mod loss;"));
+    let normal = std::fs::read_to_string(base.join("diagnostic_signer_owned_probe.rs")).unwrap();
+    assert!(!normal.contains("HC074_OWNED_LOSS"));
+    assert!(!normal.contains("owned_probe_loss_tests"));
+}
+
+#[test]
 fn ordinary_original_owner_is_fixed_private_self_exec_not_authenticated_start() {
     let c = contract("diagnostic-signer-owned-probe-contract.toml");
     for key in [

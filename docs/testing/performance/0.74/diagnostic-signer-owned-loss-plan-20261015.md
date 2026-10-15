@@ -32,3 +32,18 @@ contract gates and expected ship refusal. Retain raw captures and update the
 article with the narrow result. Commit preregistration, tests and evidence
 separately. Do not change normal code, dependencies, frozen inputs, workflow,
 credentials, signing, server/GitHub state, workload, admission or push.
+
+## Harness correction after the first negative run
+
+The first implementation used self-SIGSTOP as the owner acknowledgement. The
+exec case observed an already-zombie child before injecting owner loss. A
+successful kill(SIGSTOP) call is not an instruction-level acknowledgement that
+the calling thread has stopped; the test could continue into its loss-path
+assertion and cleanup. Preserve both the failed run and the status diagnostic.
+Replace that harness gate with a private bidirectional socket: after reporting,
+the owner can only wait for a grant. Only healthy controls receive the grant.
+The child remains at the same original ptrace stop throughout. The normal owner
+and its child code are unchanged. Also let the monitor own the temporary image
+directory, and arm role-parent loss cleanup so a failed observer leaves no live
+acknowledgement-gated owner. This is a harness correction, not a weaker expected
+terminal status or a new normal launch hook.

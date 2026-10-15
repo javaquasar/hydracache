@@ -2,6 +2,9 @@ use super::*;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 
+#[path = "diagnostic_signer_owned_probe_loss_tests.rs"]
+mod loss;
+
 fn fixture() -> (tempfile::TempDir, File) {
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("owned-true");
