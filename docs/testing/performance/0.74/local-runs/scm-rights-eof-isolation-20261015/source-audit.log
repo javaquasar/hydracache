@@ -1,0 +1,3 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs', LF will be replaced by CRLF the next time Git touches it
+Verified unchanged non-test loss source, unchanged original EOF fixture bodies modulo indentation, additive guard import only in root tests, and exact two-file tooling inventory. No product/dependency/workflow changes.

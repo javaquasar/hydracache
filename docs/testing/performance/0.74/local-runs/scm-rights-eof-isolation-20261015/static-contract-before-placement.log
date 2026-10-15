@@ -1,0 +1,24 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.94s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 165 tests
+............................................................................ 76/165
+ordinary_root_creator_loss_is_owned_stops_only_not_authority --- FAILED
+....................................................................................... 164/165
+.
+failures:
+
+---- ordinary_root_creator_loss_is_owned_stops_only_not_authority stdout ----
+
+thread 'ordinary_root_creator_loss_is_owned_stops_only_not_authority' (35680) panicked at crates\xtask\tests\performance_contract_074.rs:14504:9:
+Command::
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ordinary_root_creator_loss_is_owned_stops_only_not_authority
+
+test result: FAILED. 164 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 48.72s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

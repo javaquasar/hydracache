@@ -1,0 +1,778 @@
+{
+  "format_version": 1,
+  "date": "2026-10-15",
+  "scope": "Local W11 test-only SCM_RIGHTS EOF fixture isolation; no product, production-start, all-writer cessation or server admission",
+  "baseline_commit": "61d664e97337f535b51f191561f6914a56f5b082",
+  "preregistration_commit": "01b78e980278caac0868d14343808583b6e42a31",
+  "initial_implementation_commit": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+  "source_commit": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+  "source_tree": "79f193a4638e6dcff6a7224ae77875d9d026a22d",
+  "registry_blob": "7caad9914e6b1676853343e900c3ef6192494af5",
+  "source_files": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs",
+      "git_blob": "1168abbf6458af22d84fdbe360f5b4f52b006186"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs",
+      "git_blob": "4359ff8c8a5b104e194f55f4532406741f6e01cd"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+      "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "git_blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/root-guard-attribution-20261015/hash-attribution-2.log",
+      "sha256": "acbfdbac5a8aa876795dcc5f0fe6f20ce51fa74cef549b0739f578b4fd82c7d9",
+      "git_blob": "61d725bc4610c5805b35dfa8ffec063c81391ec2"
+    }
+  ],
+  "commit_chain": [
+    {
+      "commit": "01b78e980278caac0868d14343808583b6e42a31",
+      "parent": "61d664e97337f535b51f191561f6914a56f5b082"
+    },
+    {
+      "commit": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "parent": "01b78e980278caac0868d14343808583b6e42a31"
+    },
+    {
+      "commit": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "parent": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    }
+  ],
+  "capture_encoding": "Tool output normalized from CRLF to UTF-8 LF; terminal newline appended if missing. ANSI and blank lines retained; empty formatter output is zero bytes.",
+  "source_binding": "Source-file identity denotes matching relevant tooling source, not signed execution attestation or a claim that the entire worktree was clean at capture. Null bindings are development/test-first observations or unchanged standalone guard support. The second development group overlapped the explicit close-return-check edit and is not a canonical final-source receipt.",
+  "source_scope": {
+    "changed_files": [
+      "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs",
+      "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs"
+    ],
+    "normal_loss_prefix": "Exactly unchanged before #[cfg(test)]",
+    "original_eof_bodies": "Unchanged modulo indentation, wrapped by test-only exact-test exec",
+    "existing_root_tests": "Exactly unchanged after the first #[test]; new support and exec adapter precede them",
+    "production_dependency_workflow_changes": false,
+    "static_contract_and_registry": "Unchanged, no forbidden-token exception or new gate",
+    "guard_support": "Unchanged standalone support/driver; nine tests per Linux current/MSRV pass"
+  },
+  "guard_contract": {
+    "deadline_seconds": 5,
+    "parent_poll_milliseconds": 5,
+    "global_test_serialization": false,
+    "outer_default_parallelism": true,
+    "wait_for_eof_retry": false,
+    "production_channel_changed": false
+  },
+  "results": {
+    "baseline_tests": 68,
+    "final_root_tests": 71,
+    "new_tests": 3,
+    "final_current_groups": [
+      "corrected-current.log",
+      "corrected-postcommit-current.log"
+    ],
+    "final_msrv_group": "corrected-msrv.log",
+    "msrv": "Unit EOF checks pass; normal runtime still explicitly refuses extra-libm image under the unchanged four-role graph",
+    "earlier_source_unit_repetitions": {
+      "source_commit": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "starts": 5,
+      "tests_per_start": 51
+    },
+    "guard_tests_each": 9,
+    "performance_contract_tests": 165,
+    "registry_tests": 6,
+    "registered_gates": 176,
+    "package_lanes": "all-target/all-feature check and strict Clippy on Windows/Linux Rust1.88/1.94, both before and after placement correction",
+    "local_admission": "non-promotable",
+    "require_ship": "expected refusal",
+    "product_performance_claim": false
+  },
+  "captures": [
+    {
+      "file": "baseline.log",
+      "bytes": 17874,
+      "sha256": "d59dc2e4585a6bef6065b3d7e1ef863217e4f1578fe001ce1934940f0cea009a",
+      "phase": "baseline",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "61d664e97337f535b51f191561f6914a56f5b082",
+      "outer_test_totals": {
+        "passed": 68,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "inherited-writer-red.log",
+      "bytes": 1935,
+      "sha256": "3b26b3569474171c0db72da6369a86982f1dd1ee3cd101a667e10641ac91e9ec",
+      "phase": "test-first-old-oracle",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline root::launch::loss::tests::inherited_cloexec_writer_blocks_eof_until_original_child_exit -- --exact --nocapture",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 1,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "outcome": "Deliberate test-first EOF assertion failure; inner nonzero result propagated"
+    },
+    {
+      "file": "received-rights-red.log",
+      "bytes": 1689,
+      "sha256": "1e459f12315bfcd60f5edda6bdc989df8e8e8be018e8322da36fb1e35fa736eb",
+      "phase": "test-first-old-oracle",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline root::launch::loss::tests::received_writer_control_prevents_false_eof -- --exact --nocapture",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 1,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "outcome": "Deliberate test-first EOF assertion failure; inner nonzero result propagated"
+    },
+    {
+      "file": "test-first-source.log",
+      "bytes": 7669,
+      "sha256": "a440587bb6e7a318bb14d192b9ca023efff4bdf28989ed46e689559823befa84",
+      "phase": "test-first-diff",
+      "command": "git diff -- tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null
+    },
+    {
+      "file": "development-loss-units.log",
+      "bytes": 2694,
+      "sha256": "a224b759828200fac91d8f26b33af49d557b48b840ae2504f3aa11d37cb6889d",
+      "phase": "intermediate-before-explicit-close-checks",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe root::launch::loss::tests:: --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 13,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "development-group-1.log",
+      "bytes": 19165,
+      "sha256": "1c843cb6c753191de4bb05c5775bc758e02fce4807e3a2a3d5e8bfafddefa03c",
+      "phase": "intermediate-before-explicit-close-checks",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "development-group-2.log",
+      "bytes": 19034,
+      "sha256": "ebf1d25ea1f818592a4a521eeacd0bb14aab5a3edf5b48c631c0cd001a99f657",
+      "phase": "transition-overlapped-source-edit-not-final-receipt",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "guard-current.log",
+      "bytes": 1583,
+      "sha256": "e942119b5c7e2059dab210799349f2922dfb087a435004c6a3c38d86a6c6e8b5",
+      "phase": "unchanged-support",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_root_guard --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "format-step.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "initial-implementation-source-format",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt -p hydracache-long-run-supervisor-074",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "final-current.log",
+      "bytes": 19165,
+      "sha256": "0ce4deda575aaf378458019bcc5a6feefa61faf56ea5367bf7d270ec3871dc48",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "final-msrv.log",
+      "bytes": 10859,
+      "sha256": "518b5f90cf894b26f5240f4a9cf81528547f9bd0eb9fdb5c4553b06793973669",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "guard-msrv.log",
+      "bytes": 1444,
+      "sha256": "1275c19127947abb117a507c170f12b1406348dbcdb8a91e5157ac15258bedec",
+      "phase": "unchanged-support",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_root_guard --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null,
+      "outer_test_totals": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "source-audit.log",
+      "bytes": 546,
+      "sha256": "8deb23e54572337eee1d268c8ebca27ca6213b453974ccd10ed6b11cbd618574",
+      "phase": "initial-implementation-source-audit",
+      "command": "$ErrorActionPreference='Stop'\n$base='61d664e97337f535b51f191561f6914a56f5b082'\n$loss='tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs'\n$old=(git show \"${base}:$loss\") -join \"`n\"\n$new=(Get-Content -LiteralPath $loss) -join \"`n\"\n$boundary='#[cfg(test)]'\nif($old.Substring(0,$old.IndexOf($boundary)) -cne $new.Substring(0,$new.IndexOf($boundary))){throw 'non-test loss code changed'}\n$rootTests='tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs'\n$expected=(git show \"${base}:$rootTests\") -join \"`n\"\n$actual=(Get-Content -LiteralPath $rootTests) -join \"`n\"\n$addition='#[path = \"../tests/support/root_process_guard.rs\"]'+\"`n\"+'pub(super) mod process_guard;'+\"`n\"\nif($actual.Replace($addition,'') -cne $expected){throw 'other root tests changed'}\nforeach($name in @('rejected_rights_are_closed_even_for_foreign_credentials_or_truncation','truncated_ancillary_rights_close_every_delivered_or_truncated_writer')){\n $start=$old.IndexOf(\"    fn $name() {\")\n $end=$old.IndexOf('    #[test]',$start)\n $body=$old.Substring($start,$end-$start)\n $body=$body.Substring($body.IndexOf('{')+1)\n $body=$body.Substring(0,$body.LastIndexOf('}'))\n $startNew=$new.IndexOf(\"    fn $name() {\")\n $endNew=$new.IndexOf('    #[test]',$startNew)\n $wrapped=$new.Substring($startNew,$endNew-$startNew)\n $wrapped=$wrapped.Substring($wrapped.IndexOf('|| {')+4)\n $endBody=$wrapped.LastIndexOf('},')\n if($endBody -lt 0){throw 'wrapper missing'}\n $wrapped=$wrapped.Substring(0,$endBody)\n if(($body -replace '\\s','') -cne ($wrapped -replace '\\s','')){throw \"original EOF fixture changed: $name\"}\n}\n$changed=@(git diff --name-only $base -- tools crates Cargo.toml Cargo.lock .github)\nif(@(Compare-Object $changed @($loss,$rootTests)).Count -ne 0){throw 'source inventory'}\nWrite-Output 'Verified unchanged non-test loss source, unchanged original EOF fixture bodies modulo indentation, additive guard import only in root tests, and exact two-file tooling inventory. No product/dependency/workflow changes.'",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "windows-1.88.0-check.log",
+      "bytes": 72,
+      "sha256": "1aa6bef404dd8ffaa73d761d688d7a65439e3e099d3856b19d60cc894141c32c",
+      "phase": "initial-implementation-source",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "windows-1.88.0-clippy.log",
+      "bytes": 72,
+      "sha256": "c54bca416b8a09e3c2018b0ada16771065b3b9b5469242539af42bc53077e2cf",
+      "phase": "initial-implementation-source",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "windows-1.94.0-check.log",
+      "bytes": 72,
+      "sha256": "a16685927daa0790a2b357e2b56df170e7bad259186d3c802d6d441422dfd0cf",
+      "phase": "initial-implementation-source",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "windows-1.94.0-clippy.log",
+      "bytes": 72,
+      "sha256": "ec3275bd7cdb61fe7edc4fadcb9a7a8d1c03aef38d75c8a6d05652c57a1d448e",
+      "phase": "initial-implementation-source",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "linux-1.88.0-check.log",
+      "bytes": 204,
+      "sha256": "0f385c4bc1752612017817fde21ab23f0c7fd1ff91a4d09c58c170c1599f104a",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "linux-1.88.0-clippy.log",
+      "bytes": 204,
+      "sha256": "15c6e541fa370f8e114c4fa3d5c01c8c3427f5c16a2fc6b868c0be7e705e88e5",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "linux-1.94.0-check.log",
+      "bytes": 204,
+      "sha256": "6923ac32aa2d0bef9f6206b416727ae4dc5fbf5e7a1b10947fa48698283a2713",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "linux-1.94.0-clippy.log",
+      "bytes": 204,
+      "sha256": "b8ec0941a9a9b34ed2cb19ab8694e312aaf491b6643745cf63efbd1fc0c9f878",
+      "phase": "initial-implementation-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "postcommit-current.log",
+      "bytes": 19033,
+      "sha256": "2fac1afbc14b4da7d34fc072abb29d1d32ba01d0e847f6f7d7f6382d32afeb14",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-units-1.log",
+      "bytes": 6773,
+      "sha256": "7d750d62053874435b406bcd911144026b679f039f3e2d902e2357df11ea1843",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 51,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-units-2.log",
+      "bytes": 6774,
+      "sha256": "c6e47698da9dc32217e7fabb4a3a6d65954c3786985e965e9703c01d83e1426a",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 51,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-units-3.log",
+      "bytes": 6774,
+      "sha256": "c790a373e3bbc5b08f499b164c8a44d76fb16fb8e42e9ad990a751925b102aa4",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 51,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-units-4.log",
+      "bytes": 6774,
+      "sha256": "4bc61526ccbae135382c5a2dd8ec762e39fb35a94dcea41b70bf2a9bb3ebf8c5",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 51,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "postcommit-units-5.log",
+      "bytes": 6774,
+      "sha256": "cc229a9872d66cbedabadbc305ee88f7d8d7dfcd8440688ecff744dc233ec090",
+      "phase": "initial-implementation-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 51,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "corrected-source-audit.log",
+      "bytes": 565,
+      "sha256": "3cf426f543630f501b060090374339ba97e774ba1d68bde4414e385052bff5ea",
+      "phase": "corrected-source-audit",
+      "command": "$ErrorActionPreference='Stop'\n$base='61d664e97337f535b51f191561f6914a56f5b082'\n$loss='tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs'\n$old=(git show \"${base}:$loss\") -join \"`n\"\n$new=(Get-Content -LiteralPath $loss) -join \"`n\"\n$boundary='#[cfg(test)]'\nif($old.Substring(0,$old.IndexOf($boundary)) -cne $new.Substring(0,$new.IndexOf($boundary))){throw 'non-test loss code changed'}\n$rootTests='tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs'\n$expected=(git show \"${base}:$rootTests\") -join \"`n\"\n$actual=(Get-Content -LiteralPath $rootTests) -join \"`n\"\n$header='pub(super) mod images;'\nif($actual.Substring(0,$actual.IndexOf($header)+$header.Length) -cne $expected.Substring(0,$expected.IndexOf($header)+$header.Length)){throw 'original root-test header changed'}\nif($actual.Substring($actual.IndexOf('#[test]')) -cne $expected.Substring($expected.IndexOf('#[test]'))){throw 'original root-test bodies changed'}\nforeach($name in @('rejected_rights_are_closed_even_for_foreign_credentials_or_truncation','truncated_ancillary_rights_close_every_delivered_or_truncated_writer')){\n $start=$old.IndexOf(\"    fn $name() {\")\n $end=$old.IndexOf('    #[test]',$start)\n $body=$old.Substring($start,$end-$start)\n $body=$body.Substring($body.IndexOf('{')+1)\n $body=$body.Substring(0,$body.LastIndexOf('}'))\n $startNew=$new.IndexOf(\"    fn $name() {\")\n $endNew=$new.IndexOf('    #[test]',$startNew)\n $wrapped=$new.Substring($startNew,$endNew-$startNew)\n $wrapped=$wrapped.Substring($wrapped.IndexOf('|| {')+4)\n $endBody=$wrapped.LastIndexOf('},')\n if($endBody -lt 0){throw 'wrapper missing'}\n $wrapped=$wrapped.Substring(0,$endBody)\n if(($body -replace '\\s','') -cne ($wrapped -replace '\\s','')){throw \"original EOF fixture changed: $name\"}\n}\n$changed=@(git diff --name-only $base -- tools crates Cargo.toml Cargo.lock .github)\nif(@(Compare-Object $changed @($loss,$rootTests)).Count -ne 0){throw 'source inventory'}\nWrite-Output 'Verified unchanged non-test loss source, unchanged original EOF fixture bodies modulo indentation, additive exec/guard support only before original root tests, and exact two-file tooling inventory. No product/dependency/workflow changes.'",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "static-contract-before-placement.log",
+      "bytes": 1123,
+      "sha256": "85b839f7c93a9f1815e753951fede478ae027d1a432d38a30d7d0fedad3e0e53",
+      "phase": "initial-implementation-unexpected-static-refusal",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 1,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca",
+      "outer_test_totals": {
+        "passed": 164,
+        "failed": 1,
+        "ignored": 0
+      },
+      "outcome": "Unexpected static launch-source placement refusal, corrected without changing the contract"
+    },
+    {
+      "file": "format-before-placement.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "initial-implementation-format",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all --check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "b1ee4fd1a9c707e956783284daac3b424b2fdcca"
+    },
+    {
+      "file": "static-contract-target.log",
+      "bytes": 373,
+      "sha256": "e16757b8cf014f21b1331e1b354296d0ded3a555178ace900c03fd4302a1ccce",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline ordinary_root_creator_loss_is_owned_stops_only_not_authority -- --exact --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "corrected-current.log",
+      "bytes": 19165,
+      "sha256": "945b667bdb99b66a7ec5851aaefd0f9dbb068a8ae7b7ba04bdd89b23dd1dae72",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "corrected-msrv.log",
+      "bytes": 10859,
+      "sha256": "74ec4e855e07b6ceebe06d9487f899864a7cdaf606df57d630558675735e2f84",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "corrected-windows-1.88.0-check.log",
+      "bytes": 72,
+      "sha256": "a8dd5b4f852b782842253d071162bc7c3c44c3a9a07131cd1159e45bbb802a10",
+      "phase": "corrected-source",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-windows-1.88.0-clippy.log",
+      "bytes": 72,
+      "sha256": "9c73735a1033f44f00ea48e15c38d73843ff5a391557aac653bd81d564a34b5f",
+      "phase": "corrected-source",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-windows-1.94.0-check.log",
+      "bytes": 72,
+      "sha256": "4618eeba4e21359898995b7f544b56cd4d474efe9641525e1447388aaa8fabe6",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-windows-1.94.0-clippy.log",
+      "bytes": 72,
+      "sha256": "9c73735a1033f44f00ea48e15c38d73843ff5a391557aac653bd81d564a34b5f",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-linux-1.88.0-check.log",
+      "bytes": 204,
+      "sha256": "6b9cc62924fe52da7f72e04cdbc5ae7b6041bbf59b3a3029f85697ad5b87b7ed",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-linux-1.88.0-clippy.log",
+      "bytes": 204,
+      "sha256": "d9f14dea310293b18301759d5d216cb2edd102175a688186c61187eef1d3cf82",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-linux-1.94.0-check.log",
+      "bytes": 204,
+      "sha256": "320a0b0e9cbca2cd899f2aebd7bcf1429f06e6e6e411acf0df5ae7822bdba280",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-linux-1.94.0-clippy.log",
+      "bytes": 204,
+      "sha256": "d1cb7424e35bb079625b99f2fc1dce714287f31479048ecb18c20cc1740cba9e",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 --all-targets --all-features --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "performance-contract-tests.log",
+      "bytes": 477,
+      "sha256": "495b802941ced1af4848fcc25fe7810bf034798bb788a722273e2e2fa3d2ce3d",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --locked --offline -- --quiet",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 165,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "gate-registry-tests.log",
+      "bytes": 713,
+      "sha256": "4b069007ea961b037ccb69dbbbd3e4426f4b6fda59fc14e4c4ff7aca26dce677",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 test -p xtask --test gated_tests --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "gate-registry.log",
+      "bytes": 270,
+      "sha256": "ab5d0d6de82906aea83a372f79f757ee6fa21b11ebd0c4d951473ce43538ffc6",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- gated-test-check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "local-contract.log",
+      "bytes": 212,
+      "sha256": "2121618888b6f900a67d76e3f12d1dcf7fd9e0450e2e6ababb5dedc9a154ef6d",
+      "phase": "corrected-source",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "require-ship.log",
+      "bytes": 494,
+      "sha256": "769f7f3be6df960c374cab18b7f7cff688356e2cdcd952a7366d19329cb18ddc",
+      "phase": "corrected-source-expected-refusal",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "gate_expected_exit": 1,
+      "experiment_expected_exit": 1,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "format-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "corrected-source",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all --check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e"
+    },
+    {
+      "file": "corrected-postcommit-current.log",
+      "bytes": 19033,
+      "sha256": "49a19e8fb924946f85d56dcd60fb55aa17afb3d4be7c0a825885bbc34fb82a96",
+      "phase": "corrected-source-postcommit",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --bin diagnostic_signer_root_probe --test diagnostic_signer_root_probe --test diagnostic_signer_root_cli --test diagnostic_signer_child_entry --test diagnostic_signer_isolation --locked --offline -- --nocapture",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": "3cfb6c37c88ac36d0054055e25805462e36e949e",
+      "outer_test_totals": {
+        "passed": 71,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "file": "doc-check.log",
+      "bytes": 164,
+      "sha256": "a2f39488e312964d669433ef06f271cd62c0b866f4723e2c8356058ac25faeea",
+      "phase": "documentation",
+      "command": "cargo +1.94.0 run -p xtask --locked --offline -- doc-check",
+      "exit_code": 0,
+      "gate_expected_exit": 0,
+      "experiment_expected_exit": 0,
+      "source_file_identity": null
+    }
+  ],
+  "extra_artifacts": [
+    {
+      "file": "README.md",
+      "bytes": 4608,
+      "sha256": "53a24a9d99d237f16134c7d7264028ab7256ce658e40b88949d4e877d328fdb4"
+    },
+    {
+      "file": "verify.ps1",
+      "bytes": 10021,
+      "sha256": "27ef0eb73a276585188022a8747046bc0857078154dcb7d314aee077ae07b657"
+    }
+  ],
+  "limitations": [
+    "Controlled fork inheritance mechanism established; historical EAGAIN writer identity unknown",
+    "Two test-first EOF negatives and one unexpected static placement refusal remain exit1/expected-gate0",
+    "No overlapping-heavy-load robustness, MSRV normal-runtime expansion, RESP/native timing or allocation claim",
+    "No source or qualification mutation for frozen Release0.73, product workload, server action, workflow dispatch, push, production credentials or signing",
+    "Trusted runtime/issuer/job custody, authenticated original-start, P2/P3 all-writer cessation, completion/later cells and release/server admission remain separate"
+  ],
+  "verification_command": "& './docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-20261015/verify.ps1'",
+  "verification_output": "verification.txt is a separate consistency receipt, excluded from manifest artifact digests to avoid self-reference"
+}

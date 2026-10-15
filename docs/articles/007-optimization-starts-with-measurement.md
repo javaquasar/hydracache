@@ -10208,3 +10208,54 @@ new Linux-only guard test target. A separate entry fixes that omission without
 changing existing gates or CI workflows. The registry now covers 176 gates and
 all six registry validator tests pass; the 165 performance-contract tests pass
 again. Local admission stays non-promotable and require-ship still refuses.
+
+### An inherited writer can invalidate an immediate EOF oracle
+
+The next local experiment separates a received-descriptor leak from a fixture
+lifetime error. The unchanged-source root group first passes 68 tests. That does
+not explain the retained EAGAIN: other unit tests fork while the cleanup test can
+have an open writer. CLOEXEC is an exec boundary, not a fork boundary, so the
+cleanup test cannot infer sole writer ownership merely from its own Rust handles.
+
+A controlled child reproduces that mechanism. The test queues two writer rights,
+forks, and requires the child to close the unrelated endpoints, verify CLOEXEC
+on its inherited writer and acknowledge custody. The parent drops its writer and
+rejects the rights packet using the unchanged Channel. Applying the old immediate
+EOF assertion now fails with EAGAIN. The separate exec wrapper propagates that
+child failure; it does not promote a failed inner test to a passing outer test.
+The passing characterization instead requires WouldBlock while that acknowledged
+child remains nonterminal. A fixed release gate lets it close the writer and exit;
+the parent requires the original pidfd exit/wait/reap before demanding EOF. No
+sleep, retry or elapsed-time assertion substitutes for those logical boundaries.
+
+The correction isolates only the two received-rights EOF fixtures in fresh exec'd
+copies of the unit-test binary. Each selects exactly its existing test with a
+private child marker and empty environment. Exec removes incidental CLOEXEC
+writers before the fixture starts; other outer tests still run concurrently.
+The existing five-second process guard, immediate EOF assertions, credentials,
+ancillary truncation rejection and all Channel code remain unchanged. There is
+no new normal-build executable mode or production authority input.
+
+Isolation must not hide a real retained writer. A separate control keeps the two
+successfully received rights alive: the same EOF assertion deliberately fails.
+After characterization, the control requires WouldBlock with both rights and
+again with one, then EOF after the final close. Another test rejects an exec
+which succeeds with zero selected tests: exit zero alone is not proof that the
+intended check ran. The final root groups pass 71 on Linux Rust1.94 and Rust1.88,
+including these three additions; nine guard fault tests pass on both. The MSRV
+normal-build image still takes the explicit extra-libm refusal path.
+
+The first static contract run rejects the inline test helper because the entire
+loss source file forbids Command construction. The helper moves to the existing
+separate root-test file, leaving a thin cfg(test) delegation at the call site.
+The forbidden-token guard and every production-source condition remain unchanged;
+the same focused static check passes afterward. This is a placement correction,
+not a new exception to the launch contract.
+
+The [evidence packet](../testing/performance/0.74/local-runs/scm-rights-eof-isolation-20261015/README.md)
+retains both deliberately red controls, the test-first diff and the original
+historical negative by reference. The controlled reproduction establishes a
+possible mechanism, not the identity of the writer in that historical run.
+This test-only correction also does not establish production P2/P3 all-writer
+cessation. Trusted runtime/issuer/job custody, authenticated original-start,
+completion/later cells and server admission remain separate W11 work.

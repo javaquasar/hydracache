@@ -1,0 +1,31 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.94s
+     Running unittests src/bin/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-3f4eed9fb459e1d2)
+
+running 13 tests
+test root::launch::loss::tests::channel_rejects_missing_credentials_wrong_gate_and_malformed_requests ... ok
+test root::launch::loss::tests::channel_uses_kernel_credentials_cloexec_and_fixed_packet_budget ... ok
+test root::launch::loss::tests::original_pipe_identity_rejects_unrelated_pipe_and_wrong_access ... ok
+test root::launch::loss::tests::fixed_frames_reject_every_non_pid_bit_and_unregistered_modes ... ok
+test root::launch::loss::tests::scalar_fields_refuse_duplicates_signs_overflow_and_non_decimal ... ok
+test root::launch::loss::tests::original_socket_endpoints_require_each_original_not_equal_peer_inodes ... ok
+test root::launch::loss::tests::stopped_negative_requires_detachment_and_never_accepts_running_as_stopped ... ok
+
+thread 'root::launch::loss::tests::isolated_child_with_no_selected_test_is_rejected' (564) panicked at tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_loss.rs:810:9:
+assertion `left == right` failed: selected isolated rights test did not complete
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+isolated_rights_done test=root::launch::loss::tests::inherited_cloexec_writer_blocks_eof_until_original_child_exit admission=false
+test root::launch::loss::tests::inherited_cloexec_writer_blocks_eof_until_original_child_exit ... ok
+test root::launch::loss::tests::isolated_child_with_no_selected_test_is_rejected ... ok
+isolated_rights_done test=root::launch::loss::tests::rejected_rights_are_closed_even_for_foreign_credentials_or_truncation admission=false
+test root::launch::loss::tests::rejected_rights_are_closed_even_for_foreign_credentials_or_truncation ... ok
+isolated_rights_done test=root::launch::loss::tests::received_writer_control_prevents_false_eof admission=false
+test root::launch::loss::tests::received_writer_control_prevents_false_eof ... ok
+isolated_rights_done test=root::launch::loss::tests::truncated_ancillary_rights_close_every_delivered_or_truncated_writer admission=false
+test root::launch::loss::tests::truncated_ancillary_rights_close_every_delivered_or_truncated_writer ... ok
+test root::launch::loss::tests::tree_drop_preserves_original_names_without_quiescence ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.01s
+

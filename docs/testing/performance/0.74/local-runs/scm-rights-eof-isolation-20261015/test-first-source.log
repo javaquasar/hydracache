@@ -1,0 +1,161 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs
+index f16c2d78..dafa6eea 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs
+@@ -777,6 +777,40 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::io::Write;
++    use std::process::{Command, Stdio};
++    use std::sync::Mutex;
++
++    fn isolated(name: &str, test: impl FnOnce()) {
++        let namespace = module_path!().split_once("::").unwrap().1;
++        let selected = format!("{namespace}::{name}");
++        const MARKER: &str = "HC074_ISOLATED_RIGHTS_UNIT";
++        let done = format!("isolated_rights_done test={selected} admission=false");
++        if let Some(child) = std::env::var_os(MARKER) {
++            assert_eq!(child, selected.as_str());
++            test();
++            println!("{done}");
++            return;
++        }
++        // Exec closes incidental inherited CLOEXEC writers before this one
++        // fixture runs. No global lock, test retry or harness thread reduction.
++        let mut command = Command::new(std::env::current_exe().unwrap());
++        command
++            .args(["--exact", &selected, "--nocapture"])
++            .env_clear()
++            .env(MARKER, &selected)
++            .stdin(Stdio::null())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::piped());
++        let result =
++            super::super::super::tests::process_guard::output(&mut command, &Mutex::new(()));
++        assert!(result.status.success(), "{result:?}");
++        assert!(result.stderr.is_empty(), "{result:?}");
++        let stdout = String::from_utf8(result.stdout).unwrap();
++        assert_eq!(stdout.lines().filter(|line| *line == done).count(), 1);
++        println!("{done}");
++    }
++
+     fn pipe() -> [File; 2] {
+         let mut fds = [-1; 2];
+         assert_eq!(
+@@ -791,6 +825,100 @@ mod tests {
+         (Channel::new(a, pid), Channel::new(b, pid))
+     }
+     #[test]
++    fn inherited_cloexec_writer_blocks_eof_until_original_child_exit() {
++        isolated(
++            "inherited_cloexec_writer_blocks_eof_until_original_child_exit",
++            || {
++                let (mut a, mut b) = channels();
++                let [mut reader, writer] = pipe();
++                a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
++                    .unwrap();
++                let [gate, child_gate] = pair().unwrap();
++                let parent = unsafe { libc::getpid() };
++                let pid = unsafe { libc::fork() };
++                if pid == 0 {
++                    // Only fixed libc operations after fork, no Rust allocation
++                    // or unwinding. The writer is held until the release gate.
++                    arm(parent);
++                    unsafe {
++                        libc::close(a.file.as_raw_fd());
++                        libc::close(b.file.as_raw_fd());
++                        libc::close(reader.as_raw_fd());
++                        libc::close(gate.as_raw_fd());
++                        let ready = b'H';
++                        if libc::fcntl(writer.as_raw_fd(), libc::F_GETFD) != libc::FD_CLOEXEC
++                            || libc::send(
++                                child_gate.as_raw_fd(),
++                                (&ready as *const u8).cast(),
++                                1,
++                                libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT,
++                            ) != 1
++                        {
++                            libc::_exit(83);
++                        }
++                        let mut event = libc::pollfd {
++                            fd: child_gate.as_raw_fd(),
++                            events: libc::POLLIN,
++                            revents: 0,
++                        };
++                        let mut release = 0u8;
++                        if libc::poll(&mut event, 1, 5000) != 1
++                            || event.revents != libc::POLLIN
++                            || libc::recv(
++                                child_gate.as_raw_fd(),
++                                (&mut release as *mut u8).cast(),
++                                1,
++                                libc::MSG_DONTWAIT,
++                            ) != 1
++                            || release != b'G'
++                            || libc::close(writer.as_raw_fd()) != 0
++                        {
++                            libc::_exit(84);
++                        }
++                        libc::_exit(0);
++                    }
++                }
++                let mut child = Process::direct(pid).unwrap();
++                drop(child_gate);
++                poll(&gate, libc::POLLIN).unwrap();
++                let mut ready = [0];
++                assert_eq!((&gate).read(&mut ready).unwrap(), 1);
++                assert_eq!(ready, [b'H']);
++                drop(writer);
++                b.peer += 1;
++                assert!(b.receive(16, 2).is_err());
++                nonterminal(child.fd().unwrap()).unwrap();
++                // Characterization: the old EOF oracle must fail while an
++                // acknowledged original child still owns the inherited writer.
++                assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++                assert_eq!((&gate).write(b"G").unwrap(), 1);
++                child.wait(libc::CLD_EXITED, 0).unwrap();
++                assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++            },
++        );
++    }
++
++    #[test]
++    fn received_writer_control_prevents_false_eof() {
++        isolated("received_writer_control_prevents_false_eof", || {
++            let (mut a, mut b) = channels();
++            let [mut reader, writer] = pipe();
++            a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
++                .unwrap();
++            drop(writer);
++            let (_, mut rights) = b.receive(16, 2).unwrap();
++            // Deliberate leak control: old EOF assertion must still fail.
++            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++            drop(rights.pop().unwrap());
++            assert_eq!(
++                reader.read(&mut [0; 1]).unwrap_err().kind(),
++                io::ErrorKind::WouldBlock
++            );
++            drop(rights);
++            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++        });
++    }
++    #[test]
+     fn fixed_frames_reject_every_non_pid_bit_and_unregistered_modes() {
+         for name in [
+             "root-loss-initial",
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
+index 37e33516..abfd251c 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs
+@@ -2,6 +2,8 @@ use super::*;
+ use std::os::unix::fs::PermissionsExt;
+ #[path = "../tests/support/diagnostic_gnu_images.rs"]
+ pub(super) mod images;
++#[path = "../tests/support/root_process_guard.rs"]
++pub(super) mod process_guard;
+ 
+ #[test]
+ fn sha256_matches_known_vectors_and_seeded_image_boundaries() {

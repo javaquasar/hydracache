@@ -1,12 +1,24 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [SCM_RIGHTS EOF fixture experiment](local-runs/scm-rights-eof-isolation-20261015/README.md)
+reproduces EAGAIN with an acknowledged inherited CLOEXEC writer after fork, then
+requires original-child exit/reap before EOF. Both existing received-rights EOF
+fixtures now run in their own exec'd unit-test process; their assertions and
+Channel implementation are unchanged. A retained-rights control still prevents
+EOF, and zero selected tests are rejected. The final Linux root groups pass 71
+on Rust1.94 and Rust1.88; the latter still refuses the extra-libm runtime image.
+This closes the demonstrated fixture lifetime ambiguity, not the unknown owner
+in the historical failure or P2/P3 production writer cessation. Server admission
+remains closed.
+
 The [root guard attribution](local-runs/root-guard-attribution-20261015/README.md)
 adds bounded post-kill test diagnostics and identifies repeated private SHA-256
 verification as the dominant observed parent CPU cost near the five-second guard.
 A separate byte-equivalent backend change retains every check. Three ordinary
 Linux Rust1.94 groups pass 68 afterward; the original seven process fixtures and
-five-second guard remain unchanged. An unexpected SCM_RIGHTS unit EAGAIN remains
-retained/open. This is local diagnostic tooling, not a RESP/native performance
+five-second guard remain unchanged. The unexpected SCM_RIGHTS unit EAGAIN stays
+retained there; the fixture experiment above tests its possible mechanism without
+claiming historical provenance. This is local diagnostic tooling, not a RESP/native performance
 claim, authenticated start, all-writer cessation or server admission.
 
 The [tooling/trace MSRV cleanup](local-runs/msrv-tooling-trace-cleanup-20261015/README.md)

@@ -1,0 +1,5 @@
+Verified 49 captures, extra artifact digests, source/tree/two blobs/commit chain and three frozen inputs.
+Verified unchanged non-test loss source, original EOF bodies, previous root tests, process guard, static launch contract and 176-entry registry.
+Verified final 71-test groups, canonical 25/14/6 modes, four isolated completions and explicit MSRV extra-libm refusal.
+Two deliberately red EOF controls and one static placement failure remain exit1/expected-gate0. Require-ship remains an expected refusal.
+Unsigned consistency only. The historical writer owner, production all-writer cessation and server/release admission are not established.

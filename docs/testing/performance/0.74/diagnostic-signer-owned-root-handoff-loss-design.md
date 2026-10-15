@@ -67,6 +67,17 @@ cover all 14 new modes. Process coverage runs all six losses, six healthy paths
 and two survivor controls, plus environment and extra-argument refusal. MSRV's
 extra-libm image must refuse all 14 modes under the unchanged four-role graph.
 
+The two unit-only rights-cleanup EOF oracles now use an exec'd copy of the same
+unit-test binary, selected by exact test name. The outer harness keeps default
+parallelism and the existing five-second child guard. This prevents sibling
+forks from extending a fixture writer's lifetime; no Channel code, rejection
+condition or EOF assertion changes. A separate gated child proves the inheritance
+mechanism with WouldBlock before release and EOF only after exact original exit/
+reap. Retaining actual received rights still prevents EOF, and a successful child
+with zero selected tests is rejected. See the
+[fixture experiment](local-runs/scm-rights-eof-isolation-20261015/README.md).
+The writer owner in the historical EAGAIN capture remains unknown.
+
 The initial standalone matrix passed. Adding it as another parallel root fixture
 coincided with an old handoff five-second timeout. The retained red is not fixed
 by the final scheduling correction: the 14 cases now follow the 25 old cases in
