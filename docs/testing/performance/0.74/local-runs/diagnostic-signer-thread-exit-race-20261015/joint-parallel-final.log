@@ -1,0 +1,507 @@
+joint-stop parallel-repeat=1
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.58s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 17 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ok
+creator_mutations seed=0x0740c072 cases=256 exact_status_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_status_and_terminal_frame_mutations_refuse ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+creator_task_lifetime original_dead_object_not_refreshed=true duplicates_closed=true nonproc_opath_refused=true reader_fds_reconciled=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_original_task_descriptor_death_and_release ... ok
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=true healthy=false code=1 status=86 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death ... ok
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_negative_independent_observers=4 cleanup_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... ok
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop ... ok
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_concurrency seed=0x0740c072 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=1 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=2 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+creator_terminal cut=4 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 877 filtered out; finished in 32.49s
+
+joint-stop parallel-repeat=2
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.16s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 17 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ok
+creator_mutations seed=0x0740c072 cases=256 exact_status_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_status_and_terminal_frame_mutations_refuse ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal ... ok
+creator_task_lifetime original_dead_object_not_refreshed=true duplicates_closed=true nonproc_opath_refused=true reader_fds_reconciled=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_original_task_descriptor_death_and_release ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task ... ok
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=true healthy=false code=1 status=86 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death ... ok
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_negative_independent_observers=4 cleanup_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... ok
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop ... ok
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_concurrency seed=0x0740c072 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=1 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+creator_terminal cut=2 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+creator_terminal cut=4 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 877 filtered out; finished in 37.26s
+
+joint-stop parallel-repeat=3
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.43s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 17 tests
+creator_mutations seed=0x0740c072 cases=256 exact_status_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_status_and_terminal_frame_mutations_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+creator_task_lifetime original_dead_object_not_refreshed=true duplicates_closed=true nonproc_opath_refused=true reader_fds_reconciled=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_original_task_descriptor_death_and_release ... ok
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=true healthy=false code=1 status=86 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death ... ok
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_negative_independent_observers=4 cleanup_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... ok
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop ... ok
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=0 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_concurrency seed=0x0740c072 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=2 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=3 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=4 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff ... ok
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 877 filtered out; finished in 24.20s
+
+joint-stop parallel-repeat=4
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.57s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 17 tests
+creator_mutations seed=0x0740c072 cases=256 exact_status_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_status_and_terminal_frame_mutations_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+creator_task_lifetime original_dead_object_not_refreshed=true duplicates_closed=true nonproc_opath_refused=true reader_fds_reconciled=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_original_task_descriptor_death_and_release ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=true healthy=false code=1 status=86 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death ... ok
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task ... ok
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_negative_independent_observers=4 cleanup_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... ok
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop ... ok
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit ... ok
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_concurrency seed=0x0740c072 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=1 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=2 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=3 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=4 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff ... ok
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 877 filtered out; finished in 23.61s
+
+joint-stop parallel-repeat=5
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.45s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 17 tests
+creator_mutations seed=0x0740c072 cases=256 exact_status_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_status_and_terminal_frame_mutations_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_entry ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+creator_task_lifetime original_dead_object_not_refreshed=true duplicates_closed=true nonproc_opath_refused=true reader_fds_reconciled=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_original_task_descriptor_death_and_release ... ok
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=true healthy=false code=1 status=86 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_old_getppid_control_misses_creator_death ... ok
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_before_arm_refuses_dead_original_task ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_negative_independent_observers=4 cleanup_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... ok
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop ... ok
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_armed_boundaries_require_sigkill_before_group_exit ... ok
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=0 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=0 control=false healthy=false code=1 status=81 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+creator_terminal cut=2 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=3 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=4 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_terminal cut=1 control=false healthy=false code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0
+creator_concurrency seed=0x0740c072 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_seeded_fresh_and_independent_observers ... ok
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=1 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=2 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_rooted_loss_cut group_stop=true mode=0
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=3 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+creator_terminal cut=4 control=false healthy=true original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::signer_creator_loss_healthy_controls_finish_original_handoff ... ok
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 877 filtered out; finished in 28.48s

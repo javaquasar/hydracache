@@ -1,0 +1,58 @@
+group-stop diagnostic-repeat=1
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.13s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread observer refused: 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... 
+running 1 test
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+thread_rooted_loss_cut group_stop=true mode=1
+loss_root_binding parent=/tmp/.tmp3jaFxJ original_root=/tmp/.tmp3jaFxJ/.tmpMHRXlX/root
+loss_container mode=755 uid=1000
+loss_directory actual=[2096, 266764] original=[2096, 266764] mode=555 flags=231424
+loss_directory actual=[2096, 266793] original=[2096, 266793] mode=555 flags=231424
+loss_directory actual=[2096, 266806] original=[2096, 266806] mode=555 flags=231424
+loss_directory actual=[2096, 266807] original=[2096, 266807] mode=555 flags=231424
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry' (11892) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:391:79:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "thread negative lost original group stop: status=\"Name:\\tdiagnostic_sign\\nUmask:\\t0022\\nState:\\tR (running)\\nTgid:\\t12076\\nNgid:\\t0\\nPid:\\t12076\\nPPid:\\t11896\\nTracerPid:\\t0\\nUid:\\t1000\\t1000\\t1000\\t1000\\nGid:\\t1000\\t1000\\t1000\\t1000\\nFDSize:\\t64\\nGroups:\\t4 20 24 25 27 29 30 44 46 100 107 1000 1001 \\nNStgid:\\t12076\\nNSpid:\\t12076\\nNSpgid:\\t11887\\nNSsid:\\t11579\\nKthread:\\t0\\nVmPeak:\\t  171636 kB\\nVmSize:\\t  171636 kB\\nVmLck:\\t       0 kB\\nVmPin:\\t       0 kB\\nVmHWM:\\t   16808 kB\\nVmRSS:\\t   16808 kB\\nRssAnon:\\t   13736 kB\\nRssFile:\\t    3072 kB\\nRssShmem:\\t       0 kB\\nVmData:\\t   23716 kB\\nVmStk:\\t     132 kB\\nVmExe:\\t   17640 kB\\nVmLib:\\t    2404 kB\\nVmPTE:\\t     152 kB\\nVmSwap:\\t       0 kB\\nHugetlbPages:\\t       0 kB\\nCoreDumping:\\t0\\nTHP_enabled:\\t1\\nuntag_mask:\\t0xffffffffffffffff\\nThreads:\\t1\\nSigQ:\\t0/62569\\nSigPnd:\\t0000000000000000\\nShdPnd:\\t0000000000000000\\nSigBlk:\\t0000000000000000\\nSigIgn:\\t0000000000001000\\nSigCgt:\\t0000000100000440\\nCapInh:\\t0000000000000000\\nCapPrm:\\t0000000000000000\\nCapEff:\\t0000000000000000\\nCapBnd:\\t0000000000000000\\nCapAmb:\\t0000000000000000\\nNoNewPrivs:\\t1\\nSeccomp:\\t0\\nSeccomp_filters:\\t0\\nSpeculation_Store_Bypass:\\tthread vulnerable\\nSpeculationIndirectBranch:\\tconditional enabled\\nCpus_allowed:\\tff\\nCpus_allowed_list:\\t0-7\\nMems_allowed:\\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\\nMems_allowed_list:\\t0\\nvoluntary_ctxt_switches:\\t4\\nnonvoluntary_ctxt_switches:\\t0\\n\" child_live=Ok(true) tgid_live=Ok(true)" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 892 filtered out; finished in 0.95s
+
+
+
+thread '<unnamed>' (11884) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:410:63:
+called `Result::unwrap()` on an `Err` value: Custom { kind: InvalidData, error: "owned runtime root refused" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+thread_rooted_loss_cut group_stop=true mode=1
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+
+thread 'diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls' (11880) panicked at tools/long-run-supervisor-074/src/diagnostic_signer_thread_exit_fixture.rs:413:5:
+assertion failed: results.iter().all(Result::is_ok)
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls ... FAILED
+
+failures:
+
+failures:
+    diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_four_independent_negative_controls
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 892 filtered out; finished in 0.97s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

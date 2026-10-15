@@ -223,3 +223,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-probe-*/** -tex
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/** -text whitespace=cr-at-eol
 # Preserve raw libtest/proc status whitespace in the failed and passing captures.
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

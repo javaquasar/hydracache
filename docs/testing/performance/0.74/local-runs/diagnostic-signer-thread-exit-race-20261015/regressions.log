@@ -1,0 +1,235 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.51s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.44s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+same_inode_second_exec=kernel_event_refused new_user_code_ran=false seccomp_installed=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_foreign_equal_byte_inode_cannot_match_original ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_different_inode_second_exec_is_stopped_before_new_user_code ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_kernel_rejects_header_only_shape_without_admission ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_same_inode_second_exec_is_stopped_before_new_user_code ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_original_stop_precedes_helper_output ... ok
+exec-stop exact_event=true lower_status_cases=327680 unknown_high_bits=refused
+inherited_foreign_writer=closed_before_initial_stop CLOEXEC_alone=insufficient
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_wait_status_exhaustive_exact_event_only ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_inherited_foreign_writer_closed_before_initial_stop ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_cloexec_and_drop_clean_exact_owned_child ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_unexpected_signal_and_output_overflow_cross_refuse ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_header_descriptor_and_metadata_refusals ... ok
+seed=0x07403b25 fresh_original_launches=16 independent_tracer_threads=4 signer_or_runtime_authority=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 882 filtered out; finished in 0.44s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.09s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 7 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ok
+constructor_frame seed=0x0740c071 mutations=256 exact_terminal_oracle=true controls_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_finite_oracle_and_closed_frame_mutations ... ok
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch ... ok
+constructor_terminal cut=1 fault=1 healthy=false code=1 status=83 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=2 healthy=false code=1 status=84 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers ... ok
+constructor_terminal cut=1 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=2 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=3 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=4 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 886 filtered out; finished in 24.44s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.20s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+fixture_gnu_helper_sha256=e725127e5a399c0a18099e79157b11527bf41f0abd702bf09aaf3474a75ebf37 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+maps_mutation_seed=0x07403b2a cases=256 memory_attested=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_seeded_parser_inputs_do_not_panic ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_maps_require_exact_selected_file_and_pseudo_identities ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_nonempty_environment_refuses_at_original_exec_stop ... ok
+rooted_original_exec_and_exact_install=same_child selected_VMA_file_ids=4 memory_attested=false handoff=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_selected_root_exec_and_install ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_other_image_is_denied_after_install ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_original_tree_hash_and_namespace_drift_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_healthy_drop_reaps_original_without_replacement ... ok
+owned_rooted_exec_SIGKILL=initial,rooted,first_exec,installed original_reaped=true tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_sigkill_at_four_boundaries_reaps_only_original ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_phase_replay_native_numbers_and_stack_bounds_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_exact_installer_faults_refuse_stickily ... ok
+rooted_exec_seed=0x07403b2a fresh_execs=8 independent_owners=4 parent_root_changed=false actual_multithread_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::tests::rooted_exec_seeded_fresh_execs_and_independent_nonroot_owners ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 882 filtered out; finished in 20.28s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.96s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 13 tests
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_directory_record_decoder_refuses_malformed_inventory ... ok
+fixture_namespace_helper_sha256=bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+post_ND0_magic_ns/user=true
+post_ND0_magic_root=true
+post_ND0_magic_cwd=true
+post_ND0_magic_exe=true
+post_ND0_directory_task=true
+post_ND0_directory_fd=false
+post_ND0_text_uid_map=true
+post_ND0_text_gid_map=true
+post_ND0_text_setgroups=true
+post_ND0_text_status=true
+post_ND0_text_environ=false
+post_ND0_text_maps=true
+post_ND0_original_environ_and_fd_inventory=retained fresh_open=EACCES live_context_checked=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback ... ok
+namespace_policy_instructions=64 bytes=512 added_native_denials=15 old_prefix_tail_exact=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_exact_extension_and_abi_model ... ok
+namespace_policy_seed=0x07403b2b bounded_mutations=256
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_mutations_and_native_args_are_bounded ... ok
+old_policy_nested_userns=kernel_EPERM regain_not_reproduced=true control_refused=true host_namespace_changed=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse ... ok
+namespace_candidate_x32_i386=SIGSYS same_child_original_exec_install=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys ... ok
+old_policy_controls=4 parent_namespace_root_uid_gid_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse ... ok
+namespace_original_SIGKILL_drop=initial,rooted,first_exec,installed tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries ... ok
+namespace_probe_seed=0x07403b2b fresh_probes=8 independent_owners=4 multithreaded_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners ... ok
+post_install_native_namespace_root_mount_denials=15 original_context_unchanged=true handoff=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 880 filtered out; finished in 40.70s
+
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.36s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 13 tests
+fixture_handoff_helper_sha256=b67ab287ac59bbe5c22649ea79ffa5c32e34f079f8a56cb294f88c52075908e4 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+handoff_original_ready_dummy_ack_close_exit=exact packets=16 sends=1 real_credentials=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_child_receives_dummy_once_then_closes ... ok
+handoff_sendmsg_dup2_nonstack=refused_before_dispatch ancillary_FDs_received=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_ancillary_capable_call_fd_replacement_and_nonstack_pointer_refuse ... ok
+handoff_withheld=initial,rooted,exec,installed,ready no_send_before_original_read_entry=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_dummy_withheld_at_every_readiness_boundary ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_context_and_missing_channel_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seqpacket_bounds_eof_and_empty_queue_are_explicit ... ok
+handoff_foreign_endpoint_refused original_inode_and_flags_required=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_foreign_endpoint_and_changed_flags_refuse ... ok
+handoff_send_failure=latched attempted=true sends=0 retry=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry ... ok
+handoff_ACK_fault_cases=3 exactly_one_dummy_no_retry=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_lost_wrong_and_duplicate_ack_never_resend ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_startup_channel_use_and_inherited_descriptor_leak_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_phase_replay_is_sticky_and_terminal_not_reusable ... ok
+handoff_child_SIGKILL_drop=installed,ready,delivered tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_original_sigkill_and_drop_at_three_transfer_boundaries ... ok
+handoff_bad_ready_cases=7 sends=0 replacement=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_malformed_duplicate_readiness_and_wrong_fd_refuse_before_send ... ok
+handoff_seed=0x07404a11 fresh_cases=8 independent_owners=4 multithreaded_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_seeded_cases_and_four_independent_owners ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 880 filtered out; finished in 33.26s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.36s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-d7913e8dde3a5f36)
+
+running 5 tests
+x32=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+unfiltered_chdir=0 fixed_native_probes=20 exact_EPERM=true admission=false
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+i386=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+owned_native_children=8 parent_restrictions_and_cwd_unchanged=true
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_isolation.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_isolation-70e17491a01ba2a3)
+
+running 7 tests
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s

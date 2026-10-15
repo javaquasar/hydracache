@@ -9291,3 +9291,40 @@ library sources are unchanged; the cause is not yet attributed. Serial success
 does not repair the default gate, so all-regressions-passed remains false and this
 failure must be investigated before server admission. No performance result or
 release readiness follows from the new owner-loss checks.
+
+## Kernel group stop and joint observation of tracer loss
+
+The parallel no-EXITKILL failure is now attributed to the fixture's stop and
+observation boundaries. Its rooted SIGSTOP was a signal-delivery-stop, not a
+job-control group-stop. After tracer-thread exit the detached child could run
+the unchanged helper and terminate before observation. A failure captured a
+zombie child with TracerPid0 and Seccomp2 while the original TGID remained alive.
+The helper's nonblocking receive without an offered dummy is consistent with
+that natural termination, but the exact exit code was not recorded.
+
+Both rooted loss variants now establish the same kernel group-stop before
+their EXITKILL options diverge. GETSIGINFO must identify the original SIGSTOP
+delivery and then fail with exactly EINVAL after injection and the next stop.
+The first correction alone was insufficient: a repeat saw TracerPid0/StateR
+while both originals were live. Detach and job-stop must be awaited together.
+The final monitor requires TracerPid0 plus StateT and live original pidfds;
+R/t remain pending under the original deadline, never success. Death still
+refuses. This follows the documented distinction between
+[ptrace stops and group stops](https://man7.org/linux/man-pages/man2/ptrace.2.html)
+without inferring an atomic transition from separate kernel fields.
+
+Five final default-parallel repeats each pass17 tests; five additional runs
+pass the four-independent-negative-observer control. The deterministic stop
+and transition regressions were red before their respective corrections.
+MSRV1.88 passes17 tests, unchanged launcher/child and old fixture regressions
+pass, and158 root contracts pass. No deadline, terminal tuple, global scheduling
+lock, fixed helper or normal launcher code changed. An extra pidfd SIGSTOP was
+considered but not added. The
+[race packet](../testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-20261015/README.md)
+retains both the original and intermediate failures; earlier packets remain
+historical evidence, not silently rewritten successes.
+
+This closes the observed local fixture race, not server readiness. Independently
+selected root/runtime, full normal-entry loss and protected handoff remain before
+authenticated worker start and all-writer fencing. No cache-performance claim,
+credential access, signing, server change or qualification follows from this fix.

@@ -1,0 +1,46 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.64s
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.10s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.75s
+     Running tests\diagnostic_signer_isolation.rs (target\debug\deps\diagnostic_signer_isolation-eca684db6bc7c816.exe)
+
+running 7 tests
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests\diagnostic_signer_owned_cli.rs (target\debug\deps\diagnostic_signer_owned_cli-f588f9c38a6f79d6.exe)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.15s
+     Running tests\diagnostic_signer_isolation.rs (target\debug\deps\diagnostic_signer_isolation-7a5637f71d9fd1f1.exe)
+
+running 7 tests
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests\diagnostic_signer_owned_cli.rs (target\debug\deps\diagnostic_signer_owned_cli-7d7c9beb96d4bece.exe)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
