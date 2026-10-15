@@ -1,8 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
-A separate [local signer-build issuer candidate](diagnostic-signer-issuer-key.md)
-has been generated outside Git. Its public selfcheck is independently verified
-on Windows/Linux, but its fingerprint is not yet approved as a trust pin. The
+The operator has now selected the [signer-build issuer key](diagnostic-signer-issuer-selection.json).
+The [fixed-key factory](diagnostic-signer-pin-design.md) refuses a caller-selected
+synthetic issuer without promoting asserted expected build facts to custody.
+The [pin and prebuilt packet](local-runs/diagnostic-signer-pin-20261015/README.md)
+contains repeated portable/MSRV tests and one actual unsigned GNU controller build.
+Its writable, two-link Cargo output is not an admitted bundle input; static ELF
+declarations do not prove runtime/root/job custody. Earlier generation evidence
+retains its historical unapproved flags. No signing, job or server route is opened.
+
+The earlier [local signer-build issuer generation](diagnostic-signer-issuer-key.md)
+created the key outside Git and verified its public selfcheck on Windows/Linux.
+That generation event did not approve its fingerprint as a trust pin. The
 [custody design](diagnostic-signer-custody-design.md) and disabled job draft
 separate compilation from the future signing lifetime without changing GitHub
 or exposing credentials. Production runtime/root/job selection, actual receipt

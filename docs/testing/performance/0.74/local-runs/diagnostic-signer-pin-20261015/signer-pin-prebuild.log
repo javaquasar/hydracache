@@ -1,0 +1,17 @@
+16e9420313ef842e19183c7f6f189eb2e10207cf
+9fc430ed1c09934eaa4ebdb61dc282233e63a91b
+
+Algorithm       Hash                                                                   Path
+---------       ----                                                                   ----
+SHA256          99C8CF65FD709E390727D1441117B85E84FA9FE120CAC9A94E35C5D44FC2FCC7       C:\Workspace\prj\jq\cashe\hydrac…
+unsigned_prebuilt source_clean_before=true
+no_user_cargo_config_overrides
+rustc 1.94.0 (4a4ef493e 2026-03-02)
+binary: rustc
+commit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db
+commit-date: 2026-03-02
+host: x86_64-unknown-linux-gnu
+release: 1.94.0
+LLVM version: 21.1.8
+cargo 1.94.0 (85eff7c80 2026-01-15)
+

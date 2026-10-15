@@ -1,0 +1,14 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.57s
+     Running tests\diagnostic_signer_issuer.rs (target\debug\deps\diagnostic_signer_issuer-33cda14add80c2ec.exe)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+

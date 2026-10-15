@@ -8872,3 +8872,37 @@ green observation is retained separately from a deterministic injected-exception
 test. The final helper has 24 cases and passes three Linux repeats, with 14
 explicit Linux-only skips on Windows. The earlier generation packet remains
 immutable and source-specific. No key was regenerated or fingerprint approved.
+
+## Selecting the issuer and inspecting the actual unsigned artifact
+
+The operator subsequently selected the public fingerprint for the separate
+signer-build issuer role. That decision now has a code pin with no caller key,
+environment or input-record override. It does not rewrite the earlier generation
+record or its selfcheck. The new factory binds this key to an explicitly asserted
+expected build statement and returns the same diagnostic-only model, without a
+production loader or bootstrap capability. A synthetic receipt that passes the
+old caller-key model is rejected by the selected-key factory with identical
+statement and content. Three six-case repeats, compile-fail override coverage,
+old signer/trust regressions, current/MSRV checks and 150 contracts pass.
+
+The next observation uses the actual diagnostic_controller rather than the
+small launch helper: one clean-source local Rust 1.94 release/System/GNU build,
+with no signing credentials or product work. It produces a 1,922,976-byte unsigned
+PIE executable. Readelf records the expected GNU interpreter and three direct
+library declarations, with no RPATH/RUNPATH and version needs including GLIBC_2.34.
+The [readelf manual](https://sourceware.org/binutils/docs/binutils/readelf.html)
+describes these static ELF views; they do not establish which files a live loader
+will use, later loads, TLS inputs, protected ancestry or absence of writers.
+The binary was not executed, signed or admitted as a product candidate.
+
+The build also exposes a concrete custody gap: Cargo's output is 0755 with two
+hardlinks, while the existing original bundle-reader requires 0555 and one link.
+The observation is retained without chmod, unlink or a copy being promoted to
+trusted custody. A stable digest around inspection cannot revoke retained
+writable descriptors or authenticate a runtime root. Safe original prebuilt
+preparation and independent runtime/job selection remain the next implementation,
+followed by real retained-body credential coordination. Worker original-start,
+P2/P3 all-writer cessation and completion cells 2–4 remain separate prerequisites.
+The [new packet](../testing/performance/0.74/local-runs/diagnostic-signer-pin-20261015/README.md)
+separates confirmed key selection and observed unsigned build facts from those
+unimplemented joins; no throughput or allocation improvement is claimed here.

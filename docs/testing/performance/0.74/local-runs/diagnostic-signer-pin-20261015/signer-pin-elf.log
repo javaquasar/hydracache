@@ -1,0 +1,136 @@
+GNU readelf (GNU Binutils for Ubuntu) 2.42
+Copyright (C) 2024 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+binary_bytes=1922976 mode=755 uid=1000 gid=1000 links=2
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-signer-prebuilt-194/x86_64-unknown-linux-gnu/release/diagnostic_controller
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              DYN (Position-Independent Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0xc1650
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          1920736 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         12
+  Size of section headers:           64 (bytes)
+  Number of section headers:         35
+  Section header string table index: 33
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000000040 0x0000000000000040 0x0002a0 0x0002a0 R   0x8
+  INTERP         0x0002e0 0x00000000000002e0 0x00000000000002e0 0x00001c 0x00001c R   0x1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x000000 0x0000000000000000 0x0000000000000000 0x0c0648 0x0c0648 R   0x1000
+  LOAD           0x0c0650 0x00000000000c1650 0x00000000000c1650 0x07eef0 0x07eef0 R E 0x1000
+  LOAD           0x13f540 0x0000000000141540 0x0000000000141540 0x003f58 0x004ac0 RW  0x1000
+  LOAD           0x143498 0x0000000000146498 0x0000000000146498 0x0009d8 0x000ad0 RW  0x1000
+  TLS            0x13f540 0x0000000000141540 0x0000000000141540 0x000020 0x000050 R   0x8
+  DYNAMIC        0x142550 0x0000000000144550 0x0000000000144550 0x0001d0 0x0001d0 RW  0x8
+  GNU_RELRO      0x13f540 0x0000000000141540 0x0000000000141540 0x003f58 0x004ac0 R   0x1
+  GNU_EH_FRAME   0x0b42d0 0x00000000000b42d0 0x00000000000b42d0 0x001d44 0x001d44 R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0
+  NOTE           0x0002fc 0x00000000000002fc 0x00000000000002fc 0x000044 0x000044 R   0x4
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.ABI-tag .note.gnu.build-id .dynsym .gnu.version .gnu.version_r .gnu.hash .dynstr .rela.dyn .rela.plt .gcc_except_table .rodata .eh_frame_hdr .eh_frame 
+   03     .text .init .fini .plt 
+   04     .tdata .fini_array .init_array .data.rel.ro .dynamic .got .got.plt .relro_padding 
+   05     .tm_clone_table .data .bss 
+   06     .tdata .tbss 
+   07     .dynamic 
+   08     .tdata .fini_array .init_array .data.rel.ro .dynamic .got .got.plt .relro_padding 
+   09     .eh_frame_hdr 
+   10     
+   11     .note.ABI-tag .note.gnu.build-id 
+
+Dynamic section at offset 0x142550 contains 29 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]
+ 0x000000000000001e (FLAGS)              BIND_NOW
+ 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE
+ 0x0000000000000015 (DEBUG)              0x0
+ 0x0000000000000007 (RELA)               0x10b0
+ 0x0000000000000008 (RELASZ)             25224 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000006ffffff9 (RELACOUNT)          979
+ 0x0000000000000017 (JMPREL)             0x7338
+ 0x0000000000000002 (PLTRELSZ)           48 (bytes)
+ 0x0000000000000003 (PLTGOT)             0x145470
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000006 (SYMTAB)             0x340
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000005 (STRTAB)             0xc3c
+ 0x000000000000000a (STRSZ)              1134 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0xc20
+ 0x0000000000000019 (INIT_ARRAY)         0x141568
+ 0x000000000000001b (INIT_ARRAYSZ)       16 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x141560
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000000000000c (INIT)               0x1404e0
+ 0x000000000000000d (FINI)               0x1404fc
+ 0x000000006ffffff0 (VERSYM)             0xa48
+ 0x000000006ffffffe (VERNEED)            0xae0
+ 0x000000006fffffff (VERNEEDNUM)         3
+ 0x0000000000000000 (NULL)               0x0
+
+Version symbols section '.gnu.version' contains 75 entries:
+ Addr: 0x0000000000000a48  Offset: 0x00000a48  Link: 4 (.dynsym)
+  000:   0 (*local*)       2 (GLIBC_2.34)    1 (*global*)      1 (*global*)   
+  004:   1 (*global*)      3 (GLIBC_2.2.5)   4 (GCC_3.0)       5 (GLIBC_2.14) 
+  008:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  00c:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   6 (GLIBC_2.4)     7 (GLIBC_2.30) 
+  010:   8 (GLIBC_2.3)     3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  014:   9 (GLIBC_2.17)    3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  018:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  01c:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   a (GLIBC_2.3.4)
+  020:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  024:   b (GLIBC_2.33)    3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   4 (GCC_3.0)    
+  028:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)
+  02c:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   c (GLIBC_2.32)    2 (GLIBC_2.34) 
+  030:   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)   4 (GCC_3.0)    
+  034:   4 (GCC_3.0)       d (GLIBC_2.18)    2 (GLIBC_2.34)    2 (GLIBC_2.34) 
+  038:   2 (GLIBC_2.34)    e (GLIBC_2.3)     3 (GLIBC_2.2.5)   f (GLIBC_2.28) 
+  03c:   b (GLIBC_2.33)    3 (GLIBC_2.2.5)  10 (GLIBC_2.16)    3 (GLIBC_2.2.5)
+  040:   2 (GLIBC_2.34)    3 (GLIBC_2.2.5)   3 (GLIBC_2.2.5)  11 (GCC_3.3)    
+  044:   4 (GCC_3.0)      12 (GCC_4.2.0)     4 (GCC_3.0)       4 (GCC_3.0)    
+  048:   4 (GCC_3.0)       4 (GCC_3.0)       4 (GCC_3.0)    
+
+Version needs section '.gnu.version_r' contains 3 entries:
+ Addr: 0x0000000000000ae0  Offset: 0x00000ae0  Link: 8 (.dynstr)
+  000000: Version: 1  File: libgcc_s.so.1  Cnt: 3
+  0x0030:   Name: GCC_3.0  Flags: none  Version: 4
+  0x0040:   Name: GCC_3.3  Flags: none  Version: 17
+  0x0050:   Name: GCC_4.2.0  Flags: none  Version: 18
+  0x0010: Version: 1  File: libc.so.6  Cnt: 13
+  0x0060:   Name: GLIBC_2.2.5  Flags: none  Version: 3
+  0x0070:   Name: GLIBC_2.3  Flags: none  Version: 14
+  0x0080:   Name: GLIBC_2.3.4  Flags: none  Version: 10
+  0x0090:   Name: GLIBC_2.4  Flags: none  Version: 6
+  0x00a0:   Name: GLIBC_2.14  Flags: none  Version: 5
+  0x00b0:   Name: GLIBC_2.16  Flags: none  Version: 16
+  0x00c0:   Name: GLIBC_2.17  Flags: none  Version: 9
+  0x00d0:   Name: GLIBC_2.18  Flags: none  Version: 13
+  0x00e0:   Name: GLIBC_2.28  Flags: none  Version: 15
+  0x00f0:   Name: GLIBC_2.30  Flags: none  Version: 7
+  0x0100:   Name: GLIBC_2.32  Flags: none  Version: 12
+  0x0110:   Name: GLIBC_2.33  Flags: none  Version: 11
+  0x0120:   Name: GLIBC_2.34  Flags: none  Version: 2
+  0x0020: Version: 1  File: ld-linux-x86-64.so.2  Cnt: 1
+  0x0130:   Name: GLIBC_2.3  Flags: none  Version: 8
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-signer-prebuilt-194/x86_64-unknown-linux-gnu/release/diagnostic_controller

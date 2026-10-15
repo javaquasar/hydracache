@@ -1,0 +1,42 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running tests\diagnostic_signer_issuer.rs (target\debug\deps\diagnostic_signer_issuer-33cda14add80c2ec.exe)
+
+running 6 tests
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 1 test
+test tools\long-run-supervisor-074\src\diagnostic_signer_issuer.rs - diagnostic_signer_issuer::asserted_build_selection (line 34) - compile fail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.11s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.64s
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.57s
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.02s
+     Running tests\diagnostic_signer_issuer.rs (target\debug\deps\diagnostic_signer_issuer-0725c5d3db98def0.exe)
+
+running 6 tests
+test selected_signer_issuer_matches_approved_raw_public_fingerprint ... ok
+test invalid_expected_profile_is_not_repaired_by_key_selection ... ok
+test approval_record_selects_key_only_without_installing_runtime_or_job ... ok
+test selected_key_is_stable_under_independent_concurrent_model_creation ... ok
+test caller_selected_synthetic_issuer_cannot_enter_selected_key_model ... ok
+test original_public_selfcheck_is_valid_without_becoming_a_receipt ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+    Blocking waiting for file lock on build directory
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 34.07s
