@@ -1,5 +1,11 @@
 # HydraCache — Enforcement Gates
 
+Tracer-thread loss fixtures require a kernel-proven group-stop for both rooted
+loss controls before EXITKILL options diverge. The `--lib signer_thread_exit`
+tests include exact GETSIGINFO/EINVAL and four concurrent negative controls;
+default parallel execution must pass without serialization or deadline changes.
+See the [thread-exit design](testing/performance/0.74/diagnostic-signer-thread-exit-design.md).
+
 The private-owner loss matrix is included in `--bin diagnostic_signer_owned_probe`
 unit tests (`owned_probe_parent_loss_matrix`). It kills the owner, observes the
 adopted original child and retains healthy/unrelated controls, unlike child-kill

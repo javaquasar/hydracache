@@ -68,6 +68,51 @@ fn advance(own: &mut RootedExec, next: u8) -> io::Result<()> {
         _ => Err(invalid()),
     }
 }
+fn group_stop_result(result: libc::c_long, errno: Option<i32>) -> bool {
+    result == -1 && errno == Some(libc::EINVAL)
+}
+fn detached_group_stop(status: &str) -> io::Result<bool> {
+    let tracer = scalar(status, "TracerPid")?;
+    let mut states = status
+        .lines()
+        .filter_map(|line| line.strip_prefix("State:"));
+    let state = states.next().ok_or_else(invalid)?.trim();
+    if states.next().is_some() {
+        return Err(invalid());
+    }
+    match state {
+        "T (stopped)" => Ok(tracer == 0),
+        // TracerPid0 can precede the final job-control stop. These states
+        // only keep the existing bounded wait pending, never qualify cleanup.
+        "R (running)" | "t (tracing stop)" => Ok(false),
+        _ => Err(invalid()),
+    }
+}
+fn hold_rooted_loss_cut(own: &mut RootedExec) -> io::Result<()> {
+    if own.phase != super::super::super::Phase::Rooted || own.reaped {
+        return Err(invalid());
+    }
+    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+    // SAFETY: original stopped child of this tracing task only. A SIGSTOP
+    // delivery-stop is not a job-control group-stop and may run after detach.
+    if unsafe { libc::ptrace(libc::PTRACE_GETSIGINFO, own.pid, 0usize, &mut info) } != 0
+        || info.si_signo != libc::SIGSTOP
+    {
+        return Err(io::Error::other("rooted loss cut was not SIGSTOP delivery"));
+    }
+    own.trace(libc::PTRACE_CONT, libc::SIGSTOP as usize)?;
+    if own.wait()? != super::super::super::STOP {
+        return Err(io::Error::other("rooted loss cut missed exact group stop"));
+    }
+    let result = unsafe { libc::ptrace(libc::PTRACE_GETSIGINFO, own.pid, 0usize, &mut info) };
+    let errno = io::Error::last_os_error().raw_os_error();
+    if !group_stop_result(result, errno) {
+        return Err(io::Error::other(
+            "rooted loss cut was not kernel group stop",
+        ));
+    }
+    Ok(())
+}
 fn thread_tracer(spec: ThreadSpec) -> io::Result<()> {
     // SAFETY: this closed role owns its inherited original report endpoint once.
     let socket = unsafe { File::from_raw_fd(3) };
@@ -90,6 +135,12 @@ fn thread_tracer(spec: ThreadSpec) -> io::Result<()> {
     }
     if own.channel.as_ref().ok_or_else(invalid)?.sends != u32::from(spec.stage == 5) {
         return Err(invalid());
+    }
+    // Matched rooted loss controls get the same proven group-stop. The only
+    // difference is removal of EXITKILL below; healthy and other cuts are unchanged.
+    if spec.stage == 1 && spec.mode != 2 {
+        hold_rooted_loss_cut(&mut own)?;
+        println!("thread_rooted_loss_cut group_stop=true mode={}", spec.mode);
     }
     if spec.mode == 1 {
         // SAFETY: only this original tracer changes its original stopped child's options.
@@ -211,22 +262,35 @@ fn thread_monitor(spec: ThreadSpec) -> io::Result<()> {
             spec.stage
         );
     } else {
-        exact(&socket, peer, &[2])?;
-        if !gone(&original[0])? || !pending(&tracer.fd)? {
-            return Err(invalid());
+        exact(&socket, peer, &[2])
+            .map_err(|e| io::Error::other(format!("thread original creator-gone packet: {e}")))?;
+        let creator_gone = gone(&original[0])?;
+        let tgid_live = pending(&tracer.fd)?;
+        if !creator_gone || !tgid_live {
+            return Err(io::Error::other(format!("thread loss original context: creator_gone={creator_gone} tgid_live={tgid_live} mode={}", spec.mode)));
         }
         if spec.mode == 1 {
             let until = Instant::now() + Duration::from_secs(5);
             loop {
-                if !pending(&fds[0])? || !pending(&tracer.fd)? {
-                    return Err(invalid());
+                let child_live = pending(&fds[0])?;
+                let tgid_live = pending(&tracer.fd)?;
+                if !child_live || !tgid_live {
+                    let status = at_status(&child_proc);
+                    return Err(io::Error::other(format!("thread negative before cleanup: child_live={child_live} tgid_live={tgid_live} status={status:?}")));
                 }
-                let status = at_status(&child_proc)?;
-                if scalar(&status, "TracerPid")? == 0 {
+                let status = at_status(&child_proc).map_err(|e| {
+                    io::Error::other(format!("thread negative retained child status: {e}"))
+                })?;
+                if detached_group_stop(&status)? {
+                    if !pending(&fds[0])? || !pending(&tracer.fd)? {
+                        return Err(io::Error::other(format!("thread negative lost original group stop: status={status:?} child_live={:?} tgid_live={:?}", pending(&fds[0]), pending(&tracer.fd))));
+                    }
                     break;
                 }
                 if Instant::now() >= until {
-                    return Err(invalid());
+                    return Err(io::Error::other(
+                        "thread negative original ptrace detach stalled",
+                    ));
                 }
                 std::thread::sleep(Duration::from_millis(1));
             }
@@ -325,10 +389,11 @@ fn thread_exit_case(stage: u8, mode: u8) -> io::Result<()> {
     if output.matches("thread_original proof=complete").count() != 1 {
         return Err(invalid());
     }
-    for line in output
-        .lines()
-        .filter(|l| l.starts_with("thread_terminal ") || l.starts_with("thread_negative "))
-    {
+    for line in output.lines().filter(|l| {
+        l.starts_with("thread_terminal ")
+            || l.starts_with("thread_negative ")
+            || l.starts_with("thread_rooted_loss_cut ")
+    }) {
         println!("{line}");
     }
     Ok(())
@@ -354,10 +419,78 @@ fn signer_thread_exit_no_exitkill_is_not_positive() {
     thread_exit_case(1, 1).unwrap();
 }
 #[test]
+fn signer_thread_exit_four_independent_negative_controls() {
+    let joins: Vec<_> = (0..4)
+        .map(|_| std::thread::spawn(|| thread_exit_case(1, 1).unwrap()))
+        .collect();
+    let results: Vec<_> = joins.into_iter().map(|join| join.join()).collect();
+    assert!(results.iter().all(Result::is_ok));
+    println!("thread_negative_independent_observers=4 cleanup_never_positive=true");
+}
+#[test]
+fn signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop() {
+    for result in [-2, -1, 0, 1, libc::c_long::MAX] {
+        for errno in [
+            None,
+            Some(libc::EINVAL),
+            Some(libc::ESRCH),
+            Some(libc::EPERM),
+            Some(libc::EIO),
+        ] {
+            assert_eq!(
+                group_stop_result(result, errno),
+                result == -1 && errno == Some(libc::EINVAL)
+            );
+        }
+    }
+    let mut own = RootedExec::handoff(super::super::super::Case::Good).unwrap();
+    assert!(hold_rooted_loss_cut(&mut own).is_err());
+    own.enter().unwrap();
+    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+    assert_eq!(
+        unsafe { libc::ptrace(libc::PTRACE_GETSIGINFO, own.pid, 0usize, &mut info) },
+        0
+    );
+    assert_eq!(info.si_signo, libc::SIGSTOP);
+    hold_rooted_loss_cut(&mut own).unwrap();
+    assert_eq!(own.phase, super::super::super::Phase::Rooted);
+    let result = unsafe { libc::ptrace(libc::PTRACE_GETSIGINFO, own.pid, 0usize, &mut info) };
+    let error = io::Error::last_os_error().raw_os_error();
+    assert_eq!(
+        result, -1,
+        "rooted loss cut remained a delivery-stop, errno={error:?}"
+    );
+    assert_eq!(error, Some(libc::EINVAL));
+    println!("thread_rooted_kernel_delivery_to_group_stop=true exact_EINVAL=true classification_cases=25");
+}
+#[test]
 fn signer_thread_exit_healthy_original_controls() {
     for stage in 0..6 {
         thread_exit_case(stage, 2).unwrap();
     }
+}
+#[test]
+fn signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal() {
+    for tracer in [0, 123] {
+        for state in ["R (running)", "t (tracing stop)", "T (stopped)"] {
+            let status = format!("State:\t{state}\nTracerPid:\t{tracer}\n");
+            assert_eq!(
+                detached_group_stop(&status).unwrap(),
+                tracer == 0 && state == "T (stopped)"
+            );
+        }
+    }
+    for status in [
+        "",
+        "TracerPid:\t0\n",
+        "State:\tT (stopped)\n",
+        "State:\tZ (zombie)\nTracerPid:\t0\n",
+        "State:\t?\nTracerPid:\t0\n",
+        "State:\tT (stopped)\nState:\tT (stopped)\nTracerPid:\t0\n",
+    ] {
+        assert!(detached_group_stop(status).is_err());
+    }
+    println!("thread_detach_transition_models=6 running_never_accepted=true terminal_refuses=true");
 }
 #[test]
 fn signer_thread_exit_closed_frames_and_terminal_property() {

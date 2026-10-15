@@ -38,6 +38,45 @@ and 8192 captured bytes. These are stall limits, not performance claims.
 
 ## Scope and next boundary
 
+### Explicit group stop for the rooted loss controls
+
+The parallel negative-control failure was a scheduling race in the fixture.
+The old rooted cut was a SIGSTOP signal-delivery-stop, not a job-control stop.
+After the tracer thread exits without EXITKILL the child can resume, reach the
+unchanged handoff helper and terminate before the monitor observes it. Attribution
+captured child pidfd terminal, State Z, TracerPid0, Seccomp2, while the original
+TGID remained live. The helper has no dummy input offered in this control and a
+nonblocking receive, which can take its exit74 branch. That is consistent with
+natural termination; the captured status does not establish the exact exit code.
+
+Both rooted loss cases now inject the pending SIGSTOP and wait for a second
+exact stop. PTRACE_GETSIGINFO must first identify SIGSTOP delivery, then fail
+with exactly EINVAL to identify the resulting group-stop. The same preparation
+runs before either retaining or removing EXITKILL; positive and negative differ
+only in the option. The negative monitor requires retained child status T and
+TracerPid0, bracketed by live child/TGID pidfds, before explicit negative cleanup.
+Other loss cuts, all healthy paths, fixed helper bytes and wait bounds are unchanged.
+
+A kernel regression first failed deterministically because the old stop still
+returned siginfo instead of EINVAL. It now verifies delivery-to-group-stop and
+25 exact result/errno combinations; ESRCH, stale errno with successful calls and
+wrong phases cannot qualify. Four independent negative observers exercise the
+same fixed control concurrently. No group-wide scheduling lock, retry or timeout
+increase is used. Linux documents the
+[distinction and tracer-death restart behavior](https://man7.org/linux/man-pages/man2/ptrace.2.html).
+This remains a local-kernel fixture result, not a guarantee for every Linux kernel.
+
+A repeat of the first group-stop correction exposed a second observation gap:
+TracerPid was already0 while the child status was still R, and both original
+pidfds were live. Requiring T immediately on first observing TracerPid0 rejected
+this transition. The monitor now awaits both predicates within the same unchanged
+5s deadline: R/t only mean pending, never permission to clean up or success; T
+with TracerPid0 and live original child/TGID is required. Zombie/unknown/malformed
+states refuse. Six model combinations and malformed controls cover the decision.
+An extra pending SIGSTOP was considered and its absence measured, but no extra
+pidfd signal was added. The final change is the joint observation gate, not a
+second child-stopping mechanism or a broader accepted terminal tuple.
+
 This changes only Linux x86_64 libtest fixtures, without keys, tokens, remote
 hosts, workloads or public APIs. Real runtime custody, arbitrary threads,
 production issuer custody, authenticated original start, P2/P3 all writers,

@@ -1,5 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [tracer-thread rooted controls](diagnostic-signer-thread-exit-design.md) now
+distinguish SIGSTOP delivery from a kernel group-stop. Both rooted loss variants
+use the latter, avoiding a race with detached helper execution while retaining
+exact positive SIGKILL and explicitly negative cleanup. This is test tooling,
+not a production launcher or server-admission change.
+
 The [private-owner loss matrix](diagnostic-signer-owned-loss-design.md) tests real
 owner SIGKILL at initial and first-exec child stops, with adopted pidfd death/reap,
 two healthy drop controls and an unaffected unrelated child. This is the unchanged

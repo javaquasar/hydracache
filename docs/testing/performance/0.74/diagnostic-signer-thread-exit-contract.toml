@@ -24,6 +24,15 @@ negative_cleanup_is_never_positive_evidence = true
 keeper_wnowait_then_independent_same_tuple_reap = true
 healthy_six_cut_original_ack_close_exit0 = true
 normal_library_excludes_fixture_symbols = true
+rooted_positive_and_negative_share_kernel_group_stop = true
+group_stop_requires_exact_getsiginfo_einval = true
+negative_detach_requires_retained_original_job_control_stop = true
+negative_control_independent_observers = 4
+group_stop_classifier_cases = 25
+detach_transition_models = 6
+detach_and_group_stop_are_awaited_together = true
+running_state_never_qualifies_negative_cleanup = true
+extra_pidfd_sigstop_sent = false
 
 arbitrary_threads_supported = false
 forced_tid_reuse_reproduced = false

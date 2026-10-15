@@ -13575,12 +13575,18 @@ fn signer_thread_exit_is_original_thread_only_and_does_not_open_server_admission
         "keeper_wnowait_then_independent_same_tuple_reap",
         "healthy_six_cut_original_ack_close_exit0",
         "normal_library_excludes_fixture_symbols",
+        "rooted_positive_and_negative_share_kernel_group_stop",
+        "group_stop_requires_exact_getsiginfo_einval",
+        "negative_detach_requires_retained_original_job_control_stop",
+        "detach_and_group_stop_are_awaited_together",
+        "running_state_never_qualifies_negative_cleanup",
     ] {
         assert_eq!(c[key].as_bool(), Some(true), "{key}");
     }
     for key in [
         "arbitrary_threads_supported",
         "forced_tid_reuse_reproduced",
+        "extra_pidfd_sigstop_sent",
         "production_runtime_or_issuer_custody",
         "actual_private_key_or_token_read",
         "authenticated_original_worker_start",
@@ -13606,6 +13612,9 @@ fn signer_thread_exit_is_original_thread_only_and_does_not_open_server_admission
         ("capture_bytes", 8192),
         ("seeded_cases", 8),
         ("independent_observers", 4),
+        ("negative_control_independent_observers", 4),
+        ("group_stop_classifier_cases", 25),
+        ("detach_transition_models", 6),
     ] {
         assert_eq!(c[key].as_integer(), Some(value), "{key}");
     }
@@ -13636,7 +13645,24 @@ fn signer_thread_exit_is_original_thread_only_and_does_not_open_server_admission
     let cleanup = f.find("signal(&fds[0])").unwrap();
     let negative = f[..cleanup].rfind("if spec.mode == 1").unwrap();
     assert!(f[negative..cleanup].contains("!pending(&fds[0])"));
-    assert!(f[negative..cleanup].contains("scalar(&status, \"TracerPid\")? == 0"));
+    assert!(f[negative..cleanup].contains("detached_group_stop(&status)?"));
+    for required in [
+        "hold_rooted_loss_cut(&mut own)",
+        "spec.stage == 1 && spec.mode != 2",
+        "libc::PTRACE_GETSIGINFO",
+        "errno == Some(libc::EINVAL)",
+        "own.trace(libc::PTRACE_CONT, libc::SIGSTOP as usize)",
+        "signer_thread_exit_four_independent_negative_controls",
+        "signer_thread_exit_rooted_loss_cut_is_kernel_group_stop_not_delivery_stop",
+        "signer_thread_exit_detach_transition_waits_without_accepting_running_or_terminal",
+        "\"T (stopped)\" => Ok(tracer == 0)",
+        "\"R (running)\" | \"t (tracing stop)\" => Ok(false)",
+    ] {
+        assert!(f.contains(required), "{required}");
+    }
+    let rooted_cut = f.find("hold_rooted_loss_cut(&mut own)?").unwrap();
+    let remove_exitkill = f.find("if spec.mode == 1 {").unwrap();
+    assert!(rooted_cut < remove_exitkill);
     for forbidden in [
         "pub fn",
         "pub struct",
