@@ -85,8 +85,10 @@ struct Source {
     digest: [u8; 32],
 }
 fn digest(bytes: &[u8]) -> [u8; 32] {
-    use sha2::{Digest, Sha256};
-    Sha256::digest(bytes).into()
+    let value = ring::digest::digest(&ring::digest::SHA256, bytes);
+    let mut output = [0; 32];
+    output.copy_from_slice(value.as_ref());
+    output
 }
 fn contents(node: &Node) -> io::Result<Vec<u8>> {
     node.check()?;
