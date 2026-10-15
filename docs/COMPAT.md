@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+`diagnostic_signer_owned_probe` adds a fixed nonproduct self-exec diagnostic,
+not a service or public launcher API. Public native/x32/i386 modes require an
+empty environment and a private readonly 0555 self image. Internal child modes
+only enter the existing fixed probe after a PDEATHSIG precondition; they grant
+no authority. Unknown input/unsupported platform refuses. No product defaults,
+wire/domain/receipt/config/dependency/qualification inputs change; see the
+[original-owner design](testing/performance/0.74/diagnostic-signer-owned-probe-design.md).
+
 The additive `diagnostic_signer_isolation_probe` binary is a closed nonproduct
 Linux x86_64 child probe, not a configured service or signer. Only native/x32/i386
 arguments are accepted. Unsupported platforms and unknown input refuse; the

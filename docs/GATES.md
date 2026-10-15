@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+The ordinary original-self-exec probe uses `--bin diagnostic_signer_owned_probe`
+unit tests, portable `--test diagnostic_signer_owned_cli` and registered Linux
+x86_64 `--test diagnostic_signer_owned_probe`, package
+`hydracache-long-run-supervisor-074`. Existing supervisor CI includes all three.
+Owned child SIGKILL is not whole-parent-loss or authenticated signer-start proof;
+see the [original-owner contract](testing/performance/0.74/diagnostic-signer-owned-probe-contract.toml).
+
 Fixed ordinary child restrictions use portable `--test diagnostic_signer_isolation`
 and Linux x86_64 `--test diagnostic_signer_child_entry` in package
 `hydracache-long-run-supervisor-074`, plus `--lib diagnostic_signer_isolation::linux::tests`.

@@ -1,5 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary original owner](diagnostic-signer-owned-probe-design.md) now
+composes a fixed normal self-exec child, original pidfd/kernel exec-stop and
+the existing restriction probe. It authenticates no selected signer root/runtime
+or protected job and enables no credentials/start. Full parent-loss composition
+remains distinct from real child SIGKILL/drop cleanup at two original stops.
+
 The [ordinary fixed child entry](diagnostic-signer-child-entry-design.md) moves
 one restriction primitive out of test-only code: normal owned processes apply
 the fixed filter and exercise EPERM/SIGSYS. It does not authenticate original

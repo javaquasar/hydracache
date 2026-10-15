@@ -3,6 +3,104 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn ordinary_original_owner_is_fixed_private_self_exec_not_authenticated_start() {
+    let c = contract("diagnostic-signer-owned-probe-contract.toml");
+    for key in [
+        "binary_private_thread_bound_owner",
+        "normal_entry_owns_only_fixed_self_image",
+        "readonly_single_link_0555_nonroot_image",
+        "empty_environment_single_main_thread",
+        "child_close_range_before_initial_barrier",
+        "pdeathsig_installed_verified_parent_checked",
+        "traceexec_and_exitkill_requested_before_exec",
+        "exact_first_kernel_exec_and_original_object_checked",
+        "refusal_sticky_no_relaunch_or_adoption",
+        "cleanup_owner_before_fallible_pidfd_open",
+        "sigchld_default_without_autoreap_before_fork",
+        "normal_child_uses_existing_fixed_restrictions",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "normal_parent_loss_all_boundaries_proved",
+        "selected_signer_root_or_runtime_authenticated",
+        "independent_job_or_runtime_custody",
+        "mapped_instruction_integrity_or_complete_sandbox",
+        "real_private_key_or_token_read",
+        "authenticated_worker_original_start",
+        "all_writers_revoked",
+        "completion_or_later_cells_enabled",
+        "signing_allowed",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("status_bytes", 65536),
+        ("image_bytes", 134217728),
+        ("output_bytes", 128),
+        ("wait_seconds", 5),
+        ("mutation_seed", 121684090),
+        ("status_mutations", 256),
+        ("classified_statuses", 327680),
+        ("independent_owners", 4),
+        ("actual_original_child_sigkill_boundaries", 2),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_owned_probe.rs")).unwrap();
+    assert!(code.contains("struct Owner {"));
+    assert!(!code.contains("pub struct Owner"));
+    for marker in [
+        "PhantomData<Rc<()>>",
+        "PTRACE_O_TRACEEXEC | libc::PTRACE_O_EXITKILL",
+        "PR_SET_PDEATHSIG",
+        "PR_GET_PDEATHSIG",
+        "libc::SYS_execveat",
+        "let mut own = Self {",
+        ".open(\"/proc/self/exe\")",
+        "self.reaped",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    assert!(
+        code.find("let mut own = Self {").unwrap() < code.find("libc::SYS_pidfd_open").unwrap()
+    );
+    let child = code
+        .split("fn child(")
+        .nth(1)
+        .unwrap()
+        .split("fn run(")
+        .next()
+        .unwrap();
+    for forbidden in [
+        "std::process::Command",
+        "format!",
+        "println!",
+        "Vec::",
+        "String::",
+        "std::thread::",
+    ] {
+        assert!(!child.contains(forbidden), "{forbidden}");
+    }
+    let lib = std::fs::read_to_string(base.join("lib.rs")).unwrap();
+    assert!(!lib.contains("diagnostic_signer_owned_probe"));
+    for consumer in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("diagnostic_signer_owned_probe"));
+    }
+}
+
+#[test]
 fn ordinary_child_entry_is_fixed_kernel_restriction_not_launch_admission() {
     let c = contract("diagnostic-signer-child-entry-contract.toml");
     for key in [
