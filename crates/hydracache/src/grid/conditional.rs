@@ -106,13 +106,11 @@ impl fmt::Display for ConditionalError {
         match self {
             Self::WeakConsistency { level } => write!(
                 formatter,
-                "conditional writes require Quorum/EachQuorum/All, got {:?}",
-                level
+                "conditional writes require Quorum/EachQuorum/All, got {level:?}"
             ),
             Self::MultiKeyRejected { key_count } => write!(
                 formatter,
-                "conditional write is single-key only, got {} keys",
-                key_count
+                "conditional write is single-key only, got {key_count} keys"
             ),
             Self::StaleFenceToken { current, presented } => write!(
                 formatter,
@@ -128,8 +126,7 @@ impl fmt::Display for ConditionalError {
             ),
             Self::NotOwner { key, current_owner } => write!(
                 formatter,
-                "caller is not owner of fenced lock '{key}'; current owner is {:?}",
-                current_owner
+                "caller is not owner of fenced lock '{key}'; current owner is {current_owner:?}"
             ),
             Self::ReentrancyLimit { key, limit } => write!(
                 formatter,

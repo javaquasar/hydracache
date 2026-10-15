@@ -20,6 +20,97 @@ fn now(ms: u64) -> LogicalTime {
 }
 
 #[test]
+fn conditional_writes_weak_consistency_diagnostic_is_stable() {
+    for (level, expected) in [
+        (
+            ConsistencyLevel::One,
+            "conditional writes require Quorum/EachQuorum/All, got One",
+        ),
+        (
+            ConsistencyLevel::LocalQuorum,
+            "conditional writes require Quorum/EachQuorum/All, got LocalQuorum",
+        ),
+        (
+            ConsistencyLevel::Quorum,
+            "conditional writes require Quorum/EachQuorum/All, got Quorum",
+        ),
+        (
+            ConsistencyLevel::EachQuorum,
+            "conditional writes require Quorum/EachQuorum/All, got EachQuorum",
+        ),
+        (
+            ConsistencyLevel::All,
+            "conditional writes require Quorum/EachQuorum/All, got All",
+        ),
+    ] {
+        assert_eq!(
+            ConditionalError::WeakConsistency { level }.to_string(),
+            expected
+        );
+    }
+}
+
+#[test]
+fn conditional_writes_multi_key_diagnostic_is_stable() {
+    for (key_count, expected) in [
+        (0, "conditional write is single-key only, got 0 keys"),
+        (1, "conditional write is single-key only, got 1 keys"),
+        (2, "conditional write is single-key only, got 2 keys"),
+        (
+            1_000_000_000,
+            "conditional write is single-key only, got 1000000000 keys",
+        ),
+    ] {
+        assert_eq!(
+            ConditionalError::MultiKeyRejected { key_count }.to_string(),
+            expected
+        );
+    }
+    assert_eq!(
+        ConditionalError::MultiKeyRejected {
+            key_count: usize::MAX
+        }
+        .to_string(),
+        [
+            "conditional write is single-key only, got ",
+            &usize::MAX.to_string(),
+            " keys"
+        ]
+        .concat()
+    );
+}
+
+#[test]
+fn conditional_writes_not_owner_diagnostic_is_stable() {
+    for (key, current_owner, expected) in [
+        (
+            "",
+            None,
+            "caller is not owner of fenced lock ''; current owner is None",
+        ),
+        (
+            "lock:refresh",
+            Some(owner("session-a")),
+            r#"caller is not owner of fenced lock 'lock:refresh'; current owner is Some(LockOwner { session: SessionId("session-a"), endpoint: 1 })"#,
+        ),
+        (
+            "lock:'Ω",
+            Some(LockOwner::new("session\"\\\n", u64::MAX)),
+            r#"caller is not owner of fenced lock 'lock:'Ω'; current owner is Some(LockOwner { session: SessionId("session\"\\\n"), endpoint: 18446744073709551615 })"#,
+        ),
+    ] {
+        assert_eq!(
+            ConditionalError::NotOwner {
+                key: key.to_owned(),
+                current_owner
+            }
+            .to_string(),
+            expected
+        );
+    }
+}
+
+#[test]
 fn conditional_writes_compare_and_set_applies_only_on_match() {
     let mut store = store();
 
