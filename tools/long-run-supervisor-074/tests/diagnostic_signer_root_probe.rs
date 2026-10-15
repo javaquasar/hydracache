@@ -197,3 +197,94 @@ fn four_independent_normal_preparations_leave_parent_context_unchanged() {
         "independent_normal_root_preparations=4 parent_context_unchanged=true admission=false"
     );
 }
+
+#[test]
+fn normal_original_root_exec_observes_selected_runtime_then_reaps() {
+    let image = Image::new();
+    if image.extra_libm {
+        refused(image.command().arg("root-exec"));
+        println!("extra_libm_root_exec=refused admission=false");
+        return;
+    }
+    let out = output(image.command().arg("root-exec"));
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    assert_eq!(
+        out.stdout,
+        b"selected rooted self-exec observed; admission=false\n"
+    );
+    assert!(out.stderr.is_empty(), "{out:?}");
+    println!("normal_root_exec=true initial_images=2 loaded_images=4 original_reaped=true stream_eof=true admission=false");
+}
+
+#[test]
+fn repeated_original_root_execs_leave_parent_context_unchanged() {
+    let image = Image::new();
+    let before = (
+        fs::read_link("/proc/self/root").unwrap(),
+        std::env::current_dir().unwrap(),
+        fs::read_link("/proc/self/ns/user").unwrap(),
+        unsafe { (libc::getuid(), libc::getgid()) },
+    );
+    for _ in 0..4 {
+        if image.extra_libm {
+            refused(image.command().arg("root-exec"));
+        } else {
+            let out = output(image.command().arg("root-exec"));
+            assert_eq!(out.status.code(), Some(0), "{out:?}");
+            assert_eq!(
+                out.stdout,
+                b"selected rooted self-exec observed; admission=false\n"
+            );
+            assert!(out.stderr.is_empty(), "{out:?}");
+        }
+    }
+    assert_eq!(
+        before,
+        (
+            fs::read_link("/proc/self/root").unwrap(),
+            std::env::current_dir().unwrap(),
+            fs::read_link("/proc/self/ns/user").unwrap(),
+            unsafe { (libc::getuid(), libc::getgid()) }
+        )
+    );
+    println!("independent_root_exec_owners=4 extra_libm_refusal={} parent_context_unchanged=true admission=false", image.extra_libm);
+}
+#[test]
+fn root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld() {
+    let image = Image::new();
+    refused(
+        image
+            .command()
+            .arg("root-exec")
+            .env("UNTRUSTED_ROOT_PROBE", "1"),
+    );
+    refused(image.command().args(["root-exec", "extra"]));
+    let out = output(image.command().arg("--root-child"));
+    assert_eq!(out.status.code(), Some(92));
+    assert!(out.stdout.is_empty() && out.stderr.is_empty());
+    let mut inherited = image.command();
+    unsafe {
+        inherited.pre_exec(|| {
+            let fd = libc::open(c"/dev/null".as_ptr(), libc::O_RDONLY);
+            if fd < 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            if libc::dup2(fd, 200) < 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            libc::close(fd);
+            Ok(())
+        });
+    }
+    refused(inherited.arg("root-exec"));
+    let mut ignored = image.command();
+    unsafe {
+        ignored.pre_exec(|| {
+            if libc::signal(libc::SIGCHLD, libc::SIG_IGN) == libc::SIG_ERR {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        });
+    }
+    refused(ignored.arg("root-exec"));
+}

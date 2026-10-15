@@ -3,6 +3,84 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn ordinary_selected_root_exec_is_metadata_diagnostic_not_signer_admission() {
+    let c = contract("diagnostic-signer-owned-root-exec-contract.toml");
+    for key in [
+        "normal_binary_private_root_exec_probe",
+        "original_fork_pidfd_and_process_directory_retained",
+        "pdeathsig_overlaps_exitkill_before_namespace",
+        "same_nonzero_uid_gid_mapping",
+        "child_root_cwd_capabilities_and_nnp_checked",
+        "selected_original_self_first_exec_checked",
+        "initial_and_loaded_vma_file_identities_checked",
+        "fixed_private_child_marker_only",
+        "kill_reap_and_stream_eof_precede_root_cleanup",
+        "unknown_quiescence_preserves_root",
+        "refusal_is_sticky",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "normal_restriction_installer_composed",
+        "full_normal_entry_parent_loss_proved",
+        "hostile_same_uid_custody_authenticated",
+        "loaded_memory_bytes_attested",
+        "original_start_authenticated",
+        "all_writers_revoked",
+        "real_credentials_or_signing",
+        "completion_or_later_cells_enabled",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("maximum_image_bytes", 8388608),
+        ("maximum_proc_text_bytes", 65536),
+        ("maximum_map_lines", 128),
+        ("wait_seconds", 5),
+        ("initial_images", 2),
+        ("loaded_images", 4),
+        ("private_marker_version", 1),
+        ("private_marker_bytes", 16),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_owned_root_exec.rs")).unwrap();
+    for marker in [
+        "libc::fork",
+        "libc::SYS_pidfd_open",
+        "libc::SYS_pidfd_send_signal",
+        "libc::PTRACE_O_EXITKILL",
+        "libc::PR_SET_PDEATHSIG",
+        "libc::CLONE_NEWUSER",
+        "libc::SYS_execveat",
+        "libc::chroot",
+        "self.root.cleanup_attempted = true",
+        "Some(libc::SIGKILL)",
+        "Phase::Refused",
+        "self.pipe.read",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "remove_dir_all",
+        "setns(",
+        "libc::mount(",
+        "sign_with",
+        "Command::new",
+    ] {
+        assert!(!code.contains(forbidden), "{forbidden}");
+    }
+    assert!(!std::fs::read_to_string(base.join("lib.rs"))
+        .unwrap()
+        .contains("mod diagnostic_signer_owned_root"));
+}
+
+#[test]
 fn normal_fixed_root_preparation_is_not_child_launch_or_runtime_authority() {
     let c = contract("diagnostic-signer-owned-root-contract.toml");
     for key in [

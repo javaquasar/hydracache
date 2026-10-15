@@ -350,7 +350,7 @@ fn unlink(parent: &File, name: &CStr, directory: bool) -> io::Result<()> {
         Err(io::Error::last_os_error())
     }
 }
-pub(super) fn prepare() -> io::Result<()> {
+fn acquire() -> io::Result<Root> {
     require(
         std::env::vars_os().next().is_none()
             && unsafe { libc::getuid() } != 0
@@ -391,13 +391,26 @@ pub(super) fn prepare() -> io::Result<()> {
         .open("/tmp")?;
     let meta = parent.metadata()?;
     require(meta.uid() == 0 && meta.mode() & 0o1777 == 0o1777)?;
-    let mut root = Root::create(
+    Root::create(
         parent,
         random_name()?,
         sources.try_into().map_err(|_| refused())?,
-    )?;
+    )
+}
+pub(super) fn prepare() -> io::Result<()> {
+    let mut root = acquire()?;
     root.check()?;
     root.cleanup()
+}
+
+#[path = "diagnostic_signer_owned_root_exec.rs"]
+mod launch;
+pub(super) fn rooted_probe() -> io::Result<()> {
+    launch::preflight()?;
+    launch::run(acquire()?)
+}
+pub(super) fn rooted_child() -> ! {
+    launch::child_entry()
 }
 
 #[cfg(test)]

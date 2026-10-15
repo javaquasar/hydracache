@@ -1,5 +1,16 @@
 # HydraCache Compatibility Register
 
+`diagnostic_signer_root_probe root-exec` adds a fixed local empty-environment
+diagnostic, not a public launcher or signer service. The binary-private
+`--root-child` emits only the 16-byte `HC074ROOTEXECv1\n` marker on its fixed
+nonblocking write pipe, then stops and exits 93 if unexpectedly resumed; invalid
+context exits 92. Marker version1 is not an authority or authentication token.
+The parent validates the original selected exec and kernel VMA identities, kills
+without resuming the loaded stop, reaps and proves EOF before root cleanup.
+Unknown/extra input and unsupported platforms refuse. `prepare` is unchanged.
+The normal procfs-dependent restriction installer is not composed with this root;
+no credentials, signing, product wire, qualification inputs or admission change.
+
 `diagnostic_signer_owned_probe` adds a fixed nonproduct self-exec diagnostic,
 not a service or public launcher API. Public native/x32/i386 modes require an
 empty environment and a private readonly 0555 self image. Internal child modes

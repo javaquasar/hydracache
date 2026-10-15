@@ -1,7 +1,7 @@
 use super::*;
 use std::os::unix::fs::PermissionsExt;
 #[path = "../tests/support/diagnostic_gnu_images.rs"]
-mod images;
+pub(super) mod images;
 
 struct Fixture {
     root: Root,
