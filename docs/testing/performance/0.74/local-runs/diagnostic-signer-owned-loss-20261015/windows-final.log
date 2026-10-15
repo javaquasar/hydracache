@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.13s
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.15s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running tests\diagnostic_signer_owned_cli.rs (target\debug\deps\diagnostic_signer_owned_cli-f588f9c38a6f79d6.exe)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.32s
+     Running tests\diagnostic_signer_owned_cli.rs (target\debug\deps\diagnostic_signer_owned_cli-7d7c9beb96d4bece.exe)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s

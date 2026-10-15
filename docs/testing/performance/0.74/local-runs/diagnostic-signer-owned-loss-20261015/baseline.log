@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.22s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 9 tests
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s

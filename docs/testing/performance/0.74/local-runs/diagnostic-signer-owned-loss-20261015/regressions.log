@@ -1,0 +1,99 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.50s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.75s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_header_descriptor_and_metadata_refusals ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_kernel_rejects_header_only_shape_without_admission ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_foreign_equal_byte_inode_cannot_match_original ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_original_stop_precedes_helper_output ... ok
+same_inode_second_exec=kernel_event_refused new_user_code_ran=false seccomp_installed=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_same_inode_second_exec_is_stopped_before_new_user_code ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_different_inode_second_exec_is_stopped_before_new_user_code ... ok
+inherited_foreign_writer=closed_before_initial_stop CLOEXEC_alone=insufficient
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_inherited_foreign_writer_closed_before_initial_stop ... ok
+exec-stop exact_event=true lower_status_cases=327680 unknown_high_bits=refused
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_wait_status_exhaustive_exact_event_only ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_cloexec_and_drop_clean_exact_owned_child ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_unexpected_signal_and_output_overflow_cross_refuse ... ok
+seed=0x07403b25 fresh_original_launches=16 independent_tracer_threads=4 signer_or_runtime_authority=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 880 filtered out; finished in 0.13s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.69s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 7 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_entry ... ok
+constructor_frame seed=0x0740c071 mutations=256 exact_terminal_oracle=true controls_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_finite_oracle_and_closed_frame_mutations ... ok
+constructor_terminal cut=1 fault=1 healthy=false code=1 status=83 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_before_arm_refuses_original_parent_mismatch ... ok
+constructor_terminal cut=0 fault=2 healthy=false code=1 status=84 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_guard_and_parent_check_controls_are_not_positive_proof ... ok
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_armed_cuts_require_original_child_sigkill ... ok
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=false code=1 status=81 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=0 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=1 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=2 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=3 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_terminal cut=4 fault=0 healthy=false code=2 status=9 original_pidfd_reaped=true child_signaled=false dummy_sends=0
+constructor_concurrency seed=0x0740c071 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_seeded_fresh_and_independent_observers ... ok
+constructor_terminal cut=1 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=2 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=3 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+constructor_terminal cut=4 fault=0 healthy=true original_ACK_close_exit0=true healthy_progress=7
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::early::signer_constructor_loss_healthy_cuts_finish_original_handoff ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 884 filtered out; finished in 17.08s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.48s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 891 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.87s
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-d7913e8dde3a5f36)
+
+running 5 tests
+x32=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+unfiltered_chdir=0 fixed_native_probes=20 exact_EPERM=true admission=false
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+i386=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+owned_native_children=8 parent_restrictions_and_cwd_unchanged=true
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diagnostic_signer_isolation.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_isolation-70e17491a01ba2a3)
+
+running 7 tests
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s

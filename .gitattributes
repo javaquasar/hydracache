@@ -220,3 +220,6 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-join-*/** -te
 docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-context-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-child-entry-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-probe-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/** -text whitespace=cr-at-eol
+# Preserve raw libtest/proc status whitespace in the failed and passing captures.
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

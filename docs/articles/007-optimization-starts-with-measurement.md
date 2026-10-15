@@ -9258,3 +9258,36 @@ custody before credential handoff. Worker original-start and all-writer fencing
 are separate prerequisites to completion and cells 2–4. No product workload,
 performance claim, server/GitHub mutation or qualification follows from these
 local process tests.
+
+## Original owner loss at two existing child stops
+
+The next test kills the original owner process, not its child. A dedicated monitor
+retains the owner and child pidfds and checks the original creating task, sole
+child, PPid and TracerPid. At the initial stop and first kernel exec stop it sends
+SIGKILL only to the owner. Both cases require the adopted original child to report
+CLD_KILLED/SIGKILL, then exact reap and ECHILD. An unrelated original process stays
+alive. Healthy controls grant a private acknowledgement and let the normal guard
+clean its child. At the initial cut EXITKILL is not yet installed; at first exec
+both protections exist, so this observation does not attribute the kill to one.
+
+The first harness incorrectly treated self-SIGSTOP as an acknowledgement. Its
+exec case observed a zombie before fault injection. A successful signal send is
+not a logical instruction barrier: the owner could continue into its loss-path
+assertion and cleanup. The replacement socket gate allows cleanup only after the
+healthy grant. The failed captures remain in the
+[owner-loss packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-20261015/README.md).
+
+Five Linux repeats pass 12 unit tests, one portable CLI test and five normal CLI
+tests each; Rust1.88 passes the same groups. The unit total includes a no-role
+entry helper. Strict lint, current/MSRV checks, Windows refusal portability and
+158 root contracts pass. This loss matrix calls the unchanged private constructor
+from test roles with a fixed /bin/true image. It is not a proof of every boundary
+through the complete normal main-thread CLI, independently selected root/runtime,
+credential handoff or P2/P3 all-writer cessation.
+
+An expanded old creator/thread-exit regression group fails at its no-EXITKILL
+negative control in both default parallel runs, while all14 pass serially. Those
+library sources are unchanged; the cause is not yet attributed. Serial success
+does not repair the default gate, so all-regressions-passed remains false and this
+failure must be investigated before server admission. No performance result or
+release readiness follows from the new owner-loss checks.

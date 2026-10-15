@@ -1,0 +1,82 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.45s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 1 test
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... FAILED
+
+failures:
+
+failures:
+    owned::tests::loss::owned_probe_parent_loss_matrix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.02s
+
+
+thread 'owned::tests::loss::owned_probe_parent_loss_matrix' (457) panicked at tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_probe_loss_tests.rs:369:9:
+exec-loss: 
+running 1 test
+test owned::tests::loss::owned_probe_parent_loss_role ... 
+thread 'owned::tests::loss::owned_probe_parent_loss_role' (465) panicked at tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_probe_loss_tests.rs:308:5:
+unexpected original pidfd readiness before owner kill: pos:	0
+flags:	02000002
+mnt_id:	16
+ino:	1050
+Pid:	468
+NSpid:	468
+
+Name:	owned-true
+State:	Z (zombie)
+Tgid:	468
+Ngid:	0
+Pid:	468
+PPid:	466
+TracerPid:	467
+Uid:	1000	1000	1000	1000
+Gid:	1000	1000	1000	1000
+FDSize:	0
+Groups:	4 20 24 25 27 29 30 44 46 100 107 1000 1001 
+NStgid:	468
+NSpid:	468
+NSpgid:	283
+NSsid:	283
+Kthread:	0
+Threads:	1
+SigQ:	1/62569
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000100
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	0000000000000000
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	000001ffffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	1
+Seccomp:	0
+Seccomp_filters:	0
+Speculation_Store_Bypass:	thread vulnerable
+SpeculationIndirectBranch:	conditional enabled
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	3
+nonvoluntary_ctxt_switches:	0
+
+wait_info=Err(Os { code: 10, kind: Uncategorized, message: "No child processes" })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    owned::tests::loss::owned_probe_parent_loss_role
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.01s
+
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --bin diagnostic_signer_owned_probe`

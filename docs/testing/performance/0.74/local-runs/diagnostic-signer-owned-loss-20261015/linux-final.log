@@ -1,0 +1,245 @@
+owner-loss repeat=1
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.71s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+owner-loss repeat=2
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+owner-loss repeat=3
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.63s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+owner-loss repeat=4
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.96s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+
+owner-loss repeat=5
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.98s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+owner_loss first_exec=true healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=false healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss first_exec=true healthy=true original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+owner_loss_matrix=4 actual_owner_SIGKILL=2 healthy_drop_controls=2 parent_subreaper_unchanged=true full_normal_entry_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostic_signer_owned_cli.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_cli-b296a41c90e84095)
+
+running 1 test
+test ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-287451e165d71f0a)
+
+running 5 tests
+held_writer_exec=ETXTBSY retry=false after_explicit_writer_drop=new_independent_probe
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+normal_original_exec_modes=native,x32,i386 admission=false
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+normal_independent_owners=4 original_children=12 parent_context_unchanged=true seed=0x0740c07a
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s

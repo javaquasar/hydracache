@@ -1,0 +1,49 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.00s
+     Running unittests src/bin/diagnostic_signer_owned_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_owned_probe-6e512fa91ce5bde1)
+
+running 12 tests
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+owner_loss_report_fixed_bit_mutations=512 seeded_identity_shapes=128 seed=0x0740c07a report_is_not_authority=true
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+wait_status_cases=327680 seed=0x0740c07a mutations=256 authority=false
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+owner_loss first_exec=false healthy=false original_pidfd_dead=true monitor_ECHILD=true monitor_child_signaled=false unrelated_alive=true admission=false
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+
+thread 'owned::tests::loss::owned_probe_parent_loss_matrix' (450) panicked at tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_probe_loss_tests.rs:369:9:
+exec-loss: 
+running 1 test
+test owned::tests::loss::owned_probe_parent_loss_role ... 
+thread 'owned::tests::loss::owned_probe_parent_loss_role' (483) panicked at tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_probe_loss_tests.rs:308:5:
+assertion failed: !dead(&orphan.fd)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    owned::tests::loss::owned_probe_parent_loss_role
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.01s
+
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+original_child_SIGKILL_and_drop=initial,first_exec exact_owned_pidfd=true parent_loss_proved=false
+test owned::tests::loss::owned_probe_parent_loss_matrix ... FAILED
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+
+failures:
+
+failures:
+    owned::tests::loss::owned_probe_parent_loss_matrix
+
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --bin diagnostic_signer_owned_probe`
