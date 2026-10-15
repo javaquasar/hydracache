@@ -8776,3 +8776,49 @@ tracer-thread-only loss, forced TID reuse and arbitrary signer-thread support.
 Actual launcher/runtime/job custody, token integration, worker original-start,
 all-writer cessation and server admission remain separate. No measured cache
 performance improvement follows from these lifecycle tests.
+
+## EXITKILL when only the original tracing thread exits
+
+Whole-process loss and pre-options creator loss leave a distinct question:
+does the child die when its original tracing thread exits, although another
+thread keeps that same process alive? The new local fixture uses the unchanged
+original rooted exec and dummy handoff, then invokes raw SYS_exit in the actual
+creator/tracer task. A keeper deliberately preserves its original TGID. Linux
+documents [per-thread tracing and EXITKILL](https://man7.org/linux/man-pages/man2/ptrace.2.html);
+the test checks that lifetime directly instead of substituting a group kill.
+
+Six cuts cover initial options, rooted state, first exec, installed policy,
+READY and delivered dummy. The initial cut still has both PDEATHSIG and EXITKILL;
+it cannot attribute the kill exclusively to EXITKILL. The existing child clears
+PDEATHSIG on first resume, before the other cuts. At those later cuts, the exact
+original child's SIGKILL while its original TGID remains nonterminal provides
+the narrower EXITKILL result. The observer retains original task and child
+objects before release, verifies the kernel parent/tracer relationship and root
+objects, then independently corroborates and reaps the keeper's WNOWAIT tuple.
+No positive path signals the child itself.
+
+The falsifying rooted control removes only EXITKILL. After original thread exit
+the child is detached and nonterminal while its original TGID remains alive.
+Only after recording that bounded point observation does the observer signal
+the validated original child pidfd for cleanup. Its later SIGKILL has
+`positive=false`. This separates kernel protection from the test's cleanup;
+calling both terminal records successes would erase the experiment's meaning.
+Healthy controls still complete the original ACK, close and zero exit at all
+six cuts, with the keeper joined normally.
+
+The first repeated run also exposed an observer mistake: it waited for several
+successful advances as if they were one five-second protocol gap. A healthy
+late-cut case timed out. The failed log remains retained. A separately recorded
+amendment adds exact credential-checked progress ordinals between the original
+steps; five-second gap, thirty-second outer and capture bounds stay unchanged.
+Three final six-test repetitions retain 54 positive deaths, three negative
+controls and 18 healthy completions. All 138 prior signer regressions, the six
+MSRV tests, 148 source contracts and nine Windows portable tests pass. These
+counts describe correctness checks, not cache throughput or allocation gains.
+
+The [design](../testing/performance/0.74/diagnostic-signer-thread-exit-design.md)
+and [evidence packet](../testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-20261015/README.md)
+close this fixed thread-loss gap while keeping real runtime/job/issuer custody,
+actual credential integration, authenticated worker start and cessation of all
+P2/P3 writers separate. Those are still needed before completion cells 2–4 and
+server admission; no key, host service or qualification input changed here.

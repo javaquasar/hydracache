@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [post-options original tracing-thread fixture](diagnostic-signer-thread-exit-design.md)
+extends the creator-only loss experiment through six original exec/handoff cuts.
+The independent observer requires child SIGKILL while the original TGID remains
+nonterminal; a rooted no-EXITKILL control instead observes detach and a live child
+before explicitly labelled cleanup. The [thread-exit packet](local-runs/diagnostic-signer-thread-exit-20261015/README.md)
+retains the aggregate startup timeout and separate progress amendment alongside
+three complete repeats, 138 prior regressions, MSRV and 148 source contracts.
+This closes the fixed post-options thread-loss proof, not production custody,
+authenticated worker start, all-writer cessation or server admission. Earlier
+packets below retain their original source-specific scope.
+
 The [original creating-thread guard](diagnostic-signer-creator-loss-design.md)
 now retains the original proc task and checks it after arming. Five actual
 creator-only loss cuts require original child terminal while its parent TGID

@@ -1,0 +1,35 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.52s
+     Running `target\debug\xtask.exe release-evidence --release 0.74 --require-ship`
+release-evidence: planned=0 implemented=28 fast-green=0 gated-green=0 ship-ready=0
+Error: "release-evidence: --require-ship rejected non-green evidence"
+release-evidence: release-wide: 0.74 ship admission is closed while candidate identity and release qualification are incomplete
+release-evidence: release-wide: current worktree is dirty
+release-evidence: W0 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W1 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W2 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W3 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4a Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4b Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4c Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4d Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W4e Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W5 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W6 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W6a Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W6b Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W7 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W8 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W8a Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W8b Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W8c Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9a Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9b Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9c Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9d Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W9e Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W10 Implemented: missing receipt for fast.workspace-nextest
+release-evidence: W11 Implemented: dynamic canary: wrong source commit
+release-evidence: W12 Implemented: dynamic canary: wrong source commit
+error: process didn't exit successfully: `target\debug\xtask.exe release-evidence --release 0.74 --require-ship` (exit code: 1)

@@ -1,0 +1,44 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.27s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-roster-msrv/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 6 tests
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_entry ... ok
+thread_mutations exact_frame_terminal=true control_never_positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_closed_frames_and_terminal_property ... ok
+thread_terminal stage=0 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_negative stage=1 detached=true original_child_nonterminal=true original_tgid_nonterminal=true cleanup_is_not_positive=true
+thread_terminal stage=1 mode=1 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=true dummy_sends=0 positive=false
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_no_exitkill_is_not_positive ... ok
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=0 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=5 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=1 positive=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_all_original_cuts ... ok
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=1 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=2 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=3 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=3 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_terminal stage=4 mode=0 code=2 status=9 original_tgid_alive_at_child_terminal=true independent_reaped=true child_signaled=false dummy_sends=0 positive=true
+thread_concurrency seed=0x0740d073 fresh=8 independent=4 ordinary_subreaper_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_seeded_fresh_and_concurrent ... ok
+thread_terminal stage=4 mode=2 original_ACK_close_exit0=true keeper_joined=true
+thread_terminal stage=5 mode=2 original_ACK_close_exit0=true keeper_joined=true
+test diagnostic_signer_root_fixture::rooted_exec::handoff::loss::creator_loss::thread_exit::signer_thread_exit_healthy_original_controls ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 844 filtered out; finished in 37.46s
+
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.07s
