@@ -86,6 +86,14 @@ class PublicEncodingTests(unittest.TestCase):
                 self.assertRaises(keytool.Refused) as error:
             keytool.read_public(123)
         self.assertEqual(str(error.exception), "Invalid signer public selection")
+        # The real deep input need not exhaust every interpreter's decoder stack.
+        # Force this exception deterministically; never depend on a depth threshold.
+        with patch.object(keytool, "check_file", return_value=None), \
+                patch.object(keytool.os, "pread", return_value=raw, create=True), \
+                patch.object(keytool.json, "loads", side_effect=RecursionError("decoder sentinel")), \
+                self.assertRaises(keytool.Refused) as error:
+            keytool.read_public(123)
+        self.assertEqual(str(error.exception), "Invalid signer public selection")
 
 
 @unittest.skipUnless(sys.platform == "linux" and os.geteuid() != 0,
