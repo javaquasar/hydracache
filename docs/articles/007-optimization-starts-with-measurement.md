@@ -9328,3 +9328,71 @@ This closes the observed local fixture race, not server readiness. Independently
 selected root/runtime, full normal-entry loss and protected handoff remain before
 authenticated worker start and all-writer fencing. No cache-performance claim,
 credential access, signing, server change or qualification follows from this fix.
+
+## A selected root must exist outside the test harness
+
+The next step moves a small, concrete prerequisite into the normal build: preparing
+the fixed GNU filesystem tree. The previous root and rooted-exec fixtures remain
+independent regression oracles. The new binary-private preparer neither promotes
+their test-only launcher nor accepts an arbitrary command. Its single `prepare`
+mode creates, checks and removes a root; it does not execute a child inside it.
+
+The hypothesis is about ownership and reproducibility, not cache throughput:
+ordinary code should retain the exact source objects and construct a bounded,
+verifiable four-role tree without depending on test-only TempDir cleanup. The
+sources are self, the fixed GNU loader, libc and libgcc. Original read-only
+CLOEXEC descriptors, metadata and byte hashes stay owned together. The existing
+GNU declaration parser and 8 MiB/image bound remain unchanged. Fixed distribution
+symlinks are deliberately followed during acquisition; numeric ownership checks
+do not turn their ancestry or the current namespace into authenticated provenance.
+
+One random 128-bit name is created under retained sticky `/tmp`; collisions refuse
+without adoption or retry. Exclusive descriptor-relative creation builds exactly
+four directories and four files. Temporary writable copy descriptors close before
+return; finalized objects have mode0555. Rechecks validate the original descriptors,
+root name bindings, bounded inventories, metadata and source/copy bytes. Failure
+latches rather than replacing an original with a newly observed equivalent object.
+
+Cleanup is part of the hypothesis. Before changing permissions or unlinking
+anything, the owner checks every known binding and inventory. It then removes only
+the four known files, three subdirectories and original fresh root name. Equal-byte
+file replacement, a foreign root, directory symlink or extra entry refuses before
+cleanup mutation. No recursive deletion is used. Tests cover eight owned partial
+construction prefixes too. This is still a cooperative local scope: hostile same-UID
+or privileged races between validation and unlink are not defeated, process SIGKILL
+can leave a root behind, and mode0555 is not independent custody or writer revocation.
+
+The compiler comparison provided a useful negative result. The local Rust1.94
+private debug executable, with debug sections stripped only from the test copy,
+fits the four-role declaration graph and prepares real runtime files. The local
+Rust1.88 executable additionally needs libm. Initial process expectations failed;
+readelf identified that dependency difference. Expanding the graph would change
+the selected profile, so the parser was left intact. MSRV compilation and synthetic
+unit materialization pass, while its independently identified extra-libm normal
+profile deliberately refuses. That refusal is not MSRV runtime support, and neither
+private debug copy is a production release-build attestation.
+
+Another test incorrectly assumed that source-path renaming must change original
+metadata. The retained source descriptor, not its former pathname, is the input
+being checked. The corrected test keeps exact stamp/byte semantics and verifies
+that a foreign non-ELF replacement is never adopted. Created-root path bindings
+remain a separate mandatory check. This distinguishes retaining an original object
+from claiming custody of every name once used to find it.
+
+Final checks pass11 unit, one CLI and three process tests on Linux Rust1.94, including
+four independent normal preparations. MSRV passes those counts with the explicit
+runtime refusal above. Windows current/MSRV CLI refusal, strict checks/lint,
+159 root contracts,175 registered gates and local documentation/contracts pass;
+ship admission still refuses. The
+[local packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-20261015/README.md)
+retains initial failures, exact source/tree, captures and15 verifier tests.
+
+The wider baseline also found an unrelated unresolved boundary: the unchanged
+old-root group failed78/1 in its constructor-loss seeded observer. The same root
+and constructor groups later passed7/7 each when focused. That is an observation,
+not attribution or repair; all-regressions-passed remains false. The next priority
+is to explain that failure before composing normal root selection with original
+child launch and kernel post-exec mappings. Existing child restrictions depend on
+procfs and must not be weakened to accommodate a proc-less root. Protected handoff,
+full normal-entry loss, authenticated worker start and all-writer fencing remain
+open. No server operation, performance sample or release-readiness claim follows.

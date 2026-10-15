@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary fixed root preparer](diagnostic-signer-owned-root-design.md) now
+materializes/rechecks/removes four selected GNU roles outside cfg(test), without
+launching a child. Rust1.94 normal preparation passes; local Rust1.88's extra-libm
+profile deliberately refuses, not expanded runtime support. The unchanged broad
+old-root baseline exposed a constructor-loss seeded observer failure (78/1);
+later focused passes do not resolve it. All-regressions/server admission remain
+closed pending attribution and normal root/child composition.
+
 The [tracer-thread rooted controls](diagnostic-signer-thread-exit-design.md) now
 distinguish SIGSTOP delivery from a kernel group-stop. Both rooted loss variants
 use the latter, avoiding a race with detached helper execution while retaining

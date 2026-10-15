@@ -47,3 +47,16 @@ server/GitHub operations, performance workloads, qualification, completion or
 later cells. All authorization, release and production admission remain false.
 Next slice joins original child launch with selected root/runtime and independently
 checks post-exec kernel mappings, without weakening existing isolation checks.
+
+Observed during implementation: the local Rust1.88 normal executable declares
+libm in addition to the four-role profile. Preserve the initial 1/2 process-test
+failure and readelf output. Do not expand the approved Rust1.94 graph. MSRV must
+compile and pass synthetic materialization, while its independently identified
+exact extra-libm normal profile must refuse. Unknown dependency profiles still
+fail the test. Rust1.94 normal preparation must remain an actual success; an
+extra-libm refusal is not a successful root materialization or MSRV runtime claim.
+
+The broad old-root baseline failed 78/1 in an unchanged constructor-loss seeded
+observer before new code was compiled. Retain it as an unresolved regression
+observation, not a fixed issue or a reason to weaken checks. Local focused gates
+for this isolated module do not constitute an all-regressions/server green gate.

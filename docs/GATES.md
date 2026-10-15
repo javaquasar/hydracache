@@ -1,5 +1,16 @@
 # HydraCache — Enforcement Gates
 
+Normal fixed GNU root preparation uses `--bin diagnostic_signer_root_probe`,
+portable `--test diagnostic_signer_root_cli` and registered Linux x86_64
+`--test diagnostic_signer_root_probe` in package
+`hydracache-long-run-supervisor-074`. Linux process tests need `/usr/bin/strip`
+and `/usr/bin/readelf`; only private test copies are stripped. Rust1.94 must
+actually prepare the four-role root, while the observed Rust1.88 extra-libm
+profile must refuse without a parser exception. No root child is launched.
+The [design/evidence](testing/performance/0.74/diagnostic-signer-owned-root-design.md)
+retains an unresolved broader constructor-loss baseline failure; isolated green
+groups do not establish all-regressions or server admission.
+
 Tracer-thread loss fixtures require a kernel-proven group-stop for both rooted
 loss controls before EXITKILL options diverge. The `--lib signer_thread_exit`
 tests include exact GETSIGINFO/EINVAL and four concurrent negative controls;

@@ -225,3 +225,5 @@ docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/** -text
 docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

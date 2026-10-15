@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: failed to remove file `C:\Workspace\prj\jq\cashe\hydracache-074\target\debug\xtask.exe`
+
+Caused by:
+  Access is denied. (os error 5)
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,136 @@
+{
+  "schema_version": "diagnostic-signer-owned-root-074-v1",
+  "source_commit": "97e1bde1481394b387b47bd99497afb2d2b8ac93",
+  "source_tree": "81d80384fbdce09fbe0c7ba45b55ff39a821f1e6",
+  "baseline": "81c327d1fed7a2284d4ebd96a8e80f2961e0787b",
+  "preregistration": "7c27c3c6b66efdcefa61b916bfe3210852354255",
+  "scoped_final_checks_passed": true,
+  "closed_claims": {
+    "all_regressions_passed": false,
+    "broad_constructor_loss_failure_fixed": false,
+    "msrv_normal_root_materialized": false,
+    "source_pathnames_authenticated": false,
+    "hostile_same_uid_cleanup_race_prevented": false,
+    "normal_child_launched": false,
+    "initial_namespace_provenance_authenticated": false,
+    "loaded_runtime_attested": false,
+    "independent_runtime_custody_authenticated": false,
+    "real_credentials_or_signing": false,
+    "authenticated_original_start": false,
+    "all_writers_revoked": false,
+    "completion_or_later_cells_enabled": false,
+    "server_or_github_mutated": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false,
+    "full_release_gate_passed": false,
+    "clean_checkout_execution_attested": false
+  },
+  "frozen_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "implementation_files": {
+    "crates/xtask/tests/performance_contract_074.rs": "04690085ddfd274edf402d810f23c5bb458fc47a1ed0b7828bf8b59ab34f6d75",
+    "docs/testing/gated-test-registry.toml": "4e44a5ca7d62e5c517b6a9f761b012e74165a234dd848a294aac23d1ff16024b",
+    "docs/testing/performance/0.74/diagnostic-signer-owned-root-contract.toml": "93f81ecc572cd64b4c10c964ffde1b893d130d29e2c56f594def0eccd0c2b80b",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs": "00f90adcb07144a4ad09685fa6f251dedd5e2b954e3b22a31cf6bed69d4490f2",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs": "2c31a6b3eb44e58f28d800b449dfa06b7e732209828db8c04d2b61cfa721bcf5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs": "685f65db9fdd467428e990be219c9a3e65f844406a9a93d7ec2881368d40f17d",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs": "31dc3bda889797fbef15c55548857b05921dafcea59eb1248c166c6f5c23381b",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs": "357dd035d349e95b3acf9134afdfa16458f896bf26ee1f93485b78f970d0e511"
+  },
+  "unchanged_sources": {
+    "tools/long-run-supervisor-074/src/lib.rs": "36c054f56ae80437bea158a17da6bc02b2a11873f57b41fb3bc6f0dc90b909b1",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs": "515bf7766ee15e2bd629a36dd5f1f3d3e613d9b137fb519c02b6aa7e6ef4d4cf",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs": "adf38288b9e77e1b509b6cec5326a897e80f24241ba53fa49671b5080cd8cc97",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs": "e0c331986047ab4c046dce0c9795e600b7ed4107fbd89729c38675b45e33a3a5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs": "1a4c41df0b617255d078a070046822ebe4dc008a7e0699553fd863a6237dc1c4",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs": "1fa5267b673de0557c50860f96c47b24946f258329cb938116759e4cb81d5bb5"
+  },
+  "captures": {
+    "baseline-old-root-failed.log": {
+      "sha256": "932dbd554732825d78d36dd34b2b360b47b866afa1e021a05cdba4418cc61a99",
+      "bytes": 29708,
+      "exit_code": 1
+    },
+    "current-final.log": {
+      "sha256": "f79216e4349bdc433b87595be13f7a4c91e709625f053dcd41b9f2561a6997ff",
+      "bytes": 2839,
+      "exit_code": 0
+    },
+    "current-provisional.log": {
+      "sha256": "44f857bb467ed4a1709a51d4da8f280777a7ebff90405601ec70825bc1c42fc9",
+      "bytes": 2303,
+      "exit_code": 0
+    },
+    "dynamic-declarations.log": {
+      "sha256": "0a4efba9078702963c2c28d17baf9bc89eee723c917a695d410c0e38ad36d331",
+      "bytes": 3288,
+      "exit_code": 0
+    },
+    "gnu-owner-regressions.log": {
+      "sha256": "f3a4b825aad8310353e02397a79de90527e14c14b197f16d38f60e6595e3930c",
+      "bytes": 4314,
+      "exit_code": 0
+    },
+    "missing-target.log": {
+      "sha256": "28d73418cf91b56528dbb255e3124fa46d166cc2697f1a48dbb7e4c6a7b9ca8c",
+      "bytes": 295,
+      "exit_code": 1
+    },
+    "msrv-extra-libm-failed.log": {
+      "sha256": "da534b2a65b15c9b431e092fef097c80604d7aea5ddba048d68857128670ba7e",
+      "bytes": 4294,
+      "exit_code": 1
+    },
+    "msrv-final.log": {
+      "sha256": "419c03b15e653332f5c44609fa710f7b63daf549c599904db2c656f2d3363f3e",
+      "bytes": 3068,
+      "exit_code": 0
+    },
+    "old-root-constructor-focused.log": {
+      "sha256": "fc3f8784eb8da798bdd4aaba88100c9eaadb32be3df520727637d4b7b3c16ef1",
+      "bytes": 6042,
+      "exit_code": 0
+    },
+    "root-contracts-final.log": {
+      "sha256": "d379234f285b40a2bfc6f4bfe8c3cb141e081aa213b3d26d96a1307f34b48b25",
+      "bytes": 470,
+      "exit_code": 0
+    },
+    "source-name-assumption-failed.log": {
+      "sha256": "dbdb5d18924be6e3f393ba6037be8c24123a84658fa90422574eaf5ae75cd20e",
+      "bytes": 2121,
+      "exit_code": 101
+    },
+    "static-final.log": {
+      "sha256": "b1a2ab36e294353c6b721c7787bfe1ab816be949ad01c0393b888626cff71485",
+      "bytes": 1325,
+      "exit_code": 0
+    },
+    "unit-symlink-setup-failed.log": {
+      "sha256": "93fd2f1717eade074caeebaa207f2c1adb3c73a8d01f1bcac627fbe7e6ea2aa9",
+      "bytes": 1896,
+      "exit_code": 1
+    },
+    "windows-check-lint-final.log": {
+      "sha256": "d05bcb5be5094c360331e56ed4c70116b39d2243f000e946f1d084ee7c7c4044",
+      "bytes": 707,
+      "exit_code": 0
+    },
+    "windows-cli-lint.log": {
+      "sha256": "654a8377f1b4c552ba15200b8f2c5d2d02b22b6aaeb49e7b22f03885222dbf7d",
+      "bytes": 1256,
+      "exit_code": 0
+    },
+    "windows-concurrent-build-failed.log": {
+      "sha256": "ea0165b683885e6c44030a6fdd5b1154648e870443c00610a63cbda56925ae37",
+      "bytes": 495,
+      "exit_code": 1
+    }
+  }
+}
