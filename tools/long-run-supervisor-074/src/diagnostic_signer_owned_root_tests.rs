@@ -2,6 +2,8 @@ use super::*;
 use std::os::unix::fs::PermissionsExt;
 #[path = "../tests/support/diagnostic_gnu_images.rs"]
 pub(super) mod images;
+#[path = "../tests/support/root_process_guard.rs"]
+pub(super) mod process_guard;
 
 #[test]
 fn sha256_matches_known_vectors_and_seeded_image_boundaries() {

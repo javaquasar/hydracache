@@ -777,6 +777,56 @@ pub(super) fn run(mode: &str) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    use std::sync::Mutex;
+
+    fn isolated(name: &str, test: impl FnOnce()) {
+        let namespace = module_path!().split_once("::").unwrap().1;
+        let selected = format!("{namespace}::{name}");
+        const MARKER: &str = "HC074_ISOLATED_RIGHTS_UNIT";
+        let done = format!("isolated_rights_done test={selected} admission=false");
+        if let Some(child) = std::env::var_os(MARKER) {
+            assert_eq!(child, selected.as_str());
+            test();
+            println!("{done}");
+            return;
+        }
+        // Exec closes incidental inherited CLOEXEC writers before this one
+        // fixture runs. No global lock, test retry or harness thread reduction.
+        let mut command = Command::new(std::env::current_exe().unwrap());
+        command
+            .args(["--exact", &selected, "--nocapture"])
+            .env_clear()
+            .env(MARKER, &selected)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        let result =
+            super::super::super::tests::process_guard::output(&mut command, &Mutex::new(()));
+        assert!(result.status.success(), "{result:?}");
+        assert!(result.stderr.is_empty(), "{result:?}");
+        let stdout = String::from_utf8(result.stdout).unwrap();
+        assert_eq!(
+            stdout.lines().filter(|line| *line == done).count(),
+            1,
+            "selected isolated rights test did not complete"
+        );
+        println!("{done}");
+    }
+
+    #[test]
+    fn isolated_child_with_no_selected_test_is_rejected() {
+        let rejected = std::panic::catch_unwind(|| {
+            isolated("not_a_registered_rights_test", || {
+                panic!("unregistered child must never execute a body");
+            });
+        })
+        .expect_err("zero selected tests cannot supply a completion marker");
+        let message = rejected.downcast_ref::<String>().unwrap();
+        assert!(message.contains("selected isolated rights test did not complete"));
+    }
+
     fn pipe() -> [File; 2] {
         let mut fds = [-1; 2];
         assert_eq!(
@@ -789,6 +839,104 @@ mod tests {
         let [a, b] = pair().unwrap();
         let pid = unsafe { libc::getpid() };
         (Channel::new(a, pid), Channel::new(b, pid))
+    }
+    #[test]
+    fn inherited_cloexec_writer_blocks_eof_until_original_child_exit() {
+        isolated(
+            "inherited_cloexec_writer_blocks_eof_until_original_child_exit",
+            || {
+                let (mut a, mut b) = channels();
+                let [mut reader, writer] = pipe();
+                a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
+                    .unwrap();
+                let [gate, child_gate] = pair().unwrap();
+                let parent = unsafe { libc::getpid() };
+                let pid = unsafe { libc::fork() };
+                if pid == 0 {
+                    // Only fixed libc operations after fork, no Rust allocation
+                    // or unwinding. The writer is held until the release gate.
+                    arm(parent);
+                    unsafe {
+                        let ready = b'H';
+                        if libc::close(a.file.as_raw_fd()) != 0
+                            || libc::close(b.file.as_raw_fd()) != 0
+                            || libc::close(reader.as_raw_fd()) != 0
+                            || libc::close(gate.as_raw_fd()) != 0
+                            || libc::fcntl(writer.as_raw_fd(), libc::F_GETFD) != libc::FD_CLOEXEC
+                            || libc::send(
+                                child_gate.as_raw_fd(),
+                                (&ready as *const u8).cast(),
+                                1,
+                                libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT,
+                            ) != 1
+                        {
+                            libc::_exit(83);
+                        }
+                        let mut event = libc::pollfd {
+                            fd: child_gate.as_raw_fd(),
+                            events: libc::POLLIN,
+                            revents: 0,
+                        };
+                        let mut release = 0u8;
+                        if libc::poll(&mut event, 1, 5000) != 1
+                            || event.revents != libc::POLLIN
+                            || libc::recv(
+                                child_gate.as_raw_fd(),
+                                (&mut release as *mut u8).cast(),
+                                1,
+                                libc::MSG_DONTWAIT,
+                            ) != 1
+                            || release != b'G'
+                            || libc::close(writer.as_raw_fd()) != 0
+                        {
+                            libc::_exit(84);
+                        }
+                        libc::_exit(0);
+                    }
+                }
+                let mut child = Process::direct(pid).unwrap();
+                drop(child_gate);
+                poll(&gate, libc::POLLIN).unwrap();
+                let mut ready = [0];
+                assert_eq!((&gate).read(&mut ready).unwrap(), 1);
+                assert_eq!(ready, [b'H']);
+                drop(writer);
+                b.peer += 1;
+                assert!(b.receive(16, 2).is_err());
+                nonterminal(child.fd().unwrap()).unwrap();
+                assert_eq!(
+                    reader.read(&mut [0; 1]).unwrap_err().kind(),
+                    io::ErrorKind::WouldBlock
+                );
+                assert_eq!((&gate).write(b"G").unwrap(), 1);
+                child.wait(libc::CLD_EXITED, 0).unwrap();
+                assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
+            },
+        );
+    }
+
+    #[test]
+    fn received_writer_control_prevents_false_eof() {
+        isolated("received_writer_control_prevents_false_eof", || {
+            let (mut a, mut b) = channels();
+            let [mut reader, writer] = pipe();
+            a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
+                .unwrap();
+            drop(writer);
+            let (_, mut rights) = b.receive(16, 2).unwrap();
+            assert_eq!(rights.len(), 2);
+            assert_eq!(
+                reader.read(&mut [0; 1]).unwrap_err().kind(),
+                io::ErrorKind::WouldBlock
+            );
+            drop(rights.pop().unwrap());
+            assert_eq!(
+                reader.read(&mut [0; 1]).unwrap_err().kind(),
+                io::ErrorKind::WouldBlock
+            );
+            drop(rights);
+            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
+        });
     }
     #[test]
     fn fixed_frames_reject_every_non_pid_bit_and_unregistered_modes() {
@@ -888,39 +1036,44 @@ mod tests {
     }
     #[test]
     fn rejected_rights_are_closed_even_for_foreign_credentials_or_truncation() {
-        for case in 0..4 {
-            let (mut a, mut b) = channels();
-            let [mut reader, writer] = pipe();
-            a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
-                .unwrap();
-            drop(writer);
-            if case == 0 {
-                b.peer += 1;
-            }
-            let expected_bytes = if case == 1 { 1 } else { 16 };
-            let expected_fds = if case == 2 { 0 } else { 2 };
-            if case == 3 {
-                // A separate oversized datagram, after the rights datagram.
-                let bytes = [0u8; 32];
-                assert_eq!(
-                    unsafe {
-                        libc::send(
-                            a.file.as_raw_fd(),
-                            bytes.as_ptr().cast(),
-                            bytes.len(),
-                            libc::MSG_NOSIGNAL,
-                        )
-                    },
-                    32
-                );
-                assert!(b.receive(expected_bytes, expected_fds).is_ok());
-                assert!(b.receive(16, 0).is_err());
-            } else {
-                assert!(b.receive(expected_bytes, expected_fds).is_err());
-            }
-            // Any leaked received writer would yield EAGAIN, not EOF.
-            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
-        }
+        isolated(
+            "rejected_rights_are_closed_even_for_foreign_credentials_or_truncation",
+            || {
+                for case in 0..4 {
+                    let (mut a, mut b) = channels();
+                    let [mut reader, writer] = pipe();
+                    a.send(&[2; 16], &[writer.as_raw_fd(), writer.as_raw_fd()])
+                        .unwrap();
+                    drop(writer);
+                    if case == 0 {
+                        b.peer += 1;
+                    }
+                    let expected_bytes = if case == 1 { 1 } else { 16 };
+                    let expected_fds = if case == 2 { 0 } else { 2 };
+                    if case == 3 {
+                        // A separate oversized datagram, after the rights datagram.
+                        let bytes = [0u8; 32];
+                        assert_eq!(
+                            unsafe {
+                                libc::send(
+                                    a.file.as_raw_fd(),
+                                    bytes.as_ptr().cast(),
+                                    bytes.len(),
+                                    libc::MSG_NOSIGNAL,
+                                )
+                            },
+                            32
+                        );
+                        assert!(b.receive(expected_bytes, expected_fds).is_ok());
+                        assert!(b.receive(16, 0).is_err());
+                    } else {
+                        assert!(b.receive(expected_bytes, expected_fds).is_err());
+                    }
+                    // Any leaked received writer would yield EAGAIN, not EOF.
+                    assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
+                }
+            },
+        );
     }
     #[test]
     fn channel_rejects_missing_credentials_wrong_gate_and_malformed_requests() {
@@ -987,38 +1140,43 @@ mod tests {
     }
     #[test]
     fn truncated_ancillary_rights_close_every_delivered_or_truncated_writer() {
-        let (a, mut b) = channels();
-        let [mut reader, writer] = pipe();
-        let rights = [writer.as_raw_fd(); 32];
-        let mut control = [0usize; 32];
-        let mut payload = [0u8; 16];
-        let mut iov = libc::iovec {
-            iov_base: payload.as_mut_ptr().cast(),
-            iov_len: payload.len(),
-        };
-        let mut message: libc::msghdr = unsafe { std::mem::zeroed() };
-        message.msg_iov = &mut iov;
-        message.msg_iovlen = 1;
-        message.msg_control = control.as_mut_ptr().cast();
-        message.msg_controllen = unsafe { libc::CMSG_SPACE(128) as usize };
-        unsafe {
-            let header = libc::CMSG_FIRSTHDR(&message);
-            (*header).cmsg_level = libc::SOL_SOCKET;
-            (*header).cmsg_type = libc::SCM_RIGHTS;
-            (*header).cmsg_len = libc::CMSG_LEN(128) as usize;
-            std::ptr::copy_nonoverlapping(
-                rights.as_ptr().cast::<u8>(),
-                libc::CMSG_DATA(header),
-                128,
-            );
-            assert_eq!(
-                libc::sendmsg(a.file.as_raw_fd(), &message, libc::MSG_NOSIGNAL),
-                16
-            );
-        }
-        drop(writer);
-        assert!(b.receive(16, 2).is_err());
-        assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
+        isolated(
+            "truncated_ancillary_rights_close_every_delivered_or_truncated_writer",
+            || {
+                let (a, mut b) = channels();
+                let [mut reader, writer] = pipe();
+                let rights = [writer.as_raw_fd(); 32];
+                let mut control = [0usize; 32];
+                let mut payload = [0u8; 16];
+                let mut iov = libc::iovec {
+                    iov_base: payload.as_mut_ptr().cast(),
+                    iov_len: payload.len(),
+                };
+                let mut message: libc::msghdr = unsafe { std::mem::zeroed() };
+                message.msg_iov = &mut iov;
+                message.msg_iovlen = 1;
+                message.msg_control = control.as_mut_ptr().cast();
+                message.msg_controllen = unsafe { libc::CMSG_SPACE(128) as usize };
+                unsafe {
+                    let header = libc::CMSG_FIRSTHDR(&message);
+                    (*header).cmsg_level = libc::SOL_SOCKET;
+                    (*header).cmsg_type = libc::SCM_RIGHTS;
+                    (*header).cmsg_len = libc::CMSG_LEN(128) as usize;
+                    std::ptr::copy_nonoverlapping(
+                        rights.as_ptr().cast::<u8>(),
+                        libc::CMSG_DATA(header),
+                        128,
+                    );
+                    assert_eq!(
+                        libc::sendmsg(a.file.as_raw_fd(), &message, libc::MSG_NOSIGNAL),
+                        16
+                    );
+                }
+                drop(writer);
+                assert!(b.receive(16, 2).is_err());
+                assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
+            },
+        );
     }
     #[test]
     fn stopped_negative_requires_detachment_and_never_accepts_running_as_stopped() {
