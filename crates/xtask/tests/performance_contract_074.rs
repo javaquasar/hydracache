@@ -1277,6 +1277,7 @@ fn diagnostic_controller_attempt_requires_original_owned_retention_not_start() {
         "cross_chain_runtime_refusal_no_repeat_io",
         "partial_or_complete_context_blocks_fresh_reservation",
         "legacy_publication_conversion_refused",
+        "joined_sigkill_matrix_complete",
     ] {
         assert_eq!(c[field].as_bool(), Some(true), "{field}");
     }
@@ -1284,7 +1285,6 @@ fn diagnostic_controller_attempt_requires_original_owned_retention_not_start() {
         "recovered_runtime_acknowledgement",
         "global_nonce_or_host_rollback_protection",
         "durable_authority_refusal_appended",
-        "joined_sigkill_matrix_complete",
         "production_trust_enrollment",
         "original_start_or_later_cells",
         "production_consumer_wired",
@@ -1335,6 +1335,78 @@ fn diagnostic_controller_attempt_requires_original_owned_retention_not_start() {
     }
     let compat = std::fs::read_to_string(root().join("docs/COMPAT.md")).unwrap();
     assert!(compat.contains("diagnostic-controller-attempt-074-v1"));
+}
+
+#[test]
+fn diagnostic_controller_attempt_process_loss_remains_owned_local_not_start() {
+    let c = contract("diagnostic-controller-attempt-crash-contract.toml");
+    assert_eq!(c["seed"].as_str(), Some("0x0740c095"));
+    for (field, count) in [
+        ("write_boundaries", 8),
+        ("sigkill_cases", 9),
+        ("uninterrupted_controls", 1),
+        ("fresh_inspections_per_case", 2),
+        ("fresh_inspections_per_run", 20),
+    ] {
+        assert_eq!(c[field].as_integer(), Some(count), "{field}");
+    }
+    for field in [
+        "parent_owned_origins_and_exact_pidfd_child_only",
+        "original_controller_oidc_worker_kernel_authority_and_fence_held",
+        "kernel_sender_is_same_fixture_child",
+        "same_original_lock_busy_before_available_after",
+        "bytes_inode_modes_and_mtime_ctime_unchanged",
+        "before_create_empty_and_unadmitted",
+        "every_retained_context_blocks_fresh_reservation",
+        "after_return_acknowledgement_not_recovered",
+        "manual_gate_ignored_in_fast_suite",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(true), "{field}");
+    }
+    for field in [
+        "runtime_api_or_durable_schema_changed",
+        "independent_production_controller_or_trust_enrolled",
+        "power_loss_reboot_or_global_rollback_proved",
+        "durable_authority_refusal_appended",
+        "original_start_all_writer_cessation_or_later_cells",
+        "server_workflow_product_or_qualification_allowed",
+        "ship_or_performance_claim_allowed",
+    ] {
+        assert_eq!(c[field].as_bool(), Some(false), "{field}");
+    }
+    let source = std::fs::read_to_string(
+        root()
+            .join("tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs"),
+    )
+    .unwrap();
+    for marker in [
+        "#[ignore =",
+        "libc::SYS_pidfd_send_signal",
+        "Some(libc::SIGKILL)",
+        "retain_request_with",
+        "snapshot(s.1.path())",
+        "Err(HostExecutionError::Busy)",
+        "inspect_empty_fence_at_for_test",
+        "for inspection in 1..=2",
+        "0x0740_c095",
+        "controller_attempt_crash_summary",
+        "get_ref().limit() > 0",
+    ] {
+        assert!(source.contains(marker), "{marker}");
+    }
+    for forbidden in [
+        "systemctl",
+        "Command::new(\"ssh\")",
+        "std::thread::sleep",
+        "O_TRUNC",
+        "remove_file",
+    ] {
+        assert!(!source.contains(forbidden), "{forbidden}");
+    }
+    let registry =
+        std::fs::read_to_string(root().join("docs/testing/gated-test-registry.toml")).unwrap();
+    assert!(registry.contains("controller-attempt-process-crash-all-stages-and-lost-ack"));
+    assert!(registry.contains("fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack"));
 }
 
 #[test]
