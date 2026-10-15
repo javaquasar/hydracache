@@ -370,3 +370,29 @@ fn root_input_seeded_full_metadata_mutations_and_independent_observers() {
         "seed=0x0740c075 metadata_mutations=64 independent_observers=4 production_custody=false"
     );
 }
+
+#[test]
+fn root_input_internal_snapshot_keeps_offset_and_latches_budget_or_content_failure() {
+    use std::io::{Seek, SeekFrom};
+    let f = Fixture::new();
+    let mut read = f.read().unwrap();
+    let mut last = &read.nodes.last().unwrap().file;
+    last.seek(SeekFrom::Start(7)).unwrap();
+    assert_eq!(
+        read.read_original_bounded(64).unwrap(),
+        b"synthetic unsigned input"
+    );
+    let mut last = &read.nodes.last().unwrap().file;
+    assert_eq!(last.stream_position().unwrap(), 7);
+    assert!(read.read_original_bounded(1).is_err());
+    assert!(read.is_refused());
+    assert!(read.read_original_bounded(64).is_err());
+    let mut read = f.read().unwrap();
+    assert!(read.read_original_bounded(MAX_BINARY_BYTES + 1).is_err());
+    assert!(read.is_refused());
+    let mut read = f.read().unwrap();
+    fs::set_permissions(f.path(), fs::Permissions::from_mode(0o755)).unwrap();
+    fs::write(f.path(), b"Synthetic unsigned input").unwrap();
+    assert!(read.read_original_bounded(64).is_err());
+    assert!(read.is_refused());
+}

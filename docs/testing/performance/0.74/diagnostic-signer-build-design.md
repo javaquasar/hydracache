@@ -51,6 +51,13 @@ make that boundary observable, rather than hiding it behind a realistic fixture.
 
 ## Tests and next integration
 
+The optional Linux [original GNU runtime join](diagnostic-signer-runtime-join-design.md)
+now obtains binary bytes from the retained signer and regenerates canonical GNU
+catalog bytes for the runtime-manifest slot. It reuses this exact verifier and
+domain without changing the old opaque-slot reader. Its selection still remains
+explicitly asserted; original numeric-root observations are not independently
+enrolled runtime/job custody.
+
 The [preregistration](diagnostic-signer-build-plan-20261014.md) fixes tests and
 bounds before implementation. Integration tests mutate every statement field,
 every signature position and each artifact; refuse the known old key roles,

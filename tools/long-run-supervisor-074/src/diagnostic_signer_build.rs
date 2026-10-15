@@ -176,7 +176,7 @@ impl AssertedSignerBuildSelection {
         })
     }
 
-    fn check_receipt(&self, bytes: &[u8]) -> Result<(), ArtifactError> {
+    pub(crate) fn check_receipt(&self, bytes: &[u8]) -> Result<(), ArtifactError> {
         if bytes.is_empty() || bytes.len() > MAX_RECEIPT_BYTES {
             return Err(ArtifactError::Invalid);
         }

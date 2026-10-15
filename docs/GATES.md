@@ -1,5 +1,12 @@
 # HydraCache — Enforcement Gates
 
+Original GNU runtime/receipt consistency uses Linux ordinary tests:
+`cargo test -p hydracache-long-run-supervisor-074 --lib diagnostic_signer_runtime_input::tests --locked`
+plus the root-owned input corpus, signer build/GNU integration tests and five
+compile-fail doctests filtered by `diagnostic_signer_runtime_input`.
+Synthetic receipt consistency is not production custody or signing admission;
+see the [join contract](testing/performance/0.74/diagnostic-signer-runtime-join-contract.toml).
+
 The shared GNU signer catalog uses ordinary portable integration tests:
 `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_gnu --locked`.
 On Linux also run `--example inspect_signer_gnu_catalog` tests and the unchanged

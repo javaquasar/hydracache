@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The opt-in Linux original GNU runtime join uses the unchanged
+`diagnostic-signer-build-074-v1` receipt/domain. For this path only, the existing
+runtime-manifest slot must contain canonical sorted-key JSON plus one LF of
+`diagnostic-signer-gnu-declarations-074-v1`, regenerated from original files;
+opaque, alternate encoding or other-file catalogs refuse. The legacy model's
+opaque-slot behavior remains compatible. No stored configuration reader,
+migration, default, public wire protocol or server admission changes. The new
+Rust-only owner cannot be deserialized or negotiated; see the
+[join design](testing/performance/0.74/diagnostic-signer-runtime-join-design.md).
+
 The opt-in offline `diagnostic-signer-gnu-declarations-074-v1` catalog is
 serialize-only inventory data: four logical roles with byte digests and ELF
 declarations, with all authority flags false. There is no runtime trust reader,

@@ -13667,3 +13667,106 @@ fn shared_signer_gnu_catalog_is_data_not_bootstrap_or_runtime_custody() {
         assert!(parser.contains(marker), "{marker}");
     }
 }
+
+#[test]
+fn original_gnu_runtime_receipt_join_keeps_observations_separate_from_authority() {
+    let c = contract("diagnostic-signer-runtime-join-contract.toml");
+    for key in [
+        "all_role_budgets_before_acquisition",
+        "expected_statement_signature_before_acquisition",
+        "same_original_signer_bytes_and_generated_catalog",
+        "canonical_catalog_plus_single_lf",
+        "no_separately_supplied_binary_or_runtime_manifest",
+        "fixed_numeric_root_public_acquisition",
+        "all_originals_refused_on_join_or_recheck_error",
+        "original_read_only_positional_snapshots",
+        "existing_receipt_domain_and_reader_preserved",
+        "fixture_owner_anchor_override_test_only",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "independent_policy_or_host_authenticated",
+        "production_runtime_custody_authenticated",
+        "all_writers_revoked",
+        "loaded_memory_attested",
+        "original_start_authenticated",
+        "signing_allowed",
+        "server_entry_wired",
+        "actual_private_key_or_token_read",
+        "host_or_github_mutated",
+        "completion_or_later_cells_enabled",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("roles", 4),
+        ("image_bytes", 8388608),
+        ("mutation_seed", 121684087),
+        ("signed_catalog_mutations", 64),
+        ("independent_thread_local_owners", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value));
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_runtime_input.rs")).unwrap();
+    let entry = code
+        .split("pub fn retain_asserted_gnu_runtime(")
+        .nth(1)
+        .unwrap();
+    assert!(
+        entry.find("64..=MAX_IMAGE").unwrap()
+            < entry.find("selection.check_receipt(receipt)?").unwrap()
+    );
+    assert!(
+        entry.find("selection.check_receipt(receipt)?").unwrap()
+            < entry.find("match inspect_root_owned_input(").unwrap()
+    );
+    for text in [
+        "read_original_bounded(MAX_IMAGE)",
+        "binary: &images[0]",
+        "runtime_manifest: &manifest",
+        "crate::canonical_json(&catalog)",
+        "manifest.push(b'\\n')",
+        "refuse_all(&mut self.originals)",
+    ] {
+        assert!(code.contains(text), "{text}");
+    }
+    let companions = code
+        .split("pub struct SignerRuntimeCompanions")
+        .nth(1)
+        .unwrap()
+        .split('}')
+        .next()
+        .unwrap();
+    assert!(!companions.contains("binary:") && !companions.contains("runtime_manifest:"));
+    for text in [
+        "SigningKey",
+        "Command::",
+        "execve(",
+        "PTRACE_",
+        "prepare_asserted_copy",
+        "pub fn inspect_runtime_fixture",
+        "deserialize",
+        "set_permissions(",
+    ] {
+        assert!(!code.contains(text), "{text}");
+    }
+    let original = std::fs::read_to_string(base.join("diagnostic_root_owned_input.rs"))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert!(original.contains("#[cfg(test)]\npub(crate) fn inspect_runtime_fixture("));
+    assert!(original.contains("pub(crate) fn read_original_bounded("));
+    for consumer in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("diagnostic_signer_runtime_input"));
+    }
+}

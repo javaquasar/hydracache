@@ -360,6 +360,43 @@ pub struct RootOwnedInputRead {
     _thread: PhantomData<Rc<()>>,
 }
 impl RootOwnedInputRead {
+    pub(crate) fn refuse(&mut self) {
+        self.refused = true;
+    }
+
+    // Internal snapshot seam for the runtime join, never a public FD or byte reader.
+    // Both original checks and this read use the same retained leaf description.
+    pub(crate) fn read_original_bounded(&mut self, maximum: u64) -> io::Result<Vec<u8>> {
+        let result = (|| {
+            if self.expected.bytes > maximum || maximum > MAX_BINARY_BYTES {
+                return Err(invalid());
+            }
+            self.check_original()?;
+            let file = &self.nodes.last().ok_or_else(invalid)?.file;
+            let mut bytes = vec![0; self.expected.bytes as usize + 1];
+            let mut count = 0;
+            while count < bytes.len() {
+                let n = file.read_at(&mut bytes[count..], count as u64)?;
+                if n == 0 {
+                    break;
+                }
+                count += n;
+            }
+            if count as u64 != self.expected.bytes
+                || crate::sha256_hex(&bytes[..count]) != self.expected.sha256
+            {
+                return Err(invalid());
+            }
+            self.check_original()?;
+            bytes.truncate(count);
+            Ok(bytes)
+        })();
+        if result.is_err() {
+            self.refuse();
+        }
+        result
+    }
+
     pub fn is_refused(&self) -> bool {
         self.refused
     }
@@ -410,6 +447,15 @@ impl RootOwnedInputRead {
         )?)?;
         self.context.check()
     }
+}
+#[cfg(test)]
+pub(crate) fn inspect_runtime_fixture(
+    path: &Path,
+    expected: ArtifactDigest,
+    anchor: &Path,
+    owner: (u32, u32),
+) -> io::Result<RootOwnedInputRead> {
+    inspect_at(path, expected, anchor, owner)
 }
 #[cfg(test)]
 #[path = "diagnostic_root_owned_input_tests.rs"]
