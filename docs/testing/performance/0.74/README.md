@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [kernel refusal attribution](diagnostic-kernel-refusal-attribution-design.md)
+adds scoped test-only first-site/phase capture for the original controller
+fixture. Thirty-two Invalid sites and three test-only lazy Option constructors
+preserve non-test guards through an exact macro/source comparison. Expected
+clock/namespace/projection refusals are classifier checks, not evidence that the
+earlier uninstrumented Kernel(Invalid) has been explained. No production trace,
+retry, clock fallback or server admission is added.
+The [local attribution packet](local-runs/kernel-refusal-attribution-20261016/README.md)
+retains three Rust1.94 and one Rust1.88 original-input repetitions, each passing
+69 tests without reproducing the earlier refusal. Historical cause stays open.
+
 The [original controller attempt](diagnostic-controller-attempt-design.md)
 consumes the original common-fence preflight into bounded durable request
 retention, preserving the same lock and authority chain. Partial or complete

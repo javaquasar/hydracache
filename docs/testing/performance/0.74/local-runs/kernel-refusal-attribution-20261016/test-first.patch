@@ -1,0 +1,16 @@
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs
+index ee1ff2e9..c7e97cf0 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs
+@@ -1,4 +1,11 @@
+ use super::*;
++
++#[test]
++fn kernel_refusal_capture_healthy_has_no_event() {
++    let (value, event) = super::refusal_trace::capture(|| 7);
++    assert_eq!(value, 7);
++    assert!(event.is_none());
++}
+ use std::io::Read;
+ use std::os::fd::FromRawFd;
+ use std::os::unix::process::{CommandExt, ExitStatusExt};

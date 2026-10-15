@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.80s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 1 test
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 924 filtered out; finished in 0.02s
+
+seed=0x0751 connection_peer=parent inherited_sender=child per_message_pidfd=original actual_sigkill=1 exited_sender=refused parent_sender=still_live production_enrollment=false

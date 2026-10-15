@@ -1,0 +1,17 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.68s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 4 tests
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_first_event_and_phase_are_not_overwritten ... ok
+
+thread 'diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope' (633) panicked at tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs:101:21:
+owned trace unwind canary
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unwind", site: "unwinding", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs", line: 100, clock: [0, 0, 0, 0, 0, 0] }
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_nested_and_unwind_restore_original_scope ... ok
+test diagnostic_kernel_admission::tests::kernel_refusal_capture_healthy_has_no_event ... ok
+test diagnostic_kernel_admission::refusal_trace::tests::kernel_refusal_capture_threads_are_independent ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 919 filtered out; finished in 0.00s
+

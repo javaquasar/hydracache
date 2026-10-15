@@ -1,0 +1,29 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.47s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack ... controller_attempt_crash seed=0x0740c095 stage=PrefixWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=PrefixWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Acknowledging sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Acknowledging sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=FileSynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=FileSynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=BeforeCreate sigkill=true fresh_inspection=1 empty=true unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=BeforeCreate sigkill=true fresh_inspection=2 empty=true unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=BytesWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=BytesWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Created sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Created sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=DirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=DirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Sealed sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=Sealed sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=AfterReturn sigkill=true fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=AfterReturn sigkill=true fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=AfterReturn sigkill=false fresh_inspection=1 empty=false unchanged=true
+controller_attempt_crash seed=0x0740c095 stage=AfterReturn sigkill=false fresh_inspection=2 empty=false unchanged=true
+controller_attempt_crash_summary seed=0x0740c095 sigkills=9 controls=1 fresh_inspections=20 production_enrollment=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 924 filtered out; finished in 66.06s
+

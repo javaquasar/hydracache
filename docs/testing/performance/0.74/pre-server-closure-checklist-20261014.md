@@ -73,6 +73,13 @@ do not identify its cause. Attribute that refusal before treating the integrated
 admission path as stable or enrolling it for server execution; do not relax the
 kernel/time guards to remove the failure.
 
+The [scoped classifier](diagnostic-kernel-refusal-attribution-design.md) now
+records the first Invalid site and fixture phase in test builds, with existing
+numeric clock observations for ordering/hold refusals. It preserves original
+ordinary-build constructors and checks guard/source equivalence against the
+pre-instrumentation baseline. Model classifications and clean repeats are not
+a historical root-cause finding or an enrolled production diagnostic route.
+
 The [fixed trust input](diagnostic-worker-trust-input-design.md) now retains the
 selected issuer and explicitly configured body pin/epoch from a bounded original
 root-owned file, with an owned config/journal/policy join. Its positive filesystem

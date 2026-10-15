@@ -1,0 +1,5 @@
+Verified three current-Rust and one MSRV matrix: each 9 owned SIGKILL cases, 1 control and 20 fresh inspections.
+Verified source scope, unchanged runtime/schema, 69 trust tests, 11 fence tests and 168 contracts.
+Verified 176 automatic gates still covered and exactly one added manual entry, 229 to 230 explicit registrations.
+Verified 47 captures and all artifact hashes; test-first and origin negatives remain retained.
+Unsigned consistency only; no execution attestation, power-loss/reboot proof, production enrollment, start or server admission.

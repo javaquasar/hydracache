@@ -255,3 +255,6 @@ docs/testing/performance/0.74/local-runs/controller-fence-preflight-*/*.log -tex
 docs/testing/performance/0.74/local-runs/controller-attempt-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/controller-attempt-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/controller-attempt-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol

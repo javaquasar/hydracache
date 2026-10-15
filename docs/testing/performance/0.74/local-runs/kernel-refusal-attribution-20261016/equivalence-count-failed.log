@@ -1,0 +1,21 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.78s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 1 test
+
+thread 'kernel_refusal::kernel_refusal_test_instrumentation_preserves_every_non_test_guard' (8084) panicked at crates\xtask\tests\support\performance_contract_074_kernel_refusal.rs:152:5:
+assertion `left == right` failed
+  left: (32, 3)
+ right: (33, 3)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test kernel_refusal::kernel_refusal_test_instrumentation_preserves_every_non_test_guard ... FAILED
+
+failures:
+
+failures:
+    kernel_refusal::kernel_refusal_test_instrumentation_preserves_every_non_test_guard
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 168 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

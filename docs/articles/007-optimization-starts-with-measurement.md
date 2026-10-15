@@ -10439,3 +10439,60 @@ inspections. The original-input regression subsequently passes 69 tests and the
 fence group passes eleven, while all development failures remain retained.
 These are scoped safety results, not permission to start a server or a numerical
 performance claim.
+
+### Locating the first kernel refusal without changing admission
+
+A generic Kernel(Invalid) can come from very different checks: procfs or nsfs
+origin, retained object identity, credential projection, clock ordering or the
+exclusive packet-hold boundary. The earlier original-controller regression
+failed during reviewed build binding before the attempted write. Its subsequent
+successes and nearby timesync entries could not identify which check refused.
+Changing timing policy on that evidence would substitute a guess for attribution.
+
+The next addition is therefore a private test-only classifier. A scoped
+thread-local frame keeps the first static site, file/line and fixture phase.
+Clock-order and hold errors also retain the six existing numeric facts: before
+and after boottime, before and after realtime, equal boot and the unchanged
+hold limit. No extra clock or proc observation constructs the report. It retains
+no request, bearer token, raw credential or configuration body, and creates no
+runtime journal or public admission interface.
+
+Nested scopes restore their prior frame, even during unwind. Eight concurrently
+active test threads prove frame separation. A caught panic canary checks that
+reporting preserves the original panic payload; its deliberately emitted trace
+is not a reproduction of the historical fixture failure. Positive checks produce
+no event, and an event in an expected negative test describes that test's first
+refusal rather than automatically explaining a later assertion.
+
+Instrumentation has its own correctness traps. Constructing an error eagerly
+inside Option::ok_or would emit a false diagnostic even when the Option is Some.
+Making every constructor lazy avoids that in tests, but strict Clippy correctly
+rejects the unnecessary closure when test recording disappears. An explicit
+compile-time split now keeps the original ordinary-build ok_or while only tests
+perform lazy recording. No lint suppression or guard change is needed.
+
+An independent token comparison expands only the approved macros and compares
+both non-test source prefixes with the exact earlier baseline. It does not
+discard arbitrary blocks, predicates or observation order. Its first run caught
+a closure block introduced by formatting a long diagnostic label; a shorter
+label restored the original expression shape. Only question-mark joint spacing
+is normalized. Changed deadline and filesystem guards must still differ, and a
+parsed trailing test module cannot conceal newly appended ordinary code.
+
+The classification matrix covers reversed clocks, the exclusive 60-second hold,
+timespec overflow, namespace type/object, proc-origin and credential-projection
+failures. Seeded synthetic faults establish that those categories remain
+distinguishable and fail closed. They do not establish which category caused
+the old uninstrumented refusal. Bounded original-input repetitions may provide
+a new event, but neither a new event nor a clean repetition can retroactively
+prove the earlier cause. Original-start, all-writer cessation, production trust
+and server admission remain separate requirements; this is not a throughput
+or allocations result.
+
+The bounded experiment subsequently completed three original-input repetitions
+on Rust 1.94 and one on Rust 1.88, each with 69 passing tests and the existing
+manual case ignored. None emitted an unexpected first-refusal event. Both
+compiler versions passed the 25-test kernel group. The useful result is a
+guard-preserving attribution tool, not a reproduced or repaired historical
+failure. The [local evidence packet](../testing/performance/0.74/local-runs/kernel-refusal-attribution-20261016/README.md)
+retains development failures alongside final checks; the old cause remains open.

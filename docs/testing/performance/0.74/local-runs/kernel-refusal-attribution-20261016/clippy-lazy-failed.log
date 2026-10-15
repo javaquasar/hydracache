@@ -1,0 +1,62 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: unnecessary closure used to substitute value for `Option::None`
+   --> tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs:111:5
+    |
+111 | /     (sec as u64)
+112 | |         .checked_mul(1_000_000_000)
+113 | |         .and_then(|s| s.checked_add(ns as u64))
+114 | |         .ok_or_else(|| kernel_invalid!("clock-overflow"))
+    | |_________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_lazy_evaluations
+    = note: `-D clippy::unnecessary-lazy-evaluations` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_lazy_evaluations)]`
+help: use `ok_or` instead
+    |
+114 ~         .ok_or({
+115 +         #[cfg(test)]
+116 +         $crate::diagnostic_kernel_admission::refusal_trace::record($site, file!(), line!(), $facts);
+117 +         KernelError::Invalid
+118 +     })
+    |
+
+error: unnecessary closure used to substitute value for `Option::None`
+   --> tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs:287:20
+    |
+287 |           let body = lines
+    |  ____________________^
+288 | |             .next()
+289 | |             .ok_or_else(|| kernel_invalid!("projection-missing-field"))?;
+    | |_______________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_lazy_evaluations
+help: use `ok_or` instead
+    |
+289 ~             .ok_or({
+290 +         #[cfg(test)]
+291 +         $crate::diagnostic_kernel_admission::refusal_trace::record($site, file!(), line!(), $facts);
+292 +         KernelError::Invalid
+293 ~     })?;
+    |
+
+error: unnecessary closure used to substitute value for `Option::None`
+   --> tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs:394:20
+    |
+394 |       let observed = lines
+    |  ____________________^
+395 | |         .next()
+396 | |         .ok_or_else(|| kernel_invalid!("pidfd-info-missing-pid"))?
+    | |_________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#unnecessary_lazy_evaluations
+help: use `ok_or` instead
+    |
+396 ~         .ok_or({
+397 +         #[cfg(test)]
+398 +         $crate::diagnostic_kernel_admission::refusal_trace::record($site, file!(), line!(), $facts);
+399 +         KernelError::Invalid
+400 ~     })?
+    |
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
