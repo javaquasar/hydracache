@@ -196,6 +196,10 @@ fn signer_namespace_policy_exact_extension_and_abi_model() {
     let new = program();
     let old = policy();
     assert_eq!(encoded(&new).len(), 512);
+    assert_eq!(
+        encoded(&new).as_slice(),
+        crate::diagnostic_signer_isolation::policy_bytes().as_slice()
+    );
     assert_eq!(encoded(&new[..22]), encoded(&old[..22]));
     assert_eq!(encoded(&new[52..]), encoded(&old[22..]));
     assert_eq!(

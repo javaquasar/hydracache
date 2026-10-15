@@ -55,6 +55,7 @@ pub mod diagnostic_root_owned_input;
 pub mod diagnostic_signer_bootstrap_context;
 pub mod diagnostic_signer_build;
 pub mod diagnostic_signer_gnu;
+pub mod diagnostic_signer_isolation;
 pub mod diagnostic_signer_issuer;
 #[cfg(target_os = "linux")]
 pub mod diagnostic_signer_runtime_input;

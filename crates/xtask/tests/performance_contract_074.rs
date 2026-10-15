@@ -3,6 +3,82 @@ use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 #[test]
+fn ordinary_child_entry_is_fixed_kernel_restriction_not_launch_admission() {
+    let c = contract("diagnostic-signer-child-entry-contract.toml");
+    for key in [
+        "ordinary_fixed_generator_matches_independent_fixture",
+        "private_installer_only_terminating_fixed_probe",
+        "exact_zero_tsync_and_nd0_required",
+        "post_install_current_context_and_exact_filter_increment",
+        "environment_credentials_threads_capabilities_and_fds_checked",
+        "core_limits_disabled_before_abi_probes",
+        "owned_probe_wait_and_cleanup_bounded",
+        "owned_harness_child_only_cloexec_sweep",
+        "native_positive_unfiltered_chdir_control",
+        "parent_restrictions_unchanged",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(true), "{key}");
+    }
+    for key in [
+        "actual_root_process_exercised",
+        "selected_root_or_original_exec_authenticated",
+        "host_initial_namespace_or_account_admitted",
+        "complete_sandbox_or_mapped_instruction_integrity",
+        "real_private_key_or_token_read",
+        "all_writers_revoked",
+        "completion_or_later_cells_enabled",
+        "signing_allowed",
+        "server_or_github_mutated",
+        "qualification_allowed",
+        "ship_allowed",
+        "performance_claim_allowed",
+    ] {
+        assert_eq!(c[key].as_bool(), Some(false), "{key}");
+    }
+    for (key, value) in [
+        ("instructions", 64),
+        ("policy_bytes", 512),
+        ("native_denial_probes", 20),
+        ("namespace_root_mount_denials", 15),
+        ("status_bytes", 65536),
+        ("fd_read_bytes", 512),
+        ("fd_reads", 3),
+        ("fd_records", 8),
+        ("existing_filters_max", 64),
+        ("post_install_filters_max", 65),
+        ("probe_wait_seconds", 5),
+        ("mutation_seed", 121684089),
+        ("seeded_argument_mutations", 256),
+        ("independent_owners", 4),
+    ] {
+        assert_eq!(c[key].as_integer(), Some(value), "{key}");
+    }
+    let base = root().join("tools/long-run-supervisor-074/src");
+    let code = std::fs::read_to_string(base.join("diagnostic_signer_isolation_linux.rs")).unwrap();
+    assert!(code.contains("fn install() -> io::Result<()>"));
+    assert!(!code.contains("pub fn install"));
+    for marker in [
+        "SECCOMP_FILTER_FLAG_TSYNC",
+        "PR_SET_NO_NEW_PRIVS",
+        "PR_SET_DUMPABLE",
+        "RLIMIT_CORE",
+        "libc::_exit(code)",
+        "after.filters != before.filters + 1",
+    ] {
+        assert!(code.contains(marker), "{marker}");
+    }
+    for consumer in [
+        "server.rs",
+        "bin/diagnostic_controller.rs",
+        "diagnostic_controller_producer_linux.rs",
+    ] {
+        assert!(!std::fs::read_to_string(base.join(consumer))
+            .unwrap()
+            .contains("diagnostic_signer_isolation"));
+    }
+}
+
+#[test]
 fn signer_executable_observation_keeps_same_inode_reexec_and_runtime_authority_unproved() {
     let c = contract("diagnostic-signer-executable-contract.toml");
     assert_eq!(c["additional_executable_descriptors"].as_integer(), Some(2));

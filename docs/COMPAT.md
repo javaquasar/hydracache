@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The additive `diagnostic_signer_isolation_probe` binary is a closed nonproduct
+Linux x86_64 child probe, not a configured service or signer. Only native/x32/i386
+arguments are accepted. Unsupported platforms and unknown input refuse; the
+library entry terminates its current process and must only run in a fresh owned
+child. The fixed policy equals the old fixture and changes no product defaults,
+wire schema, signing domain, receipt, dependency or qualification input. No
+server/controller consumer is connected; see the [child-entry design](testing/performance/0.74/diagnostic-signer-child-entry-design.md).
+
 The optional `diagnostic-signer-bootstrap-context-074-v1` inner document uses
 canonical sorted-key JSON plus one LF and strict unknown/future/type/duplicate
 refusal. Stronger portable/Linux APIs require it in the unchanged signer receipt's

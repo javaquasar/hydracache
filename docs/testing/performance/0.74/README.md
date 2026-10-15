@@ -1,5 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary fixed child entry](diagnostic-signer-child-entry-design.md) moves
+one restriction primitive out of test-only code: normal owned processes apply
+the fixed filter and exercise EPERM/SIGSYS. It does not authenticate original
+launch/root/runtime or enable signing/start. The independent old fixture policy
+and helpers remain regression oracles; this is not a cache-performance result.
+
 The optional [structured bootstrap context](diagnostic-signer-bootstrap-context-design.md)
 binds declared source/binary/runtime and fixed job requirements inside the existing
 receipt. Its [packet](local-runs/diagnostic-signer-bootstrap-context-20261015/README.md)

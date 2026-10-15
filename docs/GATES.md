@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+Fixed ordinary child restrictions use portable `--test diagnostic_signer_isolation`
+and Linux x86_64 `--test diagnostic_signer_child_entry` in package
+`hydracache-long-run-supervisor-074`, plus `--lib diagnostic_signer_isolation::linux::tests`.
+The Linux target is registered and included by the existing supervisor CI command.
+Old namespace/rooted-exec/handoff fixtures remain independent regressions. Real
+EPERM/SIGSYS checks are only owned, core-disabled nonproduct child probes, never
+signing/start admission; see the [child-entry contract](testing/performance/0.74/diagnostic-signer-child-entry-contract.toml).
+
 Structured bootstrap context uses ordinary portable tests:
 `cargo test -p hydracache-long-run-supervisor-074 --test diagnostic_signer_bootstrap_context --locked`.
 Also run Linux original-runtime composition/OIDC regressions and doctests filtered
