@@ -8617,3 +8617,63 @@ the next experiment. A one-shot public dummy is not a signing credential, and
 these tests do not authenticate production issuer/job custody, worker original-
 start or cessation of all writers. Server and release admission remain closed;
 no goodput, allocation or latency improvement follows from this safety fixture.
+
+## Actual tracer death and independent child cleanup (2026-10-15)
+
+Requesting EXITKILL is not evidence that owner loss is safe. The next local
+fixture therefore kills the actual original tracer through its original pidfd
+and observes the child from a separate process. At initial, rooted, original-exec,
+installed, READY and delivered stops, the observer requires the original child's
+CLD_KILLED/SIGKILL record, consumes it through P_PIDFD waitid and requires ECHILD
+on repeat. It never signals the child on a successful path. A separate emergency
+guard can clean a failed owned process group, but that cannot create a green
+EXITKILL result. This remains a public-dummy experiment, not a production signer.
+
+The observer itself needs an ownership boundary. It creates the original tracer
+and private socketpair, receives kernel credentials and only five original FDs,
+then checks the child pidfd, actual parent/tracer thread and exact root directory
+inodes. Only the isolated observer becomes a subreaper; ordinary test-process
+flags are checked unchanged. Root cleanup permissions change only after exact
+original child death and reap. This composes the existing owner and unchanged
+GNU helper rather than adopting a supplied PID or writing another signer engine.
+The relevant kernel mechanisms are documented by
+[ptrace](https://man7.org/linux/man-pages/man2/ptrace.2.html),
+[subreapers](https://man7.org/linux/man-pages/man2/PR_SET_CHILD_SUBREAPER.2const.html)
+and [pidfd waitid](https://man7.org/linux/man-pages/man2/waitid.2.html).
+
+Several failed assumptions improved the experiment. The selected tree was nested
+under `.tmpName/root`, not directly under the observer parent. The temporary
+container's actual 0755 mode also contradicted an assumed 0700 default. The observer
+now explicitly creates its own retained 0700 parent around that unchanged tree,
+with descriptor-relative NOFOLLOW opens. The first coarse negative assertions
+passed under those unrelated setup failures; final report faults are attributed
+to their intended parser, frame, process or directory predicate instead.
+
+The no-EXITKILL control also falsified its exact natural-exit prediction: installed
+returned 74 rather than 73. Tracer death, ptrace detach and endpoint teardown are
+not one atomic user-visible boundary. The unchanged helper can successfully send
+READY before losing its peer, then fail to read a dummy that was never sent.
+The failed prediction remains retained. A separately preregistered finite oracle
+distinguishes only reachable CLD_EXITED branches from positive SIGKILL; actual
+statuses are logged, not replaced by one convenient sample. Natural exit is not
+evidence that a live orphan was reproduced.
+
+Parallel current/MSRV runs exposed two harness confounds. An aggregate report
+timer included compilation and every setup stage; bounded credential-checked
+progress now separates those stages without increasing the five-second gap or
+30-second outer bound. Progress is a hint and cannot admit the fault. A pipe EOF
+test then failed while unrelated tests forked: CLOEXEC does not prevent temporary
+inheritance of the same open description, as the
+[fork semantics](https://man7.org/linux/man-pages/man2/fork.2.html) explain. Running
+that oracle after exec in its own fixed role removes that confound without sleeps
+or weaker assertions. Immediate EOF still proves received writers were closed;
+the healthy report control keeps them alive until drop.
+
+The [design](../testing/performance/0.74/diagnostic-signer-tracer-loss-design.md)
+and [source-bound packet](../testing/performance/0.74/local-runs/diagnostic-signer-tracer-loss-20261015/README.md)
+retain those failures beside three eleven-case repeats, 112 old regressions,
+MSRV and 145 source contracts. The constructor window before installing EXITKILL
+remains outside this proof. Independent runtime/job/issuer custody, real token
+producer and authenticated receiver/replay/fence, worker original-start and all
+writers, completion/cells 2–4 and server admission remain separate. No cache
+throughput, allocation, latency or release qualification claim follows.

@@ -1,0 +1,11 @@
+error: expected expression, found `as`
+   --> \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_signer_tracer_loss_tests.rs:196:77
+    |
+196 |         let expected = if fault == 3 { 0 } else { unsafe { libc::getpid() } as u32 };
+    |                                                                             ^^ expected expression
+    |
+help: parentheses are required to parse this as an expression
+    |
+196 |         let expected = if fault == 3 { 0 } else { (unsafe { libc::getpid() }) as u32 };
+    |                                                   +                         +
+

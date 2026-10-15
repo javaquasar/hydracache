@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.38s
+     Running `target\debug\xtask.exe doc-check`
+doc-check: OK (releases.toml is consistent)
+Verified original tracer-loss evidence, 36 captures; constructor window and production remain closed.
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 35.533s
+
+OK

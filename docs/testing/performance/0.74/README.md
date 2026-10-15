@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [actual tracer-loss observer](diagnostic-signer-tracer-loss-design.md) now
+kills the original tracer and independently requires the original child's SIGKILL
+and exact pidfd reap at six boundaries. Three eleven-case repeats, 112 prior
+regressions, MSRV and 145 source contracts pass. The
+[tracer-loss packet](local-runs/diagnostic-signer-tracer-loss-20261015/README.md)
+retains failed ancestry/mode/exit predictions, aggregate-stall pressure and a
+concurrent fork/EOF confound. Final progress and FD-lifetime checks preserve the
+original bounds; emergency cleanup cannot count as proof. The pre-options
+constructor window, production custody/credentials, worker/all-writer completion
+and server/qualification remain closed. Earlier profiles retain their narrower
+source-specific claims.
+
 The [original synthetic handoff](diagnostic-signer-handoff-design.md) now binds
 one 16-byte dummy transfer to the original exec/install/ND0/read-entry chain.
 Three thirteen-case repeats, 99 old regressions, MSRV, Windows portability and 144
