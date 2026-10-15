@@ -79,6 +79,15 @@ class PublicEncodingTests(unittest.TestCase):
         self.assertEqual(len(keytool.OLD_ROLES), 3)
 
 
+    def test_deep_public_json_is_sanitized_before_private_access(self):
+        raw = b"[" * 1500 + b"]" * 1500
+        with patch.object(keytool, "check_file", return_value=None), \
+                patch.object(keytool.os, "pread", return_value=raw, create=True), \
+                self.assertRaises(keytool.Refused) as error:
+            keytool.read_public(123)
+        self.assertEqual(str(error.exception), "Invalid signer public selection")
+
+
 @unittest.skipUnless(sys.platform == "linux" and os.geteuid() != 0,
                      "Custody fixtures require nonroot Linux/OpenSSL; not Windows/root coverage")
 class LinuxCustodyTests(unittest.TestCase):

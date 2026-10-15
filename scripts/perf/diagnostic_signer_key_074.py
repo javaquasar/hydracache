@@ -225,7 +225,7 @@ def read_public(fd):
                              bytes.fromhex(report["selfcheck_signature_hex"]), os.geteuid())
         if raw != canonical(expected):
             raise Refused("Exact unapproved signer public selection required")
-    except (KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError, RecursionError):
         raise Refused("Invalid signer public selection") from None
     if stable_metadata(os.fstat(fd)) != stable_metadata(before):
         raise Refused("Original public selection metadata drifted")
