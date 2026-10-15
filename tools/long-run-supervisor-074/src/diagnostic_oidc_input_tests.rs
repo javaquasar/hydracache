@@ -1,4 +1,6 @@
 //! This RSA private test fixture is publicly committed, never a production key.
+#[path = "diagnostic_controller_fence_preflight_tests.rs"]
+mod fence_preflight_tests;
 #[path = "diagnostic_oidc_roster_tests.rs"]
 mod roster_tests;
 use super::profile::Profile;

@@ -7,6 +7,9 @@ use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+#[path = "diagnostic_controller_fence_preflight.rs"]
+pub mod fenced_preflight;
+
 #[path = "diagnostic_oidc_profile.rs"]
 mod profile;
 use profile::{verify, TrustProfile, MAX_ROSTER_BYTES, MAX_TOKEN};
