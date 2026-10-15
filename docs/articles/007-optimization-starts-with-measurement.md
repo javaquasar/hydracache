@@ -8726,3 +8726,53 @@ an explicit launcher thread model. Actual issuer/job/runtime custody, token
 integration, worker original-start and all-writer cessation, later cells and
 server admission remain separate. This is a lifecycle safety improvement, not
 a measured cache throughput or allocation win.
+
+## Creating thread death while the parent process remains alive
+
+The whole-parent-loss guard did not settle one narrower race: getppid can still
+match after the creating thread dies while other parent threads survive. The
+next local experiment retains the actual creator's procfs directory before
+fork and checks fresh status relative to it after PDEATHSIG arming. Pid, Tgid
+and a live task state must match. It does not reopen a numeric TID, which could
+refer to a replacement. The [kernel procfs documentation](https://docs.kernel.org/filesystems/proc.html)
+explains why an open original object does not become a later task with the
+same numeric identity. This is object binding, not mapped-memory attestation.
+
+The fault must also isolate that thread. A whole-group SIGKILL would repeat the
+previous experiment. Here the original callback invokes raw SYS_exit, leaving
+its keeper and libtest/main threads alive. The
+[exit syscall](https://man7.org/linux/man-pages/man2/exit.2.html) and
+[PDEATHSIG semantics](https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html)
+distinguish that lifetime from whole-process termination. All Rust preparation
+finishes before the raw exit; the dedicated tracer process later exits as a
+whole, without pretending its lost Rust thread resumed normally.
+
+Before arming, the observer confirms the original creator is gone while the
+parent process remains live, then releases the child gate. The new task check
+refuses with exit81. The old-getppid control passes that earlier predicate and
+exits86 before exec when only the new check is omitted. This reproduces the
+missing condition without claiming a live authority-bearing orphan. At the
+four armed cuts actual creator loss produces child SIGKILL.
+
+The independent proof is not just the keeper's report. The observer requires
+child pidfd readiness while the original parent pidfd is still nonterminal.
+The keeper retains the child's WNOWAIT terminal record without reaping; only
+then may the parent process exit. The independent subreaper subsequently
+requires that same original child's kernel tuple, consumes it and requires
+ECHILD before releasing runtime directories. Neither a direct child signal nor
+emergency cleanup can make a positive. Healthy controls still complete the old
+ACK/close/zero-exit chain and join their keeper.
+
+Three eight-case repeats retain 51 positive terminal records, three separate
+old-TGID controls and 15 healthy completions. All 130 previous signer regressions,
+MSRV, 147 source contracts and Windows portable checks pass. A separate post-exec
+role proves original task death, descriptor release and raw-reader FD stability;
+the parser rejects dead/future/duplicate/oversized status under fixed stack/read
+bounds. No duration or qualification threshold changes. The
+[design](../testing/performance/0.74/diagnostic-signer-creator-loss-design.md) and
+[evidence](../testing/performance/0.74/local-runs/diagnostic-signer-creator-loss-20261015/README.md)
+separate this confirmed constructor result from still-unproved post-options
+tracer-thread-only loss, forced TID reuse and arbitrary signer-thread support.
+Actual launcher/runtime/job custody, token integration, worker original-start,
+all-writer cessation and server admission remain separate. No measured cache
+performance improvement follows from these lifecycle tests.

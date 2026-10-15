@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original creating-thread guard](diagnostic-signer-creator-loss-design.md)
+now retains the original proc task and checks it after arming. Five actual
+creator-only loss cuts require original child terminal while its parent TGID
+still lives, followed by independent reap. The
+[creator-loss packet](local-runs/diagnostic-signer-creator-loss-20261015/README.md)
+keeps the old-getppid counterfactual distinct from positive proof. This closes
+that fixed pre-options thread-loss gap, not forced TID reuse, post-options
+thread-only loss, arbitrary signer-thread support, production custody or server
+admission. Earlier packets retain their original source-specific scope.
+
 The [constructor parent-loss guard](diagnostic-signer-constructor-loss-design.md)
 adds PDEATHSIG plus an original-parent check before the existing EXITKILL boundary.
 Five whole-process loss cuts distinguish the pre-arm refusal from armed SIGKILL;

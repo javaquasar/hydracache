@@ -1,0 +1,36 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+warning: unused import: `super::*`
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:2:5
+  |
+2 | use super::*;
+  |     ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0425]: cannot find function `creator_loss_case` in this scope
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:5:5
+  |
+5 |     c...loss_case(0,...
+  |     ^...^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `creator_loss_case` in this scope
+ --> tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:9:23
+  |
+9 | ... { creator_loss_case(cu...
+  |       ^^^^^^^^^^^^^^^^^...und in this scope
+
+error[E0425]: cannot find function `creator_loss_case` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:13:5
+   |
+13 |     ..._loss_case(0,...
+   |     ...^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `creator_loss_case` in this scope
+  --> tools/long-run-supervisor-074/src/diagnostic_signer_creator_loss_fixture.rs:17:23
+   |
+17 | ... { creator_loss_cas...
+   |       ^^^^^^^^^^^^^^^^...ound in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `hydracache-long-run-supervisor-074` (lib test) generated 1 warning
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 4 previous errors; 1 warning emitted
