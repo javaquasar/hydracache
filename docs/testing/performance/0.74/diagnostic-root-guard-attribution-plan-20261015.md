@@ -36,3 +36,27 @@ checks/strict lint on current/MSRV Windows/Linux, formatting, static performance
 contracts, registry and non-promotable admission checks. Retain all negative
 outputs. This step opens no server, qualification, trusted original-start,
 credential transfer, completion/later cells or performance claim.
+
+## Separate hash owner attribution and conditional candidate
+
+The first two parent-stage observations complete below the unchanged deadline
+but close to it, with most elapsed time accounted for by parent thread CPU.
+They do not identify the historical stalled instruction. Before selecting a
+candidate, add a separate temporary overlay counting SHA-256 calls, input bytes
+and thread CPU inside the existing private digest function. Input bytes hashed
+are not copied-byte or product-workload metrics. Do not sum nested CPU owners.
+Retain the overlay and raw stderr refusals separately, then restore it exactly.
+
+Only if that leaf owner dominates may a separate local-tooling candidate reuse
+the already pinned Linux `ring` SHA-256 implementation instead of the private
+probe's `sha2` implementation. First test known SHA-256 vectors, seeded binary
+block boundaries and the unchanged eight-MiB image bound against the old
+implementation. No hash cache, skipped revalidation, weaker algorithm, new
+dependency, graph exception, guard, workload or qualification change is allowed.
+All other root, source, binding and cleanup code must compare unchanged.
+
+The extra pure hash test may increase the unit count; it must not add a competing
+process fixture to the seven-test root matrix. Keep the hash candidate separate
+from the test-only timeout capture commit. Repeat canonical current-toolchain
+process checks and strict package gates before accepting either. A faster local
+diagnostic is not a RESP/native throughput or release performance claim.
