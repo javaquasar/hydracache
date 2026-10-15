@@ -1,0 +1,9 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.86s
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 1 test
+normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 4.21s

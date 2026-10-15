@@ -1138,6 +1138,14 @@ trusted host/all-thread/original-start authority. Production preparation and
 signed lifecycle/watchdog integration remain separate; no helper/IPC or live
 route, host mutation, workload or qualification is enabled.
 
+The local [ordinary selected-self dummy handoff](../testing/performance/0.74/diagnostic-signer-owned-root-handoff-design.md)
+composes the existing root/policy diagnostic with one attempted public-dummy
+transfer, exact original native trace, ACK/close/zero exit and owned cleanup.
+It leaves original-start authority closed: creator loss at transfer boundaries,
+trusted runtime/issuer/job custody, real credentials and P2/P3 all-writer
+cessation remain prerequisites before completion/later cells or server admission.
+This local W11 prerequisite adds no measurement or qualification admission.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw

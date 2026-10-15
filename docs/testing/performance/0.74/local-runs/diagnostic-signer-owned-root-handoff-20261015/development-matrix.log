@@ -1,0 +1,34 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.37s
+     Running tests/diagnostic_signer_root_probe.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_root_probe-9ea1c435ba4ff137)
+
+running 1 test
+normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false
+normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff has been running for over 60 seconds
+normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false
+test normal_original_root_one_shot_dummy_handoff ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 88.93s

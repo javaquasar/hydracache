@@ -61,3 +61,8 @@ fixture. Real key/OIDC integration, authenticated receiver/replay/fence, worker
 original-start, P2/P3 cessation of all writers, completion/cells2-4 and server
 rehearsal remain separate. Normal libraries contain no new symbols or consumer;
 no dependency, signed/durable schema, reviewed pin or qualification input changes.
+
+The later [ordinary selected-self composition](diagnostic-signer-owned-root-handoff-design.md)
+adds a separate binary-private socket profile using the normal root/policy path.
+Its 25-mode public-dummy proof does not substitute for this fixture's loss cases
+or establish trusted credentials and authenticated worker start.

@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary root dummy handoff](diagnostic-signer-owned-root-handoff-design.md)
+adds the original traced READY/read/dummy/ACK/close/exit sequence to a separate
+fixed socket profile. All 25 modes distinguish one-shot success from refusal and
+cleanup controls; lost ACK and failed send never permit retry. Existing pipe
+profiles and exact policy stay separate. Creator loss at transfer boundaries,
+trusted credentials, worker start, writers and server admission remain closed.
+
 The [ordinary root creator-loss diagnostic](diagnostic-signer-owned-root-loss-design.md)
 adds five stopped-boundary creator SIGKILL checks, two healthy controls and one
 matched no-EXITKILL survivor control. A fresh local monitor retains original root,

@@ -1,0 +1,21 @@
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error: items after a test module
+   --> tools/long-run-supervisor-074/src/bin/../diagnostic_signer_owned_root_handoff.rs:578:1
+    |
+578 | mod tests {
+    | ^^^^^^^^^
+...
+877 |...:Result<()> {
+    |...^^^^^^^^^^^
+...
+939 |... &str) -> ! {
+    |...^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#items_after_test_module
+    = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+    = help: move the items to before the test module was defined
+
+error: could not compile `hydracache-long-run-supervisor-074` (bin "diagnostic_signer_root_probe" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

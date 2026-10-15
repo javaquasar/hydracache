@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.54s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 3 tests
+test diagnostic_signer_isolation::linux::tests::child_entry_directory_decoder_bounds_canonical_names_and_types ... ok
+test diagnostic_signer_isolation::linux::tests::child_entry_status_bounds_duplicates_credentials_and_capabilities ... ok
+test diagnostic_signer_isolation::linux::tests::child_entry_status_filter_count_has_bounded_post_install_slot ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 895 filtered out; finished in 0.00s

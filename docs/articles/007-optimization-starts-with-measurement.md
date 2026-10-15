@@ -9695,3 +9695,92 @@ The next isolated step is protected one-shot dummy handoff through the ordinary
 root/policy path, followed by the remaining loss boundaries. Real credentials,
 authenticated worker original-start, P2/P3 cessation of all writers, completion and
 later cells, server rehearsal and release qualification remain separate gates.
+
+### One shot dummy transfer through the ordinary root
+
+The next question was whether the ordinary selected-self launcher could carry
+the existing fixed dummy protocol after its actual root, exec, loaded mappings
+and restriction checks. The previous handoff proof used a separately compiled
+test helper; the stopped-creator-loss proof did not transfer anything. Reusing
+those results as evidence of ordinary transfer would skip the composition being
+tested. We retained the 52-test baseline and the old binary's new-mode exit2 red.
+
+The added profile replaces only its private FD3 pipe with an unnamed nonblocking
+CLOEXEC seqpacket pair. The raw worker fork path stays unchanged. The parent
+drops its child-end duplicate immediately and retains original endpoint objects.
+Existing pipe modes keep their own behavior; no new root file or procfs mount
+appears. A normal private child mode performs the same context prerequisites
+before any fault action, then the same fixed policy installer. Neither the
+library nor a production server gains a credential or process-launch API.
+
+Startup observation is bounded to 256 syscall pairs and a finite loader/context
+query set. The parent's original trace rejects early channel use, FD replacement,
+another exec, fork/thread creation and root/namespace changes before dispatch.
+The loaded marker is checked from stack; actual TSYNC/BPF/ND0 installation remains
+the existing eight-pair sequence. Before ND0, original FD3 inode is checked.
+After ND0, parent-retained live inventory and the strict accepted trace exclude
+replacement without attempting a fresh forbidden FD-object open.
+
+READY alone does not release the dummy. Its exact original sendto call, flags,
+stack bytes, return16 and received record must first match. The next original
+syscall must then be the exact bounded recvfrom entry. At that entry the parent
+rechecks full context/maps and the empty queue, latches its only attempt, and
+sends public `HC074-DUMMY-v001`. It checks the original read result and stack
+bytes, exact ACK, close3 and stdio-only inventory, then original zero exit,
+reap/ECHILD and EOF before root validation/cleanup. A wrong, duplicate or lost
+ACK cannot make that attempt retryable. A failed send is still attempted even
+when zero successful sends are counted.
+
+Two development failures changed the implementation, not the acceptance budget.
+First, the ordinary loaded marker lived in rodata and correctly failed the
+stack-only reader. Only the new socket profile's marker moved to stack. Second,
+an implementation that reread full root/context around every individual call
+exhausted the unchanged five-second outer guard. A diagnostic trace identified
+repeated full-context scans before completion; it was not a product benchmark.
+The correction was recorded before the next candidate: full checks at installed,
+the exact read entry and after close, with original pidfd/endpoint, exact native
+entry/exit and stack checks between them. That intervening sequence admits no
+FD/root/process mutation except final close. No old Owner check was removed and
+no timeout, graph, policy, compiler/profile or release threshold was widened.
+
+Failure handling also needs transport-specific care. MSG_TRUNC preserves actual
+datagram length for the existing 48-byte drain bound. A zero-length record from
+a live peer is not EOF, so HUP is required. Under this fixed observed writer's
+maximum four records, five bounded reads cross EOF; data after a zero refuses.
+This is not a general reader for an untrusted unlimited datagram stream. Failure
+to establish original terminal/stream quiescence still preserves the root.
+
+The 25-mode process matrix distinguishes successful one-shot transfer from
+malformed/duplicate readiness, short/oversized records, wrong FD, early use,
+leaked FD, ACK faults, close/exit, sendmsg, replacement, rodata, withheld data,
+failed send and phase replay. SIGKILL and ordinary Drop controls at installed,
+ready and delivered stops prove child cleanup, not loss of the creator at those
+boundaries. Eight new units cover closed selectors, no-retry/event budgets,
+original socket flags, queue/drain behavior, finite startup calls and full-width
+argument mutations. Strict lint required moving the unit module after the
+implementation; no lint allowance was added.
+
+Three final current-toolchain groups pass 61 tests each, two after source commit:
+41 root units, five ordinary child-entry, seven policy, one root CLI and seven
+process tests. Each process group actually exercises all 25 handoff modes and the
+previous ordinary root/policy/loss controls with default parallelism. MSRV also
+passes 61 tests but explicitly refuses all 25 handoff modes for its extra-libm
+image; that is not supported-runtime admission. Windows current/MSRV portable
+groups pass eight each, current/MSRV checks pass, and strict current Clippy is
+green on Linux and Windows. MSRV Clippy remains unperformed: the installed
+component inventory does not contain it. The local contract remains non-promotable
+and require-ship still refuses; no full release gate or numerical claim follows.
+
+Separate old regressions pass 121 tests: rooted/loss 83, first-exec 11, private
+policy parsers three and old owned-probe/GNU/CLI/process 24. The broad rooted
+group starts after the final ordinary process repetitions, not as an overlapping
+load-robustness experiment. Static contracts pass 163; the gate registry stays 175.
+
+Source `c30c0bc4cc417e44a38d7482dafaf651f3df3302` and the
+[local packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-20261015/README.md)
+retain the feasibility correction, negative captures and final verification.
+The next separate experiment is creator loss before/during/after this transfer.
+The earlier five stopped cuts do not establish that result automatically.
+Real credentials, independent runtime/issuer/job custody, authenticated original
+worker start, all-writer cessation, completion/later cells and server admission
+remain separate. This protocol adds no throughput or allocation claim.

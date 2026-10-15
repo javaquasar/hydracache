@@ -1,0 +1,770 @@
+{
+  "schema_version": "diagnostic-signer-owned-root-handoff-074-v1",
+  "source_commit": "c30c0bc4cc417e44a38d7482dafaf651f3df3302",
+  "source_tree": "cfd4c3ca0fd95c4ea65e0139b5854bdcdcbfee88",
+  "baseline": "ae1c3b7c3582fd8facbacb09dbc95654122ca378",
+  "preregistration": "20ccd4b1f9c7fb89646683997376d5bed4a66e7e",
+  "amendment": "a8849dfdab4a10dc14dae57cbe693e5d86e2bece",
+  "scoped_checks_passed": true,
+  "msrv_lint_executed": false,
+  "capture_normalization": "LF and one final newline; empty format output recorded as one newline",
+  "bounds": {
+    "fixed_modes": 25,
+    "child_cases": 16,
+    "parent_controls": 9,
+    "packet_version": 1,
+    "packet_bytes": 16,
+    "maximum_send_attempts": 1,
+    "child_channel_fd": 3,
+    "startup_syscall_pairs": 256,
+    "maximum_protocol_events": 16,
+    "policy_instructions": 64,
+    "policy_bytes": 512,
+    "maximum_image_bytes": 8388608,
+    "maximum_proc_text_bytes": 65536,
+    "maximum_map_lines": 128,
+    "directory_read_bytes": 512,
+    "directory_reads": 3,
+    "directory_records": 8,
+    "maximum_failure_drain_bytes": 48,
+    "wait_seconds": 5
+  },
+  "closed_claims": {
+    "credential_handoff_authenticated": false,
+    "runtime_custody_authenticated": false,
+    "mapped_memory_attested": false,
+    "transfer_boundary_creator_loss_proved": false,
+    "full_normal_entry_creator_loss_proved": false,
+    "overlapping_broad_load_robustness_proved": false,
+    "original_worker_start_authenticated": false,
+    "all_writers_revoked": false,
+    "real_credentials_or_signing": false,
+    "completion_or_later_cells_enabled": false,
+    "server_or_github_mutated": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false,
+    "execution_attested": false,
+    "full_release_gate_passed": false,
+    "clean_checkout_execution_attested": false
+  },
+  "sources": {
+    "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs": "de26abffaa38ee245a612de11f6d6acd7d8c809418b79f59197a995dab72e7e2",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff.rs": "4e05a34164ffa92dac141aa0d96d2944d3b66c432d8659d1da638a9bdb6e5243",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation.rs": "ad90885859bf1f542354ff64759477c9689d551582ca450780fcc9fe517c9179",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs": "a3ee3b898b8730520dfe86af12dc3903b1e55bdb29982b591d188b2abb767e80",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs": "3ed1e84e7418ea803e5c355af5c84e7d3238c6b27e6ed02ba03968952a90eb70",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec.rs": "3c317828c3d730e50f4a765bd68d5d50bbd49e809088d7317185d4e9ddcc9fe8",
+    "crates/xtask/tests/performance_contract_074.rs": "3f9d9f8e4544a94480bc22591e51dc19bb98a86e7baf4af2d66a090c60067f7e",
+    "docs/testing/performance/0.74/diagnostic-signer-owned-root-handoff-contract.toml": "c95278b2987dd92452bf66bcfe649bba812785cb3ebdea3bdacd55731cdf1c1c",
+    "docs/COMPAT.md": "2b55f5831c6fc20b1b26168d1f3e23bcd97c168749fdc1a8680f02f4ce7330db",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_handoff_tests.rs": "abb738dd256eef6f6222c4eb1dd4b96e42441c543a12d59cd94cab5ccaefb260",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root.rs": "cf2e31eb2f3d11577d52aa0d137403cbf3b5c322f55bab6aa19ffa202e971d3c"
+  },
+  "unchanged_sources": {
+    "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_maps.rs": "d6c2194679db6f4fd61503da55d0a4ad611bcc2475d20f623e605667aa0aa27f",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_handoff_helper.rs": "c83169be6d5fff97adbb87fa5c65c1436b70ab5f9c077bd1118b73415d057371",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_gnu.rs": "e0c331986047ab4c046dce0c9795e600b7ed4107fbd89729c38675b45e33a3a5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_guard.rs": "29d8abde786bd644f1de38e7af8921745dc6af450d72e8a8a9128a2cabb9edad",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_constructor_loss_fixture.rs": "259f9aa219e58cb980a25f13c23e4003e277eb746ce276774aaf317a013a446d",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_core.rs": "282492bb23e4d2e7ac5e14ff0a1ddf18f55721d4a4bc4e9e9604702412072d2c",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_loss.rs": "23f79f1d4a0ef5ac5d3c9bbcd14a891e7a5c45cf08d8cffc28b774a699a33f61",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_root_fixture.rs": "347adc3ed03207570bdc2ee1c450bbf25817efa2ffe2d82e8ea1c171626857e5",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_exec_fixture.rs": "1a4c41df0b617255d078a070046822ebe4dc008a7e0699553fd863a6237dc1c4",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_isolation_tests.rs": "a18a991134a00d43c848ab4f21d6500ad3d168b8059c7d70e702570926e4d708",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_rooted_maps.rs": "66680bb06d3149746778b738c8fd7c0be8e5495c9ac5d0d2303fdb60dbdae831",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_creator_task.rs": "0106d7be6c478891ba67590db46478c6be034aa33d752339530ee07ff7de0781",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_probe.rs": "515bf7766ee15e2bd629a36dd5f1f3d3e613d9b137fb519c02b6aa7e6ef4d4cf",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "tools/long-run-supervisor-074/src/lib.rs": "36c054f56ae80437bea158a17da6bc02b2a11873f57b41fb3bc6f0dc90b909b1",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_tests.rs": "6a30cec47443f912715a0f5dcd0477552761790ad3c2b50e35efeae7a45b8547",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_owned_root_exec_tests.rs": "5561657515b8056e29b67c2d33b18c9f3c4ad857cf63cf96822c95726de89ef6"
+  },
+  "frozen_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "prior_negative": {
+    "path": "docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-20261015/overlapping-broad-timeouts.log",
+    "sha256": "a0bec2f2a448ffb7765839f58c9d854a98e250b77471f9de364486ec3a942037"
+  },
+  "captures": {
+    "baseline.log": {
+      "sha256": "991f140630c11217995c993060d1aaca879955a336388892086f21ba3831aea2",
+      "bytes": 9215,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          33,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          6,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "current-1.log": {
+      "sha256": "4a7e40adabe498dfe7269fa0f4cb8a33b9c2a9c7e00b1436079f7d9156f053f8",
+      "bytes": 13385,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          41,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "required_markers": [
+        "normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false"
+      ]
+    },
+    "current-2.log": {
+      "sha256": "e47a0bb59974bdec3def43b076fd5f7741401822530447cb1f6a41f01acd7d87",
+      "bytes": 13253,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          41,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "required_markers": [
+        "normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false"
+      ]
+    },
+    "current-3.log": {
+      "sha256": "856c5929155199c6b96020c3fa77d9eb7dea97edf96786c57eb18f604f9b0c6f",
+      "bytes": 13253,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          41,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "required_markers": [
+        "normal_root_handoff mode=good attempted=1 sends=1 ack_close_exit=true original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=short attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=oversized attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-fd attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=early attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=leak attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=no-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=wrong-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=duplicate-ack attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=closed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=exit attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=ancillary attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replace attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=rodata attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=withhold attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=send-failure attempted=1 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=replay attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-installed attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-ready attempted=0 sends=0 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=kill-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false",
+        "normal_root_handoff mode=drop-delivered attempted=1 sends=1 success_claim=false original_reaped=true eof=true admission=false"
+      ]
+    },
+    "development-61.log": {
+      "sha256": "b5a68dafcd71415225bb190106ab44219d05bd75f2e5b1c8b9c8d12fe5c3a3e9",
+      "bytes": 13385,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          41,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-bounded-timeout.log": {
+      "sha256": "05ba374e3857cc19de7d412f30949a4e0ae808041b9ac5bd223068145680679f",
+      "bytes": 973,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-context-cost.log": {
+      "sha256": "7f028025b48a399b7c4689f5d684fa07d9edf06267f9b91127e48548e2e94065",
+      "bytes": 1464,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": [
+        "normal root preparation stalled: Output"
+      ]
+    },
+    "development-first-refusal.log": {
+      "sha256": "0aa22d88c112180f8594cdfcd72a34d68494dc446ebace3791c79e7ff660bfd5",
+      "bytes": 1116,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-first-timeout.log": {
+      "sha256": "2f146627d0efa9ae437ee078c41576c6c18c049fad78aa9fd318b6aa99bdb606",
+      "bytes": 974,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-good.log": {
+      "sha256": "ee3571fdf9db80e293be692571d072a4f5632522f94ba37ec95fac426c596c7f",
+      "bytes": 642,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-lint.log": {
+      "sha256": "aa0b4e7eda81b5020ca70a3ed2cb1243991b1ec1cde7f657313b7b0ef24474ec",
+      "bytes": 1026,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": [
+        "error: items after a test module"
+      ]
+    },
+    "development-matrix.log": {
+      "sha256": "0ce7c12441406bb6181a53bb98346dc2f17e59580911ac1049695724d82f0041",
+      "bytes": 3637,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-progress-timeout.log": {
+      "sha256": "8997d4c803df9b80b61c7e3568ac0f649d12c487ed526584b34b921a8de1ff0e",
+      "bytes": 1193,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-rodata-refusal.log": {
+      "sha256": "959cdc67ef6a603dceba2effa1f22417103022a58eb84e7a562b8c2eb1bab3e8",
+      "bytes": 6022,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "development-stderr-rejected.log": {
+      "sha256": "22919a3c1c88928d8fb7788d0bcc8fc3370c9e7968a81c21cf64207760f775f8",
+      "bytes": 1422,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": [
+        "status: ExitStatus(unix_wait_status(0))"
+      ]
+    },
+    "development-timeout-location.log": {
+      "sha256": "d8d77610db00772661fa4eb41b228d0790b97193505c629c0c500df4a62263c6",
+      "bytes": 1224,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": []
+    },
+    "doc-check.log": {
+      "sha256": "78f88d54e89f35ac33bb5fdc148267ec7ebff283f6fedf8700b0ded1c9cd7f78",
+      "bytes": 164,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "format.log": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "gated.log": {
+      "sha256": "5ccd58c2933954b1d83d2a8919bd5c26d0acffdc493a434b66211e6d4861fe2e",
+      "bytes": 270,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "linux-check.log": {
+      "sha256": "10d3bcdedd05588cbc88f3f2af1ded7e0608fdc4204b7134b2b08b1cc8ec3f47",
+      "bytes": 291,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "linux-lint.log": {
+      "sha256": "06ada8e60171d9cbeb8cc7a06e505673b6c58fd03fd8f097e11fd7bd2c40a3cd",
+      "bytes": 204,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "msrv-check.log": {
+      "sha256": "8f2614090ee45d84612ecaf120cd0f67b443a79b6700112fabdbe282802a0274",
+      "bytes": 291,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "msrv-components.log": {
+      "sha256": "a13769c18a7a74ea492ab633b644d6c238ae81e536d30d3f168eddb57e86000e",
+      "bytes": 96,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "msrv.log": {
+      "sha256": "82a8a11f849a9081bd910bd3d2684f02834c9cf408b6dae381b17b3e5a171da0",
+      "bytes": 8709,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          41,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          7,
+          0
+        ]
+      ],
+      "required_markers": [
+        "extra_libm_root_handoff_modes=25 refused=true unchanged_four_role_graph=true admission=false"
+      ]
+    },
+    "new-mode-red.log": {
+      "sha256": "d886c1c42160776a69589855052430b3ab80ce6e5ae276ad7d2ceafed4750798",
+      "bytes": 1116,
+      "exit_code": 1,
+      "capture_complete": true,
+      "results": [
+        [
+          "FAILED",
+          0,
+          1
+        ]
+      ],
+      "required_markers": [
+        "left: Some(2)"
+      ]
+    },
+    "old-first.log": {
+      "sha256": "099a65f19fc0c6c5c4df9a862db9edc296a549311e37f74690e822867a32b79e",
+      "bytes": 2035,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          11,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "old-owned.log": {
+      "sha256": "e98379ebcbb875e5c2b7ee44964669f1f391396ec34c12d0b3bdb27db8bd8d75",
+      "bytes": 4426,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          12,
+          0
+        ],
+        [
+          "ok",
+          6,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ],
+        [
+          "ok",
+          5,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "old-policy.log": {
+      "sha256": "90a45b818614a1f76461543064336f1a5e1a98cb036f0b133ae3afa84289fa70",
+      "bytes": 686,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          3,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "old-root.log": {
+      "sha256": "c263ee411da9462b8d45cdf758c177c979dfaf386d2c401a73e756d769faea43",
+      "bytes": 31825,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          83,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "performance-contract.log": {
+      "sha256": "07aedf90acdbfca9d5be6dd4d5980df62581b8f3d928fc9d86affc10b9945463",
+      "bytes": 212,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "require-ship.log": {
+      "sha256": "a989fa8ab93cf3bd038f66284e0ddb80ef558867a4fba23ce731c691cf3f94ae",
+      "bytes": 539,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": [
+        "expected_require_ship_exit=1 admission=false"
+      ]
+    },
+    "root-contracts.log": {
+      "sha256": "e28188b2324c0fadd315726bfc314e245d0d0d4977817c5ce350a30427746362",
+      "bytes": 557,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          163,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "windows-check.log": {
+      "sha256": "1fbc0d0ca56d591aec740ec377f3a19dcd9fa0fb8810268d3df947d6e86a057e",
+      "bytes": 283,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "windows-lint.log": {
+      "sha256": "15f155c776757b719712ed22d1169c507031dfa4d127e04c0475d012215f6724",
+      "bytes": 200,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "windows-msrv-check.log": {
+      "sha256": "8d70da75b512618b79032c87563d96fdf2999f56fdd16ec1869a7ecf3ce6f658",
+      "bytes": 283,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [],
+      "required_markers": []
+    },
+    "windows-msrv-portable.log": {
+      "sha256": "5e891643e0484afcf7d4b61dda03fe616adca53f7648cc781a23ce6e9223a044",
+      "bytes": 1209,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "required_markers": []
+    },
+    "windows-portable.log": {
+      "sha256": "06fcbc521a219853d437b83f8fbff3798528ad8cb4309909c62b30f81bce282a",
+      "bytes": 1209,
+      "exit_code": 0,
+      "capture_complete": true,
+      "results": [
+        [
+          "ok",
+          7,
+          0
+        ],
+        [
+          "ok",
+          1,
+          0
+        ]
+      ],
+      "required_markers": []
+    }
+  }
+}

@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+The existing ordinary root targets also cover the
+[one-shot dummy protocol](testing/performance/0.74/diagnostic-signer-owned-root-handoff-design.md).
+Require all 25 current-toolchain modes, eight new private units, unchanged old
+pipe/policy controls and attributed refusals of all 25 MSRV extra-libm modes.
+Full context checks at installed/recv/close bracket the exact bounded trace;
+the five-second wait/outer guard is unchanged. Child SIGKILL/Drop controls do
+not prove creator loss at transfer boundaries or open credential/start admission.
+
 The same ordinary root targets now cover fixed `root-loss-*` diagnostics at five
 owned stops, healthy acknowledgements and a matched no-EXITKILL negative. See the
 [design](testing/performance/0.74/diagnostic-signer-owned-root-loss-design.md).

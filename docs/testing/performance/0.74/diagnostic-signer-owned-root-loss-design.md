@@ -70,6 +70,8 @@ modes under the unchanged four-role graph; passing that test is not runtime supp
 
 Not proved: pre-arm loss, running worker, creator-thread-only death, fresh creator
 CLI exec, hostile same-UID custody or the retained overlapping-broad-load timeouts.
-Protected handoff, independently authenticated runtime custody, real credentials,
+The subsequent [ordinary dummy transfer](diagnostic-signer-owned-root-handoff-design.md)
+composes the fixed public protocol, not trusted credential handoff or creator loss
+at transfer cuts. Independently authenticated runtime custody, real credentials,
 authenticated worker original-start, all-writer cessation, completion/later cells,
 server rehearsal, qualification and performance claims stay closed.
