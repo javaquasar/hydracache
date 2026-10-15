@@ -1,0 +1,186 @@
+{
+  "schema_version": "diagnostic-signer-child-entry-packet-074-v1",
+  "source_commit": "41cb929af58ed8e81d6083710832aa3513ab9bfe",
+  "source_tree": "9242b7358b381aba89bf8628e97a37686c9d8df5",
+  "preregistration": "7fd7a45608f9175be81c8ddb35b060d0a87080d4",
+  "closed_claims": {
+    "original_start_authenticated": false,
+    "selected_root_authenticated": false,
+    "complete_sandbox": false,
+    "independent_runtime_custody": false,
+    "host_job_enrolled": false,
+    "all_writers_revoked": false,
+    "real_private_key_or_token_read": false,
+    "server_or_github_mutated": false,
+    "completion_or_later_cells_enabled": false,
+    "qualification_allowed": false,
+    "ship_allowed": false,
+    "performance_claim_allowed": false
+  },
+  "frozen_inputs": {
+    "Cargo.lock": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "implementation_files": {
+    "crates/xtask/tests/performance_contract_074.rs": "1ef35246a7ca6875da5fdeb4a8df88197c05fedd18b7a9e4a339b0570d91538e",
+    "docs/COMPAT.md": "30f80824baff2c6f4476dd81cf91991751e8301d8896f269801cf27aab3f9bc2",
+    "docs/GATES.md": "ab41f94e4e52d0fe2145910e27ec075971b69b564e1390c39144bf1e757a4b41",
+    "docs/testing/gated-test-registry.toml": "c71cf11bcdefeae9d5a5370c68839def3d6ee220ac2f6f29331a1070cf23dabf",
+    "docs/testing/performance/0.74/README.md": "85de318bf26f5516c225365a4363f27a2b313e5de8845be5391d20dd2f4594ea",
+    "docs/testing/performance/0.74/diagnostic-signer-child-entry-contract.toml": "53f71ebcd7e124d780a1f794a29f906947aaced734e813c05f1c75533cfc6d96",
+    "docs/testing/performance/0.74/diagnostic-signer-child-entry-design.md": "f653189027462f73d9d254f3f41ca27feb85288963ee584a232c602793f7302e",
+    "tools/long-run-supervisor-074/src/bin/diagnostic_signer_isolation_probe.rs": "8eb1461f1a6bff586edfe6075c9edc3a8dc96f36939ce7cac8fdba31e58ad27a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation.rs": "bd952ee03b85617d86dcbc824dd79ce6b1b6503c7413c81b618eb589e04e480e",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux.rs": "adf38288b9e77e1b509b6cec5326a897e80f24241ba53fa49671b5080cd8cc97",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_isolation_linux_tests.rs": "97167d08e5bafc5e79aa82d052f47da9347ca38dd73726781da106fddcef5a3c",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture_tests.rs": "42bc0f84d888434ed86bb43725ad69b821ab0facf194b0b024e64b212972eb63",
+    "tools/long-run-supervisor-074/src/lib.rs": "36c054f56ae80437bea158a17da6bc02b2a11873f57b41fb3bc6f0dc90b909b1",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs": "c0f4abc0ba15a16b4453d0761d5e1696733a64bc3d72084cffa3303634757258",
+    "tools/long-run-supervisor-074/tests/diagnostic_signer_isolation.rs": "359da1e855cc172798a786ff15e673c1351182339b33c0be87dafa756cbf808a"
+  },
+  "independent_oracles": {
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_fixture.rs": "b3acf60064ecc6bd84a6941aeb30f8cc282d95b42785202a77938e1d584fb750",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_namespace_helper.rs": "13d69f18d0e00422b3e461835dd1e8019a4c310fa9a5acd31c37691e9221210a",
+    "tools/long-run-supervisor-074/src/diagnostic_signer_seccomp_fixture.rs": "6c7d04b1bb8c87d67ad97d18090c21b52b84557e55eeadf8eba4935198c0130d"
+  },
+  "files": {
+    "baseline-linux.log": {
+      "bytes": 3410,
+      "sha256": "bbdd36d045c2d3017a6aba4f7ac37a430bf8965fbb803ba344b9f021d583a104",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "baseline-windows.log": {
+      "bytes": 897,
+      "sha256": "2b7fe69d114cea99a6acd36680fde17c64d8d494bf7f68099878ff6d4018b525",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "clippy-diagnostic-failed.log": {
+      "bytes": 661,
+      "sha256": "38d61322556b345387d36f6c086792958e502d422a910e36915f617a8e26f5c9",
+      "outer_exit": 1,
+      "capture_complete": true
+    },
+    "clippy-ice-partial.log": {
+      "bytes": 26239,
+      "sha256": "d69b79ad277948fc5d0a62856c2b7b948ef0e53d74224bb06924189ad2088396",
+      "outer_exit": 1,
+      "capture_complete": false
+    },
+    "diagnostic-repeats-failed.log": {
+      "bytes": 4140,
+      "sha256": "1762d4e4d0c096341d7a9f5918fb08458fbb215275bbb2db5be78db59fa80904",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "fd-diagnosis-failed.log": {
+      "bytes": 4770,
+      "sha256": "135195c07833cca7f8132882e74864b189f2d89c307dcf1d55c1087645d58275",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "kernel-failed.log": {
+      "bytes": 3163,
+      "sha256": "a04d2e6bd736b482d3f8d1141d5351f96447340f41820fe623ca940113fba371",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "kernel-initial.log": {
+      "bytes": 1866,
+      "sha256": "5e80b215d676e857ba1ce9e420c14351518da7fca0d2aa2e4cfae3838d38cbe7",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "linux-final.log": {
+      "bytes": 1024,
+      "sha256": "f9f1c0807d9ea7b63ec8f161d95583cd8c5060c4c447e2461754edb999a594b8",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "linux-msrv.log": {
+      "bytes": 2889,
+      "sha256": "bc2004fcb2a9897230c12d6a0a3ce65ff26e71185b403c72120da4df855f1917",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "linux-repeats.log": {
+      "bytes": 14004,
+      "sha256": "df4619a0bf3d512a92f9566e4628589a099d7396beee3e21a3c8bcac6ceadc86",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "missing-api.log": {
+      "bytes": 743,
+      "sha256": "a115652774ebfe6053ae1debbf985ecb2bd26df112eb8bcd6352821582301fab",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "msrv-failed.log": {
+      "bytes": 4140,
+      "sha256": "853786e1bb01f3b958bab6ccf4845ff7cacee1f36a59ed88cb29e15a2c727e17",
+      "outer_exit": 101,
+      "capture_complete": true
+    },
+    "README.md": {
+      "bytes": 5283,
+      "sha256": "f2b75636afe06a6179ff5c3d8e9a1136c290811d5a23b5976795128ee5427ae5"
+    },
+    "registry-failed.log": {
+      "bytes": 807,
+      "sha256": "d7e1d98b4aa5898570fd23e752bc8bb95087bab14b454f8216c0abe86d38be4a",
+      "outer_exit": 1,
+      "capture_complete": true
+    },
+    "regressions.log": {
+      "bytes": 8787,
+      "sha256": "c6b4592f089c45d9ea8052e81011d7c7e5d7d9a854427f2b9fdc2c6a984de8c9",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "root-final.log": {
+      "bytes": 13223,
+      "sha256": "da49023ec1076d506ae092424b49ae61d7cf32cbf053d3293be85adc1ea6a46e",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "stage-diagnostic.log": {
+      "bytes": 1110,
+      "sha256": "352f5c2e3536125bec9d8beee32b3ec58425c025310f3c90d6ba92908ef9eb24",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "static-final.log": {
+      "bytes": 1086,
+      "sha256": "1b62424a26114b77ffc5ab3af568d8287bb6a0571809d937226aedf4790b4217",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "test_verify_packet.py": {
+      "sha256": "151a9e890ca297ec6525cf25e265330f33b8f885b11b4f26bc3c9adcb7bbb796",
+      "bytes": 3383
+    },
+    "unit-initial.log": {
+      "bytes": 819,
+      "sha256": "cadf9712c041bd44414f3817a437458b93aadf52879fd938f0c398d881a43dce",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "verify_packet.py": {
+      "bytes": 7014,
+      "sha256": "7f118b827ed6b5b8f14de6eb0102c139845514d7b09f7c357e62d85ed5c4bed9"
+    },
+    "windows-final.log": {
+      "bytes": 1207,
+      "sha256": "57779c6acc8dccd5c49075964773434d2dbbce48e7d05d0f84280479b9c6e795",
+      "outer_exit": 0,
+      "capture_complete": true
+    },
+    "windows-msrv.log": {
+      "bytes": 923,
+      "sha256": "056f94588c4b18d133d1fd520f29675837ff0e7331defb22201c210445f7b7a1",
+      "outer_exit": 0,
+      "capture_complete": true
+    }
+  }
+}

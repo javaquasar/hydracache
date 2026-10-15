@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.91s
+     Running `target\debug\xtask.exe gated-test-check`
+gated-test-check: docs/testing/gated-test-registry.toml: stale gate `cfg.hydracache-long-run-supervisor-074.diagnostic-signer-child-entry` does not resolve to a discovered gate
+gated-test-check: docs/testing/gated-test-registry.toml: unregistered cfg-gated target hydracache-long-run-supervisor-074/diagnostic_signer_child_entry (all (target_os = "linux" , target_arch = "x86_64")) in tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs
+Error: "gated-test-check found 2 problem(s)"
+error: process didn't exit successfully: `target\debug\xtask.exe gated-test-check` (exit code: 1)

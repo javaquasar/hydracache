@@ -1,0 +1,70 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.06s
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-481d5967cb811233)
+
+running 5 tests
+x32=SIGSYS core=false stdout=empty admission=false
+i386=SIGSYS core=false stdout=empty admission=false
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+unfiltered_chdir=0 fixed_native_probes=20 exact_EPERM=true admission=false
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+owned_native_children=8 parent_restrictions_and_cwd_unchanged=true
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.41s
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-481d5967cb811233)
+
+running 5 tests
+
+thread 'ordinary_child_x32_and_i386_die_sigsys_without_output_or_core' (392) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:92:9:
+assertion `left == right` failed: x32: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: None
+ right: Some(31)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... FAILED
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+
+thread '<unnamed>' (397) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: Some(2)
+ right: Some(0)
+
+thread '<unnamed>' (398) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: Some(2)
+ right: Some(0)
+
+thread 'ordinary_child_four_independent_owners_leave_parent_unchanged' (388) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:181:22:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+
+thread '<unnamed>' (400) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... FAILED
+
+thread '<unnamed>' (402) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_native_denials_and_positive_unfiltered_control ... FAILED
+
+thread 'ordinary_child_native_denials_and_positive_unfiltered_control' (389) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "preflight descriptors\n" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+failures:
+
+failures:
+    ordinary_child_four_independent_owners_leave_parent_unchanged
+    ordinary_child_native_denials_and_positive_unfiltered_control
+    ordinary_child_x32_and_i386_die_sigsys_without_output_or_core
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_signer_child_entry`

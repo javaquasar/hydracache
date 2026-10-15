@@ -1,0 +1,41 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.04s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 13 tests
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_directory_record_decoder_refuses_malformed_inventory ... ok
+fixture_namespace_helper_sha256=bf78cb987e98962676c63cf62f3efae0ecf0cd7258f126a231634bc41d075081 compiler=Rust1.94 profile=O3_abort runtime_admission=false
+post_ND0_magic_ns/user=true
+post_ND0_magic_root=true
+post_ND0_magic_cwd=true
+post_ND0_magic_exe=true
+post_ND0_directory_task=true
+post_ND0_directory_fd=false
+post_ND0_text_uid_map=true
+post_ND0_text_gid_map=true
+post_ND0_text_setgroups=true
+post_ND0_text_status=true
+post_ND0_text_environ=false
+post_ND0_text_maps=true
+post_ND0_original_environ_and_fd_inventory=retained fresh_open=EACCES live_context_checked=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_environment_survives_nd0_without_reopen_fallback ... ok
+namespace_policy_instructions=64 bytes=512 added_native_denials=15 old_prefix_tail_exact=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_exact_extension_and_abi_model ... ok
+namespace_policy_seed=0x07403b2b bounded_mutations=256
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_policy_mutations_and_native_args_are_bounded ... ok
+old_policy_nested_userns=kernel_EPERM regain_not_reproduced=true control_refused=true host_namespace_changed=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_context_phase_replay_and_memory_bounds_refuse ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_original_fd_directory_faults_refuse ... ok
+namespace_candidate_x32_i386=SIGSYS same_child_original_exec_install=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys ... ok
+old_policy_controls=4 parent_namespace_root_uid_gid_unchanged=true
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_old_policy_controls_retain_negative_namespace_regain_result ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_missing_foreign_or_weakened_environment_fd_refuses ... ok
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_installer_startup_and_environment_faults_refuse ... ok
+namespace_original_SIGKILL_drop=initial,rooted,first_exec,installed tracer_loss_proved=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_sigkill_and_drop_at_four_original_boundaries ... ok
+namespace_probe_seed=0x07403b2b fresh_probes=8 independent_owners=4 multithreaded_signer=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_seeded_fresh_probes_and_independent_owners ... ok
+post_install_native_namespace_root_mount_denials=15 original_context_unchanged=true handoff=false
+test diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_fifteen_native_mutations_denied_after_exact_install ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 875 filtered out; finished in 35.62s

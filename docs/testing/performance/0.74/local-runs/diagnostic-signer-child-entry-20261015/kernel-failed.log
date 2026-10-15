@@ -1,0 +1,55 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.32s
+     Running tests/diagnostic_signer_child_entry.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_signer_child_entry-481d5967cb811233)
+
+running 5 tests
+
+thread '<unnamed>' (3961) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread '<unnamed>' (3962) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+
+thread 'ordinary_child_x32_and_i386_die_sigsys_without_output_or_core' (3956) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:92:9:
+assertion `left == right` failed: x32: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: None
+ right: Some(31)
+
+thread '<unnamed>' (3963) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... FAILED
+
+thread '<unnamed>' (3959) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: Some(2)
+ right: Some(0)
+
+thread 'ordinary_child_four_independent_owners_leave_parent_unchanged' (3952) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:181:22:
+called `Result::unwrap()` on an `Err` value: Any { .. }
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... FAILED
+
+thread 'ordinary_child_native_denials_and_positive_unfiltered_control' (3953) panicked at tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs:40:5:
+assertion `left == right` failed: Output { status: ExitStatus(unix_wait_status(512)), stdout: "", stderr: "" }
+  left: Some(2)
+ right: Some(0)
+test ordinary_child_native_denials_and_positive_unfiltered_control ... FAILED
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+
+failures:
+
+failures:
+    ordinary_child_four_independent_owners_leave_parent_unchanged
+    ordinary_child_native_denials_and_positive_unfiltered_control
+    ordinary_child_x32_and_i386_die_sigsys_without_output_or_core
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_signer_child_entry`

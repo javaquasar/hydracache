@@ -9148,3 +9148,59 @@ remaining launcher/root/job custody or writer revocation. No real private key,
 token, production receipt or server execution was involved, and no cache
 performance measurement follows from this tooling change. Actual enforcement
 and independently reviewed original-start still precede completion and cells 2–4.
+
+## From declared protection to a fixed ordinary child entry
+
+The next isolated change is actual kernel enforcement, but still not a complete
+launcher. Previously, the 64-instruction namespace restriction policy and its
+installer lived only in fixtures. The ordinary library now generates the same
+512 bytes, with a private Linux installer reachable only through a terminating
+fixed-probe entry. A normal binary accepts native/x32/i386, not a caller-selected
+executable, PID, FD, filter, key or command. The old independent generator and
+standalone helper remain unchanged regression oracles.
+
+The fresh secret-free child refuses root numerical credentials, unequal UID/GID
+slots, capabilities, multiple threads, extra FDs or a nonempty environment. It
+disables core dumps, sets/verifies no_new_privs, requires exact zero from TSYNC,
+sets ND0 and rechecks the current context and exactly one additional filter.
+Failures terminate the child, including partial installation; no installed guard
+or bootstrap/signing capability returns to the caller. These checks observe the
+current namespace, not initial-host/account or independent job custody.
+
+The useful experimental contrast is small and concrete: unfiltered chdir('/')
+succeeds in an owned control child; the ordinary filtered probe receives exact
+EPERM. Twenty fixed safe native calls are checked, and actual x32/i386 getpid
+probes die SIGSYS with no output/core. Fork/clone numbers are covered in the
+independent model and old fixtures, not invoked by this new probe. Null pointers
+and invalid FDs avoid executing or mounting anything if the filter is defective.
+The existing prctl tail checks both full-width arguments for ND0 but ignores
+four unused arguments. Other syscalls remain allowed: a deny list is not a full
+sandbox or mapped-instruction attestation.
+
+Repeating the experiment mattered. An initial green run was followed by exit2
+failures on both current Rust and MSRV. Temporary diagnostics found an inherited
+FD7 alongside stdio and the probe's own proc-directory FD3. Its origin was not
+authenticated. The restriction was working; the test launcher had failed to
+establish its own clean child precondition. The harness now requires a child-only
+CLOEXEC sweep before exec. The inherited-FD negative deliberately clears its own
+flag afterward and still must refuse. No parent flag or normal installer guard
+was relaxed. Temporary diagnostics are removed, while failed captures remain.
+
+After that correction, eight Linux repeats pass five normal-process and seven
+portable tests each, with parent seccomp/core/cwd unchanged across four independent
+owners. Three decoder tests cover malformed/bounded status and FD inventories;
+root and multithread negatives there are models, not privileged execution.
+MSRV 1.88 and Windows portable checks pass, as do strict lint, 156 root contracts
+and the old namespace/rooted-exec/handoff suites (13/11/13). The
+[child-entry packet](../testing/performance/0.74/local-runs/diagnostic-signer-child-entry-20261015/README.md)
+also preserves initial registry/lint failures and explicitly marks a truncated
+compiler diagnostic as partial, not passing evidence.
+
+What this justifies is reuse of one tested restriction primitive outside cfg(test).
+It does not establish original executable/root provenance, protected runtime/job
+custody, credential handoff or cessation of every P2/P3 writer. Stdio-only entry
+cannot yet implement the fixture's FD3 handoff. The next work is an owned original
+launcher with explicit root/runtime/descriptor and parent-loss lifecycle, followed
+by authenticated original-start and all-writer fencing. Signing, completion,
+later cells and server admission remain closed. No product workload or cache
+allocation/throughput result was measured, and no server or GitHub state changed.
