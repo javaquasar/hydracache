@@ -8864,3 +8864,11 @@ unapproved production boundary. No build receipt, worker policy or OIDC token
 was produced; no existing key, GitHub configuration, server or qualification
 input changed. Authenticated prebuilt custody and token coordination come next,
 then worker original-start and all-writer cessation before completion cells 2–4.
+
+A [decoder followup](../testing/performance/0.74/local-runs/diagnostic-signer-custody-depth-20261015/README.md)
+adds explicit sanitization of a recursion exception before private access. The
+initial deep-input prediction did not reproduce a failure on Windows; that
+green observation is retained separately from a deterministic injected-exception
+test. The final helper has 24 cases and passes three Linux repeats, with 14
+explicit Linux-only skips on Windows. The earlier generation packet remains
+immutable and source-specific. No key was regenerated or fingerprint approved.

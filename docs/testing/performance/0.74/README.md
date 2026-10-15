@@ -8,6 +8,9 @@ separate compilation from the future signing lifetime without changing GitHub
 or exposing credentials. Production runtime/root/job selection, actual receipt
 signing, worker original-start and all-writer cessation remain open. See the
 [local custody packet](local-runs/diagnostic-signer-custody-20261015/README.md).
+The [decoder followup](local-runs/diagnostic-signer-custody-depth-20261015/README.md)
+retains a non-reproduced depth prediction and the final 24-case parser gate;
+it does not regenerate the key or promote the candidate fingerprint.
 
 The [post-options original tracing-thread fixture](diagnostic-signer-thread-exit-design.md)
 extends the creator-only loss experiment through six original exec/handoff cuts.

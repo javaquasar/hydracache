@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "source_commit": "4528d175dbf856bf2cd2e0c7632a66c197dc9fcf",
+  "generation_source": "2b90c66593e6fabbec407f1aea743d4987915e38",
+  "original_packet_commit": "02b3bab2dcddcbd9868b40b64bed7f0fcb51b244",
+  "source_files": [
+    {
+      "path": "scripts/perf/diagnostic_signer_key_074.py",
+      "sha256_lf": "5ef6620df0b65b0acfa4e31cc7fa63d5ff508b4f1b96f7d9fb7346dfac391c71"
+    },
+    {
+      "path": "scripts/perf/test_diagnostic_signer_key_074.py",
+      "sha256_lf": "7284390e782da550f769aa63da2b55236f4f3de41670a39b23ec3c704ce063d5"
+    }
+  ],
+  "captures": [
+    {
+      "path": "signer-custody-depth-red.log",
+      "bytes": 103,
+      "sha256": "223e06d17dfb6c32bd67ca7c62b915cb03e0a1189bad193f723662e346b75b55",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-windows.log",
+      "bytes": 141,
+      "sha256": "5be6f0461944b459b564808da1b1d9e3e6596a3df4baef6084847bc038cef0b5",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-linux.log",
+      "bytes": 426,
+      "sha256": "aa576304138c3d967468e2cfafb5877310f12f665c1328e30354fe7df72f094c",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-inspection.json",
+      "bytes": 945,
+      "sha256": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-windows-final.log",
+      "bytes": 141,
+      "sha256": "5be6f0461944b459b564808da1b1d9e3e6596a3df4baef6084847bc038cef0b5",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-linux-final.log",
+      "bytes": 369,
+      "sha256": "17a87297d8729dbcd65719096c9b1b0ccb6053b7a3fa81aa7535e353739181a3",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-archive-windows.log",
+      "bytes": 104,
+      "sha256": "f65b6607d1a869274f2254103ff092f1c010cce3db916ae38634d77fdc65590b",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-archive-linux.log",
+      "bytes": 103,
+      "sha256": "531b2067f33c769a7b4b09ebf298fb386476fffb0930e7ecfbe24a16b87dc911",
+      "observed_test_exit": 0
+    },
+    {
+      "path": "signer-custody-depth-static.log",
+      "bytes": 609,
+      "sha256": "cfb79bb1a63d29643f141bfe4e4cb15d207506540c8bf3b60724d7b0b7dc38af",
+      "observed_test_exit": 0
+    }
+  ],
+  "public_record_sha256_raw": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693",
+  "windows_depth_prediction_reproduced": false,
+  "forced_decoder_exception_sanitized": true,
+  "new_key_generated_again": false,
+  "public_pin_approved": false,
+  "production_enrolled": false,
+  "server_operated": false
+}
