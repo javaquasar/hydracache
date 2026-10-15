@@ -8906,3 +8906,45 @@ P2/P3 all-writer cessation and completion cells 2–4 remain separate prerequisi
 The [new packet](../testing/performance/0.74/local-runs/diagnostic-signer-pin-20261015/README.md)
 separates confirmed key selection and observed unsigned build facts from those
 unimplemented joins; no throughput or allocation improvement is claimed here.
+
+## Preparing the unsigned copy and killing the preparer
+
+Cargo's writable two-link output is now copied into an exclusively created
+attempt directory. The Linux preparer accepts original read-only descriptors
+and an asserted size/hash, copies positionally with a fixed buffer, syncs the
+file, changes only the new inode to 0555, checks the explicit writer close,
+reopens read-only and syncs the directory and parent. It returns inventory, not
+a file descriptor or a conversion to a trusted bundle. Existing and interrupted
+attempts cannot be overwritten, repaired or resumed.
+
+Repeating the tests exposed a real gap in the first implementation: the
+metadata-only bracket sometimes accepted a source write immediately after
+copying. The copied bytes still matched the expected digest, but the claim
+that the source had not changed was unsupported. The fix adds a second content
+pass over the original source, bracketed by metadata checks. It does not sleep
+until timestamps differ or weaken the test. The failed precommit observation
+is retained separately from the final passing source; it is not a clean-source
+benchmark candidate or a continuous source-immutability proof.
+
+The owned-process fault test pauses a libtest subprocess at seven copy
+checkpoints and SIGKILLs/reaps that exact child. All seven retained attempts
+refuse reuse. The final cut deliberately leaves complete-looking bytes and
+readonly modes: apparent completion is not permission to repeat execution.
+Three current-toolchain repeats and MSRV checks pass alongside copy integration,
+old bundle/issuer regressions, compile-fail API guards and 151 contracts. This
+tests process loss, not power failure or the worker's authenticated lifecycle.
+
+One actual local preparation of the previously inventoried unsigned controller
+produced a distinct inode, 0555 and one link, with unchanged size and SHA256.
+The Cargo source stayed 0755 with two links. Neither controller file was run or
+signed. The [copy packet](../testing/performance/0.74/local-runs/diagnostic-prebuilt-copy-20261015/README.md)
+records source and preparer identities separately.
+
+The foreign-writer counterexample remains decisive. A descriptor opened during
+creation can write after chmod even when the first inventory check passes.
+Later revalidation detects the write and refuses permanently, but detection is
+not revocation. Production still needs protected ancestry/account/runtime/job
+custody and independently authenticated receipt inputs before signing. Original
+worker start and cessation of every P2/P3 writer still precede completion and
+cells 2–4. These changes establish copy mechanics and failure boundaries, not a
+cache throughput or allocation improvement.

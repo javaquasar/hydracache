@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [unsigned copy preparer](diagnostic-prebuilt-copy-design.md) now creates a
+distinct read-only single-link file without modifying Cargo's source inode.
+The [copy packet](local-runs/diagnostic-prebuilt-copy-20261015/README.md) retains
+actual local copy observations, seven-cut owned-process SIGKILL checks and the
+metadata-only source-mutation defect found during development. Foreign retained
+writers survive chmod: prepared inventory is not authenticated prebuilt custody,
+runtime/job admission or whole-writer revocation. Server and ship remain closed.
+
 The operator has now selected the [signer-build issuer key](diagnostic-signer-issuer-selection.json).
 The [fixed-key factory](diagnostic-signer-pin-design.md) refuses a caller-selected
 synthetic issuer without promoting asserted expected build facts to custody.

@@ -1,0 +1,11 @@
+copy_parent=/home/artur/.cache/hydracache-074-prebuilt-copy-20261015.Ruo6eQvc
+source_before dev=2096 ino=262375 bytes=1922976 mode=755 uid=1000 gid=1000 links=2 mtime=1792034571 ctime=1792034571
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-signer-prebuilt-194/x86_64-unknown-linux-gnu/release/diagnostic_controller
+aa6e84b79e8fde4aafb6d2d6dd10647fbbf0126c2c1ff14e6c78b1add31d7847  /home/artur/.cache/hydracache-074-194-check/debug/examples/prepare_unsigned_prebuilt
+unsigned_copy_sha256=ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba bytes=1922976 copy_inventory_only=true authenticated_custody=false executed=false signed=false admission=false
+copy dev=2096 ino=251371 bytes=1922976 mode=555 uid=1000 gid=1000 links=1 mtime=1792036157 ctime=1792036157
+copy_directory mode=555 uid=1000 gid=1000 links=2
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-prebuilt-copy-20261015.Ruo6eQvc/attempt-00000000000000000000000000000074/diagnostic_controller
+source_after dev=2096 ino=262375 bytes=1922976 mode=755 uid=1000 gid=1000 links=2 mtime=1792034571 ctime=1792034571
+ca7bc17ad21d9495c48945430289e6626540cffb511ffc206fda42a1b86659ba  /home/artur/.cache/hydracache-074-signer-prebuilt-194/x86_64-unknown-linux-gnu/release/diagnostic_controller
+aa6e84b79e8fde4aafb6d2d6dd10647fbbf0126c2c1ff14e6c78b1add31d7847  /home/artur/.cache/hydracache-074-194-check/debug/examples/prepare_unsigned_prebuilt
