@@ -2,6 +2,9 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
+#[path = "support/performance_contract_074_kernel_refusal.rs"]
+mod kernel_refusal;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
