@@ -5,6 +5,9 @@ use std::path::{Path, PathBuf};
 #[path = "support/performance_contract_074_kernel_refusal.rs"]
 mod kernel_refusal;
 
+#[path = "support/performance_contract_074_collector_intent.rs"]
+mod collector_intent;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
