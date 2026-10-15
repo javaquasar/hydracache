@@ -48,3 +48,22 @@ Pre-arm, running/thread-only loss, fresh creator CLI exec, hostile same-UID
 custody, trusted credentials, authenticated worker original-start, P2/P3 writer
 cessation, completion/later cells, server/qualification and performance claims
 remain excluded. Earlier overlapping-load timeouts remain unresolved.
+
+## Fixture scheduling correction
+
+The initial separate new process test passed all 14 modes alone. In the full
+default-parallel group, the old ordinary handoff test then hit its unchanged
+five-second outer guard while the new third root/policy matrix was also active.
+There is no scheduler trace establishing the cause; retain this failure rather
+than call it fixed by an isolated success. A development compile also rejected
+comparison of FixedProbe (no PartialEq); use pattern matching without changing
+the shared enum.
+
+Before the next candidate, place the new 14-mode helper after the existing 25
+handoff cases in the same ordinary process test. Reuse that original Image and
+keep the baseline number of concurrently active process-test fixtures, default
+parallel harness and exact output guard. No extra target, ignored test, serial
+harness flag, lock spanning process lifetime or timeout increase is introduced.
+This controls the experiment's added fixture load; it is not a product change
+or a proof of overlapping-load robustness. Final targeted count becomes 63:
+43 root units, five child-entry, seven policy, one CLI and seven process tests.
