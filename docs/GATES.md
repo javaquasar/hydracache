@@ -497,6 +497,17 @@ pre-candidate baseline members.
 
 ## Chaos / soak / Docker (nightly / pre-release)
 
+The original-controller request attempt has a separate local Linux nonroot
+manual gate. Run `cargo test -p hydracache-long-run-supervisor-074 --lib --locked controller_attempt_process_crash_ -- --ignored --nocapture --test-threads=1`.
+Its private harness retains the actual local kernel message and original
+controller/OIDC/worker/authority/common-fence composition at eight write cuts
+and AfterReturn. Nine owned pidfd SIGKILL cases, an uninterrupted control and
+two fresh read-only inspections per case verify retained context and lock
+lifetime. The sender is the synthetic fixture child itself, not an independent
+production controller. No recovered acknowledgement, original start, host
+enrollment, power-loss/reboot proof or qualification follows. This gate is
+registered separately and does not replace the earlier storage/intent proofs.
+
 Release 0.74 P0 diagnostic process-loss proofs are local Linux nonroot manual
 gates, wired through the existing `gated-proof-registry` dispatch job and listed
 in `docs/testing/gated-test-registry.toml`. They remain ignored in the fast suite.

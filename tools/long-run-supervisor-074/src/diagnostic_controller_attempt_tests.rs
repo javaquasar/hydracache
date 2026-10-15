@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_controller_attempt_crash_tests.rs"]
+mod process_crash_tests;
 use super::super::super::fenced_preflight::request_attempt::{
     validate_retained_controller_attempt, AttemptStage, ControllerAttemptError, StorageAttemptError,
 };

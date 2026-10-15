@@ -575,6 +575,21 @@ pub(super) fn controller_worker_fixture() -> (
     )
 }
 
+// Test-only parent-owned authority origin: retain the strict /tmp leaf rule.
+pub(super) fn controller_worker_fixture_at(
+    authority_root: &std::path::Path,
+) -> (TempDir, WorkerTrustInput, FixedAuthorityRegistry, Vec<u8>) {
+    let model = kernel_model(kernel_local_host());
+    let input = model.input();
+    let checked =
+        super::super::verify_worker_policy(&model.envelope, &model.trust, &model.host).unwrap();
+    let authority = fixture::fixed::modeled_registry_for_test(
+        fixture::initialize_fixture_registry(authority_root, uid(), gid(), &checked).unwrap(),
+    );
+    // The unused empty authority TempDir is dropped here, before any checkpoint.
+    (model.root, input, authority, model.envelope)
+}
+
 #[test]
 fn worker_kernel_binding_actual_context_roundtrip_and_healthy_drop() {
     let model = kernel_model(kernel_local_host());

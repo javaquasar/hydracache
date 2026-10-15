@@ -29,6 +29,15 @@ fn with_original_operation(
     refused: bool,
     run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
 ) {
+    with_original_operation_at(operation, refused, None, run);
+}
+
+fn with_original_operation_at(
+    operation: crate::diagnostic_ipc::DiagnosticOperation,
+    refused: bool,
+    authority_path: Option<&Path>,
+    run: impl FnOnce(&mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>, &Paths),
+) {
     let model = Model::new();
     let mut r = request(&model);
     r.operation = operation;
@@ -38,7 +47,16 @@ fn with_original_operation(
     let t = token(&header(&p), &serde_json::to_vec(&claims(&r, &p)).unwrap());
     let bytes = model.sign(r.clone(), &model.key);
     let (root, authority_root, mut source, mut authority, worker_bytes) =
-        controller_worker_fixture();
+        if let Some(path) = authority_path {
+            let (root, source, authority, bytes) =
+                crate::diagnostic_worker_policy::trusted_input::tests::controller_worker_fixture_at(
+                    path,
+                );
+            (root, None, source, authority, bytes)
+        } else {
+            let (root, authority_root, source, authority, bytes) = controller_worker_fixture();
+            (root, Some(authority_root), source, authority, bytes)
+        };
     let mut packet = kernel_packet_bytes(&bytes);
     let mut worker = source
         .verify_kernel_policy(&worker_bytes, &mut packet, &mut authority)
@@ -50,7 +68,9 @@ fn with_original_operation(
         worker: root
             .path()
             .join("etc/hydracache-perf/worker-trust-074.json"),
-        authority: authority_root.path().into(),
+        authority: authority_path
+            .unwrap_or_else(|| authority_root.as_ref().unwrap().path())
+            .into(),
     };
     {
         let mut original = controller.authenticate_controller(&mut worker).unwrap();

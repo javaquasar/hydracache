@@ -2,6 +2,38 @@ schema_version = 1
 release = "0.64.0"
 
 [[gate]]
+id = "tool.hydracache-long-run-supervisor-074.controller-attempt-process-crash-all-stages-and-lost-ack"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "controller_attempt_process_crash_all_stages_and_lost_ack"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot original controller/kernel/fence SIGKILL and lost-ack proof; no enrollment or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-long-run-supervisor-074.diagnostic-signer-root-guard"
 kind = "cfg_test_target"
 source = "tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs"
