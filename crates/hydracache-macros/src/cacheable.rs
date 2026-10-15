@@ -444,7 +444,7 @@ fn parse_unique_segment_list(
     if current.is_some() {
         return Err(syn::Error::new(
             option.span(),
-            format!("duplicate cacheable {} option", option),
+            format!("duplicate cacheable {option} option"),
         ));
     }
 
@@ -460,7 +460,7 @@ fn parse_unique_expr(
     if current.is_some() {
         return Err(syn::Error::new(
             option.span(),
-            format!("duplicate cacheable {} option", option),
+            format!("duplicate cacheable {option} option"),
         ));
     }
 
@@ -668,6 +668,40 @@ mod tests {
         .unwrap_err();
 
         assert!(error.to_string().contains("duplicate cacheable tags"));
+    }
+
+    #[test]
+    fn preserves_duplicate_attribute_expression_diagnostic() {
+        let error = expand_attribute(
+            quote!(cache = first, cache = second, key = "one"),
+            quote!(
+                async fn load() -> Result<Value, Error> {
+                    todo!()
+                }
+            ),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.to_string(), "duplicate cacheable cache option");
+    }
+
+    #[test]
+    fn preserves_duplicate_attribute_segment_diagnostic() {
+        let error = expand_attribute(
+            quote!(
+                cache = cache,
+                key_segments = ["one"],
+                key_segments = ["two"]
+            ),
+            quote!(
+                async fn load() -> Result<Value, Error> {
+                    todo!()
+                }
+            ),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.to_string(), "duplicate cacheable key_segments option");
     }
 
     #[test]

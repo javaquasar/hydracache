@@ -611,7 +611,7 @@ fn parse_unique_expr_list(
     if !current.is_empty() {
         return Err(syn::Error::new(
             option.span(),
-            format!("duplicate query_cache_policy {} option", option),
+            format!("duplicate query_cache_policy {option} option"),
         ));
     }
 
@@ -623,8 +623,7 @@ fn parse_unique_expr_list(
             content.parse::<Token![,]>()?;
         } else if !content.is_empty() {
             return Err(content.error(format!(
-                "query_cache_policy {} expects comma-separated expressions",
-                option
+                "query_cache_policy {option} expects comma-separated expressions"
             )));
         }
     }
@@ -632,7 +631,7 @@ fn parse_unique_expr_list(
     if current.is_empty() {
         Err(syn::Error::new(
             option.span(),
-            format!("query_cache_policy {} cannot be empty", option),
+            format!("query_cache_policy {option} cannot be empty"),
         ))
     } else {
         Ok(())
@@ -698,7 +697,7 @@ fn reject_duplicate<T>(current: &Option<T>, option: &Ident) -> syn::Result<()> {
     if current.is_some() {
         Err(syn::Error::new(
             option.span(),
-            format!("duplicate query_cache_policy {} option", option),
+            format!("duplicate query_cache_policy {option} option"),
         ))
     } else {
         Ok(())
@@ -954,6 +953,55 @@ mod tests {
         assert!(error
             .to_string()
             .contains("duplicate query_cache_policy key"));
+    }
+
+    #[test]
+    fn preserves_duplicate_expression_list_diagnostic() {
+        let error = expand(quote! {
+            key = "one",
+            depends_on = [table("one")],
+            depends_on = [table("two")],
+        })
+        .unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "duplicate query_cache_policy depends_on option"
+        );
+    }
+
+    #[test]
+    fn preserves_missing_expression_list_comma_diagnostic() {
+        let error = expand(quote! {
+            key = "one",
+            depends_on = [table("one") table("two")],
+        })
+        .unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "query_cache_policy depends_on expects comma-separated expressions"
+        );
+    }
+
+    #[test]
+    fn preserves_empty_expression_list_diagnostic() {
+        let error = expand(quote!(key = "one", depends_on = [])).unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "query_cache_policy depends_on cannot be empty"
+        );
+    }
+
+    #[test]
+    fn preserves_duplicate_type_diagnostic() {
+        let error = expand(quote!(entity = First, entity = Second, id = 1)).unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "duplicate query_cache_policy entity option"
+        );
     }
 
     #[test]

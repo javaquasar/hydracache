@@ -318,7 +318,7 @@ fn reject_duplicate<T>(current: &Option<T>, option: &Ident) -> syn::Result<()> {
     if current.is_some() {
         Err(syn::Error::new(
             option.span(),
-            format!("duplicate prepared_query_policy {} option", option),
+            format!("duplicate prepared_query_policy {option} option"),
         ))
     } else {
         Ok(())
@@ -410,6 +410,16 @@ mod tests {
         assert!(error
             .to_string()
             .contains("duplicate prepared_query_policy key"));
+    }
+
+    #[test]
+    fn preserves_duplicate_type_diagnostic() {
+        let error = expand(quote!(per_entity = First, per_entity = Second)).unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "duplicate prepared_query_policy per_entity option"
+        );
     }
 
     #[test]
