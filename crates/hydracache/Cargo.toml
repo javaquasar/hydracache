@@ -52,5 +52,9 @@ trybuild.workspace = true
 name = "cache_hot_path"
 harness = false
 
+[[example]]
+name = "memory_compat_driver_071"
+required-features = ["durable-value-store"]
+
 [lints]
 workspace = true
