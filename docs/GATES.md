@@ -1,5 +1,13 @@
 # HydraCache — Enforcement Gates
 
+The [original send-window diagnostic](testing/performance/0.74/diagnostic-signer-owned-root-send-windows-design.md)
+uses the same registered root targets. Require two creator-only SIGKILL losses,
+two healthy original continuations and two untraced no-EXITKILL controls after
+the existing25/14 cases, with no additional competing test fixture. Check sticky
+attempt/dispatch state, exact reset/ACK prefix and the unchanged EOF guard.
+All six MSRV extra-libm modes must refuse. An untraced ACK/zero exit must never
+be classified as a successful authenticated handoff or automatic-death proof.
+
 The same registered ordinary root targets cover the
 [six stopped transfer-loss cuts](testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-design.md).
 Require six actual original creator-only SIGKILL/worker-death controls, six

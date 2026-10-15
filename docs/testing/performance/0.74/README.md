@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [ordinary send-window diagnostic](diagnostic-signer-owned-root-send-windows-design.md)
+adds two fixed creator stops after attempt latch and after send before recv
+resume. Six controls separate creator-enforced SIGKILL from healthy one-shot
+continuation and untraced no-EXITKILL exits74/0. A sent-loss reset must be followed
+by actual EOF/HUP; ACK and zero exit alone never authenticate completion. Old
+drain, policy, child and fixture concurrency remain unchanged. Arbitrary/in-syscall
+loss, restart, trusted custody, all-writer cessation and server admission stay closed.
+
 The [ordinary transfer creator-loss diagnostic](diagnostic-signer-owned-root-handoff-loss-design.md)
 adds six stopped public-dummy cuts, six healthy continuations and two matched
 no-EXITKILL survivor controls. Original root/socket objects precede the fixture

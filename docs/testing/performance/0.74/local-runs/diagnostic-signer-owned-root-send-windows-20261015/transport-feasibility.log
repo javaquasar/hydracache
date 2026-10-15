@@ -1,0 +1,2 @@
+seqpacket pending_dummy=False observations=[('recv', 0), ('recv', 0), ('recv', 0)] eof_hup=true admission=false
+seqpacket pending_dummy=True observations=[('errno', 104), ('recv', 0), ('recv', 0)] eof_hup=true admission=false

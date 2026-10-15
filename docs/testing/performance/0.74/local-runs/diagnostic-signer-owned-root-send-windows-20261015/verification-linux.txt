@@ -1,0 +1,7 @@
+owned-root-send-windows packet consistent; unsigned=true execution_attested=false admission=false
+........owned-root-send-windows packet consistent; unsigned=true execution_attested=false admission=false
+
+----------------------------------------------------------------------
+Ran 8 tests in 11.686s
+
+OK

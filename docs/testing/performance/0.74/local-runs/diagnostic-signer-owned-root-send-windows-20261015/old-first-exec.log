@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.70s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 11 tests
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_foreign_equal_byte_inode_cannot_match_original ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_kernel_rejects_header_only_shape_without_admission ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_header_descriptor_and_metadata_refusals ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_original_stop_precedes_helper_output ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_different_inode_second_exec_is_stopped_before_new_user_code ... ok
+same_inode_second_exec=kernel_event_refused new_user_code_ran=false seccomp_installed=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_same_inode_second_exec_is_stopped_before_new_user_code ... ok
+inherited_foreign_writer=closed_before_initial_stop CLOEXEC_alone=insufficient
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_inherited_foreign_writer_closed_before_initial_stop ... ok
+exec-stop exact_event=true lower_status_cases=327680 unknown_high_bits=refused
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_wait_status_exhaustive_exact_event_only ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_cloexec_and_drop_clean_exact_owned_child ... ok
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_unexpected_signal_and_output_overflow_cross_refuse ... ok
+seed=0x07403b25 fresh_original_launches=16 independent_tracer_threads=4 signer_or_runtime_authority=false
+test diagnostic_signer_first_exec_fixture::tests::signer_first_exec_seeded_originals_and_independent_tracer_threads ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 887 filtered out; finished in 0.11s

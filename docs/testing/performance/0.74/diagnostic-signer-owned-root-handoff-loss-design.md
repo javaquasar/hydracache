@@ -76,10 +76,11 @@ overlapping-load robustness remains open.
 
 The [local packet](local-runs/diagnostic-signer-owned-root-handoff-loss-20261015/README.md)
 records execution logs and historical source consistency, not signed execution
-attestation. These cuts bracket, but do not interrupt, the creator between
+attestation. These six cuts bracket, but do not interrupt, the creator between
 latching an attempt and calling send or after successful send before resuming
-the original recv. Those uncertain-send windows remain a separate local
-experiment; no permission recovery/restart is tested here.
+the original recv. The separate
+[send-window composition](diagnostic-signer-owned-root-send-windows-design.md)
+adds two fixed stops there; no permission recovery/restart is tested by either.
 
 These cuts do not prove pre-arm/running/thread-only loss, a fresh
 creator CLI exec or hostile same-UID custody. Trusted runtime/issuer/job custody,

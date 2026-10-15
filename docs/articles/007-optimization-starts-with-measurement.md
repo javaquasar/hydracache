@@ -9896,3 +9896,95 @@ job custody and credentials, authenticated original worker start, P2/P3 cessatio
 of every writer, completion/later cells and server admission remain separate.
 No product candidate, expensive qualification or numerical performance claim
 was enabled by these lifecycle checks.
+
+### Creator loss between attempt send and receive
+
+The six stopped transfer cuts left two useful creator-side boundaries untested:
+the attempt had been consumed but no send dispatched, or send16 had succeeded
+while the original worker still waited at its recv-entry stop. The next local
+experiment isolates those two boundaries without adding a product worker or
+real credentials. The complete 63-test baseline is retained, and the unchanged
+binary refuses the new scenario with exit2 before implementation. The
+[preregistration](../testing/performance/0.74/diagnostic-signer-owned-root-send-windows-preregistration.md)
+fixes two losses, two healthy continuations and two no-EXITKILL controls.
+
+The state now distinguishes the attempt latch, the dispatch latch and successful
+send count. Dispatch is latched before the syscall and never becomes reusable
+after an error. This is an intention to dispatch, not proof that data reached
+the peer; successful send16 is recorded separately. At the first cut the facts
+are attempt1/dispatch0/send0. At the second they are attempt1/dispatch1/send1,
+but the same original worker has not resumed recv. Healthy continuation from
+the first cut dispatches once; from the second it only resumes the original
+recv, checks received stack bytes and completes the existing ACK/close/zero-exit
+trace. There is no second attempt or dispatch, and no durable permission-recovery
+claim follows from these per-lifetime flags.
+
+The original monitor, Root, socket pair, credential-checked setup channel and
+worker pidfd are reused. Passing loss sends SIGKILL only to the original creator
+and requires original worker SIGKILL/WNOWAIT/reap/ECHILD, then socket EOF and
+unrelated original child survival before root cleanup. Raw child, policy,
+installer, full-context boundaries, startup256 and protocol16 budgets stay fixed.
+
+Unread data makes the second loss materially different. A preliminary local
+seqpacket check found one ECONNRESET when a peer closed with the dummy unread,
+followed by actual zero reads with HUP. Without pending input there was only
+zero/HUP. Treating that reset as EOF would hide an unproved terminal stream;
+rejecting every reset in the new disposition would also prevent completing
+this exact loss experiment. The implementation therefore leaves the old
+48-byte/five-read drain body unchanged and requires one reset prefix only for
+the new sent-loss cut. It then requires zero without queued extra data and the
+old mandatory EOF/HUP proof. Unexpected reset, other errors or live zero records
+still refuse; unknown quiescence preserves the root. This is not generic reset
+tolerance or a widened drain/timeout budget.
+
+The no-EXITKILL controls deliberately do not group-stop or kill the worker.
+After creator loss the same original child runs untraced. With no input it
+exits74 without ACK. With queued input it emits ACK16 and exits0. The sent
+control's ACK and terminal EOF are observed, but close is not ptrace-observed.
+Both outcomes are negative counterexamples, not healthy completion. In
+particular a plausible ACK and zero exit can coexist with creator loss when
+lifetime enforcement is missing; those signals alone cannot authenticate
+original start or prove that every writer has lost authority.
+
+All six isolated process controls match these expected outcomes. Four new units
+cover dispatch/replay/EPIPE, reset versus EOF, exact single ACK versus malformed
+or duplicate records, and unknown modes/live peers. Existing cut-state and
+frame-bit mutation tests cover the new facts and private cuts11/12/mode3. The
+new cases follow the old25/14 matrices in their existing process test; default
+parallelism and the five-second per-process guard remain unchanged. The initial
+development targeted group passes 67 tests; final source repetitions and
+historical function/frozen-input checks are retained separately in the
+[local packet](../testing/performance/0.74/local-runs/diagnostic-signer-owned-root-send-windows-20261015/README.md).
+
+The final implementation is `541c752b072a755774493e93bbecb85b4f1746b5`. Two
+post-commit current-toolchain groups pass 67 each: 47 root units, five child-entry,
+seven policy, one CLI and seven process tests. Each process matrix executes the
+old25 and old14 cases before all six new controls. MSRV passes 67 with explicit
+six-mode extra-libm refusal, not supported-runtime admission. Windows portable
+groups pass eight each; current/MSRV checks pass on both platforms and current
+strict Clippy is green on Linux/Windows. Static contracts pass 165 and the registry retains 175 gates;
+formatting/doc-check and the non-promotable local contract pass, while require-ship
+still refuses. The repeated Windows MSRV lint retains seven unchanged macro
+errors; its Linux component remains absent. Historical comparison verifies 42
+original function bodies, including old drain, raw child, credential channel,
+frame codec and outer guard, plus separate sticky-dispatch/prefix-order checks.
+This is not a full release gate or an all-checks-green receipt.
+
+The old regressions then pass 121 separately: 83 rooted/loss, 11 first-exec, three
+policy parsers and 24 old owned/GNU/CLI/process tests. Neither broad group
+overlaps the ordinary five-second guards. Frozen qualification inputs and prior
+negative captures remain unchanged. No product performance measurement was
+collected by this lifecycle experiment.
+
+The packet seals 32 complete raw captures and pins source/tree, frozen inputs
+and earlier negative results. Its verifier and eight mutation/unit tests pass
+on Windows and Linux. Separate final verifier transcripts are unsigned
+consistency checks, not execution attestation or a production-start receipt.
+
+These are two fixed boundaries, not arbitrary-instruction or in-syscall loss.
+Restart/permission recovery, fresh creator CLI exec, pre-arm/running/thread-only
+loss, hostile same-UID custody, trusted credentials/runtime/issuer/job custody,
+authenticated original worker start, P2/P3 cessation of every writer and later
+cells remain separate. Earlier parallel-fixture timeouts and MSRV macro lint
+failures remain recorded rather than waived. No server, qualification, product
+workload or throughput/allocation claim is opened by this local experiment.

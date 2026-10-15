@@ -1142,9 +1142,12 @@ The local [ordinary selected-self dummy handoff](../testing/performance/0.74/dia
 composes the existing root/policy diagnostic with one attempted public-dummy
 transfer, exact original native trace, ACK/close/zero exit and owned cleanup.
 The separate [stopped transfer-loss composition](../testing/performance/0.74/diagnostic-signer-owned-root-handoff-loss-design.md)
-covers six exact stops with healthy and no-EXITKILL controls. It leaves
-original-start authority closed: creator-side attempt/send uncertainty windows,
-running/pre-arm/thread-only loss, trusted
+covers six exact stops with healthy and no-EXITKILL controls. The separate
+[send-window composition](../testing/performance/0.74/diagnostic-signer-owned-root-send-windows-design.md)
+adds two fixed creator cuts after attempt latch and after send before recv
+resume, including explicit untraced negative controls and reset/EOF separation.
+It leaves original-start authority closed: arbitrary/in-syscall loss, permission
+recovery after restart, running/pre-arm/thread-only loss, trusted
 runtime/issuer/job custody, real credentials and P2/P3 all-writer
 cessation remain prerequisites before completion/later cells or server admission.
 This local W11 prerequisite adds no measurement or qualification admission.
