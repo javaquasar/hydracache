@@ -31,8 +31,14 @@ identity/flag, binary IO/EOF and full-queue backpressure tests, seeded flag
 mutations and negative ownership/FD-export APIs. Run a separate joined manual
 matrix on both normal GNU release compiler lanes: six construction interruptions,
 eight descriptor/flag substitutions, original trust drift, concurrent flag drift
-between observation brackets and a healthy control. Every chain is fresh;
-failed owners retain Busy and existing durable history without mutation.
+between observation brackets and a healthy control. Also refuse trust drift at
+acknowledgement and an already-refused Starting before pipe allocation. These
+extend the initial matrix to nineteen cases. Every chain is fresh; failed owners
+retain Busy and existing durable history without mutation.
+Descriptor substitutions and concurrent flag drift must report Invalid from
+pipe inspection, not a coincident Original time refusal. Trust drift must report
+the original guard failure. The acknowledgement hook precedes its final complete
+original/kernel closing checks, preserving the same four full authority checks.
 No failed scenario is retried into a green result or admitted by extending time.
 
 Preserve baseline runtime and all lower source guards with exact narrow static
