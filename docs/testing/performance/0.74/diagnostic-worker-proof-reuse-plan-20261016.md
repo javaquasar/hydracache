@@ -62,3 +62,10 @@ historical causes unresolved unless this slice supplies occurrence-specific proo
 Starting, runtime handoff, writer cessation, production enrollment, server, expensive
 infrastructure, qualification and push stay closed. Full verify is for the later
 release milestone, not implied by focused checks here.
+
+Estimator implementation detail fixed before candidate stage observations:
+xorshift32 (left 13, unsigned right 17, left 5), modulo-five pair sampling,
+reset the same seed per stage so resample indices are paired across stages.
+Percentiles use linear interpolation at (10000-1)*p, p=0.025/0.975. Include all
+five independent pairs and no warmup/sample exclusion. This specifies the
+estimator, not a change to the <=0.80 upper-bound rule.
