@@ -1,13 +1,22 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [campaign-construction packet](local-runs/claim-construction-20261016/README.md)
+extends explicit ownership to acquire/recover before a HostExecutionClaim exists.
+A private pending owner unlocks on errors and recover_active returning None,
+then transfers the same File on success without premature unlock. Six new tests
+cover 23 enumerated scenarios, preserving diagnostic conflicts and surviving
+markers. This closes the construction gap left by the short-helper correction;
+it neither attributes historical natural failures nor supplies original-start,
+all-writer cessation, server admission or a new performance estimate.
+
 The [short-fence causal packet](local-runs/short-fence-20261016/README.md)
 reproduces a pre-exec fork alias retaining the completed transaction's flock.
 The private short owner now explicitly unlocks its original open description on
 drop, including admission errors. Four causal controls pass on both Linux
 compilers; seven corrupt/pending ledger variants recover the original revision
 without execution or file mutation. This fixes a reachable lifetime defect, not
-the unobserved owner of each historical Host(Busy). Campaign-claim construction
-errors still require a separate audit. No performance or server admission follows;
+the unobserved owner of each historical Host(Busy). The construction errors are
+covered by the separate follow-up above. No performance or server admission follows;
 the five-pair timings below belong only to their pinned historical source.
 
 The [second worker proof screen](local-runs/worker-proof-reuse-v2-20261016/README.md)

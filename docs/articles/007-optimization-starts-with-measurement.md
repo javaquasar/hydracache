@@ -11022,8 +11022,56 @@ already registered manual exclusions. Both Windows compilers pass the portable
 IPC/lease/host groups (21/18/5). These are semantic checks, not a throughput gain;
 the earlier five-pair debug result remains pinned to its earlier source.
 
-The remaining ownership question is explicit: raw File error paths before a
-HostExecutionClaim is constructed in acquire/recover are outside this fix and
-need their own preregistration, controls and correction if reproduced. Releasing
-a cooperative short transaction is also not autonomous all-writer cessation.
-Authenticated original-start, later cells and server rehearsal remain closed.
+Raw File error paths before a HostExecutionClaim is constructed were outside
+that short-helper fix. The separate construction correction below addresses
+them; releasing a cooperative transaction still does not prove autonomous
+all-writer cessation or authenticate original-start.
+
+### Ownership must cover construction errors and an absent active claim
+
+The next experiment keeps successful campaign ownership unchanged and tests the
+interval before that owner exists. Both named acquisition/recovery and active
+recovery acquire a flock before inspecting admission and the active marker.
+On failure, or on active recovery returning None, the old raw File simply closed.
+The already controlled pre-exec child could extend that lock's lifetime too.
+
+Six preregistered tests reuse the exact private owned-child fixture rather than
+introducing another process model. On the baseline, five test groups fail when
+an independent open attempts to acquire after constructor return. The sixth,
+successful ownership transfer, already passes all three routes. The failures
+include an absent active claim and a late refusal after creating the marker:
+neither a failed request nor Ok(None) should retain cooperative lock ownership.
+Each failing group stops at its first case; the baseline did not execute all
+23 successful-path/case combinations later covered by the fixed tests.
+
+The private PendingHostClaim takes ownership only after successful flock and
+before fallible admission. On early return it explicitly unlocks the original
+description. On success it consumes an Option<File> into the unchanged claim;
+there is no clone, reopen, relock or unsafe extraction. Emptying that Option
+disarms the temporary owner, so its Drop cannot unlock a live successful claim.
+Unlock remains best effort, not a receipt proving resource or writer release.
+
+The enumerated cases cover factory and legacy-admission errors, malformed,
+missing and conflicting markers, fixed-context refusal, both None branches,
+late refusal on all three routes and successful Created/Recovered transfer.
+Existing marker bytes, inode and mode remain unchanged; a newly created marker
+survives late refusal. Independent lock probes verify release while the old
+child still holds its descriptor. A later old-child unlock/close or failed
+contender cannot release a new independent owner. Successful claims stay Busy
+to contenders until their existing Drop. Admission ordering, final owner and
+terminal marker-release predicates are preserved by exact-source restoration
+with negative canaries, layered into the prior static contracts.
+
+Both Linux compilers now pass all 19 host unit tests, including six new tests
+covering the 23 cases and all prior short-fence controls. All 179 static contracts,
+eight platform/compiler build/strict-Clippy lanes and old Linux/Windows integration
+groups pass. Each compiler's ordinary original-input regression passes 99 tests
+with the same four registered manual exclusions, without an IPC retry or changed
+signed window. Those semantic greens do not requalify the earlier timing screen.
+
+The [construction evidence](../testing/performance/0.74/local-runs/claim-construction-20261016/README.md)
+retains the baseline failures and development overlay separately from the pinned
+fixed source. This is a second local ownership correction, not a throughput or
+allocation optimization and not attribution of either old natural Host(Busy).
+Authenticated original-start and cessation of every writer remain the next
+execution boundary; completion, later cells and server admission remain closed.

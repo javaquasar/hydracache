@@ -1,0 +1,62 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.67s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+
+running 19 tests
+test host_execution::fixed_admission_tests::fixed_admission_repeated_scans_and_original_refusal_never_refresh ... ok
+test host_execution::fixed_admission_tests::fixed_admission_recovery_late_failure_never_removes_existing_marker ... ok
+test host_execution::fixed_admission_tests::fixed_admission_context_after_fence_drop_blocks_acquire_and_both_recoveries ... ok
+test host_execution::fixed_admission_tests::fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence ... ok
+seed=0x747
+claim_construction active_none_context=false release=true preserved=true
+claim_construction named_create=true kind=0 release=true preserved=true
+claim_construction active_error=0 release=true preserved=true
+claim_construction active_none_context=true release=true preserved=true
+claim_construction named_create=true kind=1 release=true preserved=true
+test host_execution::fixed_admission_tests::fixed_admission_empty_storage_preserves_legacy_create_and_recovery ... ok
+test host_execution::fixed_admission_tests::fixed_admission_busy_precedes_factory_and_aliases_use_canonical_dispatch ... ok
+claim_construction active_error=1 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_none_releases_original ... ok
+claim_construction named_create=true kind=2 release=true preserved=true
+test host_execution::fixed_admission_tests::fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct ... ok
+claim_construction named_create=false kind=0 release=true preserved=true
+claim_construction named_create=true kind=3 release=true preserved=true
+claim_construction active_error=2 release=true preserved=true
+short_fence admission_error_release=true
+test host_execution::short_fence_tests::short_fence_admission_error_releases_original_description ... ok
+claim_construction active_error=3 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original ... ok
+claim_construction named_create=true kind=4 release=true preserved=true
+claim_construction named_create=false kind=1 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_acquire_errors_release_original ... ok
+short_fence drop_release=true failed_contender_preserves=true late_old_unlock_preserves_next=true
+claim_construction success_route=0 held_until_claim_drop=true marker_retained=true
+test host_execution::short_fence_tests::short_fence_drop_releases_original_not_next_open_description ... ok
+claim_construction late_route=0 release=true marker_retained=true
+claim_construction named_create=false kind=2 release=true preserved=true
+claim_construction success_route=1 held_until_claim_drop=true marker_retained=true
+claim_construction late_route=1 release=true marker_retained=true
+short_fence raw_close_busy=true cloexec=true explicit_child_unlock_releases=true
+test host_execution::short_fence_tests::short_fence_raw_close_negative_control_retains_inherited_lock ... ok
+claim_construction named_create=false kind=3 release=true preserved=true
+claim_construction late_route=2 release=true marker_retained=true
+claim_construction success_route=2 held_until_claim_drop=true marker_retained=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_late_refusal_preserves_created_or_recovered_marker ... ok
+claim_construction named_create=false kind=4 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_success_transfers_same_owner_without_unlock ... ok
+claim_construction named_create=false kind=5 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_recover_errors_release_original ... ok
+test host_execution::fixed_admission_tests::fixed_admission_seeded_late_context_and_object_failures_retain_created_marker ... ok
+test host_execution::fixed_admission_tests::fixed_admission_all_known_unknown_and_nonregular_contexts_block_without_decode ... ok
+short_fence corruption_kind=0 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=1 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=2 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=3 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=4 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=5 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=6 transaction_refused=true inherited_child_ready=true
+short_fence corruption_cases=7 backend_calls=0 state_and_ledger_preserved=true
+test host_execution::short_fence_tests::short_fence_corrupt_ledger_error_releases_before_original_recovery ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 964 filtered out; finished in 0.26s
+

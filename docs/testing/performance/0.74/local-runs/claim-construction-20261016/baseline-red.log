@@ -1,0 +1,43 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.74s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 6 tests
+
+thread 'host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original' (678) panicked at tools/long-run-supervisor-074/src/host_claim_construction_tests.rs:31:40:
+constructor returned but inherited alias retained flock: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original ... FAILED
+
+thread 'host_execution::short_fence_tests::claim_construction::claim_constructor_acquire_errors_release_original' (677) panicked at tools/long-run-supervisor-074/src/host_claim_construction_tests.rs:31:40:
+constructor returned but inherited alias retained flock: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+
+thread 'host_execution::short_fence_tests::claim_construction::claim_constructor_active_none_releases_original' (679) panicked at tools/long-run-supervisor-074/src/host_claim_construction_tests.rs:31:40:
+constructor returned but inherited alias retained flock: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+
+thread 'host_execution::short_fence_tests::claim_construction::claim_constructor_recover_errors_release_original' (681) panicked at tools/long-run-supervisor-074/src/host_claim_construction_tests.rs:31:40:
+constructor returned but inherited alias retained flock: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+test host_execution::short_fence_tests::claim_construction::claim_constructor_acquire_errors_release_original ... FAILED
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_none_releases_original ... FAILED
+test host_execution::short_fence_tests::claim_construction::claim_constructor_recover_errors_release_original ... FAILED
+
+thread 'host_execution::short_fence_tests::claim_construction::claim_constructor_late_refusal_preserves_created_or_recovered_marker' (680) panicked at tools/long-run-supervisor-074/src/host_claim_construction_tests.rs:31:40:
+constructor returned but inherited alias retained flock: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+claim_construction success_route=0 held_until_claim_drop=true marker_retained=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_late_refusal_preserves_created_or_recovered_marker ... FAILED
+claim_construction success_route=1 held_until_claim_drop=true marker_retained=true
+claim_construction success_route=2 held_until_claim_drop=true marker_retained=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_success_transfers_same_owner_without_unlock ... ok
+
+failures:
+
+failures:
+    host_execution::short_fence_tests::claim_construction::claim_constructor_acquire_errors_release_original
+    host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original
+    host_execution::short_fence_tests::claim_construction::claim_constructor_active_none_releases_original
+    host_execution::short_fence_tests::claim_construction::claim_constructor_late_refusal_preserves_created_or_recovered_marker
+    host_execution::short_fence_tests::claim_construction::claim_constructor_recover_errors_release_original
+
+test result: FAILED. 1 passed; 5 failed; 0 ignored; 0 measured; 977 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --lib`

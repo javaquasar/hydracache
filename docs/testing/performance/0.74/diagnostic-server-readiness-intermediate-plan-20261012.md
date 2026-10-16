@@ -156,9 +156,20 @@ explicitly unlocks only the successfully acquired original description. The raw
 close control remains Busy; the three baseline regressions fail, then all four
 controls and seven corrupt-ledger variants pass after correction. No old IPC test
 is retried or relaxed. Historical occurrence-specific attribution remains open.
-Audit raw-file construction errors in HostExecutionClaim acquire/recover next;
-this short-helper correction deliberately leaves those paths unchanged. It is
-not all-writer cessation, original-start, or requalification of prior timings.
+The short-helper correction deliberately left campaign construction unchanged;
+the separate follow-up below closes that gap. Neither correction is all-writer
+cessation, original-start, or requalification of prior timings.
+
+The [campaign-construction follow-up](local-runs/claim-construction-20261016/README.md)
+reproduces five failing baseline groups while successful claim ownership already
+passes. A private pending owner now releases the original successful flock on
+every early constructor return, including recover_active returning None, and
+consumes its Option<File> exactly once into the existing successful claim. Six
+tests cover 23 cases: early errors, fixed-context conflicts, absent active claim,
+late refusal retaining the marker and successful transfer. Predicate ordering,
+marker retention, final claim Drop and terminal release stay exact. The next
+implementation boundary remains the original authenticated start and autonomous
+writer cessation described below, not release admission.
 
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed

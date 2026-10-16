@@ -1,0 +1,35 @@
+warning: in the working copy of 'tools/long-run-supervisor-074/src/host_execution.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tools/long-run-supervisor-074/src/host_short_fence_tests.rs', LF will be replaced by CRLF the next time Git touches it
+diff --git a/tools/long-run-supervisor-074/src/host_execution.rs b/tools/long-run-supervisor-074/src/host_execution.rs
+index 02cde081..c4232651 100644
+--- a/tools/long-run-supervisor-074/src/host_execution.rs
++++ b/tools/long-run-supervisor-074/src/host_execution.rs
+@@ -144,6 +144,8 @@ impl HostExecutionClaim {
+         let root = fs::canonicalize(campaign_root)?;
+         let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
+         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
++        #[cfg(all(test, target_os = "linux"))]
++        short_fence_tests::after_acquire(&lock);
+         let mut admission = admission(&root, &lock)?;
+         if admission.present(&root, &lock)? {
+             if fs::symlink_metadata(root.join(ACTIVE_CAMPAIGN_NAME)).is_ok() {
+@@ -198,6 +200,8 @@ impl HostExecutionClaim {
+         let lock_path = root.join(HOST_EXECUTION_LOCK_NAME);
+         let lock = open_lock(&lock_path)?;
+         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
++        #[cfg(all(test, target_os = "linux"))]
++        short_fence_tests::after_acquire(&lock);
+         let mut admission = admission(&root, &lock)?;
+         if admission.present(&root, &lock)? {
+             return Err(HostExecutionError::DiagnosticConflict);
+diff --git a/tools/long-run-supervisor-074/src/host_short_fence_tests.rs b/tools/long-run-supervisor-074/src/host_short_fence_tests.rs
+index a4feadbf..11ac65a4 100644
+--- a/tools/long-run-supervisor-074/src/host_short_fence_tests.rs
++++ b/tools/long-run-supervisor-074/src/host_short_fence_tests.rs
+@@ -1,4 +1,6 @@
+ //! Bounded owned-fork controls; never a workload or production authority.
++#[path = "host_claim_construction_tests.rs"]
++mod claim_construction;
+ use super::*;
+ use crate::diagnostic_ipc::*;
+ use crate::diagnostic_lease::*;

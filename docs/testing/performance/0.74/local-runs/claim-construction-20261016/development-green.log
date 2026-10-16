@@ -1,0 +1,37 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.07s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 6 tests
+claim_construction active_error=0 release=true preserved=true
+claim_construction named_create=true kind=0 release=true preserved=true
+claim_construction active_none_context=false release=true preserved=true
+claim_construction named_create=false kind=0 release=true preserved=true
+claim_construction active_error=1 release=true preserved=true
+claim_construction named_create=true kind=1 release=true preserved=true
+claim_construction named_create=false kind=1 release=true preserved=true
+claim_construction active_error=2 release=true preserved=true
+claim_construction active_none_context=true release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_none_releases_original ... ok
+claim_construction success_route=0 held_until_claim_drop=true marker_retained=true
+claim_construction named_create=false kind=2 release=true preserved=true
+claim_construction active_error=3 release=true preserved=true
+claim_construction late_route=0 release=true marker_retained=true
+claim_construction named_create=true kind=2 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original ... ok
+claim_construction success_route=1 held_until_claim_drop=true marker_retained=true
+claim_construction named_create=false kind=3 release=true preserved=true
+claim_construction success_route=2 held_until_claim_drop=true marker_retained=true
+claim_construction late_route=1 release=true marker_retained=true
+claim_construction named_create=true kind=3 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_success_transfers_same_owner_without_unlock ... ok
+claim_construction named_create=true kind=4 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_acquire_errors_release_original ... ok
+claim_construction named_create=false kind=4 release=true preserved=true
+claim_construction late_route=2 release=true marker_retained=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_late_refusal_preserves_created_or_recovered_marker ... ok
+claim_construction named_create=false kind=5 release=true preserved=true
+test host_execution::short_fence_tests::claim_construction::claim_constructor_recover_errors_release_original ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 977 filtered out; finished in 0.02s
+

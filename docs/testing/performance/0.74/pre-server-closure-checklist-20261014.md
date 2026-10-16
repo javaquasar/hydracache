@@ -208,8 +208,12 @@ also on admission error; a failed contender or old child's late unlock cannot
 release the next independently opened owner. Both Linux compiler regressions
 pass all four causal controls and seven corrupt/pending ledger variants without
 execution or file mutation. This is a proven local defect class, not attribution
-of each old Host(Busy). Raw-file campaign-claim construction errors remain an
-explicit next audit; all-writer cessation and server admission stay closed.
+of each old Host(Busy). The separately preregistered
+[campaign-construction correction](local-runs/claim-construction-20261016/README.md)
+now covers early errors, Ok(None), late marker-preserving refusal and transfer
+into the original successful claim. Its six tests span 23 cases and retain the
+original admission predicates and terminal release. This closes that local
+construction gap, not all-writer cessation or server admission.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
