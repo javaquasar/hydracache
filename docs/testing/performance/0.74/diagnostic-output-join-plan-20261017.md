@@ -100,3 +100,28 @@ before the unhooked closing observation, never after it. Require exact expected
 interruption/refusal variants, all region order/count assertions, late trust and
 descriptor mutation controls, and no new deadline-writing assignment before
 accepting a new server cohort.
+
+## Expiry-oracle attribution before a corrected cohort
+
+The first current-compiler joined cohort completes 27 sink cases, 15 earlier
+interruptions and all 25 trust drifts. Its intentional ten-second wait obtains
+`Original(Original(Original(Causal(Progress(Input(Kernel(Invalid)))))))`, not the
+test's expected Causal(Time). The cohort is red and retained; MSRV and SIGKILL
+are not dispatched from it. The first event was not captured, so source order
+alone cannot prove the occurrence-specific site.
+
+The original frame visits Progress before Causal. The unchanged progress-age
+guard separately rejects a Heartbeat at its exclusive ten-second age with
+Kernel(Invalid), and an existing original-kernel unit already tests that contract.
+Before changing the joined oracle, run a separately named fresh diagnostic using
+the existing test-only first-refusal recorder. Require site `progress-age`, the
+original strictly ordered receive/after samples, `now >= received`, observed age
+at least the unchanged controller-loss bound and that exact bound in the event.
+An arbitrary Invalid, reversed clock, origin mismatch or absent event must fail.
+Require sticky cross-refusal, retained Busy and no Starting file/output created.
+
+If this independently confirms the mechanism, use that exact numeric/site oracle
+in a separately identified complete cohort. Preserve the first red log and both
+source snapshots; do not retroactively assign its missing event. Change no
+runtime code, validation predicate, duration or origin. The corrected complete
+cohort must still pass both compilers before the full SIGKILL matrix.
