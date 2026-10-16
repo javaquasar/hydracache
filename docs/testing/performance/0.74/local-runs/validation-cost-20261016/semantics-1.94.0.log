@@ -1,0 +1,82 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_intent_projection-fa194d21ccbab1d0)
+
+running 30 tests
+test collector_intent_requires_a_distinct_output_projection ... ok
+test authenticated_worker_trust_drift_revokes_original_not_just_wrapper ... ok
+test boot_change_never_rebinds_an_original_worker ... ok
+test body_budget_nested_schema_and_hash_encoding_are_strict ... ok
+test collector_intent_tests::collector_original_worker_refusal_survives_guard_drop ... ok
+test collector_intent_tests::collector_and_legacy_domains_and_output_digests_cannot_be_relabelled ... ok
+test collector_intent_tests::collector_projection_removes_regular_file_access_and_preserves_other_properties ... ok
+test collector_intent_tests::collector_reserved_state_and_budget_grammar_cannot_be_relaxed ... ok
+test checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily ... ok
+test collector_intent_tests::collector_document_budget_canonical_schema_and_duplicate_fields_refuse ... ok
+test collector_intent_tests::collector_strict_signature_key_and_encoding ... ok
+test collector_intent_tests::collector_original_guard_latches_packet_state_peer_and_time_drift ... ok
+test collector_intent_tests::collector_principal_configuration_stays_independent_and_bounded ... ok
+test controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope ... ok
+test collector_intent_tests::collector_window_is_bounded_and_expiry_exclusive ... ok
+test collector_intent_tests::collector_signed_field_mutations_are_not_production_authority ... ok
+test controller_fields_and_bounded_configuration_fail_closed ... ok
+test original_worker_refusal_survives_intent_drop_and_restoration ... ok
+collector_output_requirements fields=10 order_mutations=2 durable_replay_prevention=false
+test collector_intent_tests::collector_every_output_requirement_is_hashed_not_supplied_as_authority ... ok
+test collector_intent_tests::collector_four_modeled_cells_keep_distinct_exact_pins ... ok
+test state_hash_includes_every_field_and_unit_hash_changes_with_budget ... ok
+test state_projection_rejects_interrupted_expired_and_admission_states ... ok
+test signature_domain_key_and_lowercase_encoding_are_strict ... ok
+test malformed_noncanonical_unknown_duplicate_and_oversize_refuse ... ok
+test independent_concurrent_checks_are_not_a_replay_ledger ... ok
+test signed_binding_mutations_are_not_authority ... ok
+test window_is_positive_bounded_and_expiry_exclusive ... ok
+test four_cells_bind_exact_projection_without_execution ... ok
+test seeded_state_mutations_bind_full_state_not_only_cell ... ok
+collector_intent seed=0x0740c097 state_mutations=64 independent_threads=4 production_start=false
+test collector_intent_tests::collector_seeded_full_state_binding_and_independent_concurrency ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.72s
+
+     Running tests/diagnostic_ipc.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_ipc-846fb4aecac98b45)
+
+running 24 tests
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test local_seqpacket_denies_non_allowlisted_kernel_peer_without_marker ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test linked_ledger_is_refused_and_mode_is_private ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+
+thread 'corrupt_future_noncanonical_or_pending_ledgers_fail_closed' (2506) panicked at tools/long-run-supervisor-074/tests/diagnostic_ipc.rs:555:14:
+called `Result::unwrap()` on an `Err` value: Host(Busy)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... FAILED
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs ... ok
+test local_seqpacket_uses_kernel_peer_credentials_without_production_route ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+
+thread 'pending_intent_blocks_reexecution_and_new_requests' (2526) panicked at tools/long-run-supervisor-074/tests/diagnostic_ipc.rs:113:9:
+injected loss after durable IPC intent
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+failures:
+
+failures:
+    corrupt_future_noncanonical_or_pending_ledgers_fail_closed
+
+test result: FAILED. 23 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.11s
+
+error: test failed, to rerun pass `-p hydracache-long-run-supervisor-074 --test diagnostic_ipc`

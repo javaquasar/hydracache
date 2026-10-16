@@ -1,0 +1,6 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 44.26s
+  Executable unittests src/lib.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/hydracache_long_run_supervisor_074-4b9d2cf26ebcd602)
+  Executable tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_intent_projection-9fd7d0182eda4422)
+  Executable tests/diagnostic_ipc.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_ipc-8478055ecc8469e5)
+  Executable tests/diagnostic_worker_policy.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_worker_policy-3a00bebc94a9179b)

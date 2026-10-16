@@ -10822,6 +10822,59 @@ do not turn the retained default-parallel regression red into success. Before
 Starting handoff, attribute and address the validation-cost/window blocker
 without changing policy deadlines or weakening original ownership checks.
 
+### Attributing repeated validation before changing its proof boundary
+
+The next [local attribution](../testing/performance/0.74/diagnostic-validation-cost-design.md)
+keeps production guard bodies unchanged. Private test-only frames count request
+authentication, request signature work and full worker-policy document checks
+inside six original-owner stages. Separate first-Time facts retain only the
+bounded operation and the issued, expiry and now values already used by the
+existing verifier. Diagnostic Instant timers never become authorization clocks.
+Nesting, unwind, thread isolation and actual signed-window/error precedence have
+their own tests; copied reports carry no runtime authority.
+
+The important repeated work is not limited to the signed request checked at the
+top of the chain. Two independently started current-toolchain probes and one
+MSRV probe produce identical call counts:
+
+| Local stage | Request authentications | Full worker-policy verifications |
+| --- | ---: | ---: |
+| Reserved publication | 272 | 2696 |
+| Heartbeat binding | 66 | 652 |
+
+On the two current debug-fixture runs, publication takes 24.01/24.09 seconds,
+including 18.08/18.19 seconds inside the worker verifier. Binding takes 5.81/5.92
+seconds, including 4.40/4.47 seconds there. MSRV observes the same shape. These
+are local elapsed-time components, not production CPU/op or a throughput gain.
+Request signature duration is already included in request authentication; adding
+them would double-count. The worker timer covers parsing, canonicalization,
+signature and context comparison together, not cryptography alone. Scheduler
+delay and other unmeasured work remain separate from any filesystem hypothesis.
+
+This identifies an owner for a subsequent isolated proof-reuse proposal. It does
+not authorize caching live epoch, authority, configuration or kernel observations.
+Any reused immutable proof must stay bound to exact original bytes and key/policy
+pins while preserving all existing revocation and context brackets. The old path
+must remain a differential oracle before any speedup is claimed.
+
+The instrumented default-parallel original-input repeat passes 99 tests, with the
+three prior manual cases and the new cost probe explicitly ignored. No Time
+failure is reproduced and no build/whole-workspace formatting overlaps that run.
+The earlier failures are still unresolved: changing only diagnostics and obtaining
+a green repeat is not their fix or a shared-load guarantee.
+
+Broader checks expose another negative worth keeping distinct. The first current
+IPC run has 23 passes and one Host(Busy) in old corrupt-ledger recovery. One repeat
+of the same three-target command and ordinary parallelism passes projection,
+IPC and worker-policy groups (30/24/15); MSRV passes them too. No old test body,
+retry policy or locking guard changed. That occurrence's lock-lifetime/concurrency
+cause remains unproved. Six trace tests pass on four platform/compiler lanes,
+both Linux compilers pass 29 kernel and 28 negative API checks, eight build/lint
+lanes and 176 static contracts pass. The
+[retained packet](../testing/performance/0.74/local-runs/validation-cost-20261016/README.md)
+keeps the failed IPC attempt alongside the successes. This is a narrower,
+reproducible attribution step, not Starting or permission to launch on a server.
+
 The [local heartbeat packet](../testing/performance/0.74/local-runs/collector-progress-20261016/README.md)
 pins implementation 0ec52ddc and retains 34 command transcripts with all development
 and parallel negatives. Its verifier checks source/frozen inputs and artifact

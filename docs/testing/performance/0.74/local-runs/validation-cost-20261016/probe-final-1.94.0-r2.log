@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.04s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+HC074-VALIDATION-STAGE Setup Stats { wall_ns: 903562638, authentication_calls: 11, authentication_ns: 76881286, signature_calls: 11, signature_ns: 75530648, worker_policy_calls: 99, worker_policy_ns: 675222828 }
+HC074-VALIDATION-STAGE Fence Stats { wall_ns: 656136011, authentication_calls: 8, authentication_ns: 56262255, signature_calls: 8, signature_ns: 55567509, worker_policy_calls: 72, worker_policy_ns: 488537558 }
+HC074-VALIDATION-STAGE Retain Stats { wall_ns: 8032253784, authentication_calls: 96, authentication_ns: 646812123, signature_calls: 96, signature_ns: 637354617, worker_policy_calls: 908, worker_policy_ns: 6049803000 }
+HC074-VALIDATION-STAGE Observe Stats { wall_ns: 2797947547, authentication_calls: 32, authentication_ns: 223194875, signature_calls: 32, signature_ns: 220270852, worker_policy_calls: 308, worker_policy_ns: 2113844787 }
+HC074-VALIDATION-STAGE Publish Stats { wall_ns: 24085303742, authentication_calls: 272, authentication_ns: 1861292571, signature_calls: 272, signature_ns: 1836741225, worker_policy_calls: 2696, worker_policy_ns: 18188053717 }
+HC074-VALIDATION-STAGE Bind Stats { wall_ns: 5919860009, authentication_calls: 66, authentication_ns: 451621318, signature_calls: 66, signature_ns: 445101433, worker_policy_calls: 652, worker_policy_ns: 4471455153 }
+validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 967 filtered out; finished in 42.40s
+

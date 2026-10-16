@@ -185,6 +185,12 @@ ordinary regression explicitly red: 98 passed, one unchanged old heartbeat
 Authentication(Time) failure. The isolated current/MSRV proof passes, but that
 does not close the validation-cost/window blocker or waive launch checks.
 
+The subsequent [validation-cost packet](local-runs/validation-cost-20261016/README.md)
+records a green 99-test ordinary repeat and a measured repeated worker-verifier
+owner, with no product optimization or historical Time-cause proof. It also
+retains one old IPC Host(Busy) failure despite an unchanged successful repeat.
+Neither observation closes production lifecycle or server admission.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

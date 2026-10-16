@@ -131,6 +131,13 @@ one old heartbeat Authentication(Time) failure). Attribute and address that
 validation-cost/window interaction before treating the handoff as ready; do not
 widen deadlines or suppress the old test.
 
+The [validation-cost probe](diagnostic-validation-cost-design.md) now attributes
+repeated full worker-policy verification in the local debug fixture. A new
+ordinary repeat passes 99 tests without reproducing Time, not proving its
+historical cause or a fix. Isolate any immutable-proof reuse proposal while
+retaining live configuration/epoch/context checks, and separately attribute the
+retained old IPC Host(Busy) occurrence before treating robustness as closed.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

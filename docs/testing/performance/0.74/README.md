@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [validation-cost attribution](diagnostic-validation-cost-design.md) adds only
+test-scoped numeric timers and first signed-window refusal facts. Two current
+probes and one MSRV probe agree on 2696 worker-policy verifications during
+Reserved publication and 652 during heartbeat binding. The latest ordinary
+original-input run passes 99 tests, but does not explain prior Time refusals.
+The [local packet](local-runs/validation-cost-20261016/README.md) also retains a
+separate old IPC Host(Busy) failure and its unchanged successful repeat. No
+immutable-proof cache, live-check removal, Starting or server admission follows.
+
 The [causal challenge preflight](diagnostic-collector-causal-design.md) consumes
 the acknowledged reservation into one system-random, state/request-bound challenge.
 A signed Heartbeat must answer its exact digest; a previously queued signature

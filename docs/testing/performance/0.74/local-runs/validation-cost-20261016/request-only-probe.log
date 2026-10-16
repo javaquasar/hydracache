@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.18s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 1 test
+HC074-VALIDATION-STAGE Setup Stats { wall_ns: 910153825, authentication_calls: 11, authentication_ns: 74528888, signature_calls: 11, signature_ns: 73568353 }
+HC074-VALIDATION-STAGE Fence Stats { wall_ns: 613070787, authentication_calls: 8, authentication_ns: 49933781, signature_calls: 8, signature_ns: 49273595 }
+HC074-VALIDATION-STAGE Retain Stats { wall_ns: 7695146449, authentication_calls: 96, authentication_ns: 614247288, signature_calls: 96, signature_ns: 606468884 }
+HC074-VALIDATION-STAGE Observe Stats { wall_ns: 2610797979, authentication_calls: 32, authentication_ns: 208916397, signature_calls: 32, signature_ns: 206121238 }
+HC074-VALIDATION-STAGE Publish Stats { wall_ns: 24875592981, authentication_calls: 272, authentication_ns: 1915903718, signature_calls: 272, signature_ns: 1889562507 }
+HC074-VALIDATION-STAGE Bind Stats { wall_ns: 5992143068, authentication_calls: 66, authentication_ns: 473704154, signature_calls: 66, signature_ns: 467744450 }
+validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 966 filtered out; finished in 42.70s
+
