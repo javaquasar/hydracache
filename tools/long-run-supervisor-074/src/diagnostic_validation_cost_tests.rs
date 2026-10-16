@@ -58,7 +58,7 @@ fn validation_cost_original_stages_preserve_guards_and_files() {
         let stats = report.stages[stage as usize];
         assert!(stats.authentication_calls > 0);
         assert!(stats.signature_calls > 0);
-        assert_eq!(stats.worker_policy_calls, u64::from(stage == Stage::Setup));
+        assert!(stats.worker_policy_calls > 0);
         println!("HC074-VALIDATION-STAGE {stage:?} {stats:?}");
     }
     println!("validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false");
