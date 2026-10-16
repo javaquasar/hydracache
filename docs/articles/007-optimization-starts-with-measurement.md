@@ -10756,6 +10756,72 @@ overlap caused the failures, nor a waiver for shared-load robustness. Original
 authorization windows and ten-second freshness were not extended. The local
 contract stays non-promotable and release admission remains closed.
 
+### A post-ack challenge is stronger than a newly dequeued heartbeat
+
+The next hypothesis addresses the queue boundary explicitly. A controller can
+sign and enqueue a heartbeat before Reserved exists, yet the receiver can dequeue
+it afterward. Authentication and receive order alone therefore cannot establish
+a response to the acknowledged reservation.
+
+The [causal challenge preflight](../testing/performance/0.74/diagnostic-collector-causal-design.md)
+consumes the original acknowledged owner, revalidates it, generates 32 bytes with
+the system CSPRNG, then samples issuance time from the original kernel context.
+Its bounded canonical document commits the original request, retained Reserved
+bytes, frozen state, identity and issuance time. An unchanged signed Heartbeat v1
+must echo the domain-separated digest as its nonce. A different authenticated
+nonce refuses even if its message was dequeued after challenge issuance. The
+challenge is public data, not a secret or bearer execution permission.
+
+The consuming result retains the same authority, storage, fence and original
+progress guard. It accepts only one packet and permits no replacement, renewal,
+retry or owner recovery from copied bytes. Its exclusive ten-second deadline is
+anchored to issuance, not signing or dequeue. Original admission holds and signed
+windows still apply. The byte getter may return an expired document; exporting
+data is deliberately not a claim that authority remains fresh.
+
+This confirms a response to a post-ack commitment, not that the controller read
+every Reserved byte or remained continuously present. It adds no durable state,
+Starting transition, output, execution lease or production enrollment. A later
+lifecycle handoff must explicitly define which admission predicates discharge
+and which configuration, epoch, context, progress and deadline obligations remain
+live. Silently omitting old checks or widening their windows is not that handoff.
+
+The new live composition checks an actual response, a genuinely prequeued signed
+message, explicit entropy failure and real challenge expiration. Pure checks
+separately exercise exact deadline arithmetic, strict canonical/schema bounds
+and 69 seeded commitment mutations (0x0740c09d). Seven new negative API examples
+prevent cloning, deserialization, double consumption and start/replacement calls.
+
+The initial expanded ordinary regression is an explicit negative: 96 passes,
+four Authentication(Time) failures and two existing manual ignores. It failed
+without concurrent builds or whole-workspace formatting. Under the separately
+committed [tiering amendment](../testing/performance/0.74/diagnostic-collector-causal-tiering-20261016.md),
+only the new costly four-fixture composition moves to a registered manual gate.
+Its body remains byte-identical; the retained pre-tier source has its own SHA256.
+The 900-second harness limit is not a change to any authentication deadline.
+
+Crucially, this tier separation did not fix the ordinary regression: its next
+default-parallel run has 98 passes, one Authentication(Time) failure in the old
+heartbeat composition and three manual ignores. All old tests remain enabled,
+with no serialization or --skip. An isolated new proof cannot erase that failure.
+The validation-cost/fixed-window interaction remains open; neither its complete
+cause nor arbitrary shared-load robustness is established. These failures also
+do not explain the older uninstrumented Kernel(Invalid) capture.
+
+The [local causal packet](../testing/performance/0.74/local-runs/collector-causal-20261016/README.md)
+retains development failures, both parallel negatives and the separately named
+final checks. It is unsigned consistency evidence, not a clean-build, binary or
+trusted execution attestation. No performance gain or server admission follows
+from this security boundary; product qualification remains a separate gate.
+
+The four-case manual proof passes on Rust 1.94.0 and 1.88.0, as do four ordinary
+focused causal checks on each compiler. Each separately passes 29 kernel tests,
+30 projection tests and 28 compile-fail examples. All eight Linux/Windows
+check/strict-Clippy lanes and 175 static contracts pass. These specific greens
+do not turn the retained default-parallel regression red into success. Before
+Starting handoff, attribute and address the validation-cost/window blocker
+without changing policy deadlines or weakening original ownership checks.
+
 The [local heartbeat packet](../testing/performance/0.74/local-runs/collector-progress-20261016/README.md)
 pins implementation 0ec52ddc and retains 34 command transcripts with all development
 and parallel negatives. Its verifier checks source/frozen inputs and artifact

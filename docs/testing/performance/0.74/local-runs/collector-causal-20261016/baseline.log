@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.96s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 6 tests
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_exclusive_age_and_strict_receive_order ... ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_kernel_origin_signature_order_and_sticky_refusal ... collector_progress kernel_cases=7 renewed_receive_time=false
+ok
+test diagnostic_kernel_admission::collector_inputs::progress::tests::collector_progress_real_packet_expires_without_receive_time_renewal ... collector_progress real_expiry=true receive_time_unchanged=true deadline_extended=false
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::tests::collector_progress_seeded_original_binding_mutations ... collector_progress seed=0x0740c09c binding_mutations=12
+ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses ... collector_progress composition_case=0 preflight_writes=false start=false fence_retained=true
+collector_progress composition_case=1 preflight_writes=false start=false fence_retained=true
+collector_progress composition_case=2 preflight_writes=false start=false fence_retained=true
+collector_progress composition_case=3 preflight_writes=false start=false fence_retained=true
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 950 filtered out; finished in 164.04s
+

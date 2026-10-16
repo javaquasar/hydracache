@@ -1,0 +1,19 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0433]: failed to resolve: use of undeclared type `CollectorProgressError`
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_causal_tests.rs:103:33
+    |
+103 | ...   CollectorProgressError::R...
+    |       ^^^^^^^^^^^^^^^^^^^^^^ us...red type `CollectorProgressError`
+    |
+help: an enum with a similar name exists
+    |
+103 -                                 CollectorProgressError::Reservation(
+103 +                                 CollectorReservedError::Reservation(
+    |
+help: consider importing this enum
+    |
+  1 + use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress::CollectorProgressError;
+    |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

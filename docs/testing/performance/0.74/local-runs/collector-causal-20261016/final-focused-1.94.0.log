@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.33s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 5 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_real_response_prequeued_refusal_and_entropy_failure_keep_fence ... ignored, manual nonroot fixed-window causal proof; no server
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_exact_issuance_deadline_never_renews ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_codec_canonical_domain_bounds_and_unknowns_are_strict ... ok
+collector_causal seed=0x0740c09d commitment_mutations=69 byte_inspector_is_authority=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_seeded_every_commitment_changes_the_signed_nonce ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 956 filtered out; finished in 0.01s
+

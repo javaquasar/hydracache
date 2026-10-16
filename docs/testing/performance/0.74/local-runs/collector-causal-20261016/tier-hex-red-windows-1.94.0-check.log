@@ -1,0 +1,25 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0277]: the trait bound `Array<u8, UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>>: LowerHex` is not satisfied
+   --> crates\xtask\tests\support\performance_contract_074_collector_causal.rs:196:25
+    |
+196 |         format!("{:x}", Sha256::digest(before.as_bytes())),
+    |                  ----   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `LowerHex` is not implemented for `Array<u8, UInt<UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>, ...>>`
+    |                  |
+    |                  required by this formatting parameter
+    |
+    = help: the following other types implement trait `LowerHex`:
+              &T
+              &mut T
+              IdentFragmentAdapter<T>
+              Saturating<T>
+              Wrapping<T>
+              bytes::bytes::Bytes
+              bytes::bytes_mut::BytesMut
+              deranged::RangedI128<MIN, MAX>
+            and 46 others
+    = note: the full name for the type has been written to 'C:\Workspace\prj\jq\cashe\hydracache-074\target\debug\deps\performance_contract_074-4a8b5371337d8817.long-type-792124458198928944.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the macro `format` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `xtask` (test "performance_contract_074") due to 1 previous error

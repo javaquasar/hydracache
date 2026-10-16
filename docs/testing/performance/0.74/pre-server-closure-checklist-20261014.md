@@ -173,6 +173,18 @@ but no progress entry or Starting state is committed. It cannot renew original
 admission, prove continuous presence or revive an expired execution lease.
 Durable Starting/replay/deadline integration remains open before root output.
 
+The distinct [causal challenge preflight](diagnostic-collector-causal-design.md)
+now requires a signed response to a post-ack random request/Reserved/state
+commitment. A queued old heartbeat cannot supply that response. This changes no
+durable state or existing validity window; authority handoff, Starting and replay
+commit remain open. The costly four-fixture proof moves to an explicit manual
+gate with unchanged assertions and deadlines. Old ordinary tests remain enabled;
+this test-tier change supplies no production scheduling guarantee.
+The [local packet](local-runs/collector-causal-20261016/README.md) keeps the
+ordinary regression explicitly red: 98 passed, one unchanged old heartbeat
+Authentication(Time) failure. The isolated current/MSRV proof passes, but that
+does not close the validation-cost/window blocker or waive launch checks.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

@@ -120,6 +120,17 @@ renewal of the original admission hold, proof of uninterrupted presence or a
 Starting transition. Those lifecycle/deadline and uncertain-outcome semantics
 remain part of the consuming Starting protocol before output construction.
 
+The subsequent [causal challenge](diagnostic-collector-causal-design.md) binds
+one response to a system-random commitment generated after Reserved acknowledgement,
+including original request/record/state hashes. This closes the queued-old-message
+gap for that distinct preflight, not durable progress or runtime lease authority.
+It does not discharge any admission predicate or prove continuous presence.
+Its [local packet](local-runs/collector-causal-20261016/README.md) retains passing
+isolated current/MSRV proofs but a still-red ordinary regression (98 passed,
+one old heartbeat Authentication(Time) failure). Attribute and address that
+validation-cost/window interaction before treating the handoff as ready; do not
+widen deadlines or suppress the old test.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

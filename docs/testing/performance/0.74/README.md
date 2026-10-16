@@ -1,5 +1,19 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [causal challenge preflight](diagnostic-collector-causal-design.md) consumes
+the acknowledged reservation into one system-random, state/request-bound challenge.
+A signed Heartbeat must answer its exact digest; a previously queued signature
+cannot substitute. The result remains non-executing and renews neither admission
+nor challenge time. The separately registered manual composition and its
+[tiering preregistration](diagnostic-collector-causal-tiering-20261016.md) keep
+costly fixed-window fixture work separate from the ordinary parallel regression.
+Starting still needs an explicit lifecycle authority handoff and durable commit.
+The [causal evidence packet](local-runs/collector-causal-20261016/README.md)
+retains both passing isolated four-case proofs and the negative ordinary runs:
+96/4 before tiering and 98/1 afterward. The remaining failure is an unchanged
+old heartbeat composition's Authentication(Time); no deadline or old test was
+relaxed. Runtime validation cost and parallel robustness remain open blockers.
+
 The [authenticated heartbeat preflight](diagnostic-collector-progress-design.md)
 consumes the original collector reservation and one new packet from the same
 kernel receiver. It keeps the original authority/fence and checks the configured
