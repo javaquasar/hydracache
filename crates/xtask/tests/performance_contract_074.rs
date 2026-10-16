@@ -23,6 +23,9 @@ mod collector_causal;
 #[path = "support/performance_contract_074_validation_cost.rs"]
 mod validation_cost;
 
+#[path = "support/performance_contract_074_worker_proof.rs"]
+mod worker_proof;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
@@ -3249,7 +3252,7 @@ fn diagnostic_worker_policy_keeps_asserted_context_and_production_closed() {
         "self.refused = true",
         "current_trust != &self.trust",
         "asserted_context != &self.context",
-        "observed != self.original",
+        "sha256_hex(&canonical_line(&self.original)?) != self.trust.policy_sha256",
         "sha256_hex(bytes) != self.envelope_sha256",
         "sha256_hex(&body_bytes) != trust.policy_sha256",
         "policy.policy_epoch != trust.epoch",
