@@ -54,3 +54,11 @@ admission. Retain any natural failure without rerun-to-green. New cases do not
 retroactively identify either historical occurrence's child or kernel lock owner.
 Record source/evidence separately and update article/readiness documentation.
 Server, product workload, qualification, full release admission and push stay closed.
+
+Compile-audit clarification before a successful candidate run: two additional
+test-only consumers retain or explicitly unlock the returned File. Preserve their
+assertions by changing the private fixture return type and adding a borrowed-File
+accessor under cfg(test, linux) only. Adapt those test borrows and the existing
+explicit-unlock call, not production callers. No production Deref, extraction,
+clone or public accessor is introduced. Preserve the initial E0308/E0277 receipt
+alongside the three causal reds; these are type adaptations, not new predicates.
