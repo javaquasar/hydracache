@@ -1,0 +1,75 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack ... collector_starting_crash seed=0x074057d1 repeat=1 stage=CreateDirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=CreateDirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=DirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=DirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Acknowledging sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Acknowledging sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=FileSynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=FileSynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Created sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Created sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=AfterReturn sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=AfterReturn sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=PrefixWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=PrefixWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Sealed sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=Sealed sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=BytesWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=BytesWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=BeforeCreate sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=BeforeCreate sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=AfterReturn sigkill=false fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=1 stage=AfterReturn sigkill=false fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash_summary seed=0x074057d1 repeat=1 sigkills=10 controls=1 fresh_inspections=22 production_enrollment=false start=false
+collector_starting_crash seed=0x074057d1 repeat=2 stage=CreateDirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=CreateDirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=DirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=DirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Acknowledging sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Acknowledging sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=FileSynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=FileSynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Created sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Created sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=AfterReturn sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=AfterReturn sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=PrefixWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=PrefixWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Sealed sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=Sealed sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=BytesWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=BytesWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=BeforeCreate sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=BeforeCreate sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=AfterReturn sigkill=false fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=2 stage=AfterReturn sigkill=false fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash_summary seed=0x074057d1 repeat=2 sigkills=10 controls=1 fresh_inspections=22 production_enrollment=false start=false
+collector_starting_crash seed=0x074057d1 repeat=3 stage=CreateDirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=CreateDirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=DirectorySynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=DirectorySynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Acknowledging sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Acknowledging sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=FileSynced sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=FileSynced sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Created sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Created sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=AfterReturn sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=AfterReturn sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=PrefixWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=PrefixWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Sealed sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=Sealed sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=BytesWritten sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=BytesWritten sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=BeforeCreate sigkill=true fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=BeforeCreate sigkill=true fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=AfterReturn sigkill=false fresh_inspection=1 empty=false unchanged=true
+collector_starting_crash seed=0x074057d1 repeat=3 stage=AfterReturn sigkill=false fresh_inspection=2 empty=false unchanged=true
+collector_starting_crash_summary seed=0x074057d1 repeat=3 sigkills=10 controls=1 fresh_inspections=22 production_enrollment=false start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1007 filtered out; finished in 292.40s
+

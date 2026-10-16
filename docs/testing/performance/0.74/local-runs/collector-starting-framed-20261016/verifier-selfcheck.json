@@ -1,0 +1,35 @@
+{
+  "kind": "negative-offline-manifest-canaries",
+  "verifier_snapshot": "verifier-before-selfcheck.ps1",
+  "passed": true,
+  "cases": [
+    {
+      "name": "server-ready",
+      "command": "powershell -NoProfile -File docs/testing/performance/0.74/local-runs/collector-starting-framed-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-framed/evidence-canaries/server-ready.json",
+      "expected_refusal": "Unsupported claim: server_ready",
+      "exit_code": 1,
+      "output": "Unsupported claim: server_ready\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-framed-20261016\r\n\\verify.ps1:3 char:47\r\n+ function Check($ok,[string]$why){if(-not $ok){throw $why}}\r\n+                                               ~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported claim: server_ready:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported claim: server_ready\r\n \r\n"
+    },
+    {
+      "name": "lost-ack-count",
+      "command": "powershell -NoProfile -File docs/testing/performance/0.74/local-runs/collector-starting-framed-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-framed/evidence-canaries/lost-ack-count.json",
+      "expected_refusal": "Coverage differs: lost_runtime_ack_kills_per_compiler",
+      "exit_code": 1,
+      "output": "Coverage differs: lost_runtime_ack_kills_per_compiler\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-framed-20261016\r\n\\verify.ps1:3 char:47\r\n+ function Check($ok,[string]$why){if(-not $ok){throw $why}}\r\n+                                               ~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Coverage differ...ls_per_compiler:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Coverage differs: lost_runtime_ack_kills_per_compiler\r\n \r\n"
+    },
+    {
+      "name": "artifact-hash",
+      "command": "powershell -NoProfile -File docs/testing/performance/0.74/local-runs/collector-starting-framed-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-framed/evidence-canaries/artifact-hash.json",
+      "expected_refusal": "Artifact differs:",
+      "exit_code": 1,
+      "output": "Artifact differs: crash-188.log\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-framed-20261016\r\n\\verify.ps1:3 char:47\r\n+ function Check($ok,[string]$why){if(-not $ok){throw $why}}\r\n+                                               ~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Artifact differs: crash-188.log:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Artifact differs: crash-188.log\r\n \r\n"
+    },
+    {
+      "name": "source-blob",
+      "command": "powershell -NoProfile -File docs/testing/performance/0.74/local-runs/collector-starting-framed-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-framed/evidence-canaries/source-blob.json",
+      "expected_refusal": "Source blob differs",
+      "exit_code": 1,
+      "output": "Source blob differs\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-framed-20261016\r\n\\verify.ps1:3 char:47\r\n+ function Check($ok,[string]$why){if(-not $ok){throw $why}}\r\n+                                               ~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Source blob differs:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Source blob differs\r\n \r\n"
+    }
+  ]
+}

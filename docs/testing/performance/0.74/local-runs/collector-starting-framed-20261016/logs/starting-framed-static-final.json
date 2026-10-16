@@ -1,0 +1,6 @@
+{
+  "key": "starting-framed-static-final",
+  "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked -- --quiet",
+  "exit_code": 0,
+  "output": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.14s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 186 tests\n....................................................................................... 87/186\n....................................................................................... 174/186\n...........test w12_generic_evidence_report_retains_closed_ship_admission has been running for over 60 seconds\n.\ntest result: ok. 186 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 114.20s\n\n"
+}

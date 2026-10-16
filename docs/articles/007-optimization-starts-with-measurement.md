@@ -11363,3 +11363,66 @@ Busy while the owner lived and released after death, and fixed-history admission
 still refused. Both partial tests pass; Acknowledging, AfterReturn, lost ack and
 the successful uninterrupted control remain unproved. The negative publisher is
 archived and removed from active runtime rather than admitted on partial proof.
+
+### Move the composition boundary, not the deadline
+
+The next change required explicit approval because it moved constant-depth
+validation earlier, into consent preparation and acceptance. The old public
+guards remained an independent reference. The new consuming preparation freezes
+the same body exactly once from the same original kernel observation and keeps
+the original causal, Heartbeat, Reserved and signed-consent time origins.
+Each preparation check performs a working round followed by an unhooked closing
+round over original storage, live reservation, authenticated progress, causal
+challenge, frozen projection and fresh kernel clocks. Acceptance requires the
+later actual packet from the same receiver and enters the existing full
+consent-authenticated frame directly.
+
+This changes orchestration, not what counts as authority. Signatures are still
+verified; peer/liveness, trust, epoch/history, descriptors, inventory and fence
+remain live. No immutable-proof cache, extended window, new challenge or caller
+timestamp was introduced. A failed construction or check retains refused owners
+and the Busy fence; it cannot yield an owner for retry, extraction or execution.
+
+Before reconnecting publication, the
+[pre-consent semantic packet](../testing/performance/0.74/local-runs/preconsent-frame-20261016/README.md)
+passed 48 cases on each compiler: 35 cut/drift combinations, five independently
+constructed old-reference refusals, invalid consent and request IDs, an already
+refused constructor, a healthy same-receiver control and a concurrent mutation
+that only the closing round detects. Source contracts compare the frozen-body
+construction and predicates with the old implementation. Seeded age edges,
+positive named-owner API checks and negative clone/deserialize/extract/retry/
+publish/start examples distinguish equivalent checks from a weakened interface.
+
+Only then did we restore the rejected publisher as a separate candidate.
+Its storage, publisher and SIGKILL harness are byte-exact archive restorations;
+the fixture changes only its preparation and acceptance calls. The exclusive
+create, prefix/suffix write, seal, file/directory fsync, nineteen complete frame
+checks, nine cuts, AfterReturn and three repetitions stay unchanged. This makes
+the hypothesis specific: can the earlier composition complete the original
+publication contract without spending an expired owner's authority?
+
+The [complete process-loss packet](../testing/performance/0.74/local-runs/collector-starting-framed-20261016/README.md)
+now passes on normal Rust1.94/1.88 GNU release test binaries on the same dedicated
+host. Each compiler passes nine interruptions, nine live drifts and a healthy
+publication, followed by thirty actual pidfd-targeted SIGKILLs, three uninterrupted
+controls and sixty-six independent fresh-process inspections. At AfterReturn
+the child has already received and revalidated its acknowledged runtime owner.
+Its death loses that owner; fresh inspection preserves the retained bytes and
+metadata but refuses to reconstruct permission, including for complete fsynced
+records. The lock is Busy while the original owner lives and released after
+death, without turning that release into durable replay authorization.
+
+That result supports bounded operational feasibility under the unchanged
+windows. It is not a paired benchmark, a measured signature/fsync split,
+deadline headroom under load or a RESP/native throughput improvement. Earlier
+expiration and partial-crash evidence remain intact. These checks cover process
+loss of runtime acknowledgement, not an external wire ACK, power loss, reboot
+or storage-device EIO. The nonroot fixtures ran only in owned temporary trees;
+the installed binary/receipt, boot and stable supervisor identity did not change.
+
+Durable first-cell intent is therefore one completed prerequisite, not an opened
+production route. Independently enrolled trust and original controller admission,
+private executable/output/streams/process/cgroup start, autonomous watchdog and
+all-writer cessation must still precede completion and cells two through four.
+Signed installation and an integrated nonproduct lifecycle rehearsal remain
+separate gates before any numerical pilot or release qualification.

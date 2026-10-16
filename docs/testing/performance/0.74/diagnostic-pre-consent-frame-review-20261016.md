@@ -1,5 +1,15 @@
 # Review constant depth validation before consent publication
 
+Status update: the operator approved the earlier composition. The separate
+[design](diagnostic-pre-consent-frame-design-20261016.md) is implemented as
+`77b3ad15`; its [semantic packet](local-runs/preconsent-frame-20261016/README.md)
+passes 48 cases on each compiler. The rejection and proposal below are retained
+as historical motivation, not a pending request to change the original windows.
+The separate publisher `a3f2734e` now passes its
+[complete fault/crash gate](local-runs/collector-starting-framed-20261016/README.md).
+This closes the scoped earlier-composition hypothesis, not a measured signature/
+fsync cost attribution, production enrollment or execution admission.
+
 The durable Starting candidate preserves the approved nineteen full framed
 checks and all original deadlines, but its first server fault lanes fail before
 Acknowledging on both compilers. Four separate diagnostic chains report
@@ -15,7 +25,7 @@ therefore identifies earlier composition as a hypothesis, not exclusive measured
 cost attribution. Fsync latency, signature work and setup costs must be separated
 before attributing a numerical saving.
 
-## Proposed next isolated candidate requiring approval
+## Historical proposal, subsequently approved
 
 Review an opt-in constant-depth preparation/acceptance path consuming the same
 original causal owner before consent preparation. Retain the old public guards

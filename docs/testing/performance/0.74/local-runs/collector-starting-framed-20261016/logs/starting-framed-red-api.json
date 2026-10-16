@@ -1,0 +1,6 @@
+{
+  "key": "starting-framed-red-api",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_collector_starting_publication --offline --locked",
+  "exit_code": 1,
+  "output": "   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\nerror[E0599]: no method named `publish_starting` found for struct `OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope\n --> tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs:8:23\n  |\n8 | ...er.publish_starting();\n  |       ^^^^^^^^^^^^^^^^ ... not found in `OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_collector_starting_publication\") due to 1 previous error\n"
+}

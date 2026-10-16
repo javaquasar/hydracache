@@ -21,8 +21,8 @@ The subsequent [byte-record slice](local-runs/collector-starting-record-20261016
 is implemented as `8d1b5e2a`. It closes only strict encoding/inspection and its
 clock-free mutation/API contracts. It verifies no signature or live authority,
 writes nothing and leaves the exact original two-file storage inventory intact.
-The private consuming storage phase and all publication/crash gates below remain
-unimplemented in accepted runtime; a consistent retained record cannot acknowledge
+At that byte-record milestone the private consuming phase and publication/crash
+gates were unimplemented. A consistent retained record still cannot acknowledge
 or recover an owner.
 
 The subsequent [actual publication experiment](local-runs/collector-starting-publication-20261016/README.md)
@@ -30,8 +30,32 @@ implements the private phase and file/directory fsync in an archived candidate,
 but both server fault lanes refuse before Acknowledging after eight expected
 interruptions. Four separate diagnostic chains report Original(Causal(Time))
 after DirectorySynced without acknowledgement. No failing candidate is promoted.
-The full crash/lost-ack gate remains blocked; see the separately scoped partial
+That candidate's full crash/lost-ack gate remains blocked; see its scoped partial
 crash diagnostic and [earlier-composition review](diagnostic-pre-consent-frame-review-20261016.md).
+
+## Completed first-cell publication gate
+
+After explicit approval, `77b3ad15` adds constant-depth preparation and accepts
+the later same-receiver consent directly into the existing complete frame.
+The [semantic proof](local-runs/preconsent-frame-20261016/README.md) passes
+48 cases/compiler while preserving the frozen body, original live predicates
+and all original time origins. No signature cache or renewed deadline is used.
+
+`a3f2734e` restores the archived publisher/storage/crash harness exactly, changing
+only the fixture's preparation/acceptance composition. The
+[complete server-temporary proof](local-runs/collector-starting-framed-20261016/README.md)
+passes nine interruptions, nine drifts and a healthy control per compiler,
+then thirty SIGKILL, three uninterrupted controls and sixty-six fresh inspections
+per compiler. AfterReturn loss occurs after a successfully returned runtime owner;
+fresh processes preserve retained history and refuse recovered permission.
+Both 186-contract suites and all focused checks pass. This is process loss, not
+external-wire ACK loss, reboot, power loss or injected device EIO.
+
+The first-cell durable intent prerequisite is closed, not production execution.
+Original output/process/cgroup ownership, autonomous watchdog, all-writer
+cessation, completion/cells2–4, actual trust/enrollment, signed installation and
+integrated lifecycle rehearsal still follow. No installed artifact or service
+was changed and no qualification or product workload was admitted.
 
 ## Record and phase ownership
 

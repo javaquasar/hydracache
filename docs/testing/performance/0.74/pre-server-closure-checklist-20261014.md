@@ -270,6 +270,17 @@ blocked. Preserve the candidate as evidence, not accepted runtime, and review
 The distinct partial diagnostic passes sixteen actual SIGKILL and thirty-two
 fresh inspections across both compilers, not the missing acknowledgement/control gate.
 
+That historical rejection is now followed by an independently approved
+[earlier-composition semantic proof](local-runs/preconsent-frame-20261016/README.md)
+and [complete Starting publication proof](local-runs/collector-starting-framed-20261016/README.md).
+Implementations `77b3ad15`/`a3f2734e` preserve all live checks and anchored
+deadlines. Both compilers pass all nine publication cuts and AfterReturn,
+three times: sixty SIGKILL, six controls and 132 fresh inspections total.
+No retained history recovers a runtime acknowledgement. Only this first-cell
+intent/process-loss prerequisite is closed; external ACK transport, device
+failure/reboot, production enrollment and the five execution items below are not.
+The exact stable supervisor and installed binary/receipt stayed unchanged.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

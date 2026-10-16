@@ -60,3 +60,19 @@ pins and read-only no-active-context/supervisor/installation pre/post checks.
 No installation, supervisor stop, production enrollment, product workload,
 clock adjustment, pilot or qualification is admitted. If any original guard
 refuses, retain that result; do not shorten the gate or retry into a green claim.
+
+## Result
+
+Preparation/acceptance is committed as `77b3ad15`; its
+[separate packet](local-runs/preconsent-frame-20261016/README.md) passes all
+48 semantic cases per compiler. The next isolated join `a3f2734e` preserves
+the exact archived publisher, storage, crash harness, seed and repetitions,
+with only the two fixture composition substitutions. Its
+[full packet](local-runs/collector-starting-framed-20261016/README.md) passes
+60 actual SIGKILL, six uninterrupted controls and 132 new-process inspections
+across Rust1.94/1.88. Six of those kills occur after runtime acknowledgement.
+Original kernel/lease/challenge/qualification inputs and installed host identities
+stay unchanged. The hypothesis is operational feasibility for these bounded
+fixtures under the original windows, not a numerical speedup or load guarantee.
+Product output/start, writer revocation, completion/later cells and enrolled
+server execution remain outside this gate.

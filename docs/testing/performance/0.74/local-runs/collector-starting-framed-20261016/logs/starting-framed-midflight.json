@@ -1,0 +1,6 @@
+{
+  "key": "starting-framed-midflight",
+  "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"id; cat /proc/sys/kernel/random/boot_id; systemctl show hydracache-performance-supervisor-074.service -p MainPID -p NRestarts -p ActiveState -p SubState -p ExecMainStartTimestamp; sudo -n sha256sum /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074 /var/lib/hydracache-performance/provisioning-receipt-074.json; tail -n 4 /tmp/hc074-starting-framed-20261016.dAn2pE/fault-194.log\"",
+  "exit_code": 0,
+  "output": "uid=1000(hydracache-admin) gid=1000(hydracache-admin) groups=1000(hydracache-admin),27(sudo)\ne81671d6-bf23-4ebf-b8fe-5dad1f45866f\nMainPID=8839\nNRestarts=0\nExecMainStartTimestamp=Tue 2026-10-06 15:03:40 CEST\nActiveState=active\nSubState=running\nf797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62  /opt/hydracache-perf/bin/hydracache-long-run-supervisor-074\nb314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525  /var/lib/hydracache-performance/provisioning-receipt-074.json\nHC074-STARTING-INTERRUPT cut=Acknowledging sticky=true fence_retained=true\nHC074-STARTING-DRIFT kind=0 sticky=true fence_retained=true\nHC074-STARTING-DRIFT kind=1 sticky=true fence_retained=true\nHC074-STARTING-DRIFT kind=2 sticky=true fence_retained=true\n"
+}

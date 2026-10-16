@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+Current collector milestone: approved constant-depth preparation/acceptance
+`77b3ad15` and durable first Starting publisher `a3f2734e` pass their separate
+[semantic](local-runs/preconsent-frame-20261016/README.md) and
+[complete process-loss](local-runs/collector-starting-framed-20261016/README.md)
+gates. Both compilers pass all nine write cuts plus AfterReturn in three
+repetitions: 60 SIGKILL, six uninterrupted controls and 132 fresh inspections
+in total. Original guards, origins and deadlines are unchanged. Older negative
+packets below remain historical evidence. This closes intent publication only:
+production trust, original output/process/cgroup start, all-writer cessation,
+completion/cells2–4, signed installation and integrated rehearsal remain open.
+No throughput claim, installation or server execution admission follows.
+
 The [explicit start-consent contract](diagnostic-start-consent-design.md)
 adds distinct bounded canonical signing bytes and signature inspection for the
 first collector cell. It binds original reservation/challenge/response and

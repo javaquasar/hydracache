@@ -1,0 +1,25 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal ... HC074-STARTING-INTERRUPT cut=BeforeCreate sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=Created sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=CreateDirectorySynced sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=PrefixWritten sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=BytesWritten sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=Sealed sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=FileSynced sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=DirectorySynced sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=Acknowledging sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=0 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=1 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=2 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=3 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=4 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=5 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=6 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=7 sticky=true fence_retained=true
+HC074-STARTING-DRIFT kind=8 sticky=true fence_retained=true
+HC074-STARTING-CONTROL acknowledged=true ordered=true fsync=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1007 filtered out; finished in 142.19s
+

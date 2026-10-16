@@ -1,0 +1,6 @@
+{
+  "key": "starting-framed-server-root-create",
+  "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"umask 077; mktemp -d /tmp/hc074-starting-framed-20261016.XXXXXX\"",
+  "exit_code": 0,
+  "output": "/tmp/hc074-starting-framed-20261016.dAn2pE\n"
+}

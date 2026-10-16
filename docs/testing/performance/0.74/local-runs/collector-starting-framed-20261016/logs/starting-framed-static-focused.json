@@ -1,0 +1,6 @@
+{
+  "key": "starting-framed-static-focused",
+  "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline -- --exact",
+  "exit_code": 0,
+  "output": "   Compiling xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.62s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 1 test\ntest starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 185 filtered out; finished in 4.56s\n\n"
+}
