@@ -59,6 +59,12 @@ execution belongs to the retained original admission/fence protocol.
 
 ## Remaining original start integration
 
+The [original-chain preflight](diagnostic-original-collector-design.md) now joins
+these requirements to the acknowledged controller owner and actual kernel
+peer/time without a second worker guard. It still accepts a signed supplied
+Reserved projection, not an authenticated durable lifecycle owner, and creates
+no root output or start permit.
+
 The future producer must connect this distinct signed contract to the original
 kernel/controller/authority and acknowledged Starting chain. It must prepare
 actual root-private sinks, retain original pipe objects, bind the loaded executable

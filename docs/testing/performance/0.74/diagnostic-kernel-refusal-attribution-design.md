@@ -43,6 +43,12 @@ non-semantic question-mark joint spacing introduced by line wrapping. It does
 not erase arbitrary blocks, reorder observations or normalize predicates.
 Deadline and filesystem-guard canaries must still differ from baseline.
 
+The later [original collector preflight](diagnostic-original-collector-design.md)
+adds one private kernel module. Its exact two-line registration is now excluded
+before comparing the old guards; no function or predicate is skipped. The added
+module has its own contract gate. Historical instrumentation-only source claims
+remain scoped to the original pinned packet, not this larger module graph.
+
 An initial comparison correctly rejected a rustfmt-introduced closure block.
 Shortening that site's static label restored the original expression shape;
 the comparison was not generalized to discard blocks. A separate development

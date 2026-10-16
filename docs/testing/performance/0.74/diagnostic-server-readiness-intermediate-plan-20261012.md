@@ -88,6 +88,12 @@ regular-file signatures. They are byte-only requirements, not a fulfilled launch
 or a descriptor transfer. Root enrollment, trusted admission, original start and
 watchdog/cgroup revocation remain open. No fixture result advances P1.
 
+The [original collector preflight](diagnostic-original-collector-design.md) now
+checks those signatures through the acknowledged request's same original kernel,
+worker/authority/controller and common fence, with no caller peer/time inputs.
+This read-only guard still requires an original durable lifecycle/root-ancestry
+join before construction: supplied signed Reserved state is not a start permit.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

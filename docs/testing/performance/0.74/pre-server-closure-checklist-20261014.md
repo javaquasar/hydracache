@@ -141,6 +141,13 @@ attempt, consumes no nonce and has no start conversion. The separate consuming
 request-retention API and its process matrix do not make that constructor writable
 or provide lifecycle/start conversion; real trust selection is unchanged.
 
+The [original collector preflight](diagnostic-original-collector-design.md) now
+binds the signed collector requirements to that acknowledged request owner,
+original kernel peer/time and configured worker/controller authority without
+creating a second worker guard. It retains the original fence and cross-refuses
+on drift. The Reserved state is still a supplied signed projection; original
+durable lifecycle/root-ancestry integration is needed before output creation.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

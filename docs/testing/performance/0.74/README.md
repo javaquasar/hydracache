@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original collector preflight](diagnostic-original-collector-design.md)
+borrows the acknowledged controller attempt and verifies collector requirements
+through its original kernel peer/time and retained policy/authority/configuration.
+It accepts no caller peer/time/trust and preserves the same common fence. The
+supplied signed state is not durable lifecycle authority: root preparation,
+original-start and all-writer cessation remain open.
+The [local packet](local-runs/original-collector-20261016/README.md) retains the
+current/MSRV 76-test original-input regressions and unchanged writer SIGKILL
+regression; its verifier checks source, counts and hashes without opening launch.
+
 The distinct [signed collector requirements](diagnostic-collector-intent-design.md)
 bind pipe-to-root-collector output under their own schemas/domain without
 reinterpreting the v1 regular-file signature. The checked guard retains original

@@ -10543,3 +10543,54 @@ examples; the full static suite passes 170 tests. Eight Linux/Windows
 check/strict-Clippy lanes pass, while ship admission remains expected-red.
 The confirmed result is separation of signed output requirements, not production
 execution, performance improvement or closure of the historical kernel refusal.
+
+### Binding collector requirements to the original kernel and request owners
+
+The next composition exposed an ownership problem: the byte-only collector
+guard already borrows a checked worker, while the original controller chain owns
+that same policy through its kernel/authority binding. Creating a second checked
+worker would replace the original owner rather than preserve it. Supplying peer
+and time again would also reintroduce assertions at the very boundary intended
+to remove them.
+
+The [original collector preflight](../testing/performance/0.74/diagnostic-original-collector-design.md)
+therefore borrows the acknowledged request attempt exclusively. Its private
+verification uses the existing kernel worker, configured controller key, issuer/
+policy/epoch, original sender credentials and a fresh receiver clock sample.
+Supplementary groups and the per-message primary GID form one sorted unique
+peer projection; no oversized group set is silently truncated to gain admission.
+Existing sender/context checks and the packet's original 60-second hold remain
+in place. The public preflight accepts neither peer nor time nor trust inputs.
+
+The body must match the original request, nonce, controller and complete validity
+window. State identity must also match, with only initial revision one/cell zero
+Reserved projections admitted. The same attempt/fence surrounds verification;
+dropping the wrapper does not release that original lock. First failure refuses
+all original chains, and restoration cannot cause another named-record read or
+a retry. No new durable record, state mutation, output or descriptor is produced.
+
+Tests sign mutations under the same synthetic controller key, so refusal cannot
+be credited merely to a bad signature. They vary the request/nonce/controller,
+window, state, policy epoch and output digest, including a positive but long-
+expired window that must fail against the receiver's clock. Other cases retain
+the original lock/bytes, change owned trust or inventory, remove a fixture record
+after refusal and verify no reopening, and exercise independent original chains.
+The historical source comparisons skip only the exact new module registrations;
+all old guards and budget canaries remain checked.
+
+The remaining distinction is substantial: a signed supplied Reserved projection
+is not an authenticated durable Reserved/Starting owner. This preflight is not
+permission to create root outputs or execute a unit. Joining the original
+lifecycle owner and trusted root ancestry remains ahead of exclusive creation,
+original-start and autonomous all-writer cessation. The standalone byte verifier
+keeps its existing interface and scope; neither path establishes production
+enrollment or a numerical performance result.
+
+The [retained packet](../testing/performance/0.74/local-runs/original-collector-20261016/README.md)
+pins final source `f76cd63e` and the original-controller composition implemented
+in `facfe6c2`. The full original-input group passes 76 tests on both Rust 1.94
+and Rust 1.88, with its existing manual process matrix ignored there. Each
+compiler separately passes the 30-test byte regression, 26-test kernel group
+and four compile-fail examples. All 171 static contracts and eight affected
+build/lint lanes pass. These local kernel observations use synthetic trust;
+they close the read-only join, not durable lifecycle or production execution.

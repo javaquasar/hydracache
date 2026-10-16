@@ -263,3 +263,5 @@ docs/testing/performance/0.74/local-runs/collector-intent-prerequisite-*/*.log -
 docs/testing/performance/0.74/local-runs/collector-intent-prerequisite-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol
 docs/testing/performance/0.74/local-runs/collector-intent-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/collector-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
