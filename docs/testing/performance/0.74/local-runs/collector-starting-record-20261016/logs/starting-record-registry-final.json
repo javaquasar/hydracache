@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-record-registry-final",
+  "command": ".\\target\\debug\\xtask.exe gated-test-check",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; early fixture/adapter assembly failures are retained separately from final source gates. Not a byte-exact process stream or build attestation.",
+  "output": "gated-test-check: OK (177 discovered gates, all registered)\n"
+}

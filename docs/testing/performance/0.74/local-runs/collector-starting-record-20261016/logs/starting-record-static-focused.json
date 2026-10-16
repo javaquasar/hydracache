@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-record-static-focused",
+  "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked starting_record -- --nocapture",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; early fixture/adapter assembly failures are retained separately from final source gates. Not a byte-exact process stream or build attestation.",
+  "output": "   Compiling xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.26s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 1 test\n\nthread 'starting_record::collector_starting_record_preserves_original_runtime_and_two_file_storage' (10424) panicked at crates\\xtask\\tests\\support\\performance_contract_074_starting_record.rs:11:5:\nassertion `left == right` failed: unapproved Starting record adapter: tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs\n  left: 0\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\ntest starting_record::collector_starting_record_preserves_original_runtime_and_two_file_storage ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 183 filtered out; finished in 2.02s\n\n"
+}

@@ -1,0 +1,29 @@
+{
+  "format_version": 1,
+  "kind": "unsigned-verifier-observations",
+  "normal": {
+    "chunk_id": "cc8dbe",
+    "wall_time_seconds": 5.3551209,
+    "exit_code": 0,
+    "original_token_count": 28,
+    "output": "Collector Starting byte evidence: intact; byte-only PASS, actual publication/process/server admission CLOSED\r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-record-20261016/verify.ps1 -CheckWorkingCopy"
+  },
+  "scope_canary": {
+    "chunk_id": "bd43c5",
+    "wall_time_seconds": 1.8833904000000001,
+    "exit_code": 1,
+    "original_token_count": 126,
+    "output": "Unsupported claim: server_ready\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-record-20261016\r\n\\verify.ps1:3 char:56\r\n+ ... tion Check($ok,[string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported claim: server_ready:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported claim: server_ready\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-record-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/starting-record-scope.json"
+  },
+  "coverage_canary": {
+    "chunk_id": "0cd700",
+    "wall_time_seconds": 1.6681323,
+    "exit_code": 1,
+    "original_token_count": 121,
+    "output": "Fixture coverage differs\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-record-20261016\r\n\\verify.ps1:3 char:56\r\n+ ... tion Check($ok,[string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Fixture coverage differs:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Fixture coverage differs\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-record-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/starting-record-coverage.json"
+  },
+  "note": "Canary manifests are outside the repository. Their refusals do not run workloads or mutate the source manifest."
+}

@@ -1,0 +1,539 @@
+{
+  "format_version": 1,
+  "kind": "collector-starting-byte-record-only",
+  "source_commit": "8d1b5e2a6921f23ba0ba1d03af7e863f1aa1be25",
+  "source_tree": "426f69d8d26020e65da145e7966e806cf6ce7d6d",
+  "parent_commit": "15beb95a",
+  "baseline_commit": "7b7992701b9d5b69f8d8fca27aa9e016b8c80f2c",
+  "preregistration_commit": "f04931a77c27c0aac2901c860de3dcc3b2b95985",
+  "scope": {
+    "byte_record_implemented": true,
+    "original_storage_inventory_unchanged": true,
+    "actual_starting_written": false,
+    "runtime_starting_acknowledged": false,
+    "original_runtime_owner_recovered": false,
+    "signatures_verified_by_byte_inspector": false,
+    "new_sigkill_matrix_run": false,
+    "server_operation_in_this_packet": false,
+    "product_workload_run": false,
+    "deadline_changed": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false,
+    "full_release_verify_run": false
+  },
+  "schema": {
+    "version": "diagnostic-collector-starting-074-v1",
+    "fixed_future_name": "diagnostic-collector-starting-074.json",
+    "max_bytes": 16384,
+    "signed_consent_max_bytes": 8192
+  },
+  "fixture": {
+    "golden_bytes": 3038,
+    "strict_refused_prefixes": 3038,
+    "mutation_seed": "0x074057a1",
+    "leaf_mutations": 58,
+    "rehashed_binding_mutations": 9,
+    "rehashed_grammar_state_mutations": 7,
+    "unit_tests_per_compiler": 5,
+    "public_api_tests_per_compiler": 1,
+    "compile_fail_examples_per_compiler": 2,
+    "unchanged_regression_tests_per_compiler": 62,
+    "static_contracts": 184,
+    "discovered_registered_gates": 177
+  },
+  "selected_sources": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "d72f6e3cf5fe7fca29d123a4e8c7ce17ef01ddc0",
+      "checkout_sha256": "80341045fb1ec6ec5a68bc6dbfcc2631bdffeaff1713ad308bef05ba15a86dbe"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_consent_budget.rs",
+      "git_blob": "3ef1dc4f976b97d1ba41a3ae095a3ad64dbd3ddb",
+      "checkout_sha256": "53c9f7554abb12bb4962b4f9bafb6bfe381655225a17bd023be33d69c0b10a58"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs",
+      "git_blob": "5e53d42408f21138c91329c88df56673e6ff34b9",
+      "checkout_sha256": "37010ae8511f0110467d4b58111fd19b6d33722b654c8a1250fffa6542763819"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_validation_frame.rs",
+      "git_blob": "f8865da6ddb1bde5fb998a668d43038678a135e9",
+      "checkout_sha256": "e120d81430f261b677d3f74ac856895ee46b5f3ed5b9d4ae9f9f3597f00acc60"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_starting_record.rs",
+      "git_blob": "d0a54f8acba6f3dd08d1ef9a1c123ef6d2b26275",
+      "checkout_sha256": "7cdeb7783185dad42297c200a73e56f2e8a9da6c36a61d941ebd8efc08bb7664"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "git_blob": "a991034f9ba3f65b00fa9632cf93e619ac74495f",
+      "checkout_sha256": "15f972ca796e7f0eeb2b54b0ef2bec430bd2e6dbef9dca59baa5e7c2287635aa"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "6e482aee43178d22a40c399f0cebe8e90acf2942",
+      "checkout_sha256": "c55bf2e543d80395b2e198da9e5b3581c883a0db3b0e8502741234e2c8e91181"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+      "git_blob": "7058b02b5d190e4273b5b6ceecc6dd72f7cb4ff0",
+      "checkout_sha256": "81f16769a8d95d62a78b5fc792ae234ca9979bb32b4847f69011e2eca1dfe2cf"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record.rs",
+      "git_blob": "604ad155ab75be61db3c6469fd1a70d6f8e0db3a",
+      "checkout_sha256": "400652f620a8057baab185b32a06ab2342e2ae70d06c5e8b86edaebaa1f76583"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record_tests.rs",
+      "git_blob": "bb312a279c03599e0105d060c1b5d81ce75b30b5",
+      "checkout_sha256": "6a6b52c87fa9af4d397f2b1a39015ca93f0638bb0ca19ef1470f516994cca73e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_record.rs",
+      "git_blob": "f1124c5f3a3fb399dbb28d674dd4dc07d0a5c6ab",
+      "checkout_sha256": "908cebd1b3abc6f8e186e241f94ea0e5e5a9cd8cf215a439b30c6949a54f88d2"
+    }
+  ],
+  "frozen_runtime_inputs": [
+    {
+      "path": "Cargo.toml",
+      "git_blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed"
+    },
+    {
+      "path": "Cargo.lock",
+      "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "git_blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/lib.rs",
+      "git_blob": "1dffa56b5526530388184401882436620154c1a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+      "git_blob": "1a474faf0cf1fd8630507a88ce9d434bbb804456"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+      "git_blob": "e0a53b2fe5f8816a73b5c7a5decfbf5095f37ef3"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+      "git_blob": "e17bd52bcd5157741fbc87fc711275097d06910f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
+      "git_blob": "605f05f58a6b7d3937d4335ece56281bc311e338"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+      "git_blob": "e11be3209fcbb035ec3e5d5ebc611bc45e6d0a9c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+      "git_blob": "92e259921b522832469e656412977dca3e3442a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs",
+      "git_blob": "5551cfba6f756b52dc4cb58c287ae5c8c1682fea"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs",
+      "git_blob": "aac29ef6730c0cce48bb91e5b18d6d036a7de41c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_start_consent.rs",
+      "git_blob": "17fd85f53c25d39d6cf7175ee80a5f832be47fac"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "git_blob": "da06a8583df99bc414566a7cd6cf6929bffce145"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
+      "git_blob": "3ce87d5f298df949663490cd63763dea8b087f82"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
+      "git_blob": "79dbf6ba091813a89e2b7b8801d0735c20ecbc48"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+      "git_blob": "87535fd644a65af0379c9be7f68a46be126519b8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+      "git_blob": "ed9e30a164514f72e9556ddace46bea549191318"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+      "git_blob": "3cf3111046ebd5995e1b94c4d58be1032195340b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/host_execution.rs",
+      "git_blob": "5cbbc31fc73e69ba5ce477e91d14fe02775a95e0"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "git_blob": "b3e10ab6e314c555f1e46daa4683282f53cbb4d9"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "git_blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    }
+  ],
+  "commands": [
+    {
+      "key": "starting-record-red-api",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-first-unit",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-unit-fixed",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-unit-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-unit-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-static-focused",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-static-all",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-static-reference-failure",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-static-final",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-win-check",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-linux-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-linux-msrv-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-win-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-msrv-win-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-docs-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-docs-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-api-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-api-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-regression-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-regression-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-xtask-clippy-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-xtask-clippy-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-fmt",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-registry",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-doc-check",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-local-contract",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-static-after-registry",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-fmt-final",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-registry-final",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-post-format-check-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-post-format-check-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-ship-guard",
+      "exit_code": 1
+    },
+    {
+      "key": "starting-record-final-tests-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-final-tests-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-final-linux-clippy-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-final-linux-clippy-188",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-final-win-clippy-194",
+      "exit_code": 0
+    },
+    {
+      "key": "starting-record-final-win-clippy-188",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "logs/starting-record-api-188.json",
+      "bytes": 1320,
+      "sha256": "44951b4083441fab9517d7e9418be4a15445d7f01a1a3eb2e951e689bfd8f3f6"
+    },
+    {
+      "path": "logs/starting-record-api-194.json",
+      "bytes": 1272,
+      "sha256": "5696583601bf620d3cfa07108c765372857a64148d82934f24d1f1256def2137"
+    },
+    {
+      "path": "logs/starting-record-doc-check.json",
+      "bytes": 388,
+      "sha256": "279d9b9e62fef1d83eea61b229dd74eaaf336491de795b7b8fc8b789c72a85f5"
+    },
+    {
+      "path": "logs/starting-record-docs-188.json",
+      "bytes": 1621,
+      "sha256": "d97683267cb8c726a15621de8bfaf3c6d07723e92609d599eb106a3307186b67"
+    },
+    {
+      "path": "logs/starting-record-docs-194.json",
+      "bytes": 1805,
+      "sha256": "2c8107a01523edd27fb0d63d1d5fd5b9e02423e40225fabe7900d1eae19e0b16"
+    },
+    {
+      "path": "logs/starting-record-final-linux-clippy-188.json",
+      "bytes": 1015,
+      "sha256": "5b0a0406f9de949ffa0e32008c0da79e7b6e9bc422ba9bbdc8b0278e1c91c16b"
+    },
+    {
+      "path": "logs/starting-record-final-linux-clippy-194.json",
+      "bytes": 1015,
+      "sha256": "e499ca717b237385e0b268d386936b1c20b18a9aa554ba15909d77cdae51bdef"
+    },
+    {
+      "path": "logs/starting-record-final-tests-188.json",
+      "bytes": 3332,
+      "sha256": "76142801b81497004b963e1ae62b5a9b17931d22735692536c60da4185077eff"
+    },
+    {
+      "path": "logs/starting-record-final-tests-194.json",
+      "bytes": 3390,
+      "sha256": "16c469c0fd71a2a97cd88185ceecb697ac0e9a893e97070cdb9cfbc6e2ead96d"
+    },
+    {
+      "path": "logs/starting-record-final-win-clippy-188.json",
+      "bytes": 770,
+      "sha256": "94e5d16a9b65c5498e3903ca7156e65c84dee148b2c60ba0b13bad43e67f923c"
+    },
+    {
+      "path": "logs/starting-record-final-win-clippy-194.json",
+      "bytes": 825,
+      "sha256": "7dafa1240f94b0cdd325633fe8f5ef1bf96d2b9a5e1bdb1103db64b04b1ceae4"
+    },
+    {
+      "path": "logs/starting-record-first-unit.json",
+      "bytes": 5684,
+      "sha256": "1c33c86461352c00490d37e16f91ae64da7f7e79ca06b315b1a4a849e593eec0"
+    },
+    {
+      "path": "logs/starting-record-fmt-final.json",
+      "bytes": 438,
+      "sha256": "7418c4fa78a81b21e3912b2f9787777248b9722f0379796e33a1d3ebc975adcc"
+    },
+    {
+      "path": "logs/starting-record-fmt.json",
+      "bytes": 1255,
+      "sha256": "c23070bf1469464c56f149f5c0b735b7cdb92fd9716c5c2b321d460f5e4cc5ef"
+    },
+    {
+      "path": "logs/starting-record-linux-clippy.json",
+      "bytes": 1003,
+      "sha256": "db38d66934ace14db959ec25007726e97deed462f78659323a42376427f8264f"
+    },
+    {
+      "path": "logs/starting-record-linux-msrv-clippy.json",
+      "bytes": 1008,
+      "sha256": "b4a9b23744aa891368eacd61b69b4cf473f4060746f1610bb8cf0641820f7286"
+    },
+    {
+      "path": "logs/starting-record-local-contract.json",
+      "bytes": 441,
+      "sha256": "076d5cfceea0ab70f6b1b3aaa484199cb4b2b339fe8817b87cf044e3d0eab898"
+    },
+    {
+      "path": "logs/starting-record-msrv-win-clippy.json",
+      "bytes": 957,
+      "sha256": "4e104a1bc2f29d4b95cf2b2f5cbf63ad59965e6a05e71e8c23d7af72c6b918a9"
+    },
+    {
+      "path": "logs/starting-record-post-format-check-188.json",
+      "bytes": 996,
+      "sha256": "2ef1815d2ab76e19d9bb1a84f50016eed708a35c6ae988ae7e6f1666ea380a40"
+    },
+    {
+      "path": "logs/starting-record-post-format-check-194.json",
+      "bytes": 996,
+      "sha256": "bdc771cfbcbcc966760af12f040e3084271001682d34e771735fc4be0f7cf4b6"
+    },
+    {
+      "path": "logs/starting-record-red-api.json",
+      "bytes": 1397,
+      "sha256": "fcf930461dbd14801534741207abd417879a32e9a8ad1611610c0deedba2d711"
+    },
+    {
+      "path": "logs/starting-record-registry-final.json",
+      "bytes": 416,
+      "sha256": "568d25c16bb938d284b200f2796f9d2486861dcaede4d8b845b9489c995d467f"
+    },
+    {
+      "path": "logs/starting-record-registry.json",
+      "bytes": 660,
+      "sha256": "f84a236948c852c313492e28f0ae50ff4901e96c91ab3ec3dc9f528005b71b86"
+    },
+    {
+      "path": "logs/starting-record-regression-188.json",
+      "bytes": 7647,
+      "sha256": "0812ec41a93b2c84e04bc78e41ead3535599f0bac90a7a160add71ea1d290711"
+    },
+    {
+      "path": "logs/starting-record-regression-194.json",
+      "bytes": 7601,
+      "sha256": "47502116a8151c61a11f181d05bcd4ec577a4f66335d8c9a81bf1f85496bf94a"
+    },
+    {
+      "path": "logs/starting-record-ship-guard.json",
+      "bytes": 2914,
+      "sha256": "8642b913b0cdb7f3ba8fdef11b81a5960029583a7fa64295e6f20ce948f3cbec"
+    },
+    {
+      "path": "logs/starting-record-static-after-registry.json",
+      "bytes": 1118,
+      "sha256": "42f0cfaded4a89a1364a1675a5f48e8860bca4bc83d936267e0547b45f7a5b00"
+    },
+    {
+      "path": "logs/starting-record-static-all.json",
+      "bytes": 36423,
+      "sha256": "28b2bf326ac14f99f469e2c6f9b70abd5d5f826d12ebc5030dd700ef4f2d8f4c"
+    },
+    {
+      "path": "logs/starting-record-static-final.json",
+      "bytes": 1269,
+      "sha256": "724aa8a3728cb33c742f6d147f58ade1458497955d3da0721a15dd906d782df5"
+    },
+    {
+      "path": "logs/starting-record-static-focused.json",
+      "bytes": 1370,
+      "sha256": "0a1b11a8644d6ab37f91856de2152d8f16cbc87b43cee8ba1c9eb270416946b1"
+    },
+    {
+      "path": "logs/starting-record-static-reference-failure.json",
+      "bytes": 15016,
+      "sha256": "6883d9d12caaf4a01a6c14df1f7ab3293bd617d92e4703a4fef3c9daa7fc6223"
+    },
+    {
+      "path": "logs/starting-record-unit-188.json",
+      "bytes": 2967,
+      "sha256": "c5c95c0a94b036db0808dd2486a521d402093e9282798b8604c1413a977cbbc1"
+    },
+    {
+      "path": "logs/starting-record-unit-194.json",
+      "bytes": 2967,
+      "sha256": "5bb84a2dd2c9c5071e7a2815ab40f0660e67dde6e30816d59480a63023db6cbe"
+    },
+    {
+      "path": "logs/starting-record-unit-fixed.json",
+      "bytes": 2500,
+      "sha256": "b56c1656632b38b0dd6c4de66ad15e3be48863fe96d09a2a491d33cf3a304b82"
+    },
+    {
+      "path": "logs/starting-record-win-check.json",
+      "bytes": 934,
+      "sha256": "ea4524ccce9e772599edc848600b4268a35d94c54201d9282105407b1f7ecc8b"
+    },
+    {
+      "path": "logs/starting-record-win-clippy.json",
+      "bytes": 1005,
+      "sha256": "574daa91733e32f75df2bb0995d45ed12295a4af58f0ebc49a159f1c560bdc68"
+    },
+    {
+      "path": "logs/starting-record-xtask-clippy-188.json",
+      "bytes": 997,
+      "sha256": "3307f2edc47ec790c8c7b74eb4167011abc24419c9aeb9d6aba7c53df848f6d5"
+    },
+    {
+      "path": "logs/starting-record-xtask-clippy-194.json",
+      "bytes": 891,
+      "sha256": "c2cc5f6caa4edf368315a321d7636887394a399968356680d62453ef78992890"
+    }
+  ],
+  "provenance": "Unsigned local byte/functional evidence; no actual clocks, peer or issuer enrollment in the byte inspector. Git source blobs are pinned; checkout hashes are observations, not cross-platform binary attestation. Early assembly failures are not final source receipts. No performance or server admission."
+}

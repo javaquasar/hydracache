@@ -11291,3 +11291,29 @@ host be combined with the old host's timings into a speedup claim. The
 [server fault packet](../testing/performance/0.74/local-runs/validation-frame-server-fault-20261016/README.md)
 retains the exact raw logs and narrow scope; durable publication is the next
 separate hypothesis.
+
+### A consistent Starting record is not a durable acknowledgement
+
+After the frame fault gate, the next isolated change implemented only the byte
+contract of the new collector Starting record. We first retained the missing-API
+compile failure, then added a strict encoder and inspector reusing the original
+prior-history parser. The record binds exact canonical LF history and signed
+consent bytes to the complete Starting state. It does not replace signature
+verification, kernel peer/time observations or the retained original owner.
+
+The tests distinguish byte integrity from authority deliberately: a well-shaped
+but invalid signature can describe consistent bytes while the actual signature
+validator refuses it. Mutation tests also distinguish the original consent's
+state hash without LF from the older Reserved projection hash with LF. Silently
+normalizing those two rules would weaken binding rather than improve efficiency.
+All 3038 strict prefixes of the golden record refuse, along with 58 leaf,
+nine rehashed binding and seven rehashed grammar/state mutations on both compiler
+lanes. The implementation leaves the old two-file storage inventory unchanged.
+
+The [byte-record evidence](../testing/performance/0.74/local-runs/collector-starting-record-20261016/README.md)
+retains the red tests, assembly corrections and final 184-contract result. There
+is no allocation or throughput claim here: this is a correctness prerequisite
+for a separate consuming publisher. Exclusive creation, partial writes, sealing,
+file/directory fsync and lost acknowledgement must still be tested with actual
+SIGKILL boundaries before the record can become durable runtime progress. A
+complete file found after a crash must never recreate the missing live owner.

@@ -3594,6 +3594,14 @@ unchanged; only an owned temporary directory was written. No budget benchmark,
 product workload or release installation ran. This closes that fault gate,
 not Starting publication, real crash acknowledgement or execution admission.
 
+The [collector Starting byte record](local-runs/collector-starting-record-20261016/README.md)
+now implements strict canonical encoding/inspection in `8d1b5e2a`, without
+publication, signature verification or ownership recovery. Both compilers pass
+the clock-free mutation/API suite and 62 unchanged Linux regressions; all 184
+static contracts pass and the registry accounts for 177 gates. The old two-file
+storage inventory is unchanged. Next is the consuming storage phase, durable writes and real
+SIGKILL/lost-ack proof; original start and server admission remain closed.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

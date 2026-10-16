@@ -10,10 +10,19 @@ now retains twelve refusing local chains, including normal release builds.
 The straightforward recursive-check publication path is blocked before any
 Starting write. The operator subsequently approved the separate
 [validation frame design](diagnostic-validation-frame-design-20261016.md).
-Its local candidate changes only outer orchestration and retains the original
-live leaf guards, origins and deadlines. It is not an implemented publisher:
-the mixed release-budget observations and incomplete live-mutation matrix must
-not be interpreted as permission to start a process or acknowledge storage.
+Its isolated implementation changes only outer orchestration and retains the
+original live leaf guards, origins and deadlines. The subsequently approved
+[dedicated Linux matrix](local-runs/validation-frame-server-fault-20261016/README.md)
+passes all 48 cases per compiler without changing the installation or supervisor.
+This closes the frame fault gate, not publication or process admission. Earlier
+mixed release-budget observations and WSL clock refusals remain retained.
+
+The subsequent [byte-record slice](local-runs/collector-starting-record-20261016/README.md)
+is implemented as `8d1b5e2a`. It closes only strict encoding/inspection and its
+clock-free mutation/API contracts. It verifies no signature or live authority,
+writes nothing and leaves the exact original two-file storage inventory intact.
+The private consuming storage phase and all publication/crash gates below remain
+unimplemented; a consistent retained record cannot acknowledge or recover an owner.
 
 ## Record and phase ownership
 

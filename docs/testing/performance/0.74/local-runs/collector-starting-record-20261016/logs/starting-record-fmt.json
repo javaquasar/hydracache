@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-record-fmt",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+  "exit_code": 1,
+  "provenance": "Tool-returned text segments; early fixture/adapter assembly failures are retained separately from final source gates. Not a byte-exact process stream or build attestation.",
+  "output": "Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs:1:\n //! Original initial Reserved publication only; never recovered acknowledgement or start.\n\u001b[31m-#[path = \"diagnostic_collector_starting_record.rs\"]\n\u001b(B\u001b[m\u001b[31m-pub mod starting_record;\n\u001b(B\u001b[m #[path = \"diagnostic_collector_progress.rs\"]\n pub mod progress;\n\u001b[32m+#[path = \"diagnostic_collector_starting_record.rs\"]\n\u001b(B\u001b[m\u001b[32m+pub mod starting_record;\n\u001b(B\u001b[m use super::{OriginalCollectorError, OriginalObservedReservation};\n use super::super::super::{capture as capture_request, validate_retained_controller_attempt, OidcControllerInput, Record as RequestRecord};\n use crate::diagnostic_kernel_admission::KernelTimePoint;\n"
+}

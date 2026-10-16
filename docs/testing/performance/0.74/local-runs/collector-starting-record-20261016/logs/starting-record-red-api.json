@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-record-red-api",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_collector_starting_record --offline --locked --no-run",
+  "exit_code": 1,
+  "provenance": "Tool-returned text segments; early fixture/adapter assembly failures are retained separately from final source gates. Not a byte-exact process stream or build attestation.",
+  "output": "   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\nerror[E0432]: unresolved import `hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record`\n --> tools/long-run-supervisor-074/tests/diagnostic_collector_starting_record.rs:2:216\n  |\n2 | ...n::starting_record::*;\n  |       ^^^^^^^^^^^^^^^ could not find `starting_record` in `publication`\n\nFor more information about this error, try `rustc --explain E0432`.\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_collector_starting_record\") due to 1 previous error\n"
+}

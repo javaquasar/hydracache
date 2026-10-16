@@ -253,6 +253,13 @@ identities. The isolated frame is committed as 7b799270; WSL negatives remain.
 This closes the frame fault gate, not new Starting publication/crash proof or
 the production execution and host-admission prerequisites below.
 
+The separate [Starting byte-record slice](local-runs/collector-starting-record-20261016/README.md)
+is now committed as `8d1b5e2a`. Its encoder/inspector preserves prior history and
+state bindings, but verifies neither signatures nor live peer/time authority.
+Its passing clock-free tests do not implement the private three-file storage
+phase, durable acknowledgement, SIGKILL/lost-ack proof or owner recovery. The
+original default two-file reader and all runtime leaf predicates remain intact.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

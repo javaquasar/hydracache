@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-record-win-clippy",
+  "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; early fixture/adapter assembly failures are retained separately from final source gates. Not a byte-exact process stream or build attestation.",
+  "output": "    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on build directory\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.17s\n"
+}
