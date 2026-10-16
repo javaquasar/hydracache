@@ -1,0 +1,69 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:8:36
+    |
+  8 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ me...in `ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:29:40
+    |
+ 29 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method...ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:82:44
+    |
+ 82 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method not...rollerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:118:40
+    |
+118 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method...ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:135:44
+    |
+135 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method not...rollerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:165:44
+    |
+165 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method not...rollerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 6 previous errors

@@ -10594,3 +10594,44 @@ compiler separately passes the 30-test byte regression, 26-test kernel group
 and four compile-fail examples. All 171 static contracts and eight affected
 build/lint lanes pass. These local kernel observations use synthetic trust;
 they close the read-only join, not durable lifecycle or production execution.
+
+### Creating the initial reservation state from the original kernel clock
+
+Authenticating a controller's signature does not turn the signed clock fields
+into receiver observations. The preceding preflight accepted an entire supplied
+Reserved state. Its signature could authenticate that statement, but could not
+establish when the host actually observed the reservation. Persisting that state
+as kernel-backed lifecycle authority would therefore cross an unproved boundary.
+
+The [observed reservation path](../testing/performance/0.74/diagnostic-original-collector-design.md#observed-initial-state-under-the-same-owner)
+consumes the acknowledged original request owner. Its first successful check
+samples the same retained receiver origin and creates revision-one, cell-zero
+Reserved using the original request identity, observed boot and CLOCK_BOOTTIME.
+All three initial clock fields use that one sample. Later observations check
+clock order but do not move lease origin, report new controller progress or renew
+the original packet hold. The configured authority epoch still supplies authority;
+wall time is only part of bounded request freshness.
+
+The controller can obtain a cloned state to sign, but cannot replace the owned
+state through that copy. A distinct collector preflight accepts bytes only and
+compares their signed state digest to the frozen original. The supplied-state
+guard cannot convert into this type. Original worker, authority, kernel packet,
+controller and fence remain under the same exclusive ownership, and a first
+error permanently refuses that chain without retrying I/O on subsequent calls.
+
+Tests bracket the captured origin with actual local CLOCK_BOOTTIME observations,
+verify stable exports and retained request objects, and sign six changed state
+digests under the valid synthetic controller key. Other cases cover prior
+refusal, missing records, trust/inventory drift and independent owners. This is
+functional kernel-context evidence, not an allocation or throughput measurement.
+The state is still in memory: a separately versioned durable publication and its
+real process-loss matrix must precede root output construction and original start.
+
+The [retained local packet](../testing/performance/0.74/local-runs/observed-reservation-20261016/README.md)
+pins runtime `77fdb7b8` and final source `82312a02`. On each of Rust 1.94 and
+1.88, the original-input group passes 82 tests, the byte regression 30, the
+kernel group 26, and ten compile-fail examples pass. The original-input/kernel
+groups each leave their existing manual case ignored. The complete static suite
+passes 172 tests and all eight Linux/Windows build/strict-Clippy lanes pass.
+The confirmed result is an observed frozen state under the original owner,
+not durable lifecycle or production execution.

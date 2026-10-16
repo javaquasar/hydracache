@@ -1,0 +1,17 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.77s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 6 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_pre_refused_owner_does_not_read_missing_attempt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_independent_owners_keep_refusal_local ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_freezes_actual_kernel_state_and_retains_originals ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_late_source_and_storage_drift_cannot_heal has been running for over 60 seconds
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_late_source_and_storage_drift_cannot_heal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_seeded_signed_clock_and_state_substitutions_refuse has been running for over 60 seconds
+observed_reservation seed=0x0740c099 signed_mutations=6 caller_state=false durable_ack=false start=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_seeded_signed_clock_and_state_substitutions_refuse ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 933 filtered out; finished in 113.46s
+

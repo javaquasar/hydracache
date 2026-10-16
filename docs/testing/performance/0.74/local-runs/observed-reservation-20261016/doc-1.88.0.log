@@ -1,0 +1,163 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.93s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 10 tests
+error[E0382]: use of moved value: `g`
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:13:18
+    |
+6   | fn twice(g: ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
+    |          - move occurs because `g` has type `ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`, which does not implement the `Copy` trait
+7   |     let first = g.into_observed_reservation();
+    |                   --------------------------- `g` moved due to this method call
+8   |     let second = g.into_observed_reservation();
+    |                  ^ value used here after move
+    |
+note: `observed_reservation::<impl ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>::into_observed_reservation` takes ownership of the receiver `self`, which moves `g`
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:123:9
+    |
+123 |         self,
+    |         ^^^^
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0382`.
+error[E0277]: the trait bound `OriginalObservedReservation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>: serde::de::DeserializeOwned` is not satisfied
+ --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:31:10
+  |
+7 | decode::<OriginalObservedReservation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+  |
+  = help: the trait `for<'de> Deserialize<'de>` is not implemented for `OriginalObservedReservation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+  = help: the following other types implement trait `Deserialize<'de>`:
+            `&'a [u8]` implements `Deserialize<'de>`
+            `&'a std::path::Path` implements `Deserialize<'de>`
+            `&'a str` implements `Deserialize<'de>`
+            `()` implements `Deserialize<'de>`
+            `(T,)` implements `Deserialize<'de>`
+            `(T0, T1)` implements `Deserialize<'de>`
+            `(T0, T1, T2)` implements `Deserialize<'de>`
+            `(T0, T1, T2, T3)` implements `Deserialize<'de>`
+          and 279 others
+  = note: required for `OriginalObservedReservation<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>` to implement `DeserializeOwned`
+note: required by a bound in `decode`
+ --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:30:14
+  |
+6 | fn decode<T: serde::de::DeserializeOwned>() {}
+  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `decode`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+error[E0277]: the trait bound `ObservedCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>: From<...>` is not satisfied
+ --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:137:171
+  |
+6 | ...ight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_> = g.into(); }
+  |                                                         ^^^^ unsatisfied trait bound
+  |
+  = help: the trait `From<OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>>` is not implemented for `ObservedCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+  = note: required for `OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>` to implement `Into<ObservedCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>>`
+  = note: the full name for the type has been written to '/tmp/rustdoctestgfRIZP/rust_out.long-type-16523777180585207120.txt'
+  = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::OriginalObservedReservation (line 8) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::OriginalObservedReservation (line 27) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::ObservedCollectorPreflight (line 134) - compile fail ... ok
+error[E0061]: this method takes 1 argument but 2 arguments were supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:22:171
+    |
+6   | ...::DiagnosticState) { g.bind_collector_requirements(b"", state); }
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^      ----- unexpected argument #2 of type `&DiagnosticState`
+    |
+note: method defined here
+   --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:160:12
+    |
+160 |     pub fn bind_collector_requirements<'bind>(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: remove the extra argument
+    |
+6   - fn replace(mut g: OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>, state: &hydracache_long_run_supervisor_074::diagnostic_lease::DiagnosticState) { g.bind_collector_requirements(b"", state); }
+6   + fn replace(mut g: OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>, state: &hydracache_long_run_supervisor_074::diagnostic_lease::DiagnosticState) { g.bind_collector_requirements(b""); }
+    |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0061`.
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::OriginalObservedReservation (line 19) - compile fail ... ok
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+  --> tools/long-run-supervisor-074/src/diagnostic_original_collector.rs:64:95
+   |
+6  | fn replace(mut g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(b"new"); }
+   |                                                                                               ^^^^^^^^^^ ------ unexpected argument of type `&'static [u8; 3]`
+   |
+note: method defined here
+  --> /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_collector.rs:85:12
+   |
+85 |     pub fn revalidate(&mut self) -> Result<(), OriginalCollectorError> {
+   |            ^^^^^^^^^^
+help: remove the extra argument
+   |
+6  - fn replace(mut g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(b"new"); }
+6  + fn replace(mut g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.revalidate(); }
+   |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0061`.
+test tools/long-run-supervisor-074/src/diagnostic_original_collector.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::OriginalCollectorPreflight (line 61) - compile fail ... ok
+error[E0599]: no method named `prepare_root_outputs` found for struct `OriginalCollectorPreflight` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_original_collector.rs:68:95
+  |
+6 | fn release(mut g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.prepare_root_outputs(); }
+  |                                                                                               ^^^^^^^^^^^^^^^^^^^^ method not found in `OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_original_collector.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::OriginalCollectorPreflight (line 65) - compile fail ... ok
+error[E0599]: no method named `clone` found for struct `OriginalObservedReservation` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:18:86
+  |
+6 | fn clone(g: OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.clone(); }
+  |                                                                                      ^^^^^ method not found in `OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::OriginalObservedReservation (line 15) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::OriginalObservedReservation (line 23) - compile fail ... ok
+error[E0599]: no method named `prepare_root_outputs` found for struct `OriginalObservedReservation` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation.rs:26:90
+  |
+6 | fn start(mut g: OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.prepare_root_outputs(); }
+  |                                                                                          ^^^^^^^^^^^^^^^^^^^^ method not found in `OriginalObservedReservation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `clone` found for struct `OriginalCollectorPreflight` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_original_collector.rs:56:89
+  |
+6 | fn clone(g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.clone(); }
+  |                                                                                         ^^^^^ method not found in `OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start_once` found for struct `OriginalCollectorPreflight` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_original_collector.rs:60:93
+  |
+6 | fn start(mut g: OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { g.start_once(); }
+  |                                                                                             ^^^^^^^^^^ method not found in `OriginalCollectorPreflight<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_original_collector.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::OriginalCollectorPreflight (line 53) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_collector.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::OriginalCollectorPreflight (line 57) - compile fail ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 141 filtered out; finished in 0.57s
+

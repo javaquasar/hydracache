@@ -1,0 +1,76 @@
+Warning: truncated output (original token count: 3026)
+Total output lines: 257
+
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:7:36
+    |
+  7 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ me...in `ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:28:40
+    |
+ 28 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method...ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `dev` found for struct `Metadata` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:57:34
+   |
+57 | ...ta.dev(),...
+   |       ^^^
+   |
+  --> /rustc/4a4ef493e3a1488c6e321570238084b38948f6db/library/std/src/os/unix/fs.rs:555:7
+   |
+   = note: the method is available for `Metadata` here
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `MetadataExt` which provides `dev` is implemented but not in scope; perhaps you want to import it
+   |
+ 1 + use std::os::unix::fs::MetadataExt;
+   |
+help: there is a…2026 tokens truncated…ed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:117:40
+    |
+117 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method...ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:134:44
+    |
+134 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method not...rollerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+error[E0599]: no method named `into_observed_reservation` found for struct `ControllerRequestAttempt<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_observed_reservation_tests.rs:164:44
+    |
+164 | ...pt.into_observed_reservation();
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^ method not...rollerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+    |
+   ::: tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs:189:1
+    |
+189 |...'s, 'a, 'p> {
+    |...----------- method `into_observed_reservation` not found for this struct
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 16 previous errors

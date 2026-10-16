@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [observed reservation path](diagnostic-original-collector-design.md#observed-initial-state-under-the-same-owner)
+now consumes the original request attempt and creates initial Reserved from its
+retained kernel boot/CLOCK_BOOTTIME, without accepting caller state or clock.
+Its exported signing copy cannot change the frozen owner. The distinct collector
+guard retains the same original authority/fence; durable Reserved/Starting,
+root output creation and execution remain closed.
+The [local packet](local-runs/observed-reservation-20261016/README.md) retains
+both compiler regressions: 82 original-input, 30 projection, 26 kernel tests,
+ten compile-fail checks each, plus 172 static contracts and eight build/lint lanes.
+
 The [original collector preflight](diagnostic-original-collector-design.md)
 borrows the acknowledged controller attempt and verifies collector requirements
 through its original kernel peer/time and retained policy/authority/configuration.

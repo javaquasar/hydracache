@@ -94,6 +94,14 @@ worker/authority/controller and common fence, with no caller peer/time inputs.
 This read-only guard still requires an original durable lifecycle/root-ancestry
 join before construction: supplied signed Reserved state is not a start permit.
 
+The separate [observed reservation owner](diagnostic-original-collector-design.md#observed-initial-state-under-the-same-owner)
+now mints initial state from the retained receiver's kernel boot/boottime and
+freezes it for collector signing. It consumes the request owner and accepts no
+caller state/clock in the distinct collector binding. This closes the asserted
+clock gap for that new path, not the durable publication gap. P1/P3 still require
+owned Reserved/Starting acknowledgement and trusted root ancestry before output
+creation, followed by authenticated original start and all-writer cessation.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

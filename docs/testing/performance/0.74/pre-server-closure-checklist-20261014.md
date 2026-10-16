@@ -148,6 +148,12 @@ creating a second worker guard. It retains the original fence and cross-refuses
 on drift. The Reserved state is still a supplied signed projection; original
 durable lifecycle/root-ancestry integration is needed before output creation.
 
+The distinct [observed reservation path](diagnostic-original-collector-design.md#observed-initial-state-under-the-same-owner)
+now creates and freezes initial state from the retained kernel boot/boottime.
+Collector binding accepts only signed bytes, not a replacement state or clock;
+the original request owner and fence are consumed into this in-memory owner.
+Durable Reserved/Starting publication, root ancestry and execution remain open.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted
