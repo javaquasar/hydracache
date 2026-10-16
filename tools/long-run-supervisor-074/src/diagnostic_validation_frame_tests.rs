@@ -2,6 +2,9 @@ use super::*;
 #[path = "diagnostic_validation_frame_budget_tests.rs"]
 mod budget;
 
+#[path = "diagnostic_collector_starting_publication_tests.rs"]
+mod starting_tests;
+
 #[test]
 fn validation_frame_consuming_adapter_exists() {
     fn probe(owner: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {

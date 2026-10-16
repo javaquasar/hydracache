@@ -1,6 +1,9 @@
 //! Constant-depth orchestration; all original live leaf guards remain active.
 use super::*;
 
+#[path = "diagnostic_collector_starting_publication.rs"]
+pub mod starting;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ValidationFrameStep {
     StorageBefore,
@@ -43,7 +46,7 @@ const STEPS: [ValidationFrameStep; 8] = [
 /// ```
 /// ```compile_fail
 /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
-/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(); }
+/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(b"replacement"); }
 /// ```
 /// ```compile_fail
 /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;

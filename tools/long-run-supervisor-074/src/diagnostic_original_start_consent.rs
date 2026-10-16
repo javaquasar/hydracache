@@ -2,6 +2,7 @@
 use super::*;
 #[path = "diagnostic_validation_frame.rs"]
 mod validation_frame;
+pub use validation_frame::starting;
 pub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};
 
 use crate::diagnostic_start_consent::{

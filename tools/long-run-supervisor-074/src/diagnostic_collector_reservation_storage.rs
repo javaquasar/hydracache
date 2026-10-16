@@ -2,6 +2,9 @@
 use super::{open_at, stamp, AttemptStorage, Document, StorageAttemptError, CONTROLLER_NAME};
 use std::os::fd::AsRawFd;
 
+#[path = "diagnostic_collector_starting_storage.rs"]
+pub(crate) mod starting_storage;
+
 pub(crate) const NAME: &str = "diagnostic-collector-reserved-074.json";
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CollectorReservedStage {
@@ -20,6 +23,7 @@ pub(crate) struct CollectorReservationStorage<'storage> {
     document: Option<Document>,
     attempted: bool,
     acknowledged: bool,
+    starting: Option<starting_storage::StartingPhase>,
 }
 impl<'storage> CollectorReservationStorage<'storage> {
     pub(crate) fn from_original(original: AttemptStorage<'storage>) -> Self {
@@ -28,6 +32,7 @@ impl<'storage> CollectorReservationStorage<'storage> {
             document: None,
             attempted: false,
             acknowledged: false,
+            starting: None,
         }
     }
     pub(crate) fn is_refused(&self) -> bool {
@@ -164,7 +169,11 @@ impl<'storage> CollectorReservationStorage<'storage> {
         if self.is_refused() || !self.acknowledged {
             return Err(StorageAttemptError::Refused);
         }
-        let result = self.inspect();
+        let result = if self.starting.is_some() {
+            self.inspect_starting()
+        } else {
+            self.inspect()
+        };
         if result.is_err() {
             self.latch_refusal();
         }

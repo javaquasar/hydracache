@@ -9219,3 +9219,105 @@ platform = "linux"
 
 [gate.command.env]
 # END PRECONSENT LIVE GATE
+
+# BEGIN STARTING PUBLICATION API GATE
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-collector-starting-publication"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_collector_starting_publication"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original collector Starting intent only, no process or product workload"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_collector_starting_publication", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END STARTING PUBLICATION API GATE
+
+# BEGIN STARTING PUBLICATION FAULT GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.collector-starting-publication-boundaries-and-live-refusal"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "collector_starting_publication_boundaries_and_live_refusal"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original collector Starting intent only, no process or product workload"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "--release", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END STARTING PUBLICATION FAULT GATE
+
+# BEGIN STARTING PUBLICATION CRASH GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.collector-starting-process-crash-all-stages-and-lost-ack"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "collector_starting_process_crash_all_stages_and_lost_ack"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original collector Starting intent only, no process or product workload"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "--release", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END STARTING PUBLICATION CRASH GATE

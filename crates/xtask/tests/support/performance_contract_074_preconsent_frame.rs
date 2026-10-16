@@ -7,6 +7,8 @@ const RESTORATIONS: &[(&str, &str, &str)] = &[
     ("tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs", "#[path = \"diagnostic_validation_frame_tests.rs\"]\nmod validation_frame_tests;\n\n#[path = \"diagnostic_preconsent_frame_tests.rs\"]\nmod preconsent_tests;\n\nfn consent(\n    body: crate::diagnostic_start_consent::StartConsentBody,\n    key: &ed25519_dalek::SigningKey,\n", "#[path = \"diagnostic_validation_frame_tests.rs\"]\nmod validation_frame_tests;\n\nfn consent(\n    body: crate::diagnostic_start_consent::StartConsentBody,\n    key: &ed25519_dalek::SigningKey,\n"),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::starting_publication::normalize(path, raw);
+    let raw = current.as_str();
     let mut clean = raw.to_owned();
     for (p, new, old) in RESTORATIONS {
         if path == *p {
@@ -73,7 +75,11 @@ fn preconsent_frame_preserves_frozen_body_all_lower_guards_and_original_windows(
         "tools/long-run-supervisor-074/src/server.rs",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), old(p), "out of scope: {p}");
+        assert_eq!(
+            super::starting_publication::normalize(p, &read(p)),
+            old(p),
+            "out of scope: {p}"
+        );
     }
     let source = read("tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs");
     let reference = old("tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs");

@@ -145,8 +145,8 @@ fn collector_starting_record_preserves_original_runtime_and_two_file_storage() {
     ] {
         assert!(runtime.contains(required), "{required}");
     }
-    let storage =
-        read("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs");
+    let path = "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs";
+    let storage = super::starting_publication::normalize(path, &read(path));
     assert!(storage.contains("let mut seen = [false; 2]"));
     assert!(!storage.contains("diagnostic-collector-starting-074"));
 }
