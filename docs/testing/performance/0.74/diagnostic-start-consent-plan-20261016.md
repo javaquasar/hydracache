@@ -50,3 +50,12 @@ retain durable replay/uncertain intent before root output or authenticated
 process start. Discharging bootstrap predicates, autonomous all-writer cessation,
 completion/later cells and installed-host admission remain separate work. No
 server, Actions, product workload, qualification, new timing claim or push.
+
+Before a successful consent cohort: retain E0603 from an integration-test attempt
+to call private canonical_json; reproduce its existing Value-then-Vec algorithm
+inside the test, not by widening the library API. Also retain the six-pass/one-
+failure development run: the test guessed more than forty scalar leaves, while
+the selected 18-field body has exactly 36 nested leaves (controller four, state
+sixteen). Replace that invented count with an exact eighteen-top-level-field
+inventory and the audited 36-leaf count before running every mutation. No
+performance/admission threshold, old test, workload or signing window changes.
