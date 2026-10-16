@@ -1,0 +1,13 @@
+
+running 1 test
+HC074-VALIDATION-STAGE Setup Stats { wall_ns: 989231542, authentication_calls: 11, authentication_ns: 81672479, signature_calls: 11, signature_ns: 80585591, worker_policy_calls: 99, worker_policy_ns: 741770343 }
+HC074-VALIDATION-STAGE Fence Stats { wall_ns: 703922260, authentication_calls: 8, authentication_ns: 56896550, signature_calls: 8, signature_ns: 56188492, worker_policy_calls: 72, worker_policy_ns: 529052148 }
+HC074-VALIDATION-STAGE Retain Stats { wall_ns: 8512232684, authentication_calls: 96, authentication_ns: 675891961, signature_calls: 96, signature_ns: 666871006, worker_policy_calls: 908, worker_policy_ns: 6431531506 }
+HC074-VALIDATION-STAGE Observe Stats { wall_ns: 2865615166, authentication_calls: 32, authentication_ns: 229136634, signature_calls: 32, signature_ns: 225899780, worker_policy_calls: 308, worker_policy_ns: 2170909334 }
+HC074-VALIDATION-STAGE Publish Stats { wall_ns: 24953039110, authentication_calls: 272, authentication_ns: 1891238413, signature_calls: 272, signature_ns: 1867579510, worker_policy_calls: 2696, worker_policy_ns: 18933627104 }
+HC074-VALIDATION-STAGE Bind Stats { wall_ns: 5574289650, authentication_calls: 66, authentication_ns: 426336544, signature_calls: 66, signature_ns: 420941003, worker_policy_calls: 652, worker_policy_ns: 4224790993 }
+validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 967 filtered out; finished in 43.60s
+

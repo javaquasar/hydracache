@@ -1,0 +1,142 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.96s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 103 tests
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_exact_issuance_deadline_never_renews ... ok
+collector_progress seed=0x0740c09c binding_mutations=12
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::tests::collector_progress_seeded_original_binding_mutations ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_codec_canonical_domain_bounds_and_unknowns_are_strict ... ok
+collector_causal seed=0x0740c09d commitment_mutations=69 byte_inspector_is_authority=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::tests::collector_causal_seeded_every_commitment_changes_the_signed_nonce ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::crash_tests::collector_reserved_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::crash_tests::collector_reserved_process_crash_all_stages_and_lost_ack ... ignored, manual nonroot Linux original collector Reserved SIGKILL proof
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::crash_tests::collector_reserved_process_protocol_accepts_only_bounded_expected_records ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_real_response_prequeued_refusal_and_entropy_failure_keep_fence ... ignored, manual nonroot fixed-window causal proof; no server
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_pre_refused_owner_has_no_retry_io_or_write ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files ... ignored, manual nonroot original validation cost attribution; no server
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_api_shape ... ok
+collector_reserved boundary=BeforeCreate start=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_occupied_name_is_not_overwritten_or_adopted ... ok
+collector_reserved boundary=Created start=false
+collector_reserved boundary=CreateDirectorySynced start=false
+collector_reserved boundary=PrefixWritten start=false
+collector_reserved boundary=BytesWritten start=false
+collector_reserved boundary=Sealed start=false
+collector_reserved boundary=FileSynced start=false
+collector_reserved boundary=DirectorySynced start=false
+collector_reserved boundary=Acknowledging start=false
+collector_reserved paired_byte_mutations=20 signature_authentication_by_inspector=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_independent_owners_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_publishes_frozen_state_under_same_original_fence ... ok
+collector_progress composition_case=0 preflight_writes=false start=false fence_retained=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_independent_owners_keep_refusal_local ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_freezes_actual_kernel_state_and_retains_originals ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_pre_refused_owner_does_not_read_missing_attempt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_independent_chains_keep_refusal_local ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_keeps_original_kernel_chain_lock_and_bytes ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_bad_signed_state_epoch_legacy_and_budget_never_create ... ok
+collector_progress composition_case=1 preflight_writes=false start=false fence_retained=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_pre_refused_attempt_does_not_reopen_missing_record ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_late_source_and_storage_drift_cannot_heal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_late_source_and_storage_drift_are_sticky_without_retry_io ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_engine_cannot_convert_to_legacy_intent_publication ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_malformed_legacy_and_overbudget_preserve_attempt ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_canonical_reader_refuses_mutations_not_admission ... ok
+collector_progress composition_case=2 preflight_writes=false start=false fence_retained=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_independent_concurrent_originals_remain_isolated ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_pre_refused_original_does_no_write_or_checkpoint ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_original_capture_mismatch_preserves_retained_bytes ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_retains_original_request_and_lock ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_acknowledged_object_and_source_drift_are_sticky has been running for over 60 seconds
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_seeded_all_logical_boundaries_retain_failure_and_lock has been running for over 60 seconds
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses has been running for over 60 seconds
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_signed_nonreserve_refuses_before_first_write ... ok
+observed_reservation seed=0x0740c099 signed_mutations=6 caller_state=false durable_ack=false start=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::observed_reservation_seeded_signed_clock_and_state_substitutions_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::original_collector_preflight_api_shape ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_child ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_crash_all_stages_and_lost_ack ... ignored, manual nonroot Linux original controller attempt SIGKILL proof
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::process_crash_tests::controller_attempt_process_protocol_accepts_only_bounded_expected_records ... ok
+collector_progress composition_case=3 preflight_writes=false start=false fence_retained=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::collector_progress_retains_both_owners_without_mutation_and_cross_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_constructor_refuses_both_chains_and_keeps_lock ... ok
+controller_fence_independent_originals=4 actual_issuer_enrolled=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_independent_concurrent_originals_do_not_share_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_keeps_original_lock_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_late_trust_and_authority_drift_retains_refused_fence ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_each_late_context_refuses_without_repair_or_io_retry ... ok
+controller_attempt_seed=0x0740c094 logical_boundaries=8 sigkill_proof=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_seeded_all_logical_write_faults_keep_lock_and_partial_context ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_original_lock_and_directory_replacement_never_adopted ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_constructor_bad_token_source_and_prior_refusal_cross_latch_all_owners ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_original_source_and_kernel_faults_cross_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_additional_scalar_claim_budget_and_duplicate_header_boundaries ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_canonical_schema_snapshot_and_rsa_key_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_each_origin_time_type_and_duplicate_claim_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_key_header_and_compact_encoding_confusion_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_profile_original_jws_bytes_and_time_boundaries ... ok
+controller_fence_seed=0x0740c093 bracket_positions=5 admission=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::controller_fence_preflight_seeded_every_bracket_position_preserves_first_error ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_source_nofollow_modes_links_bounds_and_fixed_nonroot_refusal ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_document_rsa_and_canonical_bounds ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_membership_each_position_v1_compatibility_and_no_try_all ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_origin_header_and_exclusive_windows_are_unchanged ... ok
+seed=0x07552074 signature_mutations=32 independent_bindings=4 real_github_issuer_enrollment=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_seeded_signature_mutations_and_independent_bindings ... ok
+seed=0x07402a11 membership_mutations=64 independent_bindings=4 actual_issuer_enrolled=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_seeded_membership_mutations_and_independent_bindings ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_shape_types_order_and_duplicate_material_refuse ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_snapshot_read_budget_is_original_and_other_sources_stay_small ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_source_metadata_bounds_and_nofollow ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_trust_drift_at_each_write_boundary_cross_refuses ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_constructor_prior_refusal_cross_latches_without_replacement ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::controller_attempt_late_owned_object_and_namespace_drift_stay_refused ... ok
+independent_threads=4 controller_run_provenance=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_independent_bindings_keep_reviewed_builder_pins ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_original_refusal_during_retention_cannot_rebind ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_roundtrip_owned_bytes_rechecks_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::oidc_original_binding_owned_bytes_healthy_drop_and_sticky_faults ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_original_binding_constructor_and_rotation_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_constructor_uses_shared_nofollow_metadata_without_repairs ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_fixed_constructor_refuses_nonroot_and_has_exact_path ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_wrong_original_identity_refuses_whole_chain ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_prior_refusal_or_source_failure_cross_latches_at_construction ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signed_roundtrip_retains_originals_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_retained_and_original_faults_stay_refused_after_restoration ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_strict_schema_principals_key_and_budget ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_actual_context_roundtrip_and_healthy_drop ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_source_worker_and_original_request_faults_stay_refused ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_signature_actor_uid_gid_time_and_boot_refusals_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_malformed_prior_refusal_and_wrong_envelope_never_recover ... ok
+original_collector seed=0x0740c098 signed_mutations=11 peer_time_assertions=false output_creation=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::original_collector_seeded_signed_request_and_state_substitution_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_bounded_fragmented_short_and_interrupted_reads ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_coarse_metadata_cannot_hide_changed_named_bytes ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_constructor_mode_link_type_size_and_owner_refusals ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_fixed_constructor_refuses_nonroot_without_file_io ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_signed_wrong_machine_boot_and_namespaces_refuse_all ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_model_policy_authority_bracket_retains_original_owners ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_named_root_ancestor_and_file_links_refuse ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_source_packet_probe_and_policy_failures_cross_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_policy_owned_refusal_latches_both_originals ... ok
+seed=0x07512074 mutations=256 independent_guards=4 production_enrollment=false
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_seeded_document_bytes_and_independent_concurrency ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_strict_document_and_independent_issuer_epoch_pin ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch ... ok
+test diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh ... ok
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_acknowledged_object_and_source_drift_are_sticky ... ok
+seed=0x07532074 signed_disallowed_actors=32 independent_threads=4 production_enrollment=false
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... ok
+seed=0x07542074 signature_mutations=32 production_signing=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+collector_reserved seed=0x0740c09a logical_faults=9 root_start=false
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::collector_reserved_seeded_all_logical_boundaries_retain_failure_and_lock ... ok
+seed=0x07522074 signed_context_mutations=32 independent_threads=4 production_enrollment=false
+test diagnostic_worker_policy::trusted_input::tests::worker_kernel_binding_seeded_context_mutations_and_independent_threads ... ok
+
+test result: ok. 99 passed; 0 failed; 4 ignored; 0 measured; 870 filtered out; finished in 93.63s
+

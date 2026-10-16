@@ -142,9 +142,12 @@ The first [proof reuse candidate](local-runs/worker-proof-reuse-20261016/README.
 passes focused differential tests but is withdrawn after the first paired
 candidate run fails its preregistered Setup counter: two constructors execute,
 not one. The screen stops without retries or a gain estimate, and the isolated
-candidate is reverted. A new proposal must account for both original constructor
-sites before any observation; the signed windows and practical-effect floor
-stay unchanged. The separately recurring IPC Host(Busy) remains unresolved.
+candidate is reverted. The separately preregistered
+[second screen](local-runs/worker-proof-reuse-v2-20261016/README.md) now preserves
+both constructors and passes the unchanged practical floor in five local debug
+pairs. Live checks and signed windows stay unchanged. Both compiler regressions
+pass without IPC retries, not proving historical Host(Busy)/Time/Kernel(Invalid)
+causes or production readiness. Original-start and writer cessation remain below.
 
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed

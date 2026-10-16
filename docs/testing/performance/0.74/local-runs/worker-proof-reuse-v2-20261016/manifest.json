@@ -1,0 +1,1616 @@
+{
+  "format_version": 1,
+  "source_commit": "cca2cb68a6d00e8fa4af6f08f9b59cdf199956a6",
+  "source_tree": "2ff6f7e48c484dc04863c6722f8e52abe27c29cf",
+  "baseline_commit": "73f71f07e95696ae9263939e82dac6a73f09ce8c",
+  "retained_reference_source": "78d8d9fc",
+  "preregistration_commit": "ab1a3ee7f9c2befbc1e5288fa77eabe8b6ddc770",
+  "preregistration_blob": "7c1511a94e3ed5219654184b82743e96454ff9ae",
+  "local_tooling_effect_established": true,
+  "five_pairs_complete": true,
+  "full_constructors_preserved": true,
+  "live_guards_unchanged": true,
+  "prior_failed_screen_unchanged": true,
+  "qualification_or_product_performance_claim": false,
+  "timing_is_cpu_measurement": false,
+  "allocation_effect_measured": false,
+  "historical_cause_proved": false,
+  "shared_load_fixed": false,
+  "ipc_retried": false,
+  "screen_retried": false,
+  "old_tests_skipped_or_serialized": false,
+  "authorization_window_changed": false,
+  "starting_proved": false,
+  "runtime_handoff": false,
+  "writer_cessation_proved": false,
+  "server_admitted": false,
+  "binary_or_clean_build_attested": false,
+  "new_sigkill_matrix_run": false,
+  "full_release_verify_run": false,
+  "push_performed": false,
+  "baseline_binary_path": "/home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016",
+  "candidate_binary_path": "/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273",
+  "baseline_binary_sha256": "7e8247610919a8dc39f3f6b7f6644944084a36a78cf949045fe9a0eaa7a946ad",
+  "candidate_binary_sha256": "65efc5332917079da35262bd9814099944bfd9551f8c5c33e753ae83d367f32e",
+  "probe_fqn": "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files",
+  "statistics": [
+    {
+      "stage": "Publish",
+      "ratio": 0.23273865734308757,
+      "lower95": 0.22830455463369137,
+      "upper95": 0.2365264515772926,
+      "pass": true
+    },
+    {
+      "stage": "Bind",
+      "ratio": 0.2364966557943169,
+      "lower95": 0.22830924013514306,
+      "upper95": 0.2430683134114684,
+      "pass": true
+    }
+  ],
+  "pairs": [
+    {
+      "pair": 1,
+      "order": "BC",
+      "primary": {
+        "Publish": {
+          "baseline_ns": 24024171106,
+          "candidate_ns": 5679429028
+        },
+        "Bind": {
+          "baseline_ns": 5476095510,
+          "candidate_ns": 1346900799
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "order": "CB",
+      "primary": {
+        "Publish": {
+          "baseline_ns": 23856160138,
+          "candidate_ns": 5584181782
+        },
+        "Bind": {
+          "baseline_ns": 5741469237,
+          "candidate_ns": 1348069258
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "order": "BC",
+      "primary": {
+        "Publish": {
+          "baseline_ns": 23799033046,
+          "candidate_ns": 5662541186
+        },
+        "Bind": {
+          "baseline_ns": 5730879891,
+          "candidate_ns": 1384364601
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "order": "CB",
+      "primary": {
+        "Publish": {
+          "baseline_ns": 23655575787,
+          "candidate_ns": 5311515814
+        },
+        "Bind": {
+          "baseline_ns": 5827448294,
+          "candidate_ns": 1400659643
+        }
+      }
+    },
+    {
+      "pair": 5,
+      "order": "BC",
+      "primary": {
+        "Publish": {
+          "baseline_ns": 23445112373,
+          "candidate_ns": 5415551046
+        },
+        "Bind": {
+          "baseline_ns": 5828784326,
+          "candidate_ns": 1286073770
+        }
+      }
+    }
+  ],
+  "observations": [
+    {
+      "pair": 1,
+      "side": "B",
+      "capture": "pair-1-B.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 859368133,
+          "authentication_calls": 11,
+          "authentication_ns": 71228551,
+          "signature_calls": 11,
+          "signature_ns": 70207253,
+          "worker_policy_calls": 99,
+          "worker_policy_ns": 638830139
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 614050264,
+          "authentication_calls": 8,
+          "authentication_ns": 49818459,
+          "signature_calls": 8,
+          "signature_ns": 49145463,
+          "worker_policy_calls": 72,
+          "worker_policy_ns": 458877322
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 7621730500,
+          "authentication_calls": 96,
+          "authentication_ns": 618918969,
+          "signature_calls": 96,
+          "signature_ns": 611036185,
+          "worker_policy_calls": 908,
+          "worker_policy_ns": 5730251228
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 2631136391,
+          "authentication_calls": 32,
+          "authentication_ns": 211110375,
+          "signature_calls": 32,
+          "signature_ns": 208541235,
+          "worker_policy_calls": 308,
+          "worker_policy_ns": 1987472113
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 24024171106,
+          "authentication_calls": 272,
+          "authentication_ns": 1849384804,
+          "signature_calls": 272,
+          "signature_ns": 1825459289,
+          "worker_policy_calls": 2696,
+          "worker_policy_ns": 18120608894
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 5476095510,
+          "authentication_calls": 66,
+          "authentication_ns": 426142855,
+          "signature_calls": 66,
+          "signature_ns": 420856116,
+          "worker_policy_calls": 652,
+          "worker_policy_ns": 4124465174
+        }
+      ]
+    },
+    {
+      "pair": 1,
+      "side": "C",
+      "capture": "pair-1-C.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 233463202,
+          "authentication_calls": 11,
+          "authentication_ns": 72636762,
+          "signature_calls": 11,
+          "signature_ns": 71839129,
+          "worker_policy_calls": 2,
+          "worker_policy_ns": 13099663
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 147843217,
+          "authentication_calls": 8,
+          "authentication_ns": 50678712,
+          "signature_calls": 8,
+          "signature_ns": 50064692,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 1830185151,
+          "authentication_calls": 96,
+          "authentication_ns": 624820153,
+          "signature_calls": 96,
+          "signature_ns": 618171954,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 668062156,
+          "authentication_calls": 32,
+          "authentication_ns": 226510923,
+          "signature_calls": 32,
+          "signature_ns": 224032653,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 5679429028,
+          "authentication_calls": 272,
+          "authentication_ns": 1862229912,
+          "signature_calls": 272,
+          "signature_ns": 1841358288,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 1346900799,
+          "authentication_calls": 66,
+          "authentication_ns": 445603987,
+          "signature_calls": 66,
+          "signature_ns": 440829214,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        }
+      ]
+    },
+    {
+      "pair": 2,
+      "side": "C",
+      "capture": "pair-2-C.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 229546330,
+          "authentication_calls": 11,
+          "authentication_ns": 74045409,
+          "signature_calls": 11,
+          "signature_ns": 73218693,
+          "worker_policy_calls": 2,
+          "worker_policy_ns": 13976182
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 157102702,
+          "authentication_calls": 8,
+          "authentication_ns": 53554354,
+          "signature_calls": 8,
+          "signature_ns": 52950743,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 1940938378,
+          "authentication_calls": 96,
+          "authentication_ns": 659718427,
+          "signature_calls": 96,
+          "signature_ns": 652573600,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 657493272,
+          "authentication_calls": 32,
+          "authentication_ns": 223174412,
+          "signature_calls": 32,
+          "signature_ns": 220824549,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 5584181782,
+          "authentication_calls": 272,
+          "authentication_ns": 1835642102,
+          "signature_calls": 272,
+          "signature_ns": 1815075416,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 1348069258,
+          "authentication_calls": 66,
+          "authentication_ns": 447621045,
+          "signature_calls": 66,
+          "signature_ns": 442902480,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        }
+      ]
+    },
+    {
+      "pair": 2,
+      "side": "B",
+      "capture": "pair-2-B.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 912908162,
+          "authentication_calls": 11,
+          "authentication_ns": 74563647,
+          "signature_calls": 11,
+          "signature_ns": 73544490,
+          "worker_policy_calls": 99,
+          "worker_policy_ns": 680764504
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 631242958,
+          "authentication_calls": 8,
+          "authentication_ns": 56601329,
+          "signature_calls": 8,
+          "signature_ns": 55949765,
+          "worker_policy_calls": 72,
+          "worker_policy_ns": 470225524
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 8020302824,
+          "authentication_calls": 96,
+          "authentication_ns": 650018333,
+          "signature_calls": 96,
+          "signature_ns": 641526171,
+          "worker_policy_calls": 908,
+          "worker_policy_ns": 6022929719
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 2612280841,
+          "authentication_calls": 32,
+          "authentication_ns": 202012081,
+          "signature_calls": 32,
+          "signature_ns": 199224673,
+          "worker_policy_calls": 308,
+          "worker_policy_ns": 1965469634
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 23856160138,
+          "authentication_calls": 272,
+          "authentication_ns": 1837332315,
+          "signature_calls": 272,
+          "signature_ns": 1812917269,
+          "worker_policy_calls": 2696,
+          "worker_policy_ns": 18002582407
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 5741469237,
+          "authentication_calls": 66,
+          "authentication_ns": 442045616,
+          "signature_calls": 66,
+          "signature_ns": 436339132,
+          "worker_policy_calls": 652,
+          "worker_policy_ns": 4335472689
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "side": "B",
+      "capture": "pair-3-B.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 847454166,
+          "authentication_calls": 11,
+          "authentication_ns": 72250245,
+          "signature_calls": 11,
+          "signature_ns": 71206586,
+          "worker_policy_calls": 99,
+          "worker_policy_ns": 630123443
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 620142041,
+          "authentication_calls": 8,
+          "authentication_ns": 53098017,
+          "signature_calls": 8,
+          "signature_ns": 52503113,
+          "worker_policy_calls": 72,
+          "worker_policy_ns": 458904896
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 8036581521,
+          "authentication_calls": 96,
+          "authentication_ns": 659309823,
+          "signature_calls": 96,
+          "signature_ns": 650809788,
+          "worker_policy_calls": 908,
+          "worker_policy_ns": 6043264871
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 2698957050,
+          "authentication_calls": 32,
+          "authentication_ns": 217109594,
+          "signature_calls": 32,
+          "signature_ns": 214431232,
+          "worker_policy_calls": 308,
+          "worker_policy_ns": 2036416556
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 23799033046,
+          "authentication_calls": 272,
+          "authentication_ns": 1856858549,
+          "signature_calls": 272,
+          "signature_ns": 1833165741,
+          "worker_policy_calls": 2696,
+          "worker_policy_ns": 17958201071
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 5730879891,
+          "authentication_calls": 66,
+          "authentication_ns": 447939277,
+          "signature_calls": 66,
+          "signature_ns": 442410961,
+          "worker_policy_calls": 652,
+          "worker_policy_ns": 4331246396
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "side": "C",
+      "capture": "pair-3-C.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 225100051,
+          "authentication_calls": 11,
+          "authentication_ns": 73498686,
+          "signature_calls": 11,
+          "signature_ns": 72608226,
+          "worker_policy_calls": 2,
+          "worker_policy_ns": 13493281
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 151505472,
+          "authentication_calls": 8,
+          "authentication_ns": 52905063,
+          "signature_calls": 8,
+          "signature_ns": 52311819,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 1957677927,
+          "authentication_calls": 96,
+          "authentication_ns": 665248951,
+          "signature_calls": 96,
+          "signature_ns": 657725027,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 654905999,
+          "authentication_calls": 32,
+          "authentication_ns": 224197188,
+          "signature_calls": 32,
+          "signature_ns": 221822300,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 5662541186,
+          "authentication_calls": 272,
+          "authentication_ns": 1875483660,
+          "signature_calls": 272,
+          "signature_ns": 1855229316,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 1384364601,
+          "authentication_calls": 66,
+          "authentication_ns": 459560720,
+          "signature_calls": 66,
+          "signature_ns": 454072343,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        }
+      ]
+    },
+    {
+      "pair": 4,
+      "side": "C",
+      "capture": "pair-4-C.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 240905954,
+          "authentication_calls": 11,
+          "authentication_ns": 79686713,
+          "signature_calls": 11,
+          "signature_ns": 78807161,
+          "worker_policy_calls": 2,
+          "worker_policy_ns": 13989885
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 162285658,
+          "authentication_calls": 8,
+          "authentication_ns": 56061463,
+          "signature_calls": 8,
+          "signature_ns": 55463069,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 1983123807,
+          "authentication_calls": 96,
+          "authentication_ns": 667602603,
+          "signature_calls": 96,
+          "signature_ns": 660151091,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 615641042,
+          "authentication_calls": 32,
+          "authentication_ns": 207286909,
+          "signature_calls": 32,
+          "signature_ns": 204880148,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 5311515814,
+          "authentication_calls": 272,
+          "authentication_ns": 1741901782,
+          "signature_calls": 272,
+          "signature_ns": 1721638459,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 1400659643,
+          "authentication_calls": 66,
+          "authentication_ns": 461737978,
+          "signature_calls": 66,
+          "signature_ns": 456144288,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        }
+      ]
+    },
+    {
+      "pair": 4,
+      "side": "B",
+      "capture": "pair-4-B.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 866455953,
+          "authentication_calls": 11,
+          "authentication_ns": 72426443,
+          "signature_calls": 11,
+          "signature_ns": 71496161,
+          "worker_policy_calls": 99,
+          "worker_policy_ns": 647704272
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 619464938,
+          "authentication_calls": 8,
+          "authentication_ns": 53543058,
+          "signature_calls": 8,
+          "signature_ns": 52902384,
+          "worker_policy_calls": 72,
+          "worker_policy_ns": 462528260
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 7969715948,
+          "authentication_calls": 96,
+          "authentication_ns": 650458578,
+          "signature_calls": 96,
+          "signature_ns": 642158992,
+          "worker_policy_calls": 908,
+          "worker_policy_ns": 5989615652
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 2629000132,
+          "authentication_calls": 32,
+          "authentication_ns": 203404570,
+          "signature_calls": 32,
+          "signature_ns": 200678950,
+          "worker_policy_calls": 308,
+          "worker_policy_ns": 1983746137
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 23655575787,
+          "authentication_calls": 272,
+          "authentication_ns": 1803570302,
+          "signature_calls": 272,
+          "signature_ns": 1779998997,
+          "worker_policy_calls": 2696,
+          "worker_policy_ns": 17847834817
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 5827448294,
+          "authentication_calls": 66,
+          "authentication_ns": 453509396,
+          "signature_calls": 66,
+          "signature_ns": 447662423,
+          "worker_policy_calls": 652,
+          "worker_policy_ns": 4398809349
+        }
+      ]
+    },
+    {
+      "pair": 5,
+      "side": "B",
+      "capture": "pair-5-B.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 837233994,
+          "authentication_calls": 11,
+          "authentication_ns": 69118043,
+          "signature_calls": 11,
+          "signature_ns": 68196062,
+          "worker_policy_calls": 99,
+          "worker_policy_ns": 628368140
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 614592219,
+          "authentication_calls": 8,
+          "authentication_ns": 51619701,
+          "signature_calls": 8,
+          "signature_ns": 50942285,
+          "worker_policy_calls": 72,
+          "worker_policy_ns": 455894286
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 8226657751,
+          "authentication_calls": 96,
+          "authentication_ns": 651501091,
+          "signature_calls": 96,
+          "signature_ns": 642510359,
+          "worker_policy_calls": 908,
+          "worker_policy_ns": 6186143044
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 2791446243,
+          "authentication_calls": 32,
+          "authentication_ns": 219230563,
+          "signature_calls": 32,
+          "signature_ns": 216343304,
+          "worker_policy_calls": 308,
+          "worker_policy_ns": 2110509315
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 23445112373,
+          "authentication_calls": 272,
+          "authentication_ns": 1796375090,
+          "signature_calls": 272,
+          "signature_ns": 1771811527,
+          "worker_policy_calls": 2696,
+          "worker_policy_ns": 17694535041
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 5828784326,
+          "authentication_calls": 66,
+          "authentication_ns": 449057166,
+          "signature_calls": 66,
+          "signature_ns": 443181361,
+          "worker_policy_calls": 652,
+          "worker_policy_ns": 4401636018
+        }
+      ]
+    },
+    {
+      "pair": 5,
+      "side": "C",
+      "capture": "pair-5-C.log",
+      "stages": [
+        {
+          "stage": "Setup",
+          "wall_ns": 239893345,
+          "authentication_calls": 11,
+          "authentication_ns": 76903665,
+          "signature_calls": 11,
+          "signature_ns": 76047513,
+          "worker_policy_calls": 2,
+          "worker_policy_ns": 14734583
+        },
+        {
+          "stage": "Fence",
+          "wall_ns": 161297690,
+          "authentication_calls": 8,
+          "authentication_ns": 55234541,
+          "signature_calls": 8,
+          "signature_ns": 54633619,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Retain",
+          "wall_ns": 1978309612,
+          "authentication_calls": 96,
+          "authentication_ns": 664188354,
+          "signature_calls": 96,
+          "signature_ns": 656299834,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Observe",
+          "wall_ns": 655979591,
+          "authentication_calls": 32,
+          "authentication_ns": 219679294,
+          "signature_calls": 32,
+          "signature_ns": 217234155,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Publish",
+          "wall_ns": 5415551046,
+          "authentication_calls": 272,
+          "authentication_ns": 1763893704,
+          "signature_calls": 272,
+          "signature_ns": 1744754429,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        },
+        {
+          "stage": "Bind",
+          "wall_ns": 1286073770,
+          "authentication_calls": 66,
+          "authentication_ns": 419890799,
+          "signature_calls": 66,
+          "signature_ns": 415214542,
+          "worker_policy_calls": 0,
+          "worker_policy_ns": 0
+        }
+      ]
+    }
+  ],
+  "source_files": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "7ad2144edac61cc64c2c9980ed744a02290ed8fd"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_validation_cost.rs",
+      "git_blob": "1e1abd7a943166a4377d608308014b9fb02689a6"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_worker_proof.rs",
+      "git_blob": "b0b2049e7f7c11e698b8f84687c494d8fe139f6b"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "d4efab32e01e347c11460ff77d0ac84e5bbd665f"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-proof-reuse-design.md",
+      "git_blob": "546f806b3efa2e8ab40008179dd01b9732b7db11"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_cost_tests.rs",
+      "git_blob": "ac0cb43257d079167720be066c4c456ec9be1f1d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+      "git_blob": "4dc16bfc6e2bfa2ebf22159848197e3abc412581"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_proof_reuse_tests.rs",
+      "git_blob": "f6268697bd5d34a4e693c3b24917b0b351096ab8"
+    }
+  ],
+  "frozen_files": [
+    {
+      "path": "Cargo.lock",
+      "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "Cargo.toml",
+      "git_blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed",
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "git_blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27",
+      "sha256": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "git_blob": "004c5d6d789b3cc12152461935d895adf9fe8db4",
+      "sha256": "1dac010049bb21f774ef4b107648682e4b6a4fb7065360ea22e40226e1e4f46b"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "git_blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/collector-causal-20261016/manifest.json",
+      "git_blob": "207522d659affa234be49accff87d32a03b7a555",
+      "sha256": "135079c134649d6bcf727e8d0a76522eb913efb2933bd49eb22086c8d02081de"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/collector-progress-20261016/manifest.json",
+      "git_blob": "1a2a0b54ff337fcbb3b06588145c206b9c83430f",
+      "sha256": "1ea6e8f0be174a081a4dc1ab072db2f25db091aa5c7998a5ce7646009026f55d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "git_blob": "da06a8583df99bc414566a7cd6cf6929bffce145",
+      "sha256": "50dc91406628f1cecdcf8fa771a7cdf3093751c5688d91aa56f5b04017663f56"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "git_blob": "fc848af142e61068bd4f5460503b8df1186d5aaf",
+      "sha256": "07355b1299ea9e3010e28b95fdb9d4dd2591c2996cc7fbe73662de426d4d74dc"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+      "git_blob": "a8d64842c5e498216bf23892ebbd68c3a1dede22",
+      "sha256": "13b9fe620dcd4b3bff719f3b4f62eb1b38c33809d1ed0f81a597a49734e2c9a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_collector_inputs.rs",
+      "git_blob": "e305d23cb636b96c1a2a04121e45cd66e5c37917",
+      "sha256": "b578e1b9c8350f04644bad950081e46725e1a3816421a3827dea72b7bbbbb16b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
+      "git_blob": "a69b18466b0248fcb283ad375c242e26c7cffc51",
+      "sha256": "b2ed9f5bbaeb2146db4502c9c5e7d383ea27e647435bc48db576ccce657414c8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs",
+      "git_blob": "b689f30647e9c5230ca65a3eba80af15ae55da3d",
+      "sha256": "81095183cfc7cb01fa6c366a436f60bc510dc1e5128b99be34cdb530d044baf7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input.rs",
+      "git_blob": "9374d84ccdcfa82d01a3acdd0385740a6dbacc9c",
+      "sha256": "ffe12cca4fbb458d1df0f30db6ce35c3f9f87b3161d7283edebd5786a6874a1b"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+      "git_blob": "9a80e0cae0ed6fb8eb471834e702fe0db5cf8848",
+      "sha256": "6b35d4a50d2b52a823a9fc552b5d1aecf2d5dc2e37ee14128d1b706ea7c6a29e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
+      "git_blob": "b34b56abf0d728103db7b66f6cd4406ecf053dae",
+      "sha256": "7df6881fa899224e4e97ae6e618f441258f42a2daabe6f2f042fe7fef3c96577"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "git_blob": "1ed02217b184d4af0135b385792c7a8f9e0c1a0c",
+      "sha256": "cc87300e46cc8449a6fa57c45e061d0c488ccddd3c911426110272eb8dc2514e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
+      "git_blob": "605f05f58a6b7d3937d4335ece56281bc311e338",
+      "sha256": "4df062bbaebb77e6f4cf16a770ee49e87f24371fd12e2278ec2160ee4c718a7e"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+      "git_blob": "d0d2a118d1376c6949c68729456146c4f8fc3be7",
+      "sha256": "03a7bac1e625d33827698b5fac7026f2f3180bf6dad3e69e98e41563316720b2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal_tests.rs",
+      "git_blob": "5b9bfde2c3479af43df066313ba335a7c0f80272",
+      "sha256": "e1cc97a855be1f0a07c35fd7836e59a51a6172a64527a559393ac8a2bca43eb3"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+      "git_blob": "3ca09d5bc171b4a4251313eb9a039a489c2f467f",
+      "sha256": "28656356d8261dd513bf91d01dbe0338c831e77fc1fe6b3e1cd16b9e1d7add41"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved_crash_tests.rs",
+      "git_blob": "5549dece579ce6e21da60fa43241f59c7ff33138",
+      "sha256": "8651951847038c8babd306b75004456c62399af0687937c37b41d26b29747077"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+      "git_blob": "e0a53b2fe5f8816a73b5c7a5decfbf5095f37ef3",
+      "sha256": "664bbb4d73f02649b3984ef4e0d1ea64a292a18f9a404e357340069216d28ac7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_attempt_crash_tests.rs",
+      "git_blob": "1fd7af59a3cd332f3b44a7b2ad909f1f2b1239ba",
+      "sha256": "3c8f6ac9d58b65881e1b279b283784d2ee7de6cbc0bf6c2b6fd3c7badb0ea95a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+      "git_blob": "1a474faf0cf1fd8630507a88ce9d434bbb804456",
+      "sha256": "ccb4d6f9267ec835e0466bdf21b222ba854b14a56b068b78e93558ed24c0e17a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+      "git_blob": "ed9e30a164514f72e9556ddace46bea549191318",
+      "sha256": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/server.rs",
+      "git_blob": "b3e10ab6e314c555f1e46daa4683282f53cbb4d9",
+      "sha256": "958075ed03d82343e31e6ea8cd67c3201f3df9795690e1d0a1e62e683573ad09"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_trust_input_tests.rs",
+      "git_blob": "fc2349e89f3875aae3f940b8bf4056266a6a87fb",
+      "sha256": "99621afc326ff9354f7896ce708a5155efda50167c2ac9af70e5145d98c3c56d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress_tests.rs",
+      "git_blob": "3b7f0b2d330793055827fc7bb757822bd134fdc8",
+      "sha256": "c865e455198408808b1aebb6838875fe664292e26f5833ba152e54631ccbe1e2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs",
+      "git_blob": "6d6756729d3f47e33c969acf3b7bc19f7f6bb8ad",
+      "sha256": "43955aaae6da518fe964a73ed6800ba4d2285fd956d6c814b8cf5a5320ce25b8"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/validation-cost-20261016/manifest.json",
+      "git_blob": "250c1d9a6c4adc5d6dabcb4fb2314b8aaf379474",
+      "sha256": "7921138f0ef9116a29505b353fc7705213dc2891fd7fd6600244c9b79e2f6e6d"
+    },
+    {
+      "path": "docs/testing/performance/0.74/local-runs/worker-proof-reuse-20261016/manifest.json",
+      "git_blob": "5a669ac785a0d583ff3b8c76513338585d758853",
+      "sha256": "0d6dab3be97b06582749a8e47b728769b57aa75648799345a060f9c640e01572"
+    },
+    {
+      "path": "docs/testing/performance/0.74/diagnostic-worker-proof-reuse-plan-20261016.md",
+      "git_blob": "c414598d2b6debd7863ad3ed9ca4826631f0b831",
+      "sha256": "1d89c368e7f72fac89c2a88ad10c404f6f4f4418473a1e1b1b82b6d490241052"
+    }
+  ],
+  "captures": [
+    {
+      "file": "baseline-source.log",
+      "cmd": "git diff --exit-code 78d8d9fc 73f71f07 -- tools/long-run-supervisor-074/src crates/xtask/tests docs/testing/gated-test-registry.toml",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "baseline-binary.log",
+      "cmd": "wsl.exe -d Ubuntu --exec sha256sum /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "baseline-preflight.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "red.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "file": "green.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "fmt-development-red.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "file": "fmt.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.94.0-check.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.94.0-clippy.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.94.0-unit.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.88.0-check.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.88.0-clippy.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "linux-1.88.0-unit.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.94.0-check.log",
+      "cmd": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.94.0-clippy.log",
+      "cmd": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.94.0-unit.log",
+      "cmd": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.88.0-check.log",
+      "cmd": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.88.0-clippy.log",
+      "cmd": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "windows-1.88.0-unit.log",
+      "cmd": "cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib worker_proof_reuse_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "static.log",
+      "cmd": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "doc-check.log",
+      "cmd": ".\\target\\debug\\xtask.exe doc-check",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "registry.log",
+      "cmd": ".\\target\\debug\\xtask.exe gated-test-check",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "local-contract.log",
+      "cmd": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "require-ship.log",
+      "cmd": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "file": "prebuild-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib --test diagnostic_worker_policy --test diagnostic_intent_projection --test diagnostic_ipc --test diagnostic_worker_files --test diagnostic_context_files --no-run",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "prebuild-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib --test diagnostic_worker_policy --test diagnostic_intent_projection --test diagnostic_ipc --test diagnostic_worker_files --test diagnostic_context_files --no-run",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "original-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_worker_policy::trusted_input:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "kernel-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_kernel_admission:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "semantics-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --test diagnostic_worker_policy --test diagnostic_intent_projection --test diagnostic_ipc --test diagnostic_worker_files --test diagnostic_context_files -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "credentials-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib policy_credentials_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "causal-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_real_response_prequeued_refusal_and_entropy_failure_keep_fence -- --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "docs-1.94.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --offline --locked --doc request_attempt::collector_preflight:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "original-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_worker_policy::trusted_input:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "kernel-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_kernel_admission:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "semantics-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --test diagnostic_worker_policy --test diagnostic_intent_projection --test diagnostic_ipc --test diagnostic_worker_files --test diagnostic_context_files -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "credentials-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib policy_credentials_ -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "causal-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --lib diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::causal_tests::collector_causal_real_response_prequeued_refusal_and_entropy_failure_keep_fence -- --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "docs-1.88.0.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test -p hydracache-long-run-supervisor-074 --offline --locked --doc request_attempt::collector_preflight:: -- --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "binary-command-development-red.log",
+      "cmd": "wsl.exe -d Ubuntu --exec sha256sum [object Object] /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273",
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "file": "binary-before.log",
+      "cmd": "wsl.exe -d Ubuntu --exec sha256sum /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-1-B.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-1-C.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-2-C.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-2-B.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-3-B.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-3-C.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-4-C.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-4-B.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-5-B.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "pair-5-C.log",
+      "cmd": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273 diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files --ignored --exact --nocapture",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "binary-after.log",
+      "cmd": "wsl.exe -d Ubuntu --exec sha256sum /home/artur/.cache/hydracache-074-194-check/worker-proof-baseline-78d8d9fc-20261016 /home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "final-doc-check.log",
+      "cmd": ".\\target\\debug\\xtask.exe doc-check",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "final-registry.log",
+      "cmd": ".\\target\\debug\\xtask.exe gated-test-check",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "final-local-contract.log",
+      "cmd": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "file": "final-require-ship.log",
+      "cmd": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74 --require-ship",
+      "exit_code": 1,
+      "expected_exit_code": 1
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "baseline-binary.log",
+      "bytes": 150,
+      "sha256": "14466885c86cb81c01d9aad6bea19b651b898f4f183f1cd64e0db794a3d5a0ba"
+    },
+    {
+      "file": "baseline-preflight.log",
+      "bytes": 1822,
+      "sha256": "3e02a3cfe93bf4e9c01e80d09108f847b02feb47c215c300da6eb520b5155f8f"
+    },
+    {
+      "file": "baseline-source.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "binary-after.log",
+      "bytes": 323,
+      "sha256": "2adde77252a737ae7caf86584fd2e3984b5cc2469bacae03337a1e337e56ab34"
+    },
+    {
+      "file": "binary-before.log",
+      "bytes": 323,
+      "sha256": "2adde77252a737ae7caf86584fd2e3984b5cc2469bacae03337a1e337e56ab34"
+    },
+    {
+      "file": "binary-command-development-red.log",
+      "bytes": 267,
+      "sha256": "61cbdc08a5d97729ec21ae32c2446702013fbd76c8b2afa4de70c89a3fd1a3ce"
+    },
+    {
+      "file": "causal-1.88.0.log",
+      "bytes": 993,
+      "sha256": "9f43f3c255b9e595c5e74b8272f879e74c1250f455242e29d87947702e1f21a3"
+    },
+    {
+      "file": "causal-1.94.0.log",
+      "bytes": 993,
+      "sha256": "fb1b56b8edd06c0a027d1792794a3a1891c3e8422260cb216618d21826c5db46"
+    },
+    {
+      "file": "credentials-1.88.0.log",
+      "bytes": 2694,
+      "sha256": "446bfbb20d967a5d6cabb6418f6679d002d42399bd19830bb85fbb41941ce41f"
+    },
+    {
+      "file": "credentials-1.94.0.log",
+      "bytes": 2694,
+      "sha256": "81313b846a849bb7f770159e149fa14e2cfa8f1601b072134bdc286eca6f81da"
+    },
+    {
+      "file": "doc-check.log",
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    {
+      "file": "docs-1.88.0.log",
+      "bytes": 36650,
+      "sha256": "ac435c2f0813202bf61d1669b177660974395ef3418ffe6998a28914dbef5eea"
+    },
+    {
+      "file": "docs-1.94.0.log",
+      "bytes": 33093,
+      "sha256": "0620f2f539f4410f5fff825edcf6a66c3c975d09513d03053b25a542d9ad965a"
+    },
+    {
+      "file": "final-doc-check.log",
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    {
+      "file": "final-local-contract.log",
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    {
+      "file": "final-registry.log",
+      "bytes": 60,
+      "sha256": "7a8868ce91e0bc1486b5a8bff111b225f645602de45333a45600959a4125fa34"
+    },
+    {
+      "file": "final-require-ship.log",
+      "bytes": 189,
+      "sha256": "4fd72c787a7ff7ac5bf447f7e8ed317bb531a98030923302ce394db8c3d3789c"
+    },
+    {
+      "file": "fmt-development-red.log",
+      "bytes": 725,
+      "sha256": "2d84a8b801127265cc4d94c0dfac65088b643df351d7721ac65d4ad7d680ec92"
+    },
+    {
+      "file": "fmt.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "green.log",
+      "bytes": 1193,
+      "sha256": "efe79df95a0b73edfaac7f1b9f1c1af665ddc12eaba6c4ab955d904da4f4def3"
+    },
+    {
+      "file": "kernel-1.88.0.log",
+      "bytes": 4754,
+      "sha256": "d874b33418988f60e630b210ec377abba916c967e5736844b24b656f3ec78cda"
+    },
+    {
+      "file": "kernel-1.94.0.log",
+      "bytes": 4761,
+      "sha256": "586ac42a9b5b33b2311302d6f547b38f27214c8caa129548811b4e701fbef733"
+    },
+    {
+      "file": "linux-1.88.0-check.log",
+      "bytes": 292,
+      "sha256": "2c7829b76e244d9078e7f2b6951a66138155422fb992a69a43a05de523bd5e3f"
+    },
+    {
+      "file": "linux-1.88.0-clippy.log",
+      "bytes": 292,
+      "sha256": "318d9fa8d809769297aa3a03066b458575eb10efaaab70ae97ac4273c230c92c"
+    },
+    {
+      "file": "linux-1.88.0-unit.log",
+      "bytes": 1193,
+      "sha256": "caa48e0b9bbb1697a02dc2bd80a2ddbfea8585eba2ddf1808d753822f30cb683"
+    },
+    {
+      "file": "linux-1.94.0-check.log",
+      "bytes": 292,
+      "sha256": "fdf67a0d3aedada3424948cfdf7452d3db1082c18ffc0c2ef5c853ad6fa63279"
+    },
+    {
+      "file": "linux-1.94.0-clippy.log",
+      "bytes": 292,
+      "sha256": "82c3593e743513ca5f6128b211b7121cbe95a2c047fa34b08a8085c39ea09516"
+    },
+    {
+      "file": "linux-1.94.0-unit.log",
+      "bytes": 1192,
+      "sha256": "30c46cfc6f9e3bd07f9e930cf7c8e33cb8900bcee66a8732638079e654d861f4"
+    },
+    {
+      "file": "local-contract.log",
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    {
+      "file": "original-1.88.0.log",
+      "bytes": 23815,
+      "sha256": "e7dca1bbebcf25df2e13d54536358d86c812011fb7d76f1b6288ecd6d368a618"
+    },
+    {
+      "file": "original-1.94.0.log",
+      "bytes": 24147,
+      "sha256": "389781de1b7bd2bd89e8326a221573a8f786405788ea801e1fae86cbebc229c4"
+    },
+    {
+      "file": "pair-1-B.log",
+      "bytes": 1822,
+      "sha256": "dc37c2e6c7ff70a58ece5bc0f1a3d1d5fa094d854fdbcb90d13fc1ccd4438ca1"
+    },
+    {
+      "file": "pair-1-C.log",
+      "bytes": 1762,
+      "sha256": "ec7420bab13073f4511637134fea5f6f70512d5b07026c8b1512a787cc2d77f3"
+    },
+    {
+      "file": "pair-2-B.log",
+      "bytes": 1822,
+      "sha256": "43e10566c4f7bc6593739828d87d1981c8ee9fe93f965ddf48dd9eb853d92c0b"
+    },
+    {
+      "file": "pair-2-C.log",
+      "bytes": 1762,
+      "sha256": "247e5f89901c3f4b6be0893ab2960c05a1dbcebcb672ccebf638a788422039bd"
+    },
+    {
+      "file": "pair-3-B.log",
+      "bytes": 1822,
+      "sha256": "a93d5f5728ea23fbb87afb69417649f39d9ec63a19cb8fdac8d5360fc9be6bde"
+    },
+    {
+      "file": "pair-3-C.log",
+      "bytes": 1763,
+      "sha256": "c6b56ed51662848634e2309dfd225e368d98ee683b70f708d7ee5b703ecd94f3"
+    },
+    {
+      "file": "pair-4-B.log",
+      "bytes": 1822,
+      "sha256": "101935d0fe0ce528d9da53d61365ac8a6769bc4787a84c7649f87382fd1f584d"
+    },
+    {
+      "file": "pair-4-C.log",
+      "bytes": 1762,
+      "sha256": "09ec2984e8c8d98ecb090976e4112465fbbe779af5b8aa57dd0ae8b24487865b"
+    },
+    {
+      "file": "pair-5-B.log",
+      "bytes": 1822,
+      "sha256": "57b953fb3a0ef9b8365c87e622c5a34e7df5f14171af00067359db20b9c89117"
+    },
+    {
+      "file": "pair-5-C.log",
+      "bytes": 1762,
+      "sha256": "d1e5887941f1bd5fea164487664b906ce71ae0120a0bf3372eb94801130a5953"
+    },
+    {
+      "file": "prebuild-1.88.0.log",
+      "bytes": 1065,
+      "sha256": "8e52c9869aed604a5f563d8004d957af60256f326dcf24466cb6d6a4cdf1df7d"
+    },
+    {
+      "file": "prebuild-1.94.0.log",
+      "bytes": 1065,
+      "sha256": "c758228a57973fdd7d6783078ba79f48d745ac48675b0c15a8a51f6dc2582ab8"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6192,
+      "sha256": "9180032c5ddaa5f303c7733d97a846595414ca217d7583fa3822f708d39d130d"
+    },
+    {
+      "file": "red.log",
+      "bytes": 2159,
+      "sha256": "1e3ebca42d1d11c85e1857c733b482faf3ba5d0bc7527bd59910052b30f03d47"
+    },
+    {
+      "file": "registry.log",
+      "bytes": 60,
+      "sha256": "7a8868ce91e0bc1486b5a8bff111b225f645602de45333a45600959a4125fa34"
+    },
+    {
+      "file": "require-ship.log",
+      "bytes": 189,
+      "sha256": "4fd72c787a7ff7ac5bf447f7e8ed317bb531a98030923302ce394db8c3d3789c"
+    },
+    {
+      "file": "semantics-1.88.0.log",
+      "bytes": 8923,
+      "sha256": "d1a6ca7ace3d0a82c3391975df3430cc909b90b9416315207b3e3cab343d3694"
+    },
+    {
+      "file": "semantics-1.94.0.log",
+      "bytes": 8931,
+      "sha256": "1aff6d191f67a22dcfdf73c0180e4ac2e2d3f181f81be98ed003c921376af79d"
+    },
+    {
+      "file": "static.log",
+      "bytes": 17066,
+      "sha256": "b390b52d3b92ca89ab0923e36e45c922b2333d4ec73af99220c000f85b8b527e"
+    },
+    {
+      "file": "verify.ps1",
+      "bytes": 17143,
+      "sha256": "bf92354c4de8c4981ffc0ebe2222c7b94bc0c9e4dc129ed7375cc59a9e30b07e"
+    },
+    {
+      "file": "windows-1.88.0-check.log",
+      "bytes": 283,
+      "sha256": "7b22e6afe15cab77d86d8519e417fc16762061b87c27870c656621aae0f0cd00"
+    },
+    {
+      "file": "windows-1.88.0-clippy.log",
+      "bytes": 284,
+      "sha256": "b25f4de67bd04daa26f85b67c70b7725b0584604d9e0f839eda25156c372f693"
+    },
+    {
+      "file": "windows-1.88.0-unit.log",
+      "bytes": 1154,
+      "sha256": "e508d99f295a434ed23a835a29fa0bb2243f5f831182178d05cf3266d2dadab4"
+    },
+    {
+      "file": "windows-1.94.0-check.log",
+      "bytes": 284,
+      "sha256": "c68a99bf4a02243d119721546b083c2828de128c09540919af927bb1cb2d0bb6"
+    },
+    {
+      "file": "windows-1.94.0-clippy.log",
+      "bytes": 284,
+      "sha256": "e0ce012287d1ff76d59efcd544773a7465503f504c7ad717ab0dba38c2d16175"
+    },
+    {
+      "file": "windows-1.94.0-unit.log",
+      "bytes": 1154,
+      "sha256": "c62906c66b4464d5fb82863f4c14a554fd5d236822346c2161e17a3e3483bfdd"
+    }
+  ]
+}

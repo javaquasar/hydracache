@@ -1,0 +1,12 @@
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_validation_cost_tests.rs:58:
+         let stats = report.stages[stage as usize];
+         assert!(stats.authentication_calls > 0);
+         assert!(stats.signature_calls > 0);
+[31m-        assert_eq!(stats.worker_policy_calls, 2 * u64::from(stage == Stage::Setup));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            stats.worker_policy_calls,
+(B[m[32m+            2 * u64::from(stage == Stage::Setup)
+(B[m[32m+        );
+(B[m         println!("HC074-VALIDATION-STAGE {stage:?} {stats:?}");
+     }
+     println!("validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false");

@@ -1,0 +1,14 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.86s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 5 tests
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_independent_concurrent_owners_share_no_cached_authority ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_verifies_once_and_retains_projection_integrity ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_two_constructors_are_not_one_shared_admission ... ok
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_every_retained_projection_field ... ok
+worker_proof_reuse seed=0x0740c0a1 cases=128 projection_fields=16 original_error_order=true
+test diagnostic_worker_policy::proof_reuse_tests::worker_proof_reuse_reference_matches_seeded_input_trust_context_and_priority ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 968 filtered out; finished in 1.88s
+

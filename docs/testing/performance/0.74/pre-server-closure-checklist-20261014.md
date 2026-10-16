@@ -194,9 +194,12 @@ Neither observation closes production lifecycle or server admission.
 The first [worker proof reuse screen](local-runs/worker-proof-reuse-20261016/README.md)
 stops on its first candidate's wrong Setup call expectation (two versus one).
 The candidate is reverted, with no retry, completed five-pair estimate or
-performance claim. A separate corrected preregistration and full screen are
-still required. Current IPC again has 23 passes and one Host(Busy), retained
-without retry; this is not fixed by the passing focused proof or MSRV checks.
+performance claim. A separate corrected preregistration and
+[five-pair second screen](local-runs/worker-proof-reuse-v2-20261016/README.md)
+now pass the unchanged local debug floor, preserving both constructors and all
+live checks. The first candidate's 23-pass/one-Host(Busy) IPC result remains
+retained without retry; new current/MSRV 24-pass IPC runs do not establish its
+cause or fix. Local proof reuse does not supply lifecycle or server admission.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace

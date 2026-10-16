@@ -10921,3 +10921,57 @@ compilers pass the 99-test original-input group, 29 kernel tests, four-case manu
 causal proof and 28 compile-fail examples. These greens neither explain the IPC
 lock lifetime nor close the historical Time/Kernel(Invalid) causes. Product
 throughput, Starting and server admission remain outside this local tooling step.
+
+### Reusing immutable proof without caching current authority
+
+The separately [preregistered second screen](../testing/performance/0.74/diagnostic-worker-proof-reuse-v2-plan-20261016.md)
+accounts for both construction sites before implementation or measurements.
+A new two-owner test first observes eighteen full verifications for two
+constructors and sixteen revalidations, then requires exactly two. The prior
+single-owner test still requires one. This protects the distinction between
+reusing an owner's original proof and sharing admission between independent owners.
+
+The resulting change is deliberately inside the immutable document boundary.
+Construction still checks the complete signed canonical document. Revalidation
+retains exact trust/key/body-pin/epoch and host-context equality, original envelope
+SHA256 and sticky refusal. It also hashes the retained canonical projection to
+detect internal corruption. Only the repeated document parse and signature proof
+are removed. The retained owner gains no field or buffer. Live source files,
+authority epochs, kernel/peer observations and signed time windows still execute
+through the unchanged enclosing owners; no current revocation result is cached.
+
+Five independently started pairs now complete in B/C, C/B, B/C, C/B, B/C order,
+without a failed invocation, retry or sample exclusion. The two binaries keep the
+same before/after hashes. Request-authentication and request-signature counts match
+at every stage. Full worker-document verifications change from
+99/72/908/308/2696/652 to 2/0/0/0/0/0 across the six stages: both constructors
+survive, while repeated publication and binding work disappears.
+
+| Local debug stage | Baseline seconds | Candidate seconds | Paired C/B ratio | 95% interval |
+| --- | --- | --- | ---: | --- |
+| Reserved publication | 23.45–24.02 | 5.31–5.68 | 0.232739 | 0.228305–0.236526 |
+| Heartbeat binding | 5.48–5.83 | 1.29–1.40 | 0.236497 | 0.228309–0.243068 |
+
+The geometric paired-ratio estimator and seeded 10000-resample percentile
+bootstrap are unchanged; both upper bounds clear the fixed 0.80 rule. These are
+elapsed times from local unoptimized Rust 1.94 WSL fixtures, including diagnostic
+instrumentation, not production CPU/op or native/RESP throughput. No measured
+allocation reduction is inferred from removing parsing, and the separate stage
+gains are not added together. The [second packet](../testing/performance/0.74/local-runs/worker-proof-reuse-v2-20261016/README.md)
+retains all ten raw stage reports and independently reproduces their statistics;
+the first failed screen and rollback remain separate immutable evidence.
+
+All five portable proof tests pass on four platform/compiler lanes, with the
+exact old method retained as a private test-only oracle. Eight build/strict-Clippy
+lanes and 177 static contracts pass. Current and MSRV each pass 99 ordinary
+original-input tests, 29 kernel tests, all 24 IPC tests, the unchanged four-case
+causal proof and 28 compile-fail examples. Neither green IPC run retries a failed
+invocation in this screen. They do not explain historical Host(Busy), Time or
+Kernel(Invalid), or establish arbitrary shared-load safety.
+
+The useful outcome is narrower than release qualification: repeated immutable
+verification is a confirmed local tooling owner, and its isolated replacement
+clears the preregistered debug floor without dropping live observations. The next
+cost investigation must preserve that boundary. Authenticated original-start,
+autonomous all-writer cessation, completion/later cells, real trust enrollment
+and server rehearsal still need their own implementations and fault evidence.

@@ -1,13 +1,22 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [second worker proof screen](local-runs/worker-proof-reuse-v2-20261016/README.md)
+passes five independent alternating pairs. Publication/binding elapsed-time C/B
+ratios are 0.232739/0.236497, with upper 95% bounds 0.236526/0.243068 against the
+fixed 0.80 floor. This is a local debug tooling result, not native/RESP goodput.
+Both constructors and all live guards remain; current/MSRV semantic checks pass
+without IPC retry. Historical Host(Busy)/Time/Kernel(Invalid), lifecycle and server
+admission remain open.
+
 The first [worker proof reuse screen](local-runs/worker-proof-reuse-20261016/README.md)
 is negative and the isolated candidate is reverted. Its first candidate run fails
 the preregistered Setup counter (two full verifications, expected one); no later
 pair or bootstrap estimate is produced. The fixture constructs one policy for
 authority initialization and another for the original kernel-bound owner. This
 was a wrong mechanism expectation, not an established semantic failure or a
-measured speedup. A corrected proposal needs a separate preregistration. Current
-IPC again reports Host(Busy), without a retry; server admission remains closed.
+measured speedup. That attempt was not resumed; the separately preregistered second
+screen is recorded above. The first candidate also retained a recurring IPC
+Host(Busy), without a retry.
 
 The [validation-cost attribution](diagnostic-validation-cost-design.md) adds only
 test-scoped numeric timers and first signed-window refusal facts. Two current
