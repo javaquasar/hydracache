@@ -94,6 +94,8 @@ fn once(raw: &str, new: &str, old: &str, path: &str) -> String {
     raw.replacen(new, old, 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::starting_record::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs" => {
             once(raw, RUNTIME, "", path)
@@ -171,7 +173,7 @@ fn validation_frame_preserves_original_guards_and_frozen_workload() {
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
         assert_eq!(
-            read(path),
+            super::starting_record::normalize(path, &read(path)),
             old(path),
             "original leaf/workload changed: {path}"
         );

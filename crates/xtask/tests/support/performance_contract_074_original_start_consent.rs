@@ -172,7 +172,11 @@ fn original_start_consent_keeps_historical_guards_and_has_no_execution_conversio
         "docs/COMPAT.md",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), old(p), "out-of-scope: {p}");
+        assert_eq!(
+            super::starting_record::normalize(p, &read(p)),
+            old(p),
+            "out-of-scope: {p}"
+        );
     }
     let source = read("tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs");
     for marker in [

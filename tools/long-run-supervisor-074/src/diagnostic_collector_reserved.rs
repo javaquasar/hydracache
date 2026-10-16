@@ -1,6 +1,8 @@
 //! Original initial Reserved publication only; never recovered acknowledgement or start.
 #[path = "diagnostic_collector_progress.rs"]
 pub mod progress;
+#[path = "diagnostic_collector_starting_record.rs"]
+pub mod starting_record;
 use super::{OriginalCollectorError, OriginalObservedReservation};
 use super::super::super::{capture as capture_request, validate_retained_controller_attempt, OidcControllerInput, Record as RequestRecord};
 use crate::diagnostic_kernel_admission::KernelTimePoint;

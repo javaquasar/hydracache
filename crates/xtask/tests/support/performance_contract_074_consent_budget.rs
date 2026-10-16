@@ -137,7 +137,7 @@ fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
         );
     }
     let path = "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs";
-    let raw = read(path);
+    let raw = super::starting_record::normalize(path, &read(path));
     assert_eq!(raw.matches(ADAPTER).count(), 1);
     assert_eq!(raw.replacen(ADAPTER, "", 1), old(path));
     let path = "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs";
