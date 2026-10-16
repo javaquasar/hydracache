@@ -38,6 +38,9 @@ mod start_consent;
 #[path = "support/performance_contract_074_original_start_consent.rs"]
 mod original_start_consent;
 
+#[path = "support/performance_contract_074_consent_budget.rs"]
+mod consent_budget;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");

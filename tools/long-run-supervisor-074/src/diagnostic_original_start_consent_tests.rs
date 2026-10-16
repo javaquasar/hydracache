@@ -2,6 +2,8 @@ use super::*;
 use crate::diagnostic_start_consent::{start_consent_signing_message, SignedStartConsent, ENVELOPE_SCHEMA};
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::*;
 use ed25519_dalek::Signer;
+#[path = "diagnostic_consent_budget_tests.rs"]
+mod budget_tests;
 
 fn consent(
     body: crate::diagnostic_start_consent::StartConsentBody,

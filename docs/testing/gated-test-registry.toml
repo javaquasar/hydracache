@@ -8981,3 +8981,71 @@ platform = "linux"
 
 [gate.command.env]
 # END ORIGINAL START CONSENT GATE
+
+# BEGIN CONSENT BUDGET GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-consent-publication-budget"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_consent_publication_budget"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot publication-free budget attribution; refusal is retained, not admission"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "--config", "profile.dev.package.ed25519-dalek.opt-level=3", "--config", "profile.dev.package.curve25519-dalek.opt-level=3", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::budget_tests::original_consent_publication_budget", "--", "--ignored", "--exact", "--nocapture"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END CONSENT BUDGET GATE
+
+# BEGIN CONSENT OWNER ATTRIBUTION GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-consent-validation-owner-attribution"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_consent_validation_owner_attribution"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot inclusive owner cost attribution; no publication or admission"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "--config", "profile.dev.package.ed25519-dalek.opt-level=3", "--config", "profile.dev.package.curve25519-dalek.opt-level=3", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::budget_tests::original_consent_validation_owner_attribution", "--", "--ignored", "--exact", "--nocapture"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END CONSENT OWNER ATTRIBUTION GATE

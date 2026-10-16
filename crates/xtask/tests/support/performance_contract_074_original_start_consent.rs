@@ -102,6 +102,8 @@ fn replace_once(raw: &str, new: &str, old: &str, path: &str) -> String {
     raw.replacen(new, old, 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::consent_budget::normalize(path, raw);
+    let raw = current.as_str();
     if let Some((_, registration)) = REGISTRATIONS.iter().find(|(p, _)| *p == path) {
         replace_once(raw, registration, "", path)
     } else if path == "crates/xtask/tests/performance_contract_074.rs" {
