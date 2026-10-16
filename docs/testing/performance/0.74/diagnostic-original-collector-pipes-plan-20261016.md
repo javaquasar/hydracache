@@ -39,6 +39,9 @@ Descriptor substitutions and concurrent flag drift must report Invalid from
 pipe inspection, not a coincident Original time refusal. Trust drift must report
 the original guard failure. The acknowledgement hook precedes its final complete
 original/kernel closing checks, preserving the same four full authority checks.
+The actual owner declares pipes before Starting so Rust drops them before the
+original fence. Check that exact declaration order and actual EOF after healthy
+owner drop; this is closure of private unexported pipes, not all external writers.
 No failed scenario is retried into a green result or admitted by extending time.
 
 Preserve baseline runtime and all lower source guards with exact narrow static
