@@ -294,14 +294,32 @@ impl HostExecutionClaim {
 
 /// Only supervisor-owned diagnostic transactions use this fence. It must not
 /// be retained while a workload runs; the durable typed marker owns that lease.
-pub(crate) fn lock_host_root(campaign_root: &Path) -> Result<(PathBuf, File), HostExecutionError> {
+pub(crate) fn lock_host_root(
+    campaign_root: &Path,
+) -> Result<(PathBuf, ShortHostFence), HostExecutionError> {
     lock_host_root_with(campaign_root, DiagnosticAdmission::open)
+}
+
+/// Own only the successful short transaction's original open description.
+/// No clone/extraction or release receipt; durable markers are never removed.
+pub(crate) struct ShortHostFence(File);
+#[cfg(all(test, target_os = "linux"))]
+impl ShortHostFence {
+    pub(crate) fn original_for_test(&self) -> &File {
+        &self.0
+    }
+}
+impl Drop for ShortHostFence {
+    fn drop(&mut self) {
+        // A pre-exec fork alias must not extend this completed transaction.
+        let _ = FileExt::unlock(&self.0);
+    }
 }
 
 fn lock_host_root_with(
     campaign_root: &Path,
     admission: impl FnOnce(&Path, &File) -> Result<DiagnosticAdmission, HostExecutionError>,
-) -> Result<(PathBuf, File), HostExecutionError> {
+) -> Result<(PathBuf, ShortHostFence), HostExecutionError> {
     let metadata = fs::symlink_metadata(campaign_root)?;
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
         return Err(HostExecutionError::Path);
@@ -309,7 +327,10 @@ fn lock_host_root_with(
     let root = fs::canonicalize(campaign_root)?;
     let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
     FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
-    if admission(&root, &lock)?.fixed_present(&root, &lock)? {
+    let lock = ShortHostFence(lock);
+    #[cfg(all(test, target_os = "linux"))]
+    short_fence_tests::after_acquire(&lock.0);
+    if admission(&root, &lock.0)?.fixed_present(&root, &lock.0)? {
         return Err(HostExecutionError::DiagnosticConflict);
     }
     Ok((root, lock))
@@ -445,3 +466,7 @@ fn sync_directory(_path: &Path) -> Result<(), HostExecutionError> {
 #[cfg(all(test, target_os = "linux"))]
 #[path = "host_execution_fixed_admission_tests.rs"]
 mod fixed_admission_tests;
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "host_short_fence_tests.rs"]
+mod short_fence_tests;

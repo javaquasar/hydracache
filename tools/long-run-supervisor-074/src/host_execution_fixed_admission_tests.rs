@@ -198,16 +198,16 @@ fn fixed_admission_missing_unsafe_or_replaced_storage_is_not_absence() {
 fn fixed_admission_repeated_scans_and_original_refusal_never_refresh() {
     let (temp, root, leaf) = fixture();
     let (_, lock) = lock_host_root(&root).unwrap();
-    let mut admission = model(temp.path(), &root, &lock).unwrap();
-    assert!(!admission.present(&root, &lock).unwrap());
-    assert!(!admission.present(&root, &lock).unwrap());
+    let mut admission = model(temp.path(), &root, &lock.0).unwrap();
+    assert!(!admission.present(&root, &lock.0).unwrap());
+    assert!(!admission.present(&root, &lock.0).unwrap());
     fs::write(leaf.join("future"), []).unwrap();
-    assert!(admission.present(&root, &lock).unwrap());
+    assert!(admission.present(&root, &lock.0).unwrap());
     fs::remove_file(leaf.join("future")).unwrap();
     fs::set_permissions(&leaf, fs::Permissions::from_mode(0o750)).unwrap();
-    assert!(admission.present(&root, &lock).is_err());
+    assert!(admission.present(&root, &lock.0).is_err());
     fs::set_permissions(&leaf, fs::Permissions::from_mode(0o700)).unwrap();
-    assert!(admission.present(&root, &lock).is_err());
+    assert!(admission.present(&root, &lock.0).is_err());
 }
 
 #[test]
@@ -316,12 +316,12 @@ fn fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct()
     let (temp, root, _) = fixture();
     let (_, lock) = lock_host_root(&root).unwrap();
     assert!(
-        DiagnosticAdmission::open(Path::new(crate::config::PRODUCTION_CAMPAIGN_ROOT), &lock)
+        DiagnosticAdmission::open(Path::new(crate::config::PRODUCTION_CAMPAIGN_ROOT), &lock.0)
             .is_err()
     );
-    assert!(!DiagnosticAdmission::open(&root, &lock)
+    assert!(!DiagnosticAdmission::open(&root, &lock.0)
         .unwrap()
-        .present(&root, &lock)
+        .present(&root, &lock.0)
         .unwrap());
     drop(lock);
     assert!(HostExecutionClaim::acquire(&root, &"a".repeat(64)).is_ok());

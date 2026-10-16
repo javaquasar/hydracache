@@ -578,7 +578,7 @@ mod tests {
             Err(PreparationError::Busy)
         ));
         assert!(!f.root.join(OUTPUT_ROOT).exists());
-        FileExt::unlock(&fence).unwrap();
+        FileExt::unlock(fence.original_for_test()).unwrap();
         drop(fence);
         prepare_inner(&f.root, &f.state, &f.clock, |stage| {
             if stage == PreparationStage::CellCreated {

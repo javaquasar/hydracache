@@ -52,7 +52,7 @@ fn worker_proof_reuse_is_one_owned_substitution_with_full_reference_and_live_gua
     let original = old(p);
     assert_eq!(restore_worker(p, &raw), original);
     let gate = "crates/xtask/tests/performance_contract_074.rs";
-    let current_gate = read(gate);
+    let current_gate = super::short_fence::restore_gate(&read(gate));
     let registration =
         "\n#[path = \"support/performance_contract_074_worker_proof.rs\"]\nmod worker_proof;\n";
     let new_marker = "\"sha256_hex(&canonical_line(&self.original)?) != self.trust.policy_sha256\"";

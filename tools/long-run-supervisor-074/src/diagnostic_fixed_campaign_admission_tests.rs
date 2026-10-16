@@ -4,7 +4,11 @@ use std::fs;
 use std::os::unix::ffi::OsStringExt;
 use std::os::unix::fs::PermissionsExt;
 
-fn fixture() -> (tempfile::TempDir, PathBuf, File) {
+fn fixture() -> (
+    tempfile::TempDir,
+    PathBuf,
+    crate::host_execution::ShortHostFence,
+) {
     let (temp, _, _) = tree();
     let root = at(temp.path(), 3).join("campaigns");
     fs::create_dir(&root).unwrap();
@@ -22,13 +26,14 @@ fn fixture() -> (tempfile::TempDir, PathBuf, File) {
 #[test]
 fn fixed_admission_scan_scan_reopens_offsets_and_nonutf8_entries_also_block() {
     let (temp, root, lock) = fixture();
-    let mut read = FixedCampaignAdmission::modeled(temp.path(), &root, &lock).unwrap();
-    assert!(!read.present(&root, &lock).unwrap());
-    assert!(!read.present(&root, &lock).unwrap());
+    let mut read =
+        FixedCampaignAdmission::modeled(temp.path(), &root, lock.original_for_test()).unwrap();
+    assert!(!read.present(&root, lock.original_for_test()).unwrap());
+    assert!(!read.present(&root, lock.original_for_test()).unwrap());
     let name = std::ffi::OsString::from_vec(vec![0xff, b'x']);
     fs::write(at(temp.path(), 4).join(name), []).unwrap();
-    assert!(read.present(&root, &lock).unwrap());
-    assert!(read.present(&root, &lock).unwrap());
+    assert!(read.present(&root, lock.original_for_test()).unwrap());
+    assert!(read.present(&root, lock.original_for_test()).unwrap());
     assert!(
         !read.storage.is_refused(),
         "presence is exclusion, not ownership revocation"
@@ -39,13 +44,14 @@ fn fixed_admission_scan_scan_reopens_offsets_and_nonutf8_entries_also_block() {
 fn fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latches() {
     for descriptor in [false, true] {
         let (temp, root, lock) = fixture();
-        let mut read = FixedCampaignAdmission::modeled(temp.path(), &root, &lock).unwrap();
+        let mut read =
+            FixedCampaignAdmission::modeled(temp.path(), &root, lock.original_for_test()).unwrap();
         if descriptor {
             let old = std::mem::replace(
                 &mut read.storage.components[3].file,
                 File::open("/tmp").unwrap(),
             );
-            assert!(read.present(&root, &lock).is_err());
+            assert!(read.present(&root, lock.original_for_test()).is_err());
             read.storage.components[3].file = old;
         } else {
             let path = temp.path().join("foreign-lock");
@@ -53,7 +59,7 @@ fn fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latch
             assert!(read.present(&root, &File::open(path).unwrap()).is_err());
         }
         assert!(read.storage.is_refused());
-        assert!(read.present(&root, &lock).is_err());
+        assert!(read.present(&root, lock.original_for_test()).is_err());
     }
 }
 
@@ -75,7 +81,10 @@ fn fixed_admission_scan_world_writable_hardlinked_lock_or_foreign_root_refuses()
             .unwrap(),
             _ => {}
         }
-        assert!(FixedCampaignAdmission::modeled(temp.path(), argument, &lock).is_err());
+        assert!(
+            FixedCampaignAdmission::modeled(temp.path(), argument, lock.original_for_test())
+                .is_err()
+        );
         assert!(!root.join("active-campaign").exists());
     }
 }

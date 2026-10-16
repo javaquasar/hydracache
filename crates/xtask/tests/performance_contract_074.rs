@@ -26,6 +26,9 @@ mod validation_cost;
 #[path = "support/performance_contract_074_worker_proof.rs"]
 mod worker_proof;
 
+#[path = "support/performance_contract_074_short_fence.rs"]
+mod short_fence;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
@@ -11744,6 +11747,7 @@ fn diagnostic_fixed_admission_blocks_context_without_publication_or_enrollment()
     let host =
         std::fs::read_to_string(root().join("tools/long-run-supervisor-074/src/host_execution.rs"))
             .unwrap();
+    let host = short_fence::restore(&host.replace('\r', ""));
     for marker in [
         "DiagnosticAdmission::open",
         "crate::config::PRODUCTION_CAMPAIGN_ROOT",
