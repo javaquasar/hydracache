@@ -73,6 +73,8 @@ platform = "linux"
 # END CONSENT OWNER ATTRIBUTION GATE
 "#;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::validation_frame::normalize(path, raw);
+    let raw = current.as_str();
     let extra = match path {
         "crates/xtask/tests/performance_contract_074.rs" => GATE,
         "docs/testing/gated-test-registry.toml" => REGISTRY,
@@ -117,7 +119,11 @@ fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
         "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(path), old(path), "budget changed runtime: {path}");
+        assert_eq!(
+            super::validation_frame::normalize(path, &read(path)),
+            old(path),
+            "budget changed runtime: {path}"
+        );
     }
     for path in [
         "crates/xtask/tests/performance_contract_074.rs",
@@ -136,7 +142,7 @@ fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
     assert_eq!(raw.replacen(ADAPTER, "", 1), old(path));
     let path = "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs";
     let registration = "#[path = \"diagnostic_consent_budget_tests.rs\"]\nmod budget_tests;\n";
-    let raw = read(path);
+    let raw = super::validation_frame::normalize(path, &read(path));
     assert_eq!(raw.matches(registration).count(), 1);
     assert_eq!(raw.replacen(registration, "", 1), old(path));
     let fixture = read("tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs");

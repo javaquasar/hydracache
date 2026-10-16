@@ -9049,3 +9049,71 @@ platform = "linux"
 
 [gate.command.env]
 # END CONSENT OWNER ATTRIBUTION GATE
+
+# BEGIN VALIDATION FRAME BUDGET GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.validation-frame-budget"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "validation_frame_publication_budget"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot original validation frame; no publication or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--config","profile.dev.package.ed25519-dalek.opt-level=3","--config","profile.dev.package.curve25519-dalek.opt-level=3","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::budget::validation_frame_publication_budget","--","--ignored","--exact","--nocapture"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END VALIDATION FRAME BUDGET GATE
+
+# BEGIN VALIDATION FRAME DRIFT GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.validation-frame-drift"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "validation_frame_live_drift_at_every_cut_and_reference_refusal"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot original validation frame; no publication or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::validation_frame_live_drift_at_every_cut_and_reference_refusal","--","--ignored","--exact","--nocapture"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END VALIDATION FRAME DRIFT GATE

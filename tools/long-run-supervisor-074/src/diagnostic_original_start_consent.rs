@@ -1,5 +1,9 @@
 //! Consumed original bootstrap consent; no durable acknowledgement or execution.
 use super::*;
+#[path = "diagnostic_validation_frame.rs"]
+mod validation_frame;
+pub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};
+
 use crate::diagnostic_start_consent::{
     start_consent_signing_message, StartConsentBody, BODY_SCHEMA,
 };

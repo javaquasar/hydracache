@@ -4,6 +4,8 @@ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_inpu
 use ed25519_dalek::Signer;
 #[path = "diagnostic_consent_budget_tests.rs"]
 mod budget_tests;
+#[path = "diagnostic_validation_frame_tests.rs"]
+mod validation_frame_tests;
 
 fn consent(
     body: crate::diagnostic_start_consent::StartConsentBody,
