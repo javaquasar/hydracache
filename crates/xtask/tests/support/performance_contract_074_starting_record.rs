@@ -21,6 +21,8 @@ fn once(raw: &str, new: &str, old: &str, path: &str) -> String {
     raw.replacen(new, old, 1)
 }
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::preconsent_frame::normalize(path, raw);
+    let raw = current.as_str();
     match path {
         "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs" => {
             once(raw, REGISTRATION, "", path)

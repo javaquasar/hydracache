@@ -47,6 +47,9 @@ mod validation_frame;
 #[path = "support/performance_contract_074_starting_record.rs"]
 mod starting_record;
 
+#[path = "support/performance_contract_074_preconsent_frame.rs"]
+mod preconsent_frame;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");

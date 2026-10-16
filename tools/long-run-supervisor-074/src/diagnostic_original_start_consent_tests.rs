@@ -7,6 +7,9 @@ mod budget_tests;
 #[path = "diagnostic_validation_frame_tests.rs"]
 mod validation_frame_tests;
 
+#[path = "diagnostic_preconsent_frame_tests.rs"]
+mod preconsent_tests;
+
 fn consent(
     body: crate::diagnostic_start_consent::StartConsentBody,
     key: &ed25519_dalek::SigningKey,

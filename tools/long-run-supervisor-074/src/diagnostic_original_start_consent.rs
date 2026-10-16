@@ -340,3 +340,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
 #[cfg(test)]
 #[path = "diagnostic_original_start_consent_binding_tests.rs"]
 mod tests;
+
+#[path = "diagnostic_preconsent_frame.rs"]
+pub mod preconsent;
