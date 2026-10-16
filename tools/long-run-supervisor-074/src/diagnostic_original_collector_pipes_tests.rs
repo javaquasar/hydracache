@@ -2,6 +2,75 @@ use super::*;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::{OriginalPipeError, PipePreparationStage};
 
 #[test]
+#[ignore = "manual nonroot original output-chain cost attribution; no execution"]
+fn original_output_chain_validation_cost_attribution() {
+    use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
+    use std::time::Instant;
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    for sample in 0..3 {
+        with_original_at(false, None, |original, _, receiver, sender, model| {
+            with_owned_empty_fence_for_test(|fence, root, leaf| {
+                let (framed, setup) = trace::capture(|| {
+                    trace::stage(Stage::Setup);
+                    accepted(original, fence, leaf, receiver, sender, model)
+                });
+                println!("HC074-OUTPUT-COST sample={sample} phase=consent ipc={setup:?}");
+                let (starting, publication) = trace::capture(|| {
+                    trace::stage(Stage::Publish);
+                    framed.publish_starting().unwrap()
+                });
+                println!("HC074-OUTPUT-COST sample={sample} phase=starting full_frames=19 rounds=38 ipc={publication:?}");
+                let (mut pipes, preparation) = trace::capture(|| {
+                    trace::stage(Stage::Bind);
+                    starting.prepare_original_pipes().unwrap()
+                });
+                println!("HC074-OUTPUT-COST sample={sample} phase=pipes full_frames=4 rounds=8 ipc={preparation:?}");
+                let (_, validation) = trace::capture(|| {
+                    trace::stage(Stage::Checks);
+                    pipes.revalidate().unwrap();
+                });
+                println!("HC074-OUTPUT-COST sample={sample} phase=pipe-validation full_frames=1 rounds=2 ipc={validation:?}");
+                busy(root);
+                pipes.drop_eof_for_test();
+                retained_context_refuses_for_test(root);
+            });
+        });
+    }
+    // Separate chains: this diagnostic must not consume publication's live window.
+    for sample in 0..3 {
+        with_original_at(false, None, |original, _, receiver, sender, model| {
+            with_owned_empty_fence_for_test(|fence, root, leaf| {
+                let mut framed = accepted(original, fence, leaf, receiver, sender, model);
+                let start = Instant::now();
+                let mut last = start;
+                let mut previous = None;
+                let mut offered = Vec::new();
+                framed
+                    .revalidate_with_for_test(|at| {
+                        let now = Instant::now();
+                        if let Some(step) = previous {
+                            println!(
+                                "HC074-OUTPUT-LEAF sample={sample} step={step:?} wall_ns={}",
+                                now.duration_since(last).as_nanos()
+                            );
+                        }
+                        previous = Some(at);
+                        offered.push(at);
+                        last = now;
+                    })
+                    .unwrap();
+                println!("HC074-OUTPUT-LEAF sample={sample} step=FinalClocksAndClosingRound wall_ns={} total_ns={} offered={offered:?}", last.elapsed().as_nanos(), start.elapsed().as_nanos());
+                assert_eq!(offered.len(), 8);
+                busy(root);
+                drop(framed);
+                retained_context_refuses_for_test(root);
+            });
+        });
+    }
+    println!("HC074-OUTPUT-COST complete=true samples=3 leaf_chains=3 renewed=false product=false");
+}
+
+#[test]
 #[ignore = "manual nonroot original pipe ownership under acknowledged Starting; no execution"]
 fn original_collector_pipes_joined_fault_and_live_refusal() {
     assert_ne!(unsafe { libc::geteuid() }, 0);
