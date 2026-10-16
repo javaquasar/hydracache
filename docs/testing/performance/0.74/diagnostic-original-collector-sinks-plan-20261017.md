@@ -8,7 +8,9 @@ original start, revoke external writers or publish completion/later cells.
 ## Ownership and durable layout
 
 The production library entry takes no path, FD, UID/GID, time, state or trust
-argument. It requires effective UID/GID zero. A narrow crate-private read-only
+argument. This entry is Linux x86_64 only and requires effective UID/GID zero.
+Exact F_GETFL includes that kernel ABI's forced O_LARGEFILE status bit; it is
+not an ignored-bit mask or a caller-supplied expected value. A narrow crate-private read-only
 storage accessor returns the already retained performance parent; all old
 storage, live authority and deadline predicates stay exact. Under that parent
 create `diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>`
