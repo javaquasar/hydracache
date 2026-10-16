@@ -8924,7 +8924,7 @@ target = "hydracache_long_run_supervisor_074"
 test = "validation_cost_original_stages_preserve_guards_and_files"
 cfg = 'target_os = "linux"'
 env = ""
-reason = "Manual nonroot debug fixture stage/call/signature cost attribution; no production optimization or execution"
+reason = "Manual nonroot debug fixture stage/call/signature cost attribution; no product workload or execution admission"
 tier = "manual"
 required_features = []
 required_env = []

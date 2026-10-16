@@ -60,7 +60,7 @@ mod validation_cost_tests;
     ),
 ];
 pub(super) fn without_instrumentation(path: &str, raw: &str) -> String {
-    let mut raw = raw.to_owned();
+    let mut raw = super::worker_proof::restore_worker(path, raw);
     for (file, hook) in HOOKS {
         if path.ends_with(file) {
             assert_eq!(
@@ -109,6 +109,7 @@ platform = "linux"
 # END VALIDATION COST PROBE GATE
 "#;
 pub(super) fn without_registry_addition(raw: &str) -> String {
+    let raw = super::worker_proof::restore_reason(raw);
     assert_eq!(raw.matches(REGISTRY_ADDITION).count(), 1);
     raw.replacen(REGISTRY_ADDITION, "", 1)
 }

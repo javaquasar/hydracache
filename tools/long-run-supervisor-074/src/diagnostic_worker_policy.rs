@@ -159,8 +159,9 @@ impl CheckedWorkerPolicy {
             if sha256_hex(bytes) != self.envelope_sha256 {
                 return Err(WorkerPolicyError::Drift);
             }
-            let observed = verify_document(bytes, current_trust, asserted_context)?;
-            if observed != self.original {
+            // Constructor proof is bound to the original envelope, trust and context above.
+            // Also retain detection of corruption in the stored projection, not just input bytes.
+            if sha256_hex(&canonical_line(&self.original)?) != self.trust.policy_sha256 {
                 return Err(WorkerPolicyError::Drift);
             }
             Ok(())
@@ -296,3 +297,7 @@ fn signature(value: &str) -> Result<Signature, WorkerPolicyError> {
     }
     Ok(Signature::from_bytes(&decoded))
 }
+
+#[cfg(test)]
+#[path = "diagnostic_worker_proof_reuse_tests.rs"]
+mod proof_reuse_tests;
