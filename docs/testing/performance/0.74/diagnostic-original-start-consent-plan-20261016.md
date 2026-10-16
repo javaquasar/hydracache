@@ -57,6 +57,19 @@ failed development runs and distinguish unrun full/milestone gates.
 
 ## Server sequence
 
+Before a successful joined cohort, retain the first debug failure at consent
+acceptance: original Heartbeat age 10,697,776,024 ns exceeds the unchanged
+exclusive 10,000,000,000 ns deadline. The stage trace reports 944 authentication
+and signature calls across setup/chain checks. This is not permission to remove
+rechecks or raise deadlines. Run a separately identified local correctness lane
+with only ed25519-dalek and curve25519-dalek compiled at opt-level 3 through
+command-line Cargo profile overrides; keep every source and deadline exact.
+That lane is neither a debug pass nor a performance comparison/production claim.
+Retain all failures, including an attempted WSL static gate whose Windows .git
+worktree pointer is unreadable by Linux Git; use native Windows Git for that
+unchanged static gate. E0603 development use of the private transition module
+is corrected to its existing crate-visible re-export without widening visibility.
+
 The October 16 read-only check finds the stable service active with PID 8839,
 NRestarts zero, source receipt 543108f1 and unchanged installed binary hash.
 Diagnostic trust/authority roots are still absent. No server mutation occurred.
