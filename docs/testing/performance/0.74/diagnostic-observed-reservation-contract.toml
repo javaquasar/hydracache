@@ -1,0 +1,16 @@
+schema_version = "diagnostic-observed-reservation-074-v1"
+baseline_commit = "0389978f1ff5d7eeacb99c497f9ef8cbfd6be08a"
+seed = "0x0740c099"
+kernel_packet_hold_ns = 60000000000
+consuming_original_request_owner = true
+kernel_boot_and_boottime_only = true
+one_frozen_initial_state = true
+original_packet_hold_and_request_window_unchanged = true
+no_caller_state_or_clock_in_collector_binding = true
+distinct_guard_without_supplied_state_conversion = true
+sticky_original_refusal_and_fence_retention = true
+durable_reserved_or_starting_acknowledgement = false
+root_output_or_start = false
+new_durable_write_boundary = false
+production_enrollment_or_server_admission = false
+qualification_or_performance_claim = false

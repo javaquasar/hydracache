@@ -75,3 +75,34 @@ order, latches, format readers and budgets continue to compare to their fixed
 baselines, with changed-guard/deadline canaries intact. The new read-only modules
 have a separate contract gate. This is scoped source consistency, not formal
 whole-program equivalence, signed execution evidence or a performance result.
+
+## Observed initial state under the same owner
+
+The separate [observed reservation path](diagnostic-observed-reservation-plan-20261016.md)
+consumes ControllerRequestAttempt into OriginalObservedReservation. Transfer
+itself performs no I/O and grants no permission. The first successful observation
+checks the retained request/storage and original worker/kernel authority, samples
+the receiver's retained origin and constructs initial Reserved from its boot and
+CLOCK_BOOTTIME. Revision is one, completed cells zero, and all three initial
+clock fields share that one sample. The state is frozen in memory; later
+observations update only a private clock-order checkpoint, not lease origin,
+state revision or controller progress. Packet hold is always measured from the
+original receive point, and the original request window still applies.
+
+state_to_sign returns a checked clone for the existing collector signing format.
+Changing that data cannot change the owner. The distinct ObservedCollectorPreflight
+accepts signed bytes only, checks them against the frozen state through the
+existing original collector verifier, and revalidates without replacement input.
+Neither a supplied-state guard nor a decoded record can construct this guard.
+All errors retain the same fence and permanently refuse the original chains;
+subsequent refused calls do no I/O. Healthy wrapper drop retains its owning
+reservation and cannot expose the consumed request again.
+
+These observations establish an in-memory origin, not durable Reserved/Starting
+acknowledgement. The next publication protocol must consume this original owner,
+retain its original request document and fence, and exclusively create a distinct
+versioned record. The old one-document attempt inventory and legacy publication
+transfer must not be relaxed for general adoption or reinterpreted as collector
+authority. Its new write boundaries need a preregistered real SIGKILL/lost-ack
+matrix before root output creation. Production enrollment and execution remain
+closed; no existing signed or durable format changes here.

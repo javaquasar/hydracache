@@ -9,6 +9,30 @@ fn peer(uid: u32, gid: u32, supplementary: &[u32]) -> DiagnosticPeer {
     DiagnosticPeer { uid, gids }
 }
 impl KernelPacket {
+    // The previous point is retained by the original reservation owner, never IPC input.
+    pub(crate) fn original_reservation_time(
+        &mut self,
+        previous: Option<&KernelTimePoint>,
+    ) -> Result<KernelTimePoint, KernelError> {
+        let result = (|| {
+            if self.refused {
+                return Err(KernelError::Refused);
+            }
+            self.sender.revalidate(&self.origin)?;
+            let now = self.origin.sample()?;
+            valid_hold(&self.received, &now)?;
+            if let Some(previous) = previous {
+                ordered(previous, &now)?;
+            }
+            self.sender.revalidate(&self.origin)?;
+            Ok(now)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
+
     pub(crate) fn original_collector_inputs(
         &mut self,
     ) -> Result<(DiagnosticPeer, u64), KernelError> {

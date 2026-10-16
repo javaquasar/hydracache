@@ -103,6 +103,22 @@ pub struct KernelWorkerPolicyInput<'s, 'a, 'p> {
     probe: Probe,
 }
 impl KernelWorkerPolicyInput<'_, '_, '_> {
+    pub(super) fn original_reservation_time(
+        &mut self,
+        previous: Option<&crate::diagnostic_kernel_admission::KernelTimePoint>,
+    ) -> Result<crate::diagnostic_kernel_admission::KernelTimePoint, TrustInputError> {
+        let result = (|| {
+            self.revalidate()?;
+            let now = self.packet.original_reservation_time(previous)?;
+            self.revalidate()?;
+            Ok(now)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
+
     // No caller peer/time/trust/host. Retain the original policy and authority owner.
     pub(super) fn verify_original_collector_requirements(
         &mut self,

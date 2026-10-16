@@ -4,6 +4,9 @@ use crate::diagnostic_lease::{DiagnosticStage, DiagnosticState};
 use crate::diagnostic_worker_policy::trusted_input::TrustInputError;
 use std::fmt;
 
+#[path = "diagnostic_observed_reservation.rs"]
+pub mod observed_reservation;
+
 #[derive(Debug, thiserror::Error)]
 pub enum OriginalCollectorError {
     #[error("original collector preflight permanently refused")]

@@ -6,6 +6,9 @@ use crate::diagnostic_worker_policy::intent_projection::{
 };
 use ed25519_dalek::{Signer, SigningKey};
 
+#[path = "diagnostic_observed_reservation_tests.rs"]
+mod observed_reservation_tests;
+
 fn state(request: &crate::diagnostic_ipc::DiagnosticRequest) -> DiagnosticState {
     DiagnosticState {
         identity: request.identity.clone(),
@@ -174,7 +177,9 @@ fn original_collector_seeded_signed_request_and_state_substitution_refuse() {
             });
         });
     }
-    println!("original_collector seed=0x0740c098 signed_mutations=11 peer_time_assertions=false output_creation=false");
+    println!(
+        "original_collector seed=0x0740c098 signed_mutations=11 peer_time_assertions=false output_creation=false"
+    );
 }
 
 #[test]
