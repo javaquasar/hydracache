@@ -113,7 +113,8 @@ fn collector_reserved_requires_original_owned_publication_not_recovered_start() 
         "Cargo.lock",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        assert_eq!(read(p), historical(p), "out-of-scope change: {p}");
+        let current = super::collector_progress::without_registration(p, &read(p));
+        assert_eq!(current, historical(p), "out-of-scope change: {p}");
     }
     let registry = read("docs/testing/gated-test-registry.toml");
     assert_eq!(registry.matches(REGISTRY_ADDITION).count(), 1);

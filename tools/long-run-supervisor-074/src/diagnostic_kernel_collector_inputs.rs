@@ -1,6 +1,9 @@
 //! Private original peer/time snapshot, not an exported admission capability.
 use super::*;
 
+#[path = "diagnostic_kernel_progress.rs"]
+mod progress;
+
 fn peer(uid: u32, gid: u32, supplementary: &[u32]) -> DiagnosticPeer {
     let mut gids = supplementary.to_vec();
     gids.push(gid);

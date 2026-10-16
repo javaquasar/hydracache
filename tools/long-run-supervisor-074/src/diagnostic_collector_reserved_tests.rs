@@ -4,6 +4,8 @@ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_inpu
 const RESERVED_NAME: &str = "diagnostic-collector-reserved-074.json";
 #[path = "diagnostic_collector_reserved_crash_tests.rs"]
 mod crash_tests;
+#[path = "diagnostic_collector_progress_tests.rs"]
+mod progress_tests;
 const STAGES: [CollectorReservedStage; 9] = [
     CollectorReservedStage::BeforeCreate,
     CollectorReservedStage::Created,
