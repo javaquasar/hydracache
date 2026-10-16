@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-publication-server-root-create",
+  "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"umask 077; mktemp -d /tmp/hc074-starting-20261016.XXXXXX\"",
+  "exit_code": 0,
+  "output": "/tmp/hc074-starting-20261016.vdpJqe\n",
+  "capture_kind": "tool observation, may be truncated; exact server process logs are separate artifacts"
+}

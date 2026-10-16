@@ -260,6 +260,16 @@ Its passing clock-free tests do not implement the private three-file storage
 phase, durable acknowledgement, SIGKILL/lost-ack proof or owner recovery. The
 original default two-file reader and all runtime leaf predicates remain intact.
 
+The [durable Starting candidate](local-runs/collector-starting-publication-20261016/README.md)
+subsequently reaches actual sealed/fsynced bytes but refuses before runtime
+acknowledgement in both server fault lanes. Four fresh attribution chains agree
+on Original(Causal(Time)); no extension, re-anchoring or guard waiver is applied.
+The full Acknowledging/AfterReturn/lost-ack and uninterrupted control gate remains
+blocked. Preserve the candidate as evidence, not accepted runtime, and review
+[pre-consent composition](diagnostic-pre-consent-frame-review-20261016.md) separately.
+The distinct partial diagnostic passes sixteen actual SIGKILL and thirty-two
+fresh inspections across both compilers, not the missing acknowledgement/control gate.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

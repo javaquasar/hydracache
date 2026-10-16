@@ -3602,6 +3602,17 @@ static contracts pass and the registry accounts for 177 gates. The old two-file
 storage inventory is unchanged. Next is the consuming storage phase, durable writes and real
 SIGKILL/lost-ack proof; original start and server admission remain closed.
 
+The [first durable Starting candidate](local-runs/collector-starting-publication-20261016/README.md)
+now retains a negative real-I/O result. Both compiler fault lanes reach the first
+eight interruption cuts but refuse before Acknowledging. The separate four-chain
+diagnostic reports Original(Causal(Time)) after DirectorySynced; successful
+attribution is not successful publication. The complete SIGKILL/lost-ack gate
+is not dispatched or passed. Review constant-depth preparation/acceptance before
+changing composition; deadlines, live predicates and the accepted runtime stay
+unchanged. Partial pre-ack process-loss evidence is a distinct, narrower gate.
+It passes eight real SIGKILL and sixteen fresh inspections per compiler; this
+does not cover Acknowledging, AfterReturn, lost acknowledgement or a healthy control.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

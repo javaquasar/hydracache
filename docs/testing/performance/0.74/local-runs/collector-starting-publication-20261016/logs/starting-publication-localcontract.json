@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-publication-localcontract",
+  "command": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+  "exit_code": 0,
+  "output": "performance-contract-check 0.74: OK (local, non-promotable)\n",
+  "capture_kind": "tool observation, may be truncated; exact server process logs are separate artifacts"
+}

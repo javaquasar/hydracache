@@ -1,0 +1,1778 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index d72f6e3c..d280e007 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -47,6 +47,9 @@ mod validation_frame;
+ #[path = "support/performance_contract_074_starting_record.rs"]
+ mod starting_record;
+ 
++#[path = "support/performance_contract_074_starting_publication.rs"]
++mod starting_publication;
++
+ #[test]
+ fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
+     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
+diff --git a/crates/xtask/tests/support/performance_contract_074_starting_record.rs b/crates/xtask/tests/support/performance_contract_074_starting_record.rs
+index d0a54f8a..d3984f5f 100644
+--- a/crates/xtask/tests/support/performance_contract_074_starting_record.rs
++++ b/crates/xtask/tests/support/performance_contract_074_starting_record.rs
+@@ -21,6 +21,8 @@ fn once(raw: &str, new: &str, old: &str, path: &str) -> String {
+     raw.replacen(new, old, 1)
+ }
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::starting_publication::normalize(path, raw);
++    let raw = current.as_str();
+     match path {
+         "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs" => {
+             once(raw, REGISTRATION, "", path)
+@@ -143,8 +145,8 @@ fn collector_starting_record_preserves_original_runtime_and_two_file_storage() {
+     ] {
+         assert!(runtime.contains(required), "{required}");
+     }
+-    let storage =
+-        read("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs");
++    let path = "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs";
++    let storage = super::starting_publication::normalize(path, &read(path));
+     assert!(storage.contains("let mut seen = [false; 2]"));
+     assert!(!storage.contains("diagnostic-collector-starting-074"));
+ }
+diff --git a/docs/COMPAT.md b/docs/COMPAT.md
+index a991034f..b6bd8394 100644
+--- a/docs/COMPAT.md
++++ b/docs/COMPAT.md
+@@ -810,6 +810,7 @@ authenticated original start. Existing versioned manager projections are unchang
+ | Artifact | Current Version | Writer | Reader Compatibility | Failure Mode |
+ | --- | --- | --- | --- | --- |
+ | Separate 0.74 collector Starting byte record | `diagnostic-collector-starting-074-v1` | opt-in Linux byte encoder only; no publisher or installed consumer | Canonical LF JSON, at most 16384 bytes; eventual fixed name `diagnostic-collector-starting-074.json`. Binds exact controller-attempt/collector-Reserved LF digests, canonical signed-consent LF digest and the identical signed Starting state; reuses strict prior-history and adjacent-transition grammar. | Unknown/future/duplicate/partial/noncanonical/oversized/mixed bindings refuse. Byte consistency does not verify signatures, inspect actual clocks/credentials or recover acknowledgement, replay ownership or start rights. Old two-file storage and legacy readers remain unchanged and reject a third record. No migration, overwrite, repair, publication, output, execution or cleanup authority. |
++| Separate 0.74 original collector Starting publisher | `diagnostic-collector-starting-074-v1` | opt-in consuming Linux original frame only, not an installed entry | Same byte contract and fixed name; private three-document phase retains original descriptors and fence. Exclusive 0600 create, bounded writes, seal 0400, file/directory fsync and live guards precede runtime acknowledgement. | Default two-file and legacy readers still reject retained Starting history. Partial or complete retained bytes cannot recover acknowledgement or a runtime owner; any uncertainty latches refusal and retains descriptors/context. No repair, retry, migration, process/output start, writer revocation, completion or server admission. |
+ | Separate 0.74 collector progress challenge | `diagnostic-collector-progress-challenge-074-v1` | opt-in Linux original-owner library only; no installed consumer | Canonical LF JSON, at most 4096 bytes; 32 system-random bytes, original controller-attempt/Reserved/canonical-state hashes, identity, revision 1 and original-kernel issuance BOOTTIME. SHA256 of `hydracache-diagnostic-collector-progress-challenge-074-v1`, NUL and the complete LF document is echoed as nonce_sha256 in an otherwise unchanged signed DiagnosticRequest v1 Heartbeat. | Unknown/future/duplicate/noncanonical/oversized/partial documents refuse. Old clients cannot parse or downgrade this challenge; deploy a matched consumer. Byte inspection computes a digest, never an owner or acknowledgement. Exact owned nonce, original live inputs and exclusive challenge deadline are required; no regeneration, retry, recovered permission, durable progress, Starting or execution authority. |
+ | Separate 0.74 original collector Reserved | `diagnostic-collector-reserved-074-v1` | opt-in Linux library only; no production consumer | Canonical LF JSON, at most 16384 bytes, in exclusive `diagnostic-collector-reserved-074.json` beside the retained controller attempt. Binds its full-byte SHA256, frozen receiver-observed initial state and separately signed collector envelope. Same original authority and fence remain owned; file and directory sync precede runtime acknowledgement. | Unknown/future/noncanonical/partial/mixed/extra context refuses. The bounded paired byte inspector does not verify signatures or reconstruct acknowledgement. Old readers reject the new inventory; no downgrade, overwrite, repair, deletion, legacy publisher conversion or adoption with unresolved context. Starting, outputs, execution, reboot and global nonce protection are not supplied. |
+ | Separate 0.74 original controller attempt | `diagnostic-controller-attempt-074-v1` | opt-in Linux library only; no production consumer | Strict canonical LF JSON, at most 16384 bytes, in exclusively created `diagnostic-controller-attempt-074.json` under the original fixed intent leaf. Binds original Reserve request/hash, token digest (never token), build/config digests and original active policy/epoch/authority revision. The same original common fence and authority borrow remain held. | Unknown/future/duplicate/noncanonical/oversized/inconsistent fields refuse. Partial and complete retained context block fresh reservation; bytes never recover acknowledgement or start rights. Legacy intent bytes/names stay unchanged; controller documents cannot transfer into their publisher. No downgrade, deletion, repair or migration with unresolved context. Whole-host rollback and global nonce protection are outside this local contract. |
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index 6e482aee..77d438c0 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9151,3 +9151,105 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END COLLECTOR STARTING RECORD GATE
++
++# BEGIN STARTING PUBLICATION API GATE
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.diagnostic-collector-starting-publication"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_collector_starting_publication"
++test = ""
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Original collector Starting intent only, no process or product workload"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_collector_starting_publication", "--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END STARTING PUBLICATION API GATE
++
++# BEGIN STARTING PUBLICATION FAULT GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.collector-starting-publication-boundaries-and-live-refusal"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "collector_starting_publication_boundaries_and_live_refusal"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Original collector Starting intent only, no process or product workload"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test", "--release", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END STARTING PUBLICATION FAULT GATE
++
++# BEGIN STARTING PUBLICATION CRASH GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.collector-starting-process-crash-all-stages-and-lost-ack"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "collector_starting_process_crash_all_stages_and_lost_ack"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Original collector Starting intent only, no process or product workload"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test", "--release", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END STARTING PUBLICATION CRASH GATE
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs
+index 1a474faf..aa3a0b9a 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs
+@@ -2,6 +2,9 @@
+ use super::{open_at, stamp, AttemptStorage, Document, StorageAttemptError, CONTROLLER_NAME};
+ use std::os::fd::AsRawFd;
+ 
++#[path = "diagnostic_collector_starting_storage.rs"]
++pub(crate) mod starting_storage;
++
+ pub(crate) const NAME: &str = "diagnostic-collector-reserved-074.json";
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ pub enum CollectorReservedStage {
+@@ -20,6 +23,7 @@ pub(crate) struct CollectorReservationStorage<'storage> {
+     document: Option<Document>,
+     attempted: bool,
+     acknowledged: bool,
++    starting: Option<starting_storage::StartingPhase>,
+ }
+ impl<'storage> CollectorReservationStorage<'storage> {
+     pub(crate) fn from_original(original: AttemptStorage<'storage>) -> Self {
+@@ -28,6 +32,7 @@ impl<'storage> CollectorReservationStorage<'storage> {
+             document: None,
+             attempted: false,
+             acknowledged: false,
++            starting: None,
+         }
+     }
+     pub(crate) fn is_refused(&self) -> bool {
+@@ -164,7 +169,11 @@ impl<'storage> CollectorReservationStorage<'storage> {
+         if self.is_refused() || !self.acknowledged {
+             return Err(StorageAttemptError::Refused);
+         }
+-        let result = self.inspect();
++        let result = if self.starting.is_some() {
++            self.inspect_starting()
++        } else {
++            self.inspect()
++        };
+         if result.is_err() {
+             self.latch_refusal();
+         }
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
+index e11be320..2d67ae7e 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
+@@ -2,6 +2,7 @@
+ use super::*;
+ #[path = "diagnostic_validation_frame.rs"]
+ mod validation_frame;
++pub use validation_frame::starting;
+ pub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};
+ 
+ use crate::diagnostic_start_consent::{
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs
+index 92e25992..57d99659 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs
+@@ -1,6 +1,9 @@
+ //! Constant-depth orchestration; all original live leaf guards remain active.
+ use super::*;
+ 
++#[path = "diagnostic_collector_starting_publication.rs"]
++pub mod starting;
++
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ pub(crate) enum ValidationFrameStep {
+     StorageBefore,
+@@ -43,7 +46,7 @@ const STEPS: [ValidationFrameStep; 8] = [
+ /// ```
+ /// ```compile_fail
+ /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
+-/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(); }
++/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(b"replacement"); }
+ /// ```
+ /// ```compile_fail
+ /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs
+index 5551cfba..6b195b40 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs
+@@ -2,6 +2,9 @@ use super::*;
+ #[path = "diagnostic_validation_frame_budget_tests.rs"]
+ mod budget;
+ 
++#[path = "diagnostic_collector_starting_publication_tests.rs"]
++mod starting_tests;
++
+ #[test]
+ fn validation_frame_consuming_adapter_exists() {
+     fn probe(owner: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
+diff --git a/crates/xtask/tests/support/performance_contract_074_starting_publication.rs b/crates/xtask/tests/support/performance_contract_074_starting_publication.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_starting_publication.rs
+@@ -0,0 +1,155 @@
++//! Exact opt-in restoration; no original predicate is exempted.
++const RESTORATIONS: &[(&str, &str, &str)] = &[
++    ("crates/xtask/tests/performance_contract_074.rs", "#[path = \"support/performance_contract_074_starting_record.rs\"]\nmod starting_record;\n\n#[path = \"support/performance_contract_074_starting_publication.rs\"]\nmod starting_publication;\n\n#[test]\nfn ordinary_procless_root_restriction_composition_is_not_credential_admission() {\n    let c = contract(\"diagnostic-signer-owned-root-isolation-contract.toml\");\n", "#[path = \"support/performance_contract_074_starting_record.rs\"]\nmod starting_record;\n\n#[test]\nfn ordinary_procless_root_restriction_composition_is_not_credential_admission() {\n    let c = contract(\"diagnostic-signer-owned-root-isolation-contract.toml\");\n"),
++    ("crates/xtask/tests/support/performance_contract_074_starting_record.rs", "    raw.replacen(new, old, 1)\n}\npub(super) fn normalize(path: &str, raw: &str) -> String {\n    let current = super::starting_publication::normalize(path, raw);\n    let raw = current.as_str();\n    match path {\n        \"tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs\" => {\n            once(raw, REGISTRATION, \"\", path)\n", "    raw.replacen(new, old, 1)\n}\npub(super) fn normalize(path: &str, raw: &str) -> String {\n    match path {\n        \"tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs\" => {\n            once(raw, REGISTRATION, \"\", path)\n"),
++    ("crates/xtask/tests/support/performance_contract_074_starting_record.rs", "    ] {\n        assert!(runtime.contains(required), \"{required}\");\n    }\n    let path = \"tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs\";\n    let storage = super::starting_publication::normalize(path, &read(path));\n    assert!(storage.contains(\"let mut seen = [false; 2]\"));\n    assert!(!storage.contains(\"diagnostic-collector-starting-074\"));\n}\n", "    ] {\n        assert!(runtime.contains(required), \"{required}\");\n    }\n    let storage =\n        read(\"tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs\");\n    assert!(storage.contains(\"let mut seen = [false; 2]\"));\n    assert!(!storage.contains(\"diagnostic-collector-starting-074\"));\n}\n"),
++    ("docs/COMPAT.md", "| Artifact | Current Version | Writer | Reader Compatibility | Failure Mode |\n| --- | --- | --- | --- | --- |\n| Separate 0.74 collector Starting byte record | `diagnostic-collector-starting-074-v1` | opt-in Linux byte encoder only; no publisher or installed consumer | Canonical LF JSON, at most 16384 bytes; eventual fixed name `diagnostic-collector-starting-074.json`. Binds exact controller-attempt/collector-Reserved LF digests, canonical signed-consent LF digest and the identical signed Starting state; reuses strict prior-history and adjacent-transition grammar. | Unknown/future/duplicate/partial/noncanonical/oversized/mixed bindings refuse. Byte consistency does not verify signatures, inspect actual clocks/credentials or recover acknowledgement, replay ownership or start rights. Old two-file storage and legacy readers remain unchanged and reject a third record. No migration, overwrite, repair, publication, output, execution or cleanup authority. |\n| Separate 0.74 original collector Starting publisher | `diagnostic-collector-starting-074-v1` | opt-in consuming Linux original frame only, not an installed entry | Same byte contract and fixed name; private three-document phase retains original descriptors and fence. Exclusive 0600 create, bounded writes, seal 0400, file/directory fsync and live guards precede runtime acknowledgement. | Default two-file and legacy readers still reject retained Starting history. Partial or complete retained bytes cannot recover acknowledgement or a runtime owner; any uncertainty latches refusal and retains descriptors/context. No repair, retry, migration, process/output start, writer revocation, completion or server admission. |\n| Separate 0.74 collector progress challenge | `diagnostic-collector-progress-challenge-074-v1` | opt-in Linux original-owner library only; no installed consumer | Canonical LF JSON, at most 4096 bytes; 32 system-random bytes, original controller-attempt/Reserved/canonical-state hashes, identity, revision 1 and original-kernel issuance BOOTTIME. SHA256 of `hydracache-diagnostic-collector-progress-challenge-074-v1`, NUL and the complete LF document is echoed as nonce_sha256 in an otherwise unchanged signed DiagnosticRequest v1 Heartbeat. | Unknown/future/duplicate/noncanonical/oversized/partial documents refuse. Old clients cannot parse or downgrade this challenge; deploy a matched consumer. Byte inspection computes a digest, never an owner or acknowledgement. Exact owned nonce, original live inputs and exclusive challenge deadline are required; no regeneration, retry, recovered permission, durable progress, Starting or execution authority. |\n| Separate 0.74 original collector Reserved | `diagnostic-collector-reserved-074-v1` | opt-in Linux library only; no production consumer | Canonical LF JSON, at most 16384 bytes, in exclusive `diagnostic-collector-reserved-074.json` beside the retained controller attempt. Binds its full-byte SHA256, frozen receiver-observed initial state and separately signed collector envelope. Same original authority and fence remain owned; file and directory sync precede runtime acknowledgement. | Unknown/future/noncanonical/partial/mixed/extra context refuses. The bounded paired byte inspector does not verify signatures or reconstruct acknowledgement. Old readers reject the new inventory; no downgrade, overwrite, repair, deletion, legacy publisher conversion or adoption with unresolved context. Starting, outputs, execution, reboot and global nonce protection are not supplied. |\n| Separate 0.74 original controller attempt | `diagnostic-controller-attempt-074-v1` | opt-in Linux library only; no production consumer | Strict canonical LF JSON, at most 16384 bytes, in exclusively created `diagnostic-controller-attempt-074.json` under the original fixed intent leaf. Binds original Reserve request/hash, token digest (never token), build/config digests and original active policy/epoch/authority revision. The same original common fence and authority borrow remain held. | Unknown/future/duplicate/noncanonical/oversized/inconsistent fields refuse. Partial and complete retained context block fresh reservation; bytes never recover acknowledgement or start rights. Legacy intent bytes/names stay unchanged; controller documents cannot transfer into their publisher. No downgrade, deletion, repair or migration with unresolved context. Whole-host rollback and global nonce protection are outside this local contract. |\n", "| Artifact | Current Version | Writer | Reader Compatibility | Failure Mode |\n| --- | --- | --- | --- | --- |\n| Separate 0.74 collector Starting byte record | `diagnostic-collector-starting-074-v1` | opt-in Linux byte encoder only; no publisher or installed consumer | Canonical LF JSON, at most 16384 bytes; eventual fixed name `diagnostic-collector-starting-074.json`. Binds exact controller-attempt/collector-Reserved LF digests, canonical signed-consent LF digest and the identical signed Starting state; reuses strict prior-history and adjacent-transition grammar. | Unknown/future/duplicate/partial/noncanonical/oversized/mixed bindings refuse. Byte consistency does not verify signatures, inspect actual clocks/credentials or recover acknowledgement, replay ownership or start rights. Old two-file storage and legacy readers remain unchanged and reject a third record. No migration, overwrite, repair, publication, output, execution or cleanup authority. |\n| Separate 0.74 collector progress challenge | `diagnostic-collector-progress-challenge-074-v1` | opt-in Linux original-owner library only; no installed consumer | Canonical LF JSON, at most 4096 bytes; 32 system-random bytes, original controller-attempt/Reserved/canonical-state hashes, identity, revision 1 and original-kernel issuance BOOTTIME. SHA256 of `hydracache-diagnostic-collector-progress-challenge-074-v1`, NUL and the complete LF document is echoed as nonce_sha256 in an otherwise unchanged signed DiagnosticRequest v1 Heartbeat. | Unknown/future/duplicate/noncanonical/oversized/partial documents refuse. Old clients cannot parse or downgrade this challenge; deploy a matched consumer. Byte inspection computes a digest, never an owner or acknowledgement. Exact owned nonce, original live inputs and exclusive challenge deadline are required; no regeneration, retry, recovered permission, durable progress, Starting or execution authority. |\n| Separate 0.74 original collector Reserved | `diagnostic-collector-reserved-074-v1` | opt-in Linux library only; no production consumer | Canonical LF JSON, at most 16384 bytes, in exclusive `diagnostic-collector-reserved-074.json` beside the retained controller attempt. Binds its full-byte SHA256, frozen receiver-observed initial state and separately signed collector envelope. Same original authority and fence remain owned; file and directory sync precede runtime acknowledgement. | Unknown/future/noncanonical/partial/mixed/extra context refuses. The bounded paired byte inspector does not verify signatures or reconstruct acknowledgement. Old readers reject the new inventory; no downgrade, overwrite, repair, deletion, legacy publisher conversion or adoption with unresolved context. Starting, outputs, execution, reboot and global nonce protection are not supplied. |\n| Separate 0.74 original controller attempt | `diagnostic-controller-attempt-074-v1` | opt-in Linux library only; no production consumer | Strict canonical LF JSON, at most 16384 bytes, in exclusively created `diagnostic-controller-attempt-074.json` under the original fixed intent leaf. Binds original Reserve request/hash, token digest (never token), build/config digests and original active policy/epoch/authority revision. The same original common fence and authority borrow remain held. | Unknown/future/duplicate/noncanonical/oversized/inconsistent fields refuse. Partial and complete retained context block fresh reservation; bytes never recover acknowledgement or start rights. Legacy intent bytes/names stay unchanged; controller documents cannot transfer into their publisher. No downgrade, deletion, repair or migration with unresolved context. Whole-host rollback and global nonce protection are outside this local contract. |\n"),
++    ("docs/testing/gated-test-registry.toml", "\n[gate.command.env]\n# END COLLECTOR STARTING RECORD GATE\n\n# BEGIN STARTING PUBLICATION API GATE\n[[gate]]\nid = \"cfg.hydracache-long-run-supervisor-074.diagnostic-collector-starting-publication\"\nkind = \"cfg_test_target\"\nsource = \"tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"diagnostic_collector_starting_publication\"\ntest = \"\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original collector Starting intent only, no process or product workload\"\ntier = \"fast\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 120\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"rust\"\nstep = \"Release 0.74 Linux supervisor contracts\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--test\", \"diagnostic_collector_starting_publication\", \"--locked\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END STARTING PUBLICATION API GATE\n\n# BEGIN STARTING PUBLICATION FAULT GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.collector-starting-publication-boundaries-and-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"collector_starting_publication_boundaries_and_live_refusal\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original collector Starting intent only, no process or product workload\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"--release\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--lib\", \"--locked\", \"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal\", \"--\", \"--ignored\", \"--exact\", \"--nocapture\", \"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END STARTING PUBLICATION FAULT GATE\n\n# BEGIN STARTING PUBLICATION CRASH GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.collector-starting-process-crash-all-stages-and-lost-ack\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"collector_starting_process_crash_all_stages_and_lost_ack\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original collector Starting intent only, no process or product workload\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"--release\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--lib\", \"--locked\", \"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::crash_tests::collector_starting_process_crash_all_stages_and_lost_ack\", \"--\", \"--ignored\", \"--exact\", \"--nocapture\", \"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END STARTING PUBLICATION CRASH GATE\n", "\n[gate.command.env]\n# END COLLECTOR STARTING RECORD GATE\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs", "use super::{open_at, stamp, AttemptStorage, Document, StorageAttemptError, CONTROLLER_NAME};\nuse std::os::fd::AsRawFd;\n\n#[path = \"diagnostic_collector_starting_storage.rs\"]\npub(crate) mod starting_storage;\n\npub(crate) const NAME: &str = \"diagnostic-collector-reserved-074.json\";\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum CollectorReservedStage {\n", "use super::{open_at, stamp, AttemptStorage, Document, StorageAttemptError, CONTROLLER_NAME};\nuse std::os::fd::AsRawFd;\n\npub(crate) const NAME: &str = \"diagnostic-collector-reserved-074.json\";\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum CollectorReservedStage {\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs", "    document: Option<Document>,\n    attempted: bool,\n    acknowledged: bool,\n    starting: Option<starting_storage::StartingPhase>,\n}\nimpl<'storage> CollectorReservationStorage<'storage> {\n    pub(crate) fn from_original(original: AttemptStorage<'storage>) -> Self {\n", "    document: Option<Document>,\n    attempted: bool,\n    acknowledged: bool,\n}\nimpl<'storage> CollectorReservationStorage<'storage> {\n    pub(crate) fn from_original(original: AttemptStorage<'storage>) -> Self {\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs", "            document: None,\n            attempted: false,\n            acknowledged: false,\n            starting: None,\n        }\n    }\n    pub(crate) fn is_refused(&self) -> bool {\n", "            document: None,\n            attempted: false,\n            acknowledged: false,\n        }\n    }\n    pub(crate) fn is_refused(&self) -> bool {\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs", "        if self.is_refused() || !self.acknowledged {\n            return Err(StorageAttemptError::Refused);\n        }\n        let result = if self.starting.is_some() {\n            self.inspect_starting()\n        } else {\n            self.inspect()\n        };\n        if result.is_err() {\n            self.latch_refusal();\n        }\n", "        if self.is_refused() || !self.acknowledged {\n            return Err(StorageAttemptError::Refused);\n        }\n        let result = self.inspect();\n        if result.is_err() {\n            self.latch_refusal();\n        }\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs", "use super::*;\n#[path = \"diagnostic_validation_frame.rs\"]\nmod validation_frame;\npub use validation_frame::starting;\npub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};\n\nuse crate::diagnostic_start_consent::{\n", "use super::*;\n#[path = \"diagnostic_validation_frame.rs\"]\nmod validation_frame;\npub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};\n\nuse crate::diagnostic_start_consent::{\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs", "//! Constant-depth orchestration; all original live leaf guards remain active.\nuse super::*;\n\n#[path = \"diagnostic_collector_starting_publication.rs\"]\npub mod starting;\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub(crate) enum ValidationFrameStep {\n    StorageBefore,\n", "//! Constant-depth orchestration; all original live leaf guards remain active.\nuse super::*;\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub(crate) enum ValidationFrameStep {\n    StorageBefore,\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs", "/// ```\n/// ```compile_fail\n/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;\n/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(b\"replacement\"); }\n/// ```\n/// ```compile_fail\n/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;\n", "/// ```\n/// ```compile_fail\n/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;\n/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(); }\n/// ```\n/// ```compile_fail\n/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;\n"),
++    ("tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs", "#[path = \"diagnostic_validation_frame_budget_tests.rs\"]\nmod budget;\n\n#[path = \"diagnostic_collector_starting_publication_tests.rs\"]\nmod starting_tests;\n\n#[test]\nfn validation_frame_consuming_adapter_exists() {\n    fn probe(owner: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {\n", "#[path = \"diagnostic_validation_frame_budget_tests.rs\"]\nmod budget;\n\n#[test]\nfn validation_frame_consuming_adapter_exists() {\n    fn probe(owner: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {\n"),
++];
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let mut clean = raw.to_owned();
++    for (p, new, old) in RESTORATIONS {
++        if path == *p {
++            assert_eq!(
++                clean.matches(new).count(),
++                1,
++                "unapproved Starting publisher adapter: {path}"
++            );
++            clean = clean.replacen(new, old, 1);
++        }
++    }
++    clean
++}
++#[test]
++fn collector_starting_publication_preserves_every_original_predicate_and_deadline() {
++    let read = |p: &str| {
++        std::fs::read_to_string(super::root().join(p))
++            .unwrap()
++            .replace('\r', "")
++    };
++    let old = |p: &str| {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("e7513b25:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        String::from_utf8(out.stdout).unwrap().replace('\r', "")
++    };
++    for (p, _, _) in RESTORATIONS {
++        assert_eq!(
++            normalize(p, &read(p)),
++            old(p),
++            "original predicate changed: {p}"
++        );
++        assert_ne!(
++            normalize(p, &format!("{}\n// unapproved\n", read(p))),
++            old(p)
++        );
++    }
++    let p = "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs";
++    assert!(std::panic::catch_unwind(|| normalize(
++        p,
++        &read(p).replace("starting_storage::StartingPhase", "UncheckedPhase")
++    ))
++    .is_err());
++    for p in [
++        "Cargo.toml",
++        "Cargo.lock",
++        "tools/long-run-supervisor-074/Cargo.toml",
++        "tools/long-run-supervisor-074/src/diagnostic_early_attempt_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_starting_record.rs",
++        "tools/long-run-supervisor-074/src/host_execution.rs",
++        "tools/long-run-supervisor-074/src/server.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(read(p), old(p), "out of scope: {p}");
++    }
++    let storage =
++        read("tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs");
++    let publisher =
++        read("tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs");
++    for marker in [
++        "libc::O_EXCL",
++        "0o600",
++        "sync_all()",
++        "owned_write(&leaf, bytes, seal)",
++        "phase.next != STAGES.len()",
++        "phase.acknowledged = true",
++        "controller.inspect(leaf)?",
++        "reserved.inspect(leaf)?",
++        "[true, true, phase.document.is_some()]",
++    ] {
++        assert!(storage.contains(marker), "{marker}");
++    }
++    for marker in [
++        "self.original.revalidate()?",
++        ".starting_step(at, &raw)?",
++        "checkpoint(at)?",
++        ".acknowledge_starting()?",
++        "held.original.refuse()",
++        "encode_collector_starting_record",
++        "self.original.original.packet.bytes()",
++    ] {
++        assert!(publisher.contains(marker), "{marker}");
++    }
++    assert!(
++        publisher.find(".acknowledge_starting()?").unwrap()
++            < publisher.find("self.acknowledged = true").unwrap()
++    );
++    let runtime = publisher
++        .lines()
++        .filter(|line| !line.trim_start().starts_with("///"))
++        .collect::<Vec<_>>()
++        .join("\n");
++    for denied in [
++        "std::process",
++        "std::fs",
++        "pub fn recover",
++        "pub fn start_once",
++        "O_TRUNC",
++        "SystemTime",
++        "SigningKey",
++    ] {
++        assert!(!runtime.contains(denied), "{denied}");
++    }
++    let crash =
++        read("tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs");
++    for marker in [
++        "libc::SYS_pidfd_send_signal",
++        "Some(libc::SIGKILL)",
++        "for repeat in 1..=3",
++        "fresh_inspections=22",
++        "sigkills=10",
++        "assert_eq!(snapshot(&s.origin()), origin)",
++        "inspect_empty_fence_at_for_test",
++        "with_original_at(false, Some(&authority)",
++        "let framed = accepted(original, fence, leaf, receiver, sender, model)",
++    ] {
++        assert!(
++            crash
++                .split_whitespace()
++                .collect::<String>()
++                .contains(&marker.split_whitespace().collect::<String>()),
++            "{marker}"
++        );
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+@@ -0,0 +1,308 @@
++//! Private opt-in phase on the original storage; default two-file inspection is unchanged.
++use super::*;
++
++pub(crate) const STARTING_NAME: &str = "diagnostic-collector-starting-074.json";
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum CollectorStartingStage {
++    BeforeCreate,
++    Created,
++    CreateDirectorySynced,
++    PrefixWritten,
++    BytesWritten,
++    Sealed,
++    FileSynced,
++    DirectorySynced,
++    Acknowledging,
++}
++pub(crate) const STAGES: [CollectorStartingStage; 9] = [
++    CollectorStartingStage::BeforeCreate,
++    CollectorStartingStage::Created,
++    CollectorStartingStage::CreateDirectorySynced,
++    CollectorStartingStage::PrefixWritten,
++    CollectorStartingStage::BytesWritten,
++    CollectorStartingStage::Sealed,
++    CollectorStartingStage::FileSynced,
++    CollectorStartingStage::DirectorySynced,
++    CollectorStartingStage::Acknowledging,
++];
++pub(super) struct StartingPhase {
++    document: Option<Document>,
++    next: usize,
++    acknowledged: bool,
++}
++impl CollectorReservationStorage<'_> {
++    pub(crate) fn begin_starting(&mut self) -> Result<(), StorageAttemptError> {
++        if self.starting.is_some() {
++            self.latch_refusal();
++            return Err(StorageAttemptError::Refused);
++        }
++        self.revalidate()?;
++        // Attempt latch precedes creation; no API resets or returns this phase.
++        self.starting = Some(StartingPhase {
++            document: None,
++            next: 0,
++            acknowledged: false,
++        });
++        Ok(())
++    }
++    pub(super) fn inspect_starting(&mut self) -> Result<(), StorageAttemptError> {
++        if self.is_refused()
++            || !self.acknowledged
++            || !self.original.acknowledged
++            || self.original.name != CONTROLLER_NAME
++        {
++            return Err(StorageAttemptError::Refused);
++        }
++        self.original.ancestry()?;
++        let leaf = self.original.leaf()?;
++        let controller = self
++            .original
++            .document
++            .as_ref()
++            .ok_or(StorageAttemptError::Refused)?;
++        let reserved = self.document.as_ref().ok_or(StorageAttemptError::Refused)?;
++        let phase = self.starting.as_ref().ok_or(StorageAttemptError::Refused)?;
++        controller.inspect(leaf)?;
++        reserved.inspect(leaf)?;
++        if let Some(doc) = &phase.document {
++            doc.inspect(leaf)?;
++        }
++        let fresh = open_at(leaf, ".", libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++        let mut seen = [false; 3];
++        for entry in std::fs::read_dir(format!("/proc/self/fd/{}", fresh.as_raw_fd()))? {
++            let name = entry?.file_name();
++            let index = if name == CONTROLLER_NAME {
++                0
++            } else if name == NAME {
++                1
++            } else if phase.document.is_some() && name == STARTING_NAME {
++                2
++            } else {
++                return Err(StorageAttemptError::Context);
++            };
++            if seen[index] {
++                return Err(StorageAttemptError::Context);
++            }
++            seen[index] = true;
++        }
++        if seen != [true, true, phase.document.is_some()] {
++            return Err(StorageAttemptError::Context);
++        }
++        controller.inspect(leaf)?;
++        reserved.inspect(leaf)?;
++        if let Some(doc) = &phase.document {
++            doc.inspect(leaf)?;
++        }
++        self.original.ancestry()
++    }
++    fn starting_effect(
++        &mut self,
++        at: CollectorStartingStage,
++        raw: &[u8],
++    ) -> Result<(), StorageAttemptError> {
++        self.inspect_starting()?;
++        let phase = self.starting.as_ref().ok_or(StorageAttemptError::Refused)?;
++        if phase.acknowledged
++            || STAGES.get(phase.next) != Some(&at)
++            || raw.is_empty()
++            || raw.len() > 16_384
++        {
++            return Err(StorageAttemptError::Refused);
++        }
++        match at {
++            CollectorStartingStage::BeforeCreate | CollectorStartingStage::Acknowledging => {}
++            CollectorStartingStage::Created => {
++                let file = open_at(
++                    self.original.leaf()?,
++                    STARTING_NAME,
++                    libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
++                    0o600,
++                )?;
++                // Retain the FD even if metadata inspection subsequently fails.
++                self.starting.as_mut().unwrap().document = Some(Document {
++                    name: STARTING_NAME,
++                    file,
++                    stamp: [0; 11],
++                    raw: Vec::new(),
++                    mode: 0o600,
++                });
++                let doc = self.starting.as_mut().unwrap().document.as_mut().unwrap();
++                doc.stamp = stamp(&doc.file.metadata()?);
++            }
++            CollectorStartingStage::CreateDirectorySynced
++            | CollectorStartingStage::DirectorySynced => self.original.leaf()?.sync_all()?,
++            CollectorStartingStage::PrefixWritten
++            | CollectorStartingStage::BytesWritten
++            | CollectorStartingStage::Sealed => {
++                let leaf = open_at(
++                    self.original.leaf()?,
++                    ".",
++                    libc::O_RDONLY | libc::O_DIRECTORY,
++                    0,
++                )?;
++                let middle = raw.len() / 2;
++                let (bytes, seal) = match at {
++                    CollectorStartingStage::PrefixWritten => (&raw[..middle], false),
++                    CollectorStartingStage::BytesWritten => (&raw[middle..], false),
++                    _ => (&[][..], true),
++                };
++                self.starting
++                    .as_mut()
++                    .unwrap()
++                    .document
++                    .as_mut()
++                    .ok_or(StorageAttemptError::Refused)?
++                    .owned_write(&leaf, bytes, seal)?;
++            }
++            CollectorStartingStage::FileSynced => self
++                .starting
++                .as_ref()
++                .unwrap()
++                .document
++                .as_ref()
++                .ok_or(StorageAttemptError::Refused)?
++                .file
++                .sync_all()?,
++        }
++        self.starting.as_mut().unwrap().next += 1;
++        self.inspect_starting()
++    }
++    pub(crate) fn starting_step(
++        &mut self,
++        at: CollectorStartingStage,
++        raw: &[u8],
++    ) -> Result<(), StorageAttemptError> {
++        let result = self.starting_effect(at, raw);
++        if result.is_err() {
++            self.latch_refusal();
++        }
++        result
++    }
++    pub(crate) fn acknowledge_starting(&mut self) -> Result<(), StorageAttemptError> {
++        let result = (|| {
++            self.revalidate()?;
++            let phase = self.starting.as_mut().ok_or(StorageAttemptError::Refused)?;
++            if phase.next != STAGES.len() || phase.acknowledged {
++                return Err(StorageAttemptError::Refused);
++            }
++            phase.acknowledged = true;
++            Ok(())
++        })();
++        if result.is_err() {
++            self.latch_refusal();
++        }
++        result
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::with_owned_empty_fence_for_test;
++    use std::os::unix::fs::{symlink, PermissionsExt};
++
++    fn with_storage(run: impl FnOnce(&mut CollectorReservationStorage<'_>, &std::path::Path)) {
++        with_owned_empty_fence_for_test(|fence, _, leaf| {
++            let mut attempt = AttemptStorage::for_controller(fence);
++            attempt
++                .retain_with(b"controller\n", |_| Ok::<_, StorageAttemptError>(()))
++                .unwrap();
++            let mut storage = CollectorReservationStorage::from_original(attempt);
++            storage
++                .publish_with(b"reserved\n", |_| Ok::<_, StorageAttemptError>(()))
++                .unwrap();
++            run(&mut storage, leaf);
++        });
++    }
++    #[test]
++    fn collector_starting_storage_exact_phase_order_and_old_inventory() {
++        with_storage(|storage, leaf| {
++            storage.revalidate().unwrap();
++            storage.begin_starting().unwrap();
++            for (index, at) in STAGES.into_iter().enumerate() {
++                storage.starting_step(at, b"starting\n").unwrap();
++                assert_eq!(storage.starting.as_ref().unwrap().next, index + 1);
++                assert!(!storage.starting.as_ref().unwrap().acknowledged);
++                if index >= 1 {
++                    assert!(storage.inspect().is_err());
++                }
++                storage.revalidate().unwrap();
++            }
++            assert_eq!(
++                std::fs::read(leaf.join(STARTING_NAME)).unwrap(),
++                b"starting\n"
++            );
++            storage.acknowledge_starting().unwrap();
++            assert!(storage.starting.as_ref().unwrap().acknowledged);
++            storage.revalidate().unwrap();
++            assert!(storage
++                .starting_step(CollectorStartingStage::BeforeCreate, b"starting\n")
++                .is_err());
++            assert!(storage.is_refused());
++        });
++    }
++    #[test]
++    fn collector_starting_storage_refuses_reentry_skips_early_ack_and_unexpected_third_file() {
++        for kind in 0..5 {
++            with_storage(|storage, leaf| {
++                if kind == 4 {
++                    assert!(storage.acknowledge_starting().is_err());
++                    assert!(storage.is_refused());
++                    return;
++                }
++                storage.begin_starting().unwrap();
++                let result = match kind {
++                    0 => storage.begin_starting(),
++                    1 => storage.starting_step(CollectorStartingStage::Created, b"starting\n"),
++                    2 => storage.acknowledge_starting(),
++                    _ => {
++                        std::fs::write(leaf.join(STARTING_NAME), b"foreign").unwrap();
++                        storage.starting_step(CollectorStartingStage::BeforeCreate, b"starting\n")
++                    }
++                };
++                assert!(result.is_err());
++                assert!(storage.is_refused());
++            });
++        }
++    }
++    #[test]
++    fn collector_starting_storage_exclusive_create_and_fd_mutations_refuse() {
++        for kind in 0..6 {
++            with_storage(|storage, leaf| {
++                storage.begin_starting().unwrap();
++                storage
++                    .starting_step(CollectorStartingStage::BeforeCreate, b"starting\n")
++                    .unwrap();
++                if kind == 0 {
++                    std::fs::write(leaf.join(STARTING_NAME), b"foreign").unwrap();
++                    assert!(storage
++                        .starting_step(CollectorStartingStage::Created, b"starting\n")
++                        .is_err());
++                    assert_eq!(std::fs::read(leaf.join(STARTING_NAME)).unwrap(), b"foreign");
++                } else {
++                    storage
++                        .starting_step(CollectorStartingStage::Created, b"starting\n")
++                        .unwrap();
++                    let path = leaf.join(STARTING_NAME);
++                    match kind {
++                        1 => std::fs::write(&path, b"external").unwrap(),
++                        2 => {
++                            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400))
++                                .unwrap()
++                        }
++                        3 => {
++                            std::fs::remove_file(&path).unwrap();
++                            symlink(NAME, &path).unwrap();
++                        }
++                        4 => std::fs::hard_link(&path, leaf.join("extra")).unwrap(),
++                        _ => std::fs::rename(&path, leaf.join("renamed")).unwrap(),
++                    }
++                    assert!(storage
++                        .starting_step(CollectorStartingStage::CreateDirectorySynced, b"starting\n")
++                        .is_err());
++                }
++                assert!(storage.is_refused());
++            });
++        }
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs
+@@ -0,0 +1,187 @@
++//! Consuming first-cell intent publication, never process start or recovered acknowledgement.
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::{StorageAttemptError, collector_reservation_storage::starting_storage};
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::starting_record::{encode_collector_starting_record, CollectorStartingRecordError};
++pub use starting_storage::CollectorStartingStage;
++
++#[derive(Debug, thiserror::Error)]
++pub enum CollectorStartingError {
++    #[error("original validation refused: {0}")]
++    Original(#[from] OriginalStartConsentError),
++    #[error("original Starting storage refused: {0}")]
++    Storage(#[from] StorageAttemptError),
++    #[error("Starting record refused: {0}")]
++    Record(#[from] CollectorStartingRecordError),
++    #[error("private interruption at {0:?}")]
++    Interrupted(CollectorStartingStage),
++}
++
++/// Original runtime acknowledgement only. No recovered owner, start, retry or extraction API.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn twice(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++///     let first = p.publish_starting(); let second = p.publish_starting();
++/// }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::OriginalCollectorStarting;
++/// fn start(p: OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::OriginalCollectorStarting;
++/// fn copy(p: OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::OriginalCollectorStarting;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalCollectorStarting<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::OriginalCollectorStarting;
++/// fn retry(p: OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::OriginalCollectorStarting;
++/// fn extract(p: OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_original(); }
++/// ```
++pub struct OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    original: OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    acknowledged: bool,
++}
++impl fmt::Debug for OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalCollectorStarting")
++            .field("acknowledged", &self.acknowledged)
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++impl OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.original.is_refused()
++    }
++    pub fn revalidate(&mut self) -> Result<(), CollectorStartingError> {
++        if !self.acknowledged {
++            self.original.refuse();
++            return Err(OriginalStartConsentError::Refused.into());
++        }
++        self.original.revalidate().map_err(Into::into)
++    }
++    fn publish(
++        &mut self,
++        mut checkpoint: impl FnMut(CollectorStartingStage) -> Result<(), CollectorStartingError>,
++    ) -> Result<(), CollectorStartingError> {
++        let r = &self
++            .original
++            .original
++            .prepared
++            .original
++            .original
++            .reservation;
++        let raw = encode_collector_starting_record(
++            &r.request_raw,
++            &r.raw,
++            self.original.original.packet.bytes(),
++        )?;
++        self.original
++            .original
++            .prepared
++            .original
++            .original
++            .reservation
++            .storage
++            .begin_starting()?;
++        for at in starting_storage::STAGES {
++            // Two complete live rounds before and after each storage effect; no cached proof.
++            self.original.revalidate()?;
++            self.original
++                .original
++                .prepared
++                .original
++                .original
++                .reservation
++                .storage
++                .starting_step(at, &raw)?;
++            checkpoint(at)?;
++            self.original.revalidate()?;
++        }
++        self.original.revalidate()?;
++        self.original
++            .original
++            .prepared
++            .original
++            .original
++            .reservation
++            .storage
++            .acknowledge_starting()?;
++        self.acknowledged = true;
++        Ok(())
++    }
++}
++pub struct CollectorStartingFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: CollectorStartingError,
++    held: Box<OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl CollectorStartingFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &CollectorStartingError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for CollectorStartingFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for CollectorStartingFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for CollectorStartingFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub fn publish_starting(
++        self,
++    ) -> Result<
++        OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        CollectorStartingFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.publish_with(|_| Ok(()))
++    }
++    #[cfg(test)]
++    pub(crate) fn publish_starting_with(
++        self,
++        checkpoint: impl FnMut(CollectorStartingStage) -> Result<(), CollectorStartingError>,
++    ) -> Result<
++        OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        CollectorStartingFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.publish_with(checkpoint)
++    }
++    fn publish_with(
++        self,
++        checkpoint: impl FnMut(CollectorStartingStage) -> Result<(), CollectorStartingError>,
++    ) -> Result<
++        OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        CollectorStartingFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalCollectorStarting {
++            original: self,
++            acknowledged: false,
++        };
++        match held.publish(checkpoint) {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.original.refuse();
++                Err(CollectorStartingFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs
+@@ -0,0 +1,271 @@
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::{starting_record::*, progress::causal::start_consent::starting::*};
++use std::os::unix::fs::{symlink, PermissionsExt};
++#[path = "diagnostic_collector_starting_crash_tests.rs"]
++mod crash_tests;
++
++const STAGES: [CollectorStartingStage; 9] = [
++    CollectorStartingStage::BeforeCreate,
++    CollectorStartingStage::Created,
++    CollectorStartingStage::CreateDirectorySynced,
++    CollectorStartingStage::PrefixWritten,
++    CollectorStartingStage::BytesWritten,
++    CollectorStartingStage::Sealed,
++    CollectorStartingStage::FileSynced,
++    CollectorStartingStage::DirectorySynced,
++    CollectorStartingStage::Acknowledging,
++];
++
++// Separate fixture: original packet/response/consent share an actual receiver.
++// In a crash child the authority directory is owned by the parent, never adopted.
++fn with_original_at(
++    refused: bool,
++    authority_path: Option<&std::path::Path>,
++    run: impl FnOnce(
++        &mut OidcControllerInput<'_, '_, '_, '_, '_, '_, '_, '_>,
++        &Paths,
++        &mut KernelReceiver,
++        &OwnedFd,
++        &Model,
++    ),
++) {
++    let model = Model::new();
++    let r = request(&model);
++    let p = policy(&r);
++    let t = token(&header(&p), &serde_json::to_vec(&claims(&r, &p)).unwrap());
++    let (root, authority_root, mut source, mut authority, worker_bytes) =
++        if let Some(path) = authority_path {
++            let (root, source, authority, bytes) =
++                crate::diagnostic_worker_policy::trusted_input::tests::controller_worker_fixture_at(
++                    path,
++                );
++            (root, None, source, authority, bytes)
++        } else {
++            let (root, authority_root, source, authority, bytes) = controller_worker_fixture();
++            (root, Some(authority_root), source, authority, bytes)
++        };
++    let (mut receiver, sender) = pair();
++    let mut packet = receive(&mut receiver, &sender, &model.sign(r.clone(), &model.key));
++    let mut worker = source
++        .verify_kernel_policy(&worker_bytes, &mut packet, &mut authority)
++        .unwrap();
++    let mut controller = model.input();
++    let mut oidc = TrustModel::new(&r);
++    let paths = Paths {
++        oidc: oidc.path(),
++        worker: root
++            .path()
++            .join("etc/hydracache-perf/worker-trust-074.json"),
++        authority: authority_path
++            .unwrap_or_else(|| authority_root.as_ref().unwrap().path())
++            .into(),
++    };
++    {
++        let mut original = controller.authenticate_controller(&mut worker).unwrap();
++        let mut build = original
++            .bind_reviewed_build(BUILDER_POLICY, RECEIPT)
++            .unwrap();
++        let mut guard = build.bind_oidc(&mut oidc.trust, &t).unwrap();
++        run(&mut guard, &paths, &mut receiver, &sender, &model);
++        assert_eq!(guard.is_refused(), refused);
++    }
++    assert_eq!(oidc.trust.is_refused(), refused);
++    assert_eq!(controller.is_refused(), refused);
++    assert_eq!(worker.is_refused(), refused);
++    drop(worker);
++    assert_eq!(source.is_refused(), refused);
++    assert_eq!(authority.is_failed(), refused);
++    assert_eq!(packet.is_refused(), refused);
++}
++fn accepted<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>(
++    original: &'join mut OidcControllerInput<'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    fence: crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::OriginalEmptyReservationFence<'storage>,
++    leaf: &std::path::Path,
++    receiver: &mut KernelReceiver,
++    sender: &OwnedFd,
++    model: &Model,
++) -> OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    let request = original.original.original.request.clone();
++    let attempt = original
++        .bind_common_empty_fence(fence)
++        .unwrap()
++        .retain_request()
++        .unwrap();
++    let raw = fs::read(leaf.join(NAME)).unwrap();
++    let mut observed = attempt.into_observed_reservation();
++    let state = observed.state_to_sign().unwrap();
++    let reserved = observed
++        .publish_reserved(&signed(&body(&request, &state, &raw)))
++        .unwrap();
++    let challenge = reserved.issue_progress_challenge().unwrap();
++    let nonce = crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::collector_challenge_nonce(challenge.challenge_to_sign()).unwrap();
++    let mut response = request;
++    response.operation = DiagnosticOperation::Heartbeat;
++    response.expected_state_revision = 1;
++    response.request_id = "f".repeat(64);
++    response.nonce_sha256 = nonce;
++    let causal = challenge
++        .accept_response(receive(receiver, sender, &model.sign(response, &model.key)))
++        .unwrap();
++    let prepared = causal.prepare_start_consent("1".repeat(64)).unwrap();
++    let bytes = consent(prepared.consent_to_sign().clone(), &model.key);
++    prepared
++        .accept_consent(receive(receiver, sender, &bytes))
++        .unwrap()
++        .into_validation_frame()
++        .unwrap()
++}
++
++#[test]
++#[ignore = "manual nonroot original Starting writes, interruption and live drift; no execution"]
++fn collector_starting_publication_boundaries_and_live_refusal() {
++    assert_ne!(unsafe { libc::geteuid() }, 0);
++    // Each injected failure owns an independently fresh original chain.
++    for at in STAGES {
++        with_original_at(true, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let framed = accepted(original, fence, leaf, receiver, sender, model);
++                let mut visited = Vec::new();
++                let failure = framed
++                    .publish_starting_with(|cut| {
++                        visited.push(cut);
++                        busy(root);
++                        if cut == at {
++                            return Err(CollectorStartingError::Interrupted(cut));
++                        }
++                        Ok(())
++                    })
++                    .unwrap_err();
++                assert!(
++                    matches!(failure.error(), CollectorStartingError::Interrupted(cut) if *cut == at)
++                );
++                assert_eq!(visited, STAGES[..visited.len()]);
++                assert!(failure.is_refused());
++                busy(root);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-STARTING-INTERRUPT cut={at:?} sticky=true fence_retained=true");
++            });
++        });
++    }
++    // External bytes, links, inventory, trust and concurrent writers cannot be adopted.
++    for kind in 0..9 {
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let framed = accepted(original, fence, leaf, receiver, sender, model);
++                let failure = framed
++                    .publish_starting_with(|at| {
++                        if at == CollectorStartingStage::Created {
++                            let path = leaf.join(COLLECTOR_STARTING_NAME);
++                            match kind {
++                                0 => fs::write(&paths.worker, b"changed trust").unwrap(),
++                                1 => fs::write(
++                                    paths.authority.join("unexpected-starting-context"),
++                                    b"invalid",
++                                )
++                                .unwrap(),
++                                2 => fs::write(&path, b"partial external bytes").unwrap(),
++                                3 => fs::set_permissions(&path, fs::Permissions::from_mode(0o400))
++                                    .unwrap(),
++                                4 => {
++                                    fs::remove_file(&path).unwrap();
++                                    symlink(RESERVED_NAME, &path).unwrap();
++                                }
++                                5 => fs::hard_link(&path, leaf.join("extra-link")).unwrap(),
++                                6 => fs::rename(&path, leaf.join("renamed-starting")).unwrap(),
++                                7 => {
++                                    let path = path.clone();
++                                    std::thread::spawn(move || {
++                                        fs::write(path, b"concurrent drift").unwrap()
++                                    })
++                                    .join()
++                                    .unwrap();
++                                }
++                                _ => fs::write(leaf.join("unexpected-file"), b"invalid").unwrap(),
++                            }
++                        }
++                        Ok(())
++                    })
++                    .unwrap_err();
++                assert!(failure.is_refused());
++                busy(root);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-STARTING-DRIFT kind={kind} sticky=true fence_retained=true");
++            });
++        });
++    }
++    with_original_at(false, None, |original, _, receiver, sender, model| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let framed = accepted(original, fence, leaf, receiver, sender, model);
++            let mut visited = Vec::new();
++            let mut owner = framed
++                .publish_starting_with(|at| {
++                    visited.push(at);
++                    Ok(())
++                })
++                .unwrap();
++            assert_eq!(visited, STAGES);
++            owner.revalidate().unwrap();
++            busy(root);
++            let raw = fs::read(leaf.join(COLLECTOR_STARTING_NAME)).unwrap();
++            validate_retained_collector_starting(
++                &raw,
++                &fs::read(leaf.join(NAME)).unwrap(),
++                &fs::read(leaf.join(RESERVED_NAME)).unwrap(),
++            )
++            .unwrap();
++            assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++            drop(owner);
++            retained_context_refuses_for_test(root);
++            println!(
++                "HC074-STARTING-CONTROL acknowledged=true ordered=true fsync=true start=false"
++            );
++        });
++    });
++}
++
++#[test]
++#[ignore = "manual nonroot first Starting refusal attribution, not a successful fault gate"]
++fn collector_starting_publication_first_refusal_attribution() {
++    assert_ne!(unsafe { libc::geteuid() }, 0);
++    for sample in 0..2 {
++        with_original_at(true, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let framed = accepted(original, fence, leaf, receiver, sender, model);
++                let start = std::time::Instant::now();
++                let mut visited = Vec::new();
++                let (result, event) = crate::diagnostic_kernel_admission::refusal_trace::capture(
++                    || {
++                        framed.publish_starting_with(|at| {
++                        visited.push(at);
++                        println!("HC074-STARTING-ATTRIBUTION sample={sample} cut={at:?} elapsed_ns={}", start.elapsed().as_nanos());
++                        Ok(())
++                    })
++                    },
++                );
++                match result {
++                    Ok(mut owner) => {
++                        println!("HC074-STARTING-ATTRIBUTION sample={sample} acknowledged=true elapsed_ns={} event={event:?} gate_complete=false", start.elapsed().as_nanos());
++                        fs::set_permissions(
++                            leaf.join(COLLECTOR_STARTING_NAME),
++                            fs::Permissions::from_mode(0o600),
++                        )
++                        .unwrap();
++                        assert!(owner.revalidate().is_err());
++                        assert!(owner.is_refused());
++                        busy(root);
++                        drop(owner);
++                    }
++                    Err(failure) => {
++                        assert!(failure.is_refused());
++                        busy(root);
++                        println!("HC074-STARTING-ATTRIBUTION sample={sample} acknowledged=false visited={visited:?} elapsed_ns={} error={:?} event={event:?} gate_complete=false", start.elapsed().as_nanos(), failure.error());
++                        drop(failure);
++                    }
++                }
++                retained_context_refuses_for_test(root);
++            });
++        });
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs
+@@ -0,0 +1,564 @@
++//! Private original collector Starting SIGKILL proof, never an installed entry point.
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{
++    inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test,
++};
++use crate::host_execution::{lock_host_root, HostExecutionError, HOST_EXECUTION_LOCK_NAME};
++use std::io::{BufRead, BufReader, Read, Write};
++use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
++use std::os::unix::fs::MetadataExt;
++use std::os::unix::process::ExitStatusExt;
++use std::process::{Child, Command, Stdio};
++use std::sync::mpsc;
++use std::thread::{self, JoinHandle};
++use std::time::Duration;
++
++const READY: &str = "HC074-COLLECTOR-STARTING-READY ";
++const ROOT: &str = "HC074_PRIVATE_COLLECTOR_STARTING_CRASH_ROOT";
++const MODE: &str = "HC074_PRIVATE_COLLECTOR_STARTING_CRASH_MODE";
++const STAGE: &str = "HC074_PRIVATE_COLLECTOR_STARTING_CRASH_STAGE";
++const AUTHORITY: &str = "HC074_PRIVATE_COLLECTOR_STARTING_CRASH_AUTHORITY";
++const BUDGET: u64 = 8192;
++const SEED: u64 = 0x0740_57d1;
++
++fn valid_stage(stage: &str) -> bool {
++    stage == "AfterReturn" || STAGES.iter().any(|at| format!("{at:?}") == stage)
++}
++fn readiness_line(line: &str) -> Option<(&str, u32)> {
++    if !line.ends_with('\n') || line.contains(['\r', '\0']) {
++        return None;
++    }
++    let (prefix, body) = line.split_once(READY)?;
++    if !(prefix.is_empty() || prefix.starts_with("test ") && prefix.ends_with(" ... ")) {
++        return None;
++    }
++    let (stage, pid) = body.strip_suffix('\n')?.split_once(' ')?;
++    if !(valid_stage(stage) || matches!(stage, "fresh-refused"))
++        || pid.is_empty()
++        || !pid.bytes().all(|b| b.is_ascii_digit())
++    {
++        return None;
++    }
++    let pid = pid.parse().ok()?;
++    (pid > 0).then_some((stage, pid))
++}
++
++#[test]
++fn collector_starting_process_protocol_accepts_only_bounded_expected_records() {
++    for prefix in ["", "test nested::owned_child ... "] {
++        for stage in [
++            "BeforeCreate",
++            "Acknowledging",
++            "AfterReturn",
++            "fresh-refused",
++        ] {
++            let line = format!("{prefix}{READY}{stage} 123\n");
++            assert_eq!(readiness_line(&line), Some((stage, 123)));
++        }
++    }
++    for line in [
++        format!("junk {READY}AfterReturn 123\n"),
++        format!("{READY}AfterReturn 0\n"),
++        format!("{READY}AfterReturn -1\n"),
++        format!("{READY}AfterReturn 4294967296\n"),
++        format!("{READY}AfterReturn 123 extra\n"),
++        format!("{READY}AfterReturn 123\r\n"),
++        format!("{READY}AfterReturn 123\0\n"),
++        format!("{READY}AfterReturn 123"),
++        format!("{READY}unknown 123\n"),
++        format!("{READY}AfterReturn 123 {READY}fresh-empty 123\n"),
++    ] {
++        assert_eq!(readiness_line(&line), None, "{line:?}");
++    }
++}
++
++fn ready(stage: &str, wait: bool) {
++    println!("{READY}{stage} {}", std::process::id());
++    std::io::stdout().flush().unwrap();
++    if wait {
++        let mut command = [0];
++        std::io::stdin().read_exact(&mut command).unwrap();
++        assert_eq!(command, [b'q']);
++    }
++}
++
++fn owned_root() -> PathBuf {
++    let root = PathBuf::from(std::env::var_os(ROOT).unwrap());
++    assert_eq!(root.parent(), Some(Path::new("/tmp")));
++    let name = root.file_name().unwrap().to_str().unwrap();
++    assert!(name.starts_with("hydracache-collector-starting-crash-") && name.len() <= 128);
++    assert!(name
++        .bytes()
++        .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'));
++    assert_eq!(fs::canonicalize(&root).unwrap(), root);
++    for path in [&root, &root.join("context"), &root.join("origin")] {
++        let m = fs::symlink_metadata(path).unwrap();
++        assert!(m.is_dir() && !m.file_type().is_symlink());
++        assert_eq!(
++            (m.uid(), m.gid(), m.mode() & 0o7777),
++            (
++                unsafe { libc::geteuid() },
++                unsafe { libc::getegid() },
++                0o700
++            )
++        );
++        assert_ne!(m.uid(), 0);
++    }
++    assert_eq!(std::env::temp_dir(), root.join("context"));
++    root
++}
++
++#[test]
++fn collector_starting_process_child() {
++    let Some(mode) = std::env::var_os(MODE) else {
++        return;
++    };
++    let root = owned_root();
++    let stage = std::env::var(STAGE).unwrap();
++    assert!(valid_stage(&stage));
++    if mode == "inspect" {
++        inspect_empty_fence_at_for_test(&root.join("origin"), false);
++        ready("fresh-refused", false);
++        return;
++    }
++    assert!(mode == "kill" || mode == "control");
++    let authority = PathBuf::from(std::env::var_os(AUTHORITY).unwrap());
++    assert_eq!(authority.parent(), Some(Path::new("/tmp")));
++    assert_eq!(fs::canonicalize(&authority).unwrap(), authority);
++    assert!(authority
++        .file_name()
++        .unwrap()
++        .to_str()
++        .unwrap()
++        .starts_with("hydracache-authority-"));
++    let m = fs::symlink_metadata(&authority).unwrap();
++    assert!(m.is_dir() && !m.file_type().is_symlink());
++    assert_eq!(
++        (m.uid(), m.gid(), m.mode() & 0o7777),
++        (
++            unsafe { libc::geteuid() },
++            unsafe { libc::getegid() },
++            0o700
++        )
++    );
++    with_original_at(
++        false,
++        Some(&authority),
++        |original, _, receiver, sender, model| {
++            with_owned_empty_fence_at_for_test(&root.join("origin"), |fence, _, leaf| {
++                let framed = accepted(original, fence, leaf, receiver, sender, model);
++                let mut visited = Vec::new();
++                let mut owner = framed
++                    .publish_starting_with(|at| {
++                        visited.push(at);
++                        assert_eq!(visited, STAGES[..visited.len()]);
++                        if format!("{at:?}") == stage {
++                            ready(&stage, true);
++                        }
++                        Ok(())
++                    })
++                    .unwrap();
++                assert_eq!(visited, STAGES);
++                assert_eq!(stage, "AfterReturn");
++                owner.revalidate().unwrap();
++                ready("AfterReturn", true);
++                owner.revalidate().unwrap();
++            });
++        },
++    );
++}
++
++struct Scratch(tempfile::TempDir, tempfile::TempDir);
++impl Scratch {
++    fn new() -> Self {
++        assert_ne!(
++            unsafe { libc::geteuid() },
++            0,
++            "manual proof requires nonroot"
++        );
++        let root = tempfile::Builder::new()
++            .prefix("hydracache-collector-starting-crash-")
++            .tempdir_in("/tmp")
++            .unwrap();
++        fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
++        for name in ["context", "origin"] {
++            fs::create_dir(root.path().join(name)).unwrap();
++            fs::set_permissions(root.path().join(name), fs::Permissions::from_mode(0o700)).unwrap();
++        }
++        let authority = tempfile::Builder::new()
++            .prefix("hydracache-authority-")
++            .tempdir_in("/tmp")
++            .unwrap();
++        fs::set_permissions(authority.path(), fs::Permissions::from_mode(0o700)).unwrap();
++        Self(root, authority)
++    }
++    fn origin(&self) -> PathBuf {
++        self.0.path().join("origin")
++    }
++    fn context(&self) -> PathBuf {
++        self.0.path().join("context")
++    }
++    fn leaf(&self) -> PathBuf {
++        self.origin()
++            .join("var/lib/hydracache-performance/diagnostic-intents-074")
++    }
++    fn campaigns(&self) -> PathBuf {
++        self.origin()
++            .join("var/lib/hydracache-performance/campaigns")
++    }
++}
++
++fn terminal(fd: &OwnedFd, milliseconds: i32) -> bool {
++    let mut poll = libc::pollfd {
++        fd: fd.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    let result = unsafe { libc::poll(&mut poll, 1, milliseconds) };
++    assert!(result >= 0);
++    assert_eq!(poll.revents & (libc::POLLERR | libc::POLLNVAL), 0);
++    result == 1 && poll.revents & libc::POLLIN != 0
++}
++type Output = BufReader<std::io::Take<std::process::ChildStdout>>;
++struct OwnedChild {
++    child: Child,
++    pidfd: Option<OwnedFd>,
++    collector: Option<JoinHandle<()>>,
++    output: Option<Output>,
++}
++impl OwnedChild {
++    fn start(s: &Scratch, mode: &str, stage: &str) -> Self {
++        let full = format!("{}::collector_starting_process_child", module_path!());
++        let (_, test) = full.split_once("::").unwrap();
++        let child = Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", test, "--nocapture", "--test-threads=1"])
++            .env(ROOT, s.0.path())
++            .env(AUTHORITY, s.1.path())
++            .env(MODE, mode)
++            .env(STAGE, stage)
++            .env("TMPDIR", s.context())
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::inherit())
++            .spawn()
++            .unwrap();
++        let mut owned = Self {
++            child,
++            pidfd: None,
++            collector: None,
++            output: None,
++        };
++        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, owned.child.id(), 0) };
++        assert!(fd >= 0, "pin exact owned child before waiting");
++        owned.pidfd = Some(unsafe { OwnedFd::from_raw_fd(fd as i32) });
++        let output = owned.child.stdout.take().unwrap();
++        let (send, receive) = mpsc::sync_channel(1);
++        owned.collector = Some(thread::spawn(move || {
++            let mut reader = BufReader::new(output.take(BUDGET));
++            loop {
++                let mut line = String::new();
++                if reader.read_line(&mut line).unwrap() == 0 {
++                    let _ = send.send((None, reader));
++                    break;
++                }
++                if let Some((label, pid)) = readiness_line(&line) {
++                    let _ = send.send((Some((label.to_owned(), pid)), reader));
++                    break;
++                }
++            }
++        }));
++        // This is a harness fail-safe, never the correctness oracle.
++        let (message, reader) = receive
++            .recv_timeout(Duration::from_secs(60))
++            .expect("owned original chain did not reach logical checkpoint");
++        owned.output = Some(reader);
++        owned.collector.take().unwrap().join().unwrap();
++        let expected = if mode == "inspect" {
++            "fresh-refused"
++        } else {
++            stage
++        };
++        assert_eq!(message, Some((expected.to_owned(), owned.child.id())));
++        owned
++    }
++    fn finish(&mut self, kill: bool, inspection: bool) {
++        if kill {
++            // The descriptor pins this exact unreaped child, not a discovered PID.
++            assert_eq!(
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        self.pidfd.as_ref().unwrap().as_raw_fd(),
++                        libc::SIGKILL,
++                        std::ptr::null::<libc::siginfo_t>(),
++                        0,
++                    )
++                },
++                0
++            );
++        } else if !inspection {
++            self.child.stdin.as_mut().unwrap().write_all(b"q").unwrap();
++        }
++        assert!(
++            terminal(self.pidfd.as_ref().unwrap(), 60_000),
++            "owned child did not terminate"
++        );
++        let status = self.child.wait().unwrap();
++        if kill {
++            assert_eq!(status.signal(), Some(libc::SIGKILL));
++        } else {
++            assert!(status.success(), "owned child failed: {status}");
++        }
++        let mut tail = Vec::new();
++        self.output
++            .as_mut()
++            .unwrap()
++            .read_to_end(&mut tail)
++            .unwrap();
++        assert!(tail.len() < BUDGET as usize);
++        assert!(
++            self.output.as_ref().unwrap().get_ref().limit() > 0,
++            "child output budget exhausted"
++        );
++    }
++}
++impl Drop for OwnedChild {
++    fn drop(&mut self) {
++        if self.child.try_wait().is_ok_and(|status| status.is_none()) {
++            if let Some(fd) = &self.pidfd {
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        fd.as_raw_fd(),
++                        libc::SIGKILL,
++                        std::ptr::null::<libc::siginfo_t>(),
++                        0,
++                    );
++                }
++            } else {
++                let _ = self.child.kill();
++            }
++        }
++        let _ = self.child.wait();
++        if let Some(collector) = self.collector.take() {
++            let _ = collector.join();
++        }
++    }
++}
++
++#[derive(Debug, PartialEq, Eq)]
++struct Entry {
++    name: PathBuf,
++    metadata: [u64; 11],
++    bytes: Vec<u8>,
++}
++fn snapshot(root: &Path) -> Vec<Entry> {
++    fn visit(root: &Path, path: &Path, entries: &mut Vec<Entry>) {
++        let m = fs::symlink_metadata(path).unwrap();
++        assert!(!m.file_type().is_symlink() && (m.is_dir() || m.is_file()));
++        assert_eq!(
++            (m.uid(), m.gid()),
++            (unsafe { libc::geteuid() }, unsafe { libc::getegid() })
++        );
++        assert!(m.len() <= 65_536);
++        if m.is_file() {
++            assert_eq!(m.nlink(), 1);
++        }
++        entries.push(Entry {
++            name: path.strip_prefix(root).unwrap().to_owned(),
++            metadata: [
++                m.dev(),
++                m.ino(),
++                u64::from(m.uid()),
++                u64::from(m.gid()),
++                u64::from(m.mode()),
++                m.nlink(),
++                m.len(),
++                m.mtime() as u64,
++                m.mtime_nsec() as u64,
++                m.ctime() as u64,
++                m.ctime_nsec() as u64,
++            ],
++            bytes: if m.is_file() {
++                fs::read(path).unwrap()
++            } else {
++                vec![]
++            },
++        });
++        if m.is_dir() {
++            for entry in fs::read_dir(path).unwrap() {
++                visit(root, &entry.unwrap().path(), entries);
++            }
++        }
++    }
++    let mut entries = Vec::new();
++    visit(root, root, &mut entries);
++    entries.sort_by(|a, b| a.name.cmp(&b.name));
++    entries
++}
++
++fn controller_checkpoint_contents(
++    s: &Scratch,
++    stage: &str,
++    context: &[Entry],
++    authority: &[Entry],
++) {
++    assert_eq!(fs::read_dir(s.campaigns()).unwrap().count(), 1);
++    assert!(s.campaigns().join(HOST_EXECUTION_LOCK_NAME).is_file());
++    if stage == "BeforeCreate" {
++        return;
++    }
++    let path = s.leaf().join(NAME);
++    let raw = fs::read(&path).unwrap();
++    assert!(raw.len() <= 16_384);
++    assert_eq!(
++        fs::metadata(path).unwrap().mode() & 0o7777,
++        if matches!(stage, "Created" | "PrefixWritten" | "BytesWritten") {
++            0o600
++        } else {
++            0o400
++        }
++    );
++    match stage {
++        "Created" => assert!(raw.is_empty()),
++        "PrefixWritten" => {
++            assert!(!raw.is_empty());
++            assert!(serde_json::from_slice::<Value>(&raw).is_err());
++        }
++        _ => {
++            validate_retained_controller_attempt(&raw).unwrap();
++            let value: Value = serde_json::from_slice(&raw).unwrap();
++            assert_eq!(value["policy_epoch"], 7);
++            assert_eq!(value["authority_revision"], 1);
++            let records: Vec<_> = authority
++                .iter()
++                .filter(|e| e.name == Path::new("0000000000000001.json"))
++                .collect();
++            assert_eq!(records.len(), 1);
++            let anchor: Value = serde_json::from_slice(&records[0].bytes).unwrap();
++            assert_eq!(anchor["revision"], value["authority_revision"]);
++            assert_eq!(anchor["policy_epoch"], value["policy_epoch"]);
++            assert_eq!(anchor["policy_sha256"], value["worker_policy_sha256"]);
++            assert_eq!(anchor["state"], "active");
++            assert_eq!(authority.iter().filter(|e| !e.bytes.is_empty()).count(), 2);
++            assert_eq!(value["build_receipt_sha256"], crate::sha256_hex(RECEIPT));
++            assert_eq!(
++                value["builder_policy_sha256"],
++                crate::sha256_hex(BUILDER_POLICY)
++            );
++            for (field, filename) in [
++                ("worker_trust_sha256", "worker-trust-074.json"),
++                ("controller_trust_sha256", "controller-trust-074.json"),
++                ("oidc_trust_sha256", "oidc-trust-074.json"),
++            ] {
++                let matches: Vec<_> = context
++                    .iter()
++                    .filter(|e| e.name.file_name().is_some_and(|n| n == filename))
++                    .collect();
++                assert_eq!(matches.len(), 1, "{filename}");
++                assert_eq!(value[field], crate::sha256_hex(&matches[0].bytes));
++            }
++            assert!(value.get("token").is_none() && value.get("signature_hex").is_none());
++        }
++    }
++}
++
++fn checkpoint_contents(s: &Scratch, stage: &str, context: &[Entry], authority: &[Entry]) {
++    controller_checkpoint_contents(s, "AfterReturn", context, authority);
++    let request = fs::read(s.leaf().join(NAME)).unwrap();
++    let reserved = fs::read(s.leaf().join(RESERVED_NAME)).unwrap();
++    validate_retained_collector_reserved(&reserved, &request).unwrap();
++    assert_eq!(
++        fs::metadata(s.leaf().join(RESERVED_NAME)).unwrap().mode() & 0o7777,
++        0o400
++    );
++    assert_eq!(
++        fs::read_dir(s.leaf()).unwrap().count(),
++        if stage == "BeforeCreate" { 2 } else { 3 }
++    );
++    let path = s.leaf().join(COLLECTOR_STARTING_NAME);
++    if stage == "BeforeCreate" {
++        assert!(!path.exists());
++        return;
++    }
++    let raw = fs::read(&path).unwrap();
++    assert!(raw.len() <= MAX_STARTING_BYTES);
++    assert_eq!(
++        fs::metadata(path).unwrap().mode() & 0o7777,
++        if matches!(
++            stage,
++            "Created" | "CreateDirectorySynced" | "PrefixWritten" | "BytesWritten"
++        ) {
++            0o600
++        } else {
++            0o400
++        }
++    );
++    match stage {
++        "Created" | "CreateDirectorySynced" => assert!(raw.is_empty()),
++        "PrefixWritten" => {
++            assert!(!raw.is_empty());
++            assert!(validate_retained_collector_starting(&raw, &request, &reserved).is_err());
++        }
++        _ => {
++            validate_retained_collector_starting(&raw, &request, &reserved).unwrap();
++        }
++    }
++}
++
++fn run_case(stage: &str, kill: bool, repeat: u32) {
++    let s = Scratch::new();
++    let mut child = OwnedChild::start(&s, if kill { "kill" } else { "control" }, stage);
++    assert!(!terminal(child.pidfd.as_ref().unwrap(), 0));
++    assert!(matches!(
++        lock_host_root(&s.campaigns()),
++        Err(HostExecutionError::Busy)
++    ));
++    let origin = snapshot(&s.origin());
++    let context = snapshot(&s.context());
++    let authority = snapshot(s.1.path());
++    checkpoint_contents(&s, stage, &context, &authority);
++    child.finish(kill, false);
++    drop(lock_host_root(&s.campaigns()).expect("original flock survived terminated owner"));
++    assert_eq!(snapshot(&s.origin()), origin);
++    assert_eq!(snapshot(s.1.path()), authority);
++    if kill {
++        assert_eq!(snapshot(&s.context()), context);
++    } else {
++        assert_eq!(fs::read_dir(s.context()).unwrap().count(), 0);
++    }
++    let retained_context = snapshot(&s.context());
++    for inspection in 1..=2 {
++        let mut fresh = OwnedChild::start(&s, "inspect", stage);
++        fresh.finish(false, true);
++        assert_eq!(snapshot(&s.origin()), origin);
++        assert_eq!(snapshot(&s.context()), retained_context);
++        assert_eq!(snapshot(s.1.path()), authority);
++        println!("collector_starting_crash seed=0x{SEED:08x} repeat={repeat} stage={stage} sigkill={kill} fresh_inspection={inspection} empty=false unchanged=true");
++    }
++}
++
++fn run_collector_crash_matrix(repeat: u32) {
++    let mut order: Vec<_> = STAGES.iter().map(|stage| format!("{stage:?}")).collect();
++    order.push("AfterReturn".into());
++    let mut seed = SEED;
++    for i in (1..order.len()).rev() {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        order.swap(i, seed as usize % (i + 1));
++    }
++    for stage in order {
++        run_case(&stage, true, repeat);
++    }
++    run_case("AfterReturn", false, repeat);
++    println!("collector_starting_crash_summary seed=0x{SEED:08x} repeat={repeat} sigkills=10 controls=1 fresh_inspections=22 production_enrollment=false start=false");
++}
++
++#[test]
++#[ignore = "manual nonroot Linux original collector Starting SIGKILL proof"]
++fn collector_starting_process_crash_all_stages_and_lost_ack() {
++    for repeat in 1..=3 {
++        run_collector_crash_matrix(repeat);
++    }
++}
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs b/tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs
+@@ -0,0 +1,11 @@
++#![cfg(target_os = "linux")]
++
++use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++
++#[test]
++fn collector_starting_publication_consumes_only_original_frame() {
++    fn probe(owner: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.publish_starting();
++    }
++    let _ = probe;
++}

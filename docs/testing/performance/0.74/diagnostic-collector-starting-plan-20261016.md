@@ -22,7 +22,16 @@ is implemented as `8d1b5e2a`. It closes only strict encoding/inspection and its
 clock-free mutation/API contracts. It verifies no signature or live authority,
 writes nothing and leaves the exact original two-file storage inventory intact.
 The private consuming storage phase and all publication/crash gates below remain
-unimplemented; a consistent retained record cannot acknowledge or recover an owner.
+unimplemented in accepted runtime; a consistent retained record cannot acknowledge
+or recover an owner.
+
+The subsequent [actual publication experiment](local-runs/collector-starting-publication-20261016/README.md)
+implements the private phase and file/directory fsync in an archived candidate,
+but both server fault lanes refuse before Acknowledging after eight expected
+interruptions. Four separate diagnostic chains report Original(Causal(Time))
+after DirectorySynced without acknowledgement. No failing candidate is promoted.
+The full crash/lost-ack gate remains blocked; see the separately scoped partial
+crash diagnostic and [earlier-composition review](diagnostic-pre-consent-frame-review-20261016.md).
 
 ## Record and phase ownership
 

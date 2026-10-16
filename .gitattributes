@@ -300,3 +300,6 @@ docs/testing/performance/0.74/local-runs/validation-frame-*/*.patch -text whites
 docs/testing/performance/0.74/local-runs/validation-frame-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 
 docs/testing/performance/0.74/local-runs/collector-starting-record-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

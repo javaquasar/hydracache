@@ -1,0 +1,28 @@
+{
+  "format_version": 1,
+  "note": "Unsigned verifier observations; canary manifests outside Git; no remote workload run by verifier",
+  "normal": {
+    "chunk_id": "20982a",
+    "wall_time_seconds": 3.14214,
+    "exit_code": 0,
+    "original_token_count": 35,
+    "output": "Starting evidence intact: 16 pre-ack SIGKILL / 32 fresh refusals PASS; original fault gate FAILED, lost ack and server admission CLOSED\r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-publication-20261016/verify.ps1 -CheckWorkingCopy"
+  },
+  "claim-canary.json": {
+    "chunk_id": "fcf847",
+    "wall_time_seconds": 1.5632898,
+    "exit_code": 1,
+    "original_token_count": 130,
+    "output": "Unsupported claim: lost_ack_proved\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-publication-202\r\n61016\\verify.ps1:3 char:56\r\n+ ... tion Check($ok,[string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported claim: lost_ack_proved:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported claim: lost_ack_proved\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-publication-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/claim-canary.json"
+  },
+  "coverage-canary.json": {
+    "chunk_id": "762e0b",
+    "wall_time_seconds": 1.9606141,
+    "exit_code": 1,
+    "original_token_count": 136,
+    "output": "Coverage differs: partial_sigkills_per_compiler\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\collector-starting-publication-202\r\n61016\\verify.ps1:3 char:56\r\n+ ... tion Check($ok,[string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Coverage differ...ls_per_compiler:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Coverage differs: partial_sigkills_per_compiler\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-publication-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/coverage-canary.json"
+  }
+}

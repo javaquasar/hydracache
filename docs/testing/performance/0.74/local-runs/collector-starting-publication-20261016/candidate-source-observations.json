@@ -1,0 +1,76 @@
+{
+  "format_version": 1,
+  "basis": "Working bytes for final archived candidate C; unsigned observation, not a committed source or signed binary build receipt",
+  "sources": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "bytes": 558689,
+      "sha256": "0d46a3ea41307f561abc7d9b6c82488a935a6d62fd7350965a108caff119dfba"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_starting_record.rs",
+      "bytes": 9319,
+      "sha256": "4237221ee38e7c877791c094f9140b7290a27e79adef0b83b13c82d7c2b44f8f"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "bytes": 134920,
+      "sha256": "0af5c65cb43560a06b1a3835bf75e9f5faeb26754e7f348ccb0b1f1910a1f65f"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "bytes": 257863,
+      "sha256": "4055c5f0c2e3f77d4cceb14155309b00cbd8f8e054b30f93c2fcbaeb7e5cffc2"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+      "bytes": 6240,
+      "sha256": "27b35701d57d5651ed13a9d6c98247730a625dd4c1b47bce94c4da547ac66a17"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+      "bytes": 15219,
+      "sha256": "8c01caef175e9ac0ebbee29d459a8012e6cdea0247d22bc7c04a4fa694ea2bcf"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+      "bytes": 12654,
+      "sha256": "62934d8b3b021b49671685ff83155ea781082ba84a227ebe9fb6462fbb848817"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs",
+      "bytes": 7283,
+      "sha256": "3eb1cf09c968ff39f20dddce726adeb2a1dd8fb8a3c054bc3e289ad2d960c300"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_starting_publication.rs",
+      "bytes": 25732,
+      "sha256": "20e0ec785ac9602ca18972388e8a114dcbc615da460f36eee559329acae466da"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs",
+      "bytes": 12083,
+      "sha256": "27d6558994c24f44a35a75c602ff623cf5ea379bd16f00b1b930d7cfd97da4b8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs",
+      "bytes": 8782,
+      "sha256": "e85da2cb333e6d972b2e46cf1e247019ec81efebe2e6400f91f62c5f864de452"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs",
+      "bytes": 12680,
+      "sha256": "e77b4599f20b67592f7b7cadfd2d3a260fd5bb95b0f327d51ce1dfbae9a23570"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs",
+      "bytes": 21187,
+      "sha256": "df392d69efb5e4de784a5682a94670cae562796994c14c925792a464d3dea4b3"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs",
+      "bytes": 531,
+      "sha256": "5194a5c55f94bb8255fa7e217124d2da6b235f579641f3115a9cae5129d04f33"
+    }
+  ]
+}

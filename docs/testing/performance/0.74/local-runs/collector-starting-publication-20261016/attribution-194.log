@@ -1,0 +1,24 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_first_refusal_attribution ... HC074-STARTING-ATTRIBUTION sample=0 cut=BeforeCreate elapsed_ns=310691457
+HC074-STARTING-ATTRIBUTION sample=0 cut=Created elapsed_ns=944134164
+HC074-STARTING-ATTRIBUTION sample=0 cut=CreateDirectorySynced elapsed_ns=1574989506
+HC074-STARTING-ATTRIBUTION sample=0 cut=PrefixWritten elapsed_ns=2190743175
+HC074-STARTING-ATTRIBUTION sample=0 cut=BytesWritten elapsed_ns=2806465634
+HC074-STARTING-ATTRIBUTION sample=0 cut=Sealed elapsed_ns=3422175045
+HC074-STARTING-ATTRIBUTION sample=0 cut=FileSynced elapsed_ns=4052383237
+HC074-STARTING-ATTRIBUTION sample=0 cut=DirectorySynced elapsed_ns=4674373210
+HC074-STARTING-ATTRIBUTION sample=0 acknowledged=false visited=[BeforeCreate, Created, CreateDirectorySynced, PrefixWritten, BytesWritten, Sealed, FileSynced, DirectorySynced] elapsed_ns=5121578376 error=Original(Causal(Time)) event=None gate_complete=false
+HC074-STARTING-ATTRIBUTION sample=1 cut=BeforeCreate elapsed_ns=307581189
+HC074-STARTING-ATTRIBUTION sample=1 cut=Created elapsed_ns=921401380
+HC074-STARTING-ATTRIBUTION sample=1 cut=CreateDirectorySynced elapsed_ns=1551962856
+HC074-STARTING-ATTRIBUTION sample=1 cut=PrefixWritten elapsed_ns=2167252593
+HC074-STARTING-ATTRIBUTION sample=1 cut=BytesWritten elapsed_ns=2782003478
+HC074-STARTING-ATTRIBUTION sample=1 cut=Sealed elapsed_ns=3396243633
+HC074-STARTING-ATTRIBUTION sample=1 cut=FileSynced elapsed_ns=4025133947
+HC074-STARTING-ATTRIBUTION sample=1 cut=DirectorySynced elapsed_ns=4654460833
+HC074-STARTING-ATTRIBUTION sample=1 acknowledged=false visited=[BeforeCreate, Created, CreateDirectorySynced, PrefixWritten, BytesWritten, Sealed, FileSynced, DirectorySynced] elapsed_ns=5101804287 error=Original(Causal(Time)) event=None gate_complete=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1006 filtered out; finished in 27.49s
+

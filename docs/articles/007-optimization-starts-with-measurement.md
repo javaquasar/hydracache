@@ -11317,3 +11317,49 @@ for a separate consuming publisher. Exclusive creation, partial writes, sealing,
 file/directory fsync and lost acknowledgement must still be tested with actual
 SIGKILL boundaries before the record can become durable runtime progress. A
 complete file found after a crash must never recreate the missing live owner.
+
+### Real fsync exposed the remaining anchored validation budget
+
+The next isolated candidate consumed the original framed consent, latched a
+private storage phase and exclusively created its own Starting document. It
+wrote a prefix and suffix, sealed the original file, fsynced it and its directory,
+then attempted acknowledgement under nineteen full frame checks. The old default
+reader remained a two-file reader; partial history, descriptor drift and a failed
+attempt could not be repaired or adopted. Clock-free storage/API checks, the
+unchanged regressions and 185 static contracts passed for this candidate.
+
+The real server fault gate did not. On both compilers, eight independently
+injected interruptions passed through DirectorySynced, but the chain intended
+for Acknowledging refused before reaching its hook. The runner stopped the full
+crash phase instead of treating the unexpected failure as an injected success.
+A separately declared diagnostic constructed four fresh publication chains;
+all reported Original(Causal(Time)) after DirectorySynced with no acknowledgement,
+about 5.1 seconds after publication began. These are correctness diagnostic
+observations, not throughput measurements or a product speedup.
+
+That five-second interval does not replace the original ten-second causal
+window. Its origin is the earlier challenge issuance, before response admission,
+preparation, consent acceptance and frame construction. The approved frame
+reduces recursive work only after acceptance; earlier composition still consumes
+the same anchored budget. Source order motivates examining it, but does not
+by itself attribute every second to signatures or fsync. Renewing the challenge,
+resetting the clock origin or acknowledging an expired owner would change the
+contract and is not an optimization.
+
+The [negative publication evidence](../testing/performance/0.74/local-runs/collector-starting-publication-20261016/README.md)
+therefore retains the candidate and refusals without promoting them. A complete
+sealed and fsynced file is still not runtime acknowledgement; refusal before ack
+also does not prove loss of an ack that had already succeeded. The next proposed
+change needs a separate review of constant-depth preparation and acceptance,
+with the old guards as a functional reference and every live predicate retained.
+The full Acknowledging, AfterReturn, lost-ack and uninterrupted controls remain
+necessary before this path can be accepted.
+
+The separately preregistered partial crash diagnostic then killed actual owned
+children at the eight already reachable pre-ack cuts on each compiler: sixteen
+SIGKILL terminal outcomes and thirty-two independent fresh-process inspections.
+Retained byte/inode/ownership/mode/time snapshots stayed unchanged, the lock was
+Busy while the owner lived and released after death, and fixed-history admission
+still refused. Both partial tests pass; Acknowledging, AfterReturn, lost ack and
+the successful uninterrupted control remain unproved. The negative publisher is
+archived and removed from active runtime rather than admitted on partial proof.

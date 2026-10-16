@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-publication-attribution-transfer",
+  "command": "scp -p -o BatchMode=yes -o StrictHostKeyChecking=yes C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/attribution-194 C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/attribution-188 C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/collector-starting-publication-20261016/attribute.sh hydracache-ax42:/tmp/hc074-starting-20261016.vdpJqe/",
+  "exit_code": 0,
+  "output": "",
+  "capture_kind": "tool observation, may be truncated; exact server process logs are separate artifacts"
+}

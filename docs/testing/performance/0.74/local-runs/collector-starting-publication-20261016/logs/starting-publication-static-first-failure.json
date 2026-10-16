@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-publication-static-first-failure",
+  "command": ".\\target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe --exact starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline --nocapture",
+  "exit_code": 1,
+  "output": "\nrunning 1 test\n\nthread 'starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline' (10704) panicked at crates\\xtask\\tests\\support\\performance_contract_074_starting_publication.rs:21:13:\nassertion `left == right` failed: unapproved Starting publisher adapter: tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs\n  left: 0\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline' (10704) panicked at crates\\xtask\\tests\\support\\performance_contract_074_starting_publication.rs:68:335:\nwith_original_at(false, Some(&authority)\ntest starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline ... FAILED\n\nfailures:\n\nfailures:\n    starting_publication::collector_starting_publication_preserves_every_original_predicate_and_deadline\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 184 filtered out; finished in 3.95s\n\n",
+  "capture_kind": "tool observation, may be truncated; exact server process logs are separate artifacts"
+}

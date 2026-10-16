@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "starting-publication-binary-hashes",
+  "command": "New-Item -ItemType Directory -Path C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication -Force | Out-Null; Copy-Item -LiteralPath '\\\\wsl.localhost\\Ubuntu\\home\\artur\\.cache\\hydracache-074-194-check\\release\\deps\\hydracache_long_run_supervisor_074-171a8ee7d3705ebd' -Destination C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/starting-194; Copy-Item -LiteralPath '\\\\wsl.localhost\\Ubuntu\\home\\artur\\.cache\\hydracache-074-188-check\\release\\deps\\hydracache_long_run_supervisor_074-81989065b672da94' -Destination C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/starting-188; Get-FileHash -Algorithm SHA256 C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/starting-194,C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-starting-publication/starting-188 | Format-List",
+  "exit_code": 0,
+  "output": "\r\nAlgorithm : SHA256\r\nHash      : 9B6971E4B95BF0DDED2A636D4DB51D83F1799FC5AEEF9B77D70F5C67F2A3203F\r\nPath      : C:\\Workspace\\prj\\jq\\cashe\\.worktree-cleanup-recovery\\2026-10-16-starting-publication\\starting-194\r\n\r\nAlgorithm : SHA256\r\nHash      : 87BD0DA95BB33A3EFE56C70A679711C398609DC2F6FC98F1F3EB5A13300AF56E\r\nPath      : C:\\Workspace\\prj\\jq\\cashe\\.worktree-cleanup-recovery\\2026-10-16-starting-publication\\starting-188\r\n\r\n",
+  "capture_kind": "tool observation, may be truncated; exact server process logs are separate artifacts"
+}

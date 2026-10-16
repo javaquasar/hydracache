@@ -1,0 +1,24 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal ... HC074-STARTING-INTERRUPT cut=BeforeCreate sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=Created sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=CreateDirectorySynced sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=PrefixWritten sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=BytesWritten sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=Sealed sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=FileSynced sticky=true fence_retained=true
+HC074-STARTING-INTERRUPT cut=DirectorySynced sticky=true fence_retained=true
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal' panicked at tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs:139:17:
+assertion failed: matches!(failure.error(), CollectorStartingError::Interrupted(cut) if *cut ==
+    at)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::collector_starting_publication_boundaries_and_live_refusal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1005 filtered out; finished in 102.50s
+
