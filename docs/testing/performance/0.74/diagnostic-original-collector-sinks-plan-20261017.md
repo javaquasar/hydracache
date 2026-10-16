@@ -50,7 +50,8 @@ Starting/history and the exact partial output inventory. Add actual owned-child
 SIGKILL at all ten cuts, death after successful return, an uninterrupted control
 and two fresh read-only inspections of each retained attempt. Inspectors must
 never reconstruct a sink owner. BeforeCreate leaves no output; original durable
-Starting still refuses replay. These are process-loss, not power-loss proofs.
+Starting still refuses replay. Use seed `0x074051d1` and three exact-source
+repetitions per compiler. These are process-loss, not power-loss proofs.
 
 Run current/MSRV Linux and Windows affected-package check/strict Clippy,
 unit/API/compile-fail, old collector/pipe/consent/storage regressions, scoped and
