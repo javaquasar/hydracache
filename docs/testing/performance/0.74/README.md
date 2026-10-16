@@ -3545,6 +3545,20 @@ retained pidfds. No CLI, durable schema or persistent write boundary is added.
 P1 authenticated outcome and cells two through four require P2/P3 producers
 before their new SIGKILL/lost-acknowledgement publication matrix can run.
 
+## Original kernel start consent
+
+The [original-consent packet](local-runs/original-start-consent-20261016/README.md)
+now binds a frozen first-cell Starting projection to a later same-receiver
+packet, observed peer/time and the retained policy/epoch/fence chain. Four local
+joined cases and the portable/API/integration/static matrix pass on the named
+compiler lanes. The preserved debug expiration is not a default-debug pass or
+installed budget proof. No Starting record or process is created.
+
+The next [durable Starting plan](diagnostic-collector-starting-plan-20261016.md)
+requires an explicit storage-phase handoff, exclusive intent and uncertain/lost
+acknowledgement refusal before output or spawning. Root collector/original start,
+watchdog, all-writer cessation, later cells and server admission remain open.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

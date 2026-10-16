@@ -2,10 +2,14 @@
 
 A causal Heartbeat is a response to a fresh post-Reserved challenge, not consent
 to execute. The distinct start-consent artifact signs an explicit start-cell-one
-claim. Current implementation provides signing bytes and byte/signature
-inspection only; it neither derives the claims nor authenticates their original
-runtime context. The [preregistration](diagnostic-start-consent-plan-20261016.md)
-and [local evidence](local-runs/start-consent-20261016/README.md) describe that scope.
+claim. The standalone codec provides signing bytes and byte/signature inspection
+only. A separate Linux original-owner consumer now derives and checks those
+claims under retained kernel/trust/authority/fence inputs; it still publishes no
+durable Starting and starts no process. The [codec preregistration](diagnostic-start-consent-plan-20261016.md)
+and [codec evidence](local-runs/start-consent-20261016/README.md) retain the earlier
+byte-only scope. The [original admission plan](diagnostic-original-start-consent-plan-20261016.md)
+and [joined evidence](local-runs/original-start-consent-20261016/README.md) cover
+the consuming runtime prerequisite.
 
 ## Format and signature
 
@@ -30,13 +34,13 @@ PRESET, not the current tooling commit. A positive worker-policy epoch and valid
 hash grammar are required. None of these signed strings selects trust or proves
 that a referenced object exists.
 
-## Required comparisons by the future original owner
+## Comparisons by the original owner
 
-The consuming implementation must derive these values from retained original
+The consuming implementation derives these values from retained original
 objects, not accept matching caller assertions. Digest conventions follow the
 existing collector and causal protocols:
 
-| Field | Original bytes or value required by the future owner |
+| Field | Original bytes or value required by the owner |
 | --- | --- |
 | consent_request_id | New unique first-cell consent id; compare against original ids and durable replay state |
 | reservation_request_id | Original Reserve request id |
@@ -58,9 +62,16 @@ credentials/time, discharge bootstrap predicates, acknowledge a state, prevent
 replay, create output or launch/release a process. Repeated inspection and a
 syntactically valid historical window intentionally succeed.
 
-The future receiver must bind consent to its original kernel-message context,
-then keep all current source/policy/epoch/fence checks around one consuming
-handoff. Durable intent and uncertain/lost-ack replay protection precede any
+The Linux consumer retains the causal owner, freezes a first Starting projection
+at an original kernel observation and checks the unchanged adjacent transition
+from actual Reserved. It accepts one later packet from the same original receiver
+and authenticates its observed credentials/time under the original configured
+controller policy. Every canonical body field must equal the frozen projection;
+live source/policy/epoch/fence/storage checks bracket signature authentication.
+Failure retains refused owners and the fence. The id is distinct from both
+original ids, but this is not a durable or global replay ledger.
+
+Durable intent and uncertain/lost-ack replay protection still precede any
 root-private output or authenticated original process/streams/cgroup start.
 Autonomous watchdog and revocation/cessation of every writer precede completion
 and later cells. No installed-host or qualification admission follows here.

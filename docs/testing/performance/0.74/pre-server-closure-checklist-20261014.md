@@ -222,6 +222,15 @@ inspector's supplied key and signed timestamps are not enrolled authority or
 kernel observations. The consuming original-owner join, exact live checks and
 durable replay/Starting acknowledgement remain before output or execution.
 
+The separate [original consent consumer](local-runs/original-start-consent-20261016/README.md)
+now freezes kernel-derived Starting and checks all body bindings against the
+retained original chain. It consumes a later same-receiver packet, observes
+credentials/time and preserves sticky refusal/fence ownership. This closes only
+the local admission join. The default-debug deadline failure remains retained;
+the successful optimized-crypto correctness lane is not installed budget proof.
+Durable Starting/replay, root output/original start and all-writer cessation
+remain before server admission.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

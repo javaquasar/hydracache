@@ -1,0 +1,118 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 56.58s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 7 tests
+error[E0599]: no method named `clone` found for struct `OriginalStartConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:180:78
+    |
+180 | ... p.clone(); }
+    |       ^^^^^ method not found in `OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0277]: the trait bound `OriginalStartConsent<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>: serde::de::DeserializeOwned` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:193:10
+    |
+193 | ...::<Or...'static>>();
+    |       ^^...^^^^^^^^ unsatisfied trait bound
+    |
+    = help: the trait `for<'de> Deserialize<'de>` is not implemented for `OriginalStartConsent<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>`
+    = help: the following other types implement trait `Deserialize<'de>`:
+              `&[u8]` implements `Deserialize<'de>`
+              `&...` implements `Deserialize<'de>`
+              `&str` implements `Deserialize<'de>`
+              `()` implements `Deserialize<'de>`
+              `(...,)` implements `Deserialize<'de>`
+              `(..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ...)` implements `Deserialize<'de>`
+              `(..., ..., ..., ...)` implements `Deserialize<'de>`
+            and 281 others
+    = note: required for `OriginalStartConsent<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>` to implement `DeserializeOwned`
+note: required by a bound in `decode`
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:192:14
+    |
+192 | ...T: serde:...wned>() {}
+    |       ^^^^^^...^^^^ required by this bound in `decode`
+    = note: the full name for the type has been written to '/tmp/rustdoctest7nH9dP/rust_out.long-type-8753569354456956760.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsent (line 177) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsent (line 189) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsentPreparation (line 53) - compile fail ... ok
+error[E0599]: no method named `clone` found for struct `OriginalStartConsentPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:56:89
+   |
+56 | ... p.clone(); }
+   |       ^^^^^ method not found in `OriginalStartConsentPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start_once` found for struct `OriginalStartConsentPreparation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:45:90
+   |
+45 | ... p.start_once(); }
+   |       ^^^^^^^^^^ method not found in `OriginalStartConsentPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsentPreparation (line 42) - compile fail ... ok
+error[E0599]: no method named `publish_starting` found for struct `OriginalStartConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:184:81
+    |
+184 | ... p.publish_starting(); }
+    |       ^^^^^^^^^^^^^^^^ method not found in `OriginalStartConsent<'_, '_, '_, '_...'_, '_, '_, '_, '_>`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsent (line 181) - compile fail ... ok
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:188:85
+    |
+188 | ... p.revalidate(b"replacement"); }
+    |       ^^^^^^^^^^ -------------- unexpected argument of type `&'static [u8; 11]`
+    |
+note: method defined here
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:232:12
+    |
+232 | ...fn revalidate(&m...
+    |       ^^^^^^^^^^
+help: remove the extra argument
+    |
+188 - fn replace(mut p: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.revalidate(b"replacement"); }
+188 + fn replace(mut p: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.revalidate(); }
+    |
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0061`.
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsent (line 185) - compile fail ... ok
+error[E0382]: use of moved value: `p`
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:51:51
+    |
+ 50 | ...ce(p: OriginalStartConsentPreparation<'_, '_, '_...
+    |       - move occurs because `p` has type `OriginalStartConsentPreparation<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`, which does not implement the `Copy` trait
+ 51 | ...t first = p.ac...nsent(a); let second = p.ac...
+    |                --...--------               ^ value used here after move
+    |                |
+    |                `p` moved due to this method call
+    |
+note: `OriginalStartConsentPreparation::<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>::accept_consent` takes ownership of the receiver `self`, which moves `p`
+   --> tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs:313:9
+    |
+313 | ...   self,
+    |       ^^^^
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0382`.
+test tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs - diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalStartConsentPreparation (line 46) - compile fail ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 173 filtered out; finished in 0.55s

@@ -1,0 +1,38 @@
+{
+  "format_version": 1,
+  "verification_scope": "Unsigned local evidence verifier; not runtime or release authority",
+  "canaries": [
+    {
+      "mutation": "scope.process_started=true",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "output": "Exception: C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\original-start-consent-20261016\\verify.ps1:4\nLine |\n   4 |  … ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\n     |                                                       ~~~~~~~~~~~~~~\n     | Scope differs: process_started\n"
+    },
+    {
+      "mutation": "commands[win-static].exit_code=1",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "output": "Exception: C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\original-start-consent-20261016\\verify.ps1:4\nLine |\n   4 |  … ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\n     |                                                       ~~~~~~~~~~~~~~\n     | Command outcome differs: win-static\n"
+    }
+  ],
+  "final_checks": [
+    {
+      "key": "final-doc-check",
+      "command": ".\\target\\debug\\xtask.exe doc-check",
+      "exit_code": 0,
+      "output": "doc-check: OK (releases.toml is consistent)\n"
+    },
+    {
+      "key": "final-registry",
+      "command": ".\\target\\debug\\xtask.exe gated-test-check",
+      "exit_code": 0,
+      "output": "gated-test-check: OK (176 discovered gates, all registered)\n"
+    },
+    {
+      "key": "final-local-contract",
+      "command": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+      "exit_code": 0,
+      "output": "performance-contract-check 0.74: OK (local, non-promotable)\n"
+    }
+  ]
+}

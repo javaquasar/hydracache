@@ -11119,3 +11119,37 @@ These results establish the explicit signed-data boundary needed by original
 start. They do not establish authenticated process creation, durable Starting,
 autonomous watchdog or cessation of every writer. No product gain or server
 admission follows from a correctly verified consent signature alone.
+
+### Start consent checked against original kernel observations
+
+The next implementation connects that signed-data contract to the original
+receiver and ownership chain. It consumes the causal response owner, derives a
+first-cell Starting projection from a kernel observation and freezes the body
+before requesting a signature. Even validly signed replacement claims must match
+every frozen field. The later consent packet must belong to the same receiver,
+arrive after preparation and satisfy actual peer/principal/time checks under
+the retained controller policy. Original policy/epoch, storage and common-fence
+checks remain around authentication; failure retains refused owners and the lock.
+
+This makes an important distinction visible: a once-consumed Rust owner is not a
+durable once-only start. A crash after acceptance still requires a journaled
+intent and an explicit uncertain-acknowledgement rule before any output or process
+can be created. The current consumer writes neither Starting nor a new replay
+record, and it cannot publish or launch. Reopening byte evidence cannot recreate
+the owner. Root collector ownership, original process/cgroup authentication and
+cessation of every writer remain required before completion or later cells.
+
+The first default-debug composition also exposed the cost of nested validation:
+the original Heartbeat expired before consent acceptance. The existing ten-second
+deadline refused the attempt; it was not raised. A separately declared correctness
+lane with optimized Ed25519/curve arithmetic passes the joined cases on both
+current and minimum Rust versions, while preserving all observations. That is
+not an established production speedup or a default-debug pass. The exact installed
+build must still demonstrate budget viability; future reuse of immutable proof
+work would need its own attribution and unchanged live revocation checks.
+
+The [original-consent evidence](../testing/performance/0.74/local-runs/original-start-consent-20261016/README.md)
+records real socket credential/order refusals, 36 frozen-field mutations, id
+collisions, trust/storage drift, consuming-API compile failures and the unchanged
+integration/static contracts. It establishes a local admission prerequisite,
+not authenticated process creation, durable replay safety or server readiness.

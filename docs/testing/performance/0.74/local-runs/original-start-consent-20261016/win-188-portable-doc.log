@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.86s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 4 tests
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent::inspect_start_consent_signature (line 154) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 4) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 8) - compile fail ... ok
+test tools\long-run-supervisor-074\src\diagnostic_start_consent.rs - diagnostic_start_consent (line 12) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.67s
