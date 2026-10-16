@@ -45,3 +45,16 @@ the supervisor with --release. This local test profile is not an installed
 binary attestation; it determines whether a runtime optimization is necessary
 before attempting publication. Neither a release-profile success nor a debug
 failure changes the fixed windows or creates admission.
+
+## Inclusive owner attribution
+
+If release also refuses, use a separate three-sample, publication-free diagnostic
+to time the original worker, signed controller, reviewed build and OIDC owners.
+Construct fresh original inputs for every sample. Check each owner three times
+and record inclusive wall time, current-thread user/system CPU, IPC authentication
+and signature counts. These nested spans overlap conceptually: never add their
+durations or call the difference a verified exclusive owner. Retain healthy
+owners, original trust and descriptors; create no intent, output or process.
+Use the declared optimized-crypto dev lane on both compilers. This classification
+must precede a runtime proposal; do not infer that caching signatures alone
+can close the measured budget gap.
