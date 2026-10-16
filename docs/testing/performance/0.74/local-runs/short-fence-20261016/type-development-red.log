@@ -1,0 +1,31 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+error[E0308]: mismatched types
+  --> tools/long-run-supervisor-074/src/diagnostic_fixed_campaign_admission_tests.rs:19:18
+   |
+19 | ...t, lock)
+   |       ^^^^ expected `File`, found `ShortHostFence`
+
+error[E0277]: the trait bound `ShortHostFence: FileExt` is not satisfied
+   --> tools/long-run-supervisor-074/src/diagnostic_output_preparation.rs:581:25
+    |
+581 | ...   F...t::unlock(&fence).u...
+    |       -...--------- ^^^^^^ unsatisfied trait bound
+    |       |
+    |       required by a bound introduced by this call
+    |
+help: the trait `fs2::FileExt` is not implemented for `ShortHostFence`
+   --> tools/long-run-supervisor-074/src/host_execution.rs:305:1
+    |
+305 |...rtHostFence(Fi...
+    |...^^^^^^^^^^^
+help: the trait `FileExt` is implemented for `File`
+   --> /home/artur/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs2-0.4.3/src/lib.rs:96:1
+    |
+ 96 |...xt for File {
+    |...^^^^^^^^^^^
+    = note: the full name for the type has been written to '/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273.long-type-3048614038893599509.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 2 previous errors

@@ -1,0 +1,23 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.71s
+     Running unittests src/lib.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/hydracache_long_run_supervisor_074-722be00aaac31273)
+
+running 4 tests
+short_fence admission_error_release=true
+test host_execution::short_fence_tests::short_fence_admission_error_releases_original_description ... ok
+short_fence raw_close_busy=true cloexec=true explicit_child_unlock_releases=true
+test host_execution::short_fence_tests::short_fence_raw_close_negative_control_retains_inherited_lock ... ok
+short_fence drop_release=true failed_contender_preserves=true late_old_unlock_preserves_next=true
+test host_execution::short_fence_tests::short_fence_drop_releases_original_not_next_open_description ... ok
+short_fence corruption_kind=0 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=1 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=2 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=3 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=4 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=5 transaction_refused=true inherited_child_ready=true
+short_fence corruption_kind=6 transaction_refused=true inherited_child_ready=true
+short_fence corruption_cases=7 backend_calls=0 state_and_ledger_preserved=true
+test host_execution::short_fence_tests::short_fence_corrupt_ledger_error_releases_before_original_recovery ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 973 filtered out; finished in 0.36s
+

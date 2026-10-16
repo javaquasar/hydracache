@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [short-fence causal packet](local-runs/short-fence-20261016/README.md)
+reproduces a pre-exec fork alias retaining the completed transaction's flock.
+The private short owner now explicitly unlocks its original open description on
+drop, including admission errors. Four causal controls pass on both Linux
+compilers; seven corrupt/pending ledger variants recover the original revision
+without execution or file mutation. This fixes a reachable lifetime defect, not
+the unobserved owner of each historical Host(Busy). Campaign-claim construction
+errors still require a separate audit. No performance or server admission follows;
+the five-pair timings below belong only to their pinned historical source.
+
 The [second worker proof screen](local-runs/worker-proof-reuse-v2-20261016/README.md)
 passes five independent alternating pairs. Publication/binding elapsed-time C/B
 ratios are 0.232739/0.236497, with upper 95% bounds 0.236526/0.243068 against the

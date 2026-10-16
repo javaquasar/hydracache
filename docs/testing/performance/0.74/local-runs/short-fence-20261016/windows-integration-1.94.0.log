@@ -1,0 +1,68 @@
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.94s
+     Running tests\diagnostic_ipc.rs (target\debug\deps\diagnostic_ipc-e77a03a3a50693fd.exe)
+
+running 21 tests
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+
+thread 'pending_intent_blocks_reexecution_and_new_requests' (4924) panicked at tools\long-run-supervisor-074\tests\diagnostic_ipc.rs:113:9:
+injected loss after durable IPC intent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.49s
+
+     Running tests\diagnostic_lease.rs (target\debug\deps\diagnostic_lease-1322ebe572557b04.exe)
+
+running 18 tests
+test existing_campaign_and_each_fixture_context_refuse_reservation ... ok
+test cancel_before_start_never_needs_a_backend_or_spawns_work ... ok
+test diagnostic_and_campaign_reservations_share_one_short_transaction_lock ... ok
+test boot_clock_and_lease_identity_drift_fail_without_backend_calls ... ok
+test exited_leader_never_certifies_a_populated_child_tree ... ok
+test malformed_or_ambiguous_diagnostic_markers_fail_closed ... ok
+test durable_start_intent_is_never_replayed_as_a_second_spawn ... ok
+test expired_controller_cannot_revive_or_extend_a_cell_deadline ... ok
+test overflowing_receipt_counters_stop_instead_of_wrapping_or_retrying ... ok
+test concurrent_campaign_and_diagnostic_admission_has_exactly_one_winner ... ok
+test terminal_publication_gap_recovers_identical_receipt_without_spawn ... ok
+test terminal_receipt_conflict_does_not_release_the_marker ... ok
+test overflow_and_invalid_receipts_are_retained_without_retry ... ok
+test cleanup_failure_and_identity_drift_keep_host_claimed ... ok
+test unknown_schema_fields_and_noncanonical_digest_drift_fail_closed ... ok
+test four_fixed_cells_finish_once_and_terminal_evidence_precedes_release ... ok
+test remaining_total_budget_caps_the_fixed_unit_without_padding ... ok
+test controller_loss_and_deadlines_stop_tree_before_release ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+
+     Running tests\host_execution.rs (target\debug\deps\host_execution-145817249aafe71f.exe)
+
+running 5 tests
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

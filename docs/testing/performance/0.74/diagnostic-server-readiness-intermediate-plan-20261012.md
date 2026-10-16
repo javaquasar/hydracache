@@ -149,6 +149,17 @@ pairs. Live checks and signed windows stay unchanged. Both compiler regressions
 pass without IPC retries, not proving historical Host(Busy)/Time/Kernel(Invalid)
 causes or production readiness. Original-start and writer cessation remain below.
 
+The separately preregistered [short-fence investigation](local-runs/short-fence-20261016/README.md)
+now proves and corrects one reachable Host(Busy) mechanism: a pre-exec fork alias
+outliving the raw File returned by a completed short transaction. An owned guard
+explicitly unlocks only the successfully acquired original description. The raw
+close control remains Busy; the three baseline regressions fail, then all four
+controls and seven corrupt-ledger variants pass after correction. No old IPC test
+is retried or relaxed. Historical occurrence-specific attribution remains open.
+Audit raw-file construction errors in HostExecutionClaim acquire/recover next;
+this short-helper correction deliberately leaves those paths unchanged. It is
+not all-writer cessation, original-start, or requalification of prior timings.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

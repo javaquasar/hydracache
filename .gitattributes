@@ -284,3 +284,6 @@ docs/testing/performance/0.74/local-runs/validation-cost-*/*.log -text whitespac
 docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/short-fence-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/short-fence-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

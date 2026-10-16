@@ -10975,3 +10975,55 @@ clears the preregistered debug floor without dropping live observations. The nex
 cost investigation must preserve that boundary. Authenticated original-start,
 autonomous all-writer cessation, completion/later cells, real trust enrollment
 and server rehearsal still need their own implementations and fault evidence.
+
+### A completed transaction must release its own lock
+
+The occasional IPC Host(Busy) needed a causal experiment, not a successful rerun.
+The short host-root helper returned a raw File. On Linux a flock belongs to an
+open file description shared by fork aliases: closing the parent's descriptor
+does not release it while a child retains the same description. An explicit
+unlock acts on that description. These are the relevant [kernel semantics](https://man7.org/linux/man-pages/man2/flock.2.html),
+not evidence that a particular old failure had that owner. CLOEXEC is set in our
+fixture, but the controlled child deliberately stays before exec.
+
+Before changing ownership, a preregistered private checkpoint forks exactly one
+owned child after successful acquisition. Pipe acknowledgements establish that
+the original descriptor is still retained when the parent returns. The raw-File
+control remains Busy until the child explicitly unlocks. Three regressions fail
+on the baseline: ordinary short-owner drop, admission-construction error and a
+real corrupt-ledger transaction followed by recovery. The last fails at variant
+zero with Host(Busy); it does not establish seven baseline failures. This proves
+a reachable mechanism, without reconstructing the missing PID/fd observations of
+either historical incident.
+
+The correction is a private non-cloneable short-fence owner. It wraps the File
+only after successful flock and before fallible admission, and explicitly unlocks
+that original description on drop. It adds no retry, sleep, wider deadline, marker
+removal or new admission predicate. Production has no descriptor extraction or
+borrow accessor. Existing private tests receive only a test-scoped borrow; exact
+source-restoration contracts preserve their assertions and the original runtime
+body outside the guard substitution. Long-lived campaign claims are unchanged.
+
+All four causal controls now pass on Linux Rust 1.94 and 1.88. The corrupt/pending
+ledger test traverses all seven variants, recovers the original revision while
+the child still holds the old descriptor, and preserves file bytes, inode and
+mode without a backend call. A separate control proves that failed contenders
+and an old child's late unlock/close cannot unlock a new independent owner.
+The child uses raw async-signal-safe operations only; pidfd/handshake/watchdog
+cleanup targets just the exact owned unreaped child, never another process.
+
+The [evidence packet](../testing/performance/0.74/local-runs/short-fence-20261016/README.md)
+keeps the baseline reds, type-adaptation errors and two explicitly truncated
+development captures alongside the complete final 178-contract output. Eight
+build/strict-Clippy lanes pass. Both Linux compilers pass the 13-test host group,
+four scan tests, fourteen preparation tests, five proof-reuse tests, old IPC/lease/
+original-fence/host integrations (24/20/5/6), and 99 original-input tests with four
+already registered manual exclusions. Both Windows compilers pass the portable
+IPC/lease/host groups (21/18/5). These are semantic checks, not a throughput gain;
+the earlier five-pair debug result remains pinned to its earlier source.
+
+The remaining ownership question is explicit: raw File error paths before a
+HostExecutionClaim is constructed in acquire/recover are outside this fix and
+need their own preregistration, controls and correction if reproduced. Releasing
+a cooperative short transaction is also not autonomous all-writer cessation.
+Authenticated original-start, later cells and server rehearsal remain closed.

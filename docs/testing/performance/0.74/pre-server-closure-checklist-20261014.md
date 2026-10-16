@@ -201,6 +201,16 @@ live checks. The first candidate's 23-pass/one-Host(Busy) IPC result remains
 retained without retry; new current/MSRV 24-pass IPC runs do not establish its
 cause or fix. Local proof reuse does not supply lifecycle or server admission.
 
+The [short-fence packet](local-runs/short-fence-20261016/README.md) subsequently
+reproduces and fixes a completed short transaction's flock surviving in a
+pre-exec fork alias. Explicit unlock is owned only after successful acquisition,
+also on admission error; a failed contender or old child's late unlock cannot
+release the next independently opened owner. Both Linux compiler regressions
+pass all four causal controls and seven corrupt/pending ledger variants without
+execution or file mutation. This is a proven local defect class, not attribution
+of each old Host(Busy). Raw-file campaign-claim construction errors remain an
+explicit next audit; all-writer cessation and server admission stay closed.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

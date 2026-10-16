@@ -1,0 +1,80 @@
+Warning: truncated output (original token count: 4350)
+Total output lines: 213
+
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.92s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-affcfab4e5118d5a.exe)
+
+running 178 tests
+test diagnostic_attempt_publication_contract_requires_original_transfer_and_closed_start ... ok
+test diagnostic_asserted_worker_binding_keeps_trusted_policy_and_start_closed ... ok
+test diagnostic_authority_intent_borrows_original_without_publisher_or_start ... ok
+test diagnostic_authority_journal_bounds_and_closed_production_authority_are_frozen ... ok
+test diagnostic_context_files_open_inside_original_context_and_keep_start_closed ... ok
+test diagnostic_controller_attempt_process_loss_remains_owned_local_not_start ... ok
+test bounded_diagnostic_manager_cannot_mutate_units_or_release_reservations ... ok
+test diagnostic_controller_build_binds_reviewed_statement_without_execution_or_run_provenance ... ok
+test diagnostic_controller_attempt_requires_original_owned_retention_not_start ... ok
+test diagnostic_controller_fence_preflight_is_original_read_only_not_replay_or_start ... ok
+test diagnostic_controller_trust_is_fixed_principals_not_provenance_replay_or_start ... ok
+test diagnostic_early_attempt_contract_requires_retention_not_replay ... ok
+test diagnostic_empty_fenced_intent_keeps_original_lock_and_cross_refusal ... ok
+test diagnostic_empty_reservation_fence_is_readonly_same_lock_not_publication ... ok
+test checked_in_w0_contract_is_valid_and_non_promotable ... ok
+test diagnostic_fenced_intent_borrows_originals_without_publication_or_start ... ok
+test diagnostic_fixed_authority_backend_keeps_host_enrollment_and_launch_closed ... ok
+test diagnostic_fixed_admission_blocks_context_without_publication_or_enrollment ... ok
+test diagnostic_fixed_intent_storage_is_readonly_not_backend_enrollment ... ok
+test diagnostic_fixed_account_lookup_keeps_trusted_enrollment_and_launch_closed ... ok
+test diagnostic_fixture_recovery_reuses_intents_without_production_restart_authority ... ok
+test diagnostic_fixture_preparation_keeps_production_and_launch_closed ... ok
+test diagnostic_intent_projection_stays_bytes_only_under_original_worker ... ok
+test diagnostic_initial_consumption_retains_original_runtime_not_execution ... ok
+test diagnostic_intent_journal_preserves_consumption_without_execution ... ok
+test diagnostic_live_execution_composition_keeps_enrollment_and_admission_closed ... ok
+test diagnostic_live_identity_composition_keeps_lifecycle_and_admission_closed ... ok
+test diagnostic_kernel_credentials_keep_account_enrollment_and_launch_closed ... ok
+test diagnostic_namespace_credentials_keep_sequential_opening_and_admission_closed ... ok
+test diagnostic_mount_namespace_keeps_leader_consistency_and_production_closed ... ok
+test diagnostic_original_fence_is_existing_short_lock_not_durable_admission ... ok
+test diagnostic_oidc_roster_v2_is_bounded_compatible_and_not_enrollment .…2850 tokens truncated…=true admission_renewal=false starting=false
+test collector_progress::collector_progress_requires_fresh_original_receiver_without_start_or_renewal ... ok
+collector_intent_contract legacy_unchanged=true requirements_only=true execution=false
+test collector_intent::collector_intent_keeps_legacy_bytes_and_execution_boundary_closed ... ok
+test w12_internal_workspace_tools_inherit_reviewed_license ... ok
+test w12_live_registries_preserve_frozen_baseline_inputs ... ok
+test w12_release_admission_contract_is_fail_closed ... ok
+test w12_release_note_retains_draft_claim_rollback_and_gate_boundaries ... ok
+test w12_ordinary_ci_preserves_explicit_infrastructure_boundary ... ok
+test w12_workspace_fast_gate_covers_every_work_item_without_budget_drift ... ok
+test w3_adaptive_retry_preserves_pipeline_one_and_freezes_deep_thresholds ... ok
+test w2_through_w9_terminal_dispositions_are_exact_and_non_promotable ... ok
+test w3_delivery_frontier_review_preserves_semantics_without_authorizing_a_candidate ... ok
+test w9b_d3_screen_seals_memory_rejection_without_native_or_timing_waivers ... ok
+test w3_staged_execution_assessment_does_not_authorize_product_or_threshold_changes ... ok
+test w9b_large_response_attribution_is_bounded_and_does_not_reopen_product_candidates ... ok
+test w9b_owner_receipts_preserve_all_registered_cells_without_product_claims ... ok
+test w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gates ... ok
+test w9c_kernel_attribution_is_linux_only_counterbalanced_and_non_promotable ... ok
+test w9e_allocator_attribution_is_linux_only_complete_and_non_promotable ... ok
+test w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained ... ok
+
+thread 'worker_proof::worker_proof_reuse_is_one_owned_substitution_with_full_reference_and_live_guards' (34168) panicked at crates\xtask\tests\support\performance_contract_074_worker_proof.rs:25:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+collector_reserved_contract original_fence=true initial_reserved=true starting=false root_start=false
+test collector_reserved::collector_reserved_requires_original_owned_publication_not_recovered_start ... ok
+collector_causal_contract post_ack_commitment=true original_guards=true starting=false renewal=false
+test collector_causal::collector_causal_requires_original_post_ack_challenge_and_no_admission_renewal ... ok
+short_fence_contract original_admission=true old_assertions=true long_guards_unchanged=true server=false
+test short_fence::short_fence_owned_unlock_preserves_original_admission_and_test_assertions ... ok
+validation_cost_equivalence test_only=true old_guards=true renewal=false production_optimization=false starting=false
+test validation_cost::validation_cost_exact_test_only_hooks_preserve_all_original_predicates ... ok
+worker_proof_reuse_contract owned_proof=true live_guards_unchanged=true fields_unchanged=true starting=false
+test worker_proof::worker_proof_reuse_is_one_owned_substitution_with_full_reference_and_live_guards ... ok
+test w12_evidence_skeleton_is_exact_and_fail_closed ... ok
+test w12_generic_evidence_report_retains_closed_ship_admission ... ok
+
+test result: ok. 178 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 47.85s
+
