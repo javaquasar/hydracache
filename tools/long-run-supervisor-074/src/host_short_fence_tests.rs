@@ -1,4 +1,6 @@
 //! Bounded owned-fork controls; never a workload or production authority.
+#[path = "host_claim_construction_tests.rs"]
+mod claim_construction;
 use super::*;
 use crate::diagnostic_ipc::*;
 use crate::diagnostic_lease::*;

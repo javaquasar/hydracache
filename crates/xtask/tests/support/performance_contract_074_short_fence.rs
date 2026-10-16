@@ -26,6 +26,8 @@ const REGISTRATION: &str = r#"
 mod short_fence_tests;
 "#;
 pub(super) fn restore(raw: &str) -> String {
+    let normalized = super::claim_construction::restore_host(raw);
+    let raw = normalized.as_str();
     for s in [GUARD, NEW_ACQUIRE, REGISTRATION] {
         assert_eq!(raw.matches(s).count(), 1);
     }
@@ -38,6 +40,8 @@ pub(super) fn restore(raw: &str) -> String {
         .replacen(") -> Result<(PathBuf, ShortHostFence), HostExecutionError>", ") -> Result<(PathBuf, File), HostExecutionError>", 1)
 }
 pub(super) fn restore_gate(raw: &str) -> String {
+    let normalized = super::claim_construction::restore_gate(raw);
+    let raw = normalized.as_str();
     let registration =
         "\n#[path = \"support/performance_contract_074_short_fence.rs\"]\nmod short_fence;\n";
     let legacy = "    let host = short_fence::restore(&host.replace('\\r', \"\"));\n";

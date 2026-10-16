@@ -120,6 +120,26 @@ pub struct HostExecutionClaim {
     disposition: ClaimDisposition,
 }
 
+/// Own the successful flock until construction transfers it to the claim.
+struct PendingHostClaim(Option<File>);
+impl PendingHostClaim {
+    fn file(&self) -> &File {
+        self.0
+            .as_ref()
+            .expect("pending claim owns its original file")
+    }
+    fn into_file(mut self) -> File {
+        self.0.take().expect("pending claim transfers exactly once")
+    }
+}
+impl Drop for PendingHostClaim {
+    fn drop(&mut self) {
+        if let Some(lock) = &self.0 {
+            let _ = FileExt::unlock(lock);
+        }
+    }
+}
+
 impl HostExecutionClaim {
     pub fn acquire(campaign_root: &Path, campaign_id: &str) -> Result<Self, HostExecutionError> {
         Self::acquire_inner(campaign_root, campaign_id, true)
@@ -144,8 +164,12 @@ impl HostExecutionClaim {
         let root = fs::canonicalize(campaign_root)?;
         let lock = open_lock(&root.join(HOST_EXECUTION_LOCK_NAME))?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
-        let mut admission = admission(&root, &lock)?;
-        if admission.present(&root, &lock)? {
+        let pending = PendingHostClaim(Some(lock));
+        let lock = pending.file();
+        #[cfg(all(test, target_os = "linux"))]
+        short_fence_tests::after_acquire(lock);
+        let mut admission = admission(&root, lock)?;
+        if admission.present(&root, lock)? {
             if fs::symlink_metadata(root.join(ACTIVE_CAMPAIGN_NAME)).is_ok() {
                 return Err(HostExecutionError::Path);
             }
@@ -157,11 +181,11 @@ impl HostExecutionClaim {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
             Err(error) => return Err(error.into()),
         };
-        if admission.post_present(&root, &lock)? {
+        if admission.post_present(&root, lock)? {
             return Err(HostExecutionError::Path);
         }
         Ok(Some(Self {
-            lock,
+            lock: pending.into_file(),
             root,
             campaign_id,
             disposition: ClaimDisposition::Recovered,
@@ -198,8 +222,12 @@ impl HostExecutionClaim {
         let lock_path = root.join(HOST_EXECUTION_LOCK_NAME);
         let lock = open_lock(&lock_path)?;
         FileExt::try_lock_exclusive(&lock).map_err(map_lock_error)?;
-        let mut admission = admission(&root, &lock)?;
-        if admission.present(&root, &lock)? {
+        let pending = PendingHostClaim(Some(lock));
+        let lock = pending.file();
+        #[cfg(all(test, target_os = "linux"))]
+        short_fence_tests::after_acquire(lock);
+        let mut admission = admission(&root, lock)?;
+        if admission.present(&root, lock)? {
             return Err(HostExecutionError::DiagnosticConflict);
         }
 
@@ -224,12 +252,12 @@ impl HostExecutionClaim {
             }
             Err(error) => return Err(error.into()),
         };
-        if admission.post_present(&root, &lock)? {
+        if admission.post_present(&root, lock)? {
             // Preserve any durable marker on uncertainty; never repair/retry here.
             return Err(HostExecutionError::DiagnosticConflict);
         }
         Ok(Self {
-            lock,
+            lock: pending.into_file(),
             root,
             campaign_id: campaign_id.to_owned(),
             disposition,
