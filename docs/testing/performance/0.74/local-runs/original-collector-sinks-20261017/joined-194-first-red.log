@@ -1,0 +1,16 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal ... HC074-SINK-INTERRUPT cut=BeforeCreate held=true refused=true unchanged=true
+
+thread 'diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal' (96552) panicked at tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs:77:17:
+assertion failed: matches!(failure.error(), OriginalSinkError::Interrupted(at) if *at == cut)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1020 filtered out; finished in 26.74s
+

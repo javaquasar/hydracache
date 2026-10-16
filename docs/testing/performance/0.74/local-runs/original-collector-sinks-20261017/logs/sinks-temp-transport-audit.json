@@ -1,0 +1,6 @@
+{
+  "key": "sinks-temp-transport-audit",
+  "command": "ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"ls -ldb /tmp/hc074-original-sink-attribution-20261017.* /tmp/hc074-original-sinks-20261017.*\"",
+  "exit_code": 0,
+  "output": "drwx------ 2 hydracache-admin hydracache-admin 4096 Oct 17 00:36 /tmp/hc074-original-sink-attribution-20261017.gI0oLF\\r\ndrwx------ 3 hydracache-admin hydracache-admin 4096 Oct 17 00:30 /tmp/hc074-original-sinks-20261017.L2eJxk\ndrwx------ 2 hydracache-admin hydracache-admin 4096 Oct 17 00:28 /tmp/hc074-original-sinks-20261017.L2eJxk\\r\n"
+}

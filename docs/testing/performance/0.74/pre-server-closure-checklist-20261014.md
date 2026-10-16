@@ -63,6 +63,12 @@ closes only ownership of unexported pipe objects. Production trust/epoch,
 sole-root sinks, executable/manager/process/cgroup start, autonomous watchdog and
 revocation of every exported writer remain open before completion/cells2–4.
 
+The first [sink preparation screen](local-runs/original-collector-sinks-20261017/README.md)
+stops before RootCreated and is withdrawn. Separate attribution reaches the
+original causal expiry without creating output. The complete SIGKILL/lost-ack
+matrix is still unexecuted for sinks; unchanged deadlines and guards are not
+waived. A joined validation-cost/ordering proposal precedes a new candidate.
+
 The [original controller attempt](diagnostic-controller-attempt-design.md) now
 consumes the original common-fence preflight into a durable Reserve request,
 retaining its original OIDC/kernel/authority chain and uninterrupted lock.

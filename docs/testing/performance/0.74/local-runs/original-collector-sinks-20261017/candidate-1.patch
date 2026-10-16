@@ -1,0 +1,1840 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index 0d67461a..bf5169f3 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -56,6 +56,9 @@ mod starting_publication;
+ #[path = "support/performance_contract_074_original_pipes.rs"]
+ mod original_pipes;
+ 
++#[path = "support/performance_contract_074_original_sinks.rs"]
++mod original_sinks;
++
+ #[test]
+ fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
+     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
+diff --git a/crates/xtask/tests/support/performance_contract_074_original_pipes.rs b/crates/xtask/tests/support/performance_contract_074_original_pipes.rs
+index 661a264b..95fd5b4e 100644
+--- a/crates/xtask/tests/support/performance_contract_074_original_pipes.rs
++++ b/crates/xtask/tests/support/performance_contract_074_original_pipes.rs
+@@ -8,6 +8,8 @@ const RESTORATIONS: &[(&str, &str, &str)] = &[
+     ("docs/testing/gated-test-registry.toml", "\n# BEGIN ORIGINAL PIPE API GATE\n[[gate]]\nid = \"cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-pipes\"\nkind = \"cfg_test_target\"\nsource = \"tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"diagnostic_original_collector_pipes\"\ntest = \"\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original anonymous pipes under acknowledged Starting; no FD export, output or execution\"\ntier = \"fast\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 120\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"rust\"\nstep = \"Release 0.74 Linux supervisor contracts\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--test\", \"diagnostic_original_collector_pipes\", \"--locked\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL PIPE API GATE\n\n# BEGIN ORIGINAL PIPE LIVE GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-collector-pipes-joined-fault-and-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_collector_pipes_joined_fault_and_live_refusal\"\ncfg = 'target_os = \"linux\"'\nenv = \"\"\nreason = \"Original anonymous pipes under acknowledged Starting; no FD export, output or execution\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\", \"--release\", \"-p\", \"hydracache-long-run-supervisor-074\", \"--lib\", \"--locked\", \"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipe_tests::original_collector_pipes_joined_fault_and_live_refusal\", \"--\", \"--ignored\", \"--exact\", \"--nocapture\", \"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL PIPE LIVE GATE\n", ""),
+ ];
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::original_sinks::normalize(path, raw);
++    let raw = current.as_str();
+     let mut clean = raw.to_owned();
+     for (p, new, old) in RESTORATIONS {
+         if path == *p {
+@@ -72,7 +74,11 @@ fn original_pipes_preserve_publisher_deadlines_and_private_kernel_ownership() {
+         "tools/long-run-supervisor-074/src/server.rs",
+         "docs/testing/performance/0.74/qualification-manifest.toml",
+     ] {
+-        assert_eq!(read(p), old(p), "out of scope: {p}");
++        assert_eq!(
++            super::original_sinks::normalize(p, &read(p)),
++            old(p),
++            "out of scope: {p}"
++        );
+     }
+     let source = read("tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs");
+     let runtime = source
+diff --git a/docs/COMPAT.md b/docs/COMPAT.md
+index b6bd8394..2fde792e 100644
+--- a/docs/COMPAT.md
++++ b/docs/COMPAT.md
+@@ -1,5 +1,17 @@
+ # HydraCache Compatibility Register
+ 
++The opt-in original collector sink layout v1 creates
++`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`
++under the original retained `/var/lib/hydracache-performance` parent. Both
++directories are exclusive root:root 0700; initial empty sinks are exclusive
++root:root 0600 regular single-link files. File and containing-directory fsync
++precede runtime acknowledgement. Partial or complete context is never adopted,
++overwritten, repaired or automatically removed. Old three-document intent
++history and signed collector projections stay unchanged. Retained paths cannot
++recover an owner, execution permission, completion or a replay right; no
++installed consumer, migration or downgrade is provided. Nonroot modeled tests
++use only their separately retained temporary ancestry, not production custody.
++
+ The opt-in collector start-consent byte artifact uses body
+ `diagnostic-collector-start-consent-074-v1`, envelope
+ `diagnostic-signed-collector-start-consent-074-v1` and Ed25519 domain
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index c9117eb9..4c7ea1b6 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9389,3 +9389,105 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END ORIGINAL PIPE LIVE GATE
++
++# BEGIN ORIGINAL SINK API GATE
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-sinks"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_original_collector_sinks"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_collector_sinks","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL SINK API GATE
++
++# BEGIN ORIGINAL SINK LIVE GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-collector-sinks-joined-fault-and-live-refusal"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_collector_sinks_joined_fault_and_live_refusal"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL SINK LIVE GATE
++
++# BEGIN ORIGINAL SINK CRASH GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-sink-process-crash-all-stages-and-lost-ack"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_sink_process_crash_all_stages_and_lost_ack"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::original_sink_process_crash_all_stages_and_lost_ack","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END ORIGINAL SINK CRASH GATE
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs
+index ef77b683..b0ed4b8a 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs
+@@ -7,6 +7,10 @@ mod crash_tests;
+ #[path = "diagnostic_original_collector_pipes_tests.rs"]
+ mod pipe_tests;
+ 
++#[path = "diagnostic_original_collector_sinks_tests.rs"]
++#[cfg(target_arch = "x86_64")]
++mod sink_tests;
++
+ const STAGES: [CollectorStartingStage; 9] = [
+     CollectorStartingStage::BeforeCreate,
+     CollectorStartingStage::Created,
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+index 163a9a11..1339c0b5 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs
+@@ -1,6 +1,10 @@
+ //! Private opt-in phase on the original storage; default two-file inspection is unchanged.
+ use super::*;
+ 
++#[path = "diagnostic_original_collector_sink_storage.rs"]
++#[cfg(target_arch = "x86_64")]
++mod sink_storage;
++
+ pub(crate) const STARTING_NAME: &str = "diagnostic-collector-starting-074.json";
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ pub enum CollectorStartingStage {
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs
+index c8b9ddf8..e91d34e8 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs
+@@ -362,3 +362,7 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+ #[cfg(test)]
+ #[path = "diagnostic_original_collector_pipe_kernel_tests.rs"]
+ mod tests;
++
++#[path = "diagnostic_original_collector_sinks.rs"]
++#[cfg(target_arch = "x86_64")]
++pub mod sinks;
+
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs
+@@ -0,0 +1,546 @@
++//! Exclusive empty sinks under the original ancestry, not execution or drain authority.
++use super::*;
++use std::ffi::CString;
++
++const PREFIX: &str = "diagnostic-collector-output-074-";
++const DIRECTORY: &str = "collector-attempt-v1";
++const NAMES: [&str; 2] = ["collector-stdout.bin", "collector-stderr.bin"];
++// Linux x86_64 kernel F_GETFL ABI. libc::O_LARGEFILE is zero on this target,
++// but the kernel forces the actual large-file status bit even with SYS_openat.
++const KERNEL_LARGEFILE: i32 = 0o100000;
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum SinkPreparationStage {
++    BeforeCreate,
++    RootCreated,
++    RootSynced,
++    DirectoryCreated,
++    DirectorySynced,
++    StdoutCreated,
++    StdoutSynced,
++    StderrCreated,
++    StderrSynced,
++    Acknowledging,
++}
++const STAGES: [SinkPreparationStage; 10] = [
++    SinkPreparationStage::BeforeCreate,
++    SinkPreparationStage::RootCreated,
++    SinkPreparationStage::RootSynced,
++    SinkPreparationStage::DirectoryCreated,
++    SinkPreparationStage::DirectorySynced,
++    SinkPreparationStage::StdoutCreated,
++    SinkPreparationStage::StdoutSynced,
++    SinkPreparationStage::StderrCreated,
++    SinkPreparationStage::StderrSynced,
++    SinkPreparationStage::Acknowledging,
++];
++#[derive(Debug, thiserror::Error)]
++pub enum OriginalSinkError {
++    #[error("original pipe/Starting refused: {0}")]
++    Original(#[from] OriginalPipeError),
++    #[error("original storage parent refused: {0}")]
++    Storage(#[from] crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::StorageAttemptError),
++    #[error("root-only collector preparation refused")]
++    Privilege,
++    #[error("collector sink identity, flags, bytes or inventory refused")]
++    Invalid,
++    #[error("collector sink context exists; no adoption or repair")]
++    Conflict,
++    #[error("original collector sink preparation already refused")]
++    Refused,
++    #[error("collector sink I/O failed: {0}")]
++    Io(#[from] std::io::Error),
++    #[error("private interruption at {0:?}")]
++    Interrupted(SinkPreparationStage),
++}
++fn output_name(reserved: &[u8]) -> String {
++    format!("{PREFIX}{}", crate::sha256_hex(reserved))
++}
++fn open(parent: &File, name: &str, flags: i32) -> Result<File, OriginalSinkError> {
++    let name = CString::new(name).map_err(|_| OriginalSinkError::Invalid)?;
++    let fd = unsafe {
++        libc::openat(
++            parent.as_raw_fd(),
++            name.as_ptr(),
++            flags | libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK,
++            0o600,
++        )
++    };
++    if fd < 0 {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    Ok(unsafe { File::from_raw_fd(fd) })
++}
++fn mkdir(parent: &File, name: &str) -> Result<(), OriginalSinkError> {
++    let name = CString::new(name).map_err(|_| OriginalSinkError::Invalid)?;
++    if unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o700) } != 0 {
++        let error = std::io::Error::last_os_error();
++        return Err(if error.kind() == std::io::ErrorKind::AlreadyExists {
++            OriginalSinkError::Conflict
++        } else {
++            error.into()
++        });
++    }
++    Ok(())
++}
++fn descriptor_flags(file: &File, command: i32) -> Result<i32, OriginalSinkError> {
++    let value = unsafe { libc::fcntl(file.as_raw_fd(), command) };
++    if value < 0 {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    Ok(value)
++}
++#[derive(PartialEq, Eq)]
++struct Stamp([u64; 11]);
++impl Stamp {
++    fn of(m: &std::fs::Metadata, directory: bool) -> Self {
++        Self([
++            m.dev(),
++            m.ino(),
++            u64::from(m.uid()),
++            u64::from(m.gid()),
++            u64::from(m.mode()),
++            if directory { 0 } else { m.nlink() },
++            if directory { 0 } else { m.len() },
++            if directory { 0 } else { m.mtime() as u64 },
++            if directory { 0 } else { m.mtime_nsec() as u64 },
++            if directory { 0 } else { m.ctime() as u64 },
++            if directory { 0 } else { m.ctime_nsec() as u64 },
++        ])
++    }
++}
++struct Object {
++    file: File,
++    stamp: Option<Stamp>,
++    directory: bool,
++}
++impl Object {
++    fn retain(file: File, directory: bool) -> Self {
++        Self {
++            file,
++            stamp: None,
++            directory,
++        }
++    }
++    fn inspect_file(&self, file: &File, uid: u32, gid: u32) -> Result<(), OriginalSinkError> {
++        let m = file.metadata()?;
++        if m.uid() != uid
++            || m.gid() != gid
++            || m.mode() & 0o7777 != if self.directory { 0o700 } else { 0o600 }
++            || if self.directory {
++                !m.is_dir()
++            } else {
++                !m.is_file() || m.nlink() != 1 || m.len() != 0
++            }
++            || self.stamp.as_ref() != Some(&Stamp::of(&m, self.directory))
++            || descriptor_flags(file, libc::F_GETFD)? != libc::FD_CLOEXEC
++            || descriptor_flags(file, libc::F_GETFL)?
++                != (KERNEL_LARGEFILE
++                    | libc::O_NOFOLLOW
++                    | libc::O_NONBLOCK
++                    | if self.directory {
++                        libc::O_RDONLY | libc::O_DIRECTORY
++                    } else {
++                        libc::O_RDWR
++                    })
++        {
++            return Err(OriginalSinkError::Invalid);
++        }
++        Ok(())
++    }
++    fn inspect(
++        &self,
++        parent: &File,
++        name: &str,
++        uid: u32,
++        gid: u32,
++    ) -> Result<(), OriginalSinkError> {
++        if self.file.metadata()?.dev() != parent.metadata()?.dev() {
++            return Err(OriginalSinkError::Invalid);
++        }
++        self.inspect_file(&self.file, uid, gid)?;
++        let named = open(
++            parent,
++            name,
++            if self.directory {
++                libc::O_RDONLY | libc::O_DIRECTORY
++            } else {
++                libc::O_RDWR
++            },
++        )
++        .map_err(|_| OriginalSinkError::Invalid)?;
++        self.inspect_file(&named, uid, gid)?;
++        self.inspect_file(&self.file, uid, gid)
++    }
++    fn initialize(&mut self, uid: u32, gid: u32) -> Result<(), OriginalSinkError> {
++        self.stamp = Some(Stamp::of(&self.file.metadata()?, self.directory));
++        self.inspect_file(&self.file, uid, gid)
++    }
++}
++fn inventory(directory: &File, expected: &[&str]) -> Result<(), OriginalSinkError> {
++    // Stop at the first unknown/duplicate entry; no unbounded attacker-selected collection.
++    let mut seen = vec![false; expected.len()];
++    let fresh = open(directory, ".", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    for entry in std::fs::read_dir(format!("/proc/self/fd/{}", fresh.as_raw_fd()))? {
++        let name = entry?.file_name();
++        let index = expected
++            .iter()
++            .position(|v| name == *v)
++            .ok_or(OriginalSinkError::Invalid)?;
++        if seen[index] {
++            return Err(OriginalSinkError::Invalid);
++        }
++        seen[index] = true;
++    }
++    if seen.iter().any(|s| !s) {
++        return Err(OriginalSinkError::Invalid);
++    }
++    Ok(())
++}
++
++/// Private empty original sinks. No descriptors, pump, start or recovery are exported.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_stdio(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { use std::os::fd::AsRawFd; p.as_raw_fd(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.finish(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.prepare_original_sinks(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++/// fn denied(p: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_pipes(); }
++/// ```
++pub struct OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    // Declaration order closes evidence writers before pipes and original fence.
++    sinks: [Option<Object>; 2],
++    directory: Option<Object>,
++    root: Option<Object>,
++    pipes: OriginalCollectorPipes<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    name: String,
++    uid: u32,
++    gid: u32,
++    acknowledged: bool,
++    refused: bool,
++}
++impl fmt::Debug for OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalCollectorSinks")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++impl OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.refused || self.pipes.is_refused()
++    }
++    fn refuse(&mut self) {
++        self.refused = true;
++        self.pipes.refuse();
++    }
++    fn reservation(&self) -> &crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::CollectorReservationStorage<'_>{
++        &self
++            .pipes
++            .starting
++            .original
++            .original
++            .prepared
++            .original
++            .original
++            .reservation
++            .storage
++    }
++    fn parent(&self) -> Result<&File, OriginalSinkError> {
++        Ok(self.reservation().collector_output_parent()?)
++    }
++    fn inspect(&self, complete: bool) -> Result<(), OriginalSinkError> {
++        if let Some(root) = &self.root {
++            root.inspect(self.parent()?, &self.name, self.uid, self.gid)?;
++            inventory(
++                &root.file,
++                if self.directory.is_some() {
++                    &[DIRECTORY]
++                } else {
++                    &[]
++                },
++            )?;
++        }
++        if let Some(directory) = &self.directory {
++            directory.inspect(
++                &self.root.as_ref().ok_or(OriginalSinkError::Invalid)?.file,
++                DIRECTORY,
++                self.uid,
++                self.gid,
++            )?;
++            let expected = NAMES
++                .iter()
++                .zip(&self.sinks)
++                .filter_map(|(n, s)| s.as_ref().map(|_| *n))
++                .collect::<Vec<_>>();
++            inventory(&directory.file, &expected)?;
++            for (name, sink) in NAMES.iter().zip(&self.sinks) {
++                if let Some(sink) = sink {
++                    sink.inspect(&directory.file, name, self.uid, self.gid)?;
++                }
++            }
++        }
++        if complete
++            && (self.root.is_none()
++                || self.directory.is_none()
++                || self.sinks.iter().any(Option::is_none))
++        {
++            return Err(OriginalSinkError::Invalid);
++        }
++        Ok(())
++    }
++    fn prepare(
++        &mut self,
++        mut checkpoint: impl FnMut(SinkPreparationStage) -> Result<(), OriginalSinkError>,
++    ) -> Result<(), OriginalSinkError> {
++        self.pipes.revalidate()?;
++        if unsafe { libc::geteuid() } != self.uid || unsafe { libc::getegid() } != self.gid {
++            return Err(OriginalSinkError::Privilege);
++        }
++        let m = self.parent()?.metadata()?;
++        if m.uid() != self.uid || !m.is_dir() || m.mode() & 0o7022 != 0 {
++            return Err(OriginalSinkError::Invalid);
++        }
++        let r = &self
++            .pipes
++            .starting
++            .original
++            .original
++            .prepared
++            .original
++            .original
++            .reservation;
++        self.name = output_name(&r.raw);
++        for stage in STAGES {
++            self.inspect(false)?;
++            self.pipes.revalidate()?;
++            self.inspect(false)?;
++            self.effect(stage)?;
++            checkpoint(stage)?;
++            self.inspect(false)?;
++            self.pipes.revalidate()?;
++            self.inspect(false)?;
++        }
++        self.inspect(true)?;
++        self.acknowledged = true;
++        Ok(())
++    }
++    fn effect(&mut self, at: SinkPreparationStage) -> Result<(), OriginalSinkError> {
++        match at {
++            SinkPreparationStage::BeforeCreate | SinkPreparationStage::Acknowledging => (),
++            SinkPreparationStage::RootCreated => {
++                mkdir(self.parent()?, &self.name)?;
++                self.root = Some(Object::retain(
++                    open(
++                        self.parent()?,
++                        &self.name,
++                        libc::O_RDONLY | libc::O_DIRECTORY,
++                    )?,
++                    true,
++                ));
++                self.root.as_mut().unwrap().initialize(self.uid, self.gid)?;
++            }
++            SinkPreparationStage::RootSynced => {
++                self.root.as_ref().unwrap().file.sync_all()?;
++                self.parent()?.sync_all()?;
++            }
++            SinkPreparationStage::DirectoryCreated => {
++                let root = &self.root.as_ref().unwrap().file;
++                mkdir(root, DIRECTORY)?;
++                self.directory = Some(Object::retain(
++                    open(root, DIRECTORY, libc::O_RDONLY | libc::O_DIRECTORY)?,
++                    true,
++                ));
++                self.directory
++                    .as_mut()
++                    .unwrap()
++                    .initialize(self.uid, self.gid)?;
++            }
++            SinkPreparationStage::DirectorySynced => {
++                self.directory.as_ref().unwrap().file.sync_all()?;
++                self.root.as_ref().unwrap().file.sync_all()?;
++            }
++            SinkPreparationStage::StdoutCreated | SinkPreparationStage::StderrCreated => {
++                let index = usize::from(at == SinkPreparationStage::StderrCreated);
++                self.sinks[index] = Some(Object::retain(
++                    open(
++                        &self.directory.as_ref().unwrap().file,
++                        NAMES[index],
++                        libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
++                    )?,
++                    false,
++                ));
++                self.sinks[index]
++                    .as_mut()
++                    .unwrap()
++                    .initialize(self.uid, self.gid)?;
++            }
++            SinkPreparationStage::StdoutSynced | SinkPreparationStage::StderrSynced => {
++                let index = usize::from(at == SinkPreparationStage::StderrSynced);
++                self.sinks[index].as_ref().unwrap().file.sync_all()?;
++                self.directory.as_ref().unwrap().file.sync_all()?;
++            }
++        }
++        Ok(())
++    }
++    pub fn revalidate(&mut self) -> Result<(), OriginalSinkError> {
++        if self.is_refused() || !self.acknowledged {
++            self.refuse();
++            return Err(OriginalSinkError::Refused);
++        }
++        let result = (|| {
++            self.inspect(true)?;
++            self.pipes.revalidate()?;
++            self.inspect(true)
++        })();
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++    }
++    #[cfg(test)]
++    pub(crate) fn corrupt_descriptor_for_test(&mut self, kind: usize) {
++        match kind {
++            0 => set_flags(&self.sinks[0].as_ref().unwrap().file, libc::F_SETFD, 0).unwrap(),
++            1 => set_flags(
++                &self.sinks[0].as_ref().unwrap().file,
++                libc::F_SETFL,
++                libc::O_APPEND | libc::O_NONBLOCK,
++            )
++            .unwrap(),
++            2 => set_flags(&self.directory.as_ref().unwrap().file, libc::F_SETFD, 0).unwrap(),
++            3 => self.pipes.corrupt_for_test(1),
++            _ => panic!("unknown sink descriptor drift"),
++        }
++    }
++    #[cfg(test)]
++    pub(crate) fn drop_eof_for_test(self) {
++        use std::io::Read;
++        let mut readers = self
++            .pipes
++            .pipes
++            .each_ref()
++            .map(|p| p.as_ref().unwrap().reader.try_clone().unwrap());
++        let sinks = self
++            .sinks
++            .each_ref()
++            .map(|p| p.as_ref().unwrap().file.as_raw_fd());
++        drop(self);
++        for fd in sinks {
++            assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
++            assert_eq!(
++                std::io::Error::last_os_error().raw_os_error(),
++                Some(libc::EBADF)
++            );
++        }
++        for reader in &mut readers {
++            assert_eq!(reader.read(&mut [0; 1]).unwrap(), 0);
++        }
++    }
++}
++pub struct OriginalSinkFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalSinkError,
++    held: Box<OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalSinkFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalSinkError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for OriginalSinkFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalSinkFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for OriginalSinkFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalCollectorPipes<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    #[cfg(test)]
++    pub(crate) fn prepare_original_sinks_for_test(
++        self,
++        checkpoint: impl FnMut(SinkPreparationStage) -> Result<(), OriginalSinkError>,
++    ) -> Result<
++        OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSinkFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let uid = unsafe { libc::geteuid() };
++        let gid = unsafe { libc::getegid() };
++        assert!(
++            uid > 0 && gid > 0,
++            "modeled sink preparation remains nonroot"
++        );
++        self.prepare_sinks_with(uid, gid, checkpoint)
++    }
++    pub fn prepare_original_sinks(
++        self,
++    ) -> Result<
++        OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSinkFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_sinks_with(0, 0, |_| Ok(()))
++    }
++    fn prepare_sinks_with(
++        self,
++        uid: u32,
++        gid: u32,
++        checkpoint: impl FnMut(SinkPreparationStage) -> Result<(), OriginalSinkError>,
++    ) -> Result<
++        OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalSinkFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalCollectorSinks {
++            sinks: [None, None],
++            directory: None,
++            root: None,
++            pipes: self,
++            name: String::new(),
++            uid,
++            gid,
++            acknowledged: false,
++            refused: false,
++        };
++        match held.prepare(checkpoint) {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.refuse();
++                Err(OriginalSinkFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++#[path = "diagnostic_original_collector_sink_kernel_tests.rs"]
++mod tests;
+
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs
+@@ -0,0 +1,10 @@
++//! Read-only parent view for exclusive sinks; no ancestry replacement or opener.
++use super::*;
++impl CollectorReservationStorage<'_> {
++    pub(crate) fn collector_output_parent(&self) -> Result<&std::fs::File, StorageAttemptError> {
++        if self.is_refused() || !self.starting.as_ref().is_some_and(|s| s.acknowledged) {
++            return Err(StorageAttemptError::Refused);
++        }
++        super::super::super::parent(self.original.empty.storage).map_err(Into::into)
++    }
++}
+
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs
+@@ -0,0 +1,158 @@
++use super::*;
++use std::fs;
++use std::os::unix::fs::{symlink, PermissionsExt};
++
++fn object(parent: &File, name: &str, directory: bool) -> Object {
++    if directory {
++        mkdir(parent, name).unwrap();
++    }
++    let file = open(
++        parent,
++        name,
++        if directory {
++            libc::O_RDONLY | libc::O_DIRECTORY
++        } else {
++            libc::O_RDWR | libc::O_CREAT | libc::O_EXCL
++        },
++    )
++    .unwrap();
++    let mut object = Object::retain(file, directory);
++    object.initialize(unsafe { libc::geteuid() }, unsafe { libc::getegid() }).unwrap_or_else(|error| {
++        panic!("kernel object initialization: {error:?} directory={directory} metadata={:?} status={:#x} fd={:#x}",
++            object.file.metadata().unwrap(), descriptor_flags(&object.file, libc::F_GETFL).unwrap(), descriptor_flags(&object.file, libc::F_GETFD).unwrap());
++    });
++    object
++}
++#[test]
++fn original_sink_kernel_exclusive_metadata_and_inventory() {
++    let temp = tempfile::tempdir().unwrap();
++    let parent = File::open(temp.path()).unwrap();
++    let directory = object(&parent, DIRECTORY, true);
++    inventory(&directory.file, &[]).unwrap();
++    let sink = object(&directory.file, NAMES[0], false);
++    sink.inspect(
++        &directory.file,
++        NAMES[0],
++        unsafe { libc::geteuid() },
++        unsafe { libc::getegid() },
++    )
++    .unwrap();
++    inventory(&directory.file, &NAMES[..1]).unwrap();
++    assert!(matches!(
++        mkdir(&parent, DIRECTORY),
++        Err(OriginalSinkError::Conflict)
++    ));
++    assert!(open(
++        &directory.file,
++        NAMES[0],
++        libc::O_RDWR | libc::O_CREAT | libc::O_EXCL
++    )
++    .is_err());
++    assert_eq!(sink.file.metadata().unwrap().len(), 0);
++    fs::write(temp.path().join(DIRECTORY).join("unknown"), b"retained").unwrap();
++    assert!(matches!(
++        inventory(&directory.file, &NAMES[..1]),
++        Err(OriginalSinkError::Invalid)
++    ));
++}
++#[test]
++fn original_sink_kernel_named_content_flags_and_links_refuse() {
++    for kind in 0..8 {
++        let temp = tempfile::tempdir().unwrap();
++        let parent = File::open(temp.path()).unwrap();
++        let sink = object(&parent, NAMES[0], false);
++        let path = temp.path().join(NAMES[0]);
++        match kind {
++            0 => fs::write(&path, b"unowned bytes").unwrap(),
++            1 => fs::set_permissions(&path, fs::Permissions::from_mode(0o400)).unwrap(),
++            2 => {
++                fs::hard_link(&path, temp.path().join("alias")).unwrap();
++            }
++            3 => {
++                fs::rename(&path, temp.path().join("old")).unwrap();
++                fs::write(&path, []).unwrap();
++            }
++            4 => {
++                fs::rename(&path, temp.path().join("old")).unwrap();
++                symlink("old", &path).unwrap();
++            }
++            5 => set_flags(&sink.file, libc::F_SETFD, 0).unwrap(),
++            6 => set_flags(&sink.file, libc::F_SETFL, libc::O_APPEND | libc::O_NONBLOCK).unwrap(),
++            7 => set_flags(&sink.file, libc::F_SETFL, 0).unwrap(),
++            _ => unreachable!(),
++        }
++        assert!(
++            matches!(
++                sink.inspect(&parent, NAMES[0], unsafe { libc::geteuid() }, unsafe {
++                    libc::getegid()
++                }),
++                Err(OriginalSinkError::Invalid)
++            ),
++            "kind={kind}"
++        );
++    }
++}
++#[test]
++fn original_sink_kernel_seeded_names_bind_exact_reserved_bytes() {
++    let mut seed = 0x0740_5171_u64;
++    for index in 0..4096 {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        let raw = [seed.to_le_bytes(), (index as u64).to_le_bytes()].concat();
++        let a = output_name(&raw);
++        assert_eq!(a.len(), PREFIX.len() + 64);
++        assert!(a.starts_with(PREFIX));
++        assert!(crate::is_hash(&a[PREFIX.len()..]));
++        assert!(!a.contains(['/', '\\', '\0']));
++        assert_eq!(a, output_name(&raw));
++        assert_ne!(a, output_name(&[raw.as_slice(), b"\n"].concat()));
++    }
++    println!("HC074-SINK-NAMES seed=0x07405171 randomized=4096 exact=true");
++}
++
++#[test]
++fn original_sink_kernel_concurrent_creation_and_directory_substitution() {
++    let temp = tempfile::tempdir().unwrap();
++    let parent = std::sync::Arc::new(File::open(temp.path()).unwrap());
++    let barrier = std::sync::Arc::new(std::sync::Barrier::new(2));
++    let threads = (0..2)
++        .map(|_| {
++            let parent = parent.clone();
++            let barrier = barrier.clone();
++            std::thread::spawn(move || {
++                barrier.wait();
++                mkdir(&parent, DIRECTORY)
++            })
++        })
++        .collect::<Vec<_>>();
++    let results = threads
++        .into_iter()
++        .map(|t| t.join().unwrap())
++        .collect::<Vec<_>>();
++    assert_eq!(results.iter().filter(|r| r.is_ok()).count(), 1);
++    assert_eq!(
++        results
++            .iter()
++            .filter(|r| matches!(r, Err(OriginalSinkError::Conflict)))
++            .count(),
++        1
++    );
++    let mut directory = Object::retain(
++        open(&parent, DIRECTORY, libc::O_RDONLY | libc::O_DIRECTORY).unwrap(),
++        true,
++    );
++    directory
++        .initialize(unsafe { libc::geteuid() }, unsafe { libc::getegid() })
++        .unwrap();
++    inventory(&directory.file, &[]).unwrap();
++    fs::rename(temp.path().join(DIRECTORY), temp.path().join("original")).unwrap();
++    mkdir(&parent, DIRECTORY).unwrap();
++    assert!(matches!(
++        directory.inspect(&parent, DIRECTORY, unsafe { libc::geteuid() }, unsafe {
++            libc::getegid()
++        }),
++        Err(OriginalSinkError::Invalid)
++    ));
++    inventory(&directory.file, &[]).unwrap();
++}
+
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs
+@@ -0,0 +1,211 @@
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::{OriginalSinkError, SinkPreparationStage};
++use std::path::{Path, PathBuf};
++
++#[path = "diagnostic_original_collector_sinks_crash_tests.rs"]
++mod crash_tests;
++
++const CUTS: [SinkPreparationStage; 10] = [
++    SinkPreparationStage::BeforeCreate,
++    SinkPreparationStage::RootCreated,
++    SinkPreparationStage::RootSynced,
++    SinkPreparationStage::DirectoryCreated,
++    SinkPreparationStage::DirectorySynced,
++    SinkPreparationStage::StdoutCreated,
++    SinkPreparationStage::StdoutSynced,
++    SinkPreparationStage::StderrCreated,
++    SinkPreparationStage::StderrSynced,
++    SinkPreparationStage::Acknowledging,
++];
++fn output(leaf: &Path) -> PathBuf {
++    leaf.parent().unwrap().join(format!(
++        "diagnostic-collector-output-074-{}",
++        crate::sha256_hex(&fs::read(leaf.join("diagnostic-collector-reserved-074.json")).unwrap())
++    ))
++}
++fn inventory_at_cut(leaf: &Path, index: usize) {
++    assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++    let root = output(leaf);
++    if index == 0 {
++        assert!(!root.exists());
++        return;
++    }
++    assert_eq!(
++        fs::read_dir(&root).unwrap().count(),
++        usize::from(index >= 3)
++    );
++    if index < 3 {
++        return;
++    }
++    let directory = root.join("collector-attempt-v1");
++    let count = if index >= 7 {
++        2
++    } else {
++        usize::from(index >= 5)
++    };
++    assert_eq!(fs::read_dir(&directory).unwrap().count(), count);
++    for name in ["collector-stdout.bin", "collector-stderr.bin"]
++        .into_iter()
++        .take(count)
++    {
++        assert!(fs::read(directory.join(name)).unwrap().is_empty());
++    }
++}
++#[test]
++#[ignore = "manual nonroot original sink fault/live ownership; no worker or production enrollment"]
++fn original_collector_sinks_joined_fault_and_live_refusal() {
++    assert_ne!(unsafe { libc::geteuid() }, 0);
++    for (index, cut) in CUTS.into_iter().enumerate() {
++        with_original_at(true, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let pipes = accepted(original, fence, leaf, receiver, sender, model)
++                    .publish_starting()
++                    .unwrap()
++                    .prepare_original_pipes()
++                    .unwrap();
++                let raw = fs::read(leaf.join(COLLECTOR_STARTING_NAME)).unwrap();
++                let mut visited = Vec::new();
++                let failure = pipes
++                    .prepare_original_sinks_for_test(|at| {
++                        visited.push(at);
++                        if at == cut {
++                            return Err(OriginalSinkError::Interrupted(at));
++                        }
++                        Ok(())
++                    })
++                    .unwrap_err();
++                assert!(
++                    matches!(failure.error(), OriginalSinkError::Interrupted(at) if *at == cut)
++                );
++                assert_eq!(visited, CUTS[..=index]);
++                assert!(failure.is_refused());
++                inventory_at_cut(leaf, index);
++                assert_eq!(fs::read(leaf.join(COLLECTOR_STARTING_NAME)).unwrap(), raw);
++                busy(root);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-SINK-INTERRUPT cut={cut:?} held=true refused=true unchanged=true");
++            });
++        });
++    }
++    for kind in 0..12 {
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let pipes = accepted(original, fence, leaf, receiver, sender, model)
++                    .publish_starting()
++                    .unwrap()
++                    .prepare_original_pipes()
++                    .unwrap();
++                let mut owner = pipes.prepare_original_sinks_for_test(|_| Ok(())).unwrap();
++                let directory = output(leaf).join("collector-attempt-v1");
++                let sink = directory.join("collector-stdout.bin");
++                match kind {
++                    0 => fs::write(&sink, b"unowned bytes").unwrap(),
++                    1 => fs::set_permissions(&sink, fs::Permissions::from_mode(0o400)).unwrap(),
++                    2 => fs::hard_link(&sink, directory.join("alias")).unwrap(),
++                    3 => {
++                        fs::rename(&sink, directory.join("old")).unwrap();
++                        fs::write(&sink, []).unwrap();
++                    }
++                    4 => {
++                        fs::rename(&sink, directory.join("old")).unwrap();
++                        symlink("old", &sink).unwrap();
++                    }
++                    5 => fs::write(directory.join("unknown"), b"retained").unwrap(),
++                    6..=9 => owner.corrupt_descriptor_for_test(kind - 6),
++                    10 => fs::write(&paths.worker, b"sink trust drift").unwrap(),
++                    11 => {
++                        fs::set_permissions(&directory, fs::Permissions::from_mode(0o500)).unwrap()
++                    }
++                    _ => unreachable!(),
++                }
++                let result = owner.revalidate();
++                if kind == 9 {
++                    assert!(matches!(result, Err(OriginalSinkError::Original(crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::OriginalPipeError::Invalid))), "kind={kind} {result:?}");
++                } else if kind == 10 {
++                    assert!(
++                        matches!(result, Err(OriginalSinkError::Original(_))),
++                        "kind={kind} {result:?}"
++                    );
++                } else {
++                    assert!(
++                        matches!(result, Err(OriginalSinkError::Invalid)),
++                        "kind={kind} {result:?}"
++                    );
++                }
++                assert!(owner.is_refused());
++                if kind == 11 {
++                    fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
++                }
++                assert!(matches!(
++                    owner.revalidate(),
++                    Err(OriginalSinkError::Refused)
++                ));
++                busy(root);
++                drop(owner);
++                retained_context_refuses_for_test(root);
++                println!("HC074-SINK-DRIFT kind={kind} held=true refused=true");
++            });
++        });
++    }
++    for kind in 0..4 {
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let mut pipes = accepted(original, fence, leaf, receiver, sender, model)
++                    .publish_starting()
++                    .unwrap()
++                    .prepare_original_pipes()
++                    .unwrap();
++                if kind == 0 {
++                    fs::create_dir(output(leaf)).unwrap();
++                }
++                if kind == 1 {
++                    fs::write(&paths.worker, b"already refused sinks").unwrap();
++                    assert!(pipes.revalidate().is_err());
++                }
++                let result = if kind == 2 {
++                    pipes.prepare_original_sinks()
++                } else {
++                    pipes.prepare_original_sinks_for_test(|at| {
++                        if kind == 3 && at == SinkPreparationStage::Acknowledging {
++                            fs::write(&paths.worker, b"sink ACK trust drift").unwrap();
++                        }
++                        Ok(())
++                    })
++                };
++                let failure = result.unwrap_err();
++                match kind {
++                    0 => assert!(matches!(failure.error(), OriginalSinkError::Conflict)),
++                    1 | 3 => assert!(matches!(failure.error(), OriginalSinkError::Original(_))),
++                    2 => assert!(matches!(failure.error(), OriginalSinkError::Privilege)),
++                    _ => unreachable!(),
++                }
++                assert!(failure.is_refused());
++                if kind == 1 || kind == 2 {
++                    assert!(!output(leaf).exists());
++                }
++                busy(root);
++                drop(failure);
++                retained_context_refuses_for_test(root);
++                println!("HC074-SINK-ENTRY kind={kind} held=true refused=true");
++            });
++        });
++    }
++    with_original_at(false, None, |original, _, receiver, sender, model| {
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let pipes = accepted(original, fence, leaf, receiver, sender, model)
++                .publish_starting()
++                .unwrap()
++                .prepare_original_pipes()
++                .unwrap();
++            let mut owner = pipes.prepare_original_sinks_for_test(|_| Ok(())).unwrap();
++            owner.revalidate().unwrap();
++            inventory_at_cut(leaf, 9);
++            busy(root);
++            owner.drop_eof_for_test();
++            retained_context_refuses_for_test(root);
++            inventory_at_cut(leaf, 9);
++            println!("HC074-SINK-CONTROL original=true empty=true drop_eof=true execution=false");
++        });
++    });
++}
+
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs
+@@ -0,0 +1,500 @@
++//! Private nonroot original empty-sink SIGKILL proof; no installed entry.
++use super::*;
++use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{
++    inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test,
++};
++use crate::host_execution::{lock_host_root, HostExecutionError};
++use std::io::{BufRead, BufReader, Read, Write};
++use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
++use std::os::unix::fs::MetadataExt;
++use std::os::unix::process::ExitStatusExt;
++use std::process::{Child, Command, Stdio};
++use std::sync::mpsc;
++use std::thread::{self, JoinHandle};
++use std::time::Duration;
++
++const READY: &str = "HC074-ORIGINAL-SINK-READY ";
++const ROOT: &str = "HC074_PRIVATE_ORIGINAL_SINK_CRASH_ROOT";
++const MODE: &str = "HC074_PRIVATE_ORIGINAL_SINK_CRASH_MODE";
++const STAGE: &str = "HC074_PRIVATE_ORIGINAL_SINK_CRASH_STAGE";
++const AUTHORITY: &str = "HC074_PRIVATE_ORIGINAL_SINK_CRASH_AUTHORITY";
++const BUDGET: u64 = 8192;
++const SEED: u64 = 0x0740_51d1;
++
++fn valid_stage(stage: &str) -> bool {
++    stage == "AfterReturn" || CUTS.iter().any(|at| format!("{at:?}") == stage)
++}
++fn readiness_line(line: &str) -> Option<(&str, u32)> {
++    if !line.ends_with('\n') || line.contains(['\r', '\0']) {
++        return None;
++    }
++    let (prefix, body) = line.split_once(READY)?;
++    if !(prefix.is_empty() || prefix.starts_with("test ") && prefix.ends_with(" ... ")) {
++        return None;
++    }
++    let (stage, pid) = body.strip_suffix('\n')?.split_once(' ')?;
++    if !(valid_stage(stage) || matches!(stage, "fresh-refused"))
++        || pid.is_empty()
++        || !pid.bytes().all(|b| b.is_ascii_digit())
++    {
++        return None;
++    }
++    let pid = pid.parse().ok()?;
++    (pid > 0).then_some((stage, pid))
++}
++
++#[test]
++fn original_sink_process_protocol_accepts_only_bounded_expected_records() {
++    for prefix in ["", "test nested::owned_child ... "] {
++        for stage in [
++            "BeforeCreate",
++            "Acknowledging",
++            "AfterReturn",
++            "fresh-refused",
++        ] {
++            let line = format!("{prefix}{READY}{stage} 123\n");
++            assert_eq!(readiness_line(&line), Some((stage, 123)));
++        }
++    }
++    for line in [
++        format!("junk {READY}AfterReturn 123\n"),
++        format!("{READY}AfterReturn 0\n"),
++        format!("{READY}AfterReturn -1\n"),
++        format!("{READY}AfterReturn 4294967296\n"),
++        format!("{READY}AfterReturn 123 extra\n"),
++        format!("{READY}AfterReturn 123\r\n"),
++        format!("{READY}AfterReturn 123\0\n"),
++        format!("{READY}AfterReturn 123"),
++        format!("{READY}unknown 123\n"),
++        format!("{READY}AfterReturn 123 {READY}fresh-empty 123\n"),
++    ] {
++        assert_eq!(readiness_line(&line), None, "{line:?}");
++    }
++}
++
++fn ready(stage: &str, wait: bool) {
++    println!("{READY}{stage} {}", std::process::id());
++    std::io::stdout().flush().unwrap();
++    if wait {
++        let mut command = [0];
++        std::io::stdin().read_exact(&mut command).unwrap();
++        assert_eq!(command, [b'q']);
++    }
++}
++
++fn owned_root() -> PathBuf {
++    let root = PathBuf::from(std::env::var_os(ROOT).unwrap());
++    assert_eq!(root.parent(), Some(Path::new("/tmp")));
++    let name = root.file_name().unwrap().to_str().unwrap();
++    assert!(name.starts_with("hydracache-original-sink-crash-") && name.len() <= 128);
++    assert!(name
++        .bytes()
++        .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'));
++    assert_eq!(fs::canonicalize(&root).unwrap(), root);
++    for path in [&root, &root.join("context"), &root.join("origin")] {
++        let m = fs::symlink_metadata(path).unwrap();
++        assert!(m.is_dir() && !m.file_type().is_symlink());
++        assert_eq!(
++            (m.uid(), m.gid(), m.mode() & 0o7777),
++            (
++                unsafe { libc::geteuid() },
++                unsafe { libc::getegid() },
++                0o700
++            )
++        );
++        assert_ne!(m.uid(), 0);
++    }
++    assert_eq!(std::env::temp_dir(), root.join("context"));
++    root
++}
++
++#[test]
++fn original_sink_process_child() {
++    let Some(mode) = std::env::var_os(MODE) else {
++        return;
++    };
++    let root = owned_root();
++    let stage = std::env::var(STAGE).unwrap();
++    assert!(valid_stage(&stage));
++    if mode == "inspect" {
++        inspect_empty_fence_at_for_test(&root.join("origin"), false);
++        ready("fresh-refused", false);
++        return;
++    }
++    assert!(mode == "kill" || mode == "control");
++    let authority = PathBuf::from(std::env::var_os(AUTHORITY).unwrap());
++    assert_eq!(authority.parent(), Some(Path::new("/tmp")));
++    assert_eq!(fs::canonicalize(&authority).unwrap(), authority);
++    assert!(authority
++        .file_name()
++        .unwrap()
++        .to_str()
++        .unwrap()
++        .starts_with("hydracache-authority-"));
++    let m = fs::symlink_metadata(&authority).unwrap();
++    assert!(m.is_dir() && !m.file_type().is_symlink());
++    assert_eq!(
++        (m.uid(), m.gid(), m.mode() & 0o7777),
++        (
++            unsafe { libc::geteuid() },
++            unsafe { libc::getegid() },
++            0o700
++        )
++    );
++    with_original_at(
++        false,
++        Some(&authority),
++        |original, _, receiver, sender, model| {
++            with_owned_empty_fence_at_for_test(&root.join("origin"), |fence, _, leaf| {
++                let framed = accepted(original, fence, leaf, receiver, sender, model);
++                let mut visited = Vec::new();
++                let pipes = framed
++                    .publish_starting()
++                    .unwrap()
++                    .prepare_original_pipes()
++                    .unwrap();
++                let mut owner = pipes
++                    .prepare_original_sinks_for_test(|at| {
++                        visited.push(at);
++                        assert_eq!(visited, CUTS[..visited.len()]);
++                        if format!("{at:?}") == stage {
++                            ready(&stage, true);
++                        }
++                        Ok(())
++                    })
++                    .unwrap();
++                assert_eq!(visited, CUTS);
++                assert_eq!(stage, "AfterReturn");
++                owner.revalidate().unwrap();
++                ready("AfterReturn", true);
++                owner.revalidate().unwrap();
++            });
++        },
++    );
++}
++
++struct Scratch(tempfile::TempDir, tempfile::TempDir);
++impl Scratch {
++    fn new() -> Self {
++        assert_ne!(
++            unsafe { libc::geteuid() },
++            0,
++            "manual proof requires nonroot"
++        );
++        let root = tempfile::Builder::new()
++            .prefix("hydracache-original-sink-crash-")
++            .tempdir_in("/tmp")
++            .unwrap();
++        fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
++        for name in ["context", "origin"] {
++            fs::create_dir(root.path().join(name)).unwrap();
++            fs::set_permissions(root.path().join(name), fs::Permissions::from_mode(0o700)).unwrap();
++        }
++        let authority = tempfile::Builder::new()
++            .prefix("hydracache-authority-")
++            .tempdir_in("/tmp")
++            .unwrap();
++        fs::set_permissions(authority.path(), fs::Permissions::from_mode(0o700)).unwrap();
++        Self(root, authority)
++    }
++    fn origin(&self) -> PathBuf {
++        self.0.path().join("origin")
++    }
++    fn context(&self) -> PathBuf {
++        self.0.path().join("context")
++    }
++    fn leaf(&self) -> PathBuf {
++        self.origin()
++            .join("var/lib/hydracache-performance/diagnostic-intents-074")
++    }
++    fn campaigns(&self) -> PathBuf {
++        self.origin()
++            .join("var/lib/hydracache-performance/campaigns")
++    }
++}
++
++fn terminal(fd: &OwnedFd, milliseconds: i32) -> bool {
++    let mut poll = libc::pollfd {
++        fd: fd.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    let result = unsafe { libc::poll(&mut poll, 1, milliseconds) };
++    assert!(result >= 0);
++    assert_eq!(poll.revents & (libc::POLLERR | libc::POLLNVAL), 0);
++    result == 1 && poll.revents & libc::POLLIN != 0
++}
++type Output = BufReader<std::io::Take<std::process::ChildStdout>>;
++struct OwnedChild {
++    child: Child,
++    pidfd: Option<OwnedFd>,
++    collector: Option<JoinHandle<()>>,
++    output: Option<Output>,
++}
++impl OwnedChild {
++    fn start(s: &Scratch, mode: &str, stage: &str) -> Self {
++        let full = format!("{}::original_sink_process_child", module_path!());
++        let (_, test) = full.split_once("::").unwrap();
++        let child = Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", test, "--nocapture", "--test-threads=1"])
++            .env(ROOT, s.0.path())
++            .env(AUTHORITY, s.1.path())
++            .env(MODE, mode)
++            .env(STAGE, stage)
++            .env("TMPDIR", s.context())
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::inherit())
++            .spawn()
++            .unwrap();
++        let mut owned = Self {
++            child,
++            pidfd: None,
++            collector: None,
++            output: None,
++        };
++        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, owned.child.id(), 0) };
++        assert!(fd >= 0, "pin exact owned child before waiting");
++        owned.pidfd = Some(unsafe { OwnedFd::from_raw_fd(fd as i32) });
++        let output = owned.child.stdout.take().unwrap();
++        let (send, receive) = mpsc::sync_channel(1);
++        owned.collector = Some(thread::spawn(move || {
++            let mut reader = BufReader::new(output.take(BUDGET));
++            loop {
++                let mut line = String::new();
++                if reader.read_line(&mut line).unwrap() == 0 {
++                    let _ = send.send((None, reader));
++                    break;
++                }
++                if let Some((label, pid)) = readiness_line(&line) {
++                    let _ = send.send((Some((label.to_owned(), pid)), reader));
++                    break;
++                }
++            }
++        }));
++        // This is a harness fail-safe, never the correctness oracle.
++        let (message, reader) = receive
++            .recv_timeout(Duration::from_secs(60))
++            .expect("owned original chain did not reach logical checkpoint");
++        owned.output = Some(reader);
++        owned.collector.take().unwrap().join().unwrap();
++        let expected = if mode == "inspect" {
++            "fresh-refused"
++        } else {
++            stage
++        };
++        assert_eq!(message, Some((expected.to_owned(), owned.child.id())));
++        owned
++    }
++    fn finish(&mut self, kill: bool, inspection: bool) {
++        if kill {
++            // The descriptor pins this exact unreaped child, not a discovered PID.
++            assert_eq!(
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        self.pidfd.as_ref().unwrap().as_raw_fd(),
++                        libc::SIGKILL,
++                        std::ptr::null::<libc::siginfo_t>(),
++                        0,
++                    )
++                },
++                0
++            );
++        } else if !inspection {
++            self.child.stdin.as_mut().unwrap().write_all(b"q").unwrap();
++        }
++        assert!(
++            terminal(self.pidfd.as_ref().unwrap(), 60_000),
++            "owned child did not terminate"
++        );
++        let status = self.child.wait().unwrap();
++        if kill {
++            assert_eq!(status.signal(), Some(libc::SIGKILL));
++        } else {
++            assert!(status.success(), "owned child failed: {status}");
++        }
++        let mut tail = Vec::new();
++        self.output
++            .as_mut()
++            .unwrap()
++            .read_to_end(&mut tail)
++            .unwrap();
++        assert!(tail.len() < BUDGET as usize);
++        assert!(
++            self.output.as_ref().unwrap().get_ref().limit() > 0,
++            "child output budget exhausted"
++        );
++    }
++}
++impl Drop for OwnedChild {
++    fn drop(&mut self) {
++        if self.child.try_wait().is_ok_and(|status| status.is_none()) {
++            if let Some(fd) = &self.pidfd {
++                unsafe {
++                    libc::syscall(
++                        libc::SYS_pidfd_send_signal,
++                        fd.as_raw_fd(),
++                        libc::SIGKILL,
++                        std::ptr::null::<libc::siginfo_t>(),
++                        0,
++                    );
++                }
++            } else {
++                let _ = self.child.kill();
++            }
++        }
++        let _ = self.child.wait();
++        if let Some(collector) = self.collector.take() {
++            let _ = collector.join();
++        }
++    }
++}
++
++#[derive(Debug, PartialEq, Eq)]
++struct Entry {
++    name: PathBuf,
++    metadata: [u64; 11],
++    bytes: Vec<u8>,
++}
++fn snapshot(root: &Path) -> Vec<Entry> {
++    fn visit(root: &Path, path: &Path, entries: &mut Vec<Entry>) {
++        let m = fs::symlink_metadata(path).unwrap();
++        assert!(!m.file_type().is_symlink() && (m.is_dir() || m.is_file()));
++        assert_eq!(
++            (m.uid(), m.gid()),
++            (unsafe { libc::geteuid() }, unsafe { libc::getegid() })
++        );
++        assert!(m.len() <= 65_536);
++        if m.is_file() {
++            assert_eq!(m.nlink(), 1);
++        }
++        entries.push(Entry {
++            name: path.strip_prefix(root).unwrap().to_owned(),
++            metadata: [
++                m.dev(),
++                m.ino(),
++                u64::from(m.uid()),
++                u64::from(m.gid()),
++                u64::from(m.mode()),
++                m.nlink(),
++                m.len(),
++                m.mtime() as u64,
++                m.mtime_nsec() as u64,
++                m.ctime() as u64,
++                m.ctime_nsec() as u64,
++            ],
++            bytes: if m.is_file() {
++                fs::read(path).unwrap()
++            } else {
++                vec![]
++            },
++        });
++        if m.is_dir() {
++            for entry in fs::read_dir(path).unwrap() {
++                visit(root, &entry.unwrap().path(), entries);
++            }
++        }
++    }
++    let mut entries = Vec::new();
++    visit(root, root, &mut entries);
++    entries.sort_by(|a, b| a.name.cmp(&b.name));
++    entries
++}
++
++fn checkpoint_contents(s: &Scratch, stage: &str, _context: &[Entry], _authority: &[Entry]) {
++    let request = fs::read(s.leaf().join(NAME)).unwrap();
++    let reserved = fs::read(s.leaf().join(RESERVED_NAME)).unwrap();
++    let starting = fs::read(s.leaf().join(COLLECTOR_STARTING_NAME)).unwrap();
++    validate_retained_collector_reserved(&reserved, &request).unwrap();
++    validate_retained_collector_starting(&starting, &request, &reserved).unwrap();
++    for name in [NAME, RESERVED_NAME, COLLECTOR_STARTING_NAME] {
++        assert_eq!(
++            fs::metadata(s.leaf().join(name)).unwrap().mode() & 0o7777,
++            0o400
++        );
++    }
++    let index = if stage == "AfterReturn" {
++        9
++    } else {
++        CUTS.iter()
++            .position(|at| format!("{at:?}") == stage)
++            .unwrap()
++    };
++    inventory_at_cut(&s.leaf(), index);
++    if index > 0 {
++        let root = output(&s.leaf());
++        assert_eq!(fs::metadata(&root).unwrap().mode() & 0o7777, 0o700);
++        if index >= 3 {
++            let directory = root.join("collector-attempt-v1");
++            assert_eq!(fs::metadata(&directory).unwrap().mode() & 0o7777, 0o700);
++            for entry in fs::read_dir(directory).unwrap() {
++                let m = entry.unwrap().metadata().unwrap();
++                assert_eq!(m.mode() & 0o7777, 0o600);
++                assert_eq!(m.nlink(), 1);
++                assert_eq!(m.len(), 0);
++            }
++        }
++    }
++}
++
++fn run_case(stage: &str, kill: bool, repeat: u32) {
++    let s = Scratch::new();
++    let mut child = OwnedChild::start(&s, if kill { "kill" } else { "control" }, stage);
++    assert!(!terminal(child.pidfd.as_ref().unwrap(), 0));
++    assert!(matches!(
++        lock_host_root(&s.campaigns()),
++        Err(HostExecutionError::Busy)
++    ));
++    let origin = snapshot(&s.origin());
++    let context = snapshot(&s.context());
++    let authority = snapshot(s.1.path());
++    checkpoint_contents(&s, stage, &context, &authority);
++    child.finish(kill, false);
++    drop(lock_host_root(&s.campaigns()).expect("original flock survived terminated owner"));
++    assert_eq!(snapshot(&s.origin()), origin);
++    assert_eq!(snapshot(s.1.path()), authority);
++    if kill {
++        assert_eq!(snapshot(&s.context()), context);
++    } else {
++        assert_eq!(fs::read_dir(s.context()).unwrap().count(), 0);
++    }
++    let retained_context = snapshot(&s.context());
++    for inspection in 1..=2 {
++        let mut fresh = OwnedChild::start(&s, "inspect", stage);
++        fresh.finish(false, true);
++        assert_eq!(snapshot(&s.origin()), origin);
++        assert_eq!(snapshot(&s.context()), retained_context);
++        assert_eq!(snapshot(s.1.path()), authority);
++        println!(
++            "original_sink_crash seed=0x{SEED:08x} repeat={repeat} stage={stage} sigkill={kill} fresh_inspection={inspection} empty=false unchanged=true"
++        );
++    }
++}
++
++fn run_collector_crash_matrix(repeat: u32) {
++    let mut order: Vec<_> = CUTS.iter().map(|stage| format!("{stage:?}")).collect();
++    order.push("AfterReturn".into());
++    let mut seed = SEED;
++    for i in (1..order.len()).rev() {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        order.swap(i, seed as usize % (i + 1));
++    }
++    for stage in order {
++        run_case(&stage, true, repeat);
++    }
++    run_case("AfterReturn", false, repeat);
++    println!(
++        "original_sink_crash_summary seed=0x{SEED:08x} repeat={repeat} sigkills=11 controls=1 fresh_inspections=24 production_enrollment=false start=false"
++    );
++}
++
++#[test]
++#[ignore = "manual nonroot Linux original empty sinks SIGKILL proof"]
++fn original_sink_process_crash_all_stages_and_lost_ack() {
++    for repeat in 1..=3 {
++        run_collector_crash_matrix(repeat);
++    }
++}
+
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs b/tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs
+new file mode 100644
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs
+@@ -0,0 +1,15 @@
++#![cfg(all(target_os = "linux", target_arch = "x86_64"))]
++use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::OriginalCollectorPipes;
++#[test]
++fn original_sink_api_consumes_original_pipes_without_caller_inputs() {
++    fn probe(owner: OriginalCollectorPipes<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.prepare_original_sinks();
++    }
++    let _ = probe;
++    use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++    fn named(mut owner: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.is_refused();
++        let _ = owner.revalidate();
++    }
++    let _ = named;
++}
+
+diff --git a/crates/xtask/tests/support/performance_contract_074_original_sinks.rs b/crates/xtask/tests/support/performance_contract_074_original_sinks.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_original_sinks.rs
+@@ -0,0 +1,144 @@
++//! Exact additive sink registrations; original storage/pipe predicates stay unchanged.
++const RESTORATIONS: &[(&str, &str, &str)] = &[
++    ("crates/xtask/tests/performance_contract_074.rs", "\n#[path = \"support/performance_contract_074_original_sinks.rs\"]\nmod original_sinks;\n", ""),
++    ("crates/xtask/tests/support/performance_contract_074_original_pipes.rs", "    let current = super::original_sinks::normalize(path, raw);\n    let raw = current.as_str();\n", ""),
++    ("crates/xtask/tests/support/performance_contract_074_original_pipes.rs", "        assert_eq!(\n            super::original_sinks::normalize(p, &read(p)),\n            old(p),\n            \"out of scope: {p}\"\n        );", "        assert_eq!(read(p), old(p), \"out of scope: {p}\");"),
++    ("tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs", "\n#[path = \"diagnostic_original_collector_sinks.rs\"]\n#[cfg(target_arch = \"x86_64\")]\npub mod sinks;\n", ""),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs", "\n#[path = \"diagnostic_original_collector_sink_storage.rs\"]\n#[cfg(target_arch = \"x86_64\")]\nmod sink_storage;\n", ""),
++    ("tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs", "\n#[path = \"diagnostic_original_collector_sinks_tests.rs\"]\n#[cfg(target_arch = \"x86_64\")]\nmod sink_tests;\n", ""),
++    ("docs/COMPAT.md", "The opt-in original collector sink layout v1 creates\n`diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`\nunder the original retained `/var/lib/hydracache-performance` parent. Both\ndirectories are exclusive root:root 0700; initial empty sinks are exclusive\nroot:root 0600 regular single-link files. File and containing-directory fsync\nprecede runtime acknowledgement. Partial or complete context is never adopted,\noverwritten, repaired or automatically removed. Old three-document intent\nhistory and signed collector projections stay unchanged. Retained paths cannot\nrecover an owner, execution permission, completion or a replay right; no\ninstalled consumer, migration or downgrade is provided. Nonroot modeled tests\nuse only their separately retained temporary ancestry, not production custody.\n\n", ""),
++    ("docs/testing/gated-test-registry.toml", "\n# BEGIN ORIGINAL SINK API GATE\n[[gate]]\nid = \"cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-sinks\"\nkind = \"cfg_test_target\"\nsource = \"tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"diagnostic_original_collector_sinks\"\ntest = \"\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment\"\ntier = \"fast\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 120\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"rust\"\nstep = \"Release 0.74 Linux supervisor contracts\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--test\",\"diagnostic_original_collector_sinks\",\"--locked\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL SINK API GATE\n\n# BEGIN ORIGINAL SINK LIVE GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-collector-sinks-joined-fault-and-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_collector_sinks_joined_fault_and_live_refusal\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL SINK LIVE GATE\n\n# BEGIN ORIGINAL SINK CRASH GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-sink-process-crash-all-stages-and-lost-ack\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_sink_process_crash_all_stages_and_lost_ack\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original exclusive empty sinks under acknowledged Starting; no worker or production enrollment\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::original_sink_process_crash_all_stages_and_lost_ack\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL SINK CRASH GATE\n", ""),
++];
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let mut clean = raw.to_owned();
++    for (p, new, old) in RESTORATIONS {
++        if path == *p {
++            assert_eq!(
++                clean.matches(new).count(),
++                1,
++                "unapproved original sink adapter: {path}"
++            );
++            clean = clean.replacen(new, old, 1);
++        }
++    }
++    clean
++}
++#[test]
++fn original_sinks_preserve_all_original_guards_and_private_drop_order() {
++    let read = |p: &str| {
++        std::fs::read_to_string(super::root().join(p))
++            .unwrap()
++            .replace('\r', "")
++    };
++    let old = |p: &str| {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("42087991:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        String::from_utf8(out.stdout).unwrap().replace('\r', "")
++    };
++    for (p, _, _) in RESTORATIONS {
++        assert_eq!(
++            normalize(p, &read(p)),
++            old(p),
++            "original source changed: {p}"
++        );
++        assert_ne!(
++            normalize(p, &format!("{}\n// unapproved\n", read(p))),
++            old(p)
++        );
++    }
++    let p = "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs";
++    assert!(std::panic::catch_unwind(|| normalize(
++        p,
++        &read(p).replace("pub mod sinks;", "pub mod unchecked;")
++    ))
++    .is_err());
++    for p in [
++        "Cargo.toml",
++        "Cargo.lock",
++        "tools/long-run-supervisor-074/Cargo.toml",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_starting_crash_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
++        "tools/long-run-supervisor-074/src/server.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(read(p), old(p), "out of scope: {p}");
++    }
++    let source = read("tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs");
++    let runtime = source
++        .lines()
++        .filter(|l| !l.trim_start().starts_with("///"))
++        .collect::<Vec<_>>()
++        .join("\n");
++    for required in [
++        "self.pipes.revalidate()?",
++        "collector_output_parent()?",
++        "self.inspect(false)?",
++        "self.parent()?.sync_all()?",
++        "file.sync_all()?",
++        "libc::O_EXCL",
++        "libc::O_NOFOLLOW",
++        "libc::O_CLOEXEC",
++        "libc::openat",
++        "KERNEL_LARGEFILE",
++        "self.pipes.refuse()",
++        "held: Box::new(held)",
++        "self.prepare_sinks_with(0, 0,",
++    ] {
++        assert!(runtime.contains(required), "{required}");
++    }
++    for denied in [
++        "pub fn into_",
++        "pub fn start_once",
++        "impl Clone",
++        "impl AsRawFd",
++        "SystemTime",
++        "Command::",
++        "SigningKey",
++        "pub fn recover",
++        "set_len(",
++        "remove_file(",
++        "remove_dir",
++        "O_TRUNC",
++        "File::open(",
++        "pub fn pump",
++        "pub fn finish",
++    ] {
++        assert!(!runtime.contains(denied), "{denied}");
++    }
++    let owner = source
++        .split_once("pub struct OriginalCollectorSinks")
++        .unwrap()
++        .1
++        .split_once("impl fmt::Debug")
++        .unwrap()
++        .0;
++    assert!(
++        owner.find("sinks: [Option<Object>; 2]").unwrap()
++            < owner.find("pipes: OriginalCollectorPipes").unwrap()
++    );
++    assert!(
++        owner.find("root: Option<Object>").unwrap()
++            < owner.find("pipes: OriginalCollectorPipes").unwrap()
++    );
++    let effects = source
++        .split_once("for stage in STAGES {")
++        .unwrap()
++        .1
++        .split_once("self.acknowledged = true")
++        .unwrap()
++        .0;
++    assert!(effects.contains("self.effect(stage)?;\n            checkpoint(stage)?;\n            self.inspect(false)?;\n            self.pipes.revalidate()?;\n            self.inspect(false)?;"));
++}

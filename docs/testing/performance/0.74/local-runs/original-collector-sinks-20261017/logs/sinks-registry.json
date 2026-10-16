@@ -1,0 +1,6 @@
+{
+  "key": "sinks-registry",
+  "command": ".\\target\\debug\\xtask.exe gated-test-check",
+  "exit_code": 1,
+  "output": "gated-test-check: docs/testing/gated-test-registry.toml: stale gate `cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-sinks` does not resolve to a discovered gate\ngated-test-check: docs/testing/gated-test-registry.toml: unregistered cfg-gated target hydracache-long-run-supervisor-074/diagnostic_original_collector_sinks (all (target_os = \"linux\" , target_arch = \"x86_64\")) in tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs\nError: \"gated-test-check found 2 problem(s)\"\n"
+}

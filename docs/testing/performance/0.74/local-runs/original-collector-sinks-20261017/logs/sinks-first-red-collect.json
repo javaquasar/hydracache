@@ -1,0 +1,6 @@
+{
+  "key": "sinks-first-red-collect",
+  "command": "scp -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42:/tmp/hc074-original-sinks-20261017.L2eJxk/joined-194.log C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/original-collector-sinks-20261017/joined-194-first-red.log",
+  "exit_code": 0,
+  "output": ""
+}

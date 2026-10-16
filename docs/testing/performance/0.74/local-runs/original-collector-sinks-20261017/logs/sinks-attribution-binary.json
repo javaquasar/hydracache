@@ -1,0 +1,6 @@
+{
+  "key": "sinks-attribution-binary",
+  "command": "if (Test-Path -LiteralPath 'C:\\Workspace\\prj\\jq\\cashe\\.worktree-cleanup-recovery\\2026-10-17-original-sinks\\original-sink-attribution-194') { throw 'Diagnostic backup already exists' }\nCopy-Item -LiteralPath '\\\\wsl.localhost\\Ubuntu\\home\\artur\\.cache\\hydracache-074-194-check\\release\\deps\\hydracache_long_run_supervisor_074-171a8ee7d3705ebd' -Destination 'C:\\Workspace\\prj\\jq\\cashe\\.worktree-cleanup-recovery\\2026-10-17-original-sinks\\original-sink-attribution-194' -ErrorAction Stop\nGet-FileHash -Algorithm SHA256 -LiteralPath 'C:\\Workspace\\prj\\jq\\cashe\\.worktree-cleanup-recovery\\2026-10-17-original-sinks\\original-sink-attribution-194' | Select-Object Hash,Path | ConvertTo-Json -Compress",
+  "exit_code": 0,
+  "output": "{\"Hash\":\"F7FEFBCE0CDC39EF98D56D053FEA2C598E3098C9A72104F08EB25D6C15C86BC5\",\"Path\":\"C:\\\\Workspace\\\\prj\\\\jq\\\\cashe\\\\.worktree-cleanup-recovery\\\\2026-10-17-original-sinks\\\\original-sink-attribution-194\"}\r\n"
+}

@@ -1,0 +1,6 @@
+{
+  "key": "sinks-prior-proofs",
+  "command": "powershell -NoProfile -File docs/testing/performance/0.74/local-runs/collector-starting-framed-20261016/verify.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; powershell -NoProfile -File docs/testing/performance/0.74/local-runs/preconsent-frame-20261016/verify.ps1; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; powershell -NoProfile -File docs/testing/performance/0.74/local-runs/original-collector-pipes-20261016/verify.ps1",
+  "exit_code": 0,
+  "output": "Starting publication proof intact: 60 SIGKILL / 6 controls / 132 fresh refusals PASS; runtime lost ack only, production admission CLOSED\r\nPreconsent semantic proof intact: 48 cases/compiler PASS; no publisher, SIGKILL or server admission claim\r\nOriginal pipe proof intact: 19 joined cases/compiler PASS; private kernel pipes only, original start and server admission CLOSED\r\n"
+}

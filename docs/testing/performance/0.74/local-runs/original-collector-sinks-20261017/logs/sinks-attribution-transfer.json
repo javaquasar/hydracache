@@ -1,0 +1,6 @@
+{
+  "key": "sinks-attribution-transfer",
+  "command": "scp -o BatchMode=yes -o StrictHostKeyChecking=yes C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-17-original-sinks/original-sink-attribution-194 hydracache-ax42:/tmp/hc074-original-sink-attribution-20261017.gI0oLF/",
+  "exit_code": 1,
+  "output": "C:\\Windows\\System32\\OpenSSH\\scp.exe: dest open \"/tmp/hc074-original-sink-attribution-20261017.gI0oLF/\": Failure\r\nC:\\Windows\\System32\\OpenSSH\\scp.exe: failed to upload file C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-17-original-sinks/original-sink-attribution-194 to /tmp/hc074-original-sink-attribution-20261017.gI0oLF/\r\n"
+}

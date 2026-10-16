@@ -1,0 +1,6 @@
+{
+  "key": "sinks-rollback-registry",
+  "command": ".\\target\\debug\\xtask.exe gated-test-check",
+  "exit_code": 0,
+  "output": "gated-test-check: OK (180 discovered gates, all registered)\n"
+}

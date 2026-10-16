@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The first [original sink composition](local-runs/original-collector-sinks-20261017/README.md)
+is withdrawn after the server joined screen stops before RootCreated. A separate
+fresh-chain diagnostic reaches the unchanged Causal(Time) guard before output
+creation. Its patch and negative observations remain retained; the working
+runtime stays at the original pipe milestone below. No new SIGKILL matrix,
+authenticated start, all-writer cessation or server admission is claimed.
+
 The next [original pipe preparation](local-runs/original-collector-pipes-20261016/README.md)
 is implemented as `a533e6df`. It consumes acknowledged Starting and owns two
 actual private pipes under the same authority/fence, without exporting FD/Stdio

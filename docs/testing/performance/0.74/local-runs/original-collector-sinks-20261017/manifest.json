@@ -1,0 +1,626 @@
+{
+  "format_version": 1,
+  "kind": "original-collector-sinks-withdrawn-candidate",
+  "baseline_commit": "42087991f93fb1e2640e46533968ce844ddc4699",
+  "preregistrations": [
+    "e6697f0d",
+    "a6ab4edc",
+    "3caa79ad"
+  ],
+  "scope": {
+    "candidate_withdrawn": true,
+    "runtime_restored": true,
+    "accepted_original_pipes_retained": true,
+    "deadlines_unchanged": true,
+    "admission_closed": true,
+    "sink_constructor_active": false,
+    "complete_joined_pass": false,
+    "sink_sigkill_proof": false,
+    "lost_ack_proof": false,
+    "authenticated_start": false,
+    "all_writer_cessation": false,
+    "production_enrollment": false,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "clock_changed": false,
+    "product_workload": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false
+  },
+  "observed": {
+    "first_joined_interruption_cases": 1,
+    "complete_joined_passes": 0,
+    "sink_sigkills": 0,
+    "sink_lost_ack_proofs": 0,
+    "first_joined_failure_error_named": false,
+    "attribution_error": "Original(Original(Original(Causal(Time))))",
+    "attribution_root_created": false,
+    "second_joined_compiler_started": false,
+    "broad_current_passes": 200,
+    "broad_current_failures": 3,
+    "broad_msrv_passes": 193,
+    "broad_msrv_failures": 10,
+    "broad_ignored_per_compiler": 7,
+    "candidate_kernel_units_per_compiler": 4,
+    "candidate_protocol_units_per_compiler": 2,
+    "candidate_api_per_compiler": 1,
+    "candidate_compile_fail_per_compiler": 64,
+    "narrow_integrations_per_compiler": 63,
+    "candidate_static": 188,
+    "restored_static": 187,
+    "candidate_registry": 181,
+    "restored_registry": 180,
+    "restored_compile_fail_per_compiler": 57
+  },
+  "source_blobs": [
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
+      "git_blob": "f711d944313e3b2f8ecac154427cbdf638c6fc6a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs",
+      "git_blob": "fa34049d1a8fd6bd9381a9d5fa3c4476c2cdb299"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_kernel_tests.rs",
+      "git_blob": "18095e1e6f74b478c2b212502cc328014bd5e24a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs",
+      "git_blob": "728155d93f90811b683939a6a0da301c78348ee7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_crash_tests.rs",
+      "git_blob": "76502dd225f28e94b94b8a61f1f17bb9b341e598"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_original_collector_sinks.rs",
+      "git_blob": "2bb007a2277f80cc50ab2c172d2ce685c5cc2f02"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs",
+      "git_blob": "b0ed4b8aab3c8e7cd35db55d1f5a9b50364b7185"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_storage.rs",
+      "git_blob": "1339c0b5b8d519ae792984168496b47586f62655"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
+      "git_blob": "e91d34e8f1bb2fc81737501333d6115bf04a7b31"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_sinks.rs",
+      "git_blob": "e868d071f09166c942d399ce40a1b6a458c7f287"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_pipes.rs",
+      "git_blob": "95fd5b4ead54c487e7bff4ad50fc296c5de0c3a0"
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "bf5169f3f4e83e7883116eb66662e51d0639e2d1"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "4c7ea1b6b6e3f4b779891b873d523a0f93997303"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "git_blob": "2fde792e5ffeee903d047bc8078a6c7cf9af3091"
+    }
+  ],
+  "attribution_test_git_blob": "d6bf578cb0b9e87cba5f65575bcb85f595e26fbe",
+  "binaries": [
+    {
+      "name": "original-sinks-194",
+      "sha256": "c8d8088553e96d70cd56f32cd9174ee841a2309892a84069be51097d0185435b"
+    },
+    {
+      "name": "original-sinks-188",
+      "sha256": "845d22d28e973ce237a8bbef501d1f72fc89ad32ab5008d4ff3816b35ed98e54"
+    }
+  ],
+  "attribution_binary": {
+    "name": "original-sink-attribution-194",
+    "sha256": "f7fefbce0cdc39ef98d56d053fea2c598e3098c9a72104f08eb25d6c15c86bc5"
+  },
+  "temporary_roots": [
+    "/tmp/hc074-original-sinks-20261017.L2eJxk",
+    "/tmp/hc074-original-sink-attribution-20261017.K5Cpie"
+  ],
+  "commands": [
+    {
+      "key": "sinks-red",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-flags-diagnostic",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-static",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-final-static",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-final-win194",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-final-win188",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-linux-final194",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-linux-final188",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-release-final194",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-release-final188",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-registry",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-registry-final",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-doccheck",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-localcontract",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-local-docs",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-fmt-current",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-binaries",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-server-audit",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-server-root-create",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-transfer",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-server-run",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-dispatch-audit",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-setup-repair",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-server-run-final",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-first-red-collect",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-server-kernel-diagnostic",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-focused194",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-focused188",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-build",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-binary",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-root",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-transfer",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-temp-transport-audit",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-root-fixed",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-transfer-fixed",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-run",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-attribution-first-collect",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-guarded-run",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-attribution-guarded-collect",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-postflight",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-static",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-win194",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-win188",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-linux194",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-linux188",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-doccheck",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-registry",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-format",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-rollback-contract",
+      "exit_code": 0
+    },
+    {
+      "key": "sinks-ship-guard",
+      "exit_code": 1
+    },
+    {
+      "key": "sinks-prior-proofs",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "attribution-first-setup-red.log",
+      "bytes": 1420,
+      "sha256": "c1853522b39bbb3cf15f7179ae001810fa62d8d1677d0758689f0f1e505d60a8"
+    },
+    {
+      "path": "attribution-guarded.log",
+      "bytes": 623,
+      "sha256": "a4b02d13d9dfb6086c1ec99baef900767044a157b18b6d9909119d9d75e5ac01"
+    },
+    {
+      "path": "attribution-only-test.rs.txt",
+      "bytes": 11350,
+      "sha256": "b44ef2226088f3788e6857c94f05cbaeda6ba19da627f64d0bd70946caafb9cd"
+    },
+    {
+      "path": "candidate-1.patch",
+      "bytes": 83699,
+      "sha256": "b5d0da3d88931976139e3a2900beb313ebaee5ef0996cd9b9d6155d761965331"
+    },
+    {
+      "path": "joined-194-first-red.log",
+      "bytes": 1558,
+      "sha256": "d72205c0ca61a42e2115c6d57e587b0810fe94c8151a539d351e017a8b77aa93"
+    },
+    {
+      "path": "logs/sinks-attribution-binary.json",
+      "bytes": 1039,
+      "sha256": "7f47b686bd56b4710e4e5aef1a7636852cc2fb5523c16b7365a4a9e937c9f619"
+    },
+    {
+      "path": "logs/sinks-attribution-build.json",
+      "bytes": 696,
+      "sha256": "430b3d5e6a9051e602604feb0f3e3e092a644910bc54b2fe8b2ed169af2db994"
+    },
+    {
+      "path": "logs/sinks-attribution-first-collect.json",
+      "bytes": 380,
+      "sha256": "30c76dd61dfa7d059543024e7bf4606cc891c33783e1c58732886c33c293e812"
+    },
+    {
+      "path": "logs/sinks-attribution-guarded-collect.json",
+      "bytes": 382,
+      "sha256": "06b7ebb9413f5f9ce9ba6d98b610a2c74574aba077c6f70d2943e48427029cc4"
+    },
+    {
+      "path": "logs/sinks-attribution-guarded-run.json",
+      "bytes": 4532,
+      "sha256": "5b669850e283d511b2610a8edb74710b5b5ee53ee9e40cfc8cf4041edc34c9e5"
+    },
+    {
+      "path": "logs/sinks-attribution-root-fixed.json",
+      "bytes": 2797,
+      "sha256": "b0a66ccbaef2cf7b4218fe9fed4444b921063a54fc1c69fbb7a330d015fbca02"
+    },
+    {
+      "path": "logs/sinks-attribution-root.json",
+      "bytes": 2555,
+      "sha256": "e942d45d87449e018e418d9e962b11c4fcc3c9a617953cae1ec5f0a36a18535f"
+    },
+    {
+      "path": "logs/sinks-attribution-run.json",
+      "bytes": 5287,
+      "sha256": "ac32d92d2e69d7991ed696ad38243415756447b87bf00c63d282a2e6791f1452"
+    },
+    {
+      "path": "logs/sinks-attribution-transfer-fixed.json",
+      "bytes": 327,
+      "sha256": "78830c08fcb0812e09105135a396bf70b8ac50e77370627babd984defefcc426"
+    },
+    {
+      "path": "logs/sinks-attribution-transfer.json",
+      "bytes": 674,
+      "sha256": "b5ec4273fc201fb68ba79cb1da111b0d933c7cc96ae1a44b18b7d2cb53cf6cf8"
+    },
+    {
+      "path": "logs/sinks-binaries.json",
+      "bytes": 1412,
+      "sha256": "f473041550fb7d0aa2c6e5438ca44e431c75fab91c08affdf0a2904cdf46595b"
+    },
+    {
+      "path": "logs/sinks-dispatch-audit.json",
+      "bytes": 4018,
+      "sha256": "4ff87772329efea7071eb07b5cdf81a93f8fd8e04e4239c280efd0d67deeea69"
+    },
+    {
+      "path": "logs/sinks-doccheck.json",
+      "bytes": 163,
+      "sha256": "95784eb8c8a263c8b853a51201e1205fc05ead01bda69d8c7baf760e7fe3a307"
+    },
+    {
+      "path": "logs/sinks-final-static.json",
+      "bytes": 888,
+      "sha256": "653bd810bc59db09aea2d2c6ee954bfbb27bd26c31bb6813d11ede58e7ee54bc"
+    },
+    {
+      "path": "logs/sinks-final-win188.json",
+      "bytes": 749,
+      "sha256": "c226cca2003b684927259eebf50524b15e53b834a045ffd061a6f17310428d54"
+    },
+    {
+      "path": "logs/sinks-final-win194.json",
+      "bytes": 694,
+      "sha256": "42e95302fcf6d4576c6ad00fbc43fc530e9c4c89b3eb918c186ace8ee098b4a9"
+    },
+    {
+      "path": "logs/sinks-first-red-collect.json",
+      "bytes": 353,
+      "sha256": "97e1faba3923ace644a36092d5001a33f79c5d4d3ed32841db1ec727a2c788c3"
+    },
+    {
+      "path": "logs/sinks-flags-diagnostic.json",
+      "bytes": 3058,
+      "sha256": "9b1e2f8635d2c9e0ec97fb4658b59721fca1e1dda192071a7b3cbdb5cd46715e"
+    },
+    {
+      "path": "logs/sinks-fmt-current.json",
+      "bytes": 216,
+      "sha256": "80dfea175afefcef84483b6917d416b1619ec69cc02930c92467505e1dacf2c1"
+    },
+    {
+      "path": "logs/sinks-focused188.json",
+      "bytes": 8520,
+      "sha256": "d4e6312e7f4a948b9bd0715256bd47f16216657a8a4e97ea42edea9699843d5e"
+    },
+    {
+      "path": "logs/sinks-focused194.json",
+      "bytes": 8521,
+      "sha256": "ca62b70c47e197af5073fd91f6f1edf5460052c0dbe44165aa0e762840337c31"
+    },
+    {
+      "path": "logs/sinks-linux-final188.json",
+      "bytes": 65647,
+      "sha256": "cba45c6d9e46d802114a1f601b3b4f9dc6f929cf113a81a3ebe9d5f4adb136cb"
+    },
+    {
+      "path": "logs/sinks-linux-final194.json",
+      "bytes": 57278,
+      "sha256": "d70d1ecff933953a9368b3d9acd80e9f97db4ed131f8eaa0dead2e07643067b7"
+    },
+    {
+      "path": "logs/sinks-local-docs.json",
+      "bytes": 365,
+      "sha256": "a62c73d49ac8596aabb12794f57d49490e2a06d7db97723c282da992b18a84aa"
+    },
+    {
+      "path": "logs/sinks-localcontract.json",
+      "bytes": 216,
+      "sha256": "13ddc2cc58eb2201945daa03002cdb4721f13220dad031861b3f0daf0a3fe0f6"
+    },
+    {
+      "path": "logs/sinks-postflight.json",
+      "bytes": 4050,
+      "sha256": "8ed0f72aca75bd17e2cfdb7a72ba018650edccda2ef4ec2bc2e50d6b919435ef"
+    },
+    {
+      "path": "logs/sinks-prior-proofs.json",
+      "bytes": 900,
+      "sha256": "056d5fae2adf6248a2a4d95a86233cd267806a6a9e5575dcd2fd1bb19d720244"
+    },
+    {
+      "path": "logs/sinks-red.json",
+      "bytes": 1101,
+      "sha256": "1d7842d55f36ef7b35dc7bce2c731c70497aeeacc9de6459b0755d8bac2dcd38"
+    },
+    {
+      "path": "logs/sinks-registry-final.json",
+      "bytes": 192,
+      "sha256": "fe0815bec81133eb9173e02ae3cea3d53802c8d22c3a376c632a8524ec28f2bd"
+    },
+    {
+      "path": "logs/sinks-registry.json",
+      "bytes": 651,
+      "sha256": "7a8e28fdf1f544960a8a8c11cabcfacef908e55e9f1db8f52b49c9c4ff3c7c00"
+    },
+    {
+      "path": "logs/sinks-release-final188.json",
+      "bytes": 695,
+      "sha256": "45e455414ee790c5a23edcd587af188377641131d29bf3adf4235bd6b0951b14"
+    },
+    {
+      "path": "logs/sinks-release-final194.json",
+      "bytes": 695,
+      "sha256": "9276dba5a710bdfb2be65aa41568e5ea51fa52432dca847a51642b79cb193949"
+    },
+    {
+      "path": "logs/sinks-rollback-contract.json",
+      "bytes": 220,
+      "sha256": "da270901a946f52774f5dd84e4b3aadd21c59f59cd9c5a26aa9bd132c5b68b4b"
+    },
+    {
+      "path": "logs/sinks-rollback-doccheck.json",
+      "bytes": 172,
+      "sha256": "58778a4fcba6645d9e80b9c899c001b7f22ae83e83fe8527fdc95d5782809d75"
+    },
+    {
+      "path": "logs/sinks-rollback-format.json",
+      "bytes": 220,
+      "sha256": "3dc28714d5381b7712c5338878af1feb53eb909cd97086b06cf49d7f49cbda66"
+    },
+    {
+      "path": "logs/sinks-rollback-linux188.json",
+      "bytes": 6080,
+      "sha256": "0eb2aa2488636fffe54437aaf03ff9ef0a65574f97ca8ebf040871e051974cd0"
+    },
+    {
+      "path": "logs/sinks-rollback-linux194.json",
+      "bytes": 6080,
+      "sha256": "0104db7b88d973dc6a51eed4afed73afe5cd2e290a5b5b4e7c19d9bb62bbfa9a"
+    },
+    {
+      "path": "logs/sinks-rollback-registry.json",
+      "bytes": 195,
+      "sha256": "6baa3abc8047fe511b00cff23b962d69be6ab2de4ed5eef4d00bb353f7b15265"
+    },
+    {
+      "path": "logs/sinks-rollback-static.json",
+      "bytes": 982,
+      "sha256": "09500ebbf0888a57fe4082fe68a5635a943a3c9b239664186b9989ce6e47237a"
+    },
+    {
+      "path": "logs/sinks-rollback-win188.json",
+      "bytes": 808,
+      "sha256": "faf70f11c9b5f4aef7483ff6930d94bef16232365967cd91120cf55ddee9436b"
+    },
+    {
+      "path": "logs/sinks-rollback-win194.json",
+      "bytes": 808,
+      "sha256": "d2ab83a153831fd20f74f3cf03ad86ba93a95382fb620665cf506cd4a59d986e"
+    },
+    {
+      "path": "logs/sinks-server-audit.json",
+      "bytes": 2420,
+      "sha256": "1cba5add3f6b406101d58a8ebbe420c9f0fd5ec447bbecaaf2c9a7ec0248ced5"
+    },
+    {
+      "path": "logs/sinks-server-kernel-diagnostic.json",
+      "bytes": 1034,
+      "sha256": "e15e80419409cb748305e6542ec6c3b2c53ecaf3f4b708e53b997a7b688a550e"
+    },
+    {
+      "path": "logs/sinks-server-root-create.json",
+      "bytes": 2535,
+      "sha256": "6589f02f4897d4762951f301e0609371bcb1dd2e9b901824db359fa745008914"
+    },
+    {
+      "path": "logs/sinks-server-run-final.json",
+      "bytes": 1714,
+      "sha256": "fc02266d12685a8f0ed20f8688c2d5622765567c562813e88dd7fc31df4851db"
+    },
+    {
+      "path": "logs/sinks-server-run.json",
+      "bytes": 271,
+      "sha256": "672ca4fcfaca4950be68be06c7032d1624c0d1de716c99a6de65c693f49f4e6a"
+    },
+    {
+      "path": "logs/sinks-setup-repair.json",
+      "bytes": 3190,
+      "sha256": "a1c1f41a5761fb51b2b2b2a865401a34e0dc04358cdc9f5a5869fdb20db63926"
+    },
+    {
+      "path": "logs/sinks-ship-guard.json",
+      "bytes": 2690,
+      "sha256": "4abdcedcb57d026ea3aef83a99a1be3acd596b072feb4fa561faa0474a4938db"
+    },
+    {
+      "path": "logs/sinks-static.json",
+      "bytes": 974,
+      "sha256": "f10a82a2d4a489f1fcb87a3f514170b558aaf513a1a74d715d94ab1eec23fb1c"
+    },
+    {
+      "path": "logs/sinks-temp-transport-audit.json",
+      "bytes": 599,
+      "sha256": "2ac0536c13e50c04746143a9a590b2d7adbcbde7d1986a14e274bc9639a9712c"
+    },
+    {
+      "path": "logs/sinks-transfer.json",
+      "bytes": 508,
+      "sha256": "cf42a5c3bfef8932a05b5b74f1c896facb07f0054c24a2064177eefc45b12126"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3780,
+      "sha256": "a7d3781e39bef83d5aaf3dd1e2d5aebc7b8ac05d80d29cb7dbd6d761fbd0714d"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "key": "sinks-final-win188",
+  "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --locked --offline; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --locked --offline -- -D warnings",
+  "exit_code": 0,
+  "output": "    Blocking waiting for file lock on build directory\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.86s\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.32s\n"
+}

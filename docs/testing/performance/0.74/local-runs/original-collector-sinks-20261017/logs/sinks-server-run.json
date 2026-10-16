@@ -1,0 +1,6 @@
+{
+  "key": "sinks-server-run",
+  "command": "ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"cd '/tmp/hc074-original-sinks-20261017.L2eJxk' && chmod 700 -- original-sinks-194 original-sinks-188 && sh ./run.sh\"",
+  "exit_code": 1,
+  "output": ""
+}

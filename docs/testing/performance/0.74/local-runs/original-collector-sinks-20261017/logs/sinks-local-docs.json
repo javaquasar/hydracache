@@ -1,0 +1,6 @@
+{
+  "key": "sinks-local-docs",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo fmt --all -- --check",
+  "exit_code": 1,
+  "output": "error: 'cargo-fmt' is not installed for the toolchain 'nightly-2026-07-01-x86_64-unknown-linux-gnu'.\nhelp: run `rustup component add rustfmt` to install it\n"
+}

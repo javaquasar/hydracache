@@ -11470,3 +11470,54 @@ the original executable, manager invocation, process and cgroup, with an autonom
 watchdog and proven cessation of every writer. The bounded fixture success is
 not a throughput measurement or a guarantee of deadline headroom for that later
 composition. Production enrollment and server execution remain closed.
+
+### Empty sink preparation also has to fit the original challenge
+
+The first original sink candidate attempted to consume these same pipes into two
+exclusive empty evidence files under the retained performance ancestry. Its
+directory name bound the full original Reserved record digest, not a supplied
+path. Private root/file ownership, exact descriptor flags, single-link empty
+files, bounded directory inventories and file/directory fsync were checked while
+retaining Starting and the common fence. Partial failures retained ownership
+until drop; no worker received a descriptor and no pump ran.
+
+The kernel primitives passed, including concurrent exclusive creation,
+directory replacement, links/content/flag drift and seeded name binding. One
+development failure exposed Linux x86_64's actual F_GETFL large-file bit, which
+is present even when the libc constant is zero. The direct-syscall diagnostic
+also observed it; blaming only the libc wrapper would have been incorrect.
+An exact ABI-specific flag set corrected that isolated expectation without an
+unknown-bit mask. It did not solve complete preparation.
+
+The [sink candidate packet](../testing/performance/0.74/local-runs/original-collector-sinks-20261017/README.md)
+stops on the first server compiler: BeforeCreate reaches its expected interruption,
+then the next chain refuses before the RootCreated checkpoint. A distinct
+attribution-only entry preserves identical runtime code and reports Causal(Time)
+after visiting only BeforeCreate, with no output directory. That diagnostic
+demonstrates the reachable expiry mechanism; it does not retroactively supply
+the error omitted by the original assertion or turn the failed matrix green.
+The second compiler and all sink SIGKILL/lost-ack cases remain unexecuted.
+
+The two compiler lanes pass the narrow kernel/API/compile-fail and integration
+checks, but a broader default-parallel local original_ audit records three
+failures on current Rust and ten on MSRV in old paths. Those paths were not
+edited; occurrence-specific attribution still needs a matched baseline. Neither
+the narrower greens nor later restoration erase that failed observation.
+
+Setup evidence matters too. PowerShell's final carriage return entered a mktemp
+argument, producing an empty CR-suffixed directory; multi-file transfer created
+the separately named destination with mode 0705. The unchanged mode 0700 guard
+stopped before tests. A later read-only inventory established both names, and
+the two empty transport directories were removed after exact ownership/emptiness
+checks. A diagnostic initially omitted umask 077 and was refused by the existing
+trust fixture before reaching the constructor. Both setup failures are retained,
+not classified as product or matrix passes.
+
+The sink candidate is therefore withdrawn and only its isolated fourteen-path
+delta reversed. The accepted pipe milestone remains active. Adding another
+sound local owner is insufficient if repeated complete ancestry and authority
+walks consume the original freshness window before its first durable effect.
+The next proposal must flatten the composed validation orchestration with an
+explicit proof that every live predicate and effect bracket remains intact,
+without renewing a challenge, caching mutable authority or extending deadlines.
+This is a correctness and admission result, not a throughput measurement.

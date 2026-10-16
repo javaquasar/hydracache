@@ -38,6 +38,14 @@ root collector constructor or worker handoff. That constructor must consume thes
 same objects, not replace them with the fixture factory's newly created pipes;
 it still needs sole-root sinks, production ancestry and enrolled original start.
 
+The first [original sink composition](local-runs/original-collector-sinks-20261017/README.md)
+is withdrawn. Its first server lane stops before RootCreated; a separate fresh
+original-chain attribution obtains Causal(Time) with no root created. Kernel
+creation success does not establish complete preparation inside the anchored
+challenge window. The full candidate patch is retained and runtime restored.
+A separately preregistered constant-depth join must prove unchanged live guards,
+effect ordering and deadlines before repeating a complete new candidate screen.
+
 First implement the actual bounded pipe-to-file writer and test its kernel EOF
 boundary locally. Retain both read ends and exclusively created evidence files;
 export only pipe write ends through a fixture-only Stdio transfer. Readers are

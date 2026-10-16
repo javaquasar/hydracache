@@ -67,3 +67,24 @@ Server use remains nonroot temporary-only test binaries, read-only original
 boot/supervisor/installed binary/receipt/no-active-context pre/post guards.
 No installation, service operation, global campaign lock, policy/epoch change,
 clock change, product workload, GitHub Actions or qualification is authorized.
+
+## First candidate withdrawn
+
+The [first packet](local-runs/original-collector-sinks-20261017/README.md)
+retains the full fourteen-path candidate patch. Its server joined matrix passes
+BeforeCreate, then stops before the RootCreated checkpoint on the first compiler.
+No second compiler or SIGKILL/lost-ack matrix follows that refusal. A separate
+attribution-only entry, with identical runtime code and a fresh original chain,
+reports `Original(Original(Original(Causal(Time))))`, visited `[BeforeCreate]`
+and no output root. This demonstrates a reachable expiry before output creation;
+the original matrix's less detailed assertion does not independently name its
+error. No challenge renewal, threshold/window change or retry repairs the result.
+
+The candidate is withdrawn and its fourteen paths restored to baseline. Kernel
+primitives, API/compile-fail and narrow regressions passing do not establish the
+full composition's deadline headroom. Separately retained broad local original_
+audits have unrelated-path failures requiring matched-baseline attribution;
+they are not waived by the narrow greens. Next preregister a joined constant-depth
+orchestration proposal covering the original Starting, pipe and sink effects,
+with an explicit live-predicate/ordering and deadline equivalence proof before
+new server data. Do not merely remove validation calls or extend the window.
