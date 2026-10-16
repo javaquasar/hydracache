@@ -112,6 +112,14 @@ The [local process evidence](local-runs/collector-reserved-20261016/README.md)
 passes three repetitions: 30 owned SIGKILLs, 3 controls and 66 fresh inspections,
 including lost acknowledgement and refusal before new-record creation.
 
+The subsequent [authenticated heartbeat preflight](diagnostic-collector-progress-design.md)
+now retains a new signed kernel message with the same original reservation and
+fence. It checks actual receive-time freshness and original controller/identity/
+revision without caller peer/clock inputs. This is not a committed heartbeat,
+renewal of the original admission hold, proof of uninterrupted presence or a
+Starting transition. Those lifecycle/deadline and uncertain-outcome semantics
+remain part of the consuming Starting protocol before output construction.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

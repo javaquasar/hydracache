@@ -1,0 +1,87 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)
+    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+error: taken reference of right operand
+   --> crates/xtask/tests/support/performance_contract_074_collector_progress.rs:105:19
+    |
+105 |       let runtime = owner....
+    |  ___________________^
+106 | |         + &owner
+107 | |             .split("/// ...
+108 | |             .nth(1)
+109 | |             .unwrap();
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#op_ref
+    = note: `-D clippy::op-ref` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::op_ref)]`
+help: use the right value directly
+    |
+106 ~         + owner
+107 +             .split("/// Holds both original owners.")
+108 +             .nth(1)
+109 ~             .unwrap();
+    |
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> crates/xtask/tests/support/performance_contract_074_collector_progress.rs:106:11
+    |
+106 |           + &owner
+    |  ___________^
+107 | |             .split("/// ...
+108 | |             .nth(1)
+109 | |             .unwrap();
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+    = note: `-D clippy::needless-borrow` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+help: change this to
+    |
+106 ~         + owner
+107 +             .split("/// Holds both original owners.")
+108 +             .nth(1)
+109 ~             .unwrap();
+    |
+
+error: items after a test module
+   --> tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs:40:1
+    |
+ 40 |   mod tests {
+    |   ^^^^^^^^^
+...
+134 |..., 's, 'a, 'p> {
+    |...^^^^^^^^^^^^^
+...
+139 |..., '_, '_, '_> {
+    |...^^^^^^^^^^^^^
+...
+146 |..., '_, '_, '_> {
+    |...^^^^^^^^^^^^^
+...
+194 |..., 's, 'a, 'p> {
+    |...^^^^^^^^^^^^^
+...
+198 |..., '_, '_, '_> {
+    |...^^^^^^^^^^^^^
+...
+206 |..., '_, '_, '_> {
+    |...^^^^^^^^^^^^^
+...
+211 |..., '_, '_, '_> {
+    |...^^^^^^^^^^^^^
+...
+216 |..., '_, '_, '_> {}
+    |...^^^^^^^^^^^^^
+217 |
+218 | / impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+219 | |     OriginalCollectorReservation<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+    | |_________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#items_after_test_module
+    = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+    = help: move the items to before the test module was defined
+
+error: could not compile `xtask` (test "performance_contract_074") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydracache-long-run-supervisor-074` (lib test) due to 1 previous error

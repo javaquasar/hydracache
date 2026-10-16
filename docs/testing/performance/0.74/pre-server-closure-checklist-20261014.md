@@ -166,6 +166,13 @@ passes three repetitions, totaling 30 owned SIGKILLs, 3 controls and 66 fresh
 inspections. This closes the new initial-retention process boundary only,
 not reboot/power-loss or authenticated execution.
 
+The [authenticated heartbeat preflight](diagnostic-collector-progress-design.md)
+adds one new signed message from the original receiver under the same authority
+and fence. Request/controller/revision and actual receive freshness are checked,
+but no progress entry or Starting state is committed. It cannot renew original
+admission, prove continuous presence or revive an expired execution lease.
+Durable Starting/replay/deadline integration remains open before root output.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

@@ -1,0 +1,45 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: taken reference of right operand
+   --> crates\xtask\tests\support\performance_contract_074_collector_progress.rs:105:19
+    |
+105 |       let runtime = owner.split("#[cfg(test)]").next().unwrap().to_owned()
+    |  ___________________^
+106 | |         + &owner
+107 | |             .split("/// Holds both original owners.")
+108 | |             .nth(1)
+109 | |             .unwrap();
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#op_ref
+    = note: `-D clippy::op-ref` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::op_ref)]`
+help: use the right value directly
+    |
+106 ~         + owner
+107 +             .split("/// Holds both original owners.")
+108 +             .nth(1)
+109 ~             .unwrap();
+    |
+
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> crates\xtask\tests\support\performance_contract_074_collector_progress.rs:106:11
+    |
+106 |           + &owner
+    |  ___________^
+107 | |             .split("/// Holds both original owners.")
+108 | |             .nth(1)
+109 | |             .unwrap();
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_borrow
+    = note: `-D clippy::needless-borrow` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+help: change this to
+    |
+106 ~         + owner
+107 +             .split("/// Holds both original owners.")
+108 +             .nth(1)
+109 ~             .unwrap();
+    |
+
+error: could not compile `xtask` (test "performance_contract_074") due to 2 previous errors

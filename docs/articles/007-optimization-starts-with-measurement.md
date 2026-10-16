@@ -10694,3 +10694,69 @@ examples. These retain the original ownership and refusal boundaries around the
 new durable path. The confirmed result is initial retention under the original
 authority/fence and conservative process-loss handling; production launch,
 performance qualification and the historical Kernel(Invalid) cause remain open.
+
+### Authenticating a new heartbeat without renewing admission
+
+The next hypothesis separates retained state from controller presence. Re-reading
+an intact Reserved record does not show that the controller has sent anything
+since Reserve. The [authenticated heartbeat preflight](../testing/performance/0.74/diagnostic-collector-progress-design.md)
+therefore consumes the original reservation together with one newly received
+kernel packet, keeping the same authority owner, request and common fence.
+
+Receiver identity is a private object relationship, not an equality of host
+strings: the two packets must originate from the same retained receiver. The
+new receive point must follow the owner's previous observation. Actual sender
+credentials and current kernel time enter the existing signature/principal
+verifier with the original configured controller policy. The authenticated
+request must be Heartbeat for the same controller, identity, source, preset and
+revision, with a request id and nonce different from Reserve. A correctly signed
+request for another controller run is still refused.
+
+Freshness stays anchored to the new packet's receive BOOTTIME and expires
+exclusively after ten seconds. Neither repeated checks nor a valid signature
+change that point. The original admission packet's 60-second hold, signed
+request/collector windows and OIDC/build/worker checks also remain in force.
+This keeps a follow-up from silently extending the authorization that admitted
+the original attempt. The result owns both packets' provenance through the
+original chain, but provides no state mutation, further-heartbeat method or
+Starting capability. Its failure retains the same fence and cannot retry.
+
+The local checks distinguish real kernel messages and file/lock ownership from
+pure exact-boundary tests. They also check a real packet's expiration without
+renewing receive time. An early composition test required another successful
+full revalidation round-trip and failed with Kernel(Invalid). That development
+capture is retained rather than relabeled as success; no deadline was enlarged.
+The final ownership test checks successful construction and then an explicit
+retained-file fault, while the independent expiry test checks the attributed
+progress-age refusal. These are different predicates, not a throughput result
+or an explanation of the earlier historical uninstrumented refusal.
+
+The confirmed boundary is authentication and bounded freshness of one message
+under still-valid original admission. It does not prove uninterrupted presence
+since Reserve, recover acknowledgement or revive an expired execution lease.
+Receive time is observed at dequeue, not at enqueue or signature generation;
+a previously signed queued message is not proof that its controller observed
+the durable Reserved result. Execution authority still needs a causal challenge
+and replay/commit policy rather than that inference.
+The next consuming Starting protocol must commit its lifecycle/replay/deadline
+history and signed state before root output or authenticated original start.
+
+On the final implementation, the default-parallel original-input repeat passes
+95 tests on Rust 1.94, with two existing manual cases ignored. Rust 1.88 passes
+the six-test focused preflight group. Both compilers separately pass 29 kernel
+tests, 30 signed-projection regressions and 21 compile-fail examples. Eight
+Linux/Windows check/strict-Clippy lanes and 174 static contracts pass.
+
+The first full parallel attempt remains an explicit negative: 93 passes and
+two Authentication(Time) failures, one in the old Reserved positive and one
+in the new composition. Whole-workspace formatting and read-only gates overlapped
+that attempt; the successful repeat used the same code, command and ordinary
+parallelism without those tasks. This is not a causal experiment proving that
+overlap caused the failures, nor a waiver for shared-load robustness. Original
+authorization windows and ten-second freshness were not extended. The local
+contract stays non-promotable and release admission remains closed.
+
+The [local heartbeat packet](../testing/performance/0.74/local-runs/collector-progress-20261016/README.md)
+pins implementation 0ec52ddc and retains 34 command transcripts with all development
+and parallel negatives. Its verifier checks source/frozen inputs and artifact
+hashes without treating unsigned logs as binary or execution attestation.

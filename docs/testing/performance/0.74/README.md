@@ -1,5 +1,18 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [authenticated heartbeat preflight](diagnostic-collector-progress-design.md)
+consumes the original collector reservation and one new packet from the same
+kernel receiver. It keeps the original authority/fence and checks the configured
+controller, identity/revision and bounded receive-time freshness without changing
+Reserved or its files. It neither renews the original admission windows nor
+establishes continuous liveness, durable heartbeat history or Starting authority.
+Starting publication and execution integration remain separate work.
+The [local packet](local-runs/collector-progress-20261016/README.md) retains the
+default-parallel 95-test repeat, six-test MSRV composition, both kernel/projection/
+compile-fail groups, eight build/lint lanes and 174 static contracts. It also
+retains the earlier 93-pass/two-Time-refusal run; shared-load robustness is not
+inferred from the successful repeat.
+
 The [collector Reserved publisher](diagnostic-collector-reserved-design.md)
 consumes the observed original owner into exclusive durable retention under the
 same authority/fence. Its separate record binds the frozen state, signed
