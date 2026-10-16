@@ -16,6 +16,8 @@ const RESTORATIONS: &[(&str, &str, &str)] = &[
     ("crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs", "        assert_eq!(\n            super::starting_publication::normalize(p, &read(p)),\n            old(p),\n            \"out of scope: {p}\"\n        );", "        assert_eq!(read(p), old(p), \"out of scope: {p}\");"),
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::original_pipes::normalize(path, raw);
+    let raw = current.as_str();
     let mut clean = raw.to_owned();
     for (p, new, old) in RESTORATIONS {
         if path == *p {
@@ -114,7 +116,7 @@ fn collector_starting_publication_preserves_every_original_predicate_and_deadlin
                 );
         }
         assert_eq!(
-            read(p),
+            super::original_pipes::normalize(p, &read(p)),
             expected,
             "archived publisher, cuts or workload changed: {p}"
         );

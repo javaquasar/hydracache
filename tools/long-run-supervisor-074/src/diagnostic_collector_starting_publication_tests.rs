@@ -4,6 +4,9 @@ use std::os::unix::fs::{symlink, PermissionsExt};
 #[path = "diagnostic_collector_starting_crash_tests.rs"]
 mod crash_tests;
 
+#[path = "diagnostic_original_collector_pipes_tests.rs"]
+mod pipe_tests;
+
 const STAGES: [CollectorStartingStage; 9] = [
     CollectorStartingStage::BeforeCreate,
     CollectorStartingStage::Created,

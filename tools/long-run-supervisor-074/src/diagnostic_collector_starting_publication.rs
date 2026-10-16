@@ -185,3 +185,6 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
         }
     }
 }
+
+#[path = "diagnostic_original_collector_pipes.rs"]
+pub mod pipes;

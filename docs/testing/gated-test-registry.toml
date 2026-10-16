@@ -9321,3 +9321,71 @@ platform = "linux"
 
 [gate.command.env]
 # END STARTING PUBLICATION CRASH GATE
+
+# BEGIN ORIGINAL PIPE API GATE
+[[gate]]
+id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-collector-pipes"
+kind = "cfg_test_target"
+source = "tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "diagnostic_original_collector_pipes"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original anonymous pipes under acknowledged Starting; no FD export, output or execution"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 120
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Release 0.74 Linux supervisor contracts"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--test", "diagnostic_original_collector_pipes", "--locked"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL PIPE API GATE
+
+# BEGIN ORIGINAL PIPE LIVE GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-collector-pipes-joined-fault-and-live-refusal"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_collector_pipes_joined_fault_and_live_refusal"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Original anonymous pipes under acknowledged Starting; no FD export, output or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "--release", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipe_tests::original_collector_pipes_joined_fault_and_live_refusal", "--", "--ignored", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END ORIGINAL PIPE LIVE GATE
