@@ -1,0 +1,54 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::preconsent_tests::preconsent_frame_live_mutations_reference_and_consent_refusal ... HC074-PRECONSENT-DRIFT cut=0 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=0 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=0 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=0 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=0 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=1 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=1 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=1 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=1 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=1 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=2 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=2 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=2 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=2 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=2 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=3 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=3 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=3 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=3 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=3 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=4 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=4 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=4 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=4 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=4 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=5 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=5 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=5 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=5 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=5 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=6 kind=0 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=6 kind=1 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=6 kind=2 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=6 kind=3 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-DRIFT cut=6 kind=4 frozen=true refused=true fence_retained=true
+HC074-PRECONSENT-REFERENCE kind=0 refused=true
+HC074-PRECONSENT-REFERENCE kind=1 refused=true
+HC074-PRECONSENT-REFERENCE kind=2 refused=true
+HC074-PRECONSENT-REFERENCE kind=3 refused=true
+HC074-PRECONSENT-REFERENCE kind=4 refused=true
+HC074-PRECONSENT-CONSENT kind=0 refused=true retained=true
+HC074-PRECONSENT-CONSENT kind=1 refused=true retained=true
+HC074-PRECONSENT-CONSENT kind=2 refused=true retained=true
+HC074-PRECONSENT-CONSTRUCTION pre_refused=true fence_retained=true
+HC074-PRECONSENT-ID refused=true retained=true
+HC074-PRECONSENT-ID refused=true retained=true
+HC074-PRECONSENT-HEALTHY frozen=true ordered=true same_receiver=true
+HC074-PRECONSENT-CONCURRENT closing_round_refused=true fence_retained=true
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1000 filtered out; finished in 247.19s
+

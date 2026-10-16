@@ -1,0 +1,6 @@
+{
+  "key": "preconsent-launch-before-transfer",
+  "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"cd /tmp/hc074-preconsent-20261016.m9VZny && chmod 500 preconsent-194 preconsent-188 run.sh && ./run.sh\"",
+  "exit_code": 1,
+  "output": "chmod: cannot access 'run.sh': No such file or directory\n"
+}

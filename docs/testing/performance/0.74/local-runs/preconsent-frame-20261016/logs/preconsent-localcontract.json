@@ -1,0 +1,6 @@
+{
+  "key": "preconsent-localcontract",
+  "command": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+  "exit_code": 0,
+  "output": "performance-contract-check 0.74: OK (local, non-promotable)\n"
+}

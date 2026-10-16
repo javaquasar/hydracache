@@ -1,0 +1,6 @@
+{
+  "key": "preconsent-red-api",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_preconsent_frame --offline --locked",
+  "exit_code": 1,
+  "output": "   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\nerror[E0599]: no method named `prepare_framed_consent` found for struct `OriginalCausalProgress<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope\n --> tools/long-run-supervisor-074/tests/diagnostic_preconsent_frame.rs:6:23\n  |\n6 | ...er.prepare_framed_consent(\"1...\n  |       ^^^^^^^^^^^^^^^^^^^^^^\n  |\nhelp: there is a method `prepare_start_consent` with a similar name\n  |\n6 -         let _ = owner.prepare_framed_consent(\"1\".repeat(64));\n6 +         let _ = owner.prepare_start_consent(\"1\".repeat(64));\n  |\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_preconsent_frame\") due to 1 previous error\nwarning: build failed, waiting for other jobs to finish...\n"
+}

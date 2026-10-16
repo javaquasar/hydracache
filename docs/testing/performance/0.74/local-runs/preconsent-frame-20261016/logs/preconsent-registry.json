@@ -1,0 +1,7 @@
+{
+  "key": "preconsent-registry",
+  "command": ".\\target\\debug\\xtask.exe gated-test-check",
+  "exit_code": 0,
+  "output": "gated-test-check: OK (178 discovered gates, all registered)\n",
+  "capture_note": "Exact completion output of exec session 67948 at the preconsent-only source, before publisher restoration."
+}

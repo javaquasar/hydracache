@@ -1,0 +1,262 @@
+{
+  "format_version": 1,
+  "kind": "original-preconsent-constant-depth-semantic-proof",
+  "source_commit": "77b3ad15c8f56cd1ef41c02e31c1bad622126a55",
+  "baseline_commit": "ce4a0f54efd3421129c7239f54e7adab32288b0d",
+  "preregistration_commit": "c908017d",
+  "temporary_root": "/tmp/hc074-preconsent-20261016.m9VZny",
+  "scope": {
+    "consent_preparation_semantics_passed": true,
+    "original_guards_preserved": true,
+    "deadlines_unchanged": true,
+    "publication_tested": false,
+    "sigkill_tested": false,
+    "signature_cache": false,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "product_workload_run": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false
+  },
+  "coverage": {
+    "compilers": [
+      "1.94.0",
+      "1.88.0"
+    ],
+    "drift_cases_per_compiler": 35,
+    "old_reference_refusals_per_compiler": 5,
+    "consent_refusals_per_compiler": 3,
+    "invalid_ids_per_compiler": 2,
+    "pre_refused_constructor_per_compiler": 1,
+    "healthy_per_compiler": 1,
+    "closing_race_per_compiler": 1,
+    "semantic_cases_per_compiler": 48,
+    "age_edges_per_compiler": 3072,
+    "regressions_per_compiler": 62,
+    "compile_fail_per_compiler": 6,
+    "public_api_per_compiler": 1,
+    "static_contracts": 185,
+    "registered_gates": 178
+  },
+  "binaries": [
+    {
+      "name": "preconsent-194",
+      "sha256": "e131c3d4924a13299cc8b34c19c5e724909b8e1c59e4adb3b066df502ac14e30"
+    },
+    {
+      "name": "preconsent-188",
+      "sha256": "3cce616dcb2254dc88a2c44c15a2080fdf10d6fe96af02f864393bcd38beb0f5"
+    }
+  ],
+  "source_blobs": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "e11bff8587d8a0987c661c002ec7f1310ade8ae6"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs",
+      "git_blob": "7d9b943cda4491d623acfad4a2a3482caeb8c9a3"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_starting_record.rs",
+      "git_blob": "243b95866f7d6abffc9e7caacdc72ad57826f997"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "53476511ff930875b384612a407eadc1a4027899"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+      "git_blob": "e9a2fc453774c9b8adff6ae4253e915b636f37ac"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs",
+      "git_blob": "5d4974add9c467a7773db7f141aa4e23e883eed0"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame.rs",
+      "git_blob": "4573c8391c9be22732fc23b2907bdb23e1e11253"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_preconsent_frame_tests.rs",
+      "git_blob": "1a5cb115a16b5c2f8017f32c3590db357dce00c6"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_preconsent_frame.rs",
+      "git_blob": "29369879cd3b8f23bc5e3aefeb91a9f11ec31dcd"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "matrix-188.log",
+      "bytes": 3998,
+      "sha256": "3428e91ebcac233fbdeb1d86a633d310a0acccbacb68f0af2d7517218b82d938"
+    },
+    {
+      "path": "matrix-194.log",
+      "bytes": 3998,
+      "sha256": "7c0a3450df4a28a7f8f8a5cc10dbc8ffcd83d78c0edb4ba2ae9c9efa8ad9b60f"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3054,
+      "sha256": "8617e16057fb876aeea2cdacbf78234b6f0ab68e50c46fa863f9e9995855df8e"
+    },
+    {
+      "path": "logs/preconsent-api-final-188.json",
+      "bytes": 967,
+      "sha256": "87cd098ef8748d280091782791882d35b6ceb724b40d51fddc6bb8b8a509fc45"
+    },
+    {
+      "path": "logs/preconsent-api-final-194.json",
+      "bytes": 970,
+      "sha256": "fa9307f836e1d43542fbea9ed2bd8922b2043ac92bb21b2d949fa7b9b3d78e64"
+    },
+    {
+      "path": "logs/preconsent-binary-hashes.json",
+      "bytes": 1424,
+      "sha256": "c33f0ae2108c9709c4cf4ac1d93765fe408d4b9dc59ab73b6b55fea6455a70b6"
+    },
+    {
+      "path": "logs/preconsent-build-188.json",
+      "bytes": 799,
+      "sha256": "2be899a502b9c9ff6efc4a1c8e957e66e543a4536f286e7c01de48aede1dfafe"
+    },
+    {
+      "path": "logs/preconsent-build-194.json",
+      "bytes": 799,
+      "sha256": "947803103f84d44dfeb9f35c0fc277d3946bc958d4f357528d80c110510cb7ac"
+    },
+    {
+      "path": "logs/preconsent-check-linux188.json",
+      "bytes": 649,
+      "sha256": "cb28c96b38b6395a505eceb65cd5e39ae962f3ebf4122f6947baa0473560c64f"
+    },
+    {
+      "path": "logs/preconsent-check-linux194.json",
+      "bytes": 649,
+      "sha256": "60a3efd6d0d078d517140764c870b586f3ffccb6254f8358f69f2a17165373f9"
+    },
+    {
+      "path": "logs/preconsent-check-win188.json",
+      "bytes": 489,
+      "sha256": "04ee557697f566bc93deff0d3dfde77aa97a00f2287e0129090c01854994afc8"
+    },
+    {
+      "path": "logs/preconsent-check-win194.json",
+      "bytes": 489,
+      "sha256": "daa0199f8816f14922691da1e85148c4a8e10d0abb25feb4541f5228e1f86346"
+    },
+    {
+      "path": "logs/preconsent-clippy-linux188.json",
+      "bytes": 736,
+      "sha256": "b9e9bcae034aab5da86fb80e2ff37e8bda2930315125673353dd989cdb39d990"
+    },
+    {
+      "path": "logs/preconsent-clippy-linux194.json",
+      "bytes": 736,
+      "sha256": "0fcd5c7259dc3d4e2c20e6882dc72506c948b582b243b14302d48d96a81d4dfb"
+    },
+    {
+      "path": "logs/preconsent-clippy-win188.json",
+      "bytes": 789,
+      "sha256": "93973caeb095c1a495b4794867bdac91cb0b4f1b0a56afd2104ac96f40e1593c"
+    },
+    {
+      "path": "logs/preconsent-clippy-win194.json",
+      "bytes": 736,
+      "sha256": "eeaaba24ec962e36a464942a13f643cc03ca218b8ccb01f8084461f1b1f3fa2d"
+    },
+    {
+      "path": "logs/preconsent-doccheck.json",
+      "bytes": 168,
+      "sha256": "5ec1288d362650a8d0456e5bad53f6c69f0c7163da51477e5e3c8a84117be669"
+    },
+    {
+      "path": "logs/preconsent-docs-188.json",
+      "bytes": 2885,
+      "sha256": "1604d2144d501c521047d3ff887105298cd5fc6dce8d03b54d936c3e53684080"
+    },
+    {
+      "path": "logs/preconsent-docs-194.json",
+      "bytes": 2885,
+      "sha256": "861d7b80373134d0f2ca9feeed51b74a645ea40c7b709a2ea2aaf5e522c27530"
+    },
+    {
+      "path": "logs/preconsent-fast-188.json",
+      "bytes": 2132,
+      "sha256": "d3333c4c93411a9283a759f5582e874c5ac85fc1dc6630239111bab83152669d"
+    },
+    {
+      "path": "logs/preconsent-fast-194.json",
+      "bytes": 2135,
+      "sha256": "7ef1cd6037fc4c9d961f354ba1ce1e497c2beeecabf37ed21583dbebc33cad34"
+    },
+    {
+      "path": "logs/preconsent-fmt.json",
+      "bytes": 213,
+      "sha256": "b1631a0b47d933700ea6265c8a6ff15c5695c0408fddd61a7030366773147fa4"
+    },
+    {
+      "path": "logs/preconsent-launch-before-transfer.json",
+      "bytes": 330,
+      "sha256": "d1ddd2e8cda4b036a894a1aa9cb404587d90a9dd35f19a6c8170eb0888132267"
+    },
+    {
+      "path": "logs/preconsent-localcontract.json",
+      "bytes": 221,
+      "sha256": "0d77355e8d453ee331dacb1d12543d3134b5a96ce75f633ce69cfcd030e4b4aa"
+    },
+    {
+      "path": "logs/preconsent-red-api.json",
+      "bytes": 1295,
+      "sha256": "d35f37d7db03e974eee6a74a84db2d23dbf1ce9b949902976290d95e2952a0af"
+    },
+    {
+      "path": "logs/preconsent-registry.json",
+      "bytes": 319,
+      "sha256": "e357c50d60bc04d9f900c9478184574ddcde621e48921e796f4e6d2898cecd6d"
+    },
+    {
+      "path": "logs/preconsent-regression-188.json",
+      "bytes": 2128,
+      "sha256": "416fe5cc858f937072ba262d065d884b75f5fade213b04a22a160ac0f261537d"
+    },
+    {
+      "path": "logs/preconsent-regression-194.json",
+      "bytes": 2131,
+      "sha256": "1915531eec65232889fc6b37fdb97fcd8a900d53b40045dbe775b4384e1e2566"
+    },
+    {
+      "path": "logs/preconsent-server-root-create.json",
+      "bytes": 263,
+      "sha256": "689f26ea6318ac499eb9b7a7f1379fa99d3f49e2d451762b8d03dc36616cff6e"
+    },
+    {
+      "path": "logs/preconsent-server-run.json",
+      "bytes": 1599,
+      "sha256": "9fe0da01de7f6a6d1b16e58a3606c1adea0cc045f21e8c3482def2a5e186229a"
+    },
+    {
+      "path": "logs/preconsent-static-final.json",
+      "bytes": 1051,
+      "sha256": "387b4540f37c4159e6d65b148bbc72b501a6144588dc365dccdd68ff1cd5f3cf"
+    },
+    {
+      "path": "logs/preconsent-static-first-failure.json",
+      "bytes": 5350,
+      "sha256": "6deb327b596da977572d1bc5e8792083af5df1a8ef517509ff006b45188712e2"
+    },
+    {
+      "path": "logs/preconsent-static-first.json",
+      "bytes": 5950,
+      "sha256": "86435b90d9741029d9089a48489d9213e23421714066cc83256a8cf370ff2806"
+    },
+    {
+      "path": "logs/preconsent-transfer.json",
+      "bytes": 488,
+      "sha256": "7820d13bf44d64f8a66b3e58717f1befba2346be2c866375bb3766218446bee4"
+    }
+  ]
+}
