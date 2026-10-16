@@ -1,0 +1,27 @@
+{
+  "format_version": 1,
+  "normal": {
+    "chunk_id": "e7f460",
+    "wall_time_seconds": 7.1684909,
+    "exit_code": 0,
+    "original_token_count": 30,
+    "output": "Server validation frame evidence: intact; 48 cases per compiler PASS; production and server lifecycle admission CLOSED\r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-server-fault-20261016/verify.ps1"
+  },
+  "scope_canary": {
+    "chunk_id": "eeffa3",
+    "wall_time_seconds": 1.6001826000000001,
+    "exit_code": 1,
+    "original_token_count": 127,
+    "output": "Unsupported claim: server_ready\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-frame-server-fault-2026\r\n1016\\verify.ps1:3 char:57\r\n+ ... ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported claim: server_ready:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported claim: server_ready\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-server-fault-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/server-scope.json"
+  },
+  "coverage_canary": {
+    "chunk_id": "81b683",
+    "wall_time_seconds": 3.5290623,
+    "exit_code": 1,
+    "original_token_count": 118,
+    "output": "Lane result differs\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-frame-server-fault-2026\r\n1016\\verify.ps1:3 char:57\r\n+ ... ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Lane result differs:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Lane result differs\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-server-fault-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/server-counts.json"
+  }
+}

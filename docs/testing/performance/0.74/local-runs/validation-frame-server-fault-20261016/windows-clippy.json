@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "server-step-win-clippy",
+  "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+  "exit_code": 0,
+  "provenance": "Tool-returned text, not a byte-exact stream or binary custody attestation.",
+  "output": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.93s\n"
+}

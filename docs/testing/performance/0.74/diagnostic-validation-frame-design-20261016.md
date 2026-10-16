@@ -104,3 +104,17 @@ control. Stopping timesyncd alone is therefore insufficient here; no clocksource
 Windows clock/service, deadline or runtime guard was changed. Complete fault
 coverage still needs a separately approved stable environment, not an identical
 retry or an unsupported claim that NTP was the unique cause.
+
+## Dedicated Linux fault control
+
+The operator separately approved running only the unchanged fault matrix in an
+isolated temporary directory on the dedicated Linux server. The
+[retained control](local-runs/validation-frame-server-fault-20261016/README.md)
+passes forty mutations, five old-reference cases and the healthy-order,
+construction and concurrent controls on each compiler, once per lane. Installed
+binary/receipt hashes, supervisor PID 8839/start time/NRestarts zero and boot
+remain exact. No installation, supervisor stop, product work or clock change
+occurred. Source 7b799270 commits only the nine frame source/test/contract files;
+the following Starting byte slice is separate. The earlier WSL failures and
+dev budget negatives remain. Actual publication and crash boundaries still need
+their own proof; this is not production worker enrollment or server admission.

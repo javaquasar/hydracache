@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "server-step-static",
+  "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked -- --quiet",
+  "exit_code": 0,
+  "provenance": "Tool-returned text, not a byte-exact stream or binary custody attestation.",
+  "output": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.06s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 183 tests\n....................................................................................... 87/183\n....................................................................................... 174/183\n........test w12_generic_evidence_report_retains_closed_ship_admission has been running for over 60 seconds\n.\ntest result: ok. 183 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 80.35s\n\n"
+}

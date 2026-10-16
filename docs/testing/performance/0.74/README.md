@@ -3586,6 +3586,14 @@ The subsequent [approved clock control](local-runs/validation-frame-clock-contro
 also refused before tests while WSL timesyncd was inactive. Restoration is
 verified; further environment agreement is needed, not an unchanged rerun.
 
+The separately authorized [isolated Linux fault matrix](local-runs/validation-frame-server-fault-20261016/README.md)
+subsequently passes all forty mutations, five reference cases and three controls
+on each compiler, exactly once, using the same binaries. The accepted isolated
+frame code is 7b799270. Supervisor PID/start/boot and installed hashes remain
+unchanged; only an owned temporary directory was written. No budget benchmark,
+product workload or release installation ran. This closes that fault gate,
+not Starting publication, real crash acknowledgement or execution admission.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

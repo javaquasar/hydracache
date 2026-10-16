@@ -1,0 +1,122 @@
+{
+  "format_version": 1,
+  "kind": "isolated-server-validation-frame-fault",
+  "source_commit": "7b7992701b9d5b69f8d8fca27aa9e016b8c80f2c",
+  "source_tree": "daf94165fa9169bd1a28ce6ec634c644c9db84b2",
+  "preregistration_commit": "51dccae3",
+  "original_candidate_manifest": "../validation-frame-20261016/manifest.json",
+  "temporary_root": "/tmp/hc074-validation-frame-20261016.htNCLN",
+  "host": {
+    "alias": "hydracache-ax42",
+    "test_uid": 1000,
+    "test_gid": 1000,
+    "supervisor_pid": 8839,
+    "supervisor_restarts": 0,
+    "boot_id": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "installed_source": "543108f1ccd206ae670803c2617f07e7fa91ae62",
+    "installed_binary_sha256": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+    "installed_receipt_sha256": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "scope": {
+    "fault_matrix_complete": true,
+    "isolated_temporary_writes": true,
+    "supervisor_identity_unchanged": true,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "clock_changed": false,
+    "budget_cohort_run": false,
+    "durable_starting_written": false,
+    "new_sigkill_matrix_run": false,
+    "authenticated_process_started": false,
+    "all_writers_revoked": false,
+    "production_enrollment": false,
+    "product_workload_run": false,
+    "qualification_changed": false,
+    "server_ready": false
+  },
+  "lanes": [
+    {
+      "compiler": "1.94.0",
+      "binary_sha256": "65f901ca510c240e4beff482c19d58ac6279ab685ee592c072142f98e4a91590",
+      "log": "matrix-194.log",
+      "exit_code": 0,
+      "mutation_pairs": 40,
+      "reference_cases": 5,
+      "control_cases": 3,
+      "elapsed_seconds": 417.61
+    },
+    {
+      "compiler": "1.88.0",
+      "binary_sha256": "c2e6ff7a751a7b6c0278f5d37910dba2c8128ea7356793a9af63373a7f013187",
+      "log": "matrix-188.log",
+      "exit_code": 0,
+      "mutation_pairs": 40,
+      "reference_cases": 5,
+      "control_cases": 3,
+      "elapsed_seconds": 417.39
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "linux-check.json",
+      "bytes": 779,
+      "sha256": "f68c18e37cfa020b5441e6dd0ac0d9be99631af74844516be607524713b5f09e"
+    },
+    {
+      "path": "linux-clippy.json",
+      "bytes": 574,
+      "sha256": "7b9da8d80a1a757cc98657439f29fc9d2a925ee605296d9b14cb313df0902707"
+    },
+    {
+      "path": "matrix-188.log",
+      "bytes": 3756,
+      "sha256": "095d007c456f86303a311a2a97a6bd80fe4b212dfcdd3809add3989465597204"
+    },
+    {
+      "path": "matrix-194.log",
+      "bytes": 3756,
+      "sha256": "84b676d99f11e986c74e06ce4f088b0a9de5ede77e3585ab89cf43d9f5e4a25c"
+    },
+    {
+      "path": "msrv-linux-clippy.json",
+      "bytes": 574,
+      "sha256": "f92718b9293837a587ae0207234e3acaab686be73041cee478bf0aa89fd813de"
+    },
+    {
+      "path": "msrv-windows-check.json",
+      "bytes": 484,
+      "sha256": "4dfee1ee33ab9be059d56d88b2189b5ca4f91c84d50030dc2f720da70e175696"
+    },
+    {
+      "path": "postflight.json",
+      "bytes": 2256,
+      "sha256": "2dc6276f9d65f2ee9d2b97a51928eea18c1ddeeebdcf9c7926c94bef873afe43"
+    },
+    {
+      "path": "run.json",
+      "bytes": 9475,
+      "sha256": "617c69c5693c4e441882979bd1ad561bb006f12528c5d499453d2d879dd5a33a"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3338,
+      "sha256": "b7206056f9c59c9fa6756d2bd2e6ff591e2f367d8e75609d14cb7a8341ad0fb1"
+    },
+    {
+      "path": "static.json",
+      "bytes": 909,
+      "sha256": "c7c4a78a66771cdab90b3d36ed37c0aaa7d6e2d67bf9eb08b8fd6fc888109537"
+    },
+    {
+      "path": "windows-check.json",
+      "bytes": 483,
+      "sha256": "2cb7f3d1a221f9e6eac2bba5793126c7eb83ac047e0d1eef2017a58f57bc888f"
+    },
+    {
+      "path": "windows-clippy.json",
+      "bytes": 409,
+      "sha256": "fec69f173c872b7698e6b3fefce340e06002d8b8246d4def1af7885b8ffce9f8"
+    }
+  ],
+  "provenance": "Unsigned SSH observations and exact transferred raw logs. Binaries were locally built from the earlier uncommitted candidate; selected/frozen Git content matches the later code commit. This is not signed build custody, installation, production-worker enrollment or numerical product evidence."
+}

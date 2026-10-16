@@ -1,0 +1,55 @@
+
+running 1 test
+HC074-FRAME-DRIFT cut=0 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=0 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=0 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=0 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=0 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=1 kind=0 refused=true fence_retained=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::validation_frame_live_drift_at_every_cut_and_reference_refusal has been running for over 60 seconds
+HC074-FRAME-DRIFT cut=1 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=1 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=1 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=1 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=2 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=2 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=2 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=2 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=2 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=3 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=3 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=3 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=3 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=3 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=4 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=4 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=4 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=4 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=4 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=5 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=5 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=5 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=5 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=5 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=6 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=6 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=6 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=6 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=6 kind=4 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=7 kind=0 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=7 kind=1 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=7 kind=2 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=7 kind=3 refused=true fence_retained=true
+HC074-FRAME-DRIFT cut=7 kind=4 refused=true fence_retained=true
+HC074-FRAME-REFERENCE kind=0 refused=true
+HC074-FRAME-REFERENCE kind=1 refused=true
+HC074-FRAME-REFERENCE kind=2 refused=true
+HC074-FRAME-REFERENCE kind=3 refused=true
+HC074-FRAME-REFERENCE kind=4 refused=true
+HC074-FRAME-CONTROL healthy_before_fault=true ordered=true
+HC074-FRAME-CONSTRUCTION refused=true retained=true
+HC074-FRAME-CONCURRENT refused=true original_owners=true
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::validation_frame_live_drift_at_every_cut_and_reference_refusal ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 993 filtered out; finished in 417.61s
+

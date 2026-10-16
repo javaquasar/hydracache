@@ -247,6 +247,11 @@ The separately approved timesyncd-stop control refused its own preflight at
 sample seven, before tests. The service was restored; stopping it alone did
 not solve the clock problem. Further host environment changes need separate
 agreement, and no server preparation or runtime acceptance was substituted.
+The subsequently approved isolated Linux matrix now passes all 48 cases per
+compiler using the unchanged binaries, with stable supervisor and installation
+identities. The isolated frame is committed as 7b799270; WSL negatives remain.
+This closes the frame fault gate, not new Starting publication/crash proof or
+the production execution and host-admission prerequisites below.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace

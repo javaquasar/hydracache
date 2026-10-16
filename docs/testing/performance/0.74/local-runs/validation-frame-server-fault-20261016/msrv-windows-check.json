@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "server-step-msrv-check",
+  "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+  "exit_code": 0,
+  "provenance": "Tool-returned text, not a byte-exact stream or binary custody attestation.",
+  "output": "    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.07s\n"
+}

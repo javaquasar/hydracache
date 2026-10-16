@@ -11263,5 +11263,31 @@ diagnosis of Hyper-V, Windows or NTP, and not a reason to discard the old refusa
 
 The [clock-control packet](../testing/performance/0.74/local-runs/validation-frame-clock-control-20261016/README.md)
 keeps that failure separately. Further host clock changes or a stable Linux
-test environment need separate agreement. Until the full fault gate actually
-passes, the runtime patch remains uncommitted and server admission stays closed.
+test environment needed separate agreement. At that point the full fault gate
+was incomplete, the runtime patch was uncommitted and server admission was closed.
+
+### The same fault matrix on dedicated Linux
+
+The operator then authorized the unchanged fault matrix in a private temporary
+directory on the dedicated server, without installing a release, stopping the
+supervisor or running product traffic. The exact previously built executables
+passed once per compiler: forty combinations of validation cut and mutated
+input, five independently constructed old-reference cases and healthy-order,
+failed-construction and concurrent-mutation controls. Every fault refused while
+retaining the original owners and Busy fence. Both final test results passed;
+no unsuccessful case was replaced with another attempt.
+
+The server's installed binary and receipt hashes, supervisor PID/start time,
+restart count and boot remained unchanged. The fixtures ran as the nonroot SSH
+account in their own TMPDIR, not as an enrolled production worker. This is the
+specific evidence that closes the frame's fault gate and permits committing
+the isolated refactoring. It does not test actual Starting writes, SIGKILL or
+lost acknowledgement, and it grants no production execution permission.
+
+The earlier dev expirations and WSL failures remain in their original packets.
+Passing the same code elsewhere does not uniquely identify which WSL clock
+mechanism caused the backwards steps. Nor can correctness durations on this
+host be combined with the old host's timings into a speedup claim. The
+[server fault packet](../testing/performance/0.74/local-runs/validation-frame-server-fault-20261016/README.md)
+retains the exact raw logs and narrow scope; durable publication is the next
+separate hypothesis.
