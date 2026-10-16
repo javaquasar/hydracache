@@ -1,0 +1,6 @@
+{
+  "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+  "exit_code": 0,
+  "capture": "tool-returned text segments; not a byte-exact process stream",
+  "output": "    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on build directory\n    Checking xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.56s\n"
+}

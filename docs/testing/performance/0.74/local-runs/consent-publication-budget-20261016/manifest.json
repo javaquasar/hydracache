@@ -1,0 +1,429 @@
+{
+  "format_version": 1,
+  "source_commit": "17d3ebdada7ebffd9d99e04960651b6adf3d2dc1",
+  "source_tree": "c44cf0f13e9830e14ce5122a2a4d59e8b0e3971f",
+  "parent_commit": "d560e969aaf3466ea239e7c16de4e339e23fe38f",
+  "baseline_commit": "4fbc4f3b3574afe955684bb88c8b43ecfd662c03",
+  "preregistrations": {
+    "initial_budget": "fcdb2b47",
+    "release_control": "8fb8589f",
+    "owner_attribution": "d560e969"
+  },
+  "scope": {
+    "publication_budget_pass": false,
+    "durable_starting_written": false,
+    "validation_composition_implemented": false,
+    "new_sigkill_matrix_run": false,
+    "authenticated_process_started": false,
+    "all_writers_revoked": false,
+    "server_mutated": false,
+    "product_workload_run": false,
+    "qualification_changed": false,
+    "deadline_changed": false,
+    "binary_attested": false,
+    "full_release_verify_run": false
+  },
+  "provenance": "Unsigned local observation; recorded tool text segments are not a byte-exact process stream or binary custody attestation. The budget function and runtime did not change when the later owner-attribution helper was added.",
+  "release_binary_observations": [
+    {
+      "compiler": "1.94.0",
+      "sha256": "e1db318c28600f53d38ef4a0ca6c6c1d5f27c926265374d8f43ea0ed2de01151"
+    },
+    {
+      "compiler": "1.88.0",
+      "sha256": "e05f94979911e85d56eb1aef44c9910c1e635490551664c0e234286e5a096cd1"
+    }
+  ],
+  "selected_sources": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "blob": "f86f6abad58375364a09bcf341677c8946f7255a",
+      "sha256": "b1dd0d4fa2853790cee781e2297f54810c04d79ad9436404fd4994d1cc196148"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs",
+      "blob": "0706286efbe349c06a1a604a36072d38d8e325b1",
+      "sha256": "51af2d3ce76fc1f7071e629f149ce05eda40ba275db1d24bd509a89215096484"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_consent_budget.rs",
+      "blob": "ef3e3b0a630283ef92dd887db4f4450ae2203740",
+      "sha256": "10f499cb74608cf5f79cc0275a2701749b8520f07f8bb2d2be0abf461def7c46"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "blob": "391324f02f6c1ace3d3b390bc63b34fd892d627e",
+      "sha256": "676f037115c33ad52578e67cd5dd263358c6e7e86e181e87dc2dd6bb12883d78"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs",
+      "blob": "809cf881ea78c56aeb8fc8d9713c2985ebb41aa8",
+      "sha256": "b6f199c4574c58ffb52a2d5c897b0a47070af72e2e2ed85f39168e550d139b68"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs",
+      "blob": "3e7704565fa3ab7e336c6963d2ef04343ac5a750",
+      "sha256": "6480627a62d6c6c1c54362f8d8ecaaaaa035c13b16a16ded3a0138e864e0c7b1"
+    }
+  ],
+  "frozen_inputs": [
+    {
+      "path": "Cargo.toml",
+      "blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed",
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b"
+    },
+    {
+      "path": "Cargo.lock",
+      "blob": "6719445160dd8e5dec3e097eaf0a146ada683b26",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27",
+      "sha256": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "blob": "5458c0f2bb75c32ee2211aa88f6682675a736043",
+      "sha256": "ad243fe50f2765060fbca71c35403f4b750e094338601c2e7aeb6602b70c09bc"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_ipc.rs",
+      "blob": "87535fd644a65af0379c9be7f68a46be126519b8",
+      "sha256": "1e50c3ff6d867c2c3f384ecdfce74028ff39b94e55dd1e81d2a856f88fa3440a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+      "blob": "ed9e30a164514f72e9556ddace46bea549191318",
+      "sha256": "a0df0b79a11422df4279a7c5bb8485d5297853639039a02f5127503b52508cc5"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+      "blob": "3cf3111046ebd5995e1b94c4d58be1032195340b",
+      "sha256": "fec9872f01295d58eb974f2570236147dd6eb023c86de3b43c5c06ef46146b4d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "blob": "da06a8583df99bc414566a7cd6cf6929bffce145",
+      "sha256": "50dc91406628f1cecdcf8fa771a7cdf3093751c5688d91aa56f5b04017663f56"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "blob": "fc848af142e61068bd4f5460503b8df1186d5aaf",
+      "sha256": "07355b1299ea9e3010e28b95fdb9d4dd2591c2996cc7fbe73662de426d4d74dc"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+      "blob": "a8d64842c5e498216bf23892ebbd68c3a1dede22",
+      "sha256": "13b9fe620dcd4b3bff719f3b4f62eb1b38c33809d1ed0f81a597a49734e2c9a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+      "blob": "4dc16bfc6e2bfa2ebf22159848197e3abc412581",
+      "sha256": "769c3de1224225b790d7e32b34f59b34e9263bdf292afa2b89ba3fdc718b68f8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+      "blob": "3ca09d5bc171b4a4251313eb9a039a489c2f467f",
+      "sha256": "28656356d8261dd513bf91d01dbe0338c831e77fc1fe6b3e1cd16b9e1d7add41"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+      "blob": "1a474faf0cf1fd8630507a88ce9d434bbb804456",
+      "sha256": "ccb4d6f9267ec835e0466bdf21b222ba854b14a56b068b78e93558ed24c0e17a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/host_execution.rs",
+      "blob": "5cbbc31fc73e69ba5ce477e91d14fe02775a95e0",
+      "sha256": "b38e4382ebf6bc6947b0c14ee2da8554e6820099ad55bd7f937d89437f034ad1"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+      "blob": "535a62b2a02949dba561ecb60541897d30b715de",
+      "sha256": "5797f7fe6dcbc9cde846f307f55268fff35c7803137c9a7f33119827522aa090"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
+      "blob": "3ce87d5f298df949663490cd63763dea8b087f82",
+      "sha256": "7a8726e5a19ba8ee27b168709c6f80f23338db50755b17948f256903042d5d95"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
+      "blob": "79dbf6ba091813a89e2b7b8801d0735c20ecbc48",
+      "sha256": "abab38d5f84cc25db872179f9fd01a90374176e8da05e30766f29fbad7db2f8b"
+    }
+  ],
+  "budget_samples": [
+    {
+      "key": "budget-194",
+      "completed": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "key": "budget-188",
+      "completed": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "key": "budget-release-194",
+      "completed": [
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "key": "budget-release-188",
+      "completed": [
+        4,
+        5,
+        5
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "key": "budget-194",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test --config profile.dev.package.ed25519-dalek.opt-level=3 --config profile.dev.package.curve25519-dalek.opt-level=3 -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_publication_budget -- --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-188",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test --config profile.dev.package.ed25519-dalek.opt-level=3 --config profile.dev.package.curve25519-dalek.opt-level=3 -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_publication_budget -- --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-release-194",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test --release -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_publication_budget -- --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-release-188-build",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test --release --no-run -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_publication_budget",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-release-188",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-81989065b672da94 original_consent_publication_budget --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-owner-194",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test --config profile.dev.package.ed25519-dalek.opt-level=3 --config profile.dev.package.curve25519-dalek.opt-level=3 -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_validation_owner_attribution -- --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-owner-188",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 test --config profile.dev.package.ed25519-dalek.opt-level=3 --config profile.dev.package.curve25519-dalek.opt-level=3 -p hydracache-long-run-supervisor-074 --offline --locked --lib original_consent_validation_owner_attribution -- --ignored --nocapture",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-win-194-check",
+      "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-win-194-clippy",
+      "command": "cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-win-188-check",
+      "command": "cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-win-188-clippy",
+      "command": "cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-linux-194-check",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-linux-194-clippy",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-linux-188-check",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-final-linux-188-clippy",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 clippy -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-static-final",
+      "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-doc-check",
+      "command": ".\\target\\debug\\xtask.exe doc-check",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-registry",
+      "command": ".\\target\\debug\\xtask.exe gated-test-check",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-local-contract",
+      "command": ".\\target\\debug\\xtask.exe performance-contract-check --release 0.74",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-ship-guard",
+      "command": ".\\target\\debug\\xtask.exe release-evidence --release 0.74 --require-ship",
+      "exit_code": 1
+    },
+    {
+      "key": "budget-fmt",
+      "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-registry-postcommit",
+      "command": ".\\target\\debug\\xtask.exe gated-test-check",
+      "exit_code": 0
+    },
+    {
+      "key": "budget-doc-check-postcommit",
+      "command": ".\\target\\debug\\xtask.exe doc-check",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "logs/budget-188.json",
+      "bytes": 6918,
+      "sha256": "accb7c082c63d1c612c5f3ba38d20e8d5e25719c4f2c5f1515366a0bbcf4210f"
+    },
+    {
+      "path": "logs/budget-194.json",
+      "bytes": 6310,
+      "sha256": "4326bc65a02dc971464ea15585862f9c9e6afd889c25d97c834685b8181693cd"
+    },
+    {
+      "path": "logs/budget-doc-check-postcommit.json",
+      "bytes": 213,
+      "sha256": "e9fc87824f1fed067d67b5f740773198e3519255ca8e2709fe4be3a6412f0052"
+    },
+    {
+      "path": "logs/budget-doc-check.json",
+      "bytes": 213,
+      "sha256": "e9fc87824f1fed067d67b5f740773198e3519255ca8e2709fe4be3a6412f0052"
+    },
+    {
+      "path": "logs/budget-final-linux-188-check.json",
+      "bytes": 818,
+      "sha256": "162d02282900014918807490edd83859254fe21aabcf257e07f7fd382bb385bd"
+    },
+    {
+      "path": "logs/budget-final-linux-188-clippy.json",
+      "bytes": 728,
+      "sha256": "76d7d3a7c69d6674a95022975cc482aa806b9250169ebbb06f6b60a518a7d957"
+    },
+    {
+      "path": "logs/budget-final-linux-194-check.json",
+      "bytes": 818,
+      "sha256": "15dab47cc871bdabef5b69368036d6ae201410a4a758b1c4009f7b3bd837e49c"
+    },
+    {
+      "path": "logs/budget-final-linux-194-clippy.json",
+      "bytes": 728,
+      "sha256": "f62919b11fc3ab020b13fe686da689e70fed071e31e5f72647d0245e85ed4056"
+    },
+    {
+      "path": "logs/budget-final-win-188-check.json",
+      "bytes": 568,
+      "sha256": "01728733da8bfafbc05d9611e21921c69530ec156e9f19e9ca5b439bf1e315b9"
+    },
+    {
+      "path": "logs/budget-final-win-188-clippy.json",
+      "bytes": 481,
+      "sha256": "f8791b4ceae1dbb279b98e63291a4c1b89532fc33f6f827a7e1d0f560770b7a6"
+    },
+    {
+      "path": "logs/budget-final-win-194-check.json",
+      "bytes": 624,
+      "sha256": "bad66316735da9542977bb51dd975db60f0d2484b3d39b3bc71513bb82c8c9af"
+    },
+    {
+      "path": "logs/budget-final-win-194-clippy.json",
+      "bytes": 481,
+      "sha256": "7db99cdba7ddbecfada3aa43d86f1e839243df1ee8b056a1e43fa4e9be946eef"
+    },
+    {
+      "path": "logs/budget-fmt.json",
+      "bytes": 263,
+      "sha256": "ad6fa3719b18cf7a08b76393592bf13a3c4dab99d4bb8630d19a9f694c7ef9ed"
+    },
+    {
+      "path": "logs/budget-local-contract.json",
+      "bytes": 261,
+      "sha256": "83e4271c0db39d7a52f972b4e53863e437cd0beb6152353e84e23536a7c8ecdb"
+    },
+    {
+      "path": "logs/budget-owner-188.json",
+      "bytes": 8293,
+      "sha256": "461e7f092999c04b46ad279625e93294169409cb8303ac6aa15a03bfbabd2d0b"
+    },
+    {
+      "path": "logs/budget-owner-194.json",
+      "bytes": 8307,
+      "sha256": "d55a27564cadbdd5292e95e1f9fa34b6dfbbef04adc39fb29cc8a503ee952f72"
+    },
+    {
+      "path": "logs/budget-registry-postcommit.json",
+      "bytes": 236,
+      "sha256": "1d1408f800bf2cb281436d0c3d5558fa09e14a4036a61d0d19e3cca813fda90a"
+    },
+    {
+      "path": "logs/budget-registry.json",
+      "bytes": 236,
+      "sha256": "1d1408f800bf2cb281436d0c3d5558fa09e14a4036a61d0d19e3cca813fda90a"
+    },
+    {
+      "path": "logs/budget-release-188-build.json",
+      "bytes": 4342,
+      "sha256": "d57e80d19180922c65697e16c4f116e1ba7b7ba4a42572eb1796fb1dfca36448"
+    },
+    {
+      "path": "logs/budget-release-188.json",
+      "bytes": 7566,
+      "sha256": "06d2a0a873965dc654d0ec30bc0433dec32d9dcd2be474208b136581483c55e3"
+    },
+    {
+      "path": "logs/budget-release-194.json",
+      "bytes": 12027,
+      "sha256": "2e957f1a64416fcd62df979549fc6af612d682b7ee130c86536bcbd012fd7237"
+    },
+    {
+      "path": "logs/budget-ship-guard.json",
+      "bytes": 2738,
+      "sha256": "d8b8554ff7fcc3e011b7b409776ca82083185ba608839e26574c2fbc7eaf423a"
+    },
+    {
+      "path": "logs/budget-static-final.json",
+      "bytes": 16305,
+      "sha256": "1c9242c2d0fe2c49866cba8f837fe8efaa98ab4e1150290a6c1e39efb041c35e"
+    }
+  ]
+}

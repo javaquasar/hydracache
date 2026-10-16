@@ -11153,3 +11153,54 @@ records real socket credential/order refusals, 36 frozen-field mutations, id
 collisions, trust/storage drift, consuming-API compile failures and the unchanged
 integration/static contracts. It establishes a local admission prerequisite,
 not authenticated process creation, durable replay safety or server readiness.
+
+### Validation cost before durable publication
+
+Before adding Starting, we tested whether the admitted original consent leaves
+time for its publication checks. Each fresh chain performs the real original
+admission, then requests nineteen unchanged validations: two for each of nine
+planned write boundaries and one final check. This first experiment deliberately
+omits the writes and fsyncs. If checks alone expire, adding storage cannot justify
+calling the path ready.
+
+All twelve local chains refused. With optimized Ed25519/curve dependencies in an
+otherwise dev build, Rust 1.94 completed 0, 1 and 1 checks; Rust 1.88 completed
+1, 1 and 1. The separate normal release-profile control completed 4, 5 and 5
+checks on each compiler, still short of nineteen. The old challenge or Heartbeat
+window expired, and the original owner became sticky-refused while retaining
+the common fence. Bytes and the two-file inventory were checked before deliberate
+cleanup/failure controls. No new Starting record was created. These are local
+correctness-budget observations, not product throughput results or measurements
+of an installed server binary.
+
+The tests pass by correctly reporting and retaining that refusal. The publication
+budget itself fails. Keeping these two outcomes separate prevents an ordinary
+green test receipt from becoming an unsupported execution permission. The
+release-profile control also rules out treating optimized crypto compilation
+alone as a sufficient local repair; neither the deadline nor the workload was
+changed to obtain a green budget result.
+
+A separate diagnostic then checks the original worker, controller, reviewed build
+and OIDC owners without creating an intent. Three fresh inputs and three checks
+per owner on both compilers consistently report 0, 1, 2 and 4 IPC authentications
+per check. The first Rust 1.94 dev sample's single consent check performed
+264 IPC authentications before refusing. The nested composition is a concrete target
+for further investigation. The recorded IPC signature spans cover only those
+signatures, not every crypto primitive or all validation work. Inclusive owner
+durations overlap in meaning and must not be added. Current-thread CPU counters
+also show coarse quantization, including zeros for short intervals; those zeros
+do not mean the checks are free.
+
+The next design question is how to retain immutable proofs while checking every
+live trust, epoch, kernel and storage predicate around each effect without
+recursively multiplying the same observations. A private per-boundary validation
+frame is a proposal, not an implemented optimization. Its observation order and
+mutation canaries require architectural review; caching a previous live result
+or increasing a window would not satisfy the contract. Durable publication and
+real crash tests follow that proof, then original start, whole-writer cessation,
+signed installation and bounded nonproduct host rehearsal.
+
+The [budget evidence](../testing/performance/0.74/local-runs/consent-publication-budget-20261016/README.md)
+retains all samples and explicitly keeps publication, server and qualification
+admission closed. The useful result is a reproducible blocker found before any
+uncertain storage or execution authority was created, not a new performance claim.

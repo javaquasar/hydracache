@@ -231,6 +231,14 @@ the successful optimized-crypto correctness lane is not installed budget proof.
 Durable Starting/replay, root output/original start and all-writer cessation
 remain before server admission.
 
+The subsequent [budget experiment](local-runs/consent-publication-budget-20261016/README.md)
+refuses all twelve local publication-free chains, including normal release
+profiles on both compilers. Durable Starting therefore remains blocked before
+its first write, and the new crash matrix, original-start/writer closure,
+signed installation and host rehearsal cannot be marked complete. The
+[validation composition proposal](diagnostic-validation-frame-proposal-20261016.md)
+needs separate architectural review; existing deadlines and guards stay exact.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

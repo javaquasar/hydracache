@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "verifier": "verify.ps1",
+  "positive_default": 0,
+  "positive_parent_directory": 0,
+  "canaries": [
+    {
+      "path": "C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-consent-budget-canaries/scope.json",
+      "exit_code": 1,
+      "expected_reason": "Scope differs: publication_budget_pass"
+    },
+    {
+      "path": "C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-consent-budget-canaries/counts.json",
+      "exit_code": 1,
+      "expected_reason": "Manifest sample counts differ: budget-194"
+    }
+  ],
+  "after_packet": {
+    "doc_check": 0,
+    "local_performance_contract": 0
+  },
+  "publication_budget_pass": false,
+  "server_admitted": false,
+  "note": "Unsigned local captures, not independent attestation. Expected negative canaries do not execute workloads."
+}

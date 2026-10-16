@@ -1,0 +1,6 @@
+{
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /usr/bin/env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-188-check /home/artur/.cargo/bin/cargo +1.88.0 check -p hydracache-long-run-supervisor-074 -p xtask --all-targets --all-features --offline --locked",
+  "exit_code": 0,
+  "capture": "tool-returned text segments; not a byte-exact process stream",
+  "output": "    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Checking xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)\n    Checking hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.79s\n"
+}

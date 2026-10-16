@@ -3559,6 +3559,18 @@ requires an explicit storage-phase handoff, exclusive intent and uncertain/lost
 acknowledgement refusal before output or spawning. Root collector/original start,
 watchdog, all-writer cessation, later cells and server admission remain open.
 
+The [publication budget evidence](local-runs/consent-publication-budget-20261016/README.md)
+now reports twelve fresh local chains. Optimized-crypto dev builds completed
+0/1/1 and 1/1/1 checks; normal release builds completed 4/5/5 on both compilers,
+out of nineteen required publication-free checks. Every chain refused without
+new publication. The attribution fixture is green because it verifies and
+retains refusal, not because the publication budget passed. A separate owner
+diagnostic confirms nested authentication counts; its inclusive spans cannot
+be summed into exclusive attribution. Review the
+[validation composition proposal](diagnostic-validation-frame-proposal-20261016.md)
+before changing observation order. No deadline, runtime guard, qualification
+input or server state changes in this packet.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

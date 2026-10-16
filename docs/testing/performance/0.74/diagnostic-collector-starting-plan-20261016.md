@@ -5,6 +5,13 @@ new record. The next work packet consumes that owner into a first-cell Starting
 intent before any output, process or manager invocation. The existing lease,
 controller and kernel admission deadlines are fixed, not implementation knobs.
 
+The [publication budget experiment](diagnostic-consent-budget-plan-20261016.md)
+now retains twelve refusing local chains, including normal release builds.
+The straightforward recursive-check publication path is blocked before any
+Starting write. The separate [validation composition proposal](diagnostic-validation-frame-proposal-20261016.md)
+requires architectural review before changing the live observation brackets;
+it is not a deadline relaxation or an implemented publisher.
+
 ## Record and phase ownership
 
 Register a separate opt-in diagnostic-collector-starting-074-v1 record, fixed

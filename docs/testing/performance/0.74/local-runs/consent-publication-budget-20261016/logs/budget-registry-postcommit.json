@@ -1,0 +1,6 @@
+{
+  "command": ".\\target\\debug\\xtask.exe gated-test-check",
+  "exit_code": 0,
+  "capture": "tool-returned text segments; not a byte-exact process stream",
+  "output": "gated-test-check: OK (176 discovered gates, all registered)\n"
+}
