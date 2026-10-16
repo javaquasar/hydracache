@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The first [worker proof reuse screen](local-runs/worker-proof-reuse-20261016/README.md)
+is negative and the isolated candidate is reverted. Its first candidate run fails
+the preregistered Setup counter (two full verifications, expected one); no later
+pair or bootstrap estimate is produced. The fixture constructs one policy for
+authority initialization and another for the original kernel-bound owner. This
+was a wrong mechanism expectation, not an established semantic failure or a
+measured speedup. A corrected proposal needs a separate preregistration. Current
+IPC again reports Host(Busy), without a retry; server admission remains closed.
+
 The [validation-cost attribution](diagnostic-validation-cost-design.md) adds only
 test-scoped numeric timers and first signed-window refusal facts. Two current
 probes and one MSRV probe agree on 2696 worker-policy verifications during

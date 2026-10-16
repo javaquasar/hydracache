@@ -10879,3 +10879,45 @@ The [local heartbeat packet](../testing/performance/0.74/local-runs/collector-pr
 pins implementation 0ec52ddc and retains 34 command transcripts with all development
 and parallel negatives. Its verifier checks source/frozen inputs and artifact
 hashes without treating unsigned logs as binary or execution attestation.
+
+### A failed mechanism expectation stops the optimization screen
+
+The first immutable worker-proof candidate kept the full constructor and every
+live authority, epoch, source and kernel check. Inside the same checked owner,
+revalidation compared the original trust and context, hashed the signed envelope,
+then hashed the retained canonical projection against the original body pin.
+Under the existing SHA256 integrity assumption this could reuse the constructor's
+signature proof without caching current authority. No field or retained buffer
+was added. The exact old method was retained as a private test-only oracle.
+
+The focused tests agree with that oracle across 128 seeded input/trust/context
+cases, sixteen top-level projection mutations and four independent concurrent
+owners. A single-owner mechanism test first observes ten full verifications,
+then one after the change. All four platform/compiler lanes pass those four
+tests, and 177 static contracts constrain the exact substitution and unchanged
+live guards. Those results establish a local proof boundary, not a timing gain.
+
+The [preregistered screen](../testing/performance/0.74/diagnostic-worker-proof-reuse-plan-20261016.md)
+requires five alternating pairs and an upper 95% bootstrap ratio bound of 0.80
+for both publication and binding. It does not complete. The first baseline
+passes, but the first candidate fails the exact Setup counter: two full
+verifications instead of the predicted one. Inspection of the unchanged fixture
+explains the extra constructor: it verifies a policy to initialize modeled
+authority, then creates the separate original kernel-bound policy owner.
+The single-owner mechanism test did not model that second construction site.
+
+The response is to stop, preserve the failure and revert the isolated candidate,
+not silently change the expectation and continue the same experiment. No later
+pair is run, no confidence interval is calculated and the failed invocation's
+shorter elapsed time is not a speedup. The hypothesis remains unmeasured rather
+than disproved; a corrected proposal must fix its construction-site accounting
+before collecting a new screen, with the same practical floor and signed windows.
+The [negative packet](../testing/performance/0.74/local-runs/worker-proof-reuse-20261016/README.md)
+retains both binary hashes, the candidate patch, development reds and its rollback.
+
+Separately, the candidate's current IPC regression repeats the old Host(Busy):
+23 passes and one failure, without a retry. MSRV IPC passes all 24, and both
+compilers pass the 99-test original-input group, 29 kernel tests, four-case manual
+causal proof and 28 compile-fail examples. These greens neither explain the IPC
+lock lifetime nor close the historical Time/Kernel(Invalid) causes. Product
+throughput, Starting and server admission remain outside this local tooling step.

@@ -1,0 +1,18 @@
+Read-only verifier canary development note, not a product/performance capture.
+
+Three in-memory manifest mutations were tested without changing files: enable
+candidate_active, add statistics to the incomplete screen, and corrupt the first
+artifact hash. Each was refused. In the first harness invocation the third
+expected diagnostic incorrectly named README.md, while manifest artifact zero
+is baseline.log. The harness exited 1 with "Artifact differs: baseline.log";
+the verifier correctly refused corruption, and no evidence bytes were mutated.
+The failure is a harness filename expectation, not a green invocation.
+
+After correcting only that diagnostic expectation, all three refusals match and
+the unmodified on-disk verifier passes (exit 0). The observed messages are:
+canary refused: Scope must stay closed: candidate_active
+canary refused: Incomplete screen became an estimate
+canary refused: Artifact differs: baseline.log
+worker proof screen negative retained; exact candidate rolled back; IPC and server gates remain open
+
+This correction changes no benchmark counter, workload, deadline, floor or pair.

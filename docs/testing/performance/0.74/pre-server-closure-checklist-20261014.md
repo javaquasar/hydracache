@@ -191,6 +191,13 @@ owner, with no product optimization or historical Time-cause proof. It also
 retains one old IPC Host(Busy) failure despite an unchanged successful repeat.
 Neither observation closes production lifecycle or server admission.
 
+The first [worker proof reuse screen](local-runs/worker-proof-reuse-20261016/README.md)
+stops on its first candidate's wrong Setup call expectation (two versus one).
+The candidate is reverted, with no retry, completed five-pair estimate or
+performance claim. A separate corrected preregistration and full screen are
+still required. Current IPC again has 23 passes and one Host(Busy), retained
+without retry; this is not fixed by the passing focused proof or MSRV checks.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

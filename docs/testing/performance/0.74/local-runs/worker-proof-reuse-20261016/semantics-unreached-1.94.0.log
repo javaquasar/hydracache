@@ -1,0 +1,43 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_worker_files-b1df0349ab24fb5c)
+
+running 13 tests
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.18s
+
+     Running tests/diagnostic_worker_policy.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/diagnostic_worker_policy-81b70450701decbf)
+
+running 15 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test authority_fixed_api_has_no_path_selector_and_nonroot_cannot_enroll ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+worker-policy seed=0x7512026; mutations=256
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.06s
+

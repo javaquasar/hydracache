@@ -138,6 +138,14 @@ historical cause or a fix. Isolate any immutable-proof reuse proposal while
 retaining live configuration/epoch/context checks, and separately attribute the
 retained old IPC Host(Busy) occurrence before treating robustness as closed.
 
+The first [proof reuse candidate](local-runs/worker-proof-reuse-20261016/README.md)
+passes focused differential tests but is withdrawn after the first paired
+candidate run fails its preregistered Setup counter: two constructors execute,
+not one. The screen stops without retries or a gain estimate, and the isolated
+candidate is reverted. A new proposal must account for both original constructor
+sites before any observation; the signed windows and practical-effect floor
+stay unchanged. The separately recurring IPC Host(Busy) remains unresolved.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

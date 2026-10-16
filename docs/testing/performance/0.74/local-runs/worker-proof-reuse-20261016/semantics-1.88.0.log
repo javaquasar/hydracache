@@ -1,0 +1,131 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.61s
+     Running tests/diagnostic_context_files.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_context_files-a1c1e74ecfaafebe)
+
+running 9 tests
+test context_files_actual_context_failure_precedes_missing_file_path ... ok
+context files mutation seed=0x7552026; mutations=64
+test context_files_refusal_and_revocation_precede_any_account_path_access ... ok
+test context_files_policy_failure_after_open_latches_through_drop ... ok
+test context_files_independent_concurrent_guards_do_not_share_refusal ... ok
+test context_files_owned_roundtrip_and_successful_drop_preserve_policy ... ok
+test context_files_changed_names_contents_and_restoration_cannot_refresh ... ok
+test context_files_fixture_cannot_claim_fixed_root_owner_or_symlink_origin ... ok
+test context_files_constructor_open_mapping_and_document_failures_latch_original ... ok
+test context_files_seeded_resigned_foreign_context_cannot_enroll_owned_files ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+     Running tests/diagnostic_intent_projection.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_intent_projection-9fd7d0182eda4422)
+
+running 30 tests
+test collector_intent_requires_a_distinct_output_projection ... ok
+test boot_change_never_rebinds_an_original_worker ... ok
+test authenticated_worker_trust_drift_revokes_original_not_just_wrapper ... ok
+test body_budget_nested_schema_and_hash_encoding_are_strict ... ok
+test checked_intent_refuses_original_state_peer_trust_and_packet_drift_stickily ... ok
+test collector_intent_tests::collector_projection_removes_regular_file_access_and_preserves_other_properties ... ok
+test collector_intent_tests::collector_reserved_state_and_budget_grammar_cannot_be_relaxed ... ok
+test collector_intent_tests::collector_and_legacy_domains_and_output_digests_cannot_be_relabelled ... ok
+test collector_intent_tests::collector_original_worker_refusal_survives_guard_drop ... ok
+test collector_intent_tests::collector_original_guard_latches_packet_state_peer_and_time_drift ... ok
+test collector_intent_tests::collector_document_budget_canonical_schema_and_duplicate_fields_refuse ... ok
+test collector_intent_tests::collector_strict_signature_key_and_encoding ... ok
+test collector_intent_tests::collector_four_modeled_cells_keep_distinct_exact_pins ... ok
+collector_output_requirements fields=10 order_mutations=2 durable_replay_prevention=false
+test collector_intent_tests::collector_every_output_requirement_is_hashed_not_supplied_as_authority ... ok
+test collector_intent_tests::collector_signed_field_mutations_are_not_production_authority ... ok
+test controller_and_peer_allowlists_cannot_be_supplied_by_the_envelope ... ok
+test collector_intent_tests::collector_principal_configuration_stays_independent_and_bounded ... ok
+test malformed_noncanonical_unknown_duplicate_and_oversize_refuse ... ok
+test original_worker_refusal_survives_intent_drop_and_restoration ... ok
+test independent_concurrent_checks_are_not_a_replay_ledger ... ok
+test state_hash_includes_every_field_and_unit_hash_changes_with_budget ... ok
+test state_projection_rejects_interrupted_expired_and_admission_states ... ok
+test collector_intent_tests::collector_window_is_bounded_and_expiry_exclusive ... ok
+test signature_domain_key_and_lowercase_encoding_are_strict ... ok
+test controller_fields_and_bounded_configuration_fail_closed ... ok
+test signed_binding_mutations_are_not_authority ... ok
+test four_cells_bind_exact_projection_without_execution ... ok
+test window_is_positive_bounded_and_expiry_exclusive ... ok
+test seeded_state_mutations_bind_full_state_not_only_cell ... ok
+collector_intent seed=0x0740c097 state_mutations=64 independent_threads=4 production_start=false
+test collector_intent_tests::collector_seeded_full_state_binding_and_independent_concurrency ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+
+     Running tests/diagnostic_ipc.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_ipc-8478055ecc8469e5)
+
+running 24 tests
+test changed_request_and_cross_lease_nonce_reuse_are_refused ... ok
+test diagnostic_signatures_have_a_separate_domain ... ok
+test authorization_window_has_exclusive_expiry_and_no_future_skew ... ok
+test campaign_claim_refuses_diagnostic_reserve_without_backend_calls ... ok
+test concurrent_same_revision_has_at_most_one_mutation ... ok
+test completed_replay_is_cached_without_extending_heartbeat ... ok
+test local_seqpacket_denies_non_allowlisted_kernel_peer_without_marker ... ok
+test backend_failure_is_cached_without_leaking_paths_or_releasing_marker ... ok
+test malformed_packets_unknown_fields_and_unsigned_overrides_are_rejected ... ok
+test local_seqpacket_uses_kernel_peer_credentials_without_production_route ... ok
+test linked_ledger_is_refused_and_mode_is_private ... ok
+test peer_and_signed_principal_denials_do_not_create_ledger_or_lease ... ok
+test cancel_replay_after_terminal_release_never_stops_tree_again ... ok
+test producer_public_api_is_separate_from_receiver_and_host_execution ... ok
+test producer_cli_unknown_or_incomplete_commands_refuse_without_echoing_inputs ... ok
+test foreign_or_missing_lease_and_reversed_clock_never_mutate ... ok
+test persisted_heartbeat_crash_gap_does_not_repeat_mutation ... ok
+
+thread 'pending_intent_blocks_reexecution_and_new_requests' panicked at tools/long-run-supervisor-074/tests/diagnostic_ipc.rs:113:9:
+injected loss after durable IPC intent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test stale_revision_and_controller_takeover_are_refused_before_mutation ... ok
+test pending_intent_blocks_reexecution_and_new_requests ... ok
+test signature_binds_every_request_field_and_rejects_campaign_domain ... ok
+test status_is_signed_and_never_refreshes_controller_liveness ... ok
+test corrupt_future_noncanonical_or_pending_ledgers_fail_closed ... ok
+test ledger_digest_duplicate_identity_and_invalid_response_are_rejected ... ok
+test ledger_capacity_never_evicts_replay_protection ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.75s
+
+     Running tests/diagnostic_worker_files.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_worker_files-693e699c3b3666cb)
+
+running 13 tests
+test worker_files_fixture_roundtrip_keeps_policy_private_and_healthy ... ok
+test worker_files_named_leaf_and_directory_replacement_refuse_after_restore ... ok
+test worker_files_independent_concurrent_readers_share_no_refusal ... ok
+worker-files seed=0x7522026; mutations=64
+test worker_files_refused_or_revoked_policy_precedes_any_path_access ... ok
+test worker_files_fixture_rejects_production_paths_and_root_assertions ... ok
+test worker_files_inplace_rewrite_growth_and_trust_failures_latch_original ... ok
+test worker_files_mapping_and_exact_supplementary_groups_refuse_inference ... ok
+test worker_files_modes_ownership_and_symlink_ancestors_refuse ... ok
+test worker_files_symlink_hardlink_fifo_directory_and_socket_refuse ... ok
+test worker_files_whole_documents_and_budgets_are_not_worker_only ... ok
+test worker_files_resigned_strict_grammar_and_ambiguity_refuse ... ok
+test worker_files_exact_byte_line_record_and_group_bounds_accept ... ok
+test worker_files_seeded_valid_unrelated_changes_keep_original_digest_pin ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+
+     Running tests/diagnostic_worker_policy.rs (/home/artur/.cache/hydracache-074-188-check/debug/deps/diagnostic_worker_policy-3a00bebc94a9179b)
+
+running 15 tests
+test authority_registry_api_is_inspection_not_start_authority ... ok
+test worker_policy_external_trust_rejects_weak_keys_and_invalid_pins ... ok
+test worker_policy_canonical_strict_json_and_budgets_refuse ... ok
+test worker_policy_resigned_invalid_identity_and_context_refuse ... ok
+test authority_fixed_api_has_no_path_selector_and_nonroot_cannot_enroll ... ok
+worker-policy seed=0x7512026; mutations=256
+test worker_policy_roundtrip_is_idempotent_not_host_enrollment ... ok
+test worker_policy_concurrent_guards_share_no_refusal_or_authority ... ok
+test worker_policy_context_and_envelope_drift_latch_without_refresh ... ok
+test worker_policy_unsigned_field_changes_never_adopt_new_values ... ok
+test worker_policy_group_rules_preserve_exact_lists_and_union_bound ... ok
+test worker_policy_revocation_is_first_error_and_cannot_restore ... ok
+test worker_policy_oversized_revalidation_and_key_pin_changes_latch ... ok
+test worker_policy_signatures_and_foreign_domains_refuse ... ok
+test worker_policy_asserted_host_boot_and_both_namespaces_match_exactly ... ok
+test worker_policy_seeded_valid_resigned_mutations_keep_original_pin ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.91s
+
