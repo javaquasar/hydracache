@@ -8,6 +8,9 @@ mod kernel_refusal;
 #[path = "support/performance_contract_074_collector_intent.rs"]
 mod collector_intent;
 
+#[path = "support/performance_contract_074_original_collector.rs"]
+mod original_collector;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
