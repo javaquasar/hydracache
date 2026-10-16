@@ -1,6 +1,9 @@
 use super::*;
 use std::os::unix::fs::MetadataExt;
 
+#[path = "diagnostic_collector_reserved_tests.rs"]
+mod collector_reserved_tests;
+
 #[test]
 fn observed_reservation_api_shape() {
     use super::super::super::super::super::fenced_preflight::request_attempt::ControllerRequestAttempt;

@@ -4,6 +4,9 @@ use crate::diagnostic_kernel_admission::KernelTimePoint;
 use crate::diagnostic_lease::{DiagnosticStage, DiagnosticState};
 use std::fmt;
 
+#[path = "diagnostic_collector_reserved.rs"]
+pub mod publication;
+
 /// Consumes the original request owner; state exported for signing is data only.
 /// ```compile_fail
 /// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::ControllerRequestAttempt;

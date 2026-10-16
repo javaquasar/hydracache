@@ -76,6 +76,11 @@ fn collector_intent_keeps_legacy_bytes_and_execution_boundary_closed() {
             assert_eq!(current.matches(registration).count(), 1);
             current = current.replacen(registration, "", 1);
         }
+        if path.ends_with("gated-test-registry.toml") {
+            let addition = super::collector_reserved::REGISTRY_ADDITION;
+            assert_eq!(current.matches(addition).count(), 1);
+            current = current.replacen(addition, "", 1);
+        }
         assert_eq!(current, historical(path), "out-of-scope mutation: {path}");
     }
     let source = std::fs::read_to_string(

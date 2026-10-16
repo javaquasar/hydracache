@@ -13,6 +13,8 @@ use thiserror::Error;
 
 pub(super) const NAME: &str = "diagnostic-attempt-074.json";
 pub(crate) const CONTROLLER_NAME: &str = "diagnostic-controller-attempt-074.json";
+#[path = "diagnostic_collector_reservation_storage.rs"]
+pub(crate) mod collector_reservation_storage;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AttemptStage {
     BeforeCreate,
