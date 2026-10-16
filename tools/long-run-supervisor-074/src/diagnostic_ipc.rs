@@ -21,6 +21,13 @@ pub const PENDING_NAME: &str = ".diagnostic-requests.pending";
 pub const MAX_LEDGER_BYTES: u64 = 262_144;
 pub const MAX_LEDGER_ENTRIES: usize = 128;
 
+#[cfg(test)]
+#[path = "diagnostic_validation_trace.rs"]
+pub(crate) mod validation_trace;
+#[cfg(test)]
+#[path = "diagnostic_validation_trace_tests.rs"]
+mod validation_trace_tests;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum DiagnosticOperation {
@@ -154,6 +161,8 @@ pub fn authenticate(
     policy: &DiagnosticPolicy,
     now_unix_seconds: u64,
 ) -> Result<DiagnosticRequest, DiagnosticIpcError> {
+    #[cfg(test)]
+    let _authentication_trace = validation_trace::authentication();
     if !policy.client_uids.contains(&peer.uid) || !peer.gids.contains(&policy.client_gid) {
         return Err(DiagnosticIpcError::Principal);
     }
@@ -164,10 +173,14 @@ pub fn authenticate(
         serde_json::from_slice(packet).map_err(|_| DiagnosticIpcError::Packet)?;
     let message = signing_message(&signed.request)?;
     let signature = signature(&signed.signature_hex)?;
+    #[cfg(test)]
+    let signature_trace = validation_trace::signature();
     policy
         .verifying_key
         .verify_strict(&message, &signature)
         .map_err(|_| DiagnosticIpcError::Signature)?;
+    #[cfg(test)]
+    drop(signature_trace);
     let r = signed.request;
     if r.controller.repository_id != policy.repository_id
         || !policy.actor_ids.contains(&r.controller.actor_id)
@@ -178,6 +191,13 @@ pub fn authenticate(
     // only. Lease correctness continues to use the coordinator's monotonic clock.
     if now_unix_seconds < r.issued_at_unix_seconds || now_unix_seconds >= r.expires_at_unix_seconds
     {
+        #[cfg(test)]
+        validation_trace::time_refusal(
+            r.operation,
+            r.issued_at_unix_seconds,
+            r.expires_at_unix_seconds,
+            now_unix_seconds,
+        );
         return Err(DiagnosticIpcError::Time);
     }
     Ok(r)

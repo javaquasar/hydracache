@@ -1,0 +1,65 @@
+use super::*;
+use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
+
+#[test]
+#[ignore = "manual nonroot original validation cost attribution; no server"]
+fn validation_cost_original_stages_preserve_guards_and_files() {
+    let (_, report) = trace::capture(|| {
+        trace::stage(Stage::Setup);
+        with_progress_original(true, |original, _, receiver, sender, model| {
+            let request = original.original.original.request.clone();
+            with_owned_empty_fence_for_test(|fence, root, leaf| {
+                trace::stage(Stage::Fence);
+                let bound = original.bind_common_empty_fence(fence).unwrap();
+                trace::stage(Stage::Retain);
+                let attempt = bound.retain_request().unwrap();
+                let retained = fs::read(leaf.join(NAME)).unwrap();
+                trace::stage(Stage::Observe);
+                let mut observed = attempt.into_observed_reservation();
+                let state = observed.state_to_sign().unwrap();
+                trace::stage(Stage::Publish);
+                let read = observed
+                    .publish_reserved(&signed(&body(&request, &state, &retained)))
+                    .unwrap();
+                let raw = fs::read(leaf.join(RESERVED_NAME)).unwrap();
+                trace::stage(Stage::Bind);
+                let mut next = request;
+                next.operation = DiagnosticOperation::Heartbeat;
+                next.expected_state_revision = 1;
+                next.request_id = "f".repeat(64);
+                next.nonce_sha256 = "0".repeat(64);
+                let packet = receive(receiver, sender, &model.sign(next, &model.key));
+                let mut progress = read.bind_authenticated_progress(packet).unwrap();
+                trace::stage(Stage::Checks);
+                assert!(!progress.is_refused());
+                assert_eq!(fs::read(leaf.join(NAME)).unwrap(), retained);
+                assert_eq!(fs::read(leaf.join(RESERVED_NAME)).unwrap(), raw);
+                assert_eq!(fs::read_dir(leaf).unwrap().count(), 2);
+                busy(root);
+                fs::remove_file(leaf.join(RESERVED_NAME)).unwrap();
+                assert!(progress.revalidate().is_err());
+                assert!(progress.is_refused());
+                busy(root);
+                drop(progress);
+                drop(crate::host_execution::lock_host_root(root).unwrap());
+                retained_context_refuses_for_test(root);
+            });
+        });
+    });
+    assert!(report.first_time.is_none());
+    for stage in [
+        Stage::Setup,
+        Stage::Fence,
+        Stage::Retain,
+        Stage::Observe,
+        Stage::Publish,
+        Stage::Bind,
+    ] {
+        let stats = report.stages[stage as usize];
+        assert!(stats.authentication_calls > 0);
+        assert!(stats.signature_calls > 0);
+        assert!(stats.worker_policy_calls > 0);
+        println!("HC074-VALIDATION-STAGE {stage:?} {stats:?}");
+    }
+    println!("validation_cost original_guards=true source=debug_fixture authority_renewal=false starting=false");
+}

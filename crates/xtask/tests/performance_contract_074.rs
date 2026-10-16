@@ -20,6 +20,9 @@ mod collector_progress;
 #[path = "support/performance_contract_074_collector_causal.rs"]
 mod collector_causal;
 
+#[path = "support/performance_contract_074_validation_cost.rs"]
+mod validation_cost;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");

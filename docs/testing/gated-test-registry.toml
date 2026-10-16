@@ -8913,3 +8913,37 @@ platform = "linux"
 
 [gate.command.env]
 # END COLLECTOR CAUSAL PROOF GATE
+
+# BEGIN VALIDATION COST PROBE GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.validation-cost-original-stages-preserve-guards-and-files"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_validation_cost_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "validation_cost_original_stages_preserve_guards_and_files"
+cfg = 'target_os = "linux"'
+env = ""
+reason = "Manual nonroot debug fixture stage/call/signature cost attribution; no production optimization or execution"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-long-run-supervisor-074", "--lib", "--locked", "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::validation_cost_tests::validation_cost_original_stages_preserve_guards_and_files", "--", "--ignored", "--exact", "--nocapture"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+# END VALIDATION COST PROBE GATE

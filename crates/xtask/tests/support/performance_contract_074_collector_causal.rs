@@ -36,6 +36,7 @@ platform = "linux"
 # END COLLECTOR CAUSAL PROOF GATE
 "#;
 pub(super) fn without_registry_addition(raw: &str) -> String {
+    let raw = super::validation_cost::without_registry_addition(raw);
     assert_eq!(raw.matches(REGISTRY_ADDITION).count(), 1);
     raw.replacen(REGISTRY_ADDITION, "", 1)
 }
@@ -100,7 +101,7 @@ fn collector_causal_requires_original_post_ack_challenge_and_no_admission_renewa
         ),
     ] {
         let p = format!("tools/long-run-supervisor-074/src/{file}");
-        let raw = read(&p);
+        let raw = super::validation_cost::without_instrumentation(&p, &read(&p));
         assert_eq!(raw.matches(registration).count(), 1);
         assert_eq!(
             raw.replacen(registration, "", 1),

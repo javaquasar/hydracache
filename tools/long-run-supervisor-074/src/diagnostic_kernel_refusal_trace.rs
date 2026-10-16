@@ -56,6 +56,7 @@ impl Drop for Restore {
     }
 }
 pub(crate) fn capture<T>(run: impl FnOnce() -> T) -> (T, Option<Event>) {
+    let _validation = crate::diagnostic_ipc::validation_trace::ambient();
     let restore = Restore(FRAME.replace(Some(Frame {
         phase: "unassigned",
         first: None,

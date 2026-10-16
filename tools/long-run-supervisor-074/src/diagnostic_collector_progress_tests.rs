@@ -1,6 +1,8 @@
 use super::*;
 #[path = "diagnostic_collector_causal_tests.rs"]
 mod causal_tests;
+#[path = "diagnostic_validation_cost_tests.rs"]
+mod validation_cost_tests;
 use crate::diagnostic_ipc::DiagnosticOperation;
 use crate::diagnostic_kernel_admission::{KernelPacket, KernelReceiver};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};

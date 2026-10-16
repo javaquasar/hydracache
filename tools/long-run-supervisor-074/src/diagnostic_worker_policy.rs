@@ -192,6 +192,8 @@ fn verify_document(
     trust: &WorkerPolicyTrust,
     host: &AssertedWorkerHost,
 ) -> Result<WorkerPolicy, WorkerPolicyError> {
+    #[cfg(test)]
+    let _worker_policy_trace = crate::diagnostic_ipc::validation_trace::worker_policy();
     if bytes.is_empty() || bytes.len() > MAX_SIGNED_WORKER_POLICY_BYTES {
         return Err(WorkerPolicyError::Document);
     }
