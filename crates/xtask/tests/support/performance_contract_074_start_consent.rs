@@ -37,6 +37,8 @@ const ADAPTERS: &[&str] = &[
     "crates/xtask/tests/support/performance_contract_074_claim_construction.rs",
 ];
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    let current = super::original_start_consent::normalize(path, raw);
+    let raw = current.as_str();
     let (new, old) = if path == "docs/COMPAT.md" {
         (COMPAT, "")
     } else if path == "crates/xtask/tests/performance_contract_074.rs" {
@@ -114,7 +116,11 @@ fn start_consent_is_data_only_and_preserves_all_original_runtime_and_static_guar
         "tools/long-run-supervisor-074/tests/host_execution.rs",
         "docs/testing/performance/0.74/local-runs/claim-construction-20261016/manifest.json",
     ] {
-        assert_eq!(read(p), old(p), "original guard/input changed: {p}");
+        assert_eq!(
+            super::original_start_consent::normalize(p, &read(p)),
+            old(p),
+            "original guard/input changed: {p}"
+        );
     }
     let source = read("tools/long-run-supervisor-074/src/diagnostic_start_consent.rs");
     let runtime = source

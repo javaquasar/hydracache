@@ -1,5 +1,8 @@
 //! Read-only original context join; no principal, replay, start or completion authority.
 use super::*;
+#[path = "diagnostic_worker_start_consent.rs"]
+mod start_consent;
+
 #[path = "diagnostic_worker_progress.rs"]
 mod progress;
 use crate::diagnostic_kernel_admission::KernelPacket;

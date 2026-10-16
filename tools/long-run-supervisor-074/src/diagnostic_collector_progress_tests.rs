@@ -1,4 +1,7 @@
 use super::*;
+#[path = "diagnostic_original_start_consent_tests.rs"]
+mod start_consent_tests;
+
 #[path = "diagnostic_collector_causal_tests.rs"]
 mod causal_tests;
 #[path = "diagnostic_validation_cost_tests.rs"]

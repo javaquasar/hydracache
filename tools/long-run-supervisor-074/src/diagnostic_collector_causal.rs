@@ -1,5 +1,8 @@
 //! Post-ack challenge response only; no lifecycle handoff, commit or execution.
 use super::*;
+#[path = "diagnostic_original_start_consent.rs"]
+pub mod start_consent;
+
 use crate::diagnostic_ipc::SignedDiagnosticRequest;
 use crate::diagnostic_lease::DiagnosticIdentity;
 use ring::rand::{SecureRandom, SystemRandom};

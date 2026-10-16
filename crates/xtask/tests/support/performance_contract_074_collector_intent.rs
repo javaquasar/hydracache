@@ -70,6 +70,7 @@ fn collector_intent_keeps_legacy_bytes_and_execution_boundary_closed() {
         let mut current = std::fs::read_to_string(super::root().join(path))
             .unwrap()
             .replace('\r', "");
+        current = super::original_start_consent::normalize(path, &current);
         if path.ends_with("diagnostic_controller_request_attempt.rs") {
             let registration =
                 "\n#[path = \"diagnostic_original_collector.rs\"]\npub mod collector_preflight;\n";

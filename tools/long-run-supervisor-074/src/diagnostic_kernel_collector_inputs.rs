@@ -1,6 +1,9 @@
 //! Private original peer/time snapshot, not an exported admission capability.
 use super::*;
 
+#[path = "diagnostic_kernel_start_consent.rs"]
+mod start_consent;
+
 #[path = "diagnostic_kernel_progress.rs"]
 mod progress;
 
