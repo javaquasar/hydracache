@@ -11075,3 +11075,47 @@ fixed source. This is a second local ownership correction, not a throughput or
 allocation optimization and not attribution of either old natural Host(Busy).
 Authenticated original-start and cessation of every writer remain the next
 execution boundary; completion, later cells and server admission remain closed.
+
+### A fresh heartbeat is not consent to start
+
+The original causal challenge proves that an authenticated controller answered
+a newly generated commitment after Reserved acknowledgement. That does not
+express a request to execute. Treating the existing signed Heartbeat as a start
+command would change its meaning, even if the signature and freshness checks
+were correct. The next boundary therefore starts with a distinct consent format,
+not a new interpretation of old request bytes.
+
+The first-cell consent has its own body/envelope schemas and Ed25519 domain.
+Canonical LF JSON binds the original controller attempt, retained Reserved and
+state, challenge nonce, authenticated response, worker-policy digest/epoch and
+collector-unit digest to a revision-two Starting projection. It also signs a new
+consent id, original reservation id, fixed controller/source/preset and a positive
+signing window of at most sixty seconds. First-cell grammar excludes later cells,
+running process/cgroup claims, cleanup success and promotable admission flags.
+Body and envelope ceilings are 4096 and 8192 bytes. Old request, collector intent
+and challenge domains cannot substitute even with the same signing key.
+
+The implementation deliberately exposes byte/signature inspection, not a trusted
+execution object. A supplied verifier key is not enrolled by using it, and a
+signed timestamp is not an observed clock. Repeated inspection of the same bytes
+succeeds; that is useful parsing behavior, not once-only execution. A future
+consuming original owner must compare every claim against its retained kernel
+peer/time, live trust/epoch/fence and original durable records, validate the
+adjacent transition and retain the uncertain/replay intent before output or
+process creation. No old admission deadline is refreshed or silently discharged.
+
+The [consent evidence](../testing/performance/0.74/local-runs/start-consent-20261016/README.md)
+keeps the missing-module red and two test-development mistakes: a private helper
+was inaccessible to integration tests, and an invented greater-than-forty leaf
+expectation did not match the selected schema. The test now fixes the complete
+eighteen-field inventory and mutates all 36 nested scalar leaves under seed
+0x0740c0a2. This is a test inventory correction before the successful cohort,
+not a performance or admission threshold adjustment. Other checks cover real
+signatures, four foreign domains, thirty grammar refusals, duplicate/unknown/
+noncanonical/partial/oversized input and four independent concurrent checkers.
+The compatibility register describes this opt-in matched-reader contract.
+
+These results establish the explicit signed-data boundary needed by original
+start. They do not establish authenticated process creation, durable Starting,
+autonomous watchdog or cessation of every writer. No product gain or server
+admission follows from a correctly verified consent signature alone.

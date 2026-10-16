@@ -171,6 +171,17 @@ marker retention, final claim Drop and terminal release stay exact. The next
 implementation boundary remains the original authenticated start and autonomous
 writer cessation described below, not release admission.
 
+The [explicit start-consent bytes](diagnostic-start-consent-plan-20261016.md)
+now separate first-cell launch consent from the existing Heartbeat/challenge
+protocol. The signed body binds original attempt/Reserved/state/challenge/response
+and policy/unit hashes to the first Starting projection and fixed controller/
+source/preset. Signature inspection is deliberately data-only, with no asserted
+peer/clock admission API or runtime guard. Next derive/freeze Starting under the
+consumed original causal owner, compare every signed claim using its retained
+kernel context and current policy/epoch/fence, and retain the durable adjacent
+transition/replay intent before any output or process creation. No bootstrap
+deadline is discharged or renewed by parsing a signed body.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

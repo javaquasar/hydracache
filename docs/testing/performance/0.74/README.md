@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [explicit start-consent contract](diagnostic-start-consent-design.md)
+adds distinct bounded canonical signing bytes and signature inspection for the
+first collector cell. It binds original reservation/challenge/response and
+worker/unit claims to a revision-two Starting projection. A signed Heartbeat is
+not reinterpreted as start consent. Inspection returns ordinary untrusted data:
+actual kernel time/peer, live authority/fence, adjacent durable transition and
+replay still need the consuming original-owner join before output or execution.
+The [local packet](local-runs/start-consent-20261016/README.md) records the checks.
+
 The [campaign-construction packet](local-runs/claim-construction-20261016/README.md)
 extends explicit ownership to acquire/recover before a HostExecutionClaim exists.
 A private pending owner unlocks on errors and recover_active returning None,

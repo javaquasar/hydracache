@@ -215,6 +215,13 @@ into the original successful claim. Its six tests span 23 cases and retain the
 original admission predicates and terminal release. This closes that local
 construction gap, not all-writer cessation or server admission.
 
+The distinct [start-consent byte contract](diagnostic-start-consent-plan-20261016.md)
+now exists without changing Heartbeat semantics. It signs first-cell Starting and
+the original request/reservation/challenge/response/policy/unit bindings. Its
+inspector's supplied key and signed timestamps are not enrolled authority or
+kernel observations. The consuming original-owner join, exact live checks and
+durable replay/Starting acknowledgement remain before output or execution.
+
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
    identity, verified controller provenance, replay, epoch revocation and trusted

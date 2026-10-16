@@ -291,3 +291,6 @@ docs/testing/performance/0.74/local-runs/short-fence-*/*.log -text whitespace=cr
 docs/testing/performance/0.74/local-runs/claim-construction-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/claim-construction-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/claim-construction-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/start-consent-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/start-consent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

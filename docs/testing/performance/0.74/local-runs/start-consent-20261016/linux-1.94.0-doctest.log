@@ -1,0 +1,47 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.53s
+   Doc-tests hydracache_long_run_supervisor_074
+
+running 4 tests
+error[E0599]: no method named `publish_starting` found for struct `SignedStartConsent` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_start_consent.rs:11:43
+   |
+11 | ...oc.publish_starting(); }
+   |       ^^^^^^^^^^^^^^^^ method not found in...edStartConsent`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_start_consent.rs - diagnostic_start_consent (line 8) - compile fail ... ok
+error[E0599]: no method named `release_resources` found for struct `StartConsentBody` in the current scope
+  --> tools/long-run-supervisor-074/src/diagnostic_start_consent.rs:15:43
+   |
+15 | ...dy.release_resources(); }
+   |       ^^^^^^^^^^^^^^^^^ method not found i...tConsentBody`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no method named `start_once` found for struct `StartConsentBody` in the current scope
+ --> tools/long-run-supervisor-074/src/diagnostic_start_consent.rs:7:41
+  |
+7 | ...dy.start_once(); }
+  |       ^^^^^^^^^^ method not found in `StartConsentBody`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
+test tools/long-run-supervisor-074/src/diagnostic_start_consent.rs - diagnostic_start_consent (line 12) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_start_consent.rs - diagnostic_start_consent (line 4) - compile fail ... ok
+test tools/long-run-supervisor-074/src/diagnostic_start_consent.rs - diagnostic_start_consent::inspect_start_consent_signature (line 154) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 169 filtered out; finished in 0.33s
+
+error[E0599]: no method named `start_once` found for struct `StartConsentBody` in the current scope
+   --> tools/long-run-supervisor-074/src/diagnostic_start_consent.rs:158:56
+    |
+158 | ...().start_once();
+    |       ^^^^^^^^^^ method not found in `StartConsentBody`
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
