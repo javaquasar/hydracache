@@ -1,4 +1,6 @@
 //! One consumed heartbeat preflight; no state transition, runtime lease or start.
+#[path = "diagnostic_collector_causal.rs"]
+pub mod causal;
 use super::*;
 use crate::diagnostic_ipc::{DiagnosticOperation, DiagnosticRequest};
 use crate::diagnostic_kernel_admission::KernelPacket;

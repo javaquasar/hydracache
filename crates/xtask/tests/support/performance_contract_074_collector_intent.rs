@@ -77,6 +77,7 @@ fn collector_intent_keeps_legacy_bytes_and_execution_boundary_closed() {
             current = current.replacen(registration, "", 1);
         }
         if path.ends_with("gated-test-registry.toml") {
+            current = super::collector_causal::without_registry_addition(&current);
             let addition = super::collector_reserved::REGISTRY_ADDITION;
             assert_eq!(current.matches(addition).count(), 1);
             current = current.replacen(addition, "", 1);

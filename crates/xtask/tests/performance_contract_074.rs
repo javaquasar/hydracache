@@ -17,6 +17,9 @@ mod collector_reserved;
 #[path = "support/performance_contract_074_collector_progress.rs"]
 mod collector_progress;
 
+#[path = "support/performance_contract_074_collector_causal.rs"]
+mod collector_causal;
+
 #[test]
 fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");

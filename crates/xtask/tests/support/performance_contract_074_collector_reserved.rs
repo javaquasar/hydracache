@@ -117,6 +117,7 @@ fn collector_reserved_requires_original_owned_publication_not_recovered_start() 
         assert_eq!(current, historical(p), "out-of-scope change: {p}");
     }
     let registry = read("docs/testing/gated-test-registry.toml");
+    let registry = super::collector_causal::without_registry_addition(&registry);
     assert_eq!(registry.matches(REGISTRY_ADDITION).count(), 1);
     assert_eq!(
         registry.replacen(REGISTRY_ADDITION, "", 1),
