@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-fmt",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec /home/artur/.cargo/bin/cargo +1.94.0 fmt --all -- --check",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; not a byte-exact process stream, binary attestation or final candidate acceptance.",
+  "output": ""
+}

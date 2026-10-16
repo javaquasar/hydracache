@@ -8,9 +8,12 @@ controller and kernel admission deadlines are fixed, not implementation knobs.
 The [publication budget experiment](diagnostic-consent-budget-plan-20261016.md)
 now retains twelve refusing local chains, including normal release builds.
 The straightforward recursive-check publication path is blocked before any
-Starting write. The separate [validation composition proposal](diagnostic-validation-frame-proposal-20261016.md)
-requires architectural review before changing the live observation brackets;
-it is not a deadline relaxation or an implemented publisher.
+Starting write. The operator subsequently approved the separate
+[validation frame design](diagnostic-validation-frame-design-20261016.md).
+Its local candidate changes only outer orchestration and retains the original
+live leaf guards, origins and deadlines. It is not an implemented publisher:
+the mixed release-budget observations and incomplete live-mutation matrix must
+not be interpreted as permission to start a process or acknowledge storage.
 
 ## Record and phase ownership
 

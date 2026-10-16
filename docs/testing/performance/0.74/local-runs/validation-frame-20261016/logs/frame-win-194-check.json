@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-win-194-check",
+  "command": "cargo +1.94.0 check -p hydracache-long-run-supervisor-074 --all-targets --offline --locked",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; not a byte-exact process stream, binary attestation or final candidate acceptance.",
+  "output": "    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\long-run-supervisor-074)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.43s\n"
+}

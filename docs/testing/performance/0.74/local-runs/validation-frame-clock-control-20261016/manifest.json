@@ -1,0 +1,62 @@
+{
+  "format_version": 1,
+  "kind": "approved-local-wsl-clock-control-refused",
+  "preregistration_commit": "32b5f2ba6f6c2c2a6275f9615a5117f51ab57674",
+  "original_source_snapshot": "../validation-frame-20261016/manifest.json",
+  "scope": {
+    "service_temporarily_stopped": true,
+    "service_restored": true,
+    "preflight_passed": false,
+    "matrices_started": 0,
+    "budget_cohorts_started": 0,
+    "runtime_changed": false,
+    "deadline_changed": false,
+    "clock_value_changed_by_controller": false,
+    "windows_service_changed": false,
+    "clocksource_changed": false,
+    "server_mutated": false,
+    "product_workload_run": false,
+    "qualification_changed": false,
+    "candidate_committed": false,
+    "server_ready": false
+  },
+  "preflight": {
+    "observed_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "refusal_index": 7,
+    "realtime_delta_ns": -3151529293,
+    "boottime_delta_ns": 1000220159,
+    "guard_delta_ns": 100000000,
+    "planned_seconds": 90
+  },
+  "outcomes": {
+    "wrapper_reported_result": 93,
+    "outer_run_exit_code": 1,
+    "independent_restoration_exit_code": 0
+  },
+  "artifacts": [
+    {
+      "path": "run.sh",
+      "bytes": 3293,
+      "sha256": "7e8b84b9bc39afc2fc92e0a187701b0557870811c7d4cc70ef99fccbca5455b7"
+    },
+    {
+      "path": "run.json",
+      "bytes": 1651,
+      "sha256": "9013c0826b61a3acdf5ebb967caa87342c54fd8a643b5b953c5e2bc0dbf99755"
+    },
+    {
+      "path": "restoration.json",
+      "bytes": 2842,
+      "sha256": "ef260c435fe83001a43ea9d8880c259f89f4b22cefa6a59fa7f5f73beba13fa1"
+    }
+  ],
+  "provenance": "Unsigned local tool observations, not runtime acceptance, a complete test cohort, installed-source proof or binary custody."
+}

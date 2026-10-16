@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-release-binary-observations",
+  "command": "wsl.exe -d Ubuntu --exec sha256sum /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-81989065b672da94",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; not a byte-exact process stream, binary attestation or final candidate acceptance.",
+  "output": "65f901ca510c240e4beff482c19d58ac6279ab685ee592c072142f98e4a91590  /home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd\nc2e6ff7a751a7b6c0278f5d37910dba2c8128ea7356793a9af63373a7f013187  /home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-81989065b672da94\n"
+}

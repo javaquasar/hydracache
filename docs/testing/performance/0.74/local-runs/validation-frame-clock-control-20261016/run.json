@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-clock-control-run",
+  "command": "wsl.exe -d Ubuntu -u root --exec /bin/sh /mnt/c/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-clock-control-20261016/run.sh",
+  "exit_code": 1,
+  "provenance": "Unsigned local tool text, not a byte-exact process stream.",
+  "output": "HC074-CLOCK-CONTROL service_before=active\nHC074-CLOCK-CONTROL service_during=inactive\nuid=1000(artur) gid=1000(artur) groups=1000(artur),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),100(users),107(netdev),1001(docker)\n3c8c261e-7a4c-4968-a97b-a365a1dc83fc\n/home/artur/.cache/hydracache-074-194-check/release/deps/hydracache_long_run_supervisor_074-171a8ee7d3705ebd: OK\n/home/artur/.cache/hydracache-074-188-check/release/deps/hydracache_long_run_supervisor_074-81989065b672da94: OK\nHC074-CLOCK-PREFLIGHT index=0 realtime_ns=1792156973389221989 boottime_ns=25853765947\nHC074-CLOCK-PREFLIGHT index=1 realtime_ns=1792156974389550443 boottime_ns=26854099024\nHC074-CLOCK-PREFLIGHT index=2 realtime_ns=1792156975389777217 boottime_ns=27854322430\nHC074-CLOCK-PREFLIGHT index=3 realtime_ns=1792156976389954163 boottime_ns=28854499259\nHC074-CLOCK-PREFLIGHT index=4 realtime_ns=1792156977390169773 boottime_ns=29854714872\nHC074-CLOCK-PREFLIGHT index=5 realtime_ns=1792156978390475325 boottime_ns=30855020824\nHC074-CLOCK-PREFLIGHT index=6 realtime_ns=1792156979390671496 boottime_ns=31855216964\nHC074-CLOCK-PREFLIGHT refused index=7 realtime_delta=-3151529293 boottime_delta=1000220159\nHC074-CLOCK-CONTROL service_restored=active result=93\n"
+}

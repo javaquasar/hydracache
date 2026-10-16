@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-static-budget-fixed",
+  "command": "cargo +1.94.0 test -p xtask --test performance_contract_074 --offline --locked consent_budget -- --nocapture",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; not a byte-exact process stream, binary attestation or final candidate acceptance.",
+  "output": "   Compiling xtask v0.73.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\xtask)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.81s\n     Running tests\\performance_contract_074.rs (target\\debug\\deps\\performance_contract_074-affcfab4e5118d5a.exe)\n\nrunning 1 test\ntest consent_budget::consent_budget_is_additive_and_keeps_original_runtime_and_deadlines ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 182 filtered out; finished in 0.82s\n\n"
+}

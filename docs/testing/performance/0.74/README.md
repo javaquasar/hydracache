@@ -3571,6 +3571,21 @@ be summed into exclusive attribution. Review the
 before changing observation order. No deadline, runtime guard, qualification
 input or server state changes in this packet.
 
+The operator subsequently approved the separate
+[validation frame design](diagnostic-validation-frame-design-20261016.md).
+Its local candidate coalesces outer recursion, not live predicates or cached
+proofs. The release publication-free chains completed 19/19/5 checks on Rust
+1.94 and 19/19/19 on 1.88. The short chain correctly refused a backwards WSL
+realtime step; the first live-drift matrix was also interrupted by clock-order
+refusal after five fault cases. No failed chain is erased or retried into a
+claim. Complete fault coverage and actual durable Starting remain open; neither
+these observations nor the green static contract admit server execution.
+The [working-copy evidence](local-runs/validation-frame-20261016/README.md)
+retains all twelve new budget chains and the incomplete fault gate explicitly.
+The subsequent [approved clock control](local-runs/validation-frame-clock-control-20261016/README.md)
+also refused before tests while WSL timesyncd was inactive. Restoration is
+verified; further environment agreement is needed, not an unchanged rerun.
+
 The [exact-source packet](local-runs/diagnostic-completion-boundary-20261013/README.md)
 pins implementation `fb6afed217ed6193f2898001bbd58da80ecdfc83`. Seven fast tests pass
 three repetitions; three manual repetitions prove the post-exit write. Process

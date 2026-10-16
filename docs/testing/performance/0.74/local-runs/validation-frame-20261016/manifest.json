@@ -1,0 +1,630 @@
+{
+  "format_version": 1,
+  "kind": "uncommitted-candidate-working-copy-observation",
+  "parent_commit": "fc374ea72624a5757456970aa56f2b86d185c18f",
+  "baseline_commit": "47372f9fe5d634193c8eeae90d1d7b3005d5a380",
+  "preregistration_commit": "fc374ea72624a5757456970aa56f2b86d185c18f",
+  "provenance": "Unsigned local working-copy observation. Exact checkout hashes describe the selected candidate; there is no candidate commit, installed receipt, byte-exact process-stream capture or build custody attestation. Later static adapter repair did not modify candidate runtime or either budget fixture.",
+  "scope": {
+    "candidate_committed": false,
+    "live_fault_matrix_complete": false,
+    "all_release_budget_chains_complete": false,
+    "durable_starting_written": false,
+    "new_sigkill_matrix_run": false,
+    "authenticated_process_started": false,
+    "all_writers_revoked": false,
+    "server_mutated": false,
+    "product_workload_run": false,
+    "deadline_changed": false,
+    "time_service_changed": false,
+    "qualification_changed": false,
+    "server_ready": false,
+    "full_release_verify_run": false
+  },
+  "selected_sources": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "sha256": "cec7f6f0615f74935fa0d8d073d3b5477e25ace89b7c5a3f27bc7ea55ba18326",
+      "git_blob": "366301d83164fcaf7a3521b5871a0c54ebebe856"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_consent_budget.rs",
+      "sha256": "f75fe9f2ab19d401d56e6996d4de0afa9574d44e6970261ac81c88a954c6e3b5",
+      "git_blob": "5755faa4b89e783ea3e0ec0c19bbabdbbbc5316f"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_validation_frame.rs",
+      "sha256": "81f551202426eac4712b51697ce25cb214c3f724cad9f827fe6088ee774fbe59",
+      "git_blob": "2d989e2cfd0deae79c99254d255d32243eba28d2"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "sha256": "42a04c3f17bd64959271ed5439192bb5decb99e92e3b5e74b723042d77bb51f6",
+      "git_blob": "6b6994aebbe252926667c59332a19326fa8f1876"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
+      "sha256": "bdffa0fde12407d3d1c09a01421cc0574ae89cb4e134f8c45d9129817b96a0a5",
+      "git_blob": "e11be3209fcbb035ec3e5d5ebc611bc45e6d0a9c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs",
+      "sha256": "2f9c26303b5d863dcda2e444bf81f10ce1168bd1f11ab6757fa21ce9f8eba0f9",
+      "git_blob": "ce8faf117bf43ba0270b7c1aebd1a7643c59833a"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+      "sha256": "babb2605cf335cc41aac16c1f110c7d3e4e660663acb038600fa4490f800c244",
+      "git_blob": "92e259921b522832469e656412977dca3e3442a8"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs",
+      "sha256": "4f404df0ea90cc0283bdcdb0285b069e63628fab22aa62c67878e30a84df1e03",
+      "git_blob": "5551cfba6f756b52dc4cb58c287ae5c8c1682fea"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs",
+      "sha256": "2e70a9b38f0a9fbf24b1458166a5e1260d434b781f78773930bea4271861ed5b",
+      "git_blob": "aac29ef6730c0cce48bb91e5b18d6d036a7de41c"
+    }
+  ],
+  "frozen_inputs": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b",
+      "git_blob": "93020db0f98eb9b3b22b39d0d9c7f191d22b23ed"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "99c8cf65fd709e390727d1441117b85e84fa9fe120cac9a94e35c5d44fc2fcc7",
+      "git_blob": "6719445160dd8e5dec3e097eaf0a146ada683b26"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/Cargo.toml",
+      "sha256": "47bb5eb7f68b4b7b541a9a925881da6b331652ab970186db5ae19600cbcea341",
+      "git_blob": "f04328a58ace3f0bd0f1bc712abda91d2245cf27"
+    },
+    {
+      "path": "docs/COMPAT.md",
+      "sha256": "ad243fe50f2765060fbca71c35403f4b750e094338601c2e7aeb6602b70c09bc",
+      "git_blob": "5458c0f2bb75c32ee2211aa88f6682675a736043"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs",
+      "sha256": "6480627a62d6c6c1c54362f8d8ecaaaaa035c13b16a16ded3a0138e864e0c7b1",
+      "git_blob": "3e7704565fa3ab7e336c6963d2ef04343ac5a750"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+      "sha256": "664bbb4d73f02649b3984ef4e0d1ea64a292a18f9a404e357340069216d28ac7",
+      "git_blob": "e0a53b2fe5f8816a73b5c7a5decfbf5095f37ef3"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+      "sha256": "cc87300e46cc8449a6fa57c45e061d0c488ccddd3c911426110272eb8dc2514e",
+      "git_blob": "1ed02217b184d4af0135b385792c7a8f9e0c1a0c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
+      "sha256": "7df6881fa899224e4e97ae6e618f441258f42a2daabe6f2f042fe7fef3c96577",
+      "git_blob": "b34b56abf0d728103db7b66f6cd4406ecf053dae"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+      "sha256": "6b35d4a50d2b52a823a9fc552b5d1aecf2d5dc2e37ee14128d1b706ea7c6a29e",
+      "git_blob": "9a80e0cae0ed6fb8eb471834e702fe0db5cf8848"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
+      "sha256": "769c3de1224225b790d7e32b34f59b34e9263bdf292afa2b89ba3fdc718b68f8",
+      "git_blob": "4dc16bfc6e2bfa2ebf22159848197e3abc412581"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
+      "sha256": "1347bc92ddb3fe70a3f3f971d233a9473b2908ff286305b28b23399da0c3d03f",
+      "git_blob": "7765a77625ba8d6cea97390e1692ff7ecf1ee4b7"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
+      "sha256": "50dc91406628f1cecdcf8fa771a7cdf3093751c5688d91aa56f5b04017663f56",
+      "git_blob": "da06a8583df99bc414566a7cd6cf6929bffce145"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "sha256": "07355b1299ea9e3010e28b95fdb9d4dd2591c2996cc7fbe73662de426d4d74dc",
+      "git_blob": "fc848af142e61068bd4f5460503b8df1186d5aaf"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
+      "sha256": "13b9fe620dcd4b3bff719f3b4f62eb1b38c33809d1ed0f81a597a49734e2c9a8",
+      "git_blob": "a8d64842c5e498216bf23892ebbd68c3a1dede22"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
+      "sha256": "7a8726e5a19ba8ee27b168709c6f80f23338db50755b17948f256903042d5d95",
+      "git_blob": "3ce87d5f298df949663490cd63763dea8b087f82"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs",
+      "sha256": "81095183cfc7cb01fa6c366a436f60bc510dc1e5128b99be34cdb530d044baf7",
+      "git_blob": "b689f30647e9c5230ca65a3eba80af15ae55da3d"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
+      "sha256": "abab38d5f84cc25db872179f9fd01a90374176e8da05e30766f29fbad7db2f8b",
+      "git_blob": "79dbf6ba091813a89e2b7b8801d0735c20ecbc48"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+      "sha256": "28656356d8261dd513bf91d01dbe0338c831e77fc1fe6b3e1cd16b9e1d7add41",
+      "git_blob": "3ca09d5bc171b4a4251313eb9a039a489c2f467f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
+      "sha256": "4df062bbaebb77e6f4cf16a770ee49e87f24371fd12e2278ec2160ee4c718a7e",
+      "git_blob": "605f05f58a6b7d3937d4335ece56281bc311e338"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
+      "sha256": "bbffeabc33580ade2b733b33febf7a3a1a48fa2f45a825d950550c4513d26e06",
+      "git_blob": "e17bd52bcd5157741fbc87fc711275097d06910f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
+      "sha256": "ccb4d6f9267ec835e0466bdf21b222ba854b14a56b068b78e93558ed24c0e17a",
+      "git_blob": "1a474faf0cf1fd8630507a88ce9d434bbb804456"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+      "sha256": "fec9872f01295d58eb974f2570236147dd6eb023c86de3b43c5c06ef46146b4d",
+      "git_blob": "3cf3111046ebd5995e1b94c4d58be1032195340b"
+    },
+    {
+      "path": "docs/testing/performance/0.74/qualification-manifest.toml",
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "git_blob": "1ba704159a59c16455fd0c9f4f15f9fda66ca9b1"
+    }
+  ],
+  "budget_samples": [
+    {
+      "key": "frame-budget-dev-194",
+      "completed": [
+        6,
+        8,
+        11
+      ],
+      "requested": 19
+    },
+    {
+      "key": "frame-budget-dev-188",
+      "completed": [
+        10,
+        10,
+        11
+      ],
+      "requested": 19
+    },
+    {
+      "key": "frame-budget-release-194",
+      "completed": [
+        19,
+        19,
+        5
+      ],
+      "requested": 19
+    },
+    {
+      "key": "frame-budget-release-188",
+      "completed": [
+        19,
+        19,
+        19
+      ],
+      "requested": 19
+    }
+  ],
+  "fault_matrix": {
+    "key": "frame-fault-194",
+    "completed_cut_kind_pairs": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    "failed_during_next_frame_construction": true,
+    "unchanged_guard": "clock-order",
+    "msrv_matrix_run": false,
+    "reference_controls_reached": false,
+    "concurrent_control_reached": false
+  },
+  "release_binary_observations": [
+    {
+      "compiler": "1.94.0",
+      "sha256": "65f901ca510c240e4beff482c19d58ac6279ab685ee592c072142f98e4a91590"
+    },
+    {
+      "compiler": "1.88.0",
+      "sha256": "c2e6ff7a751a7b6c0278f5d37910dba2c8128ea7356793a9af63373a7f013187"
+    }
+  ],
+  "commands": [
+    {
+      "key": "frame-red-api",
+      "exit_code": 1
+    },
+    {
+      "key": "frame-fast-194",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-budget-dev-194",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-budget-dev-188",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-release-build-194",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-release-build-188",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-static-focused",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-static-full",
+      "exit_code": 1
+    },
+    {
+      "key": "frame-static-budget-fix",
+      "exit_code": 1
+    },
+    {
+      "key": "frame-static-budget-fixed",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-budget-release-194",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-budget-release-188",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-fault-194",
+      "exit_code": 1
+    },
+    {
+      "key": "frame-clock-observation",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-clock-context",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-clock-windows",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-194-check",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-188-check",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-194-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-188-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-194-check",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-188-check",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-194-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-188-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-194-xtask-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-win-188-xtask-clippy",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-188-docs",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-194-fast",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-static-final",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-doc-check",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-registry",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-local-contract",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-ship-guard",
+      "exit_code": 1
+    },
+    {
+      "key": "frame-fmt",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-194-docs",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-188-fast",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-194-regression",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-linux-188-regression",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-release-binary-observations",
+      "exit_code": 0
+    },
+    {
+      "key": "frame-doc-check-final",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "logs/frame-budget-dev-188.json",
+      "bytes": 10386,
+      "sha256": "a38643f97a4434b397f70783f156730b3c2084217d299b1bff61314b4857a7e8"
+    },
+    {
+      "path": "logs/frame-budget-dev-194.json",
+      "bytes": 9611,
+      "sha256": "8bdb361abb002c6addd58e4fa3b31d630f56f9c3019dfb7f53d91412d8312f4d"
+    },
+    {
+      "path": "logs/frame-budget-release-188.json",
+      "bytes": 12735,
+      "sha256": "4530fca92b26d2dbf4dfc3f3f0cc09f6c5722da5fa7a65e9809a848e38089750"
+    },
+    {
+      "path": "logs/frame-budget-release-194.json",
+      "bytes": 11346,
+      "sha256": "7228665971207d28d19854511eb47fec56955ed9b2c885badd401cf472e5d7f5"
+    },
+    {
+      "path": "logs/frame-clock-context.json",
+      "bytes": 1963,
+      "sha256": "a2f8f68ff87d83041080bb8913dd092f41d9aa7aafaaf9f55cdee2e71f4f6eb0"
+    },
+    {
+      "path": "logs/frame-clock-observation.json",
+      "bytes": 3593,
+      "sha256": "00460e333b42446dcc90da16c45dd9649a310341516087255cb0c91dfac8d6ec"
+    },
+    {
+      "path": "logs/frame-clock-windows.json",
+      "bytes": 541,
+      "sha256": "c488f0071f9754ff9b0350ee0e48f1129f7c2634a30477213d686dd200c510ff"
+    },
+    {
+      "path": "logs/frame-doc-check-final.json",
+      "bytes": 324,
+      "sha256": "49b8c85f537fd6042c9de5021f61f7bfd004617ccbab8a86fa5b20a495f55a33"
+    },
+    {
+      "path": "logs/frame-doc-check.json",
+      "bytes": 318,
+      "sha256": "cab3b2859dfd55771aaa57dcc0d7754864d32264d0cf4969d1b7a1811a625163"
+    },
+    {
+      "path": "logs/frame-fast-194.json",
+      "bytes": 2088,
+      "sha256": "f966509f5d884acfb8df83b74acb5b5d6377faa21d2b4b5b257984b7a36c8870"
+    },
+    {
+      "path": "logs/frame-fault-194.json",
+      "bytes": 3815,
+      "sha256": "6905146f97adb69120adb1d804cdac0f55278f873b9f61906af5724b284ae513"
+    },
+    {
+      "path": "logs/frame-fmt.json",
+      "bytes": 362,
+      "sha256": "fa29875de48467b293f031b6cb1c1838e3e3d5bf25828844d653161d315c3d89"
+    },
+    {
+      "path": "logs/frame-linux-188-check.json",
+      "bytes": 702,
+      "sha256": "12c77c2951e61d24304825de1401dae9178468ec1804d4cf10c69fe17fedc5a3"
+    },
+    {
+      "path": "logs/frame-linux-188-clippy.json",
+      "bytes": 992,
+      "sha256": "cd6a8619bbcc24f9da702157307d64a25badb1603c5885c795a1116f4beeb9bd"
+    },
+    {
+      "path": "logs/frame-linux-188-docs.json",
+      "bytes": 3222,
+      "sha256": "95486ffffec0aecaccad21d86a764f69e43590d2d74e0e7ab908e8587682c389"
+    },
+    {
+      "path": "logs/frame-linux-188-fast.json",
+      "bytes": 2596,
+      "sha256": "7d872d8117ff39489077b86cb3f38611dc21ee94a8d9eeccee1db5df5e1d9894"
+    },
+    {
+      "path": "logs/frame-linux-188-regression.json",
+      "bytes": 6289,
+      "sha256": "85290897fe289c0e0aad9aef61439218f408c29962293e62c8c637d999bf54cf"
+    },
+    {
+      "path": "logs/frame-linux-194-check.json",
+      "bytes": 702,
+      "sha256": "c4abd1d1b4c94f65093797dfca5cb8492de8d21c7cf80e7c47241d8aaee0681f"
+    },
+    {
+      "path": "logs/frame-linux-194-clippy.json",
+      "bytes": 884,
+      "sha256": "26c516000559f9931d18f7974d37e5e39a457f1c140e65fe6e59d0a43d1e825f"
+    },
+    {
+      "path": "logs/frame-linux-194-docs.json",
+      "bytes": 3278,
+      "sha256": "144314f1d0fe20f16f6f3cd51f7e725393292924cee7bd470887b6bb410be5ed"
+    },
+    {
+      "path": "logs/frame-linux-194-fast.json",
+      "bytes": 2647,
+      "sha256": "3abbb1edf04acc88ae3ca8d2c086b2a1b6c2180c6a117f67d9d2919b8c5589ad"
+    },
+    {
+      "path": "logs/frame-linux-194-regression.json",
+      "bytes": 6246,
+      "sha256": "000247d38d1beab188ef760c318dd15dbdc4af65758d1731ab41702439a5db87"
+    },
+    {
+      "path": "logs/frame-local-contract.json",
+      "bytes": 371,
+      "sha256": "a618e73a9fd9c815a52d57f6a686e3baf7955d1b83c1595b8eb4446d693806a9"
+    },
+    {
+      "path": "logs/frame-red-api.json",
+      "bytes": 1738,
+      "sha256": "eb71be68dc0f90c96890b58036fcee6c8bacfbc767d1ec57479b39c0e47faafb"
+    },
+    {
+      "path": "logs/frame-registry.json",
+      "bytes": 340,
+      "sha256": "3b0b6ba83123b40c3f0ea808546de2e016f698dffc54f20b7efb0c372233fc9a"
+    },
+    {
+      "path": "logs/frame-release-binary-observations.json",
+      "bytes": 858,
+      "sha256": "2203a1385bab1740e21be80226e602fe35d94ba166ee03aa7d69909f1f7bc1cf"
+    },
+    {
+      "path": "logs/frame-release-build-188.json",
+      "bytes": 982,
+      "sha256": "113dfdc73a89911a9b103257480b8f93b4f49c07068fc5cb15ef75820e75dcef"
+    },
+    {
+      "path": "logs/frame-release-build-194.json",
+      "bytes": 982,
+      "sha256": "0889aba9bd3b8b0ae9acdbc2cef4e3f54b64a88af6e6087004bd4ae67eb7adb0"
+    },
+    {
+      "path": "logs/frame-ship-guard.json",
+      "bytes": 2844,
+      "sha256": "2c55e8c169ac5c7cf5b7b79d231e017ca33eb06dbdd28bf60186b5e36abcc219"
+    },
+    {
+      "path": "logs/frame-static-budget-fix.json",
+      "bytes": 6767,
+      "sha256": "f646032df5c3b41c5d4bc27b84c8c677abab7a6ec2b17ac0c466382f92d095f3"
+    },
+    {
+      "path": "logs/frame-static-budget-fixed.json",
+      "bytes": 853,
+      "sha256": "c8f51cd3268100358115654fa74823685910540acbbfe21084c4d137b9bca596"
+    },
+    {
+      "path": "logs/frame-static-final.json",
+      "bytes": 16543,
+      "sha256": "32cc4676431872e1f1d0635e79841ce7a5d5cb6d01ed193d2300421c278296ad"
+    },
+    {
+      "path": "logs/frame-static-focused.json",
+      "bytes": 1275,
+      "sha256": "4fc1a41ad4f19fef324d5e8b2157d25419d9e29d758942c8829a7192a43c7bcf"
+    },
+    {
+      "path": "logs/frame-static-full.json",
+      "bytes": 17840,
+      "sha256": "6cebe3722fd4b8589ab2afc0a9398a41a5168887f576a7fafdc1c84100446d14"
+    },
+    {
+      "path": "logs/frame-win-188-check.json",
+      "bytes": 540,
+      "sha256": "28e6769c060257f559ad70151714fac8625de45a1b22b2619d9687d3137fcfd3"
+    },
+    {
+      "path": "logs/frame-win-188-clippy.json",
+      "bytes": 731,
+      "sha256": "801956ebfc4aba3fc8356e11c16c8f1fbdd21de0f8424a8fded1ca329c34c85c"
+    },
+    {
+      "path": "logs/frame-win-188-xtask-clippy.json",
+      "bytes": 503,
+      "sha256": "4811d9a19b67ecd035bbe2cf3af80d73648f18056cebeb65e14953e5afe0e4bc"
+    },
+    {
+      "path": "logs/frame-win-194-check.json",
+      "bytes": 540,
+      "sha256": "60a58155a287ab26c4e8632d5f8890db1462fce2a025e7c9e2090e6a24e145b8"
+    },
+    {
+      "path": "logs/frame-win-194-clippy.json",
+      "bytes": 572,
+      "sha256": "42980896d204d9eb1b4cf4f1e92eb61f15cc1c599b9b640956e3cb2646f6c622"
+    },
+    {
+      "path": "logs/frame-win-194-xtask-clippy.json",
+      "bytes": 503,
+      "sha256": "6af212261c163ed7292ef570e5703e0918f61927fb92b1f5b6576ccddff81dbd"
+    }
+  ]
+}

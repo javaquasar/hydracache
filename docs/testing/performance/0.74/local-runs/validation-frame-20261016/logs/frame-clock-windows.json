@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "key": "frame-clock-windows",
+  "command": "Get-Service W32Time,vmictimesync -ErrorAction SilentlyContinue | Select-Object Name,Status,StartType; Get-Date -Format o",
+  "exit_code": 0,
+  "provenance": "Tool-returned text segments; not a byte-exact process stream, binary attestation or final candidate acceptance.",
+  "output": "\r\nName          Status StartType\r\n----          ------ ---------\r\nvmictimesync Stopped    Manual\r\nW32Time      Stopped    Manual\r\n2026-10-16T15:14:10.5381030+02:00\r\n\r\n"
+}

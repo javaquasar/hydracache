@@ -1,0 +1,20 @@
+{
+  "format_version": 1,
+  "provenance": "Local verifier observations, not test or server admission",
+  "normal": {
+    "chunk_id": "7a8067",
+    "wall_time_seconds": 7.5508785,
+    "exit_code": 0,
+    "original_token_count": 52,
+    "output": "Validation frame evidence: intact; candidate UNCOMMITTED, live fault gate INCOMPLETE, server admission CLOSED\r\nWSL clock control evidence: intact; preflight REFUSED, service RESTORED, no test cohort started\r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-clock-control-20261016/verify.ps1"
+  },
+  "unsupported_preflight_canary": {
+    "chunk_id": "39a2c8",
+    "wall_time_seconds": 2.2891962,
+    "exit_code": 1,
+    "original_token_count": 131,
+    "output": "Unsupported claim: preflight_passed\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-frame-clock-control-202\r\n61016\\verify.ps1:3 char:57\r\n+ ... ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported claim: preflight_passed:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported claim: preflight_passed\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-clock-control-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/clock-control-scope.json"
+  }
+}

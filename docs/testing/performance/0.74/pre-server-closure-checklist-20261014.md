@@ -236,8 +236,17 @@ refuses all twelve local publication-free chains, including normal release
 profiles on both compilers. Durable Starting therefore remains blocked before
 its first write, and the new crash matrix, original-start/writer closure,
 signed installation and host rehearsal cannot be marked complete. The
-[validation composition proposal](diagnostic-validation-frame-proposal-20261016.md)
-needs separate architectural review; existing deadlines and guards stay exact.
+[validation frame design](diagnostic-validation-frame-design-20261016.md)
+has now received operator approval. Its local candidate preserves the original
+live checks and deadlines, but its complete fault gate is blocked by observed
+WSL realtime reversals. Release-profile publication-free results are mixed on
+Rust 1.94 and complete on 1.88; no actual Starting write or server admission
+follows from them. Finish the complete mutation/reference/concurrent gate in a
+declared stable-clock environment before treating this packet as closed.
+The separately approved timesyncd-stop control refused its own preflight at
+sample seven, before tests. The service was restored; stopping it alone did
+not solve the clock problem. Further host environment changes need separate
+agreement, and no server preparation or runtime acceptance was substituted.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace

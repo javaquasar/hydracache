@@ -68,3 +68,39 @@ its actual I/O, signed transport, adversaries and SIGKILL/lost-acknowledgement
 proof must still pass. Root output/authenticated process/cgroup start, watchdog,
 all writers, later cells, full local gates, signed installation and bounded
 nonproduct rehearsal follow in that order. No product workload is admitted.
+
+## Candidate observation, not admission
+
+The local implementation consumes the original owner and performs the two
+rounds without caching signature results or live observations. The original
+baseline fixture and lower runtime sources remain unchanged. The new static
+adapter restores only exact module registrations and comparison adapters;
+unapproved-tail and wrong-module canaries still refuse.
+
+The preregistered dev/optimized-crypto lanes completed 6/8/11 checks on Rust
+1.94 and 10/10/11 on 1.88, all short of nineteen. Normal release completed
+19/19/5 on 1.94 and 19/19/19 on 1.88. The short release chain refused on the
+unchanged kernel clock-order guard: realtime moved backwards by about four
+seconds while boottime advanced. These observations are not product speedups,
+independent product benchmark pairs, installed-binary proof or an all-green
+publication budget. The fixture's `admitted=true` label means nineteen
+publication-free checks completed, not execution or server admission.
+
+The first release live-drift matrix retained five cut-zero refusals and then
+failed during construction of the next frame on another backwards realtime
+step. It did not reach the remaining cuts, reference comparisons or concurrent
+control. Read-only local observation also found realtime steps relative to
+uptime; WSL timesyncd is enabled while Windows W32Time is stopped. This is a
+local clock-environment blocker, not grounds to change the guard. No time
+service or host clock was changed. Any environmental control must be explicitly
+declared, preserve these failures and run a separately labelled complete cohort;
+it cannot turn a discarded attempt into a pass.
+
+The subsequently operator-approved [WSL clock control](local-runs/validation-frame-clock-control-20261016/README.md)
+also refused before tests: realtime moved backwards at preflight sample seven
+despite the exact time service being inactive. The service was restored and
+independently checked active/enabled. No matrix or budget test began in that
+control. Stopping timesyncd alone is therefore insufficient here; no clocksource,
+Windows clock/service, deadline or runtime guard was changed. Complete fault
+coverage still needs a separately approved stable environment, not an identical
+retry or an unsupported claim that NTP was the unique cause.

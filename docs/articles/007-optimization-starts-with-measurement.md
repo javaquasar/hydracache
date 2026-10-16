@@ -11204,3 +11204,64 @@ The [budget evidence](../testing/performance/0.74/local-runs/consent-publication
 retains all samples and explicitly keeps publication, server and qualification
 admission closed. The useful result is a reproducible blocker found before any
 uncertain storage or execution authority was created, not a new performance claim.
+
+### Coalescing validation without caching live authority
+
+After operator review, we implemented a separate consuming validation-frame
+candidate. It preserves the original owner, packets, fence and every lower
+worker/controller/build/OIDC guard. Instead of recursively invoking the outer
+collector wrappers, it performs two explicit rounds: storage, live reservation,
+progress authentication, causal binding, prepared policy/transition checks,
+original consent authentication, storage again and final clock checks. The
+closing round has no fault callback. No signature result or previous live
+observation is cached as permission for the next boundary.
+
+This is deliberately narrower than immutable-proof reuse. The frame still pays
+for the original lower guards, but no longer multiplies their calls through the
+outer recursion. Complete framed checks report 34 IPC authentications; the
+earlier diagnostic observed 264 for a refusing old check. Counts explain the
+mechanism; they are not an exclusive cost model or a product speedup ratio.
+
+The same three-chain/nineteen-check experiment was retained, changing only the
+consuming adapter and diagnostic labels. Optimized-crypto dev lanes completed
+6/8/11 checks on Rust 1.94 and 10/10/11 on 1.88: still a negative budget result.
+Normal release completed 19/19/5 on 1.94 and 19/19/19 on 1.88. The third 1.94
+chain did not simply run out of time. WSL realtime moved backwards by about
+four seconds while boottime advanced, so the unchanged kernel clock-order guard
+refused it. The fixture's `admitted` field means all nineteen publication-free
+checks finished, never that a server process is admitted.
+
+That distinction mattered again in the live-mutation matrix. Five first-cut
+cases correctly refused worker/OIDC/controller trust drift, an unexpected
+authority-context file and a removed Reserved file while retaining the fence.
+The next fresh chain encountered another backwards realtime step before the
+next fault cut. It is not a completed forty-cut matrix, reference comparison or
+concurrent-revocation proof. Read-only clock observation found further realtime
+steps relative to uptime. Enabled WSL timesyncd and stopped Windows time service
+are environmental observations, not proof of a unique cause.
+
+The failure remains part of the record. We did not increase any ten-second
+window, replace an original timestamp, disable a guard or alter a time service.
+A separately declared stable-clock control is needed to finish the fault gate.
+Then actual exclusive Starting publication must demonstrate its own writes,
+sealing, fsyncs and uncertain acknowledgement under the same live checks, followed
+by real SIGKILL boundaries. Original process/cgroup start, watchdog, cessation
+of every writer, later cells and signed server rehearsal remain later gates.
+The [approved design](../testing/performance/0.74/diagnostic-validation-frame-design-20261016.md)
+records those limits; a promising publication-free result is not a release claim.
+
+The separately preregistered environment control then disproved the narrow
+working assumption that stopping WSL timesyncd alone would stabilize this host.
+With explicit operator approval, the wrapper stopped only that service, retained
+the unchanged executable hashes and began a ninety-second clock preflight.
+At sample seven realtime went backwards by 3.15 seconds while boottime advanced
+by one second. The probe refused before a matrix or budget command could begin.
+Its exit handler restored the service; an independent observation confirms it
+active and enabled. Windows settings, clock values and clocksource were not
+changed. This is evidence of an unresolved environment problem, not a unique
+diagnosis of Hyper-V, Windows or NTP, and not a reason to discard the old refusals.
+
+The [clock-control packet](../testing/performance/0.74/local-runs/validation-frame-clock-control-20261016/README.md)
+keeps that failure separately. Further host clock changes or a stable Linux
+test environment need separate agreement. Until the full fault gate actually
+passes, the runtime patch remains uncommitted and server admission stays closed.

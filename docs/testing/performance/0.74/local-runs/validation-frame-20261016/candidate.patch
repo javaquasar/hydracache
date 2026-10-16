@@ -1,0 +1,1005 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index f86f6aba..366301d8 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -41,6 +41,9 @@ mod original_start_consent;
+ #[path = "support/performance_contract_074_consent_budget.rs"]
+ mod consent_budget;
+ 
++#[path = "support/performance_contract_074_validation_frame.rs"]
++mod validation_frame;
++
+ #[test]
+ fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
+     let c = contract("diagnostic-signer-owned-root-isolation-contract.toml");
+diff --git a/crates/xtask/tests/support/performance_contract_074_consent_budget.rs b/crates/xtask/tests/support/performance_contract_074_consent_budget.rs
+index ef3e3b0a..5755faa4 100644
+--- a/crates/xtask/tests/support/performance_contract_074_consent_budget.rs
++++ b/crates/xtask/tests/support/performance_contract_074_consent_budget.rs
+@@ -73,6 +73,8 @@ platform = "linux"
+ # END CONSENT OWNER ATTRIBUTION GATE
+ "#;
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::validation_frame::normalize(path, raw);
++    let raw = current.as_str();
+     let extra = match path {
+         "crates/xtask/tests/performance_contract_074.rs" => GATE,
+         "docs/testing/gated-test-registry.toml" => REGISTRY,
+@@ -117,7 +119,11 @@ fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
+         "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
+         "docs/testing/performance/0.74/qualification-manifest.toml",
+     ] {
+-        assert_eq!(read(path), old(path), "budget changed runtime: {path}");
++        assert_eq!(
++            super::validation_frame::normalize(path, &read(path)),
++            old(path),
++            "budget changed runtime: {path}"
++        );
+     }
+     for path in [
+         "crates/xtask/tests/performance_contract_074.rs",
+@@ -136,7 +142,7 @@ fn consent_budget_is_additive_and_keeps_original_runtime_and_deadlines() {
+     assert_eq!(raw.replacen(ADAPTER, "", 1), old(path));
+     let path = "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs";
+     let registration = "#[path = \"diagnostic_consent_budget_tests.rs\"]\nmod budget_tests;\n";
+-    let raw = read(path);
++    let raw = super::validation_frame::normalize(path, &read(path));
+     assert_eq!(raw.matches(registration).count(), 1);
+     assert_eq!(raw.replacen(registration, "", 1), old(path));
+     let fixture = read("tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs");
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index 391324f0..6b6994ae 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9049,3 +9049,71 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END CONSENT OWNER ATTRIBUTION GATE
++
++# BEGIN VALIDATION FRAME BUDGET GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.validation-frame-budget"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "validation_frame_publication_budget"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Manual nonroot original validation frame; no publication or execution"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--config","profile.dev.package.ed25519-dalek.opt-level=3","--config","profile.dev.package.curve25519-dalek.opt-level=3","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::budget::validation_frame_publication_budget","--","--ignored","--exact","--nocapture"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END VALIDATION FRAME BUDGET GATE
++
++# BEGIN VALIDATION FRAME DRIFT GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.validation-frame-drift"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "validation_frame_live_drift_at_every_cut_and_reference_refusal"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Manual nonroot original validation frame; no publication or execution"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::validation_frame_live_drift_at_every_cut_and_reference_refusal","--","--ignored","--exact","--nocapture"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END VALIDATION FRAME DRIFT GATE
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
+index 535a62b2..e11be320 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs
+@@ -1,5 +1,9 @@
+ //! Consumed original bootstrap consent; no durable acknowledgement or execution.
+ use super::*;
++#[path = "diagnostic_validation_frame.rs"]
++mod validation_frame;
++pub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};
++
+ use crate::diagnostic_start_consent::{
+     start_consent_signing_message, StartConsentBody, BODY_SCHEMA,
+ };
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs
+index 809cf881..ce8faf11 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs
+@@ -4,6 +4,8 @@ use crate::diagnostic_worker_policy::trusted_input::controller_input::build_inpu
+ use ed25519_dalek::Signer;
+ #[path = "diagnostic_consent_budget_tests.rs"]
+ mod budget_tests;
++#[path = "diagnostic_validation_frame_tests.rs"]
++mod validation_frame_tests;
+ 
+ fn consent(
+     body: crate::diagnostic_start_consent::StartConsentBody,
+diff --git a/crates/xtask/tests/support/performance_contract_074_validation_frame.rs b/crates/xtask/tests/support/performance_contract_074_validation_frame.rs
+new file mode 100644
+index 00000000..2d989e2c
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_validation_frame.rs
+@@ -0,0 +1,260 @@
++//! Preserve every original predicate; only the admitted outer composition is new.
++const RUNTIME: &str = "#[path = \"diagnostic_validation_frame.rs\"]\nmod validation_frame;\npub use validation_frame::{OriginalFramedConsent, OriginalFramedConsentFailure};\n\n";
++const TESTS: &str =
++    "#[path = \"diagnostic_validation_frame_tests.rs\"]\nmod validation_frame_tests;\n";
++const GATE: &str =
++    "\n#[path = \"support/performance_contract_074_validation_frame.rs\"]\nmod validation_frame;\n";
++const ADAPTER: &str = "    let current = super::validation_frame::normalize(path, raw);\n    let raw = current.as_str();\n";
++const OLD_ASSERT: &str =
++    "        assert_eq!(read(path), old(path), \"budget changed runtime: {path}\");\n";
++const NEW_ASSERT: &str = r#"        assert_eq!(
++            super::validation_frame::normalize(path, &read(path)),
++            old(path),
++            "budget changed runtime: {path}"
++        );
++"#;
++const OLD_TEST_RAW: &str =
++    "    let raw = read(path);\n    assert_eq!(raw.matches(registration).count(), 1);";
++const NEW_TEST_RAW: &str = "    let raw = super::validation_frame::normalize(path, &read(path));\n    assert_eq!(raw.matches(registration).count(), 1);";
++const REGISTRY: &str = r#"
++# BEGIN VALIDATION FRAME BUDGET GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.validation-frame-budget"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "validation_frame_publication_budget"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Manual nonroot original validation frame; no publication or execution"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--config","profile.dev.package.ed25519-dalek.opt-level=3","--config","profile.dev.package.curve25519-dalek.opt-level=3","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::budget::validation_frame_publication_budget","--","--ignored","--exact","--nocapture"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END VALIDATION FRAME BUDGET GATE
++
++# BEGIN VALIDATION FRAME DRIFT GATE
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.validation-frame-drift"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "validation_frame_live_drift_at_every_cut_and_reference_refusal"
++cfg = 'target_os = "linux"'
++env = ""
++reason = "Manual nonroot original validation frame; no publication or execution"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 900
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::validation_frame_live_drift_at_every_cut_and_reference_refusal","--","--ignored","--exact","--nocapture"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++# END VALIDATION FRAME DRIFT GATE
++"#;
++fn once(raw: &str, new: &str, old: &str, path: &str) -> String {
++    assert_eq!(
++        raw.matches(new).count(),
++        1,
++        "unapproved frame adapter: {path}"
++    );
++    raw.replacen(new, old, 1)
++}
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs" => {
++            once(raw, RUNTIME, "", path)
++        }
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs" => {
++            once(raw, TESTS, "", path)
++        }
++        "crates/xtask/tests/performance_contract_074.rs" => once(raw, GATE, "", path),
++        "docs/testing/gated-test-registry.toml" => once(raw, REGISTRY, "", path),
++        "crates/xtask/tests/support/performance_contract_074_consent_budget.rs" => {
++            let raw = once(raw, ADAPTER, "", path);
++            let raw = once(&raw, NEW_ASSERT, OLD_ASSERT, path);
++            once(&raw, NEW_TEST_RAW, OLD_TEST_RAW, path)
++        }
++        _ => raw.into(),
++    }
++}
++#[test]
++fn validation_frame_preserves_original_guards_and_frozen_workload() {
++    let read = |path: &str| {
++        std::fs::read_to_string(super::root().join(path))
++            .unwrap()
++            .replace('\r', "")
++    };
++    let old = |path: &str| {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("47372f9f:{path}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        String::from_utf8(out.stdout).unwrap().replace('\r', "")
++    };
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_start_consent_tests.rs",
++        "crates/xtask/tests/performance_contract_074.rs",
++        "crates/xtask/tests/support/performance_contract_074_consent_budget.rs",
++        "docs/testing/gated-test-registry.toml",
++    ] {
++        let raw = read(path);
++        assert_eq!(
++            normalize(path, &raw),
++            old(path),
++            "historical guard changed: {path}"
++        );
++        assert_ne!(
++            normalize(path, &format!("{raw}\n// unapproved\n")),
++            old(path)
++        );
++    }
++    for path in [
++        "Cargo.toml",
++        "Cargo.lock",
++        "tools/long-run-supervisor-074/Cargo.toml",
++        "docs/COMPAT.md",
++        "tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_policy.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_kernel_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_start_consent.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_progress.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_causal.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_collector_reservation_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_transition.rs",
++        "docs/testing/performance/0.74/qualification-manifest.toml",
++    ] {
++        assert_eq!(
++            read(path),
++            old(path),
++            "original leaf/workload changed: {path}"
++        );
++    }
++    let path = "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs";
++    assert!(std::panic::catch_unwind(|| normalize(
++        path,
++        &read(path).replace("mod validation_frame;", "mod unchecked;")
++    ))
++    .is_err());
++    let frame = read("tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs");
++    let prepared_predicate = |raw: &str| {
++        let start = raw.find("if body.worker_policy_sha256 != policy").unwrap();
++        let raw = &raw[start..];
++        let end = ".map_err(|_| OriginalStartConsentError::Binding)?;";
++        raw[..raw.find(end).unwrap() + end.len()]
++            .lines()
++            .map(str::trim)
++            .collect::<Vec<_>>()
++            .join("\n")
++    };
++    assert_eq!(
++        prepared_predicate(&frame),
++        prepared_predicate(&old(
++            "tools/long-run-supervisor-074/src/diagnostic_original_start_consent.rs"
++        ))
++    );
++    for marker in [
++        "self.round(before).and_then(|_| self.round(|_| {}))",
++        "fn final_clocks",
++        "r.last = now",
++        "original_reservation_time(Some(&r.last))",
++        "super::super::check",
++        "super::super::window",
++        "super::super::age",
++        "validate_transition(&r.state, &body.starting_state)",
++        "self.original.authenticate()?",
++        "StorageBefore",
++        "StorageAfter",
++        "CONTROLLER_LOSS_SECONDS",
++        "TOTAL_SECONDS",
++        ".live()",
++        ".progress()",
++    ] {
++        assert!(frame.contains(marker), "{marker}");
++    }
++    for forbidden in [
++        "pub fn start_once",
++        "pub fn publish",
++        "std::process",
++        "std::fs",
++        "SystemTime",
++        "impl Clone",
++        "validated: bool",
++    ] {
++        assert!(
++            !frame
++                .lines()
++                .filter(|l| !l.trim_start().starts_with("///"))
++                .collect::<Vec<_>>()
++                .join("\n")
++                .contains(forbidden),
++            "{forbidden}"
++        );
++    }
++    // Exact source restoration: same three fresh chains and nineteen checks.
++    let baseline = old("tools/long-run-supervisor-074/src/diagnostic_consent_budget_tests.rs");
++    let start = "#[test]\n#[ignore = \"manual nonroot publication-free original consent budget attribution\"]";
++    let baseline = &baseline[baseline.find(start).unwrap()..];
++    let candidate =
++        read("tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs");
++    let candidate = &candidate[candidate.find(start).unwrap()..];
++    let with_frame = "let mut accepted = prepared\n                        .accept_consent(packet)\n                        .unwrap()\n                        .into_validation_frame()\n                        .unwrap();";
++    let candidate = once(
++        candidate,
++        with_frame,
++        "let mut accepted = prepared.accept_consent(packet).unwrap();",
++        "candidate budget",
++    )
++    .replace(
++        "fn validation_frame_publication_budget()",
++        "fn original_consent_publication_budget()",
++    )
++    .replace("HC074-FRAME-BUDGET", "HC074-CONSENT-BUDGET");
++    assert_eq!(candidate, baseline);
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs
+new file mode 100644
+index 00000000..92e25992
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs
+@@ -0,0 +1,294 @@
++//! Constant-depth orchestration; all original live leaf guards remain active.
++use super::*;
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub(crate) enum ValidationFrameStep {
++    StorageBefore,
++    ReservedLive,
++    Progress,
++    Causal,
++    Prepared,
++    Consent,
++    StorageAfter,
++    FinalClocks,
++}
++const STEPS: [ValidationFrameStep; 8] = [
++    ValidationFrameStep::StorageBefore,
++    ValidationFrameStep::ReservedLive,
++    ValidationFrameStep::Progress,
++    ValidationFrameStep::Causal,
++    ValidationFrameStep::Prepared,
++    ValidationFrameStep::Consent,
++    ValidationFrameStep::StorageAfter,
++    ValidationFrameStep::FinalClocks,
++];
++
++/// Owns the admitted originals, not a cached validation result or start capability.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn clone(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalFramedConsent<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn extract(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_original(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn start(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn publish(p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.publish_starting(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::OriginalFramedConsent;
++/// fn replace(mut p: OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.revalidate(b"replacement"); }
++/// ```
++pub struct OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    original: OriginalStartConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++}
++impl fmt::Debug for OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalFramedConsent")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++fn valid_age(start: u64, now: u64, seconds: u64) -> bool {
++    start != 0
++        && now
++            .checked_sub(start)
++            .is_some_and(|age| age < seconds * 1_000_000_000)
++}
++impl OriginalFramedConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.original.is_refused()
++    }
++    fn refuse(&mut self) {
++        self.original.refuse();
++    }
++    fn prepared(&mut self) -> Result<(), OriginalStartConsentError> {
++        let prepared = &mut self.original.prepared;
++        let r = &mut prepared.original.original.reservation;
++        let body = prepared
++            .body
++            .as_ref()
++            .ok_or(OriginalStartConsentError::Binding)?;
++        let point = prepared
++            .point
++            .as_ref()
++            .ok_or(OriginalStartConsentError::Binding)?;
++        let controller = &mut r.original.original.original;
++        let now = controller.worker.original_reservation_time(Some(point))?;
++        let (policy, epoch, _, _) = controller.worker.controller_authority_binding()?;
++        if body.worker_policy_sha256 != policy
++            || body.worker_policy_epoch != epoch
++            || now.unix_seconds() < body.issued_at_unix_seconds
++            || now.unix_seconds() >= body.expires_at_unix_seconds
++        {
++            return Err(OriginalStartConsentError::Binding);
++        }
++        crate::diagnostic_lease::validate_transition(&r.state, &body.starting_state)
++            .map_err(|_| OriginalStartConsentError::Binding)?;
++        Ok(())
++    }
++    fn causal(&mut self) -> Result<(), OriginalStartConsentError> {
++        let causal = &mut self.original.prepared.original;
++        super::super::check(
++            &causal.original.reservation,
++            &causal.raw,
++            &causal.nonce,
++            &causal.issued,
++        )?;
++        let response: SignedDiagnosticRequest =
++            serde_json::from_slice(causal.original.packet.bytes())
++                .map_err(|_| CollectorCausalError::Document)?;
++        if response.request.nonce_sha256 != causal.nonce {
++            return Err(CollectorCausalError::Binding.into());
++        }
++        super::super::window(&mut causal.original.reservation, &causal.issued)?;
++        Ok(())
++    }
++    fn final_clocks(&mut self) -> Result<(), OriginalStartConsentError> {
++        let prepared = &mut self.original.prepared;
++        let causal = &mut prepared.original;
++        let heartbeat = causal.original.packet.received_time().boottime_ns();
++        let consent = self.original.packet.received_time().boottime_ns();
++        let r = &mut causal.original.reservation;
++        let now = r
++            .original
++            .original
++            .original
++            .worker
++            .original_reservation_time(Some(&r.last))?;
++        let body = prepared
++            .body
++            .as_ref()
++            .ok_or(OriginalStartConsentError::Binding)?;
++        let loss = crate::diagnostic_lease::CONTROLLER_LOSS_SECONDS;
++        super::super::age(causal.issued.boottime_ns(), now.boottime_ns())?;
++        if now.boot_id() != r.state.identity.boot_id
++            || !valid_age(heartbeat, now.boottime_ns(), loss)
++            || !valid_age(consent, now.boottime_ns(), loss)
++            || !valid_age(
++                r.state.reserved_monotonic_ns,
++                now.boottime_ns(),
++                crate::diagnostic_lease::TOTAL_SECONDS,
++            )
++            || now.unix_seconds() < body.issued_at_unix_seconds
++            || now.unix_seconds() >= body.expires_at_unix_seconds
++        {
++            return Err(OriginalStartConsentError::Binding);
++        }
++        // Rolling observation cursor only: every admission origin remains unchanged.
++        r.last = now;
++        Ok(())
++    }
++    fn round(
++        &mut self,
++        mut before: impl FnMut(ValidationFrameStep),
++    ) -> Result<(), OriginalStartConsentError> {
++        for step in STEPS {
++            before(step);
++            match step {
++                ValidationFrameStep::StorageBefore | ValidationFrameStep::StorageAfter => self
++                    .original
++                    .prepared
++                    .original
++                    .original
++                    .reservation
++                    .storage
++                    .revalidate()
++                    .map_err(CollectorReservedError::from)
++                    .map_err(CollectorCausalError::from)?,
++                ValidationFrameStep::ReservedLive => self
++                    .original
++                    .prepared
++                    .original
++                    .original
++                    .reservation
++                    .live()
++                    .map_err(CollectorCausalError::from)?,
++                ValidationFrameStep::Progress => self
++                    .original
++                    .prepared
++                    .original
++                    .original
++                    .progress()
++                    .map_err(CollectorCausalError::from)?,
++                ValidationFrameStep::Causal => self.causal()?,
++                ValidationFrameStep::Prepared => self.prepared()?,
++                ValidationFrameStep::Consent => self.original.authenticate()?,
++                ValidationFrameStep::FinalClocks => self.final_clocks()?,
++            }
++        }
++        Ok(())
++    }
++    fn validate_with(
++        &mut self,
++        before: impl FnMut(ValidationFrameStep),
++    ) -> Result<(), OriginalStartConsentError> {
++        if self.is_refused() {
++            self.refuse();
++            return Err(OriginalStartConsentError::Refused);
++        }
++        let result = self.round(before).and_then(|_| self.round(|_| {}));
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++    }
++    pub fn revalidate(&mut self) -> Result<(), OriginalStartConsentError> {
++        self.validate_with(|_| {})
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_with_for_test(
++        &mut self,
++        before: impl FnMut(ValidationFrameStep),
++    ) -> Result<(), OriginalStartConsentError> {
++        self.validate_with(before)
++    }
++}
++pub struct OriginalFramedConsentFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalStartConsentError,
++    held: Box<OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalFramedConsentFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalStartConsentError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for OriginalFramedConsentFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalFramedConsentFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for OriginalFramedConsentFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalStartConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    pub fn into_validation_frame(
++        self,
++    ) -> Result<
++        OriginalFramedConsent<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalFramedConsentFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalFramedConsent { original: self };
++        match held.revalidate() {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.refuse();
++                Err(OriginalFramedConsentFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn validation_frame_exclusive_age_matches_original_challenge_reference() {
++        let loss = crate::diagnostic_lease::CONTROLLER_LOSS_SECONDS;
++        for start in [0, 1, 100, u64::MAX - 1] {
++            for now in [0, 1, 99, 100, 101, 10_000_000_000, 10_000_000_001, u64::MAX] {
++                assert_eq!(
++                    valid_age(start, now, loss),
++                    super::super::super::age(start, now).is_ok()
++                );
++            }
++        }
++        let mut seed = 0x0740_f4a1_u64;
++        for _ in 0..512 {
++            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
++            let start = 1 + seed % 1_000_000_000;
++            for age in [
++                0,
++                loss * 1_000_000_000 - 1,
++                loss * 1_000_000_000,
++                loss * 1_000_000_000 + 1,
++            ] {
++                let now = start + age;
++                assert_eq!(
++                    valid_age(start, now, loss),
++                    super::super::super::age(start, now).is_ok()
++                );
++            }
++        }
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs
+new file mode 100644
+index 00000000..aac29ef6
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_budget_tests.rs
+@@ -0,0 +1,95 @@
++use super::*;
++use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++fn boottime() -> u64 {
++    let mut t: libc::timespec = unsafe { std::mem::zeroed() };
++    assert_eq!(
++        unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut t) },
++        0
++    );
++    (t.tv_sec as u64) * 1_000_000_000 + t.tv_nsec as u64
++}
++
++#[test]
++#[ignore = "manual nonroot publication-free original consent budget attribution"]
++fn validation_frame_publication_budget() {
++    assert_ne!(unsafe { libc::geteuid() }, 0);
++    for sample in 0..3 {
++        let (_, report) = trace::capture(|| {
++            trace::stage(Stage::Setup);
++            with_progress_original(true, |original, _, receiver, sender, model| {
++                let request = original.original.original.request.clone();
++                with_owned_empty_fence_for_test(|fence, root, leaf| {
++                    let attempt = original
++                        .bind_common_empty_fence(fence)
++                        .unwrap()
++                        .retain_request()
++                        .unwrap();
++                    let request_raw = fs::read(leaf.join(NAME)).unwrap();
++                    let mut observed = attempt.into_observed_reservation();
++                    let state = observed.state_to_sign().unwrap();
++                    let reserved = observed
++                        .publish_reserved(&signed(&body(&request, &state, &request_raw)))
++                        .unwrap();
++                    let reserved_raw = fs::read(leaf.join(RESERVED_NAME)).unwrap();
++                    let challenge = reserved.issue_progress_challenge().unwrap();
++                    let nonce = crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::collector_challenge_nonce(challenge.challenge_to_sign()).unwrap();
++                    let mut response = request.clone();
++                    response.operation = DiagnosticOperation::Heartbeat;
++                    response.expected_state_revision = 1;
++                    response.request_id = "f".repeat(64);
++                    response.nonce_sha256 = nonce;
++                    let packet = receive(receiver, sender, &model.sign(response, &model.key));
++                    let received = packet.received_time().boottime_ns();
++                    let causal = challenge.accept_response(packet).unwrap();
++                    let prepared = causal.prepare_start_consent("1".repeat(64)).unwrap();
++                    let signed_consent = consent(prepared.consent_to_sign().clone(), &model.key);
++                    let packet = receive(receiver, sender, &signed_consent);
++                    let mut accepted = prepared
++                        .accept_consent(packet)
++                        .unwrap()
++                        .into_validation_frame()
++                        .unwrap();
++                    let started = boottime();
++                    let mut completed = 0;
++                    trace::stage(Stage::Checks);
++                    // Isolate an expected time refusal from the fixture's outer healthy setup.
++                    let (_, refusal) = crate::diagnostic_kernel_admission::refusal_trace::capture(
++                        || {
++                            for check in 0..19 {
++                                let result = accepted.revalidate();
++                                let now = boottime();
++                                println!("HC074-FRAME-BUDGET sample={sample} check={check} elapsed_ns={} reserved_age_ns={} heartbeat_age_ns={} result={result:?}",
++                                now - started, now - state.reserved_monotonic_ns, now - received);
++                                if result.is_err() {
++                                    assert!(accepted.is_refused());
++                                    assert!(matches!(
++                                        accepted.revalidate(),
++                                        Err(OriginalStartConsentError::Refused)
++                                    ));
++                                    break;
++                                }
++                                completed += 1;
++                            }
++                        },
++                    );
++                    println!("HC074-FRAME-BUDGET-SUMMARY sample={sample} completed={completed} requested=19 publication_free=true admitted={} first_kernel_refusal={refusal:?}", completed == 19);
++                    assert_eq!(fs::read(leaf.join(NAME)).unwrap(), request_raw);
++                    assert_eq!(fs::read(leaf.join(RESERVED_NAME)).unwrap(), reserved_raw);
++                    assert_eq!(fs::read_dir(leaf).unwrap().count(), 2);
++                    busy(root);
++                    if !accepted.is_refused() {
++                        fs::remove_file(leaf.join(RESERVED_NAME)).unwrap();
++                        assert!(accepted.revalidate().is_err());
++                    }
++                    assert!(accepted.is_refused());
++                    busy(root);
++                    drop(accepted);
++                    drop(crate::host_execution::lock_host_root(root).unwrap());
++                    retained_context_refuses_for_test(root);
++                });
++            });
++        });
++        // These counters cover diagnostic IPC authentication, not every crypto primitive.
++        println!("HC074-FRAME-BUDGET-COUNTERS sample={sample} ipc_trace={report:?}");
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs
+new file mode 100644
+index 00000000..5551cfba
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_frame_tests.rs
+@@ -0,0 +1,180 @@
++use super::*;
++#[path = "diagnostic_validation_frame_budget_tests.rs"]
++mod budget;
++
++#[test]
++fn validation_frame_consuming_adapter_exists() {
++    fn probe(owner: OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.into_validation_frame();
++    }
++    let _ = probe;
++}
++
++fn with_accepted(
++    run: impl FnOnce(
++        OriginalStartConsent<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>,
++        &Paths,
++        &std::path::Path,
++        &std::path::Path,
++        &Model,
++    ),
++) {
++    with_progress_original(true, |original, paths, receiver, sender, model| {
++        let request = original.original.original.request.clone();
++        with_owned_empty_fence_for_test(|fence, root, leaf| {
++            let attempt = original
++                .bind_common_empty_fence(fence)
++                .unwrap()
++                .retain_request()
++                .unwrap();
++            let request_raw = fs::read(leaf.join(NAME)).unwrap();
++            let mut observed = attempt.into_observed_reservation();
++            let state = observed.state_to_sign().unwrap();
++            let reserved = observed
++                .publish_reserved(&signed(&body(&request, &state, &request_raw)))
++                .unwrap();
++            let challenge = reserved.issue_progress_challenge().unwrap();
++            let nonce = crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::collector_challenge_nonce(challenge.challenge_to_sign()).unwrap();
++            let mut response = request;
++            response.operation = DiagnosticOperation::Heartbeat;
++            response.expected_state_revision = 1;
++            response.request_id = "f".repeat(64);
++            response.nonce_sha256 = nonce;
++            let causal = challenge
++                .accept_response(receive(receiver, sender, &model.sign(response, &model.key)))
++                .unwrap();
++            let prepared = causal.prepare_start_consent("1".repeat(64)).unwrap();
++            let bytes = consent(prepared.consent_to_sign().clone(), &model.key);
++            let accepted = prepared
++                .accept_consent(receive(receiver, sender, &bytes))
++                .unwrap();
++            run(accepted, paths, root, leaf, model);
++            assert_eq!(fs::read(leaf.join(NAME)).unwrap(), request_raw);
++            drop(crate::host_execution::lock_host_root(root).unwrap());
++            retained_context_refuses_for_test(root);
++        });
++    });
++}
++fn drift(kind: usize, paths: &Paths, leaf: &std::path::Path, model: &Model) {
++    match kind {
++        0 => fs::write(&paths.worker, b"changed worker trust").unwrap(),
++        1 => fs::write(&paths.oidc, b"changed OIDC trust").unwrap(),
++        2 => {
++            let original = fs::read(model.path()).unwrap();
++            fs::write(model.path(), original).unwrap();
++        }
++        3 => fs::write(
++            paths.authority.join("unexpected-frame-context"),
++            b"not authority",
++        )
++        .unwrap(),
++        4 => fs::remove_file(leaf.join(RESERVED_NAME)).unwrap(),
++        _ => panic!("unregistered fault"),
++    }
++}
++#[test]
++#[ignore = "manual nonroot framed original consent mutation/reference controls; no execution"]
++fn validation_frame_live_drift_at_every_cut_and_reference_refusal() {
++    assert_ne!(unsafe { libc::geteuid() }, 0);
++    for cut in 0..8 {
++        for kind in 0..5 {
++            with_accepted(|accepted, paths, root, leaf, model| {
++                let mut framed = accepted.into_validation_frame().unwrap();
++                let mut visited = 0;
++                let result = framed.revalidate_with_for_test(|_| {
++                    if visited == cut {
++                        drift(kind, paths, leaf, model);
++                    }
++                    visited += 1;
++                });
++                assert!(visited > cut);
++                assert!(result.is_err());
++                assert!(framed.is_refused());
++                assert!(matches!(
++                    framed.revalidate(),
++                    Err(OriginalStartConsentError::Refused)
++                ));
++                busy(root);
++                drop(framed);
++                println!(
++                    "HC074-FRAME-DRIFT cut={cut} kind={kind} refused=true fence_retained=true"
++                );
++            });
++        }
++    }
++    // Independently fresh old-reference owners, never reuse a failed frame.
++    for kind in 0..5 {
++        with_accepted(|mut reference, paths, root, leaf, model| {
++            drift(kind, paths, leaf, model);
++            assert!(reference.revalidate().is_err());
++            assert!(reference.is_refused());
++            busy(root);
++            drop(reference);
++            println!("HC074-FRAME-REFERENCE kind={kind} refused=true");
++        });
++    }
++    with_accepted(|accepted, _, root, leaf, _| {
++        let mut framed = accepted.into_validation_frame().unwrap();
++        let mut order = Vec::new();
++        framed
++            .revalidate_with_for_test(|step| order.push(format!("{step:?}")))
++            .unwrap();
++        assert_eq!(
++            order,
++            [
++                "StorageBefore",
++                "ReservedLive",
++                "Progress",
++                "Causal",
++                "Prepared",
++                "Consent",
++                "StorageAfter",
++                "FinalClocks"
++            ]
++        );
++        assert!(!framed.is_refused());
++        assert!(!format!("{framed:?}").contains("consent_request_id"));
++        fs::remove_file(leaf.join(RESERVED_NAME)).unwrap();
++        assert!(framed.revalidate().is_err());
++        busy(root);
++        drop(framed);
++        println!("HC074-FRAME-CONTROL healthy_before_fault=true ordered=true");
++    });
++    with_accepted(|accepted, _, root, leaf, _| {
++        fs::remove_file(leaf.join(RESERVED_NAME)).unwrap();
++        let failure = accepted.into_validation_frame().unwrap_err();
++        assert!(failure.is_refused());
++        busy(root);
++        drop(failure);
++        println!("HC074-FRAME-CONSTRUCTION refused=true retained=true");
++    });
++    with_accepted(|accepted, paths, root, _, _| {
++        let mut framed = accepted.into_validation_frame().unwrap();
++        let path = paths.worker.clone();
++        let (go, wait) = std::sync::mpsc::channel();
++        let (done, finished) = std::sync::mpsc::channel();
++        let writer = std::thread::spawn(move || {
++            if wait.recv().is_ok() {
++                fs::write(path, b"concurrent original trust drift").unwrap();
++                done.send(()).unwrap();
++            }
++        });
++        let mut go = Some(go);
++        let mut visited = 0;
++        let result = framed.revalidate_with_for_test(|_| {
++            if visited == 5 {
++                go.take().unwrap().send(()).unwrap();
++                finished.recv().unwrap();
++            }
++            visited += 1;
++        });
++        drop(go);
++        writer.join().unwrap();
++        assert!(visited > 5);
++        assert!(result.is_err());
++        assert!(framed.is_refused());
++        busy(root);
++        drop(framed);
++        println!("HC074-FRAME-CONCURRENT refused=true original_owners=true");
++    });
++}

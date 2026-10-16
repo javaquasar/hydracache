@@ -1,0 +1,28 @@
+{
+  "format_version": 1,
+  "provenance": "Local verifier observations, not candidate acceptance",
+  "normal": {
+    "chunk_id": "8d297d",
+    "wall_time_seconds": 6.035317,
+    "exit_code": 0,
+    "original_token_count": 28,
+    "output": "Validation frame evidence: intact; candidate UNCOMMITTED, live fault gate INCOMPLETE, server admission CLOSED\r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-20261016/verify.ps1"
+  },
+  "scope_canary": {
+    "chunk_id": "005ab6",
+    "wall_time_seconds": 1.9913131,
+    "exit_code": 1,
+    "original_token_count": 129,
+    "output": "Unsupported scope claim: server_ready\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-frame-20261016\\verify.p\r\ns1:4 char:57\r\n+ ... ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Unsupported scope claim: server_ready:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Unsupported scope claim: server_ready\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/scope.json"
+  },
+  "counts_canary": {
+    "chunk_id": "e61edb",
+    "wall_time_seconds": 5.4968299,
+    "exit_code": 1,
+    "original_token_count": 132,
+    "output": "Budget counts differ: frame-budget-release-194\r\nAt C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\docs\\testing\\performance\\0.74\\local-runs\\validation-frame-20261016\\verify.p\r\ns1:4 char:57\r\n+ ... ion Check($ok, [string]$message) { if (-not $ok) { throw $message } }\r\n+                                                        ~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Budget counts d...get-release-194:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Budget counts differ: frame-budget-release-194\r\n \r\n",
+    "command": "powershell -NoProfile -File C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/validation-frame-20261016/verify.ps1 -ManifestPath C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-validation-frame-canaries/counts.json"
+  }
+}
