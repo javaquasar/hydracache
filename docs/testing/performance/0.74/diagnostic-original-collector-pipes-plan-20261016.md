@@ -60,3 +60,19 @@ Production trust/epoch and receiver/bootstrap selection remain unresolved.
 The next implementation still needs sole-root sinks, original executable,
 manager/process/cgroup handoff, independent watchdog and all-writer revocation
 before completion/cells2–4; this slice grants none of those capabilities.
+
+## Result
+
+Implementation `a533e6df` passes all nineteen joined cases per compiler using
+the final pinned normal GNU release binaries. The
+[packet](local-runs/original-collector-pipes-20261016/README.md) retains raw logs,
+source observations, baseline E0599, local gates and the corrected independent
+postflight. Earlier assembly binaries were not dispatched. Review fixes move the
+acknowledgement hook before closing checks, distinguish pipe Invalid from
+original refusal and close private pipes before the original fence.
+
+Four kernel tests, one named API and 57 selected compile-fail examples plus
+63 regressions pass per compiler; 187 static contracts and registry180 pass.
+These are ownership/correctness results, not numerical overhead or all-writer
+cessation evidence. The next step remains private sole-root sink/start integration
+of these exact pipes with independently enrolled trust and original execution.

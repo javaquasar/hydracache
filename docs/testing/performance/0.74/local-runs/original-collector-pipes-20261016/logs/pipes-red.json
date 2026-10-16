@@ -1,0 +1,6 @@
+{
+  "key": "pipes-red",
+  "command": "wsl.exe -d Ubuntu --cd /mnt/c/Workspace/prj/jq/cashe/hydracache-074 --exec env CARGO_TARGET_DIR=/home/artur/.cache/hydracache-074-194-check /home/artur/.cargo/bin/cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_original_collector_pipes --offline --locked",
+  "exit_code": 1,
+  "output": "    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on package cache\n    Blocking waiting for file lock on artifact directory\n   Compiling hydracache-long-run-supervisor-074 v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074)\nerror[E0599]: no method named `prepare_original_pipes` found for struct `OriginalCollectorStarting<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope\n --> tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs:6:23\n  |\n6 | ...er.prepare_original_pipes();\n  |       ^^^^^^^^^^^^^^^^^... not found in `OriginalCollectorStarting<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>`\n\nFor more information about this error, try `rustc --explain E0599`.\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_original_collector_pipes\") due to 1 previous error\n"
+}

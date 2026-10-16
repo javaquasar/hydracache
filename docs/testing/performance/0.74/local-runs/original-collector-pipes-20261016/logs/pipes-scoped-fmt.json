@@ -1,0 +1,6 @@
+{
+  "key": "pipes-scoped-fmt",
+  "command": "rustfmt +1.94.0 --edition 2021 --check crates/xtask/tests/performance_contract_074.rs crates/xtask/tests/support/performance_contract_074_starting_publication.rs crates/xtask/tests/support/performance_contract_074_original_pipes.rs tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs tools/long-run-supervisor-074/src/diagnostic_original_collector_pipe_kernel_tests.rs tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs",
+  "exit_code": 0,
+  "output": ""
+}

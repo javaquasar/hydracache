@@ -1,0 +1,6 @@
+{
+  "key": "pipes-server-root-create",
+  "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes hydracache-ax42 \"umask 077; mktemp -d /tmp/hc074-original-pipes-20261016.XXXXXX\"",
+  "exit_code": 0,
+  "output": "/tmp/hc074-original-pipes-20261016.eO13aX\n"
+}

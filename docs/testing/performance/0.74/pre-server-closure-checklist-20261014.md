@@ -55,6 +55,14 @@ stored and controlled is a deployment decision, not an implicit test default.
 
 ## Code and local gates still open
 
+Original anonymous pipe preparation `a533e6df` now retains the same acknowledged
+Starting and fence without FD export or worker start. Its
+[packet](local-runs/original-collector-pipes-20261016/README.md) passes 19 joined
+cases/compiler, original field-drop ordering and private EOF after drop. This
+closes only ownership of unexported pipe objects. Production trust/epoch,
+sole-root sinks, executable/manager/process/cgroup start, autonomous watchdog and
+revocation of every exported writer remain open before completion/cells2–4.
+
 The [original controller attempt](diagnostic-controller-attempt-design.md) now
 consumes the original common-fence preflight into a durable Reserve request,
 retaining its original OIDC/kernel/authority chain and uninterrupted lock.

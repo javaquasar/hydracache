@@ -11426,3 +11426,47 @@ private executable/output/streams/process/cgroup start, autonomous watchdog and
 all-writer cessation must still precede completion and cells two through four.
 Signed installation and an integrated nonproduct lifecycle rehearsal remain
 separate gates before any numerical pilot or release qualification.
+
+### Original pipes are a prerequisite for original start
+
+The next isolated step creates the real anonymous pipe objects before any worker
+handoff. It consumes the acknowledged Starting owner rather than accepting caller
+paths, descriptors, replacement authority or timestamps. Both streams have
+distinct retained kernel identities, close-on-exec descriptors, nonblocking read
+ends and blocking write ends. Full original Starting checks bracket kernel
+observations; successful preparation neither renews the challenge nor opens an
+execution route.
+
+Descriptor identity alone is insufficient. Access/status flags belong partly to
+the shared open-file description: changing nonblocking mode through a duplicate
+writer affects the retained original too. The joined test changes those flags
+on another thread between two inspections. It must obtain pipe Invalid after
+successful original validation, not mistake expiration of the original window
+for evidence that descriptor substitution was detected.
+
+Review also exposed an ownership-order requirement before the final build was
+dispatched. Rust drops fields in declaration order, so pipes must precede the
+Starting owner that retains the fence. The static contract checks that exact
+ordering; the healthy joined case retains read observers and requires actual
+EOF after owner drop. A separate kernel test keeps a duplicate writer alive,
+observes WouldBlock rather than EOF on an empty queue, writes late bytes, then
+obtains EOF only after the last writer closes. Filling the kernel queue and
+checking write readiness separately exercises blocking backpressure.
+
+The [pipe preparation packet](../testing/performance/0.74/local-runs/original-collector-pipes-20261016/README.md)
+passes nineteen fresh chains on each compiler: six interruptions, eight
+descriptor/flag substitutions, trust and concurrent drift, acknowledgement-time
+trust drift, a pre-refused constructor and a healthy drop control. The old
+publisher/storage and all time origins remain unchanged. The packet also retains
+an invalid first postflight assembly whose zero exit and printed success were
+contradicted by a missing-function error; only the corrected strict postflight
+is accepted. Neither server matrix was repeated to repair that reporting error.
+
+This proves ownership and closure of private, unexported pipes. Close-on-exec is
+not revocation of copies intentionally handed to a manager or worker, and this
+owner cannot become a FixtureDrain or manufacture authenticated completion.
+The next producer must create the sole-root sinks and bind these same pipes to
+the original executable, manager invocation, process and cgroup, with an autonomous
+watchdog and proven cessation of every writer. The bounded fixture success is
+not a throughput measurement or a guarantee of deadline headroom for that later
+composition. Production enrollment and server execution remain closed.

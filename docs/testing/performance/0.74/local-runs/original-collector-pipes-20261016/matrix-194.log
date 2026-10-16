@@ -1,0 +1,25 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::pipe_tests::original_collector_pipes_joined_fault_and_live_refusal ... HC074-PIPE-INTERRUPT cut=BeforeCreate held=true refused=true unchanged=true
+HC074-PIPE-INTERRUPT cut=StdoutCreated held=true refused=true unchanged=true
+HC074-PIPE-INTERRUPT cut=StdoutReady held=true refused=true unchanged=true
+HC074-PIPE-INTERRUPT cut=StderrCreated held=true refused=true unchanged=true
+HC074-PIPE-INTERRUPT cut=StderrReady held=true refused=true unchanged=true
+HC074-PIPE-INTERRUPT cut=Acknowledging held=true refused=true unchanged=true
+HC074-PIPE-DRIFT kind=0 held=true refused=true
+HC074-PIPE-DRIFT kind=1 held=true refused=true
+HC074-PIPE-DRIFT kind=2 held=true refused=true
+HC074-PIPE-DRIFT kind=3 held=true refused=true
+HC074-PIPE-DRIFT kind=4 held=true refused=true
+HC074-PIPE-DRIFT kind=5 held=true refused=true
+HC074-PIPE-DRIFT kind=6 held=true refused=true
+HC074-PIPE-DRIFT kind=7 held=true refused=true
+HC074-PIPE-LIVE concurrent=false held=true refused=true
+HC074-PIPE-LIVE concurrent=true held=true refused=true
+HC074-PIPE-ACK-DRIFT closing=true held=true refused=true
+HC074-PIPE-PRE-REFUSED allocated=0 held=true refused=true
+HC074-PIPE-CONTROL original=true private=true drop_eof=true execution=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1012 filtered out; finished in 233.64s
+

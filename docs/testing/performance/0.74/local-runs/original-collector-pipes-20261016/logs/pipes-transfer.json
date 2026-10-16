@@ -1,0 +1,6 @@
+{
+  "key": "pipes-transfer",
+  "command": "scp -p -o BatchMode=yes -o StrictHostKeyChecking=yes C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-original-pipes/original-pipes-194 C:/Workspace/prj/jq/cashe/.worktree-cleanup-recovery/2026-10-16-original-pipes/original-pipes-188 C:/Workspace/prj/jq/cashe/hydracache-074/docs/testing/performance/0.74/local-runs/original-collector-pipes-20261016/run.sh hydracache-ax42:/tmp/hc074-original-pipes-20261016.eO13aX/",
+  "exit_code": 0,
+  "output": ""
+}

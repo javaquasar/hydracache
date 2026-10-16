@@ -1,0 +1,6 @@
+{
+  "key": "pipes-fmt",
+  "command": "rustfmt new joined-test source; WSL cargo +1.94.0 fmt --all -- --check",
+  "exit_code": 0,
+  "output": ""
+}

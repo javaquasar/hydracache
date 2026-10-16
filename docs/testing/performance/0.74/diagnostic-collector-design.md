@@ -28,6 +28,16 @@ The root constructor and authenticated producer below remain necessary.
 
 ## Collector implementation sequence
 
+The [original pipe preparation](local-runs/original-collector-pipes-20261016/README.md)
+now consumes acknowledged Starting without caller descriptors and retains two
+distinct actual kernel pipes, nonblocking readers, blocking writers and CLOEXEC.
+Implementation `a533e6df` passes 19 joined cases/compiler and preserves the
+original authority/time/storage checks. Private pipe fields drop before the
+Starting/fence owner, with actual EOF checked after healthy drop. This is not the
+root collector constructor or worker handoff. That constructor must consume these
+same objects, not replace them with the fixture factory's newly created pipes;
+it still needs sole-root sinks, production ancestry and enrolled original start.
+
 First implement the actual bounded pipe-to-file writer and test its kernel EOF
 boundary locally. Retain both read ends and exclusively created evidence files;
 export only pipe write ends through a fixture-only Stdio transfer. Readers are

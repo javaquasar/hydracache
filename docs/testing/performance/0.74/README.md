@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The next [original pipe preparation](local-runs/original-collector-pipes-20261016/README.md)
+is implemented as `a533e6df`. It consumes acknowledged Starting and owns two
+actual private pipes under the same authority/fence, without exporting FD/Stdio
+or creating a sink/worker. Both compilers pass 19 joined cases, including exact
+descriptor refusal, concurrent shared-OFD flag drift and private EOF after drop.
+Pipe fields drop before Starting/fence. The four original authority checks and
+all anchored deadlines remain active. Sole-root sinks, original executable and
+manager/process/cgroup handoff, watchdog and all-writer cessation still follow;
+this is not authenticated start or server admission.
+
 Current collector milestone: approved constant-depth preparation/acceptance
 `77b3ad15` and durable first Starting publisher `a3f2734e` pass their separate
 [semantic](local-runs/preconsent-frame-20261016/README.md) and

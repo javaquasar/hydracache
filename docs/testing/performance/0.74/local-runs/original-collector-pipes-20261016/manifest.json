@@ -1,0 +1,415 @@
+{
+  "format_version": 1,
+  "kind": "original-collector-pipe-preparation-proof",
+  "baseline_commit": "a72a1b6a84373f5006504de458599613b01d6327",
+  "source_commit": "a533e6df10ca67d2681fc0df0edcdc22b65610ac",
+  "preregistrations": [
+    "745d3fea",
+    "74093dca",
+    "c9e87c7d"
+  ],
+  "temporary_root": "/tmp/hc074-original-pipes-20261016.eO13aX",
+  "scope": {
+    "joined_original_pipe_gate_passed": true,
+    "original_guards_preserved": true,
+    "deadlines_unchanged": true,
+    "private_pipe_backpressure_tested": true,
+    "private_pipe_drop_eof_tested": true,
+    "pipe_fields_drop_before_starting": true,
+    "root_collector_constructed": false,
+    "fd_or_stdio_exported": false,
+    "authenticated_product_start": false,
+    "all_writers_revoked": false,
+    "completion_or_later_cells": false,
+    "new_sigkill_proof": false,
+    "production_trust_enrolled": false,
+    "signed_production_custody": false,
+    "installed_release_changed": false,
+    "supervisor_stopped": false,
+    "clock_changed": false,
+    "product_workload_run": false,
+    "qualification_changed": false,
+    "performance_claim": false,
+    "server_ready": false
+  },
+  "coverage": {
+    "compilers": [
+      "1.94.0",
+      "1.88.0"
+    ],
+    "joined_cases_per_compiler": 19,
+    "construction_interruptions_per_compiler": 6,
+    "descriptor_drifts_per_compiler": 8,
+    "live_drifts_per_compiler": 2,
+    "acknowledgement_drift_per_compiler": 1,
+    "pre_refused_constructor_per_compiler": 1,
+    "healthy_drop_control_per_compiler": 1,
+    "kernel_units_per_compiler": 4,
+    "public_api_per_compiler": 1,
+    "randomized_flags_per_compiler": 4096,
+    "flag_edges_per_compiler": 6,
+    "selected_compile_fail_per_compiler": 57,
+    "regressions_per_compiler": 63,
+    "static_contracts": 187,
+    "registered_gates": 180
+  },
+  "binaries": [
+    {
+      "name": "original-pipes-194",
+      "sha256": "081f3318d237851ce5d95186f62eeee06ea25cd36397675957b88e4e53cf391f"
+    },
+    {
+      "name": "original-pipes-188",
+      "sha256": "80893904b321357ade5d0aea030e5a581768dda2b1674c9df61f594c2b775df6"
+    }
+  ],
+  "source_blobs": [
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "git_blob": "0d67461ad1ff628a782da6c1c12df59d53987c04"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_starting_publication.rs",
+      "git_blob": "c7c53b30a3ecc37f9896de7ec8dc80fe6745da1c"
+    },
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_original_pipes.rs",
+      "git_blob": "661a264b0e98a42446cd7d66bdf38ea34e3bce63"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication.rs",
+      "git_blob": "9c7a0bd454531ea01ee67a6d63976fcd4e2b1400"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_collector_starting_publication_tests.rs",
+      "git_blob": "ef77b6839b67b3bb71b2a2f8d8697f9959778981"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes.rs",
+      "git_blob": "c8b9ddf8175422e068cec692785a1cc3e56c4761"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipe_kernel_tests.rs",
+      "git_blob": "af1e9a11c7b02e6d5617db487c6ced71936ec07c"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_collector_pipes_tests.rs",
+      "git_blob": "0c3051ab0ab245c335ab4f72d07ebf06989b3106"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs",
+      "git_blob": "f51752e09f52d897fdcfc695f95d5b13e7966ea9"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "c9117eb9870602f8ed97d444788365a12a035bc7"
+    }
+  ],
+  "commands": [
+    {
+      "key": "pipes-red",
+      "exit_code": 1
+    },
+    {
+      "key": "pipes-baseline",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-fast-first",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-fast-194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-fast-188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-dev-win194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-dev-win188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-clippy-linux194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-clippy-linux188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-static",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-scoped-fmt",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-fmt",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-registry",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-doccheck",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-localcontract",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-release-194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-release-188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-server-root-create",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-binary-hashes",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-transfer",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-prior-proof-collector-starting-framed-20261016",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-prior-proof-preconsent-frame-20261016",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-check-linux194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-check-linux188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-docs-linux194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-final-docs-linux188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-regression-194",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-regression-188",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-ship-guard",
+      "exit_code": 1
+    },
+    {
+      "key": "pipes-server-run",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-postflight",
+      "exit_code": 0
+    },
+    {
+      "key": "pipes-postflight-assembly",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "matrix-188.log",
+      "bytes": 1608,
+      "sha256": "0f73a10f2188e2e5e8230c785418eefca7a199d9ab1d6be2d2b3192e26f33cfe"
+    },
+    {
+      "path": "matrix-194.log",
+      "bytes": 1608,
+      "sha256": "2940c8627c97cef7b4b6f38ac92bed7e2e085bbe78e3eef9cd2d37237fb7f4e9"
+    },
+    {
+      "path": "run.sh",
+      "bytes": 3088,
+      "sha256": "2cca2ba42319ffd57fe3504a86d6dd3919e7b82e5d67233fea258c5f518d93f1"
+    },
+    {
+      "path": "logs/pipes-baseline.json",
+      "bytes": 928,
+      "sha256": "7e9950ebf2c3f2e202c3bb53894446fda05c662102a05f558c7094188a944e47"
+    },
+    {
+      "path": "logs/pipes-binary-hashes.json",
+      "bytes": 1537,
+      "sha256": "b77967bc4502450e80992ec2270d8dbd2aef17cfab444e946a2a42b51ddb51c6"
+    },
+    {
+      "path": "logs/pipes-doccheck.json",
+      "bytes": 163,
+      "sha256": "fe3a1d20f576a0724288ace8ec4c3324c72e5754977fbc73dcc0d11f01632eab"
+    },
+    {
+      "path": "logs/pipes-fast-first.json",
+      "bytes": 2410,
+      "sha256": "6ffd7e98077b0f39c58efc15aac62b2a23452a0d6a76aea66e4dd77845fc6e05"
+    },
+    {
+      "path": "logs/pipes-final-check-linux188.json",
+      "bytes": 535,
+      "sha256": "3c14eff6e7d2147abec427a8ee942075f144ef81b350bbeb3f07d9aac87121d6"
+    },
+    {
+      "path": "logs/pipes-final-check-linux194.json",
+      "bytes": 756,
+      "sha256": "8a8562a184058e074d11807ff213ec81553cb7a142ded02eede9969804c68faa"
+    },
+    {
+      "path": "logs/pipes-final-clippy-linux188.json",
+      "bytes": 737,
+      "sha256": "316b154f54b00317cac3efd4e6dfe69fc0f773f068acdbfd96cc47c03f02a9a0"
+    },
+    {
+      "path": "logs/pipes-final-clippy-linux194.json",
+      "bytes": 790,
+      "sha256": "2344c37b28c6651db1528bd6db6bad4a0ca3676e55f26ae4bac9645bb1ee6d3b"
+    },
+    {
+      "path": "logs/pipes-final-dev-win188.json",
+      "bytes": 966,
+      "sha256": "551f653611f57240c0a52479321da06727c4cf2add713e621d3578c31fc29641"
+    },
+    {
+      "path": "logs/pipes-final-dev-win194.json",
+      "bytes": 911,
+      "sha256": "8767ef02d9a3df6d8e0e6a42b843d7d87a76baaabac0ff247f93d118a89125f7"
+    },
+    {
+      "path": "logs/pipes-final-docs-linux188.json",
+      "bytes": 766,
+      "sha256": "6df2a763e4ca03cb1ecc15a22f883752df9713a338faf731b729471462e72a6d"
+    },
+    {
+      "path": "logs/pipes-final-docs-linux194.json",
+      "bytes": 717,
+      "sha256": "dc6fa9be0a0191a16162818c7515569515370e6a63b4edd1e0512935e1c3479a"
+    },
+    {
+      "path": "logs/pipes-final-fast-188.json",
+      "bytes": 2691,
+      "sha256": "3fefc364fe78e6726ab699d4b98518d9dcc161513b04a8a068446bb7cd5afc46"
+    },
+    {
+      "path": "logs/pipes-final-fast-194.json",
+      "bytes": 2583,
+      "sha256": "057a3a9b36ad73ffa074a08384e2d8efb73ef8e291924da7a307c2716b880dd5"
+    },
+    {
+      "path": "logs/pipes-final-static.json",
+      "bytes": 979,
+      "sha256": "e904aa6765cb91806ba905d347cde6adef6bb1a3915c088ab0072d2fcc4d1fe7"
+    },
+    {
+      "path": "logs/pipes-fmt.json",
+      "bytes": 146,
+      "sha256": "f38a263058e023ee28ce1bca790b136f17ed7309ff5d3a76009b17ea4a6933d7"
+    },
+    {
+      "path": "logs/pipes-localcontract.json",
+      "bytes": 216,
+      "sha256": "1d5f847c7d4934a016762385db77ffb340617a39bca657c2886ce55ebc52bdbc"
+    },
+    {
+      "path": "logs/pipes-postflight-assembly.json",
+      "bytes": 1181,
+      "sha256": "84de11032a2552469643143482d5af7b99766763aee8515881088e25365478f9"
+    },
+    {
+      "path": "logs/pipes-postflight.json",
+      "bytes": 3271,
+      "sha256": "a565103c07fe04dfedb9be117f9538eeca0ba88b08487db8804e20a6164627a6"
+    },
+    {
+      "path": "logs/pipes-prior-proof-collector-starting-framed-20261016.json",
+      "bytes": 373,
+      "sha256": "e72554cde80cb26841e2a431f897702c45d72e6669eef4b3a4dc8b6b7c580eed"
+    },
+    {
+      "path": "logs/pipes-prior-proof-preconsent-frame-20261016.json",
+      "bytes": 324,
+      "sha256": "bd7d9280ec82da4f437292ffd2d3858d58af194900a0d47097b66f4645d213f9"
+    },
+    {
+      "path": "logs/pipes-red.json",
+      "bytes": 1271,
+      "sha256": "e65c38b8c31022c150f4446a027046ac7f1bbbc752d816a13054c5cab7c5267b"
+    },
+    {
+      "path": "logs/pipes-registry.json",
+      "bytes": 186,
+      "sha256": "1c7f06e16c7e310c582fea36f81619cfa56f22deda689a4345c67fece93b2d30"
+    },
+    {
+      "path": "logs/pipes-regression-188.json",
+      "bytes": 2408,
+      "sha256": "fbdd62e4a39c902c5ecb4086b8e457cb064799d93b388d86f70009b4f803d338"
+    },
+    {
+      "path": "logs/pipes-regression-194.json",
+      "bytes": 2411,
+      "sha256": "c0367769fd8a49ea75504cb9af6b94ab57ad296be03ecabb04a66731dfddca92"
+    },
+    {
+      "path": "logs/pipes-release-188.json",
+      "bytes": 798,
+      "sha256": "549d106ed9bbe94264a5e6e1be1b69f55015229599315bad1203998d89dbcadb"
+    },
+    {
+      "path": "logs/pipes-release-194.json",
+      "bytes": 743,
+      "sha256": "136898a290405892c23968149d24e3c635061df4c2a9dca96a7ba951e7454650"
+    },
+    {
+      "path": "logs/pipes-scoped-fmt.json",
+      "bytes": 790,
+      "sha256": "8e40d9eee112cb77e73a70181f6453dc7cef377f49a280b052c1aa5106764dd8"
+    },
+    {
+      "path": "logs/pipes-server-root-create.json",
+      "bytes": 266,
+      "sha256": "4b7cfc972fd83a03115eef9a64a2b90e3e9c643cd47aa6ade39773ff4f8f1a05"
+    },
+    {
+      "path": "logs/pipes-server-run.json",
+      "bytes": 1747,
+      "sha256": "392bbe66c164c47a785f88b018e6dfd5ec7f8889cf59bee84ef25e4ebf6f9582"
+    },
+    {
+      "path": "logs/pipes-ship-guard.json",
+      "bytes": 2690,
+      "sha256": "0d6eb5ea788b1683a509a2eee6cab92c1cadee31608af55af0020dd5c130f6a0"
+    },
+    {
+      "path": "logs/pipes-transfer.json",
+      "bytes": 511,
+      "sha256": "36a10d74b44a8be04466ba40a3ba85c8f9a256d849ac98eaf879864c4fec6846"
+    }
+  ]
+}
