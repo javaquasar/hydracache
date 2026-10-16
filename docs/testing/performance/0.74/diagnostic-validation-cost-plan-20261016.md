@@ -44,3 +44,10 @@ check/strict Clippy on Linux/Windows current/MSRV, scoped tests, static contract
 format/doc/registry and the local performance contract. Ship stays red. A product
 optimization needs a subsequent isolated proposal with measured attribution and
 the same ownership, revalidation ordering and refusal/expiry semantics.
+
+The first isolated probe observes 272 request-authentication calls during
+publication and 66 during heartbeat binding, but request signature time alone
+does not dominate stage wall time. Add one further test-only span around the
+unchanged worker-policy document verifier before the next probe. Count its full
+verification cost separately from request authentication; do not call their
+overlapping or elapsed times CPU/op. No signature caching is proposed here.
