@@ -10635,3 +10635,62 @@ groups each leave their existing manual case ignored. The complete static suite
 passes 172 tests and all eight Linux/Windows build/strict-Clippy lanes pass.
 The confirmed result is an observed frozen state under the original owner,
 not durable lifecycle or production execution.
+
+### Retaining the observed reservation without reopening authority
+
+The next hypothesis was about ownership rather than throughput: could the
+receiver-observed initial state become durable while preserving the original
+request, worker/authority and common fence? Reopening a second journal or
+transferring a collector request into the old regular-file publisher would
+discard exactly the provenance the previous checks established. Relaxing the
+old one-document inventory would also make unrelated retained context look
+eligible for adoption.
+
+The separate [collector Reserved publication](../testing/performance/0.74/diagnostic-collector-reserved-design.md)
+therefore consumes the observed owner into a private two-document storage engine.
+It preserves the original request descriptor, bytes, stamp and fence, and creates
+only a new fixed-name record. That versioned document contains the frozen state,
+signed collector envelope and hash of the complete original request-attempt
+record, including its policy/epoch and build/configuration bindings. Legacy
+one-document checks and publication-transfer predicates stay unchanged.
+
+Exclusive descriptor-relative creation, two bounded writes, sealing and file/
+directory sync precede acknowledgement. At every named boundary the same original
+live chain checks the request, signature, configured authority and receiver clock.
+A failure retains the lock and uncertain bytes; it cannot repair, reopen or retry
+the attempt into success. Returning a healthy guard acknowledges this record,
+not root output construction, authenticated start or renewed controller progress.
+
+The paired byte inspector has a deliberately narrower job. It rejects schema,
+canonicalization, request/window/identity, policy/epoch and state/unit mismatches,
+but does not authenticate signatures or kernel observations. A syntactically
+valid zero signature can pass it. That canary prevents a readable durable record
+from being mistaken for a reconstructed runtime permission after process loss.
+
+The focused local tests pass ten cases, including all nine logical failure
+boundaries and twenty record mutations. They cover occupied names, original-file
+replacement, ancestry/source drift, sticky refusal, independently owned attempts
+and untouched request bytes. Both Rust versions pass fifteen negative API
+examples and the thirty-test signed-projection regression; all eight build/lint
+lanes and 173 static contracts pass. These are functional publication checks,
+not numerical performance evidence or closure of Starting and production launch.
+
+The [retained process packet](../testing/performance/0.74/local-runs/collector-reserved-20261016/README.md)
+pins source `6c49e3f9`. Three repetitions each pass ten owned SIGKILL cases,
+one uninterrupted control and twenty-two fresh inspections: thirty kills,
+three controls and sixty-six inspections in total. The BeforeCreate case now
+refuses fresh admission too because the original request already exists.
+Complete records after lost acknowledgement remain historical bytes, not
+recoverable runtime permissions. Snapshots stay unchanged and the original lock
+releases after the owner dies. This establishes local process-loss behavior,
+not power-loss/reboot durability, installed-root enrollment or output writer
+cessation. Starting still needs a separate consuming protocol and authenticated
+controller progress before root output and original-start integration.
+
+Final original-input regressions pass 92 tests on each compiler, with two manual
+cases deliberately ignored in that group. Each compiler separately passes the
+26-test kernel group, 30-test projection regression and fifteen compile-fail API
+examples. These retain the original ownership and refusal boundaries around the
+new durable path. The confirmed result is initial retention under the original
+authority/fence and conservative process-loss handling; production launch,
+performance qualification and the historical Kernel(Invalid) cause remain open.

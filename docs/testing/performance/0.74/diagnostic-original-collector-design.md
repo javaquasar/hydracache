@@ -106,3 +106,10 @@ transfer must not be relaxed for general adoption or reinterpreted as collector
 authority. Its new write boundaries need a preregistered real SIGKILL/lost-ack
 matrix before root output creation. Production enrollment and execution remain
 closed; no existing signed or durable format changes here.
+
+The subsequent [collector Reserved publisher](diagnostic-collector-reserved-design.md)
+now provides that separate consuming publication with a new COMPAT-registered
+record. This observed owner and its read-only wrapper alone still cannot
+acknowledge durable state. The publisher retains the original request/fence in
+its own exact two-document engine; Starting and root output construction remain
+separate unimplemented consumers rather than conversions from supplied data.

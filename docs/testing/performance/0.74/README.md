@@ -1,10 +1,22 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [collector Reserved publisher](diagnostic-collector-reserved-design.md)
+consumes the observed original owner into exclusive durable retention under the
+same authority/fence. Its separate record binds the frozen state, signed
+collector requirements and original request-attempt hash; legacy storage and
+transfer predicates stay unchanged. Acknowledgement is initial retention only,
+not Starting, output creation, fresh controller progress or execution admission.
+The [local packet](local-runs/collector-reserved-20261016/README.md) retains
+three actual process-loss repetitions: 30 SIGKILLs, 3 controls and 66 fresh
+read-only inspections. These are local fixture proofs, not installed-host or
+numerical qualification evidence.
+
 The [observed reservation path](diagnostic-original-collector-design.md#observed-initial-state-under-the-same-owner)
 now consumes the original request attempt and creates initial Reserved from its
 retained kernel boot/CLOCK_BOOTTIME, without accepting caller state or clock.
 Its exported signing copy cannot change the frozen owner. The distinct collector
-guard retains the same original authority/fence; durable Reserved/Starting,
+guard retains the same original authority/fence but acknowledges no durable
+state by itself. The separate publisher above adds initial retention; Starting,
 root output creation and execution remain closed.
 The [local packet](local-runs/observed-reservation-20261016/README.md) retains
 both compiler regressions: 82 original-input, 30 projection, 26 kernel tests,

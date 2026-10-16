@@ -102,6 +102,16 @@ clock gap for that new path, not the durable publication gap. P1/P3 still requir
 owned Reserved/Starting acknowledgement and trusted root ancestry before output
 creation, followed by authenticated original start and all-writer cessation.
 
+The separate [collector Reserved publisher](diagnostic-collector-reserved-design.md)
+now implements initial durable retention under that same original owner/fence,
+without reusing the legacy regular-file publisher or changing its inventory.
+It adds an explicit COMPAT format and returns no start/output capability.
+Starting, fresh controller progress, root ancestry and execution/cessation
+integration remain open; a healthy retained-record guard is not lease renewal.
+The [local process evidence](local-runs/collector-reserved-20261016/README.md)
+passes three repetitions: 30 owned SIGKILLs, 3 controls and 66 fresh inspections,
+including lost acknowledgement and refusal before new-record creation.
+
 Prepare root-owned fenced production output for the exact reserved cell, with
 exclusive creation and retained ancestry/stream identities. Bind the reviewed
 loaded executable, actual environment, original streams, process generation,

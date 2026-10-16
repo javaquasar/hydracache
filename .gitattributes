@@ -268,3 +268,6 @@ docs/testing/performance/0.74/local-runs/original-collector-*/*.log -text whites
 
 docs/testing/performance/0.74/local-runs/observed-reservation-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/observed-reservation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-reserved-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-reserved-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

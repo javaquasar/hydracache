@@ -152,7 +152,19 @@ The distinct [observed reservation path](diagnostic-original-collector-design.md
 now creates and freezes initial state from the retained kernel boot/boottime.
 Collector binding accepts only signed bytes, not a replacement state or clock;
 the original request owner and fence are consumed into this in-memory owner.
-Durable Reserved/Starting publication, root ancestry and execution remain open.
+This observed guard alone does not publish durable state. Starting publication,
+root ancestry and execution remain open.
+
+The subsequent [collector Reserved publication](diagnostic-collector-reserved-design.md)
+now retains initial state and signed requirements with the original request
+digest under the same authority/fence. Its exact two-document engine does not
+relax the legacy one-file reader. This closes initial retention only: Starting,
+authenticated progress, root output/start, writer cessation and host enrollment
+remain pending. Readable bytes do not recover acknowledgement after a crash.
+Its [local process packet](local-runs/collector-reserved-20261016/README.md)
+passes three repetitions, totaling 30 owned SIGKILLs, 3 controls and 66 fresh
+inspections. This closes the new initial-retention process boundary only,
+not reboot/power-loss or authenticated execution.
 
 1. Connect independently selected root-owned trust inputs to kernel admission
    and original authority/fence ownership, including receiver time/PID namespace
