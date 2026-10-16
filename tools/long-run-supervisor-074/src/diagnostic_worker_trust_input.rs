@@ -42,6 +42,8 @@ pub enum TrustInputError {
     Kernel(#[from] crate::diagnostic_kernel_admission::KernelError),
     #[error("original fixed worker context failed: {0}")]
     Context(#[from] super::local_context::WorkerContextError),
+    #[error("original collector projection refused: {0}")]
+    Collector(#[from] super::intent_projection::IntentProjectionError),
 }
 
 #[derive(Serialize, Deserialize)]

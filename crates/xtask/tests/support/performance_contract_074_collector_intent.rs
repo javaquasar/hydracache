@@ -67,13 +67,16 @@ fn collector_intent_keeps_legacy_bytes_and_execution_boundary_closed() {
         "docs/testing/performance/0.74/qualification-manifest.toml",
         "Cargo.lock",
     ] {
-        assert_eq!(
-            std::fs::read_to_string(super::root().join(path))
-                .unwrap()
-                .replace('\r', ""),
-            historical(path),
-            "out-of-scope mutation: {path}"
-        );
+        let mut current = std::fs::read_to_string(super::root().join(path))
+            .unwrap()
+            .replace('\r', "");
+        if path.ends_with("diagnostic_controller_request_attempt.rs") {
+            let registration =
+                "\n#[path = \"diagnostic_original_collector.rs\"]\npub mod collector_preflight;\n";
+            assert_eq!(current.matches(registration).count(), 1);
+            current = current.replacen(registration, "", 1);
+        }
+        assert_eq!(current, historical(path), "out-of-scope mutation: {path}");
     }
     let source = std::fs::read_to_string(
         super::root().join("tools/long-run-supervisor-074/src/diagnostic_collector_intent.rs"),

@@ -1,4 +1,6 @@
 use super::*;
+#[path = "diagnostic_original_collector_tests.rs"]
+mod collector_tests;
 #[path = "diagnostic_controller_attempt_crash_tests.rs"]
 mod process_crash_tests;
 use super::super::super::fenced_preflight::request_attempt::{
@@ -9,6 +11,18 @@ use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::
 };
 
 const NAME: &str = "diagnostic-controller-attempt-074.json";
+
+#[test]
+fn original_collector_preflight_api_shape() {
+    use super::super::super::fenced_preflight::request_attempt::ControllerRequestAttempt;
+    fn probe(
+        attempt: &mut ControllerRequestAttempt<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>,
+        state: &crate::diagnostic_lease::DiagnosticState,
+    ) {
+        let _ = attempt.bind_collector_requirements(b"", state);
+    }
+    let _ = probe;
+}
 const STAGES: [AttemptStage; 8] = [
     AttemptStage::BeforeCreate,
     AttemptStage::Created,

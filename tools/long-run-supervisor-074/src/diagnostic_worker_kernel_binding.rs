@@ -103,6 +103,39 @@ pub struct KernelWorkerPolicyInput<'s, 'a, 'p> {
     probe: Probe,
 }
 impl KernelWorkerPolicyInput<'_, '_, '_> {
+    // No caller peer/time/trust/host. Retain the original policy and authority owner.
+    pub(super) fn verify_original_collector_requirements(
+        &mut self,
+        bytes: &[u8],
+        state: &crate::diagnostic_lease::DiagnosticState,
+        controller: &crate::diagnostic_ipc::DiagnosticPolicy,
+    ) -> Result<super::super::intent_projection::IntentProjectionBody, TrustInputError> {
+        let result = (|| {
+            self.revalidate()?;
+            let (peer, now_unix_seconds) = self.packet.original_collector_inputs()?;
+            let check = super::super::intent_projection::IntentCheck {
+                state,
+                peer: &peer,
+                controller_policy: controller,
+                now_unix_seconds,
+                worker_bytes: &self.policy.envelope,
+                worker_trust: &self.policy.input.source.trust,
+                worker_host: &self.policy.host,
+            };
+            let body = super::super::intent_projection::collector::capture_original(
+                &mut self.policy.policy,
+                bytes,
+                &check,
+            )?;
+            self.revalidate()?;
+            Ok(body)
+        })();
+        if result.is_err() {
+            self.latch_refusal();
+        }
+        result
+    }
+
     // Private capture for the original controller attempt. No second journal owner.
     pub(super) fn controller_authority_binding(
         &mut self,

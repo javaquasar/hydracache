@@ -157,7 +157,12 @@ fn kernel_refusal_test_instrumentation_preserves_every_non_test_guard() {
         let baseline = String::from_utf8(baseline.stdout).unwrap();
         let current = std::fs::read_to_string(super::root().join(path)).unwrap();
         let current = if name == "diagnostic_kernel_admission.rs" {
-            stripped_header(&current)
+            // Explicit new private extension; every existing guard still compares exactly.
+            let current = current.replace('\r', "");
+            let registration =
+                "#[path = \"diagnostic_kernel_collector_inputs.rs\"]\nmod collector_inputs;\n";
+            assert_eq!(current.matches(registration).count(), 1);
+            stripped_header(&current.replacen(registration, "", 1))
         } else {
             current
         };

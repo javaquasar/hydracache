@@ -10,6 +10,9 @@ use std::fmt;
 pub const CONTROLLER_ATTEMPT_SCHEMA: &str = "diagnostic-controller-attempt-074-v1";
 const LIMIT: usize = 16_384;
 
+#[path = "diagnostic_original_collector.rs"]
+pub mod collector_preflight;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ControllerAttemptError {
     #[error("original controller attempt permanently refused")]

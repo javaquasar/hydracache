@@ -194,6 +194,20 @@ pub fn verify_collector_intent_projection<'worker>(
     })
 }
 
+// Original kernel-worker owner brackets this private byte check; no second guard.
+pub(crate) fn capture_original(
+    worker: &mut CheckedWorkerPolicy,
+    bytes: &[u8],
+    check: &IntentCheck<'_>,
+) -> Result<IntentProjectionBody, IntentProjectionError> {
+    if worker.is_refused() {
+        return Err(WorkerPolicyError::Refused.into());
+    }
+    let body = authenticate(bytes, check)?;
+    bind_worker(worker, &body, check)?;
+    Ok(body)
+}
+
 fn authenticate(
     bytes: &[u8],
     check: &IntentCheck<'_>,

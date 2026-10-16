@@ -38,6 +38,8 @@ macro_rules! kernel_required {
 
 #[path = "diagnostic_kernel_ancillary.rs"]
 mod ancillary;
+#[path = "diagnostic_kernel_collector_inputs.rs"]
+mod collector_inputs;
 #[path = "diagnostic_kernel_origin.rs"]
 mod origin;
 pub use origin::KernelTimePoint;

@@ -9,6 +9,7 @@ nested_unwind_and_thread_isolation_required = true
 only_static_sites_phases_and_numeric_clock_facts = true
 successful_checks_have_no_error_event = true
 non_test_guard_tokens_equivalent_to_baseline = true
+original_collector_registration_excluded_by_exact_text = true
 changed_guard_and_deadline_canaries_required = true
 historical_invalid_root_cause_proved = false
 binary_identity_or_performance_proved = false
