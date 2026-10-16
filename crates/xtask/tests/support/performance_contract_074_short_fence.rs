@@ -52,9 +52,10 @@ pub(super) fn restore_gate(raw: &str) -> String {
 #[test]
 fn short_fence_owned_unlock_preserves_original_admission_and_test_assertions() {
     let read = |p: &str| {
-        std::fs::read_to_string(super::root().join(p))
+        let raw = std::fs::read_to_string(super::root().join(p))
             .unwrap()
-            .replace('\r', "")
+            .replace('\r', "");
+        super::start_consent::normalize(p, &raw)
     };
     let old = |p: &str| {
         let out = std::process::Command::new("git")

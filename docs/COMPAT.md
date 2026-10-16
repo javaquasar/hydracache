@@ -1,5 +1,19 @@
 # HydraCache Compatibility Register
 
+The opt-in collector start-consent byte artifact uses body
+`diagnostic-collector-start-consent-074-v1`, envelope
+`diagnostic-signed-collector-start-consent-074-v1` and Ed25519 domain
+`hydracache-diagnostic-collector-start-consent-074-v1`, NUL and canonical LF JSON.
+Body/envelope ceilings are 4096/8192 bytes. It binds first-cell Starting revision
+two, original request/reservation/state/challenge/response and worker/unit hashes,
+policy epoch, controller/source/preset and a positive signing window at most
+60 seconds. Only matched opt-in library signers/inspectors understand it; old
+request, collector-intent and challenge readers refuse rather than reinterpret
+it. Unknown, duplicate, future, partial, noncanonical, oversized or wrong-signature
+input refuses. Signature inspection with a supplied public key returns untrusted
+data, not freshness, enrolled trust, replay, durable lifecycle or start authority.
+No installed consumer, migration or automatic downgrade is provided.
+
 The binary-private version1 `HC074RL1` vocabulary additionally selects cuts11/12
 for latched-before-send and sent-before-recv-resume. Mode3 is permitted only for
 the two new no-EXITKILL controls, which continue untraced and must never be
