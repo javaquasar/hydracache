@@ -32,3 +32,16 @@ Authenticated output/process/cgroup start, autonomous watchdog and whole-writer
 cessation follow durable publication and its crash proof. Signed installation
 and bounded nonproduct host rehearsal follow integrated local verification;
 this experiment opens none of those routes.
+
+## Installed profile control
+
+The first six dev-profile samples refused: Rust 1.94 completed 0, 1, 1 checks;
+Rust 1.88 completed 1, 1, 1. Recorded IPC signature time is only part of total
+validation cost, so this does not yet justify signature caching. Retain those
+samples before any further work. As a separate build-only control, run the same
+unchanged three-sample fixture with cargo test --release on each compiler, with
+no per-dependency overrides. The reviewed provisioning workflow already builds
+the supervisor with --release. This local test profile is not an installed
+binary attestation; it determines whether a runtime optimization is necessary
+before attempting publication. Neither a release-profile success nor a debug
+failure changes the fixed windows or creates admission.
