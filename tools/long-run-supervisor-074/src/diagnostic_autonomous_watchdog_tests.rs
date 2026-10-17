@@ -101,12 +101,39 @@ impl Fixture {
         // Use the exact absolute input, not the later guardian creation time.
         let original_deadline = input.deadline;
         future(original_deadline, now().unwrap()).unwrap();
+        let mut before_mask = 0u64;
+        assert_eq!(
+            unsafe {
+                libc::syscall(
+                    libc::SYS_rt_sigprocmask,
+                    libc::SIG_SETMASK,
+                    0usize,
+                    &mut before_mask,
+                    8usize,
+                )
+            },
+            0
+        );
         let guardian = if fault == 0 {
             spawn(input, notify)
         } else {
             spawn_inner(input, notify, fault)
         }
         .unwrap();
+        let mut after_mask = 0u64;
+        assert_eq!(
+            unsafe {
+                libc::syscall(
+                    libc::SYS_rt_sigprocmask,
+                    libc::SIG_SETMASK,
+                    0usize,
+                    &mut after_mask,
+                    8usize,
+                )
+            },
+            0
+        );
+        assert_eq!(before_mask, after_mask);
         let guardian_fd = pidfd(guardian.pid as u32);
         Self {
             root,
@@ -333,6 +360,7 @@ fn autonomous_descriptor_roles_and_bounded_writer_inventory_refuse_before_fork()
         "not-pidfd",
         "not-fence",
         "expired",
+        "fork-failure",
     ] {
         let root = tempfile::tempdir().unwrap();
         let [r0, w0] = pipe().unwrap();
@@ -367,7 +395,42 @@ fn autonomous_descriptor_roles_and_bounded_writer_inventory_refuse_before_fork()
             "expired" => input.deadline = now().unwrap(),
             _ => (),
         }
-        assert_eq!(validate(&input).is_ok(), case == "valid", "{case}");
+        if case == "fork-failure" {
+            let mut before = 0u64;
+            assert_eq!(
+                unsafe {
+                    libc::syscall(
+                        libc::SYS_rt_sigprocmask,
+                        libc::SIG_SETMASK,
+                        0usize,
+                        &mut before,
+                        8usize,
+                    )
+                },
+                0
+            );
+            let error = match spawn_inner(input, false, 6) {
+                Err(error) => error,
+                Ok(_) => panic!("fork failure accepted"),
+            };
+            assert_eq!(error.raw_os_error(), Some(libc::EAGAIN));
+            let mut after = 0u64;
+            assert_eq!(
+                unsafe {
+                    libc::syscall(
+                        libc::SYS_rt_sigprocmask,
+                        libc::SIG_SETMASK,
+                        0usize,
+                        &mut after,
+                        8usize,
+                    )
+                },
+                0
+            );
+            assert_eq!(before, after);
+        } else {
+            assert_eq!(validate(&input).is_ok(), case == "valid", "{case}");
+        }
     }
 }
 

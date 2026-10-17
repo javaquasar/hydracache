@@ -538,6 +538,10 @@ fn autonomous_guardian_is_private_and_preserves_original_admission() {
         collector.find("libc::fsync(fd)").unwrap() < collector.rfind("libc::close(fd)").unwrap()
     );
     let guardian = slice(&raw, "fn run(", "fn spawn(");
+    let spawn = &raw[raw.find("fn spawn_inner(").unwrap()..];
+    assert!(spawn.find("&mut previous,").unwrap() < spawn.find("libc::SYS_fork").unwrap());
+    assert!(spawn.find("&previous,").unwrap() < spawn.find("drop(input)").unwrap());
+    assert!(spawn.contains("let fork_error = (pid < 0).then(io::Error::last_os_error)"));
     assert!(!guardian.contains("libc::write("));
     assert!(!guardian.contains("libc::fsync("));
     assert!(

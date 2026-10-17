@@ -564,13 +564,59 @@ fn spawn_inner(input: Inputs, notify: bool, #[cfg(test)] fault: u8) -> io::Resul
         raw.status[1],
     ];
     collector_keep.sort_unstable();
-    // No userspace atfork hooks; the child never resumes general Rust code.
-    let pid = unsafe { libc::syscall(libc::SYS_fork) };
-    if pid < 0 {
+    // Block in the caller BEFORE fork: child-side blocking alone leaves an
+    // inherited userspace-handler window. Other parent threads are unaffected.
+    let blocked = u64::MAX;
+    let mut previous = 0u64;
+    if unsafe {
+        libc::syscall(
+            libc::SYS_rt_sigprocmask,
+            libc::SIG_SETMASK,
+            &blocked,
+            &mut previous,
+            8usize,
+        )
+    } != 0
+    {
         return Err(io::Error::last_os_error());
     }
+    // No userspace atfork hooks; the child inherits the fully blocked mask.
+    let pid = {
+        #[cfg(test)]
+        {
+            if fault == 6 {
+                // Parent-only deterministic syscall-failure seam; no process
+                // limit or host-global resource mutation is used by tests.
+                unsafe { *libc::__errno_location() = libc::EAGAIN };
+                -1
+            } else {
+                unsafe { libc::syscall(libc::SYS_fork) }
+            }
+        }
+        #[cfg(not(test))]
+        {
+            unsafe { libc::syscall(libc::SYS_fork) }
+        }
+    };
     if pid == 0 {
         run(raw, &keep, &collector_keep, notify);
+    }
+    let fork_error = (pid < 0).then(io::Error::last_os_error);
+    // Parent-only path, including fork failure. Capture fork errno first.
+    if unsafe {
+        libc::syscall(
+            libc::SYS_rt_sigprocmask,
+            libc::SIG_SETMASK,
+            &previous,
+            0usize,
+            8usize,
+        )
+    } != 0
+    {
+        return Err(io::Error::last_os_error());
+    }
+    if let Some(error) = fork_error {
+        return Err(error);
     }
     // File close only, NEVER flock(LOCK_UN): the child owns the same OFD now.
     drop(input);
