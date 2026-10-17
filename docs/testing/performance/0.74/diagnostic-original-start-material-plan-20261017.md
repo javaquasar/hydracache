@@ -61,3 +61,28 @@ Installed policy enrollment, authenticated start, writer/watchdog, all-writer
 cessation, completion/cells 2–4, installation/rehearsal and product/release
 admission remain separate gates. No supervisor, server install, clock or product
 workload operation is authorized by this slice.
+
+## First composition refusal and separate attribution
+
+The first current-compiler server screen constructs material, then its first
+ordinary revalidation refuses Causal(Time). The zero-pass log and original source
+capsule remain separate. Neither MSRV nor the fault family is dispatched for
+that cohort. No deadline is widened and no oracle is changed to call this healthy.
+
+Before another candidate, run three separately named fresh-chain diagnostics
+with test-only existing IPC/wall counters around output preparation, material
+construction and its first ordinary revalidation. Record the exact returned
+error. Attribute traversal count separately from residual bundle/filesystem work;
+do not assign an unobserved first clock event to the historical failure.
+The candidate runtime and all old guards remain exact during attribution.
+
+Only after those observations, evaluate one successor: effect-local complete
+original live rounds around material inspection instead of recursively calling
+the ordinary two-round output validator at both ends. The existing public output
+validator stays unchanged. Every effect still gets fresh pre/post storage,
+output/pipe identity and all eight original live predicates. No previous closing
+round replaces a later opening round; no result or mutable authority is cached.
+This is an explicit frequency change in the new private material composition,
+not removal of a predicate or renewal of an origin. Keep all earlier source/logs
+and identify the successor separately. Require both complete healthy/fault lanes
+before accepting it; a failing successor is withdrawn rather than relaxing time.
