@@ -1,0 +1,9 @@
+{
+  "kind": "verification-scope-correction",
+  "initial_scope": "basename matching also selected the integration API probe, whose blob was identical across all cohorts",
+  "initial_runtime_equality_proof": false,
+  "correction": "select the exact src runtime path and require distinct v2 runtime identity",
+  "ordinary_and_attribution_runtime": "e73a10ce39afe2e166d0f9adb42970f7b6f602bf",
+  "v2_runtime": "1577346592bec88d3cfbc0f64c390e9dee01b5c3",
+  "runtime_changed_by_verifier": false
+}

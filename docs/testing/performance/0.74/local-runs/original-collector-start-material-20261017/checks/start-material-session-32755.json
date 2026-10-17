@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "chunk_id": "a5204c",
+  "wall_time_seconds": 0.0000096,
+  "exit_code": 0,
+  "original_token_count": 15,
+  "output": "gated-test-check: OK (182 discovered gates, all registered)\n"
+}

@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "chunk_id": "205c9a",
+  "wall_time_seconds": 0.0000114,
+  "exit_code": 0,
+  "original_token_count": 43,
+  "output": "test w12_generic_evidence_report_retains_closed_ship_admission ... ok\n\ntest result: ok. 189 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 141.72s\n\n\r\n"
+}

@@ -86,3 +86,16 @@ This is an explicit frequency change in the new private material composition,
 not removal of a predicate or renewal of an origin. Keep all earlier source/logs
 and identify the successor separately. Require both complete healthy/fault lanes
 before accepting it; a failing successor is withdrawn rather than relaxing time.
+
+## Completed material prerequisite
+
+The separate diagnostic completes all three fresh ordinary-composition refusals,
+confirming four construction rounds/68 authentications and a subsequent refusal
+after 51 authentications. The framed successor then passes three healthy chains
+and thirteen exact refusals on each compiler: six/26 total, including the actual
+unchanged progress-age expiry. Construction and revalidation each require two
+complete rounds/34 authentications. The complete
+[packet](local-runs/original-collector-start-material-20261017/README.md) retains
+all three source variants, the first red result and independent postflight.
+Only this temporary material prerequisite is closed. Installed root ancestry,
+authenticated start and every remaining execution/writer/lifecycle gate stay open.

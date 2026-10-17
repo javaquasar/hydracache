@@ -11643,3 +11643,68 @@ production trust and authenticated executable/streams/process/cgroup start,
 collector writing/watchdog, all-writer cessation and later lifecycle cells still
 follow under their own gates. The earlier red oracle and broader legacy audit
 failures remain evidence rather than being erased by this completed prerequisite.
+
+### Bind installed material without silently renewing admission
+
+The [original material preparation slice](../testing/performance/0.74/diagnostic-original-start-material-plan-20261017.md)
+joins the acknowledged output owner to retained installed bundle descriptors.
+Its consuming entry accepts no replacement path, FD, key, policy or clock. The
+original builder policy checks the fixed bundle, and its entire build statement
+and identity must match the originally acknowledged controller build. Collector
+requirements remain canonical semantic bytes, not the old regular-file unit or
+an execution transport. The program, environment and output requirements still
+need fulfillment by authenticated original start.
+
+A unit test exposes why the unit digest is not enough: changing Reserved's
+revision can leave its unit projection unchanged. The constructor therefore
+also compares the complete original Reserved state digest to signed consent,
+and retains the exact original Starting state. The test remains strict; no
+signed schema, state grammar or existing validator is weakened.
+
+The first complete server screen creates material but fails its first subsequent
+ordinary revalidation with Causal(Time). Its healthy test remains red, and neither
+the MSRV matrix nor the mutation family runs for that cohort. A separately
+preregistered attribution starts three fresh chains rather than retrying the
+failed one. Output preparation takes 7.231–7.252 seconds and exactly 782 IPC
+authentications. Material construction adds 657.9–659.6 milliseconds and 68
+authentications, corresponding to four complete original rounds. Revalidation
+then stops after 51 authentications and about 462 milliseconds on Causal(Time).
+It is not a completed four-round measurement.
+
+The instrumented signature primitive contributes about 1.9 milliseconds during
+material construction, nested inside its authentication cost. The remaining
+wall time is not attributed solely to bundle hashing or to crypto: it includes
+live walks, filesystem checks and scheduling. The fresh errors establish the
+observed refusal class, not an exact clock event recovered from the historical
+failure. These are correctness-fixture observations, not product throughput
+claims or an accepted ordinary-composition result.
+
+The isolated successor changes only the new material orchestration. It uses
+fresh complete opening and closing original rounds with output/pipe identities
+checked around each, instead of invoking a complete ordinary two-round output
+validator at both ends. It neither caches mutable authority nor lets an earlier
+closing check replace a later opening check. Existing public validators and
+all original trust, clock and storage predicates stay byte-exact. That explicit
+frequency change requires its own complete healthy, trust-drift, output-drift,
+fixture-origin and real-expiry gates; the first red source and logs remain
+retained under their own identities.
+
+That separately retained framed candidate then passes three healthy complete
+chains and thirteen exact refusals on each compiler: six healthy chains and
+twenty-six refusals altogether. Each material construction and revalidation
+performs exactly thirty-four IPC authentications, two complete original rounds.
+Repeated construction observations are about 348–351 milliseconds; revalidation
+is about 320–326 milliseconds. The useful result is fitting this additional
+preparation inside the unchanged original window, not a product speedup claim.
+Trust/output substitutions must reach their own exact refusal classes. The
+deliberately expired case instead requires the original progress-age event and
+the unchanged ten-second bound, so it cannot disguise a missing trust check.
+
+The [material packet](../testing/performance/0.74/local-runs/original-collector-start-material-20261017/README.md)
+preserves the first failure, fresh attribution and all source variants. It
+reconstructs the snapshots through isolated Git indices and verifies the prior
+SIGKILL packet at its exact source without rewriting old evidence. No new
+durable write boundary was added, and no additional crash-matrix pass is claimed.
+Installed production ancestry, real executable/environment/FD transport,
+original manager/process/cgroup, autonomous writing/watchdog and all-writer
+cessation still precede completion, later cells and production admission.

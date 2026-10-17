@@ -1,0 +1,20 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::original_start_material_joined_refusals ... HC074-START-MATERIAL-REFUSAL case=load-content exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=load-missing exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=closing-trust exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=closing-output exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=later-content exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=later-replace exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=later-trust exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=later-output exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=projection exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=starting exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=descriptor exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-REFUSAL case=fixture-entry exact=true sticky=true held=true unchanged=true start=false
+HC074-START-MATERIAL-EXPIRY event=Event { phase: "unassigned", site: "progress-age", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_progress.rs", line: 9, clock: [915102959762114, 915102691606810, 915122079505475, 0, 0, 10000000000] } limit_ns=10000000000 renewed=false
+HC074-START-MATERIAL-REFUSAL case=expiry exact=true sticky=true held=true unchanged=true start=false
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1029 filtered out; finished in 178.93s
+

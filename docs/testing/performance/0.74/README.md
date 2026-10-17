@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
+now retains the original reviewed bundle with Starting/pipes/sinks/fence.
+The framed successor passes six healthy chains and twenty-six exact refusals
+across current/MSRV, including the unchanged real progress-age limit. Its first
+ordinary-composition time refusal and separate attribution stay retained.
+No FD/unit transport, authenticated start, writer cessation or production
+enrollment is added; the installed diagnostic-pilot root is still absent.
+
 The separately approved [constant-depth output join](local-runs/original-collector-sinks-join-20261017/README.md)
 has completed baseline attribution and three healthy full construction chains on
 each compiler. It retains all original live predicates and deadlines under an

@@ -1,0 +1,1169 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index 98eab3fd..dcc7448a 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -58,6 +58,8 @@ mod original_pipes;
+ 
+ #[path = "support/performance_contract_074_output_join.rs"]
+ mod output_join;
++#[path = "support/performance_contract_074_start_material.rs"]
++mod start_material;
+ 
+ #[test]
+ fn ordinary_procless_root_restriction_composition_is_not_credential_admission() {
+diff --git a/crates/xtask/tests/support/performance_contract_074_output_join.rs b/crates/xtask/tests/support/performance_contract_074_output_join.rs
+index f01dad50..6c8045d6 100644
+--- a/crates/xtask/tests/support/performance_contract_074_output_join.rs
++++ b/crates/xtask/tests/support/performance_contract_074_output_join.rs
+@@ -10,6 +10,8 @@ const RESTORATIONS: &[(&str, &str, &str)] = &[
+     ("docs/testing/gated-test-registry.toml", "\n# BEGIN ORIGINAL OUTPUT JOIN DIAGNOSTIC-ORIGINAL-OUTPUT-JOIN GATE\n[[gate]]\nid = \"cfg.hydracache-long-run-supervisor-074.diagnostic-original-output-join\"\nkind = \"cfg_test_target\"\nsource = \"tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"diagnostic_original_output_join\"\ntest = \"\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"fast\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 120\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"rust\"\nstep = \"Release 0.74 Linux supervisor contracts\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--test\",\"diagnostic_original_output_join\",\"--locked\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN DIAGNOSTIC-ORIGINAL-OUTPUT-JOIN GATE\n\n# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-COST-AND-HEALTHY-CONTROL GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-output-join-cost-and-healthy-control\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_output_join_cost_and_healthy_control\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_output_join_cost_and_healthy_control\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-COST-AND-HEALTHY-CONTROL GATE\n\n# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-COLLECTOR-SINKS-JOINED-FAULT-AND-LIVE-REFUSAL GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-collector-sinks-joined-fault-and-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_collector_sinks_joined_fault_and_live_refusal\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::original_collector_sinks_joined_fault_and_live_refusal\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN ORIGINAL-COLLECTOR-SINKS-JOINED-FAULT-AND-LIVE-REFUSAL GATE\n\n# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-ALL-EFFECTS-LIVE-REFUSAL GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-output-join-all-effects-live-refusal\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_output_join_all_effects_live_refusal\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_all_effects_live_refusal\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-ALL-EFFECTS-LIVE-REFUSAL GATE\n\n# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-PROCESS-CRASH-ALL-STAGES-AND-LOST-ACK GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-output-join-process-crash-all-stages-and-lost-ack\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_output_join_process_crash_all_stages_and_lost_ack\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::original_output_join_process_crash_all_stages_and_lost_ack\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-PROCESS-CRASH-ALL-STAGES-AND-LOST-ACK GATE\n\n# BEGIN ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-EXPIRY-SITE-ATTRIBUTION GATE\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.original-output-join-expiry-site-attribution\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"original_output_join_expiry_site_attribution\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"Original constant-depth Starting/pipes/sinks join; no execution or deadline change\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = []\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 1800\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"--locked\",\"diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::join_fault_tests::original_output_join_expiry_site_attribution\",\"--\",\"--ignored\",\"--exact\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n\n[gate.command.env]\n# END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-EXPIRY-SITE-ATTRIBUTION GATE\n", ""),
+ ];
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let current = super::start_material::normalize(path, raw);
++    let raw = current.as_str();
+     let mut clean = raw.to_owned();
+     for (p, new, old) in RESTORATIONS {
+         if path == *p {
+diff --git a/crates/xtask/tests/support/performance_contract_074_start_material.rs b/crates/xtask/tests/support/performance_contract_074_start_material.rs
+new file mode 100644
+index 00000000..52bf23e5
+--- /dev/null
++++ b/crates/xtask/tests/support/performance_contract_074_start_material.rs
+@@ -0,0 +1,235 @@
++//! Successor keeps the accepted output runtime and trust/time leaves exact.
++const GATES: &str = r###"
++# BEGIN ORIGINAL START MATERIAL GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-start-material"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_original_start_material"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_start_material","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-start-material-joined-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_start_material_joined_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::original_start_material_joined_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-start-material-joined-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_start_material_joined_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::original_start_material_joined_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL START MATERIAL GATES
++"###;
++const SINK_MODULE: &str =
++    "#[path = \"diagnostic_original_start_material.rs\"]\npub mod start_material;\n";
++const TEST_MODULE: &str =
++    "#[path = \"diagnostic_original_start_material_join_tests.rs\"]\nmod start_material_tests;\n";
++const CONTRACT_MODULE: &str =
++    "#[path = \"support/performance_contract_074_start_material.rs\"]\nmod start_material;\n";
++const NORMALIZER: &str = "    let current = super::start_material::normalize(path, raw);\n    let raw = current.as_str();\n";
++
++pub(super) fn normalize(path: &str, raw: &str) -> String {
++    let addition = match path {
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs" => SINK_MODULE,
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs" => {
++            TEST_MODULE
++        }
++        "crates/xtask/tests/performance_contract_074.rs" => CONTRACT_MODULE,
++        "crates/xtask/tests/support/performance_contract_074_output_join.rs" => NORMALIZER,
++        "docs/testing/gated-test-registry.toml" => GATES,
++        _ => return raw.to_owned(),
++    };
++    assert_eq!(
++        raw.matches(addition).count(),
++        1,
++        "unapproved start-material registration: {path}"
++    );
++    raw.replacen(addition, "", 1)
++}
++#[test]
++fn original_start_material_preserves_output_runtime_and_closed_execution() {
++    let read = |p: &str| {
++        std::fs::read_to_string(super::root().join(p))
++            .unwrap()
++            .replace('\r', "")
++    };
++    for p in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs",
++        "crates/xtask/tests/performance_contract_074.rs",
++        "crates/xtask/tests/support/performance_contract_074_output_join.rs",
++        "docs/testing/gated-test-registry.toml",
++    ] {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("2c63cac0:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        assert_eq!(
++            normalize(p, &read(p)),
++            String::from_utf8(out.stdout).unwrap().replace('\r', ""),
++            "{p}"
++        );
++    }
++    let frozen: serde_json::Value = serde_json::from_str(&read("docs/testing/performance/0.74/local-runs/original-collector-sinks-join-20261017/unchanged-runtime.json")).unwrap();
++    for row in frozen.as_array().unwrap() {
++        let p = row["path"].as_str().unwrap();
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("2c63cac0:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        assert_eq!(
++            read(p),
++            String::from_utf8(out.stdout).unwrap().replace('\r', ""),
++            "frozen leaf: {p}"
++        );
++    }
++    for p in [
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sink_storage.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_original_output_join_fault_tests.rs",
++    ] {
++        let out = std::process::Command::new("git")
++            .args(["show", &format!("2c63cac0:{p}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(out.status.success());
++        assert_eq!(
++            read(p),
++            String::from_utf8(out.stdout).unwrap().replace('\r', ""),
++            "output proof changed: {p}"
++        );
++    }
++    let raw = read("tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs");
++    let runtime = raw
++        .lines()
++        .filter(|l| !l.trim_start().starts_with("///"))
++        .collect::<Vec<_>>()
++        .join("\n");
++    assert_eq!(runtime.matches(".outputs.material_round()?").count(), 4);
++    let compact = runtime.split_whitespace().collect::<String>();
++    assert!(
++        compact.contains("self.inspect(true)?;self.pipes.join_revalidate()?;self.inspect(true)")
++    );
++    for marker in [
++        "inspect_fixed_install(identity, policy)",
++        "held.outputs.material_round()?",
++        "held.bind(allow_fixture)?",
++        "held.outputs.refuse()",
++        "held: Box::new(held)",
++        "same_build(&r.original.original.build, bundle.build())?",
++        "body.reserved_state_sha256",
++        "body.collector_unit_sha256",
++        "bundle.revalidate()?",
++        "bundle.build().bind_intent(&intent)?",
++    ] {
++        assert!(runtime.contains(marker), "{marker}");
++    }
++    for denied in [
++        "pub fn start",
++        "pub fn into_",
++        "pub fn finish",
++        "pub fn pump",
++        "Command::",
++        "TransientUnitSpec",
++        "File::open(",
++        "SystemTime",
++        "SigningKey",
++        "O_TRUNC",
++        "remove_file(",
++        "sync_all(",
++        "impl Clone",
++    ] {
++        assert!(!runtime.contains(denied), "{denied}");
++    }
++    assert!(std::panic::catch_unwind(|| normalize(
++        "tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs",
++        &read("tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs")
++            .replace("pub mod start_material;", "pub mod unchecked;"),
++    ))
++    .is_err());
++}
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index 744e7e0b..e86ba2aa 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9627,3 +9627,102 @@ platform = "linux"
+ 
+ [gate.command.env]
+ # END ORIGINAL OUTPUT JOIN ORIGINAL-OUTPUT-JOIN-EXPIRY-SITE-ATTRIBUTION GATE
++
++# BEGIN ORIGINAL START MATERIAL GATES
++[[gate]]
++id = "cfg.hydracache-long-run-supervisor-074.diagnostic-original-start-material"
++kind = "cfg_test_target"
++source = "tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "diagnostic_original_start_material"
++test = ""
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "fast"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 120
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "rust"
++step = "Release 0.74 Linux supervisor contracts"
++
++[gate.command]
++program = "cargo"
++args = ["test","-p","hydracache-long-run-supervisor-074","--test","diagnostic_original_start_material","--locked"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-start-material-joined-healthy"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_start_material_joined_healthy"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::original_start_material_joined_healthy","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-start-material-joined-refusals"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_start_material_joined_refusals"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Original installed start material only; no worker execution or deadline change"
++tier = "manual"
++required_features = []
++required_env = ["HC074_START_MATERIAL_BUNDLE"]
++required_tools = ["cargo"]
++timeout_seconds = 1800
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::original_start_material_joined_refusals","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
++# END ORIGINAL START MATERIAL GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs
+index 8fba6637..cfab3ce9 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks.rs
+@@ -4,6 +4,8 @@ use std::ffi::CString;
+ #[path = "diagnostic_original_output_join.rs"]
+ mod joined;
+ pub use joined::OutputJoinStage;
++#[path = "diagnostic_original_start_material.rs"]
++pub mod start_material;
+ 
+ const PREFIX: &str = "diagnostic-collector-output-074-";
+ const DIRECTORY: &str = "collector-attempt-v1";
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs
+index 7ae2826e..797baa7f 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_collector_sinks_tests.rs
+@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
+ mod crash_tests;
+ #[path = "diagnostic_original_output_join_fault_tests.rs"]
+ mod join_fault_tests;
++#[path = "diagnostic_original_start_material_join_tests.rs"]
++mod start_material_tests;
+ 
+ #[test]
+ #[ignore = "manual nonroot J1 output cost and complete original control; no execution"]
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs
+new file mode 100644
+index 00000000..15773465
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_material.rs
+@@ -0,0 +1,305 @@
++//! Retained installed contents under the original output owner, never start authority.
++use super::*;
++use crate::diagnostic_artifacts::linux::{inspect_fixed_install, BundleSnapshot};
++use crate::diagnostic_artifacts::{ArtifactError, VerifiedBuild};
++use crate::diagnostic_builder::CheckedBuilderPolicy;
++use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticState};
++use crate::diagnostic_unit::diagnostic_start_intent;
++use crate::diagnostic_worker_policy::intent_projection::collector::collector_unit_projection;
++
++#[derive(Debug, thiserror::Error)]
++pub enum OriginalStartMaterialError {
++    #[error("original outputs refused: {0}")]
++    Outputs(#[from] OriginalSinkError),
++    #[error("installed original build refused: {0}")]
++    Build(#[from] ArtifactError),
++    #[error("original collector requirements or build binding differs")]
++    Binding,
++    #[error("fixture origin cannot enter fixed installed preparation")]
++    Fixture,
++    #[error("original start material preparation already refused")]
++    Refused,
++}
++
++fn same_build(
++    expected: &VerifiedBuild,
++    actual: &VerifiedBuild,
++) -> Result<(), OriginalStartMaterialError> {
++    equal_build(
++        expected.identity(),
++        expected.statement(),
++        actual.identity(),
++        actual.statement(),
++    )
++}
++fn equal_build(
++    expected_identity: &DiagnosticIdentity,
++    expected: &crate::diagnostic_artifacts::BuildStatement,
++    actual_identity: &DiagnosticIdentity,
++    actual: &crate::diagnostic_artifacts::BuildStatement,
++) -> Result<(), OriginalStartMaterialError> {
++    if expected_identity != actual_identity || expected != actual {
++        return Err(OriginalStartMaterialError::Binding);
++    }
++    Ok(())
++}
++fn requirements(
++    state: &DiagnosticState,
++    digest: &str,
++    state_digest: &str,
++) -> Result<Vec<u8>, OriginalStartMaterialError> {
++    let raw = collector_unit_projection(state).map_err(|_| OriginalStartMaterialError::Binding)?;
++    if crate::sha256_hex(&raw) != digest
++        || crate::sha256_hex(
++            &crate::canonical_json(state).map_err(|_| OriginalStartMaterialError::Binding)?,
++        ) != state_digest
++    {
++        return Err(OriginalStartMaterialError::Binding);
++    }
++    Ok(raw)
++}
++
++/// Retains the same output/fence owner and installed bundle. No descriptors,
++/// executable, unit transport, process, completion or recovery are exported.
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalCollectorStartMaterial;
++/// fn start(p: OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.start_once(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalCollectorStartMaterial;
++/// fn clone(p: OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.clone(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalCollectorStartMaterial;
++/// fn extract(p: OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_bundle(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalCollectorStartMaterial;
++/// fn stdio(p: OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) { p.into_stdio(); }
++/// ```
++/// ```compile_fail
++/// use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalCollectorStartMaterial;
++/// fn decode<T: serde::de::DeserializeOwned>() {}
++/// decode::<OriginalCollectorStartMaterial<'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static, 'static>>();
++/// ```
++pub struct OriginalCollectorStartMaterial<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    // Bundle descriptors drop before outputs, which in turn close before the fence.
++    bundle: Option<BundleSnapshot>,
++    projection: Vec<u8>,
++    starting: Option<DiagnosticState>,
++    ready: bool,
++    outputs: OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++}
++impl fmt::Debug for OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("OriginalCollectorStartMaterial")
++            .field("refused", &self.is_refused())
++            .finish_non_exhaustive()
++    }
++}
++impl OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn is_refused(&self) -> bool {
++        self.outputs.is_refused()
++    }
++    fn bind(&mut self, allow_fixture: bool) -> Result<(), OriginalStartMaterialError> {
++        let prepared = &self.outputs.pipes.starting.original.original.prepared;
++        let r = &prepared.original.original.reservation;
++        let body = prepared.consent_to_sign();
++        if requirements(
++            &r.state,
++            &body.collector_unit_sha256,
++            &body.reserved_state_sha256,
++        )? != self.projection
++            || self.starting.as_ref() != Some(&body.starting_state)
++        {
++            return Err(OriginalStartMaterialError::Binding);
++        }
++        let bundle = self
++            .bundle
++            .as_mut()
++            .ok_or(OriginalStartMaterialError::Binding)?;
++        if bundle.is_fixture() && !allow_fixture {
++            return Err(OriginalStartMaterialError::Fixture);
++        }
++        same_build(&r.original.original.build, bundle.build())?;
++        let intent = diagnostic_start_intent(&body.starting_state)
++            .map_err(|_| OriginalStartMaterialError::Binding)?;
++        bundle.build().bind_intent(&intent)?;
++        bundle.revalidate()?;
++        Ok(())
++    }
++    fn validate_with(&mut self, allow_fixture: bool) -> Result<(), OriginalStartMaterialError> {
++        if !self.ready || self.is_refused() {
++            self.outputs.refuse();
++            return Err(OriginalStartMaterialError::Refused);
++        }
++        let result = (|| {
++            self.outputs.material_round()?;
++            self.bind(allow_fixture)?;
++            self.outputs.material_round()?;
++            Ok(())
++        })();
++        if result.is_err() {
++            self.outputs.refuse();
++        }
++        result
++    }
++    pub fn revalidate(&mut self) -> Result<(), OriginalStartMaterialError> {
++        self.validate_with(false)
++    }
++    #[cfg(test)]
++    pub(crate) fn revalidate_fixture_for_test(&mut self) -> Result<(), OriginalStartMaterialError> {
++        self.validate_with(true)
++    }
++    #[cfg(test)]
++    pub(crate) fn corrupt_for_test(&mut self, kind: usize) {
++        match kind {
++            0 => self.projection.push(b' '),
++            1 => self.starting.as_mut().unwrap().revision += 1,
++            2 => self.outputs.corrupt_descriptor_for_test(0),
++            _ => panic!("unknown start material mutation"),
++        }
++    }
++}
++
++pub struct OriginalStartMaterialFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p> {
++    error: OriginalStartMaterialError,
++    held: Box<OriginalCollectorStartMaterial<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>>,
++}
++impl OriginalStartMaterialFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    pub fn error(&self) -> &OriginalStartMaterialError {
++        &self.error
++    }
++    pub fn is_refused(&self) -> bool {
++        self.held.is_refused()
++    }
++}
++impl fmt::Debug for OriginalStartMaterialFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Debug::fmt(&self.error, f)
++    }
++}
++impl fmt::Display for OriginalStartMaterialFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        fmt::Display::fmt(&self.error, f)
++    }
++}
++impl std::error::Error for OriginalStartMaterialFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {}
++
++impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++    OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
++{
++    fn material_round(&mut self) -> Result<(), OriginalSinkError> {
++        if self.is_refused() || !self.acknowledged {
++            self.refuse();
++            return Err(OriginalSinkError::Refused);
++        }
++        // A fresh original complete frame, not a cached closing result. The
++        // ordinary public output validator remains the unchanged reference.
++        let result = (|| {
++            self.inspect(true)?;
++            self.pipes.join_revalidate()?;
++            self.inspect(true)
++        })();
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++    }
++    /// Inspect only the fixed installed bundle under the original builder policy.
++    /// No supplied path, FD, policy, time, outcome or execution transport is accepted.
++    pub fn prepare_original_start_material(
++        self,
++    ) -> Result<
++        OriginalCollectorStartMaterial<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalStartMaterialFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        self.prepare_material_with(false, |policy, identity| {
++            inspect_fixed_install(identity, policy)
++        })
++    }
++    #[cfg(test)]
++    pub(crate) fn prepare_original_start_material_for_test(
++        self,
++        path: &std::path::Path,
++        after_load: impl FnOnce(),
++    ) -> Result<
++        OriginalCollectorStartMaterial<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalStartMaterialFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        assert_ne!(unsafe { libc::getegid() }, 0);
++        self.prepare_material_with(true, |_, identity| {
++            let bytes = include_bytes!(
++                "../../../docs/testing/performance/0.74/diagnostic-builder-public-policy.json"
++            );
++            let policy: crate::diagnostic_builder::BuilderPolicy =
++                serde_json::from_slice(bytes).unwrap();
++            let trust = crate::diagnostic_artifacts::BuildTrust {
++                key: crate::diagnostic_builder::decode_key(&policy.builder_key_hex).unwrap(),
++                repository_id: policy.repository_id,
++                builder_id: policy.builder_id,
++            };
++            let bundle = crate::diagnostic_artifacts::linux::inspect_fixture(
++                path,
++                unsafe { libc::geteuid() },
++                unsafe { libc::getegid() },
++                identity,
++                &trust,
++            )?;
++            after_load();
++            Ok(bundle)
++        })
++    }
++    fn prepare_material_with(
++        self,
++        allow_fixture: bool,
++        load: impl FnOnce(
++            &CheckedBuilderPolicy,
++            &DiagnosticIdentity,
++        ) -> Result<BundleSnapshot, ArtifactError>,
++    ) -> Result<
++        OriginalCollectorStartMaterial<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++        OriginalStartMaterialFailure<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>,
++    > {
++        let mut held = OriginalCollectorStartMaterial {
++            bundle: None,
++            projection: Vec::new(),
++            starting: None,
++            ready: false,
++            outputs: self,
++        };
++        let result = (|| {
++            held.outputs.material_round()?;
++            let prepared = &held.outputs.pipes.starting.original.original.prepared;
++            let r = &prepared.original.original.reservation;
++            let body = prepared.consent_to_sign();
++            held.projection = requirements(
++                &r.state,
++                &body.collector_unit_sha256,
++                &body.reserved_state_sha256,
++            )?;
++            held.starting = Some(body.starting_state.clone());
++            let build = &r.original.original;
++            held.bundle = Some(load(&build.policy, build.build.identity())?);
++            held.bind(allow_fixture)?;
++            held.outputs.material_round()?;
++            held.ready = true;
++            Ok(())
++        })();
++        match result {
++            Ok(()) => Ok(held),
++            Err(error) => {
++                held.outputs.refuse();
++                Err(OriginalStartMaterialFailure {
++                    error,
++                    held: Box::new(held),
++                })
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++#[path = "diagnostic_original_start_material_tests.rs"]
++mod tests;
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs
+new file mode 100644
+index 00000000..cf8af8b9
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_material_join_tests.rs
+@@ -0,0 +1,289 @@
++//! Real signed bytes are copied as nonexecuted fixture data; no installed-origin proof.
++use super::*;
++use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::OriginalStartMaterialError;
++
++struct Bundle {
++    temp: tempfile::TempDir,
++    path: PathBuf,
++}
++impl Bundle {
++    fn new() -> Self {
++        assert_ne!(unsafe { libc::geteuid() }, 0);
++        let source = PathBuf::from(
++            std::env::var_os("HC074_START_MATERIAL_BUNDLE")
++                .expect("manual gate requires retained hosted bundle data"),
++        );
++        assert!(source.is_absolute());
++        assert_ne!(source, Path::new(crate::diagnostic_artifacts::INSTALL_ROOT));
++        let temp = tempfile::tempdir().unwrap();
++        let path = temp.path().join("bundle");
++        fs::create_dir(&path).unwrap();
++        for name in [
++            "timing-controls-074",
++            "build-receipt-v1.json",
++            "build-log.jsonl",
++            "Cargo.lock.root",
++            "Cargo.lock.observer",
++            "embedded.json",
++            "direct.json",
++            "resp2.json",
++            "resp3.json",
++        ] {
++            fs::copy(source.join(name), path.join(name)).unwrap();
++            fs::set_permissions(
++                path.join(name),
++                fs::Permissions::from_mode(if name == "timing-controls-074" {
++                    0o555
++                } else {
++                    0o444
++                }),
++            )
++            .unwrap();
++        }
++        fs::set_permissions(&path, fs::Permissions::from_mode(0o555)).unwrap();
++        Self { temp, path }
++    }
++    fn change(&self) {
++        let file = self.path.join("embedded.json");
++        fs::set_permissions(&file, fs::Permissions::from_mode(0o644)).unwrap();
++        fs::write(&file, b"changed original config\n").unwrap();
++        fs::set_permissions(&file, fs::Permissions::from_mode(0o444)).unwrap();
++    }
++    fn replace(&self) {
++        fs::set_permissions(&self.path, fs::Permissions::from_mode(0o755)).unwrap();
++        let file = self.path.join("embedded.json");
++        let old = fs::read(&file).unwrap();
++        fs::remove_file(&file).unwrap();
++        fs::write(&file, old).unwrap();
++        fs::set_permissions(&file, fs::Permissions::from_mode(0o444)).unwrap();
++        fs::set_permissions(&self.path, fs::Permissions::from_mode(0o555)).unwrap();
++    }
++}
++impl Drop for Bundle {
++    fn drop(&mut self) {
++        // Exact owned temporary fixture only; restore directory access for TempDir.
++        assert!(self.path.starts_with(self.temp.path()));
++        fs::set_permissions(&self.path, fs::Permissions::from_mode(0o755)).unwrap();
++    }
++}
++fn records(leaf: &Path) -> Vec<Vec<u8>> {
++    [NAME, RESERVED_NAME, COLLECTOR_STARTING_NAME]
++        .into_iter()
++        .map(|n| fs::read(leaf.join(n)).unwrap())
++        .collect()
++}
++#[test]
++#[ignore = "manual nonroot signed bundle and original output material; never executes observer"]
++fn original_start_material_joined_healthy() {
++    use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
++    for sample in 0..3 {
++        let bundle = Bundle::new();
++        with_original_at(false, None, |original, _, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let owner = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap();
++                let before = records(leaf);
++                let (mut material, preparation) = trace::capture(|| {
++                    trace::stage(Stage::Bind);
++                    owner
++                        .prepare_original_start_material_for_test(&bundle.path, || {})
++                        .unwrap()
++                });
++                let (_, validation) = trace::capture(|| {
++                    trace::stage(Stage::Checks);
++                    material.revalidate_fixture_for_test().unwrap()
++                });
++                assert_eq!(
++                    preparation.stages[Stage::Bind as usize].authentication_calls,
++                    2 * 17
++                );
++                assert_eq!(
++                    validation.stages[Stage::Checks as usize].authentication_calls,
++                    2 * 17
++                );
++                assert!(preparation.first_time.is_none() && validation.first_time.is_none());
++                println!("HC074-START-MATERIAL-V2-COST sample={sample} phase=prepare report={preparation:?}");
++                println!("HC074-START-MATERIAL-V2-COST sample={sample} phase=validate report={validation:?}");
++                assert!(!material.is_refused());
++                busy(root);
++                assert_eq!(records(leaf), before);
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++                drop(material);
++                retained_context_refuses_for_test(root);
++                println!("HC074-START-MATERIAL-CONTROL sample={sample} original=true bundle=true fixture=true retained=true start=false");
++            });
++        });
++    }
++}
++#[test]
++#[ignore = "manual nonroot original material mutation/ownership gate; no execution"]
++fn original_start_material_joined_refusals() {
++    for case in [
++        "load-content",
++        "load-missing",
++        "closing-trust",
++        "closing-output",
++        "later-content",
++        "later-replace",
++        "later-trust",
++        "later-output",
++        "projection",
++        "starting",
++        "descriptor",
++        "fixture-entry",
++        "expiry",
++    ] {
++        let bundle = Bundle::new();
++        if case == "load-content" {
++            bundle.change();
++        }
++        if case == "load-missing" {
++            fs::set_permissions(&bundle.path, fs::Permissions::from_mode(0o755)).unwrap();
++            fs::remove_file(bundle.path.join("embedded.json")).unwrap();
++            fs::set_permissions(&bundle.path, fs::Permissions::from_mode(0o555)).unwrap();
++        }
++        with_original_at(true, None, |original, paths, receiver, sender, model| {
++            with_owned_empty_fence_for_test(|fence, root, leaf| {
++                let owner = accepted(original, fence, leaf, receiver, sender, model)
++                    .prepare_original_outputs_for_test(|_| Ok(()))
++                    .unwrap();
++                let before = records(leaf);
++                let result = owner.prepare_original_start_material_for_test(&bundle.path, || {
++                    if case == "closing-trust" {
++                        fs::write(&paths.worker, b"original trust drift").unwrap();
++                    }
++                    if case == "closing-output" {
++                        fs::write(
++                            output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                            b"unowned bytes",
++                        )
++                        .unwrap();
++                    }
++                });
++                match case {
++                    "load-content" | "load-missing" | "closing-trust" | "closing-output" => {
++                        let failure = result.unwrap_err();
++                        assert!(failure.is_refused());
++                        match case {
++                            "load-content" | "load-missing" => assert!(matches!(
++                                failure.error(),
++                                OriginalStartMaterialError::Build(_)
++                            )),
++                            "closing-trust" => {
++                                let reason = format!("{:?}", failure.error());
++                                assert!(
++                                    reason.contains("Input(Invalid)")
++                                        && !reason.contains("Kernel(")
++                                        && !reason.contains("Time"),
++                                    "{reason}"
++                                );
++                            }
++                            "closing-output" => assert!(matches!(
++                                failure.error(),
++                                OriginalStartMaterialError::Outputs(OriginalSinkError::Invalid)
++                            )),
++                            _ => unreachable!(),
++                        }
++                        busy(root);
++                        drop(failure);
++                    }
++                    _ => {
++                        let mut material = result.unwrap();
++                        match case {
++                            "later-content" => bundle.change(),
++                            "later-replace" => bundle.replace(),
++                            "later-trust" => {
++                                fs::write(&paths.worker, b"later original trust drift").unwrap()
++                            }
++                            "later-output" => fs::write(
++                                output(leaf).join("collector-attempt-v1/collector-stderr.bin"),
++                                b"late unowned bytes",
++                            )
++                            .unwrap(),
++                            "projection" => material.corrupt_for_test(0),
++                            "starting" => material.corrupt_for_test(1),
++                            "descriptor" => material.corrupt_for_test(2),
++                            "fixture-entry" => (),
++                            "expiry" => std::thread::sleep(std::time::Duration::from_secs(10)),
++                            _ => unreachable!(),
++                        }
++                        let (error, event) =
++                            crate::diagnostic_kernel_admission::refusal_trace::capture(|| {
++                                if case == "fixture-entry" {
++                                    material.revalidate().unwrap_err()
++                                } else {
++                                    material.revalidate_fixture_for_test().unwrap_err()
++                                }
++                            });
++                        match case {
++                            "later-content" | "later-replace" => assert!(
++                                matches!(error, OriginalStartMaterialError::Build(_)),
++                                "{case}: {error:?}"
++                            ),
++                            "projection" | "starting" => assert!(
++                                matches!(error, OriginalStartMaterialError::Binding),
++                                "{case}: {error:?}"
++                            ),
++                            "fixture-entry" => assert!(
++                                matches!(error, OriginalStartMaterialError::Fixture),
++                                "{error:?}"
++                            ),
++                            "later-trust" => {
++                                let reason = format!("{error:?}");
++                                assert!(
++                                    reason.contains("Input(Invalid)")
++                                        && !reason.contains("Kernel(")
++                                        && !reason.contains("Time"),
++                                    "{reason}"
++                                );
++                            }
++                            "later-output" => assert!(
++                                matches!(
++                                    error,
++                                    OriginalStartMaterialError::Outputs(OriginalSinkError::Invalid)
++                                ),
++                                "{error:?}"
++                            ),
++                            "descriptor" => assert!(
++                                matches!(
++                                    error,
++                                    OriginalStartMaterialError::Outputs(OriginalSinkError::Invalid)
++                                ),
++                                "{error:?}"
++                            ),
++                            "expiry" => {
++                                let event = event.expect("exact original progress age refusal");
++                                assert_eq!(event.site, "progress-age");
++                                assert_eq!(event.clock[5], 10_000_000_000);
++                                assert!(event.clock[0] > event.clock[1]);
++                                assert!(
++                                    event.clock[2] >= event.clock[0]
++                                        && event.clock[2] - event.clock[0] >= event.clock[5]
++                                );
++                                assert!(
++                                    format!("{error:?}")
++                                        .contains("Causal(Progress(Input(Kernel(Invalid))))"),
++                                    "{error:?}"
++                                );
++                                println!("HC074-START-MATERIAL-EXPIRY event={event:?} limit_ns=10000000000 renewed=false");
++                            }
++                            _ => unreachable!(),
++                        }
++                        assert!(material.is_refused());
++                        assert!(matches!(
++                            material.revalidate_fixture_for_test(),
++                            Err(OriginalStartMaterialError::Refused)
++                        ));
++                        busy(root);
++                        drop(material);
++                    }
++                }
++                assert_eq!(records(leaf), before);
++                assert_eq!(fs::read_dir(leaf).unwrap().count(), 3);
++                retained_context_refuses_for_test(root);
++                println!("HC074-START-MATERIAL-REFUSAL case={case} exact=true sticky=true held=true unchanged=true start=false");
++            });
++        });
++    }
++}
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_original_start_material_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_original_start_material_tests.rs
+new file mode 100644
+index 00000000..c8f34636
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_original_start_material_tests.rs
+@@ -0,0 +1,141 @@
++use super::*;
++use crate::diagnostic_artifacts::{BuildStatement, SignedBuild};
++use crate::diagnostic_lease::DiagnosticStage;
++
++fn identity() -> DiagnosticIdentity {
++    DiagnosticIdentity {
++        lease_id: "a".repeat(64),
++        boot_id: "12345678-1234-1234-1234-123456789abc".into(),
++        binary_sha256: "b".repeat(64),
++        build_provenance_sha256: "c".repeat(64),
++    }
++}
++fn state() -> DiagnosticState {
++    DiagnosticState {
++        identity: identity(),
++        revision: 1,
++        stage: DiagnosticStage::Reserved,
++        completed_cells: 0,
++        reserved_monotonic_ns: 1_000_000_000,
++        last_observed_monotonic_ns: 1_000_000_000,
++        controller_monotonic_ns: 1_000_000_000,
++        cell_started_monotonic_ns: None,
++        cgroup_inode: None,
++        reason: None,
++        cleanup_confirmed: true,
++        promotable: false,
++        admission_allowed: false,
++    }
++}
++#[test]
++fn original_start_material_requirements_retain_collector_not_legacy_environment() {
++    let state = state();
++    let raw = collector_unit_projection(&state).unwrap();
++    assert_eq!(
++        requirements(
++            &state,
++            &crate::sha256_hex(&raw),
++            &crate::sha256_hex(&crate::canonical_json(&state).unwrap())
++        )
++        .unwrap(),
++        raw
++    );
++    let text = String::from_utf8(raw).unwrap();
++    assert!(text.contains("original-owned-pipes"));
++    assert!(text.contains("sole-root-collector"));
++    assert!(text.contains("PATH=/usr/bin:/bin"));
++    assert!(text.contains("LC_ALL=C"));
++    assert!(text.contains("all-creator-manager-writer-copies-closed"));
++    assert!(!text.contains("StandardOutputFileToAppend"));
++    assert!(!text.contains("StandardErrorFileToAppend"));
++    assert!(!text.contains("RUNNER_TRACKING_ID"));
++}
++#[test]
++fn original_start_material_requirements_refuse_digest_state_and_seeded_mutations() {
++    let state = state();
++    let digest = crate::sha256_hex(&collector_unit_projection(&state).unwrap());
++    let state_digest = crate::sha256_hex(&crate::canonical_json(&state).unwrap());
++    let mut seed = 0x0740_5221_u64;
++    for _ in 0..256 {
++        seed ^= seed << 13;
++        seed ^= seed >> 7;
++        seed ^= seed << 17;
++        let mut bytes = digest.as_bytes().to_vec();
++        let i = seed as usize % bytes.len();
++        bytes[i] = if bytes[i] == b'0' { b'1' } else { b'0' };
++        assert!(matches!(
++            requirements(&state, &String::from_utf8(bytes).unwrap(), &state_digest),
++            Err(OriginalStartMaterialError::Binding)
++        ));
++    }
++    for kind in 0..5 {
++        let mut altered = state.clone();
++        match kind {
++            0 => altered.stage = DiagnosticStage::Starting,
++            1 => altered.revision = 2,
++            2 => altered.completed_cells = 1,
++            3 => altered.identity.binary_sha256 = "d".repeat(64),
++            4 => altered.promotable = true,
++            _ => unreachable!(),
++        }
++        assert!(
++            matches!(
++                requirements(&altered, &digest, &state_digest),
++                Err(OriginalStartMaterialError::Binding)
++            ),
++            "kind={kind}"
++        );
++    }
++    println!("HC074-START-MATERIAL-REQUIREMENTS seed=0x07405221 mutations=256 states=5 exact=true");
++}
++#[test]
++fn original_start_material_equal_build_requires_every_statement_field() {
++    let raw = include_bytes!("../../../docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json");
++    let doc: SignedBuild = serde_json::from_slice(raw).unwrap();
++    let expected = doc.statement;
++    let identity = identity();
++    equal_build(&identity, &expected, &identity, &expected).unwrap();
++    let value = serde_json::to_value(&expected).unwrap();
++    for key in value.as_object().unwrap().keys() {
++        let mut changed = value.clone();
++        let field = &mut changed[key];
++        match field {
++            serde_json::Value::String(s) => s.push('x'),
++            serde_json::Value::Bool(b) => *b = !*b,
++            serde_json::Value::Number(n) => *n = (n.as_u64().unwrap() + 1).into(),
++            serde_json::Value::Array(v) => v.push(serde_json::json!("different")),
++            serde_json::Value::Object(v) => {
++                if let Some(hash) = v.get_mut("sha256") {
++                    *hash = serde_json::json!("f".repeat(64));
++                } else {
++                    v.values_mut().next().unwrap()["sha256"] = serde_json::json!("e".repeat(64));
++                }
++            }
++            serde_json::Value::Null => panic!("unexpected null"),
++        }
++        let changed: BuildStatement = serde_json::from_value(changed).unwrap();
++        {
++            assert!(
++                matches!(
++                    equal_build(&identity, &expected, &identity, &changed),
++                    Err(OriginalStartMaterialError::Binding)
++                ),
++                "key={key}"
++            );
++        }
++    }
++    for kind in 0..4 {
++        let mut changed = identity.clone();
++        match kind {
++            0 => changed.lease_id.push('x'),
++            1 => changed.boot_id.push('x'),
++            2 => changed.binary_sha256.push('x'),
++            3 => changed.build_provenance_sha256.push('x'),
++            _ => unreachable!(),
++        }
++        assert!(matches!(
++            equal_build(&identity, &expected, &changed, &expected),
++            Err(OriginalStartMaterialError::Binding)
++        ));
++    }
++}
+diff --git a/tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs b/tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs
+new file mode 100644
+index 00000000..f395c455
+--- /dev/null
++++ b/tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs
+@@ -0,0 +1,10 @@
++#![cfg(all(target_os = "linux", target_arch = "x86_64"))]
++use hydracache_long_run_supervisor_074::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::OriginalCollectorSinks;
++
++#[test]
++fn original_start_material_consumes_outputs_without_replacement_inputs() {
++    fn probe(owner: OriginalCollectorSinks<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>) {
++        let _ = owner.prepare_original_start_material();
++    }
++    let _entry = probe;
++}

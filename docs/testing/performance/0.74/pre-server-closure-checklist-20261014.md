@@ -311,9 +311,11 @@ The exact stable supervisor and installed binary/receipt stayed unchanged.
    identity, verified controller provenance, replay, epoch revocation and trusted
    host enrollment.
 2. Join the [separately signed collector requirements](diagnostic-collector-intent-design.md)
-   to a private root output constructor. The byte-only projection now exists;
-   it does not prove original start. Preserve legacy signatures; bind executable,
-   environment, pipes, collector, process and manager invocation/cgroup.
+   to actual original start. Private output preparation and
+   [retained original bundle material](local-runs/original-collector-start-material-20261017/README.md)
+   now have complete temporary fixture gates; installed root ancestry remains
+   unproved. Preserve legacy signatures; fulfill executable, environment, pipe FD
+   transport, collector, process and manager invocation/cgroup requirements.
 3. Implement autonomous watchdog and exact original-cgroup revocation/emptiness.
    Missing EOF, uncertain stop, collector loss and leaked writers retain failure;
    a stopped leader or replacement unit name grants no release.

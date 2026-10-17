@@ -1,0 +1,7 @@
+{
+  "record_kind": "observed_failure_excerpt",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "reason": "requirements test found unit projection is intentionally invariant to revision; add explicit original Reserved state digest binding rather than relax state test",
+  "exit_code": 1,
+  "tests": "2 passed, 1 failed; kind=1 revision"
+}

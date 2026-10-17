@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "chunk_id": "42444a",
+  "wall_time_seconds": 0.458041,
+  "exit_code": 0,
+  "original_token_count": 0,
+  "output": ""
+}

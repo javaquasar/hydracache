@@ -315,3 +315,4 @@ docs/testing/performance/0.74/local-runs/original-collector-pipes-*/*.log -text 
 docs/testing/performance/0.74/local-runs/original-collector-sinks-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/original-collector-sinks-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
 docs/testing/performance/0.74/local-runs/original-collector-sinks-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-start-material-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

@@ -1,0 +1,9 @@
+{
+  "record_kind": "observed_failure_excerpt",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "exit_code": 1,
+  "baseline": "2c63cac08f70b18e4af78875f1f95c35c16238f0",
+  "error": "E0599",
+  "command": "cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --test diagnostic_original_start_material --offline --locked",
+  "output": "error[E0599]: no method named `prepare_original_start_material` found for struct `OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>` in the current scope\n --> tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs:7:23\nerror: could not compile `hydracache-long-run-supervisor-074` (test \"diagnostic_original_start_material\") due to 1 previous error"
+}

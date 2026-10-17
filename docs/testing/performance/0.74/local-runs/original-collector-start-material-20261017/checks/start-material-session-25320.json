@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "chunk_id": "16a136",
+  "wall_time_seconds": 0.0000096,
+  "exit_code": 1,
+  "original_token_count": 205,
+  "output": "The filename or extension is too long. (os error 206)\nThis utility formats all bin and lib files of the current crate using rustfmt.\n\nUsage: cargo fmt [OPTIONS] [-- <rustfmt_options>...]\n\nArguments:\n  [rustfmt_options]...  Options passed to rustfmt\n\nOptions:\n  -q, --quiet\n          No output printed to stdout\n  -v, --verbose\n          Use verbose output\n      --version\n          Print rustfmt version and exit\n  -p, --package <package>...\n          Specify package to format\n      --manifest-path <manifest-path>\n          Specify path to Cargo.toml\n      --message-format <message-format>\n          Specify message-format: short|json|human\n      --all\n          Format all packages, and also their local path-based dependencies\n      --check\n          Run rustfmt in check mode\n  -h, --help\n          Print help\n\n"
+}

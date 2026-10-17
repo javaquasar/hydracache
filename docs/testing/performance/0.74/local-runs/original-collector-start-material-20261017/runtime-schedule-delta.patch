@@ -1,0 +1,58 @@
+diff --git a/e73a10ce39afe2e166d0f9adb42970f7b6f602bf b/1577346592bec88d3cfbc0f64c390e9dee01b5c3
+index e73a10ce..15773465 100644
+--- a/e73a10ce39afe2e166d0f9adb42970f7b6f602bf
++++ b/1577346592bec88d3cfbc0f64c390e9dee01b5c3
+@@ -134,9 +134,9 @@ impl OriginalCollectorStartMaterial<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+             return Err(OriginalStartMaterialError::Refused);
+         }
+         let result = (|| {
+-            self.outputs.revalidate()?;
++            self.outputs.material_round()?;
+             self.bind(allow_fixture)?;
+-            self.outputs.revalidate()?;
++            self.outputs.material_round()?;
+             Ok(())
+         })();
+         if result.is_err() {
+@@ -189,6 +189,23 @@ impl std::error::Error for OriginalStartMaterialFailure<'_, '_, '_, '_, '_, '_,
+ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+     OriginalCollectorSinks<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+ {
++    fn material_round(&mut self) -> Result<(), OriginalSinkError> {
++        if self.is_refused() || !self.acknowledged {
++            self.refuse();
++            return Err(OriginalSinkError::Refused);
++        }
++        // A fresh original complete frame, not a cached closing result. The
++        // ordinary public output validator remains the unchanged reference.
++        let result = (|| {
++            self.inspect(true)?;
++            self.pipes.join_revalidate()?;
++            self.inspect(true)
++        })();
++        if result.is_err() {
++            self.refuse();
++        }
++        result
++    }
+     /// Inspect only the fixed installed bundle under the original builder policy.
+     /// No supplied path, FD, policy, time, outcome or execution transport is accepted.
+     pub fn prepare_original_start_material(
+@@ -253,7 +270,7 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+             outputs: self,
+         };
+         let result = (|| {
+-            held.outputs.revalidate()?;
++            held.outputs.material_round()?;
+             let prepared = &held.outputs.pipes.starting.original.original.prepared;
+             let r = &prepared.original.original.reservation;
+             let body = prepared.consent_to_sign();
+@@ -266,7 +283,7 @@ impl<'join, 'storage, 'o, 't, 'r, 'c, 'b, 's, 'a, 'p>
+             let build = &r.original.original;
+             held.bundle = Some(load(&build.policy, build.build.identity())?);
+             held.bind(allow_fixture)?;
+-            held.outputs.revalidate()?;
++            held.outputs.material_round()?;
+             held.ready = true;
+             Ok(())
+         })();

@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout.",
+  "chunk_id": "b9ab96",
+  "wall_time_seconds": 0.00001,
+  "exit_code": 0,
+  "original_token_count": 18,
+  "output": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.70s\n"
+}

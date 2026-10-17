@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored tests are not passes.",
+  "chunk_id": "4dce55",
+  "wall_time_seconds": 0.0000093,
+  "exit_code": 1,
+  "original_token_count": 156,
+  "output": "ParentContainsErrorRecordException: C:\\Users\\ArturBuzov\\AppData\\Local\\Temp\\hc074-prior-view-ec0bb73393fa4c0d93db620fcd6832c3\\source\\docs\\testing\\performance\\0.74\\local-runs\\original-collector-sinks-join-20261017\\verify.ps1:149\r\nLine |\r\n 149 |      $live = [IO.File]::ReadAllText((Join-Path $repo $b.path)).Replace …\r\n     |      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n     | Exception calling \"ReadAllText\" with \"1\" argument(s): \"Could not find a part of the path\r\n     | 'C:\\Users\\ArturBuzov\\AppData\\Local\\Temp\\hc074-prior-view-ec0bb73393fa4c0d93db620fcd6832c3\\source\\.cargo\\config.toml'.\"\r\n"
+}

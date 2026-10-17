@@ -59,6 +59,19 @@ This is process loss, not power loss or exported-writer cessation. The
 [new packet](local-runs/original-collector-sinks-join-20261017/README.md) does not
 admit original start, sole-writer drain or an installed production route.
 
+The next [original material slice](diagnostic-original-start-material-plan-20261017.md)
+consumes those same outputs and inspects the fixed installed bundle under the
+retained builder policy. It compares the whole build statement/identity, full
+Reserved state digest and collector unit digest, retaining bundle descriptors
+with the original Starting/pipes/sinks/fence. Material preparation is not a
+unit transport: it exports neither a legacy file-output spec nor descriptors,
+and it cannot start or complete a process. Its separate
+[framed material gate](local-runs/original-collector-start-material-20261017/README.md)
+passes three healthy chains and thirteen exact refusals per compiler within
+the original windows. The first ordinary-composition time refusal remains
+retained. This closes temporary fixture material preparation, not installed
+production ancestry, executable/process start or writer cessation.
+
 First implement the actual bounded pipe-to-file writer and test its kernel EOF
 boundary locally. Retain both read ends and exclusively created evidence files;
 export only pipe write ends through a fixture-only Stdio transfer. Readers are

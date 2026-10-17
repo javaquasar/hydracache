@@ -1,0 +1,9 @@
+{
+  "record_kind": "tool_completion_fragment",
+  "warning": "Completion fragments are not full process stdout; ignored manual tests are not passes.",
+  "chunk_id": "2c7bbe",
+  "wall_time_seconds": 0.0000092,
+  "exit_code": 0,
+  "original_token_count": 76,
+  "output": "Original J1 output join proof intact: attribution, live matrices and 156 SIGKILL / 6 controls / 324 fresh inspections; original deadlines exact, production admission CLOSED\r\nPrior output proof verified at exact immutable source 2c63cac08f70b18e4af78875f1f95c35c16238f0; active checkout/index unchanged\r\n"
+}
