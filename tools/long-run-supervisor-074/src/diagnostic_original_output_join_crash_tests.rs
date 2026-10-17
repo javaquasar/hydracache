@@ -1,5 +1,7 @@
 //! Private nonroot original empty-sink SIGKILL proof; no installed entry.
 use super::*;
+#[path = "diagnostic_grouped_preparation_crash_tests.rs"]
+mod grouped_process_tests;
 use crate::diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::{
     inspect_empty_fence_at_for_test, with_owned_empty_fence_at_for_test,
 };

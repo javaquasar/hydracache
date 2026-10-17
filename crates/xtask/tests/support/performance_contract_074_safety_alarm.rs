@@ -192,9 +192,83 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-grouped-process-screen"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_grouped_process_screen"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Owned nonexecuting SIGKILL and synthetic return ACK loss; no systemd delivery or admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_screen","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-grouped-process-matrix"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_crash_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_grouped_process_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Owned nonexecuting SIGKILL and synthetic return ACK loss; no systemd delivery or admission"
+tier = "manual"
+required_features = []
+required_env = ["HC074_START_MATERIAL_BUNDLE"]
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::crash_tests::grouped_process_tests::original_grouped_process_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END ORIGINAL SAFETY ALARM GATES
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    if path == "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" {
+        let registration = "#[path = \"diagnostic_grouped_preparation_crash_tests.rs\"]\nmod grouped_process_tests;\n";
+        assert_eq!(raw.matches(registration).count(), 1);
+        return raw.replacen(registration, "", 1);
+    }
+    if path == "crates/xtask/tests/support/performance_contract_074_start_material.rs" {
+        let adapter = "super::safety_alarm::normalize(p, &read(p)),";
+        assert_eq!(raw.matches(adapter).count(), 1);
+        return raw.replacen(adapter, "read(p),", 1);
+    }
     let addition = match path {
         "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
             "#[cfg(test)]\n#[path = \"diagnostic_original_safety_alarm.rs\"]\npub(crate) mod safety_alarm;\n",
@@ -412,4 +486,46 @@ fn grouped_preparation_candidate_is_test_only_and_preserves_all_runtime_guards()
     )
     .unwrap();
     assert!(registered.contains("#[path = \"diagnostic_grouped_preparation_candidate.rs\"]"));
+}
+
+#[test]
+fn grouped_process_loss_preserves_original_candidate_and_owned_crash_harness() {
+    let path = "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs";
+    let current = std::fs::read_to_string(super::root().join(path))
+        .unwrap()
+        .replace('\r', "");
+    let before = std::process::Command::new("git")
+        .args(["show", &format!("674ea586:{path}")])
+        .current_dir(super::root())
+        .output()
+        .unwrap();
+    assert!(before.status.success());
+    let frozen = String::from_utf8(before.stdout).unwrap().replace('\r', "");
+    assert_eq!(normalize(path, &current), frozen);
+    assert_ne!(
+        normalize(path, &current.replace("libc::SIGKILL", "libc::SIGTERM")),
+        frozen
+    );
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_candidate.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_grouped_preparation_join_tests.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_original_safety_alarm.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_validation_frame.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_lease.rs",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        let out = std::process::Command::new("git")
+            .args(["show", &format!("674ea586:{path}")])
+            .current_dir(super::root())
+            .output()
+            .unwrap();
+        assert!(out.status.success());
+        assert_eq!(
+            std::fs::read_to_string(super::root().join(path))
+                .unwrap()
+                .replace('\r', ""),
+            String::from_utf8(out.stdout).unwrap().replace('\r', ""),
+            "{path}"
+        );
+    }
 }
