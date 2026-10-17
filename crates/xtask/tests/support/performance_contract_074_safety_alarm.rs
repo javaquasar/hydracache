@@ -64,6 +64,38 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.original-controller-component-cost-controls"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "original_controller_component_cost_controls"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Separate original-object component controls, not a ReservedLive decomposition or new admission"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::original_controller_component_cost_controls","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+
 # END ORIGINAL SAFETY ALARM GATES
 "###;
 pub(super) fn normalize(path: &str, raw: &str) -> String {
@@ -184,6 +216,32 @@ fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact() 
     ] {
         let before = std::process::Command::new("git")
             .args(["show", &format!("48aa96b7:{path}")])
+            .current_dir(super::root())
+            .output()
+            .unwrap();
+        assert!(before.status.success());
+        let current = std::fs::read_to_string(super::root().join(path)).unwrap();
+        assert_eq!(
+            current.replace('\r', ""),
+            String::from_utf8(before.stdout).unwrap().replace('\r', ""),
+            "{path}"
+        );
+    }
+}
+
+#[test]
+fn component_cost_controls_leave_all_original_validator_bodies_exact() {
+    for path in [
+        "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
+        "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
+    ] {
+        let before = std::process::Command::new("git")
+            .args(["show", &format!("bb2c843f:{path}")])
             .current_dir(super::root())
             .output()
             .unwrap();

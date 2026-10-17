@@ -1,5 +1,7 @@
 //! Attribution through the existing callback, never a different validation schedule.
 use super::*;
+#[path = "diagnostic_controller_component_cost_tests.rs"]
+mod component_cost_tests;
 use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
 
 #[test]
