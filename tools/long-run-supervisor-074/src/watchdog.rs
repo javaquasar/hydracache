@@ -1,6 +1,12 @@
 use crate::{CheckpointPayload, Phase};
 use thiserror::Error;
 
+// Private mechanics only. Original admission/descriptor transfer is not enrolled.
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[allow(dead_code)]
+#[path = "diagnostic_autonomous_watchdog.rs"]
+mod autonomous;
+
 pub const PROCESS_CPU_TIME_NS: &str = "process_cpu_time_ns";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

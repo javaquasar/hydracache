@@ -1436,3 +1436,18 @@ The exact console, its server-embedded copy, source registries, and CycloneDX SB
 one deterministic bundle whose manifest records every file SHA-256, a set digest, and the exact
 40-character candidate commit. Verification rejects dirty-tree release packaging, an altered
 file, a rebuilt substitute, or a source-commit mismatch.
+
+## Private diagnostic guardian notices
+
+The internal 0.74 guardian fork notice protocol, guardian-fork-notice-074-v1,
+uses one inherited SOCK_SEQPACKET connection within the same executable image.
+A packet is exactly one byte: 1 is readiness; 2 isolation failure; 3 observation
+failure; 4 revocation failure; 5 read failure; 6 write failure; 7 overflow;
+8 fsync failure; 9 close failure; 10 expiry. Unknown, truncated or oversized packets
+are not readiness. The private parent must not interpret disconnect or a missing
+notice as successful closure, start authority, retry or recovered acknowledgement.
+
+There is no named listener, external producer, CLI or independently versioned
+reader. No migration or durable artifact is introduced. Failure notification is
+best effort after receiver loss; the guardian retains the fence regardless.
+This protocol does not replace any signed lifecycle record or manager ACK.

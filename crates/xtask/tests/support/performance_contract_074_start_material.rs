@@ -163,7 +163,7 @@ fn original_start_material_preserves_output_runtime_and_closed_execution() {
             .unwrap();
         assert!(out.status.success());
         assert_eq!(
-            read(p),
+            super::fixed_grouped::normalize(p, &read(p)),
             String::from_utf8(out.stdout).unwrap().replace('\r', ""),
             "frozen leaf: {p}"
         );

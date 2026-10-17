@@ -1,4 +1,20 @@
 //! Additive fixed-origin preparation; all prior validators remain frozen.
+const GUARDIAN_COMPAT: &str = r###"
+## Private diagnostic guardian notices
+
+The internal 0.74 guardian fork notice protocol, guardian-fork-notice-074-v1,
+uses one inherited SOCK_SEQPACKET connection within the same executable image.
+A packet is exactly one byte: 1 is readiness; 2 isolation failure; 3 observation
+failure; 4 revocation failure; 5 read failure; 6 write failure; 7 overflow;
+8 fsync failure; 9 close failure; 10 expiry. Unknown, truncated or oversized packets
+are not readiness. The private parent must not interpret disconnect or a missing
+notice as successful closure, start authority, retry or recovered acknowledgement.
+
+There is no named listener, external producer, CLI or independently versioned
+reader. No migration or durable artifact is introduced. Failure notification is
+best effort after receiver loss; the guardian retains the fence regardless.
+This protocol does not replace any signed lifecycle record or manager ACK.
+"###;
 const GATES: &str = r###"
 # BEGIN FIXED GROUPED PREPARATION GATES
 [[gate]]
@@ -225,11 +241,50 @@ platform = "linux"
 
 [gate.command.env]
 
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.autonomous-writer-fence"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog_tests.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "autonomous_writer_fence_matrix"
+cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
+env = ""
+reason = "Manual isolated nonroot kernel guardian and writer-fence faults; no production execution enrollment"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","watchdog::autonomous::tests::autonomous_writer_fence_matrix","--","--ignored","--exact","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
 # END FIXED GROUPED PREPARATION GATES
 "###;
 
 pub(super) fn normalize(path: &str, raw: &str) -> String {
+    if path == "crates/xtask/tests/support/performance_contract_074_start_material.rs" {
+        let addition = "super::fixed_grouped::normalize(p, &read(p)),";
+        assert_eq!(raw.matches(addition).count(), 1);
+        return raw.replacen(addition, "read(p),", 1);
+    }
     let addition = match path {
+        "docs/COMPAT.md" => GUARDIAN_COMPAT,
+        "tools/long-run-supervisor-074/src/watchdog.rs" =>
+            "\n// Private mechanics only. Original admission/descriptor transfer is not enrolled.\n#[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[allow(dead_code)]\n#[path = \"diagnostic_autonomous_watchdog.rs\"]\nmod autonomous;\n",
         "tools/long-run-supervisor-074/src/diagnostic_original_output_join_crash_tests.rs" =>
             "#[path = \"diagnostic_fixed_grouped_preparation_crash_tests.rs\"]\nmod fixed_grouped_process_tests;\n",
         "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs" =>
@@ -410,4 +465,88 @@ fn fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness() {
     ] {
         assert_ne!(current.replace(from, to), expected, "{from}");
     }
+}
+
+#[test]
+fn autonomous_guardian_is_private_and_preserves_original_admission() {
+    let path = "tools/long-run-supervisor-074/src/watchdog.rs";
+    let addition = "\n// Private mechanics only. Original admission/descriptor transfer is not enrolled.\n#[cfg(all(target_os = \"linux\", target_arch = \"x86_64\"))]\n#[allow(dead_code)]\n#[path = \"diagnostic_autonomous_watchdog.rs\"]\nmod autonomous;\n";
+    let current = read(path);
+    assert_eq!(current.matches(addition).count(), 1);
+    let old = std::process::Command::new("git")
+        .args(["show", &format!("5621df7b:{path}")])
+        .current_dir(super::root())
+        .output()
+        .unwrap();
+    assert!(old.status.success());
+    assert_eq!(
+        current.replacen(addition, "", 1),
+        String::from_utf8(old.stdout).unwrap().replace('\r', "")
+    );
+    let p = "crates/xtask/tests/support/performance_contract_074_start_material.rs";
+    let old = std::process::Command::new("git")
+        .args(["show", &format!("5621df7b:{p}")])
+        .current_dir(super::root())
+        .output()
+        .unwrap();
+    assert!(old.status.success());
+    assert_eq!(
+        normalize(p, &read(p)),
+        String::from_utf8(old.stdout).unwrap().replace('\r', "")
+    );
+    let mutation = current.replace(
+        "rejection_gap_seconds <= warning_gap_seconds",
+        "rejection_gap_seconds < warning_gap_seconds",
+    );
+    assert_ne!(normalize(path, &mutation), normalize(path, &current));
+    let raw = read("tools/long-run-supervisor-074/src/diagnostic_autonomous_watchdog.rs");
+    for forbidden in [
+        "pub fn",
+        "pub struct",
+        "pub(crate)",
+        "Command::",
+        "LOCK_UN",
+        "PR_SET_PDEATHSIG",
+        "SystemTime",
+        "CLOCK_REALTIME",
+        "unlink",
+        "rearm",
+    ] {
+        // The comment explaining why LOCK_UN is forbidden is not executable.
+        assert!(
+            !raw.lines()
+                .filter(|l| !l.trim_start().starts_with("//"))
+                .any(|l| l.contains(forbidden)),
+            "{forbidden}"
+        );
+    }
+    for required in [
+        "libc::SYS_fork",
+        "libc::SYS_close_range",
+        "libc::SYS_pidfd_send_signal",
+        "libc::TFD_TIMER_ABSTIME",
+        "libc::CLOCK_BOOTTIME",
+        "libc::MSG_NOSIGNAL",
+        "writers_terminal && eof == [true, true] && !refused",
+        "libc::fsync(fd)",
+        "libc::close(raw.fence)",
+    ] {
+        assert!(raw.contains(required), "{required}");
+    }
+    let collector = slice(&raw, "fn collect(", "fn guardian_refused(");
+    assert!(
+        collector.find("libc::fsync(fd)").unwrap() < collector.rfind("libc::close(fd)").unwrap()
+    );
+    let guardian = slice(&raw, "fn run(", "fn spawn(");
+    assert!(!guardian.contains("libc::write("));
+    assert!(!guardian.contains("libc::fsync("));
+    assert!(
+        guardian.find("libc::waitpid(").unwrap() < guardian.find("libc::close(raw.fence)").unwrap()
+    );
+    assert!(
+        guardian
+            .find("releasable(writers_terminal, eof, false)")
+            .unwrap()
+            < guardian.find("libc::close(raw.fence)").unwrap()
+    );
 }
