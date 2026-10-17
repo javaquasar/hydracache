@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "baseline": "bb2c843f63fb941ea1011bf99221772cfbfc3052",
+  "implementation_source": "a0b865f1abb0cf635028bc54f0ffa50c5c926f06",
+  "production_changed": false,
+  "schedule_changed": false,
+  "deadlines_changed": false,
+  "direct_reserved_live_decomposition": false,
+  "private_controller_capture_timed": false,
+  "admission": false,
+  "reservation": false,
+  "ship": false,
+  "perf_probe_exit_code": 255,
+  "perf_event_paranoid": 4,
+  "kernel_configuration_changed": false,
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "server_root": "/tmp/hc074-controller-cost-20261017.uYyrhr",
+  "samples_per_compiler": 3,
+  "components": 10,
+  "order_rotations": [
+    0,
+    3,
+    6
+  ],
+  "binaries": [
+    {
+      "lane": "194",
+      "bytes": 18764168,
+      "sha256": "6968ce30bab424fff57b36b1f298b80929f0a0188ee98e4c1083fad6f017de37"
+    },
+    {
+      "lane": "188",
+      "bytes": 18450456,
+      "sha256": "26f7e196bdc952164b0ae38a72608bf5f1f4c022c8060088db48880c7fac8aa9"
+    }
+  ],
+  "sources": [
+    {
+      "path": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs",
+      "git_blob": "eef101e3d3eea903544b43d933d154b7c3debc01"
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "git_blob": "8b22a4f0446fe7839555a9583bb53063d6f8823f"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs",
+      "git_blob": "de11c64dcf1d68fdecad89e6fb50cb6290c280d0"
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs",
+      "git_blob": "213ff28da7c6d64536a685962c8df779eec6999a"
+    }
+  ],
+  "files": [
+    {
+      "path": "checks-188.log",
+      "bytes": 15689,
+      "sha256": "cdff0aa9b39ea099839d8f066ab3af83ee8259984b60ec491e06e180fcd872e4"
+    },
+    {
+      "path": "checks-194.log",
+      "bytes": 15693,
+      "sha256": "beea2142b2b70a3400a88f0e922a199cabc2ee84a2d06fc77382da5535428c63"
+    },
+    {
+      "path": "checks.sh",
+      "bytes": 1572,
+      "sha256": "38994d74c087f6e26ec29cd56d3723f7cb505f8349ee4210e26efa1743a6f81d"
+    },
+    {
+      "path": "contracts.log",
+      "bytes": 17178,
+      "sha256": "9561dcf0351e08ed09f276d0cb06c1a095d0cf34a513746f8badc7612f2a3604"
+    },
+    {
+      "path": "doc-check.log",
+      "bytes": 167,
+      "sha256": "f560df53b28ce3e060fa2964d9bc431b56f5a2dc769317e5228985f1c48f9e9f"
+    },
+    {
+      "path": "fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "guard.sh",
+      "bytes": 2251,
+      "sha256": "3db7622b8e73b411fbf014c841c85d43c8eea375d3df93a646bd137389e87285"
+    },
+    {
+      "path": "host-188.log",
+      "bytes": 8159,
+      "sha256": "b2d8ee9ddae87c1d6bff234c4631c08f0e064c07f945f3ebfd1e7656c1562d40"
+    },
+    {
+      "path": "host-194.log",
+      "bytes": 8159,
+      "sha256": "1ac559d6ad866b6f9f1f17d4569607bcd362476a112b4aade2a02c95d77c7569"
+    },
+    {
+      "path": "instrumentation.patch",
+      "bytes": 12622,
+      "sha256": "376588ae62a70fd2d1e347aeefab34c3089bc6fd9ad515216aab13e19a458854"
+    },
+    {
+      "path": "performance-contract.log",
+      "bytes": 215,
+      "sha256": "e185f5527ad4f4e5850f07b9172b66ad4d329f7761efeaf08f051a7ec925a7cb"
+    },
+    {
+      "path": "phases.json",
+      "bytes": 18987,
+      "sha256": "3c1e42f21c237d16c298e5e863fe8808324e08a4e8b58a365cb6903ac5ecf02d"
+    },
+    {
+      "path": "postflight.log",
+      "bytes": 154,
+      "sha256": "6f3199c775abdc0ce1859282713bbd06f5150b2114f90b1bae48bfba03685356"
+    },
+    {
+      "path": "postflight.sh",
+      "bytes": 579,
+      "sha256": "c839626a48b0a560dba2267864684bff1313e5dc1a591b3f835c63526bacf144"
+    },
+    {
+      "path": "prior-proof.log",
+      "bytes": 306,
+      "sha256": "ee159f45421c9aaccc29fc6db4e291b62a6a4056c92ef72b9dfb7b2198430b72"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6512,
+      "sha256": "1e19a5ae72773edc6e5be7fb0ef75a079ccdd96ad456e00ff753029aab035450"
+    },
+    {
+      "path": "registry.log",
+      "bytes": 274,
+      "sha256": "8cb25495fc0f4fb7fa34bb9e28a38b2d21f41b5d37e70563f840af6cb2c37d4a"
+    },
+    {
+      "path": "require-ship.log",
+      "bytes": 499,
+      "sha256": "3ce417e1f29fdf5f0113cfd97933b8f4842857c35f88be9de6668886f094d474"
+    },
+    {
+      "path": "run-188.log",
+      "bytes": 7895,
+      "sha256": "ee1da993ecc04d0f7c86f236ed9223237c29a0de4dff7e27feb59562d4fa0ddb"
+    },
+    {
+      "path": "run-188.sh",
+      "bytes": 1254,
+      "sha256": "009390ac565a90d37463c1686f1b1726f96ba26c0590d4559a9f71989091c36d"
+    },
+    {
+      "path": "run-194.log",
+      "bytes": 7895,
+      "sha256": "74f9c4e3eb6cd87884a8878d9be3d2725c213de43e2f808bc93cd9403fc3e7ce"
+    },
+    {
+      "path": "run-194.sh",
+      "bytes": 1254,
+      "sha256": "8477032dc3a77d5255cdebaf06e32b8df74466cc5188ef3600db32ec14c09131"
+    },
+    {
+      "path": "setup.log",
+      "bytes": 1179,
+      "sha256": "fe31b7e69c83f4cd2d220e605c5f039abd5ce6ae361bbffce446881cf97c5149"
+    },
+    {
+      "path": "setup.sh",
+      "bytes": 430,
+      "sha256": "8b3c558b2ff389dafd7f220d9a369b819ce1e0ca9fa87eb68547313ca5d8f0a5"
+    },
+    {
+      "path": "verify-prior.ps1",
+      "bytes": 3475,
+      "sha256": "1f7eeeb0e8b07cf37cc17a3e03bcfaabb39f669e0650be87ba678eee7f465ba0"
+    },
+    {
+      "path": "verify.ps1",
+      "bytes": 7844,
+      "sha256": "78619b268494c416daa989a34302836e79810db21990b154a2160132616e38e6"
+    },
+    {
+      "path": "windows-check.log",
+      "bytes": 157,
+      "sha256": "df7a403b1ed2f2599b61fb3a3341acc49b228e4f21aa704547d924c9ea2a6ba4"
+    },
+    {
+      "path": "windows-clippy.log",
+      "bytes": 157,
+      "sha256": "183177c5a38bc2495949f59e5466ff1f473f0556d9e9075fa7391c8a44fc083a"
+    }
+  ]
+}

@@ -11878,3 +11878,44 @@ failure, followed by corrected test-only checks and an unchanged historical
 verifier at its exact source. All 192 static contracts pass. Supervisor and
 installed artifacts are unchanged; execution admission and the later lifecycle
 SIGKILL matrix remain open.
+
+## Separate component controls narrow the controller cost hypothesis
+
+The [component controls](../testing/performance/0.74/local-runs/controller-component-cost-20261017/README.md)
+take the next step without inserting timing hooks into frozen production guards.
+They invoke existing validators and data-verification functions on fresh original
+objects before any reservation. Three samples on each normal GNU release compiler
+complete all sixty calls. Original request and worker/OIDC fixture bytes remain
+unchanged, and full OIDC validation succeeds before and after each sample.
+
+| Separate control | Rust 1.94 milliseconds | Rust 1.88 milliseconds |
+| --- | --- | --- |
+| Signed controller live validator | 6.503–6.521 | 6.470–6.532 |
+| Builder data verification only | 0.101–0.103 | 0.102–0.105 |
+| Full build live validator | 13.101–13.154 | 13.035–13.133 |
+| OIDC token data verification only | 0.029–0.033 | 0.030–0.031 |
+| Full OIDC live validator | 29.727–29.809 | 29.575–29.835 |
+
+The data-only builder control still loads the reviewed policy, verifies both
+pinned and retained receipts and compares full identities/statements to the
+original build. The token control uses a freshly sampled original worker time,
+outside the isolated verification span, and requires the original token digest.
+Neither produces admission. Full signed-controller/build/OIDC validators retain
+their original live checks and make exactly 1/2/4 IPC authentications. Separate
+worker-live, authority-binding and worker-time calls take approximately 1.5,
+3.0–3.1 and 3.4 milliseconds in these fixtures.
+
+This is not an exclusive profile of ReservedLive: the private capture function
+is not timed, calls are separate and order uses three deterministic rotations
+rather than a fully counterbalanced effect experiment. Nested and data-only spans
+cannot be added or subtracted to assign a percentage or claim an acceleration.
+The contrast favors further profiling of repeated worker/kernel/authority walks
+over an assumption that immutable builder/OIDC cryptography dominates. It does
+not yet identify a particular syscall or permit mutable authority or time caching.
+
+The host actually refuses nonroot perf monitoring with perf_event_paranoid=4.
+That limitation stays recorded; no setting or capability is changed to obtain a
+profile. All 193 static contracts pass, including exact original validator bodies,
+and the prior leaf proof passes at its immutable source. Supervisor and installed
+artifacts remain unchanged. Grouped preparation, production execution and the
+later SIGKILL matrix retain their separate agreement and proof requirements.

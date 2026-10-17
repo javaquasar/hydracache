@@ -193,3 +193,10 @@ measured opening leaf. This is a profiling target, not authorization to omit
 nested live observations. The existing callback leaves the full closing round
 in its final bucket; that bucket must not be described as isolated FinalClocks.
 No production source, observation frequency, deadline or admission changes.
+
+The [component controls](local-runs/controller-component-cost-20261017/README.md)
+further narrow that hypothesis through existing validators on original objects,
+without inserting hooks into or replacing any production body. Their separate
+data-only and nested live spans are not an exclusive ReservedLive profile and
+grant no cached authority. The current evidence favors profiling repeated
+worker/kernel/authority observation before proposing an immutable-crypto cache.

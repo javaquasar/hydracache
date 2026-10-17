@@ -1,0 +1,261 @@
+diff --git a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+index 871a21c12af32a3585203ed575c8653d27eff00e..eef101e3d3eea903544b43d933d154b7c3debc01 100644
+--- a/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
++++ b/crates/xtask/tests/support/performance_contract_074_safety_alarm.rs
+@@ -64,6 +64,38 @@ platform = "linux"
+ 
+ [gate.command.env]
+ 
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-controller-component-cost-controls"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_controller_component_cost_controls"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Separate original-object component controls, not a ReservedLive decomposition or new admission"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::original_controller_component_cost_controls","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
+ # END ORIGINAL SAFETY ALARM GATES
+ "###;
+ pub(super) fn normalize(path: &str, raw: &str) -> String {
+@@ -196,3 +228,29 @@ fn validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact()
+         );
+     }
+ }
++
++#[test]
++fn component_cost_controls_leave_all_original_validator_bodies_exact() {
++    for path in [
++        "tools/long-run-supervisor-074/src/diagnostic_collector_reserved.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_request_attempt.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_build_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_oidc_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_oidc_profile.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_controller_trust_input.rs",
++        "tools/long-run-supervisor-074/src/diagnostic_worker_kernel_binding.rs",
++    ] {
++        let before = std::process::Command::new("git")
++            .args(["show", &format!("bb2c843f:{path}")])
++            .current_dir(super::root())
++            .output()
++            .unwrap();
++        assert!(before.status.success());
++        let current = std::fs::read_to_string(super::root().join(path)).unwrap();
++        assert_eq!(
++            current.replace('\r', ""),
++            String::from_utf8(before.stdout).unwrap().replace('\r', ""),
++            "{path}"
++        );
++    }
++}
+diff --git a/docs/testing/gated-test-registry.toml b/docs/testing/gated-test-registry.toml
+index d15b5bae536ebad1f4b31d5069b9c5908c6b0630..8b22a4f0446fe7839555a9583bb53063d6f8823f 100644
+--- a/docs/testing/gated-test-registry.toml
++++ b/docs/testing/gated-test-registry.toml
+@@ -9890,4 +9890,36 @@ platform = "linux"
+ 
+ [gate.command.env]
+ 
++[[gate]]
++id = "tool.hydracache-long-run-supervisor-074.original-controller-component-cost-controls"
++kind = "external_tool"
++source = "tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs"
++package = "hydracache-long-run-supervisor-074"
++target = "hydracache_long_run_supervisor_074"
++test = "original_controller_component_cost_controls"
++cfg = 'all (target_os = "linux" , target_arch = "x86_64")'
++env = ""
++reason = "Separate original-object component controls, not a ReservedLive decomposition or new admission"
++tier = "manual"
++required_features = []
++required_env = []
++required_tools = ["cargo"]
++timeout_seconds = 180
++owner_release = "0.74.0"
++ship_mandatory = false
++artifacts = []
++
++[gate.ci]
++workflow = ".github/workflows/ci.yml"
++job = "gated-proof-registry"
++step = "Run registered gated proofs"
++
++[gate.command]
++program = "cargo"
++args = ["test","--release","-p","hydracache-long-run-supervisor-074","--lib","--locked","diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::sink_tests::start_material_tests::pipe_transport_tests::safety_alarm_tests::leaf_cost_tests::component_cost_tests::original_controller_component_cost_controls","--","--ignored","--exact","--nocapture","--test-threads=1"]
++cwd = "."
++platform = "linux"
++
++[gate.command.env]
++
+ # END ORIGINAL SAFETY ALARM GATES
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs
+index 948494e445866f28f6ed9e9fafd3941a59136530..de11c64dcf1d68fdecad89e6fb50cb6290c280d0 100644
+--- a/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs
++++ b/tools/long-run-supervisor-074/src/diagnostic_validation_leaf_cost_tests.rs
+@@ -1,5 +1,7 @@
+ //! Attribution through the existing callback, never a different validation schedule.
+ use super::*;
++#[path = "diagnostic_controller_component_cost_tests.rs"]
++mod component_cost_tests;
+ use crate::diagnostic_ipc::validation_trace::{self as trace, Stage};
+ 
+ #[test]
+diff --git a/tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs b/tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..213ff28da7c6d64536a685962c8df779eec6999a
+--- /dev/null
++++ b/tools/long-run-supervisor-074/src/diagnostic_controller_component_cost_tests.rs
+@@ -0,0 +1,129 @@
++//! Separate original-object controls, not a replacement or decomposition of ReservedLive.
++use super::*;
++
++#[test]
++#[ignore = "manual nonroot original controller component controls; no reservation, execution or admission"]
++fn original_controller_component_cost_controls() {
++    let names = [
++        "worker-live",
++        "controller-source",
++        "signed-controller",
++        "builder-body-data-only",
++        "build-validator",
++        "oidc-source",
++        "oidc-token-data-only",
++        "oidc-validator",
++        "authority-binding",
++        "worker-time",
++    ];
++    for sample in 0..3 {
++        with_original_at(false, None, |original, paths, _, _, _| {
++            original.revalidate().unwrap();
++            let request = original.original.original.request.clone();
++            let worker = fs::read(&paths.worker).unwrap();
++            let oidc = fs::read(&paths.oidc).unwrap();
++            let mut visited = [false; 10];
++            for order in 0..10 {
++                let index = (order + sample * 3) % 10;
++                assert!(!visited[index]);
++                visited[index] = true;
++                // This isolated data-only control excludes its original clock sampling.
++                let token_now = if index == 6 {
++                    Some(
++                        original
++                            .original
++                            .original
++                            .worker
++                            .original_unix_seconds()
++                            .unwrap(),
++                    )
++                } else {
++                    None
++                };
++                let (_, report) = trace::capture(|| {
++                    trace::stage(Stage::Checks);
++                    match index {
++                        0 => original.original.original.worker.revalidate().unwrap(),
++                        1 => original.original.original.controller.check().unwrap(),
++                        2 => original.original.original.revalidate().unwrap(),
++                        3 => {
++                            let build = &original.original;
++                            let pinned = crate::diagnostic_reviewed_trust::load_builder_policy(
++                                &build.policy_bytes,
++                            )
++                            .unwrap();
++                            let identity = &build.original.request.identity;
++                            let checked = pinned
++                                .verify_receipt(&build.receipt_bytes, identity)
++                                .unwrap();
++                            let retained = build
++                                .policy
++                                .verify_receipt(&build.receipt_bytes, identity)
++                                .unwrap();
++                            assert_eq!(checked.identity(), build.build.identity());
++                            assert_eq!(checked.statement(), build.build.statement());
++                            assert_eq!(retained.identity(), checked.identity());
++                            assert_eq!(retained.statement(), checked.statement());
++                        }
++                        4 => original.original.revalidate().unwrap(),
++                        5 => original.trust.check().unwrap(),
++                        6 => {
++                            let digest = crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::profile::verify(
++                                &original.trust.source.profile, &original.token,
++                                &original.original.original.request,
++                                &original.original.original.request_sha256,
++                                token_now.unwrap(),
++                            ).unwrap();
++                            assert_eq!(digest, original.token_digest);
++                        }
++                        7 => original.revalidate().unwrap(),
++                        8 => {
++                            let _ = original
++                                .original
++                                .original
++                                .worker
++                                .controller_authority_binding()
++                                .unwrap();
++                        }
++                        9 => {
++                            let _ = original
++                                .original
++                                .original
++                                .worker
++                                .original_unix_seconds()
++                                .unwrap();
++                        }
++                        _ => unreachable!(),
++                    }
++                });
++                let expected = match index {
++                    2 => 1,
++                    4 => 2,
++                    7 => 4,
++                    _ => 0,
++                };
++                let stats = report.stages[Stage::Checks as usize];
++                assert_eq!(stats.authentication_calls, expected);
++                assert_eq!(stats.signature_calls, expected);
++                assert_eq!(
++                    report
++                        .stages
++                        .iter()
++                        .map(|s| s.authentication_calls)
++                        .sum::<u64>(),
++                    expected
++                );
++                assert!(report.first_time.is_none() && report.time_refusals == 0);
++                assert!(!original.is_refused());
++                println!("HC074-COMPONENT-COST sample={sample} order={order} component={} stats={stats:?}", names[index]);
++            }
++            assert!(visited.into_iter().all(|seen| seen));
++            original.revalidate().unwrap();
++            assert_eq!(original.original.original.request, request);
++            assert_eq!(fs::read(&paths.worker).unwrap(), worker);
++            assert_eq!(fs::read(&paths.oidc).unwrap(), oidc);
++            assert!(!original.is_refused());
++            println!("HC074-COMPONENT-CONTROL sample={sample} components=10 original=true unchanged=true reservation=false production_changed=false schedule_changed=false admission=false");
++        });
++    }
++}

@@ -1,0 +1,2 @@
+HC074-CAPSULE name=instrumentation.patch files=4 exact=true current=True
+HC074-COMPONENT-EVIDENCE verified=true controls=6 rows=60 direct_decomposition=false production_changed=false admission=false

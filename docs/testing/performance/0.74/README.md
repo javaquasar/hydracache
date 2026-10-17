@@ -3695,3 +3695,11 @@ The final bucket includes FinalClocks and the whole untouched closing round;
 it is not an isolated leaf measurement. Profiling inside ReservedLive is the next
 safe attribution target. The failed alarm candidate remains test-only and grouped
 preparation still needs separate agreement; no production or crash gate is closed.
+
+The [separate component controls](local-runs/controller-component-cost-20261017/README.md)
+pass sixty calls across six fresh original-object samples. Data-only builder/OIDC
+verification takes about 0.10/0.03 milliseconds versus about 13/30 milliseconds
+for the full live validators. These are separate pre-reservation controls, not
+a direct ReservedLive decomposition or optimization result. Original bodies,
+live observations and deadlines stay exact. Repeated worker/kernel/authority
+walks are the next profiling target; no production or crash gate is closed.
