@@ -1,0 +1,158 @@
+{
+  "rows": [
+    {
+      "mode": "screen",
+      "lane": "194",
+      "sample": 0,
+      "phase": "prepare",
+      "wall_ns": 362640447,
+      "authentication_calls": 34,
+      "authentication_ns": 1245537,
+      "signature_calls": 34,
+      "signature_ns": 1064499
+    },
+    {
+      "mode": "screen",
+      "lane": "194",
+      "sample": 0,
+      "phase": "reference-validate",
+      "wall_ns": 337918555,
+      "authentication_calls": 34,
+      "authentication_ns": 1195850,
+      "signature_calls": 34,
+      "signature_ns": 1011634
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 0,
+      "phase": "prepare",
+      "wall_ns": 363193028,
+      "authentication_calls": 34,
+      "authentication_ns": 1232106,
+      "signature_calls": 34,
+      "signature_ns": 1050845
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 0,
+      "phase": "reference-validate",
+      "wall_ns": 335686805,
+      "authentication_calls": 34,
+      "authentication_ns": 1176663,
+      "signature_calls": 34,
+      "signature_ns": 997318
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 1,
+      "phase": "prepare",
+      "wall_ns": 362564332,
+      "authentication_calls": 34,
+      "authentication_ns": 1231047,
+      "signature_calls": 34,
+      "signature_ns": 1050710
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 1,
+      "phase": "reference-validate",
+      "wall_ns": 335570839,
+      "authentication_calls": 34,
+      "authentication_ns": 1180562,
+      "signature_calls": 34,
+      "signature_ns": 999417
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 2,
+      "phase": "prepare",
+      "wall_ns": 362250140,
+      "authentication_calls": 34,
+      "authentication_ns": 1224116,
+      "signature_calls": 34,
+      "signature_ns": 1044958
+    },
+    {
+      "mode": "healthy",
+      "lane": "194",
+      "sample": 2,
+      "phase": "reference-validate",
+      "wall_ns": 335144939,
+      "authentication_calls": 34,
+      "authentication_ns": 1169048,
+      "signature_calls": 34,
+      "signature_ns": 987538
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 0,
+      "phase": "prepare",
+      "wall_ns": 358467848,
+      "authentication_calls": 34,
+      "authentication_ns": 1117829,
+      "signature_calls": 34,
+      "signature_ns": 943830
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 0,
+      "phase": "reference-validate",
+      "wall_ns": 330826017,
+      "authentication_calls": 34,
+      "authentication_ns": 1289168,
+      "signature_calls": 34,
+      "signature_ns": 1114441
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 1,
+      "phase": "prepare",
+      "wall_ns": 357403610,
+      "authentication_calls": 34,
+      "authentication_ns": 1115850,
+      "signature_calls": 34,
+      "signature_ns": 943864
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 1,
+      "phase": "reference-validate",
+      "wall_ns": 331661115,
+      "authentication_calls": 34,
+      "authentication_ns": 1282087,
+      "signature_calls": 34,
+      "signature_ns": 1109062
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 2,
+      "phase": "prepare",
+      "wall_ns": 358891285,
+      "authentication_calls": 34,
+      "authentication_ns": 1106058,
+      "signature_calls": 34,
+      "signature_ns": 934153
+    },
+    {
+      "mode": "healthy",
+      "lane": "188",
+      "sample": 2,
+      "phase": "reference-validate",
+      "wall_ns": 334325139,
+      "authentication_calls": 34,
+      "authentication_ns": 1279226,
+      "signature_calls": 34,
+      "signature_ns": 1104452
+    }
+  ]
+}

@@ -334,3 +334,7 @@ docs/testing/performance/0.74/local-runs/controller-component-cost-*/*.patch -te
 
 docs/testing/performance/0.74/local-runs/controller-syscall-cost-*/** -text whitespace=cr-at-eol
 docs/testing/performance/0.74/local-runs/controller-syscall-cost-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol

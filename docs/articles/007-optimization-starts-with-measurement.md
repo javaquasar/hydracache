@@ -11952,3 +11952,47 @@ gate. It is not permission to cache mutable trust, epoch, peer, context or time.
 The supervisor and installed artifacts remain unchanged. The rejected alarm,
 authenticated start, independent guardian, all-writer cessation and later
 SIGKILL/lost-ack boundaries keep their separate admission requirements.
+
+## Grouping nonexecuting preparation clears the first healthy reference gate
+
+The [grouped experiment](../testing/performance/0.74/local-runs/grouped-preparation-20261017/README.md)
+tests a specific consequence of the attribution: repeated complete live rounds
+around three nonexecuting steps can exhaust the original challenge window even
+when data-only cryptographic work is small. Instead of changing the predicates
+or deadlines, a private cfg(test) composer places material, unsent message and
+absolute alarm preparation between one opening and one closing full frame.
+Existing production validators and their observation schedule remain untouched.
+
+This is a temporal tradeoff, not merely a cheaper spelling of identical behavior.
+Four intermediate complete rounds disappear from the candidate. Closing must
+refuse persistent trust, object, message, writer, state or time drift, but cannot
+promise detection of a transient mutation restored between endpoints. No send or
+start is permitted inside the group. The provisional timer has no authority:
+the unchanged original_round independently checks its original bounds along
+with the full original-chain, bundle and message, followed by timer inspection.
+
+The first healthy Rust 1.94 screen now passes, including subsequent unchanged
+reference revalidation. Three more fresh samples on Rust 1.94 and three on MSRV
+1.88 pass too. Grouped construction makes 34 IPC authentications/signatures,
+where the old material/message/alarm sequence used three separately bracketed
+calls of 34 each. Repeated grouped fixture spans are 362.250–363.193 milliseconds
+on Rust 1.94 and 357.404–358.891 on MSRV; their unchanged reference checks take
+about 331–336 milliseconds. These are inclusive synthetic preparation spans,
+not GET/SET throughput, native API gains or a paired acceleration estimate.
+The old overall healthy/reference sequence was rejected, so it cannot supply
+a successful before/after latency comparison.
+
+Fourteen independent persistent-drift/expiry cases per compiler verify exact
+refusal families, sticky refusal, unchanged durable records and fence retention.
+Trust changes after all five internal checkpoints are rejected; bundle content
+and inode substitution, output writes, projection/state/writer/message changes,
+timer disarm and the original progress expiry also refuse. The 300/60/10-second
+origins remain Reserved/Starting/original progress kernel receipt. No clock or
+deadline is renewed to make the result green.
+
+The useful conclusion is narrower than production readiness: grouped preparation
+can survive its healthy reference gate with the original deadlines. All 194
+static contracts preserve the old runtime bodies. New real process-loss/ack-loss
+tests and a production adaptation are still needed; a retained timer alone is
+not an independent guardian. Authenticated original start, cessation of every
+writer, completion and later lifecycle cells retain their separate proof gates.

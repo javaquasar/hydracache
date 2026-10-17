@@ -208,3 +208,19 @@ the largest counts. The family includes setup, all controls and teardown;
 tracing perturbs its duration substantially and does not isolate a validator
 or justify caching live inputs. The original schedule and execution boundaries
 stay unchanged pending the separately agreed grouped-preparation experiment.
+
+## Test only grouped preparation
+
+The [bounded experiment](local-runs/grouped-preparation-20261017/README.md)
+now constructs material, unsent message and absolute alarm between one existing
+material_round and one unchanged original_round. It is reachable only through
+the alarm's cfg(test) tests, never a production endpoint. Closing repeats full
+live checks and binds the provisional timer back to original bounds before
+material becomes ready; failure retains the original refused owner/fence.
+
+This candidate removes four intermediate complete rounds. It detects persistent
+closing drift but does not certify a transient change restored between endpoints.
+The initial screen, repeated original/reference controls and persistent refusal
+matrix pass with unchanged original deadlines. Production bodies and observation
+schedule remain exact. Process-loss/ack-loss, production adaptation, independent
+guardian lifetime, authenticated send/start and all-writer cessation remain open.

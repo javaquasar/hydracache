@@ -3712,3 +3712,14 @@ raises family time from 0.70–0.72 to 8.62–8.64 seconds. These aggregate coun
 support investigating repeated live object walks, not an exclusive owner,
 CPU profile or speedup claim. Runtime, observations, deadlines and admission
 remain unchanged; grouped preparation still requires separate agreement.
+
+The subsequent [grouped preparation experiment](local-runs/grouped-preparation-20261017/README.md)
+implements that limited proposal under cfg(test), leaving production unchanged.
+One initial screen and six repeated healthy chains pass complete reference
+revalidation; 28 persistent-drift/expiry cases pass across both compilers.
+Grouped construction makes 34 IPC authentications instead of three separately
+bracketed calls of 34 each. This is not a paired product speedup claim. Four
+intermediate full observations are absent in the candidate, so restored transient
+drift is outside its endpoint guarantee. All predicates and original time origins
+are retained. Real process-loss/ack-loss, independent guardian, actual start and
+writer cessation remain the next execution gates, not results of this experiment.

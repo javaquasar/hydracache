@@ -1,0 +1,2 @@
+HC074-CAPSULE name=candidate.patch files=6 exact=true current=True
+HC074-GROUPED-EVIDENCE verified=true screen=1 repeated=6 refusals=28 production_changed=false admission=false
